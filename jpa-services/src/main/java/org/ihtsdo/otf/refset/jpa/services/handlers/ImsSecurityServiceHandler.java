@@ -1,0 +1,102 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
+package org.ihtsdo.otf.refset.jpa.services.handlers;
+
+import java.util.Properties;
+
+import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.services.handlers.SecurityServiceHandler;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+/**
+ * Implements a security handler that authorizes via IHTSDO authentication.
+ */
+public class ImsSecurityServiceHandler implements SecurityServiceHandler {
+
+  /** The properties. */
+  @SuppressWarnings("unused")
+  private Properties properties;
+
+  /* see superclass */
+  @Override
+  public User authenticate(String username, String password) throws Exception {
+    // password contains the IMS user document
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(password);
+
+    // e.g.
+    // {
+    // "login": "pgranvold",
+    // "password": null,
+    // "firstName": "Patrick",
+    // "lastName": "Granvold",
+    // "email": "***REMOVED***",
+    // "langKey": null,
+    // "roles": [
+    // "ROLE_confluence-users",
+    // "ROLE_ihtsdo-ops-admin",
+    // "ROLE_ihtsdo-sca-author",
+    // "ROLE_ihtsdo-tba-author",
+    // "ROLE_ihtsdo-tech-group",
+    // "ROLE_ihtsdo-users",
+    // "ROLE_jira-developers",
+    // "ROLE_jira-users",
+    // "ROLE_mapping-dev-team"
+    // ]
+    // }
+
+    // Construct user from document
+    User user = new UserJpa();
+    user.setName(doc.get("firstName").asText() + " "
+        + doc.get("lastName").asText());
+    user.setUserName(doc.get("login").asText());
+    user.setEmail(doc.get("email").asText());
+    user.setApplicationRole(UserRole.VIEWER);
+    // Not available user.setMobileEmail("");
+    // TODO: take a look into roles
+    for (JsonNode role : doc.findValues("roles")) {
+      if (role.asText().equals("ROLE_refset-author")) {
+        user.setApplicationRole(UserRole.AUTHOR);
+      }
+      if (role.asText().equals("ROLE_refset--lead")) {
+        user.setApplicationRole(UserRole.LEAD);
+      }
+      if (role.asText().equals("ROLE_refset--admin")) {
+        user.setApplicationRole(UserRole.ADMIN);
+      }
+    }
+
+    return user;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean timeoutUser(String user) {
+    // Never timeout user
+    return false;
+  }
+
+  /* see superclass */
+  @Override
+  public String computeTokenForUser(String user) {
+    return user;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProperties(Properties properties) {
+    this.properties = properties;
+  }
+
+  @Override
+  public String getName() {
+    return "IHTSDO Identity Management Service handler";
+  }
+
+}

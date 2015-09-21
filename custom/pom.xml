@@ -1,0 +1,51 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.refset</groupId>
+    <artifactId>refset-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+
+  <artifactId>refset-custom</artifactId>
+  <name>IHTSDO refset management service customizations</name>
+  <description>Custom project extensions.</description>
+
+  <dependencies>
+
+    <!-- Project dependencies -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-jpa-model</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-services</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-jpa-services</artifactId>
+    </dependency>
+
+    <!-- LVG -->
+    <dependency>
+      <groupId>gov.nih.nlm.nls.lvg</groupId>
+      <artifactId>lvgdist</artifactId>
+    </dependency>
+
+    <!-- Logging -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+    </dependency>
+
+    <!-- JUnit -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+  </dependencies>
+</project>

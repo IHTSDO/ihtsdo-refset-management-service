@@ -1,0 +1,2 @@
+id	effectiveTime	active	moduleId	refsetId	referencedComponentId	definition
+0001406e-99ce-5ebe-b84e-99691c094948	20020131	1	900000000000207008	900000000000497000	91935009	testDefinition

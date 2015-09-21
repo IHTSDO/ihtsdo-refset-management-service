@@ -1,0 +1,168 @@
+'use strict'
+
+var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree' ])
+  .config(function($rootScopeProvider) {
+
+    // Set recursive digest limit higher to handle very deep trees.
+    $rootScopeProvider.digestTtl(15);
+
+  });
+
+// Declare top level URL vars
+var securityUrl = "security/";
+var refsetUrl = "refset/";
+var translationUrl = "translation/";
+var directoryUrl = "directory/";
+var adminUrl = "admin/";
+
+// Initialization of tsApp
+tsApp.run(function($rootScope, $http, $location) {
+  // nothing yet -- may want to put metadata retrieval here
+});
+
+// Route provider configuration
+tsApp.config([ '$routeProvider', '$locationProvider', 
+               function($routeProvider, $locationProvider) {
+  console.debug('configure $routeProvider');
+
+  // Set reloadOnSearch so that $location.hash() calls do not reload the
+  // controller
+  $routeProvider.when('/', {
+    templateUrl : 'app/page/login/login.html',
+    controller : 'LoginCtrl',
+    reloadOnSearch : false
+  }).when('/refset', {
+	    templateUrl : 'app/page/refset/refset.html',
+	    controller : 'RefsetCtrl',
+	    reloadOnSearch : false
+  }).when('/translation', {
+	    templateUrl : 'app/page/translation/translation.html',
+	    controller : 'TranslationCtrl',
+	    reloadOnSearch : false
+  }).when('/directory', {
+	    templateUrl : 'app/page/directory/directory.html',
+	    controller : 'DirectoryCtrl',
+	    reloadOnSearch : false
+  }).when('/admin', {
+	    templateUrl : 'app/page/admin/admin.html',
+	    controller : 'AdminCtrl',
+	    reloadOnSearch : false
+  }).when('/help/:type', {
+	    templateUrl : function(params) {
+	    	return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
+	    } 
+  }).otherwise({
+    redirectTo : '/'
+  });
+  
+
+  //$locationProvider.html5Mode(true);
+
+} ]);
+
+// Simple glass pane controller
+tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService',
+  function($scope, gpService) {
+    console.debug('configure GlassPaneCtrl');
+
+    $scope.glassPane = gpService.glassPane;
+
+  } ]);
+
+// Simple error controller
+tsApp.controller('ErrorCtrl', [ '$scope', 'utilService',
+  function($scope, utilService) {
+    console.debug('configure ErrorCtrl');
+
+    $scope.error = utilService.error;
+
+    $scope.clearError = function() {
+      utilService.clearError();
+    }
+
+    $scope.setError = function(message) {
+      utilService.setError(message);
+    }
+
+  } ]);
+
+// Tab controller
+tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
+  'securityService', 'tabService',
+  function($scope, $interval, $timeout, securityService, tabService) {
+    console.debug('configure TabCtrl');
+
+    // Setup tabs
+    $scope.tabs = tabService.tabs;
+
+    // Set selected tab (change the view)
+    $scope.setSelectedTab = function(tab) {
+      tabService.setSelectedTab(tab);
+    }
+
+    // Set "active" or not
+    $scope.tabClass = function(tab) {
+      if (tabService.selectedTab == tab) {
+        return "active";
+      } else {
+        return "";
+      }
+    }
+
+    // for ng-show
+    $scope.isShowing = function() {
+      return securityService.isLoggedIn();
+    }
+
+  } ]);
+
+// Header controller
+tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
+  function($scope, securityService, $location) {
+    console.debug('configure HeaderCtrl');
+
+    // Declare user
+    $scope.user = securityService.getUser();
+
+    // Logout method
+    $scope.logout = function() {
+      securityService.logout();
+    }
+    
+	$scope.goToHelp = function() {
+		var path = $location.path();
+
+		path = "/help" + path;
+		
+        var currentUrl = window.location.href;
+        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+        var newUrl = baseUrl + path;
+        var myWindow = window.open(newUrl, "helpWindow");
+        myWindow.focus();
+	};
+
+  } ]);
+
+// Footer controller
+tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
+  function($scope, gpService, securityService) {
+    console.debug('configure FooterCtrl');
+    // Declare user
+    $scope.user = securityService.getUser();
+
+    // Logout method
+    $scope.logout = securityService.logout;
+
+    // Check gp status
+    $scope.isGlassPaneNegative = function() {
+      return gpService.isGlassPaneNegative();
+    }
+
+    // Get gp counter
+    $scope.getGlassPaneCounter = function() {
+      return gpService.glassPane.counter;
+    }
+
+  }
+
+]);

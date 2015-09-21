@@ -1,0 +1,45 @@
+<!--  header -->
+<nav ng-controller="HeaderCtrl" id="navBar"
+  
+  class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <!-- Brand and toggle get grouped for better mobile display -->
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <table>
+        <tr>
+          <td><a href="${deploy.link}">
+              <img class="hidden-xs" height="72px"
+                style="background-color: white; padding: 5px; margin: 5px; border-radius: 5px;"
+                src="images/logo-desktop.png"> <img class="visible-xs"
+                height="40px"
+                style="background-color: white; padding: 3px; margin: 3px; border-radius: 3px;"
+                src="images/logo-mobile.png">
+            </a></td>
+          <td style="vertical-align: middle"><b style="color: black;">
+              ${deploy.title} and <a href="swagger.html"
+                style="color: black; text-decoration: underline" target="_blank">API
+                Documentation</a>
+          </b></td>
+        </tr>
+      </table>
+    </div>
+    <!-- User, role, logout, and help -->
+    <div class="hidden-xs collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav navbar-right">
+        <!--  Username and logout tool -->
+          <li>
+            <p id="userAndRole" class="navbar-text"
+              ng-show="user.authToken">
+              {{user.name}} ({{user.applicationRole}})&nbsp;
+              <a title="Help"><span ng-click="goToHelp()">
+				<i class="material-icons  md-18">help</i></span></a> &nbsp;
+            </p>
+                
+          </li>
+      </ul>
+      
+
+    </div>
+    <!-- /.navbar-collapse -->
+  </div>
+</nav>

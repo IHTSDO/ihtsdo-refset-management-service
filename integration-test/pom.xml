@@ -1,0 +1,164 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- Module Metadata -->
+  <parent>
+    <groupId>org.ihtsdo.otf.refset</groupId>
+    <artifactId>refset-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <relativePath>../parent</relativePath>
+  </parent>
+
+  <artifactId>refset-integration-test</artifactId>
+  <name>IHTSDO refset management service integration test module</name>
+  <description>Performs integration tests given a test configuration and a running service.</description>
+
+  <!-- Avoid running integration tests by default -->
+  <properties>
+    <skipTests>true</skipTests>
+  </properties>
+
+  <!-- Declare Project Dependency Versions -->
+  <dependencies>
+
+    <!-- Dependencies -->
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-rest-client</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.ihtsdo.otf.refset</groupId>
+      <artifactId>refset-model</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.maven.shared</groupId>
+      <artifactId>maven-invoker</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Add src/main/resources to the classpath -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <additionalClasspathElements>
+            <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+          </additionalClasspathElements>
+          <skipTests>${skipTests}</skipTests>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+
+  <profiles>
+    <!-- REST integration tests -->
+    <profile>
+      <id>rest</id>
+      <build>
+        <plugins>
+          <!-- Add src/main/resources to the classpath -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/org.ihtsdo.otf.refset/test/rest/Content*Test.java</include>
+              </includes>
+              <additionalClasspathElements>
+                <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+              </additionalClasspathElements>
+              <skipTests>${skipTests}</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Jpa integration tests -->
+    <profile>
+      <id>jpa</id>
+      <build>
+        <plugins>
+          <!-- Add src/main/resources to the classpath -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/org.ihtsdo.otf.refset/test/jpa/*Test.java</include>
+              </includes>
+              <additionalClasspathElements>
+                <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+              </additionalClasspathElements>
+              <skipTests>${skipTests}</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- MOJO integration tests -->
+    <profile>
+      <id>mojo</id>
+      <build>
+        <plugins>
+          <!-- Add src/main/resources to the classpath -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/org.ihtsdo.otf.refset/test/mojo/Compare*Test.java</include>
+              </includes>
+              <excludes>
+                <exclude>**/org.ihtsdo.otf.refset/test/mojo/ResetDevDatabase.java
+                </exclude>
+              </excludes>
+              <additionalClasspathElements>
+                <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+              </additionalClasspathElements>
+              <skipTests>${skipTests}</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+    <!-- Reset dev database to stock conditions -->
+    <profile>
+      <id>reset</id>
+      <build>
+        <plugins>
+          <!-- Add src/main/resources to the classpath -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <includes>
+                <include>**/org.ihtsdo.otf.refset/test/mojo/ResetDevDatabase.java</include>
+              </includes>
+              <additionalClasspathElements>
+                <additionalClasspathElement>src/main/resources</additionalClasspathElement>
+              </additionalClasspathElements>
+              <skipTests>${skipTests}</skipTests>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
+
+</project>
