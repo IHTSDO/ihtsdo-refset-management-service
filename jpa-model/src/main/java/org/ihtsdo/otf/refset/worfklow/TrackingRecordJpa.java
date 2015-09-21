@@ -110,7 +110,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * Returns the object id. For JAXB.
    *
    * @return the object id
-   */
+   */ 
   public String getObjectId() {
     return id == null ? "" : id.toString();
   }
