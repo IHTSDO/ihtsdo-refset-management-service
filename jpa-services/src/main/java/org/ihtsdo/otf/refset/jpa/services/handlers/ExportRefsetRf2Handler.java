@@ -50,7 +50,6 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   @Override
   public InputStream exportMembers(Refset refset, List<SimpleRefSetMember> members)
     throws Exception {
-    // TODO:  why do we need refset as a parameter?
     // Write a header
     // Obtain members for refset,
     // Write RF2 simple refset pattern to a StringBuilder
@@ -97,7 +96,8 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("1").append("\t");
     sb.append(refset.getModuleId()).append("\t");
     sb.append(refset.getTerminologyId()).append("\t");
-    sb.append("").append("\t"); // TODO refset.referencedComId  how to get this?  definition.getConcept()
+    // fake id for now
+    sb.append(refset.getTerminologyId()).append("\t"); 
     sb.append(refset.getDefinition()).append("\t");
       
     sb.append("\r\n");
