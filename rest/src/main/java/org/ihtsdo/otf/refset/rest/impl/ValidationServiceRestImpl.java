@@ -100,7 +100,6 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       validationService.close();
       securityService.close();
     }
-
   }
   
   @Override
