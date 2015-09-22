@@ -59,15 +59,8 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
     user.setEmail(doc.get("email").asText());
     user.setApplicationRole(UserRole.VIEWER);
     // Not available user.setMobileEmail("");
-    // TODO: take a look into roles
     for (JsonNode role : doc.findValues("roles")) {
-      if (role.asText().equals("ROLE_refset-author")) {
-        user.setApplicationRole(UserRole.AUTHOR);
-      }
-      if (role.asText().equals("ROLE_refset--lead")) {
-        user.setApplicationRole(UserRole.LEAD);
-      }
-      if (role.asText().equals("ROLE_refset--admin")) {
+      if (role.asText().equals("ROLE_refset-administrators")) {
         user.setApplicationRole(UserRole.ADMIN);
       }
     }

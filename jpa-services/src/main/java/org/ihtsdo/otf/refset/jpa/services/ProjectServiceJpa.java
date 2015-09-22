@@ -167,10 +167,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   }
 
-  /**
-   * Project Services
-   */
-
   /* see superclass */
   @Override
   public Project getProject(Long id) throws Exception {
@@ -202,35 +198,25 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public UserRole getUserRoleForProject(String username, Long projectId)
+  public UserRole getUserRoleForProject(Project project, User user)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Project Service - get user role for project - " + username + ", "
-            + projectId);
-    Project project = getProject(projectId);
-    if (project == null) {
-      throw new Exception("No project found for " + projectId);
-    }
+        "Project Service - get user role for project - " + user + ", "
+            + project);
 
     // check admin
-    for (User user : project.getAdmins()) {
-      if (username.equals(user.getUserName())) {
-        return UserRole.ADMIN;
-      }
+    if (project.getAdmins().contains(user)) {
+      return UserRole.ADMIN;
     }
 
-    // check lead
-    for (User user : project.getLeads()) {
-      if (username.equals(user.getUserName())) {
-        return UserRole.LEAD;
-      }
+    // check reviewer
+    if (project.getReviewers().contains(user)) {
+      return UserRole.REVIEWER;
     }
 
     // check author
-    for (User user : project.getAuthors()) {
-      if (username.equals(user.getUserName())) {
-        return UserRole.AUTHOR;
-      }
+    if (project.getAuthors().contains(user)) {
+      return UserRole.AUTHOR;
     }
 
     return null;
@@ -293,13 +279,17 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     if (project.getAuthors() != null) {
       project.getAuthors().size();
     }
-    if (project.getLeads() != null) {
-      project.getLeads().size();
+    if (project.getReviewers() != null) {
+      project.getReviewers().size();
     }
   }
 
   /**
-   * Refset Services
+   * Refset Services.
+   *
+   * @param id the id
+   * @return the refset
+   * @throws Exception the exception
    */
 
   /* see superclass */
@@ -408,7 +398,11 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   }
 
   /**
-   * Translation Services
+   * Translation Services.
+   *
+   * @param id the id
+   * @return the translation
+   * @throws Exception the exception
    */
   /* see superclass */
   @Override
@@ -521,7 +515,11 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   }
 
   /**
-   * RefsetDescriptorRefSetMember Services
+   * RefsetDescriptorRefSetMember Services.
+   *
+   * @param id the id
+   * @return the refset descriptor ref set member
+   * @throws Exception the exception
    */
   /* see superclass */
   @Override
@@ -637,7 +635,11 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   }
 
   /**
-   * DescriptionTypeRefSetMember Services
+   * DescriptionTypeRefSetMember Services.
+   *
+   * @param id the id
+   * @return the description type ref set member
+   * @throws Exception the exception
    */
   /* see superclass */
   @Override
@@ -1115,4 +1117,32 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     return list;
 
   }
+
+  /* see superclass */
+  @Override
+  public boolean userHasPermissionsOf(Project project, User user, UserRole role)
+    throws Exception {
+    // Determine whether the user has at least the permissions of the specified
+    // role on the specified project
+    if (role == UserRole.VIEWER) {
+      return true;
+    }
+    if (role == UserRole.AUTHOR) {
+      return project.getAuthors().contains(user)
+          || project.getReviewers().contains(user)
+          || project.getAdmins().contains(user);
+    }
+
+    if (role == UserRole.REVIEWER) {
+      return project.getReviewers().contains(user)
+          || project.getAdmins().contains(user);
+    }
+
+    if (role == UserRole.ADMIN) {
+      return project.getAdmins().contains(user);
+    }
+    return false;
+  }
+
+
 }

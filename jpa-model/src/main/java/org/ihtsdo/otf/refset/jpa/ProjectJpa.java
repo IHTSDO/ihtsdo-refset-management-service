@@ -126,7 +126,7 @@ public class ProjectJpa implements Project {
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
-    leads = new HashSet<>(project.getLeads());
+    leads = new HashSet<>(project.getReviewers());
     authors = new HashSet<>(project.getAuthors());
     admins = new HashSet<>(project.getAdmins());
 
@@ -192,7 +192,7 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @XmlElement(type = UserJpa.class)
-  public Set<User> getLeads() {
+  public Set<User> getReviewers() {
     return leads;
   }
 

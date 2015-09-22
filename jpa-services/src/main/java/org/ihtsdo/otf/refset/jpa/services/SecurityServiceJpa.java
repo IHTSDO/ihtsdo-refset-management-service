@@ -79,7 +79,6 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return authHelper(authUser);
   }
 
-
   /**
    * Auth helper.
    *
@@ -133,7 +132,6 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     authUser.setAuthToken(token);
     return authUser;
   }
-
 
   /* see superclass */
   @Override
@@ -216,7 +214,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     String username = getUsernameForToken(authToken);
     ProjectService service = new ProjectServiceJpa();
-    UserRole result = service.getUserRoleForProject(username, projectId);
+    UserRole result =
+        service.getUserRoleForProject(service.getProject(projectId),
+            getUser(username));
     service.close();
     return result;
   }

@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
@@ -64,12 +65,12 @@ public interface ProjectService extends RootService {
   /**
    * Returns the user role for project.
    *
-   * @param username the username
-   * @param projectId the project id
+   * @param project the project
+   * @param user the user
    * @return the user role for project
    * @throws Exception the exception
    */
-  public UserRole getUserRoleForProject(String username, Long projectId)
+  public UserRole getUserRoleForProject(Project project, User user)
     throws Exception;
 
   /**
@@ -128,7 +129,6 @@ public interface ProjectService extends RootService {
    * @throws Exception the exception
    */
   public Refset getRefset(Long id) throws Exception;
-
 
   /**
    * Returns the refset.
@@ -298,7 +298,6 @@ public interface ProjectService extends RootService {
     String terminologyId, String terminology, String version, String branch)
     throws Exception;
 
-
   /**
    * Returns the description type ref set member.
    *
@@ -337,8 +336,8 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findRefsetsForQuery(String terminology, String version,
-    String query, PfsParameter pfs) throws Exception;
+  public SearchResultList findRefsetsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find translations for query.
@@ -350,8 +349,8 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findTranslationsForQuery(String terminology, String version,
-    String query, PfsParameter pfs) throws Exception;
+  public SearchResultList findTranslationsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find projects for query.
@@ -363,6 +362,19 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findProjectsForQuery(String terminology, String version,
-    String query, PfsParameter pfs) throws Exception;
+  public SearchResultList findProjectsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * User has permissions of.
+   *
+   * @param project the project
+   * @param user the user
+   * @param role the role
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  public boolean userHasPermissionsOf(Project project, User user, UserRole role)
+    throws Exception;
+
 }

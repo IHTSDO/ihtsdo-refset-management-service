@@ -32,7 +32,7 @@ public interface Project extends Searchable {
    * 
    * @return the leads
    */
-  public Set<User> getLeads();
+  public Set<User> getReviewers();
 
   /**
    * Sets the leads.

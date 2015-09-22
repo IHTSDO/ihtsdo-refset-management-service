@@ -20,6 +20,8 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -81,31 +83,38 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public void performWorkflowAction(Refset refset, WorkflowAction action)
-    throws Exception {
+  public void performWorkflowAction(Long refsetId, Long userId,
+    WorkflowAction action) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Service - perform workflow action " + action + ", " + refset);
+        "Workflow Service - perform workflow action " + action + ", "
+            + refsetId);
+    Refset refset = this.getRefset(refsetId);
+    User user = manager.find(UserJpa.class, userId);
     // Obtain the handler
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(refset.getWorkflowPath());
     // Validate the action
-    ValidationResult result = handler.validateWorkflowAction(refset, action);
+    ValidationResult result =
+        handler.validateWorkflowAction(refset, user, action, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
       throw new Exception(
           "Unable to perform workflow action, invalid preconditions for this action.");
     }
     // Perform the action
-    handler.performWorkflowAction(refset, action, this);
+    handler.performWorkflowAction(refset, user, action, this);
   }
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingWork(Translation translation,
-    User user, PfsParameter pfs) throws Exception {
+  public ConceptList findAvailableEditingWork(Long translationId, Long userId,
+    PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Service - find available editing work " + translation + ", "
-            + user);
+        "Workflow Service - find available editing work " + translationId
+            + ", " + userId);
+    // Get object references
+    Translation translation = getTranslation(translationId);
+    User user = manager.find(UserJpa.class, userId);
     // Obtain the handler
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
@@ -115,11 +124,14 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableReviewWork(Translation translation,
-    User user, PfsParameter pfs) throws Exception {
+  public ConceptList findAvailableReviewWork(Long translationId, Long userId,
+    PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Service - find available review work " + translation + ", "
-            + user);
+        "Workflow Service - find available review work " + translationId + ", "
+            + userId);
+    // Get object references
+    Translation translation = getTranslation(translationId);
+    User user = manager.find(UserJpa.class, userId);
     // Obtain the handler
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
@@ -129,45 +141,45 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public TrackingRecord getTrackingRecord(Translation translation, User user)
+  public TrackingRecordList getTrackingRecords(Long translationId, Long userId)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Service - get tracking record " + translation + ", " + user);
+        "Workflow Service - get tracking record " + translationId + ", "
+            + userId);
+    // Get object references
+    Translation translation = getTranslation(translationId);
+    // Get tracking records
     TrackingRecordList list =
-        findTrackingRecordsForQuery(translation.getTerminology(), "user.id:"
-            + user.getId(), new PfsParameterJpa());
-    if (list.getCount() > 1) {
-      throw new Exception("Unexpected number of tracking records for user - "
-          + translation.getTerminologyId() + "," + user.getId());
-    }
-    // Return it if exactly one was found
-    else if (list.getCount() == 1) {
-      return list.getObjects().get(1);
-    }
-    // otherwise, return null
-    return null;
+        findTrackingRecordsForQuery(translation.getId(), "user.id:" + userId,
+            new PfsParameterJpa());
+    return list;
   }
 
   /* see superclass */
   @Override
-  public TrackingRecord performWorkflowAction(Translation translation,
+  public TrackingRecord performWorkflowAction(Long translationId, Long userId,
     WorkflowAction action, Concept concept) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
-            + concept.getTerminologyId() + ", " + translation);
+            + concept.getTerminologyId() + ", " + translationId);
+    // Get object references
+    Translation translation = getTranslation(translationId);
+    User user = manager.find(UserJpa.class, userId);
     // Obtain the handler
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Validate the action
     ValidationResult result =
-        handler.validateWorkflowAction(translation, action, concept);
+        handler
+            .validateWorkflowAction(translation, user, action, concept, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
       throw new Exception(
           "Unable to perform workflow action, invalid preconditions for this action.");
     }
     // Perform the action
-    return handler.performWorkflowAction(translation, action, concept, this);
+    return handler.performWorkflowAction(translation, user, action, concept,
+        this);
   }
 
   /* see superclass */
@@ -200,6 +212,7 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     throw new Exception("Unable to find workflow handler for path " + path);
   }
 
+  /* see superclass */
   @Override
   public TrackingRecord getTrackingRecord(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -207,6 +220,7 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     return getHasLastModified(id, TrackingRecordJpa.class);
   }
 
+  /* see superclass */
   @Override
   public TrackingRecord addTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
@@ -217,6 +231,7 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     return addHasLastModified(trackingRecord);
   }
 
+  /* see superclass */
   @Override
   public void updateTrackingRecord(TrackingRecord trackingRecord)
     throws Exception {
@@ -225,6 +240,7 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     updateHasLastModified(trackingRecord);
   }
 
+  /* see superclass */
   @Override
   public void removeTrackingRecord(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -232,9 +248,10 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     removeHasLastModified(id, TrackingRecordJpa.class);
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public TrackingRecordList findTrackingRecordsForQuery(String translationId,
+  public TrackingRecordList findTrackingRecordsForQuery(Long translationId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - find tracking records " + translationId + ", "
@@ -246,8 +263,8 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     if (query != null && !query.isEmpty()) {
       pfsQuery.append(query).append(" AND ");
     }
-    if (translationId != null && !translationId.isEmpty()) {
-      pfsQuery.append("translation.terminologyId:" + translationId);
+    if (translationId != null) {
+      pfsQuery.append("translation.id:" + translationId);
     }
 
     // Apply pfs restrictions to query
@@ -262,12 +279,14 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
       if (query != null && !query.isEmpty()) {
         escapedPfsQuery.append(QueryParserBase.escape(query)).append(" AND ");
       }
-      if (translationId != null && !translationId.isEmpty()) {
-        escapedPfsQuery.append("translation.terminologyId:" + translationId);
+      if (translationId != null) {
+        escapedPfsQuery.append("translation.id:" + translationId);
       }
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
-              TrackingRecordJpa.class, escapedPfsQuery.toString(), pfs, manager);
+          IndexUtility
+              .applyPfsToLuceneQuery(TrackingRecordJpa.class,
+                  TrackingRecordJpa.class, escapedPfsQuery.toString(), pfs,
+                  manager);
     }
 
     // execute the query
@@ -282,4 +301,39 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
     return list;
 
   }
+
+  /* see superclass */
+  @Override
+  public ConceptList findAssignedEditingWork(Long translationId, Long userId,
+    PfsParameter pfs) throws Exception {
+    ConceptList list = new ConceptListJpa();
+    // Get tracking records for this translation, user, and with "for editing"
+    // flag
+    String query = "user.id:" + userId + " AND forEditing:1";
+    TrackingRecordList records =
+        findTrackingRecordsForQuery(translationId, query, pfs);
+    list.setTotalCount(records.getTotalCount());
+    for (TrackingRecord record : records.getObjects()) {
+      list.getObjects().add(record.getConcept());
+    }
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList findAssignedReviewWork(Long translationId, Long userId,
+    PfsParameter pfs) throws Exception {
+    ConceptList list = new ConceptListJpa();
+    // Get tracking records for this translation, user, and with "for review"
+    // flag
+    String query = "user.id:" + userId + " AND forReview:1";
+    TrackingRecordList records =
+        findTrackingRecordsForQuery(translationId, query, pfs);
+    list.setTotalCount(records.getTotalCount());
+    for (TrackingRecord record : records.getObjects()) {
+      list.getObjects().add(record.getConcept());
+    }
+    return list;
+  }
+
 }

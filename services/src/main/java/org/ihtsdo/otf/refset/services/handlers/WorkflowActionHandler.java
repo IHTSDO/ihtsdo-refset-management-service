@@ -30,12 +30,14 @@ public interface WorkflowActionHandler extends Configurable {
    * Validate workflow action.
    *
    * @param refset the refset
+   * @param user the user
    * @param action the action
+   * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateWorkflowAction(Refset refset,
-    WorkflowAction action) throws Exception;
+  public ValidationResult validateWorkflowAction(Refset refset, User user,
+    WorkflowAction action, WorkflowService service) throws Exception;
 
   /**
    * Find available editing work. Something like dual independent review wouls
@@ -66,29 +68,34 @@ public interface WorkflowActionHandler extends Configurable {
    * Validate workflow action.
    *
    * @param translation the translation
+   * @param user the user
    * @param action the action
    * @param concept the concept
+   * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateWorkflowAction(Translation translation,
-    WorkflowAction action, Concept concept) throws Exception;
+    User user, WorkflowAction action, Concept concept, WorkflowService service)
+    throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param refset the refset
+   * @param user the user
    * @param action the action
    * @param service the service
    * @throws Exception the exception
    */
-  public void performWorkflowAction(Refset refset, WorkflowAction action,
-    WorkflowService service) throws Exception;
+  public void performWorkflowAction(Refset refset, User user,
+    WorkflowAction action, WorkflowService service) throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param translation the translation
+   * @param user the user
    * @param action the action
    * @param concept the concept
    * @param service the service
@@ -96,6 +103,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Translation translation,
-    WorkflowAction action, Concept concept, WorkflowService service)
+    User user, WorkflowAction action, Concept concept, WorkflowService service)
     throws Exception;
+
 }
