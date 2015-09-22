@@ -5,6 +5,12 @@ package org.ihtsdo.otf.refset.jpa.services.validation;
 
 import java.util.Properties;
 
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
 /**
@@ -17,9 +23,35 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
   public void setProperties(Properties p) {
     // n/a
   }
-  // TODO: needs empty impl
 
   @Override
   public abstract String getName();
 
+  @Override
+  public ValidationResult validate(Concept concept) {
+    ValidationResult result = new ValidationResultJpa();
+    // no checks
+    return result;
+  }
+  
+  @Override
+  public ValidationResult validate(SimpleRefSetMember member) {
+    ValidationResult result = new ValidationResultJpa();
+    // no checks
+    return result;
+  }
+  
+  @Override
+  public ValidationResult validate(Translation translation) {
+    ValidationResult result = new ValidationResultJpa();
+    // no checks
+    return result;
+  }
+  
+  @Override
+  public ValidationResult validate(Refset refset) {
+    ValidationResult result = new ValidationResultJpa();
+    // no checks
+    return result;
+  }
 }

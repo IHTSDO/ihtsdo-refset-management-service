@@ -106,7 +106,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /update " + project);
+        "RESTful call POST (Project): /update " + project);
 
     // Create service and configure transaction scope
     ProjectService projectService = new ProjectServiceJpa();

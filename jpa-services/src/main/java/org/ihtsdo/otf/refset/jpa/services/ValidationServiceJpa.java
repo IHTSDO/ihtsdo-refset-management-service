@@ -7,7 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
 import org.ihtsdo.otf.refset.services.ValidationService;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
@@ -66,6 +72,40 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   }
 
-  // TODO: needs impl
+  @Override
+  public ValidationResult validateConcept(Concept concept) {
+    ValidationResult result = new ValidationResultJpa();
+    for (String key : validationHandlersMap.keySet()) {
+      result.merge(validationHandlersMap.get(key).validate(concept));
+    }
+    return result;
+  }
+
+  @Override
+  public ValidationResult validateTranslation(Translation translation) {
+    ValidationResult result = new ValidationResultJpa();
+    for (String key : validationHandlersMap.keySet()) {
+      result.merge(validationHandlersMap.get(key).validate(translation));
+    }
+    return result;
+  }
+
+  @Override
+  public ValidationResult validateMember(SimpleRefSetMember member) {
+    ValidationResult result = new ValidationResultJpa();
+    for (String key : validationHandlersMap.keySet()) {
+      result.merge(validationHandlersMap.get(key).validate(member));
+    }
+    return result;
+  }
+
+  @Override
+  public ValidationResult validateRefset(Refset refset) {
+    ValidationResult result = new ValidationResultJpa();
+    for (String key : validationHandlersMap.keySet()) {
+      result.merge(validationHandlersMap.get(key).validate(refset));
+    }
+    return result;
+  }
 
 }
