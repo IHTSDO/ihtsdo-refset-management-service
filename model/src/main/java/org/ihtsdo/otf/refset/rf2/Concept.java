@@ -5,6 +5,8 @@ package org.ihtsdo.otf.refset.rf2;
 
 import java.util.List;
 
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
+
 /**
  * Represents a concept in a terminology.
  */
@@ -43,14 +45,14 @@ public interface Concept extends Component {
    * 
    * @return the workflow status
    */
-  public String getWorkflowStatus();
+  public WorkflowStatus getWorkflowStatus();
 
   /**
    * Sets the workflow status.
    * 
    * @param workflowStatus the workflow status
    */
-  public void setWorkflowStatus(String workflowStatus);
+  public void setWorkflowStatus(WorkflowStatus workflowStatus);
 
   /**
    * Returns the definition status id.

@@ -32,6 +32,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefSetMemberJpa;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * JPA enabled implementation of {@link Refset}.
@@ -58,15 +59,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private boolean isPublic;
 
   /** The type. */
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false)
   private Type type;
 
   /** The definition. */
   @Column(nullable = true, length = 4000)
   private String definition;
-  
-  /**  The definition uuid. */
+
+  /** The definition uuid. */
   @Column(nullable = true)
   private String definitionUuid;
 
@@ -83,8 +82,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private boolean forTranslation;
 
   /** The workflow status. */
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private String workflowStatus;
+  private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+
+  /** The workflow path. */
+  @Column(nullable = true)
+  private String workflowPath;
 
   /** The refset descriptors. */
   @OneToOne(targetEntity = RefsetDescriptorRefSetMemberJpa.class)
@@ -123,6 +127,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     refsetDescriptor = refset.getRefsetDescriptor();
     forTranslation = refset.isForTranslation();
     workflowStatus = refset.getWorkflowStatus();
+    workflowPath = refset.getWorkflowPath();
     for (Translation translation : refset.getTranslations()) {
       addTranslation(new TranslationJpa(translation));
     }
@@ -229,14 +234,26 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  public String getWorkflowStatus() {
+  public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
   }
 
   /* see superclass */
   @Override
-  public void setWorkflowStatus(String workflowStatus) {
+  public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
+  }
+
+  /* see superclass */
+  @Override
+  public String getWorkflowPath() {
+    return workflowPath;
+  }
+
+  /* see superclass */
+  @Override
+  public void setWorkflowPath(String workflowPath) {
+    this.workflowPath = workflowPath;
   }
 
   @Override
@@ -289,13 +306,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String getDefinitionUuid() {
     return definitionUuid;
   }
-  
-  /* see superclass */ 
+
+  /* see superclass */
   @Override
   public void setDefinitionUuid(String uuid) {
     this.definitionUuid = uuid;
   }
-  
+
   /* see superclass */
   @XmlTransient
   @Override
@@ -417,8 +434,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", type=" + type + ", definition=" + definition + ", externalUrl="
         + externalUrl + ", editionUrl=" + editionUrl + ", refsetDescriptor="
         + refsetDescriptor + ", workflowStatus=" + workflowStatus
-        + ", project=" + project + ", translations=" + translations + "]";
+        + ", workflowPath=" + workflowPath + ", project=" + project
+        + ", translations=" + translations + "]";
   }
-
 
 }

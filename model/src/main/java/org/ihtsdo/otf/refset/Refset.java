@@ -8,6 +8,7 @@ import java.util.List;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * Generically represents an editable reference set tracked by this system.
@@ -88,7 +89,7 @@ public interface Refset extends Component, Searchable {
    * @param definition the definition
    */
   public void setDefinition(String definition);
-  
+
   /**
    * Returns the definition uuid.
    *
@@ -96,8 +97,7 @@ public interface Refset extends Component, Searchable {
    */
   // TODO: nullable
   public String getDefinitionUuid();
-  
-  
+
   /**
    * Sets the definition uuid.
    *
@@ -152,14 +152,28 @@ public interface Refset extends Component, Searchable {
    *
    * @return the workflow status
    */
-  public String getWorkflowStatus();
+  public WorkflowStatus getWorkflowStatus();
 
   /**
    * Sets the workflow status.
    *
    * @param workflowStatus the workflow status
    */
-  public void setWorkflowStatus(String workflowStatus);
+  public void setWorkflowStatus(WorkflowStatus workflowStatus);
+
+  /**
+   * Returns the workflow path.
+   *
+   * @return the workflow path
+   */
+  public String getWorkflowPath();
+
+  /**
+   * Sets the workflow path.
+   *
+   * @param workflowPath the workflow path
+   */
+  public void setWorkflowPath(String workflowPath);
 
   /**
    * Returns the translations.

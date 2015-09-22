@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 
 /**
  * Performs utility functions relating to Lucene indexes and Hibernate Search.
@@ -55,7 +56,8 @@ public class IndexUtility {
     try {
       Class<?>[] classes =
           new Class<?>[] {
-              RefsetJpa.class, ProjectJpa.class, TranslationJpa.class
+              RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
+              TrackingRecordJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,

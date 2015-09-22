@@ -16,6 +16,7 @@ import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -881,7 +882,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @return the t
    * @throws Exception the exception
    */
-  private <T extends HasLastModified> T addHasLastModified(T hasLastModified)
+  protected <T extends HasLastModified> T addHasLastModified(T hasLastModified)
     throws Exception {
     try {
       // Set last modified date
@@ -914,7 +915,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @param hasLastModified the has last modified
    * @throws Exception the exception
    */
-  private <T extends HasLastModified> void updateHasLastModified(
+  protected <T extends HasLastModified> void updateHasLastModified(
     T hasLastModified) throws Exception {
     try {
       // Set modification date
@@ -949,7 +950,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @return the t
    * @throws Exception the exception
    */
-  private <T extends HasLastModified> T removeHasLastModified(Long id,
+  protected <T extends HasLastModified> T removeHasLastModified(Long id,
     Class<T> clazz) throws Exception {
     try {
       // Get transaction and object
@@ -996,7 +997,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @return the checks for last modified
    * @throws Exception the exception
    */
-  private <T extends HasLastModified> T getHasLastModified(Long id,
+  protected <T extends HasLastModified> T getHasLastModified(Long id,
     Class<T> clazz) throws Exception {
     // Get transaction and object
     tx = manager.getTransaction();
@@ -1061,10 +1062,14 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     PfsParameter pfs) throws Exception {
 
     // Build query for pfs conditions
+    StringBuilder fullQuery = new StringBuilder();
     StringBuilder pfsQuery = new StringBuilder();
 
-    if (query != null && !query.isEmpty())
-      pfsQuery.append(query).append(" AND ");
+    if (query != null && !query.isEmpty()) {
+      fullQuery.append(query).append(" AND ");
+    }
+
+    // Apply pfs restrictions
     if (terminology != null && !terminology.equals("") && version != null
         && !version.equals("")) {
       pfsQuery.append("terminology:" + terminology + " AND version:" + version);
@@ -1082,33 +1087,24 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       }
     }
 
-    // Apply pfs restrictions to query
     FullTextQuery fullTextQuery = null;
     try {
-      System.out.println("query = " + pfsQuery);
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
-              pfsQuery.toString(), pfs, manager);
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, fullQuery
+              + pfsQuery.toString(), pfs, manager);
     } catch (ParseException e) {
-      // TODO:
-      // If there's a parse exception, try the literal query
-
+      // If parse exception, try a literal query
+      StringBuilder escapedQuery = new StringBuilder();
+      if (query != null && !query.isEmpty()) {
+        escapedQuery.append(QueryParserBase.escape(query)).append(" AND ");
+      }
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, escapedQuery
+              + pfsQuery.toString(), pfs, manager);
     }
 
     // execute the query
     List<? extends Searchable> results = fullTextQuery.getResultList();
-
-    // Use this code to see the actual score values
-    // fullTextQuery.setProjection(FullTextQuery.SCORE, FullTextQuery.ID);
-    // List<T> classes = new ArrayList<>();
-    // List<Object[]> obj = fullTextQuery.getResultList();
-    // for (Object[] objArray : obj) {
-    // Object score = objArray[0];
-    // long id = (Long)objArray[1];
-    // T t = getComponent( id, clazz);
-    // classes.add(t);
-    // Logger.getLogger(getClass()).info(t.getName() + " = " + score);
-    // }
 
     // Convert to search result list
     SearchResultList list = new SearchResultListJpa();

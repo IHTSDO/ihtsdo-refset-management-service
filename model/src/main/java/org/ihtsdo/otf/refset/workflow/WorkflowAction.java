@@ -8,21 +8,25 @@ package org.ihtsdo.otf.refset.workflow;
  */
 public enum WorkflowAction {
 
-  /**  The assign from scratch action. */
-  ASSIGN_FROM_SCRATCH, 
-  /**  The assign from existing action. */
- ASSIGN_FROM_EXISTING, 
- /**  The unassign action. */
- UNASSIGN, 
- /**  The save action. */
- SAVE, 
- /**  The finish action. */
- FINISH, 
- /**  The preview action. */
- PREVIEW, 
- /**  The publish action. */
- PUBLISH, 
- /**  The cancel action. */
- CANCEL;
+  /** The assign from scratch action. */
+  ASSIGN_FROM_SCRATCH,
+  /** The assign from existing action. */
+  ASSIGN_FROM_EXISTING,
+  /** The unassign action. */
+  UNASSIGN,
+  /** The save action. */
+  SAVE,
+  /** The finish action. */
+  FINISH,
+  /** The preview action. */
+  PREVIEW,
+  /** The publish action. */
+  PUBLISH,
+  /** The cancel action. */
+  CANCEL,
+  /** The "re edit" */
+  RE_EDIT,
+  /** The "re review" */
+  RE_REVIEW;
 
 }
