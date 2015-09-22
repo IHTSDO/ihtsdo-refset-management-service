@@ -1,20 +1,23 @@
 /*
  * Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.refset.test.mojo;
+package org.ihtsdo.otf.refset.test.jpa;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
+import java.io.InputStreamReader;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ExportRefsetRf2Handler;
@@ -35,17 +38,18 @@ import org.junit.Test;
  */
 public class ImportExportRf2HandlerTest {
 
-  /**  The members input stream. */
+  /** The members input stream. */
   private InputStream membersInputStream = null;
-  
-  /**  The definition input stream. */
+
+  /** The definition input stream. */
   private InputStream definitionInputStream = null;
-  
-  /**  The content input stream. */
-  private InputStream contentInputStream = null;
-  
+
+  /** The content input stream. */
+  private InputStream translationInputStream = null;
+
+  /** The output file. */
   File outputFile = null;
-  
+
   /**
    * Create test fixtures for class.
    *
@@ -68,17 +72,15 @@ public class ImportExportRf2HandlerTest {
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/test-data/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-    
+
     definitionInputStream =
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/test-data/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
-    
-    contentInputStream =
-        new FileInputStream(
-            new File(
-                "../config/src/main/resources/data/test-data/test-data.zip"));
-    outputFile = new File("../config/src/main/resources/data/test-data/outputFile.txt");
+
+    translationInputStream =
+        new FileInputStream(new File(
+            "../config/src/main/resources/data/test-data/test-data.zip"));
   }
 
   /**
@@ -87,43 +89,67 @@ public class ImportExportRf2HandlerTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
+  @SuppressWarnings("resource")
   @Test
   public void testTranslationHandlerJpa001() throws Exception {
 
-    ImportTranslationRf2Handler importHandler = new ImportTranslationRf2Handler();
-    List<Concept> concepts = importHandler.importTranslation(contentInputStream);
-    Assert.assertEquals(concepts.size(), 10293);
-    
+    // Import sample translation file
+    ImportTranslationRf2Handler importHandler =
+        new ImportTranslationRf2Handler();
+    List<Concept> concepts =
+        importHandler.importTranslation(translationInputStream);
+
+    // Verify concept, description and language refset count
+    int conceptCt = concepts.size();
+    int descCt = 0;
+    int langCt = 0;
+    for (Concept concept : concepts) {
+      descCt += concept.getDescriptions().size();
+      langCt += concept.getDescriptions().size();
+    }
+    Assert.assertEquals(104, conceptCt);
+    Assert.assertEquals(352, descCt);
+    Assert.assertEquals(352, langCt);
+
+    // Export
     Translation translation = new TranslationJpa();
     translation.setLanguage("en");
     translation.setVersion("20140731");
-    ExportTranslationRf2Handler exportHandler = new ExportTranslationRf2Handler();
+    ExportTranslationRf2Handler exportHandler =
+        new ExportTranslationRf2Handler();
     InputStream is = exportHandler.exportConcepts(translation, concepts);
     ZipInputStream zin = new ZipInputStream(is);
 
-    List<String> descriptionRows = new ArrayList<>();
+    descCt = 0;
+    langCt = 0;
+    Set<String> cid = new HashSet<>();
     for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
-      Logger.getLogger(getClass()).debug("Import translation Rf2 handler - reading zipEntry " + zipEntry.getName());
-      if (zipEntry.getName().contains("sct2_Description")) {
-         
+      if (zipEntry.getName().contains("Description")) {
+
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
-          descriptionRows.add(sc.nextLine());
+          String line = sc.nextLine();
+          String[] fields = FieldedStringTokenizer.split(line, "\t");
+          descCt++;
+          cid.add(fields[4]);
+        }
+      }
+      if (zipEntry.getName().contains("Language")) {
+
+        Scanner sc = new Scanner(zin);
+        while (sc.hasNextLine()) {
+          sc.nextLine();
+          langCt++;
         }
       }
     }
-    Assert.assertEquals(descriptionRows.size(), 34106);
-    
-    /*Collections.sort(descriptionRows);
-    //Assert.assertEquals(descriptionRows.size(), 0);
-    PrintWriter writer = new PrintWriter(outputFile, "UTF-8");
-    for (String s : descriptionRows) {
-      writer.println(s);
-    }
-    writer.close();*/
-  }
 
+    // Verify counts plus 1 for headers
+    Assert.assertEquals(105, cid.size());
+    Assert.assertEquals(353, descCt);
+    Assert.assertEquals(353, langCt);
+
+  }
 
   /**
    * Test normal use of the {@link ImportRefsetRf2Handler} &&
@@ -131,21 +157,29 @@ public class ImportExportRf2HandlerTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testRefsetHandlerJpa002() throws Exception {
 
-
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
-    List<SimpleRefSetMember> members = importHandler.importMembers(membersInputStream);
+    List<SimpleRefSetMember> members =
+        importHandler.importMembers(membersInputStream);
+
+    // Verify the member count
     Assert.assertEquals(members.size(), 35);
     String definition = importHandler.importDefinition(definitionInputStream);
     Assert.assertEquals("testDefinition", definition);
-    
+
     Refset exportRefset = new RefsetJpa();
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
-    InputStream is = exportHandler.exportMembers(exportRefset, members);
-
+    BufferedReader reader =
+        new BufferedReader(new InputStreamReader(exportHandler.exportMembers(
+            exportRefset, members)));
+    int ct = 0;
+    while (reader.readLine() != null) {
+      ct++;
+    }
+    // Verify the member count plus 1 for the header
+    Assert.assertEquals(36, ct);
   }
 
   /**
@@ -158,6 +192,7 @@ public class ImportExportRf2HandlerTest {
     // close test fixtures per class
     definitionInputStream.close();
     membersInputStream.close();
+    translationInputStream.close();
   }
 
   /**

@@ -23,7 +23,7 @@ public class LanguageRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = LanguageRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = LanguageRefSetMemberJpa.class, name = "members")
   public List<LanguageRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }

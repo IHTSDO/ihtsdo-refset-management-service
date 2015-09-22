@@ -31,7 +31,7 @@ public class AttributeValueRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = AbstractAttributeValueRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = AbstractAttributeValueRefSetMemberJpa.class, name = "members")
   public List<AttributeValueRefSetMember<? extends Component>> getObjects() {
     return super.getObjectsTransient();
   }

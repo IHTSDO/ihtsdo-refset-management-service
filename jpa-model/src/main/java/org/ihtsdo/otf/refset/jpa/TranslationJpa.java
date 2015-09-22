@@ -209,7 +209,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  @XmlElement(type = DescriptionTypeRefSetMemberJpa.class, name = "descriptionTypes")
+  @XmlElement(type = DescriptionTypeRefSetMemberJpa.class, name = "types")
   @Override
   public List<DescriptionTypeRefSetMember> getDescriptionTypes() {
     if (descriptionTypes == null) {

@@ -23,7 +23,7 @@ public class DescriptionTypeRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = DescriptionTypeRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = DescriptionTypeRefSetMemberJpa.class, name = "members")
   public List<DescriptionTypeRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }

@@ -22,7 +22,7 @@ public class SimpleRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = SimpleRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = SimpleRefSetMemberJpa.class, name = "members")
   public List<SimpleRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }

@@ -23,7 +23,7 @@ public class ComplexMapRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = ComplexMapRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = ComplexMapRefSetMemberJpa.class, name = "members")
   public List<ComplexMapRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }

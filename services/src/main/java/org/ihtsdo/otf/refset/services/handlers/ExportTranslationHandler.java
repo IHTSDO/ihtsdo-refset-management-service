@@ -24,6 +24,13 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 public interface ExportTranslationHandler extends Configurable {
 
   /**
+   * Returns the file type filter.
+   *
+   * @return the file type filter
+   */
+  public String getFileTypeFilter();
+
+  /**
    * Export descriptions and language refset members connected to them.
    *
    * @param transalation the transalation

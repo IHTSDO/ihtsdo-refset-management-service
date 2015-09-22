@@ -3,10 +3,9 @@
  */
 package org.ihtsdo.otf.refset.services;
 
-import java.util.List;
-
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -81,7 +80,7 @@ public interface WorkflowService extends ProjectService {
    *
    * @return the workflow paths
    */
-  public List<String> getWorkflowPaths();
+  public StringList getWorkflowPaths();
 
   /**
    * Perform workflow action.

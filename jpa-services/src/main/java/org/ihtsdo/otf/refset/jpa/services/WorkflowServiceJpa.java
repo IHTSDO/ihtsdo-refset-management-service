@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -184,14 +185,17 @@ public class WorkflowServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public List<String> getWorkflowPaths() {
+  public StringList getWorkflowPaths() {
     Logger.getLogger(getClass()).debug("Workflow Service - get workflow paths");
     List<String> paths = new ArrayList<>();
     for (WorkflowActionHandler handler : workflowHandlerMap.values()) {
       paths.add(handler.getWorkflowPath());
     }
     Collections.sort(paths);
-    return paths;
+    StringList list = new StringList();
+    list.setTotalCount(paths.size());
+    list.setObjects(paths);
+    return list;
   }
 
   /**

@@ -19,8 +19,6 @@
  */
 package org.ihtsdo.otf.refset.mojo;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Properties;
 
 import org.apache.maven.plugin.AbstractMojo;

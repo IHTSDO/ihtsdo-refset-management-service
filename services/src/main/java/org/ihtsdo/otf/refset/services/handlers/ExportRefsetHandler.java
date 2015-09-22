@@ -24,6 +24,13 @@ import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
 public interface ExportRefsetHandler extends Configurable {
 
   /**
+   * Returns the file type filter.
+   *
+   * @return the file type filter
+   */
+  public String getFileTypeFilter();
+
+  /**
    * Export members.
    *
    * @param refset the refset

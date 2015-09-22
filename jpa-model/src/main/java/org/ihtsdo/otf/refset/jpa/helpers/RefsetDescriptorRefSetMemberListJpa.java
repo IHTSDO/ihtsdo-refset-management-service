@@ -23,7 +23,7 @@ public class RefsetDescriptorRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = RefsetDescriptorRefSetMemberJpa.class, name = "refset")
+  @XmlElement(type = RefsetDescriptorRefSetMemberJpa.class, name = "refsets")
   public List<RefsetDescriptorRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }

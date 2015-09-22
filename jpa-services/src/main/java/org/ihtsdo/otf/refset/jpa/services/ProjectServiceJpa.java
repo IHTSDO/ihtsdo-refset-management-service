@@ -23,12 +23,14 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
+import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -753,6 +755,20 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     }
   }
 
+  @Override
+  public ConceptList findConceptsForTranslation(Long translationId,
+    String query, PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public SimpleRefSetMemberList findMembersForRefset(Long refsetId,
+    String query, PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   /**
    * Returns the pfs comparator.
    *
@@ -1143,6 +1159,5 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     }
     return false;
   }
-
 
 }

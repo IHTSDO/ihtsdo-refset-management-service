@@ -8,9 +8,11 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -376,5 +378,29 @@ public interface ProjectService extends RootService {
    */
   public boolean userHasPermissionsOf(Project project, User user, UserRole role)
     throws Exception;
+
+  /**
+   * Find concepts for translation.
+   *
+   * @param translationId the translation id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findConceptsForTranslation(Long translationId,
+    String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Find members for refset.
+   *
+   * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the simple ref set member list
+   * @throws Exception the exception
+   */
+  public SimpleRefSetMemberList findMembersForRefset(Long refsetId,
+    String query, PfsParameter pfs) throws Exception;
 
 }

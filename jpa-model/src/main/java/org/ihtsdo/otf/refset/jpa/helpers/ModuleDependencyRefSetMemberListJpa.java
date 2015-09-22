@@ -23,7 +23,7 @@ public class ModuleDependencyRefSetMemberListJpa extends
 
   /* see superclass */
   @Override
-  @XmlElement(type = ModuleDependencyRefSetMemberJpa.class, name = "member")
+  @XmlElement(type = ModuleDependencyRefSetMemberJpa.class, name = "members")
   public List<ModuleDependencyRefSetMember> getObjects() {
     return super.getObjectsTransient();
   }
