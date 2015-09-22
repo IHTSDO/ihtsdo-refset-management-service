@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 
 /**
  * Implementation of an algorithm to regenerate indexes.
@@ -88,8 +89,9 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     if (indexedObjects == null || indexedObjects.isEmpty()) {
       // TODO: list objects here, like
       objectsToReindex.add("ProjectJpa");
-      objectsToReindex.add("TranslationJpa");
       objectsToReindex.add("RefsetJpa");
+      objectsToReindex.add("TranslationJpa");
+      objectsToReindex.add("TrackingRecordJpa");
 
       // otherwise, construct set of indexed objects
     } else {
@@ -123,9 +125,10 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
       objectsToReindex.remove("ProjectJpa");
     }
-    
+
     if (objectsToReindex.contains("TranslationJpa")) {
-      Logger.getLogger(getClass()).info("  Creating indexes for TranslationJpa");
+      Logger.getLogger(getClass())
+          .info("  Creating indexes for TranslationJpa");
       fullTextEntityManager.purgeAll(TranslationJpa.class);
       fullTextEntityManager.flushToIndexes();
       fullTextEntityManager.createIndexer(TranslationJpa.class)
@@ -144,8 +147,20 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
           .threadsToLoadObjects(4).startAndWait();
 
       objectsToReindex.remove("RefsetJpa");
-    }        
-    
+    }
+
+    if (objectsToReindex.contains("TrackingRecordJpa")) {
+      Logger.getLogger(getClass()).info(
+          "  Creating indexes for TrackingRecordJpa");
+      fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(TrackingRecordJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("TrackingRecordJpa");
+    }
+
     if (objectsToReindex.size() != 0) {
       throw new Exception(
           "The following objects were specified for re-indexing, but do not exist as indexed objects: "
@@ -165,6 +180,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     fullTextEntityManager.purgeAll(ProjectJpa.class);
     fullTextEntityManager.purgeAll(TranslationJpa.class);
     fullTextEntityManager.purgeAll(RefsetJpa.class);
+    fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
   }
 
   /**

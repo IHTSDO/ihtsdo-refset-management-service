@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.rf2.SimpleMapRefSetMember;
 import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * Jpa enabled implementation of {@link Concept}.
@@ -59,8 +62,9 @@ import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
 public class ConceptJpa extends AbstractComponent implements Concept {
 
   /** The workflow status. */
-  @Column(nullable = true)
-  private String workflowStatus;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
 
   /** The definition status id. */
   @Column(nullable = false)
@@ -189,12 +193,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   @Override
-  public String getWorkflowStatus() {
+  public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
   }
 
   @Override
-  public void setWorkflowStatus(String workflowStatus) {
+  public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
   }
 

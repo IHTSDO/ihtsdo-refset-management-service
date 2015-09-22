@@ -24,6 +24,7 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -59,14 +60,17 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The user. */
   @ManyToOne(targetEntity = UserJpa.class)
+  @IndexedEmbedded
   private User user = null;
 
   /** The Translation. */
   @ManyToOne(targetEntity = TranslationJpa.class)
+  @IndexedEmbedded
   private Translation translation = null;
 
   /** The concepts. */
   @OneToMany(orphanRemoval = true, targetEntity = ConceptJpa.class)
+  @IndexedEmbedded
   private List<Concept> concepts = null;
 
   /**
@@ -79,7 +83,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   /**
    * Instantiates a {@link TrackingRecordJpa} from the specified parameters.
    *
-   * @param translation the project
+   * @param record the record
    */
   public TrackingRecordJpa(TrackingRecord record) {
     super();
@@ -110,7 +114,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * Returns the object id. For JAXB.
    *
    * @return the object id
-   */ 
+   */
   public String getObjectId() {
     return id == null ? "" : id.toString();
   }
@@ -206,5 +210,39 @@ public class TrackingRecordJpa implements TrackingRecord {
       concepts.remove(concept);
     }
 
+  }
+
+  /* see superclass */
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    return result;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    TrackingRecordJpa other = (TrackingRecordJpa) obj;
+    if (id == null) {
+      if (other.id != null)
+        return false;
+    } else if (!id.equals(other.id))
+      return false;
+    return true;
+  }
+
+  /* see superclass */
+  @Override
+  public String toString() {
+    return "TrackingRecordJpa [id=" + id + ", user=" + user + ", translation="
+        + translation + ", concepts=" + concepts + "]";
   }
 }

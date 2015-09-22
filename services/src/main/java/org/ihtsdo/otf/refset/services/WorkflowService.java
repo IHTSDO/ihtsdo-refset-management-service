@@ -3,33 +3,138 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.util.List;
+
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
+import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 
 /**
  * Generically represents a service for interacting with terminology content.
  */
-public interface WorkflowService extends RootService {
+public interface WorkflowService extends ProjectService {
 
-  // Refset services
-  
-  
+  // TODO: get, add, remove, update, find for TrackingRecord
+  // which also needs indexing
+
+  /**
+   * Returns the tracking record.
+   *
+   * @param id the id
+   * @return the tracking record
+   * @throws Exception the exception
+   */
+  public TrackingRecord getTrackingRecord(Long id) throws Exception;
+
+  /**
+   * Adds the tracking record.
+   *
+   * @param trackingRecord the tracking record
+   * @return the tracking record
+   * @throws Exception the exception
+   */
+  public TrackingRecord addTrackingRecord(TrackingRecord trackingRecord)
+    throws Exception;
+
+  /**
+   * Update tracking record.
+   *
+   * @param trackingRecord the tracking record
+   * @throws Exception the exception
+   */
+  public void updateTrackingRecord(TrackingRecord trackingRecord)
+    throws Exception;
+
+  /**
+   * Removes the tracking record.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeTrackingRecord(Long id) throws Exception;
+
+  /**
+   * Find tracking records.
+   *
+   * @param translationId the translation id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findTrackingRecordsForQuery(String translationId,
+    String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Returns the workflow paths defined by the supported listeners.
+   *
+   * @return the workflow paths
+   */
+  public List<String> getWorkflowPaths();
+
+  /**
+   * Perform workflow action.
+   *
+   * @param refset the refset
+   * @param action the action
+   * @throws Exception the exception
+   */
+  public void performWorkflowAction(Refset refset, WorkflowAction action)
+    throws Exception;
+
   // Translation services
-  
-  // Translation
-  // Identify available work
-  // Assign from scratch
-  // Assign (not from scratch) (for "fix error")
-  // Unassign
-  // start editing
-  // Finish editing
-  // Save
-  // Start review
-  // Finish review
-  // Preview
-  // Publish
-  // Refset
-  // Save
-  // Finish editing
-  // Finish Review
-  // Preview
-  // Publish
+
+  /**
+   * Find available editing work.
+   *
+   * @param translation the translation
+   * @param user the user
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findAvailableEditingWork(Translation translation,
+    User user, PfsParameter pfs) throws Exception;
+
+  /**
+   * Find available review work.
+   *
+   * @param translation the translation
+   * @param user the user
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findAvailableReviewWork(Translation translation,
+    User user, PfsParameter pfs) throws Exception;
+
+  /**
+   * Returns the tracking record.
+   *
+   * @param translation the translation
+   * @param user the user
+   * @return the tracking record
+   * @throws Exception the exception
+   */
+  public TrackingRecord getTrackingRecord(Translation translation, User user)
+    throws Exception;
+
+  /**
+   * Perform workflow action.
+   *
+   * @param translation the translation
+   * @param action the action
+   * @param concept the concept
+   * @return the tracking record
+   * @throws Exception the exception
+   */
+  public TrackingRecord performWorkflowAction(Translation translation,
+    WorkflowAction action, Concept concept) throws Exception;
+
 }

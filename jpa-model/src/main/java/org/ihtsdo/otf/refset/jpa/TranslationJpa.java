@@ -8,6 +8,8 @@ import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
@@ -28,6 +30,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefSetMemberJpa;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * JPA enabled implementation of {@link Refset}.
@@ -62,8 +65,13 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private String language;
 
   /** The workflow status. */
+  @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private String workflowStatus;
+  private WorkflowStatus workflowStatus = WorkflowStatus.NEW;
+
+  /** The workflow path. */
+  @Column(nullable = false)
+  private String workflowPath;
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
@@ -94,6 +102,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     isPublic = translation.isPublic();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
+    workflowPath = translation.getWorkflowPath();
     refset = translation.getRefset();
     for (DescriptionTypeRefSetMember member : translation.getDescriptionTypes()) {
       addDescriptionType(new DescriptionTypeRefSetMemberJpa(member));
@@ -235,14 +244,26 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /* see superclass */
   @Override
-  public String getWorkflowStatus() {
+  public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
   }
 
   /* see superclass */
   @Override
-  public void setWorkflowStatus(String workflowStatus) {
+  public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
+  }
+
+  /* see superclass */
+  @Override
+  public String getWorkflowPath() {
+    return workflowPath;
+  }
+
+  /* see superclass */
+  @Override
+  public void setWorkflowPath(String workflowPath) {
+    this.workflowPath = workflowPath;
   }
 
   /* see superclass */
@@ -257,9 +278,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((refset == null) ? 0 : refset.hashCode());
-    result =
-        prime * result
-            + ((workflowStatus == null) ? 0 : workflowStatus.hashCode());
     return result;
   }
 
@@ -300,11 +318,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         return false;
     } else if (!refset.equals(other.refset))
       return false;
-    if (workflowStatus == null) {
-      if (other.workflowStatus != null)
-        return false;
-    } else if (!workflowStatus.equals(other.workflowStatus))
-      return false;
     return true;
   }
 
@@ -313,9 +326,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   public String toString() {
     return "TranslationJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", language=" + language
-        + ", workflowStatus=" + workflowStatus + ", refset=" + refset
-        + ", descriptionTypes=" + descriptionTypes + ", namespace=" + namespace
-        + "]";
+        + ", workflowStatus=" + workflowStatus + ", workflowPath="
+        + workflowPath + ", refset=" + refset + ", descriptionTypes="
+        + descriptionTypes + ", namespace=" + namespace + "]";
   }
-
 }

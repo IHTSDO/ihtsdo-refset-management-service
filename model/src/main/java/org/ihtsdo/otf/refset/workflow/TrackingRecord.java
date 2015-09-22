@@ -8,7 +8,6 @@ import java.util.List;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
-import org.ihtsdo.otf.refset.helpers.HasId;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
