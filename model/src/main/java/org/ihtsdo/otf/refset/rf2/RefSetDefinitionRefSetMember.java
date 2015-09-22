@@ -8,7 +8,6 @@ package org.ihtsdo.otf.refset.rf2;
  */
 public interface RefSetDefinitionRefSetMember extends ConceptRefSetMember {
 
-
   /**
    * Returns the definition.
    *

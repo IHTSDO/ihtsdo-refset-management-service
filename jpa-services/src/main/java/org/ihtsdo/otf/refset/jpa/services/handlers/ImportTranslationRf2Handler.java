@@ -4,9 +4,7 @@
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -51,30 +49,12 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
   /** hash sets for retrieving concepts. */
   private Map<String, Concept> conceptCache = new HashMap<>();
 
-  
-  /**  The release version. */
-  private String releaseVersion = "";
-  
-  /** The release version date. */
-  private Date releaseVersionDate;
-  
-  /**  The terminology. */
-  private String terminology = "";
-  
-  /** The terminology version. */
-  private String terminologyVersion;
-
   /** The request cancel flag. */
   boolean requestCancel = false;
-  
-  /** The loader. */
-  final String loader = "loader";
-  
+ 
   /** The id. */
   final String id = "id";
 
-  /** The published. */
-  final String published = "PUBLISHED";
 
 
   /**
@@ -97,7 +77,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     // - find the ZipEntry corresponding to the descriptions file
     // - find the ZipEntry corresponding to the languages file
   
-    List<Concept> concepts = new ArrayList<>();
     ZipInputStream zin = new ZipInputStream(content);
 
     String line;
@@ -110,16 +89,9 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
          
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
-          // System.out.println(sc.nextLine());
           line = sc.nextLine();
           final String fields[] = line.split("\t");
           if (!fields[0].equals(id)) {
-
-            // Stop if the effective time is past the release version
-            /*
-             * if (fields[1].compareTo(releaseVersion) > 0) {
-             * descriptionReader.push(line); break; }
-             */
 
             final Description description = new DescriptionJpa();
             description.setTerminologyId(fields[0]);
@@ -138,8 +110,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             } else {
               concept = new ConceptJpa();
               concept.addDescription(description);
-              concept.setTerminology(terminology);
-              concept.setVersion(terminologyVersion);
               concept.setTerminologyId(fields[4]);
               conceptCache.put(concept.getTerminologyId(), concept);
             }
@@ -148,17 +118,10 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             description.setTypeId(fields[6].intern());
             description.setTerm(fields[7]);
             description.setCaseSignificanceId(fields[8].intern());
-            description.setTerminology(terminology);
-            description.setVersion(terminologyVersion);
-            description.setLastModified(ConfigUtility.DATE_FORMAT
-                .parse(releaseVersion));
-            description.setLastModifiedBy(loader);
-            description.setPublished(true);
-            description.setWorkflowStatus(published);
             
             
             descriptions.put(description.getTerminologyId(), description);
-            concepts.add(description.getConcept());
+            //concepts.add(description.getConcept());
           }
         }
       }
@@ -182,11 +145,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
           }
 
           if (!fields[0].equals(id)) { // header
-            // Stop if the effective time is past the release version
-            /*if (fields[1].compareTo(releaseVersion) > 0) {
-              languageReader.push(line);
-              return concepts;
-            }*/
+ 
             final LanguageRefSetMember member = new LanguageRefSetMemberJpa();
 
             // Universal RefSet attributes
@@ -196,10 +155,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             member.setActive(fields[2].equals("1"));
             member.setModuleId(fields[3].intern());
             member.setRefSetId(fields[4].intern());
-            member.setTerminology(terminology);
-            member.setVersion(terminologyVersion);
-            member.setLastModified(releaseVersionDate);
-            member.setLastModifiedBy(loader);
             member.setPublished(true);
 
             // Language unique attributes
@@ -243,36 +198,24 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             .get(description.getTerminologyId())) {
           member.setDescription(description);
           description.addLanguageRefSetMember(member);
-
-                // Check if this language refset and description form the
-                // defaultPreferredName
-                /*
-                 * if (pnHandler.isPreferredName(description, member)) { //
-                 * check for already assigned if
-                 * (defaultPreferredNames.get(concept.getTerminologyId()) !=
-                 * null) { Logger.getLogger(getClass()).info(
-                 * "Multiple default preferred names for concept " +
-                 * concept.getTerminologyId()); Logger.getLogger(getClass())
-                 * .info( "  " + "Existing: " +
-                 * defaultPreferredNames.get(concept .getTerminologyId()));
-                 * Logger.getLogger(getClass()).info( "  " + "Replaced: " +
-                 * description.getTerm()); } // Save preferred name for later
-                 * defaultPreferredNames.put(concept.getTerminologyId(),
-                 * description.getTerm());
-                 * 
-                 * }
-                 */
-              }
+        }
         // Remove used ones so we can keep track
         languageRefSetMembers.remove(description.getTerminologyId());
       } else {
         // Early SNOMED release have no languages
-        Logger.getLogger(getClass())
-            .debug(
+        throw new Exception(
                 "  Description has no languages: "
                     + description.getTerminologyId());
       }
 
+    }
+    if (!languageRefSetMembers.isEmpty()) {
+      throw new Exception("Language without description. " + languageRefSetMembers);
+    }
+    
+    List<Concept> concepts = new ArrayList<>();
+    for (Concept c : conceptCache.values()) {
+      concepts.add(c);
     }
     return concepts;
   }
@@ -337,35 +280,5 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
   }
 
-  /**
-   * Sets the terminology version.
-   *
-   * @param terminologyVersion the terminology version
-   */
-  public void setTerminologyVersion(String terminologyVersion) {
-    this.terminologyVersion = terminologyVersion;
-  }
-  
-  /**
-   * Sets the release version.
-   *
-   * @param releaseVersion the release version
-   */
-  public void setReleaseVersion(String releaseVersion) {
-    this.releaseVersion = releaseVersion;
-    try {
-      this.releaseVersionDate = ConfigUtility.DATE_FORMAT.parse(releaseVersion);
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-  }
-  
-  /**
-   * Sets the terminology.
-   *
-   * @param terminology the terminology
-   */
-  public void setTerminology(String terminology) {
-    this.terminology = terminology;
-  }
+
 }

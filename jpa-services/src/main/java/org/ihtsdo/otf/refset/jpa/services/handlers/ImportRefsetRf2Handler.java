@@ -6,9 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -37,33 +35,12 @@ public class ImportRefsetRf2Handler  implements
 
   /** The request cancel flag. */
   boolean requestCancel = false;
-  
-  /**  The release version. */
-  private String releaseVersion = "";
-  
-  /** The release version date. */
-  private Date releaseVersionDate;
-  
-  /**  The terminology. */
-  private String terminology = "";
-  
-  /** The terminology version. */
-  private String terminologyVersion;
 
   /** counter for objects created, reset in each load section. */
   int objectCt; //
 
-  /** The init pref name. */
-  final String initPrefName = "No default preferred name found";
-
-  /** The loader. */
-  final String loader = "loader";
-
   /** The id. */
   final String id = "id";
-
-  /** The published. */
-  final String published = "PUBLISHED";
 
   /**
    * Instantiates an empty {@link ImportRefsetRf2Handler}.
@@ -109,12 +86,6 @@ public class ImportRefsetRf2Handler  implements
         
       if (!fields[0].equals("id")) { // header
 
-        // Stop if the effective time is past the release version
-        if (fields[1].compareTo(releaseVersion) > 0) {
-          pbr.push(line);
-          break;
-        }
-
         final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
         // Universal RefSet attributes
         member.setTerminologyId(fields[0]);
@@ -127,16 +98,7 @@ public class ImportRefsetRf2Handler  implements
         // SimpleRefSetMember unique attributes
         // NONE
 
-        // Terminology attributes
-        member.setTerminology(terminology);
-        member.setVersion(terminologyVersion);  // TODO this is the refset version / not terminology version correct?
-        member.setLastModified(releaseVersionDate);
-        member.setLastModifiedBy(loader);
-        member.setPublished(true);
-
         final Concept concept = new ConceptJpa();
-        concept.setTerminology(terminology);
-        concept.setVersion(terminologyVersion);
         concept.setTerminologyId(fields[5]);
 
         member.setConcept(concept);
@@ -173,12 +135,6 @@ public class ImportRefsetRf2Handler  implements
       
       if (!fields[0].equals("id")) { // header
 
-        // Stop if the effective time is past the release version
-        if (fields[1].compareTo(releaseVersion) > 0) {
-          pbr.push(line);
-          break;
-        }
-
         final RefSetDefinitionRefSetMember member =
             new RefSetDefinitionRefSetMemberJpa();
         member.setTerminologyId(fields[0]);
@@ -188,20 +144,11 @@ public class ImportRefsetRf2Handler  implements
         member.setModuleId(fields[3].intern());
         member.setRefSetId(fields[4]);
         final Concept concept = new ConceptJpa();
-        concept.setTerminology(terminology);
-        concept.setVersion(terminologyVersion);
         concept.setTerminologyId(fields[5]);
         member.setConcept(concept);
 
         // Refset descriptor unique attributes
         member.setDefinition(fields[6]);
-
-        // Terminology attributes
-        member.setTerminology(terminology);
-        member.setVersion(terminologyVersion);
-        member.setLastModified(releaseVersionDate);
-        member.setLastModifiedBy(loader);
-        member.setPublished(true);   
         
         pbr.close();
         return member.getDefinition();
@@ -262,38 +209,6 @@ public class ImportRefsetRf2Handler  implements
   public void setProperties(Properties p) throws Exception {
     // n/a
 
-  }
-
-  /**
-   * Sets the terminology version.
-   *
-   * @param terminologyVersion the terminology version
-   */
-  public void setTerminologyVersion(String terminologyVersion) {
-    this.terminologyVersion = terminologyVersion;
-  }
-  
-  /**
-   * Sets the release version.
-   *
-   * @param releaseVersion the release version
-   */
-  public void setReleaseVersion(String releaseVersion) {
-    this.releaseVersion = releaseVersion;
-    try {
-      this.releaseVersionDate = ConfigUtility.DATE_FORMAT.parse(releaseVersion);
-    } catch (ParseException e) {
-      e.printStackTrace();
-    }
-  }
-  
-  /**
-   * Sets the terminology.
-   *
-   * @param terminology the terminology
-   */
-  public void setTerminology(String terminology) {
-    this.terminology = terminology;
   }
 
   @Override

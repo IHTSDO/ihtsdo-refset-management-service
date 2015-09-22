@@ -6,20 +6,10 @@ package org.ihtsdo.otf.refset.test.mojo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-
-
-
-
-
-
-
-
-
-
-
-
 import java.util.Scanner;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -35,13 +25,12 @@ import org.ihtsdo.otf.refset.jpa.services.handlers.ImportRefsetRf2Handler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationRf2Handler;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.Assert;
 
 /**
  * Implementation of the "Helper Jpa Normal Use" Test Cases.
@@ -56,6 +45,8 @@ public class ImportExportRf2HandlerTest {
   
   /**  The content input stream. */
   private InputStream contentInputStream = null;
+  
+  File outputFile = null;
   
   /**
    * Create test fixtures for class.
@@ -89,6 +80,7 @@ public class ImportExportRf2HandlerTest {
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/test-data/test-data.zip"));
+    outputFile = new File("../config/src/main/resources/data/test-data/outputFile.txt");
   }
 
   /**
@@ -102,18 +94,14 @@ public class ImportExportRf2HandlerTest {
   public void testTranslationHandlerJpa001() throws Exception {
 
     ImportTranslationRf2Handler importHandler = new ImportTranslationRf2Handler();
-    importHandler.setReleaseVersion("20140731");
-    importHandler.setTerminology("SNOMEDCT_US");
-    importHandler.setTerminologyVersion("20140731");
     List<Concept> concepts = importHandler.importTranslation(contentInputStream);
-    Assert.assertEquals(concepts.size(), 34105);
+    Assert.assertEquals(concepts.size(), 10293);
     
     Translation translation = new TranslationJpa();
     translation.setLanguage("en");
     translation.setVersion("20140731");
     ExportTranslationRf2Handler exportHandler = new ExportTranslationRf2Handler();
     InputStream is = exportHandler.exportConcepts(translation, concepts);
-    // TODO: open ZipInputStream and find corresponding zip entries
     ZipInputStream zin = new ZipInputStream(is);
 
     List<String> descriptionRows = new ArrayList<>();
@@ -127,7 +115,15 @@ public class ImportExportRf2HandlerTest {
         }
       }
     }
-    Assert.assertEquals(descriptionRows.size(), 0);
+    Assert.assertEquals(descriptionRows.size(), 34106);
+    
+    /*Collections.sort(descriptionRows);
+    //Assert.assertEquals(descriptionRows.size(), 0);
+    PrintWriter writer = new PrintWriter(outputFile, "UTF-8");
+    for (String s : descriptionRows) {
+      writer.println(s);
+    }
+    writer.close();*/
   }
 
 
@@ -143,9 +139,6 @@ public class ImportExportRf2HandlerTest {
 
 
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
-    importHandler.setReleaseVersion("20140731");
-    importHandler.setTerminology("SNOMEDCT_US");
-    importHandler.setTerminologyVersion("20140731");
     List<SimpleRefSetMember> members = importHandler.importMembers(membersInputStream);
     Assert.assertEquals(members.size(), 35);
     String definition = importHandler.importDefinition(definitionInputStream);
