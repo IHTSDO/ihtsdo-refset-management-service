@@ -116,6 +116,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     name = concept.getName();
     definitionStatusId = concept.getDefinitionStatusId();
     workflowStatus = concept.getWorkflowStatus();
+    translation = concept.getTranslation();
 
     if (deepCopy) {
       descriptions = new ArrayList<>();
@@ -134,46 +135,55 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
   }
 
+  /* see superclass */
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
   }
 
+  /* see superclass */
   @Override
   public void setWorkflowStatus(WorkflowStatus workflowStatus) {
     this.workflowStatus = workflowStatus;
   }
 
+  /* see superclass */
   @Override
   public String getDefinitionStatusId() {
     return definitionStatusId;
   }
 
+  /* see superclass */
   @Override
   public void setDefinitionStatusId(String definitionStatusId) {
     this.definitionStatusId = definitionStatusId;
   }
 
+  /* see superclass */
   @Override
   public boolean isAnonymous() {
     return anonymous;
   }
 
+  /* see superclass */
   @Override
   public void setAnonymous(boolean anonymous) {
     this.anonymous = anonymous;
   }
 
+  /* see superclass */
   @Override
   public boolean isFullyDefined() {
     return fullyDefined;
   }
 
+  /* see superclass */
   @Override
   public void setFullyDefined(boolean fullyDefined) {
     this.fullyDefined = fullyDefined;
   }
 
+  /* see superclass */
   @Override
   @XmlElement(type = DescriptionJpa.class)
   public List<Description> getDescriptions() {
@@ -183,6 +193,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return descriptions;
   }
 
+  /* see superclass */
   @Override
   public void setDescriptions(List<Description> descriptions) {
     if (descriptions != null) {
@@ -194,6 +205,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
   }
 
+  /* see superclass */
   @Override
   public void addDescription(Description description) {
     if (descriptions == null) {
@@ -203,6 +215,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     descriptions.add(description);
   }
 
+  /* see superclass */
   @Override
   public void removeDescription(Description description) {
     if (descriptions == null) {
@@ -211,6 +224,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     descriptions.remove(description);
   }
 
+  /* see superclass */
   @Override
   @XmlElement(type = RelationshipJpa.class)
   public List<Relationship> getRelationships() {
@@ -220,6 +234,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return relationships;
   }
 
+  /* see superclass */
   @Override
   public void addRelationship(Relationship relationship) {
     if (relationships == null) {
@@ -229,6 +244,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     relationships.add(relationship);
   }
 
+  /* see superclass */
   @Override
   public void removeRelationship(Relationship relationship) {
     if (relationships == null) {
@@ -237,6 +253,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     relationships.remove(relationship);
   }
 
+  /* see superclass */
   @Override
   public void setRelationships(List<Relationship> relationships) {
     if (relationships != null) {
@@ -248,6 +265,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
   }
 
+  /* see superclass */
   @Override
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
@@ -258,16 +276,25 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return name;
   }
 
+  /* see superclass */
   @Override
   public void setName(String defaultPreferredName) {
     this.name = defaultPreferredName;
   }
 
+  /* see superclass */
   @Override
-  public String toString() {
-    return super.toString() + ", " + getDefinitionStatusId() + "," + getName();
+  public Translation getTranslation() {
+    return translation;
   }
 
+  /* see superclass */
+  @Override
+  public void setTranslation(Translation translation) {
+    this.translation = translation;
+  }
+
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -285,6 +312,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return true;
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -295,4 +323,15 @@ public class ConceptJpa extends AbstractComponent implements Concept {
             + ((definitionStatusId == null) ? 0 : definitionStatusId.hashCode());
     return result;
   }
+
+  /* see superclass */
+  @Override
+  public String toString() {
+    return "ConceptJpa [workflowStatus=" + workflowStatus
+        + ", definitionStatusId=" + definitionStatusId + ", anonymous="
+        + anonymous + ", fullyDefined=" + fullyDefined + ", descriptions="
+        + descriptions + ", relationships=" + relationships + ", childCount="
+        + childCount + ", name=" + name + ", translation=" + translation + "]";
+  }
+
 }
