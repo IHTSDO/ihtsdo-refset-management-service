@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -19,6 +20,7 @@ import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.Refset;
@@ -89,11 +91,11 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   private Date lastModified = new Date();
 
   /** The refset. */
-  @Column(nullable = true)
+  @ManyToOne(targetEntity = RefsetJpa.class)
   private Refset refset;
 
   /** The translation. */
-  @Column(nullable = true)
+  @ManyToOne(targetEntity = TranslationJpa.class)
   private Translation translation;
 
   /** The release properties. */
@@ -238,6 +240,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
   public Refset getRefset() {
     return refset;
@@ -249,8 +252,32 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     this.refset = refset;
   }
 
+  /**
+   * Returns the refset id.
+   *
+   * @return the refset id
+   */
+  @XmlElement
+  private Long getRefsetId() {
+    return (refset != null) ? refset.getId() : 0;
+  }
+
+  /**
+   * Sets the refset id.
+   *
+   * @param refsetId the refset id
+   */
+  @SuppressWarnings("unused")
+  private void setRefsetId(Long refsetId) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setId(refsetId);
+  }
+
   /* see superclass */
   @Override
+  @XmlTransient
   public Translation getTranslation() {
     return translation;
   }
@@ -259,6 +286,29 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Override
   public void setTranslation(Translation translation) {
     this.translation = translation;
+  }
+
+  /**
+   * Returns the translation id.
+   *
+   * @return the translation id
+   */
+  @XmlElement
+  private Long getTranslationId() {
+    return (translation != null) ? translation.getId() : 0;
+  }
+
+  /**
+   * Sets the translation id.
+   *
+   * @param translationId the translation id
+   */
+  @SuppressWarnings("unused")
+  private void setTranslationId(Long translationId) {
+    if (translation == null) {
+      translation = new TranslationJpa();
+    }
+    translation.setId(translationId);
   }
 
   /* see superclass */
@@ -298,10 +348,16 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     result =
-        prime * result
-            + ((translation == null) ? 0 : translation.hashCode());
+        prime
+            * result
+            + ((refset == null || refset.getId() == null) ? 0 : refset.getId()
+                .hashCode());
+    result =
+        prime
+            * result
+            + ((translation == null || translation.getId() == null) ? 0
+                : translation.getId().hashCode());
     return result;
   }
 
@@ -355,12 +411,18 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     if (refset == null) {
       if (other.refset != null)
         return false;
-    } else if (!refset.equals(other.refset))
+    } else if (refset.getId() == null) {
+      if (other.refset != null && other.refset.getId() != null)
+        return false;
+    } else if (!refset.getId().equals(other.refset.getId()))
       return false;
     if (translation == null) {
       if (other.translation != null)
         return false;
-    } else if (!translation.equals(other.translation))
+    } else if (translation.getId() == null) {
+      if (other.translation != null && other.translation.getId() != null)
+        return false;
+    } else if (!translation.getId().equals(other.translation.getId()))
       return false;
     return true;
   }
@@ -373,8 +435,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         + ", published=" + published + ", terminology=" + terminology
         + ", version=" + version + ", lastModifiedBy=" + lastModifiedBy
         + ", lastModified=" + lastModified + ", refsetId=" + refset
-        + ", translationId=" + translation + ", properties=" + properties
-        + "]";
+        + ", translationId=" + translation + ", properties=" + properties + "]";
   }
 
 }
