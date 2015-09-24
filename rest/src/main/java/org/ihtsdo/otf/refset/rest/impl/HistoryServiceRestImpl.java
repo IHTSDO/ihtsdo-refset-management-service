@@ -3,15 +3,36 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.Date;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.services.HistoryServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.HistoryServiceRest;
+import org.ihtsdo.otf.refset.services.HistoryService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
 import com.wordnik.swagger.annotations.Api;
+import com.wordnik.swagger.annotations.ApiOperation;
+import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for {@link HistoryServiceRest}.
@@ -25,18 +46,153 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
     HistoryServiceRest {
 
   /** The security service. */
-  @SuppressWarnings("unused")
   private SecurityService securityService;
 
-  /**
-   * Instantiates an empty {@link HistoryServiceRestImpl}.
-   *
-   * @throws Exception the exception
-   */
-  public HistoryServiceRestImpl() throws Exception {
-    securityService = new SecurityServiceJpa();
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/refset/{refsetId}/{date}")
+  @ApiOperation(value = "Get refset for id and date", notes = "Gets the refset with the given date.", response = RefsetJpa.class)
+  public Refset getRefsetRevision(
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (History): /" + refsetId + " " + date);
+
+    HistoryService historyService = new HistoryServiceJpa();
+    try {
+      authenticate(securityService, authToken,
+          "retrieve the release history for a refset", UserRole.VIEWER);
+
+      // check date format
+      if (!date.matches("([0-9]{8})"))
+        throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
+      
+      
+      Refset refset =
+          historyService.getRefsetRevision(refsetId,
+              ConfigUtility.DATE_FORMAT.parse(date));
+
+      return refset;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a refset");
+      return null;
+    } finally {
+      historyService.close();
+      securityService.close();
+    }
+
   }
 
-  // TODO: need impl
+  @Override
+  @GET
+  @Path("/refset/{refsetId}/releases")
+  @ApiOperation(value = "Get release history for refsetId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
+  public ReleaseInfoList getReleaseHistoryForRefset(
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (History): /" + refsetId);
+
+    HistoryService historyService = new HistoryServiceJpa();
+    try {
+      authenticate(securityService, authToken,
+          "retrieve the release history for the refset", UserRole.VIEWER);
+
+      ReleaseInfoList releaseInfoList =
+          historyService.getReleaseHistoryForRefset(refsetId);
+
+      return releaseInfoList;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve release history for a refset");
+      return null;
+    } finally {
+      historyService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
+  @GET
+  @Path("/translation/{translationId}/releases")
+  @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
+  public ReleaseInfoList getReleaseHistoryForTranslation(
+    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (History): /" + translationId);
+
+    HistoryService historyService = new HistoryServiceJpa();
+    try {
+      authenticate(securityService, authToken,
+          "retrieve the release history for the translation", UserRole.VIEWER);
+
+      ReleaseInfoList releaseInfoList =
+          historyService.getReleaseHistoryForTranslation(translationId);
+
+      return releaseInfoList;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve release history for a translation");
+      return null;
+    } finally {
+      historyService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
+  @GET
+  @Path("/translation/{translationId}/{date}")
+  @ApiOperation(value = "Get translation for id and date", notes = "Gets the translation with the given date.", response = TranslationJpa.class)
+  public Translation getTranslationRevision(
+    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (History): /" + translationId + " " + date);
+
+    HistoryService historyService = new HistoryServiceJpa();
+    try {
+      authenticate(securityService, authToken,
+          "retrieve the release history for a translation", UserRole.VIEWER);
+      
+      // check date format
+      if (!date.matches("([0-9]{8})"))
+        throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
+      
+      Translation translation =
+          historyService.getTranslationRevision(translationId,
+              ConfigUtility.DATE_FORMAT.parse(date));
+
+      return translation;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a translation");
+      return null;
+    } finally {
+      historyService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
+  public SimpleRefSetMemberList findMembersForRefsetRevision(Long refsetId,
+    Date date, PfsParameter pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList findConceptsForTranslationRevision(Long refsetId,
+    Date date, PfsParameter pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

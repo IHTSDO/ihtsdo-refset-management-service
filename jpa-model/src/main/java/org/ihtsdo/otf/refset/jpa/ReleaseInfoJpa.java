@@ -21,8 +21,10 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ReleaseProperty;
+import org.ihtsdo.otf.refset.Translation;
 
 /**
  * JPA enabled implementation of a {@link ReleaseInfo}.
@@ -86,13 +88,13 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Column(nullable = false)
   private Date lastModified = new Date();
 
-  /** The refset id. */
+  /** The refset. */
   @Column(nullable = true)
-  private String refsetId;
+  private Refset refset;
 
-  /** The translation id. */
+  /** The translation. */
   @Column(nullable = true)
-  private String translationId;
+  private Translation translation;
 
   /** The release properties. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
@@ -122,8 +124,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
-    refsetId = releaseInfo.getRefsetId();
-    translationId = releaseInfo.getTranslationId();
+    refset = releaseInfo.getRefset();
+    translation = releaseInfo.getTranslation();
   }
 
   /* see superclass */
@@ -237,26 +239,26 @@ public class ReleaseInfoJpa implements ReleaseInfo {
 
   /* see superclass */
   @Override
-  public String getRefsetId() {
-    return refsetId;
+  public Refset getRefset() {
+    return refset;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetId(String refsetId) {
-    this.refsetId = refsetId;
+  public void setRefset(Refset refset) {
+    this.refset = refset;
   }
 
   /* see superclass */
   @Override
-  public String getTranslationId() {
-    return translationId;
+  public Translation getTranslation() {
+    return translation;
   }
 
   /* see superclass */
   @Override
-  public void setTranslationId(String translationId) {
-    this.translationId = translationId;
+  public void setTranslation(Translation translation) {
+    this.translation = translation;
   }
 
   /* see superclass */
@@ -296,10 +298,10 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result = prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
+    result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     result =
         prime * result
-            + ((translationId == null) ? 0 : translationId.hashCode());
+            + ((translation == null) ? 0 : translation.hashCode());
     return result;
   }
 
@@ -350,15 +352,15 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         return false;
     } else if (!version.equals(other.version))
       return false;
-    if (refsetId == null) {
-      if (other.refsetId != null)
+    if (refset == null) {
+      if (other.refset != null)
         return false;
-    } else if (!refsetId.equals(other.refsetId))
+    } else if (!refset.equals(other.refset))
       return false;
-    if (translationId == null) {
-      if (other.translationId != null)
+    if (translation == null) {
+      if (other.translation != null)
         return false;
-    } else if (!translationId.equals(other.translationId))
+    } else if (!translation.equals(other.translation))
       return false;
     return true;
   }
@@ -370,8 +372,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         + ", effectiveTime=" + effectiveTime + ", planned=" + planned
         + ", published=" + published + ", terminology=" + terminology
         + ", version=" + version + ", lastModifiedBy=" + lastModifiedBy
-        + ", lastModified=" + lastModified + ", refsetId=" + refsetId
-        + ", translationId=" + translationId + ", properties=" + properties
+        + ", lastModified=" + lastModified + ", refsetId=" + refset
+        + ", translationId=" + translation + ", properties=" + properties
         + "]";
   }
 

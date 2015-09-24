@@ -170,28 +170,28 @@ public interface ReleaseInfo {
    *
    * @return the refset id
    */
-  public String getRefsetId();
+  public Refset getRefset();
 
   /**
    * Sets the refset id.
    *
-   * @param refsetId the refset id
+   * @param refset the refset id
    */
-  public void setRefsetId(String refsetId);
+  public void setRefset(Refset refset);
 
   /**
    * Returns the translation id.
    *
-   * @return the translation id
+   * @return the translation 
    */
-  public String getTranslationId();
+  public Translation getTranslation();
 
   /**
-   * Sets the translation id.
+   * Sets the translation.
    *
-   * @param translationId the translation id
+   * @param translation the translation
    */
-  public void setTranslationId(String translationId);
+  public void setTranslation(Translation translation);
 
   /**
    * Returns the properties.
