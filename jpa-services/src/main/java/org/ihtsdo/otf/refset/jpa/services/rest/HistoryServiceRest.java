@@ -10,7 +10,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
 
 /**
  * Represents a service for accessing prior editions of domain model objects as
@@ -74,7 +74,7 @@ public interface HistoryServiceRest {
    * @return the simple ref set member list
    * @throws Exception the exception
    */
-  public SimpleRefSetMemberList findMembersForRefsetRevision(Long refsetId,
+  public SimpleRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs, String authToken)
         throws Exception;
 

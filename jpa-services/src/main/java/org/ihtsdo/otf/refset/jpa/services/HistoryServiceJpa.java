@@ -20,7 +20,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -362,7 +362,7 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
   private void handleRefsetLazyInitialization(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
-    refset.getRefsetDescriptor().getRefSetId();
+    refset.getRefsetDescriptor().getRefsetId();
     for (Translation translation : refset.getTranslations()) {
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();
@@ -415,7 +415,7 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
    * @see org.ihtsdo.otf.refset.services.HistoryService#findMembersForRefsetRevision(java.lang.Long, java.util.Date, org.ihtsdo.otf.refset.helpers.PfsParameter)
    */
   @Override
-  public SimpleRefSetMemberList findMembersForRefsetRevision(Long refsetId,
+  public SimpleRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs) {
     // TODO Auto-generated method stub
     return null;
