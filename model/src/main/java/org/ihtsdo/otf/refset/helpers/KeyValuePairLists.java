@@ -41,7 +41,7 @@ public class KeyValuePairLists {
    * 
    * @return the key value pair lists
    */
-  @XmlElement(name = "keyValuePairList")
+  @XmlElement(name = "keyValuePairLists")
   public List<KeyValuePairList> getKeyValuePairLists() {
     return keyValuePairLists;
   }
@@ -60,7 +60,6 @@ public class KeyValuePairLists {
    * 
    * @return the count
    */
-  @XmlElement(name = "count")
   public int getCount() {
     return keyValuePairLists.size();
   }

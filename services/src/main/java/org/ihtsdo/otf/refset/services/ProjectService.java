@@ -6,12 +6,15 @@ package org.ihtsdo.otf.refset.services;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
@@ -64,12 +67,12 @@ public interface ProjectService extends RootService {
   /**
    * Returns the user role for project.
    *
-   * @param username the username
-   * @param projectId the project id
+   * @param project the project
+   * @param user the user
    * @return the user role for project
    * @throws Exception the exception
    */
-  public UserRole getUserRoleForProject(String username, Long projectId)
+  public UserRole getUserRoleForProject(Project project, User user)
     throws Exception;
 
   /**
@@ -128,7 +131,6 @@ public interface ProjectService extends RootService {
    * @throws Exception the exception
    */
   public Refset getRefset(Long id) throws Exception;
-
 
   /**
    * Returns the refset.
@@ -220,26 +222,26 @@ public interface ProjectService extends RootService {
    * @param id the id
    * @throws Exception the exception
    */
-  public void removeRefsetDescriptorRefSetMember(Long id) throws Exception;
+  public void removeRefsetDescriptorRefsetMember(Long id) throws Exception;
 
   /**
    * Update refset descriptor ref set member.
    *
-   * @param refsetDescriptorRefSetMember the refset descriptor ref set member
+   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public void updateRefsetDescriptorRefSetMember(
-    RefsetDescriptorRefSetMember refsetDescriptorRefSetMember) throws Exception;
+  public void updateRefsetDescriptorRefsetMember(
+    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
   /**
    * Adds the refset descriptor ref set member.
    *
-   * @param refsetDescriptorRefSetMember the refset descriptor ref set member
+   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember addRefsetDescriptorRefSetMember(
-    RefsetDescriptorRefSetMember refsetDescriptorRefSetMember) throws Exception;
+  public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
+    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
   /**
    * Returns the refset descriptor ref set member.
@@ -251,7 +253,7 @@ public interface ProjectService extends RootService {
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember getRefsetDescriptorRefSetMember(
+  public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(
     String terminologyId, String terminology, String version, String branch)
     throws Exception;
 
@@ -262,27 +264,27 @@ public interface ProjectService extends RootService {
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember getRefsetDescriptorRefSetMember(Long id)
+  public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(Long id)
     throws Exception;
 
   /**
    * Update description type ref set member.
    *
-   * @param descriptionTypeRefSetMember the description type ref set member
+   * @param descriptionTypeRefsetMember the description type ref set member
    * @throws Exception the exception
    */
-  public void updateDescriptionTypeRefSetMember(
-    DescriptionTypeRefSetMember descriptionTypeRefSetMember) throws Exception;
+  public void updateDescriptionTypeRefsetMember(
+    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
 
   /**
    * Adds the description type ref set member.
    *
-   * @param descriptionTypeRefSetMember the description type ref set member
+   * @param descriptionTypeRefsetMember the description type ref set member
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember addDescriptionTypeRefSetMember(
-    DescriptionTypeRefSetMember descriptionTypeRefSetMember) throws Exception;
+  public DescriptionTypeRefsetMember addDescriptionTypeRefsetMember(
+    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
 
   /**
    * Returns the description type ref set member.
@@ -294,10 +296,9 @@ public interface ProjectService extends RootService {
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember getDescriptionTypeRefSetMember(
+  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(
     String terminologyId, String terminology, String version, String branch)
     throws Exception;
-
 
   /**
    * Returns the description type ref set member.
@@ -306,7 +307,7 @@ public interface ProjectService extends RootService {
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember getDescriptionTypeRefSetMember(Long id)
+  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(Long id)
     throws Exception;
 
   /**
@@ -315,7 +316,7 @@ public interface ProjectService extends RootService {
    * @param id the id
    * @throws Exception the exception
    */
-  public void removeDescriptionTypeRefSetMember(Long id) throws Exception;
+  public void removeDescriptionTypeRefsetMember(Long id) throws Exception;
 
   /**
    * Returns the terminology handler.
@@ -337,8 +338,8 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findRefsetsForQuery(String terminology, String version,
-    String query, PfsParameter pfs) throws Exception;
+  public SearchResultList findRefsetsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find translations for query.
@@ -350,8 +351,8 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findTranslationsForQuery(String terminology, String version,
-    String query, PfsParameter pfs) throws Exception;
+  public SearchResultList findTranslationsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find projects for query.
@@ -363,6 +364,43 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findProjectsForQuery(String terminology, String version,
+  public SearchResultList findProjectsForQuery(String terminology,
+    String version, String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * User has permissions of.
+   *
+   * @param project the project
+   * @param user the user
+   * @param role the role
+   * @return true, if successful
+   * @throws Exception the exception
+   */
+  public boolean userHasPermissionsOf(Project project, User user, UserRole role)
+    throws Exception;
+
+  /**
+   * Find concepts for translation.
+   *
+   * @param translationId the translation id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Find members for refset.
+   *
+   * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the simple ref set member list
+   * @throws Exception the exception
+   */
+  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
+    String query, PfsParameter pfs) throws Exception;
+
 }

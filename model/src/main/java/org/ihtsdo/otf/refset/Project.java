@@ -32,7 +32,7 @@ public interface Project extends Searchable {
    * 
    * @return the leads
    */
-  public Set<User> getLeads();
+  public Set<User> getReviewers();
 
   /**
    * Sets the leads.
@@ -151,5 +151,6 @@ public interface Project extends Searchable {
    * @param refset the refset
    */
   public void removeRefset(Refset refset);
+
 
 }

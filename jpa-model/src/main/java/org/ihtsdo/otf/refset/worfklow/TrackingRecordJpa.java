@@ -3,16 +3,14 @@
  */
 package org.ihtsdo.otf.refset.worfklow;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -26,8 +24,10 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -58,6 +58,14 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private String lastModifiedBy;
 
+  /** The for editing. */
+  @Column(nullable = false)
+  private boolean forEditing = false;
+
+  /** The for review. */
+  @Column(nullable = false)
+  private boolean forReview = false;
+
   /** The user. */
   @ManyToOne(targetEntity = UserJpa.class)
   @IndexedEmbedded
@@ -68,10 +76,14 @@ public class TrackingRecordJpa implements TrackingRecord {
   @IndexedEmbedded
   private Translation translation = null;
 
+  /** The Refset. */
+  @ManyToOne(targetEntity = RefsetJpa.class)
+  private Refset refset = null;
+
   /** The concepts. */
-  @OneToMany(orphanRemoval = true, targetEntity = ConceptJpa.class)
+  @OneToOne(targetEntity = ConceptJpa.class)
   @IndexedEmbedded
-  private List<Concept> concepts = null;
+  private Concept concept = null;
 
   /**
    * Instantiates an empty {@link TrackingRecordJpa}.
@@ -90,12 +102,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     id = record.getId();
     lastModified = record.getLastModified();
     lastModifiedBy = record.getLastModifiedBy();
-    user = record.getUser();
-    translation = record.getTranslation();
-    concepts = new ArrayList<>();
-    for (Concept concept : record.getAssignedConcepts()) {
-      concepts.add(new ConceptJpa(concept, false));
-    }
+    forEditing = record.isForEditing();
+    forReview = record.isForReview();
+    user = new UserJpa(record.getUser());
+    translation = new TranslationJpa(record.getTranslation());
+    refset = new RefsetJpa(record.getRefset());
+    concept = new ConceptJpa(record.getConcept(), false);
   }
 
   /* see superclass */
@@ -181,35 +193,50 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
-  public List<Concept> getAssignedConcepts() {
-    if (concepts == null) {
-      concepts = new ArrayList<Concept>();
-    }
-    return concepts;
+  public Refset getRefset() {
+    return refset;
   }
 
   /* see superclass */
   @Override
-  public void setAssignedConcepts(List<Concept> concepts) {
-    this.concepts = concepts;
+  public void setRefset(Refset refset) {
+    this.refset = refset;
   }
 
   /* see superclass */
   @Override
-  public void addAssignedConcept(Concept concept) {
-    if (concepts == null) {
-      concepts = new ArrayList<Concept>();
-    }
-    concepts.add(concept);
+  public Concept getConcept() {
+    return concept;
   }
 
   /* see superclass */
   @Override
-  public void removeAssignedConcept(Concept concept) {
-    if (concepts != null) {
-      concepts.remove(concept);
-    }
+  public void setConcept(Concept concept) {
+    this.concept = concept;
+  }
 
+  /* see superclass */
+  @Override
+  public boolean isForReview() {
+    return forReview;
+  }
+
+  /* see superclass */
+  @Override
+  public void setForReview(boolean forReview) {
+    this.forReview = forReview;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isForEditing() {
+    return forEditing;
+  }
+
+  /* see superclass */
+  @Override
+  public void setForEditing(boolean forEditing) {
+    this.forEditing = forEditing;
   }
 
   /* see superclass */
@@ -217,7 +244,12 @@ public class TrackingRecordJpa implements TrackingRecord {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
+    result = prime * result + (forEditing ? 1231 : 1237);
+    result = prime * result + (forReview ? 1231 : 1237);
+    result =
+        prime * result + ((translation == null) ? 0 : translation.hashCode());
+    result = prime * result + ((user == null) ? 0 : user.hashCode());
     return result;
   }
 
@@ -231,10 +263,24 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (getClass() != obj.getClass())
       return false;
     TrackingRecordJpa other = (TrackingRecordJpa) obj;
-    if (id == null) {
-      if (other.id != null)
+    if (concept == null) {
+      if (other.concept != null)
         return false;
-    } else if (!id.equals(other.id))
+    } else if (!concept.equals(other.concept))
+      return false;
+    if (forEditing != other.forEditing)
+      return false;
+    if (forReview != other.forReview)
+      return false;
+    if (translation == null) {
+      if (other.translation != null)
+        return false;
+    } else if (!translation.equals(other.translation))
+      return false;
+    if (user == null) {
+      if (other.user != null)
+        return false;
+    } else if (!user.equals(other.user))
       return false;
     return true;
   }
@@ -242,7 +288,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   /* see superclass */
   @Override
   public String toString() {
-    return "TrackingRecordJpa [id=" + id + ", user=" + user + ", translation="
-        + translation + ", concepts=" + concepts + "]";
+    return "TrackingRecordJpa [id=" + id + ", forEditing=" + forEditing
+        + ", forReview=" + forReview + ", user=" + user + ", refset=" + refset
+        + ", translation=" + translation + ", concept=" + concept + "]";
   }
 }

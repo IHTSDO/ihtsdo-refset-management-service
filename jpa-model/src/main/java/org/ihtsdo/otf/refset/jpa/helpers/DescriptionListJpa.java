@@ -22,7 +22,7 @@ public class DescriptionListJpa extends AbstractResultList<Description>
 
   /* see superclass */
   @Override
-  @XmlElement(type = DescriptionJpa.class, name = "description")
+  @XmlElement(type = DescriptionJpa.class, name = "descriptions")
   public List<Description> getObjects() {
     return super.getObjectsTransient();
   }

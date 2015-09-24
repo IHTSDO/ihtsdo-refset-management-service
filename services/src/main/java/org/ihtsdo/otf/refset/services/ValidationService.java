@@ -7,7 +7,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 
 /**
@@ -37,7 +37,7 @@ public interface ValidationService extends RootService {
    * @param member the member
    * @return the validation result
    */
-  public ValidationResult validateMember(SimpleRefSetMember member);
+  public ValidationResult validateMember(SimpleRefsetMember member);
   
   /**
    * Validate refset.

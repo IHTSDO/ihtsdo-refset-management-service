@@ -16,7 +16,7 @@ public enum UserRole {
   AUTHOR("Author"),
 
   /** The lead. */
-  LEAD("Lead"),
+  REVIEWER("Reviewer"),
 
   /** The administrator. */
   ADMIN("Admin");
@@ -54,9 +54,9 @@ public enum UserRole {
     else if (this.equals(UserRole.AUTHOR)
         && (role.equals(UserRole.VIEWER) || role.equals(UserRole.AUTHOR)))
       return true;
-    else if (this.equals(UserRole.LEAD)
+    else if (this.equals(UserRole.REVIEWER)
         && (role.equals(UserRole.VIEWER) || role.equals(UserRole.AUTHOR) || role
-            .equals(UserRole.LEAD)))
+            .equals(UserRole.REVIEWER)))
       return true;
     else if (this.equals(UserRole.ADMIN))
       return true;

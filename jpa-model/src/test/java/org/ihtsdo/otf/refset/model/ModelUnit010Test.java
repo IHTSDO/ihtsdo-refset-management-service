@@ -139,7 +139,7 @@ public class ModelUnit010Test {
     c.setTerminology("1");
     c.setTerminologyId("1");
     c.setVersion("1");
-    c.setDefaultPreferredName("1");
+    c.setName("1");
     tester.proxy(Concept.class, 1, c);
 
     assertTrue(tester.testXmlSerialization());
@@ -160,7 +160,7 @@ public class ModelUnit010Test {
     Concept c = new ConceptJpa();
     c.setId(1L);
     c.setTerminologyId("1");
-    c.setDefaultPreferredName("1");
+    c.setName("1");
     c.addRelationship(r);
     r.setSourceConcept(c);
     r.setDestinationConcept(c);

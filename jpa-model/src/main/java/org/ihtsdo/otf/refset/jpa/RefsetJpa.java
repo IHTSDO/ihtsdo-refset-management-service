@@ -29,9 +29,9 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
-import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -91,8 +91,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private String workflowPath;
 
   /** The refset descriptors. */
-  @OneToOne(targetEntity = RefsetDescriptorRefSetMemberJpa.class)
-  private RefsetDescriptorRefSetMember refsetDescriptor = null;
+  @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
+  private RefsetDescriptorRefsetMember refsetDescriptor = null;
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
@@ -128,6 +128,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     forTranslation = refset.isForTranslation();
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
+    project = refset.getProject();
     for (Translation translation : refset.getTranslations()) {
       addTranslation(new TranslationJpa(translation));
     }
@@ -220,15 +221,15 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @XmlElement(type = RefsetDescriptorRefSetMemberJpa.class)
+  @XmlElement(type = RefsetDescriptorRefsetMemberJpa.class)
   @Override
-  public RefsetDescriptorRefSetMember getRefsetDescriptor() {
+  public RefsetDescriptorRefsetMember getRefsetDescriptor() {
     return refsetDescriptor;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetDescriptor(RefsetDescriptorRefSetMember refsetDescriptor) {
+  public void setRefsetDescriptor(RefsetDescriptorRefsetMember refsetDescriptor) {
     this.refsetDescriptor = refsetDescriptor;
   }
 

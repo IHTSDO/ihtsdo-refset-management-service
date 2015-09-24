@@ -97,7 +97,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org.ihtsdo.otf.refset/test/jpa/*Test.java</include>
+                <include>**/org/ihtsdo/otf/refset/test/jpa/*Test.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>
@@ -120,10 +120,10 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org.ihtsdo.otf.refset/test/mojo/Compare*Test.java</include>
+                <include>**/org/ihtsdo/otf/refset/test/mojo/*Test.java</include>
               </includes>
               <excludes>
-                <exclude>**/org.ihtsdo.otf.refset/test/mojo/ResetDevDatabase.java
+                <exclude>**/org/ihtsdo/otf/refset/test/mojo/ResetDevDatabase.java
                 </exclude>
               </excludes>
               <additionalClasspathElements>
@@ -147,7 +147,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org.ihtsdo.otf.refset/test/mojo/ResetDevDatabase.java</include>
+                <include>**/org/ihtsdo/otf/refset/test/mojo/ResetDevDatabase.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>

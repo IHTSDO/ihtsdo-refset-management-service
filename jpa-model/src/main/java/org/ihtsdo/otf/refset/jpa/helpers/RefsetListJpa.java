@@ -22,7 +22,7 @@ public class RefsetListJpa extends AbstractResultList<Refset> implements
 
   /* see superclass */
   @Override
-  @XmlElement(type = RefsetJpa.class, name = "refset")
+  @XmlElement(type = RefsetJpa.class, name = "refsets")
   public List<Refset> getObjects() {
     return super.getObjectsTransient();
   }

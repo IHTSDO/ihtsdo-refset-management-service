@@ -7,7 +7,7 @@ import java.io.InputStream;
 import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 /**
  * Generically represents a handler for importing refset data.
@@ -23,14 +23,22 @@ import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
 public interface ImportRefsetHandler extends Configurable {
 
   /**
+   * Returns the file type filter.
+   *
+   * @return the file type filter
+   */
+  public String getFileTypeFilter();
+
+  /**
    * Import members.
    *
    * @param content the content
    * @return the list
    * @throws Exception the exception
    */
-  public List<SimpleRefSetMember> importMembers(InputStream content) throws Exception;
-  
+  public List<SimpleRefsetMember> importMembers(InputStream content)
+    throws Exception;
+
   /**
    * Import definition.
    *
@@ -39,7 +47,5 @@ public interface ImportRefsetHandler extends Configurable {
    * @throws Exception the exception
    */
   public String importDefinition(InputStream content) throws Exception;
-
-
 
 }

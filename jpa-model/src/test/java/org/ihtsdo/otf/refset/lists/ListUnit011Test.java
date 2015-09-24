@@ -3,12 +3,10 @@
  */
 package org.ihtsdo.otf.refset.lists;
 
-import org.ihtsdo.otf.refset.helpers.RefsetDescriptorRefSetMemberList;
-import org.ihtsdo.otf.refset.jpa.helpers.RefsetDescriptorRefSetMemberListJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefSetMemberJpa;
+import org.ihtsdo.otf.refset.helpers.RefsetDescriptorRefsetMemberList;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetDescriptorRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,22 +14,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link RefsetDescriptorRefSetMemberList}.
+ * Unit testing for {@link RefsetDescriptorRefsetMemberList}.
  */
 public class ListUnit011Test extends
-    AbstractListUnit<RefsetDescriptorRefSetMember> {
+    AbstractListUnit<RefsetDescriptorRefsetMember> {
 
   /** The list1 test fixture . */
-  private RefsetDescriptorRefSetMemberList list1;
+  private RefsetDescriptorRefsetMemberList list1;
 
   /** The list2 test fixture . */
-  private RefsetDescriptorRefSetMemberList list2;
+  private RefsetDescriptorRefsetMemberList list2;
 
   /** The test fixture o1. */
-  private RefsetDescriptorRefSetMember o1;
+  private RefsetDescriptorRefsetMember o1;
 
   /** The test fixture o2. */
-  private RefsetDescriptorRefSetMember o2;
+  private RefsetDescriptorRefsetMember o2;
 
   /**
    * Setup class.
@@ -46,25 +44,16 @@ public class ListUnit011Test extends
    */
   @Before
   public void setup() {
-    list1 = new RefsetDescriptorRefSetMemberListJpa();
-    list2 = new RefsetDescriptorRefSetMemberListJpa();
-    o1 = new RefsetDescriptorRefSetMemberJpa();
+    list1 = new RefsetDescriptorRefsetMemberListJpa();
+    list2 = new RefsetDescriptorRefsetMemberListJpa();
+    o1 = new RefsetDescriptorRefsetMemberJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
-    Concept c1 = new ConceptJpa();
-    c1.setId(1L);
-    c1.setTerminologyId("1");
-    c1.setDefaultPreferredName("1");
-    o1.setComponent(c1);
-    o2 = new RefsetDescriptorRefSetMemberJpa();
+    o1.setConceptId("1");
+    o2 = new RefsetDescriptorRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
-    Concept c2 = new ConceptJpa();
-    c2.setId(2L);
-    c2.setTerminologyId("2");
-    c2.setDefaultPreferredName("2");
-    o2.setComponent(c2);
-
+    o2.setConceptId("1");
   }
 
   /**

@@ -3,13 +3,9 @@
  */
 package org.ihtsdo.otf.refset.services;
 
-import java.util.List;
-
-import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
@@ -20,9 +16,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
  */
 public interface WorkflowService extends ProjectService {
 
-  // TODO: get, add, remove, update, find for TrackingRecord
-  // which also needs indexing
-
   /**
    * Returns the tracking record.
    *
@@ -31,6 +24,28 @@ public interface WorkflowService extends ProjectService {
    * @throws Exception the exception
    */
   public TrackingRecord getTrackingRecord(Long id) throws Exception;
+
+  /**
+   * Returns the tracking record.
+   *
+   * @param translationId the translation id
+   * @param userName the user name
+   * @return the tracking record
+   * @throws Exception the exception
+   */
+  public TrackingRecordList getTrackingRecordsForTranslation(
+    Long translationId, String userName) throws Exception;
+
+  /**
+   * Returns the tracking records for refset. The refset is assigned to at most
+   * one person at a time.
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @return the tracking records for refset
+   * @throws Exception the exception
+   */
+  public TrackingRecord getTrackingRecordsForRefset(Long refsetId,
+    String userName) throws Exception;
 
   /**
    * Adds the tracking record.
@@ -62,13 +77,12 @@ public interface WorkflowService extends ProjectService {
   /**
    * Find tracking records.
    *
-   * @param translationId the translation id
    * @param query the query
    * @param pfs the pfs
    * @return the tracking record list
    * @throws Exception the exception
    */
-  public TrackingRecordList findTrackingRecordsForQuery(String translationId,
+  public TrackingRecordList findTrackingRecordsForQuery(
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -76,65 +90,81 @@ public interface WorkflowService extends ProjectService {
    *
    * @return the workflow paths
    */
-  public List<String> getWorkflowPaths();
+  public StringList getWorkflowPaths();
 
   /**
    * Perform workflow action.
    *
-   * @param refset the refset
+   * @param refsetId the refset id
+   * @param userName the user name
    * @param action the action
+   * @return the tracking record
    * @throws Exception the exception
    */
-  public void performWorkflowAction(Refset refset, WorkflowAction action)
-    throws Exception;
+  public TrackingRecord performWorkflowAction(Long refsetId, String userName,
+    WorkflowAction action) throws Exception;
 
   // Translation services
 
   /**
    * Find available editing work.
    *
-   * @param translation the translation
-   * @param user the user
+   * @param translationId the translation id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(Translation translation,
-    User user, PfsParameter pfs) throws Exception;
+  public ConceptList findAvailableEditingWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
+
+  /**
+   * Find assigned editing work.
+   *
+   * @param translationId the translation id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findAssignedEditingWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Find available review work.
    *
-   * @param translation the translation
-   * @param user the user
+   * @param translationId the translation id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(Translation translation,
-    User user, PfsParameter pfs) throws Exception;
+  public ConceptList findAvailableReviewWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
-   * Returns the tracking record.
+   * Find assigned review work.
    *
-   * @param translation the translation
-   * @param user the user
-   * @return the tracking record
+   * @param translationId the translation id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the concept list
    * @throws Exception the exception
    */
-  public TrackingRecord getTrackingRecord(Translation translation, User user)
-    throws Exception;
+  public ConceptList findAssignedReviewWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Perform workflow action.
    *
-   * @param translation the translation
+   * @param translationId the translation id
+   * @param userName the user name
    * @param action the action
    * @param concept the concept
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord performWorkflowAction(Translation translation,
-    WorkflowAction action, Concept concept) throws Exception;
+  public TrackingRecord performWorkflowAction(Long translationId,
+    String userName, WorkflowAction action, Concept concept) throws Exception;
 
 }

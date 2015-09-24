@@ -21,7 +21,7 @@ public class TrackingRecordListJpa extends AbstractResultList<TrackingRecord>
 
   /* see superclass */
   @Override
-  @XmlElement(type = TrackingRecordJpa.class, name = "record")
+  @XmlElement(type = TrackingRecordJpa.class, name = "records")
   public List<TrackingRecord> getObjects() {
     return super.getObjectsTransient();
   }

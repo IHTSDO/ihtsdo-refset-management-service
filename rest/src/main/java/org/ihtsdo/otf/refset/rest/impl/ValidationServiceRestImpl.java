@@ -18,7 +18,7 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ValidationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ValidationServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.ValidationService;
 
@@ -132,17 +132,17 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/member")
-  @ApiOperation(value = "Validate SimpleRefSetMember", notes = "Validates a simpleRefSetMember", response = ValidationResult.class)
-  public ValidationResult validateSimpleRefSetMember(
-    @ApiParam(value = "SimpleRefSetMember", required = true) SimpleRefSetMemberJpa member,
+  @ApiOperation(value = "Validate SimpleRefsetMember", notes = "Validates a simpleRefSetMember", response = ValidationResult.class)
+  public ValidationResult validateSimpleRefsetMember(
+    @ApiParam(value = "SimpleRefsetMember", required = true) SimpleRefsetMemberJpa member,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Project): /simpleRefSetMember " + member);
+        "RESTful call POST (Validation): /member " + member);
 
     ValidationService validationService = new ValidationServiceJpa();
     try {
-      authenticate(securityService, authToken, "validate simpleRefSetMember",
+      authenticate(securityService, authToken, "validate member",
           UserRole.VIEWER);
 
       return validationService.validateMember(member);

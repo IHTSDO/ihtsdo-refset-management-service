@@ -3,15 +3,20 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
 import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.services.RootService;
 
 /**
@@ -19,6 +24,9 @@ import org.ihtsdo.otf.refset.services.RootService;
  * field names.
  */
 public abstract class RootServiceJpa implements RootService {
+
+  /** The user map. */
+  protected static Map<String, User> userMap = new HashMap<>();
 
   /** The factory. */
   protected static EntityManagerFactory factory = null;
@@ -167,4 +175,69 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /**
+   * Apply pfs to query.
+   *
+   * @param queryStr the query str
+   * @param pfs the pfs
+   * @return the javax.persistence. query
+   */
+  protected javax.persistence.Query applyPfsToJqlQuery(String queryStr,
+    PfsParameter pfs) {
+    StringBuilder localQueryStr = new StringBuilder();
+    localQueryStr.append(queryStr);
+
+    // Query restriction assumes a driving table called "a"
+    if (pfs != null) {
+      if (pfs.getQueryRestriction() != null) {
+        localQueryStr.append(" AND ").append(pfs.getQueryRestriction());
+      }
+
+      if (pfs.getActiveOnly()) {
+        localQueryStr.append("  AND a.obsolete = 0 ");
+      }
+      if (pfs.getInactiveOnly()) {
+        localQueryStr.append("  AND a.obsolete = 1 ");
+      }
+
+      // add an order by clause to end of the query, assume driving table
+      // called
+      // "a"
+      if (pfs.getSortField() != null) {
+        localQueryStr.append(" order by a.").append(pfs.getSortField());
+      }
+    }
+
+    javax.persistence.Query query =
+        manager.createQuery(localQueryStr.toString());
+    if (pfs != null && pfs.getStartIndex() > -1 && pfs.getMaxResults() > -1) {
+      query.setFirstResult(pfs.getStartIndex());
+      query.setMaxResults(pfs.getMaxResults());
+    }
+    return query;
+  }
+
+  /**
+   * Returns the user for the userName. Utility method.
+   *
+   * @param userName the userName
+   * @return the user
+   * @throws Exception the exception
+   */
+  protected User getUser(String userName) throws Exception {
+    if (userMap.containsKey(userName)) {
+      return userMap.get(userName);
+    }
+    javax.persistence.Query query =
+        manager
+            .createQuery("select u from UserJpa u where userName = :userName");
+    query.setParameter("userName", userName);
+    try {
+      User user = (User) query.getSingleResult();
+      userMap.put(userName, user);
+      return user;
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
 }

@@ -3,12 +3,10 @@
  */
 package org.ihtsdo.otf.refset.lists;
 
-import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefSetMemberList;
-import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeRefSetMemberListJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefSetMemberJpa;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefsetMemberList;
+import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,22 +14,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link DescriptionTypeRefSetMemberList}.
+ * Unit testing for {@link DescriptionTypeRefsetMemberList}.
  */
 public class ListUnit006Test extends
-    AbstractListUnit<DescriptionTypeRefSetMember> {
+    AbstractListUnit<DescriptionTypeRefsetMember> {
 
   /** The list1 test fixture . */
-  private DescriptionTypeRefSetMemberList list1;
+  private DescriptionTypeRefsetMemberList list1;
 
   /** The list2 test fixture . */
-  private DescriptionTypeRefSetMemberList list2;
+  private DescriptionTypeRefsetMemberList list2;
 
   /** The test fixture o1. */
-  private DescriptionTypeRefSetMember o1;
+  private DescriptionTypeRefsetMember o1;
 
   /** The test fixture o2. */
-  private DescriptionTypeRefSetMember o2;
+  private DescriptionTypeRefsetMember o2;
 
   /**
    * Setup class.
@@ -46,25 +44,16 @@ public class ListUnit006Test extends
    */
   @Before
   public void setup() {
-    list1 = new DescriptionTypeRefSetMemberListJpa();
-    list2 = new DescriptionTypeRefSetMemberListJpa();
-    o1 = new DescriptionTypeRefSetMemberJpa();
+    list1 = new DescriptionTypeRefsetMemberListJpa();
+    list2 = new DescriptionTypeRefsetMemberListJpa();
+    o1 = new DescriptionTypeRefsetMemberJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
-    Concept c1 = new ConceptJpa();
-    c1.setId(1L);
-    c1.setTerminologyId("1");
-    c1.setDefaultPreferredName("1");
-    o1.setComponent(c1);
-    o2 = new DescriptionTypeRefSetMemberJpa();
+    o1.setConceptId("1");
+    o2 = new DescriptionTypeRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
-    Concept c2 = new ConceptJpa();
-    c2.setId(2L);
-    c2.setTerminologyId("2");
-    c2.setDefaultPreferredName("2");
-    o2.setComponent(c2);
-
+    o2.setConceptId("2");
   }
 
   /**

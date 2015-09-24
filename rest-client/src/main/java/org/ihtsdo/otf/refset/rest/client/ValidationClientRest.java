@@ -23,7 +23,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ValidationServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 
 
 /**
@@ -132,14 +132,14 @@ public class ValidationClientRest implements ValidationServiceRest {
   }
 
   @Override
-  public ValidationResult validateSimpleRefSetMember(
-    SimpleRefSetMemberJpa member, String authToken) throws Exception {
+  public ValidationResult validateSimpleRefsetMember(
+    SimpleRefsetMemberJpa member, String authToken) throws Exception {
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/validate/member");
 
     String memberString =
-        ConfigUtility.getStringForGraph(member == null ? new SimpleRefSetMemberJpa()
+        ConfigUtility.getStringForGraph(member == null ? new SimpleRefsetMemberJpa()
         : member);
     Logger.getLogger(getClass()).info(memberString);
     Response response =

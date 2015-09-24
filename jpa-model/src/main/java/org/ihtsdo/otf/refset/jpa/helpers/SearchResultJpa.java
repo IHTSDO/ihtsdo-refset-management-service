@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.refset.jpa.helpers;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.helpers.SearchResult;
@@ -69,7 +68,6 @@ public class SearchResultJpa implements SearchResult {
    * @return the id
    */
   @Override
-  @XmlElement(name = "id")
   public Long getId() {
     return this.id;
   }
@@ -91,7 +89,6 @@ public class SearchResultJpa implements SearchResult {
    * @return the id
    */
   @Override
-  @XmlElement(name = "terminologyId")
   public String getTerminologyId() {
     return this.terminologyId;
   }
@@ -137,7 +134,6 @@ public class SearchResultJpa implements SearchResult {
    * @return the value
    */
   @Override
-  @XmlElement(name = "value")
   public String getValue() {
     return this.value;
   }

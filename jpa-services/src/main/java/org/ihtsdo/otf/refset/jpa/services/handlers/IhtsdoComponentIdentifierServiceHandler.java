@@ -7,20 +7,14 @@ import java.util.Properties;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.rf2.AssociationReferenceRefSetMember;
-import org.ihtsdo.otf.refset.rf2.AttributeValueRefSetMember;
-import org.ihtsdo.otf.refset.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
-import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.SimpleMapRefSetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
-import org.ihtsdo.otf.refset.rf2.TransitiveRelationship;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 
 /**
@@ -68,8 +62,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(
-    AssociationReferenceRefSetMember<? extends Component> member)
+  public String getTerminologyId(DescriptionTypeRefsetMember member)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -77,15 +70,14 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(
-    AttributeValueRefSetMember<? extends Component> member) throws Exception {
+  public String getTerminologyId(LanguageRefsetMember member) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   /* see superclass */
   @Override
-  public String getTerminologyId(ComplexMapRefSetMember member)
+  public String getTerminologyId(ModuleDependencyRefsetMember member)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -93,7 +85,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(DescriptionTypeRefSetMember member)
+  public String getTerminologyId(RefsetDescriptorRefsetMember member)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -101,45 +93,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(LanguageRefSetMember member) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(ModuleDependencyRefSetMember member)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(RefsetDescriptorRefSetMember member)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(SimpleMapRefSetMember member) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(SimpleRefSetMember member) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(TransitiveRelationship relationship)
-    throws Exception {
+  public String getTerminologyId(SimpleRefsetMember member) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

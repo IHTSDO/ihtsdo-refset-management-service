@@ -208,7 +208,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
    */
   @XmlElement
   private String getSourcePreferredName() {
-    return sourceConcept != null ? sourceConcept.getDefaultPreferredName() : "";
+    return sourceConcept != null ? sourceConcept.getName() : "";
   }
 
   /**
@@ -291,7 +291,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
   @XmlElement
   private String getDestinationPreferredName() {
     return destinationConcept != null ? destinationConcept
-        .getDefaultPreferredName() : "";
+        .getName() : "";
   }
 
   /**

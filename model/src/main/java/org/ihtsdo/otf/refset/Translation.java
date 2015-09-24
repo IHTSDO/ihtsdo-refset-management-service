@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -118,32 +118,46 @@ public interface Translation extends Component, Searchable {
   public void setRefset(Refset refset);
 
   /**
+   * Returns the project.
+   *
+   * @return the project
+   */
+  public Project getProject();
+
+  /**
+   * Sets the project.
+   *
+   * @param project the project
+   */
+  public void setProject(Project project);
+
+  /**
    * Returns the description types.
    *
    * @return the description types
    */
-  public List<DescriptionTypeRefSetMember> getDescriptionTypes();
+  public List<DescriptionTypeRefsetMember> getDescriptionTypes();
 
   /**
    * Sets the description types.
    *
    * @param types the description types
    */
-  public void setDescriptionTypes(List<DescriptionTypeRefSetMember> types);
+  public void setDescriptionTypes(List<DescriptionTypeRefsetMember> types);
 
   /**
    * Adds the description types.
    *
    * @param type the type
    */
-  public void addDescriptionType(DescriptionTypeRefSetMember type);
+  public void addDescriptionType(DescriptionTypeRefsetMember type);
 
   /**
    * Removes the description types.
    *
    * @param type the type
    */
-  public void removeDescriptionType(DescriptionTypeRefSetMember type);
+  public void removeDescriptionType(DescriptionTypeRefsetMember type);
 
   // TODO: spelling correction dictionary (per translation, but reusable
   // translations in a project)

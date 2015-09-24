@@ -22,7 +22,7 @@ public class TranslationListJpa extends AbstractResultList<Translation> implemen
 
   /* see superclass */
   @Override
-  @XmlElement(type = TranslationJpa.class, name = "translation")
+  @XmlElement(type = TranslationJpa.class, name = "translations")
   public List<Translation> getObjects() {
     return super.getObjectsTransient();
   }

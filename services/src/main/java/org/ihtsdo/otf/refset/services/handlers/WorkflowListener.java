@@ -6,8 +6,8 @@ package org.ihtsdo.otf.refset.services.handlers;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
 /**
  * Generically represents a listener for workflow actions.
@@ -114,8 +114,8 @@ public interface WorkflowListener extends Configurable {
    * @param action the action
    * @throws Exception the exception
    */
-  public void refsetDescriptorRefSetMemberChanged(
-    RefsetDescriptorRefSetMember member, Action action) throws Exception;
+  public void refsetDescriptorRefsetMemberChanged(
+    RefsetDescriptorRefsetMember member, Action action) throws Exception;
 
   /**
    * Description type ref set member changed.
@@ -124,6 +124,6 @@ public interface WorkflowListener extends Configurable {
    * @param action the action
    * @throws Exception the exception
    */
-  public void descriptionTypeRefSetMemberChanged(
-    DescriptionTypeRefSetMember member, Action action) throws Exception;
+  public void descriptionTypeRefsetMemberChanged(
+    DescriptionTypeRefsetMember member, Action action) throws Exception;
 }

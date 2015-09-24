@@ -6,20 +6,14 @@ package org.ihtsdo.otf.refset.services.handlers;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.rf2.AssociationReferenceRefSetMember;
-import org.ihtsdo.otf.refset.rf2.AttributeValueRefSetMember;
-import org.ihtsdo.otf.refset.rf2.ComplexMapRefSetMember;
-import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
-import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.SimpleMapRefSetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
-import org.ihtsdo.otf.refset.rf2.TransitiveRelationship;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 /**
  * Generically represents an algorithm for assigning identifiers.
@@ -78,8 +72,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(
-    AssociationReferenceRefSetMember<? extends Component> member)
+  public String getTerminologyId(DescriptionTypeRefsetMember member)
     throws Exception;
 
   /**
@@ -89,8 +82,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(
-    AttributeValueRefSetMember<? extends Component> member) throws Exception;
+  public String getTerminologyId(LanguageRefsetMember member) throws Exception;
 
   /**
    * Returns the terminology id.
@@ -99,7 +91,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(ComplexMapRefSetMember member)
+  public String getTerminologyId(ModuleDependencyRefsetMember member)
     throws Exception;
 
   /**
@@ -109,7 +101,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(DescriptionTypeRefSetMember member)
+  public String getTerminologyId(RefsetDescriptorRefsetMember member)
     throws Exception;
 
   /**
@@ -119,55 +111,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(LanguageRefSetMember member) throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param member the member
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(ModuleDependencyRefSetMember member)
-    throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param member the member
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(RefsetDescriptorRefSetMember member)
-    throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param member the member
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(SimpleMapRefSetMember member) throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param member the member
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(SimpleRefSetMember member) throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param relationship the relationship
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(TransitiveRelationship relationship)
-    throws Exception;
+  public String getTerminologyId(SimpleRefsetMember member) throws Exception;
 
   /**
    * Indicates whether this algorithm allows identifiers to change on an update.
