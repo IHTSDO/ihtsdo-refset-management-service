@@ -6,12 +6,18 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
+import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,6 +33,18 @@ public class ModelUnit002Test {
   /** The model object to test. */
   private ReleaseInfoJpa object;
 
+  /** The r1. */
+  private Refset r1;
+
+  /** The r2. */
+  private Refset r2;
+
+  /** The t1. */
+  private Translation t1;
+
+  /** The t2. */
+  private Translation t2;
+
   /**
    * Setup class.
    */
@@ -37,10 +55,19 @@ public class ModelUnit002Test {
 
   /**
    * Setup.
+   * @throws Exception
    */
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     object = new ReleaseInfoJpa();
+
+    ProxyTester tester1 = new ProxyTester(new RefsetJpa());
+    r1 = (RefsetJpa) tester1.createObject(1);
+    r2 = (RefsetJpa) tester1.createObject(2);
+
+    tester1 = new ProxyTester(new TranslationJpa());
+    t1 = (TranslationJpa) tester1.createObject(1);
+    t2 = (TranslationJpa) tester1.createObject(2);
   }
 
   /**
@@ -70,9 +97,14 @@ public class ModelUnit002Test {
     tester.include("published");
     tester.include("terminology");
     tester.include("version");
-    tester.include("refsetId");
-    tester.include("translationId");
+    tester.include("refset");
+    tester.include("translation");
 
+    tester.proxy(Refset.class, 1, r1);
+    tester.proxy(Refset.class, 2, r2);
+    tester.proxy(Translation.class, 1, t1);
+    tester.proxy(Translation.class, 2, t2);
+    
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -90,6 +122,10 @@ public class ModelUnit002Test {
   public void testModelCopy002() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testModelCopy002");
     CopyConstructorTester tester = new CopyConstructorTester(object);
+    tester.proxy(Refset.class, 1, r1);
+    tester.proxy(Refset.class, 2, r2);
+    tester.proxy(Translation.class, 1, t1);
+    tester.proxy(Translation.class, 2, t2);
     assertTrue(tester.testCopyConstructor(ReleaseInfo.class));
   }
 
@@ -102,7 +138,27 @@ public class ModelUnit002Test {
   public void testModelXmlSerialization002() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testModelXmlTransient002");
     XmlSerializationTester tester = new XmlSerializationTester(object);
+    tester.proxy(Refset.class, 1, r1);
+    tester.proxy(Refset.class, 2, r2);
+    tester.proxy(Translation.class, 1, t1);
+    tester.proxy(Translation.class, 2, t2);
     assertTrue(tester.testXmlSerialization());
+  }
+
+  /**
+   * Test concept reference in XML serialization.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testModelXmlTransient010() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient010");
+    ReleaseInfo info = new ReleaseInfoJpa();
+    info.setRefset(r1);
+    info.setTranslation(t1);
+    String xml = ConfigUtility.getStringForGraph(info);
+    assertTrue(xml.contains("<refsetId>"));
+    assertTrue(xml.contains("<translationId>"));
   }
 
   /**

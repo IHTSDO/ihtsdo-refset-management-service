@@ -93,7 +93,7 @@ public class ModelUnit005Test {
    */
   @Test
   public void testModelXmlSerialization005() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient005");
+    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization005");
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }

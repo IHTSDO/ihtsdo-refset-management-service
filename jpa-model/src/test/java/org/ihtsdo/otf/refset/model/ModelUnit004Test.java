@@ -117,7 +117,7 @@ public class ModelUnit004Test {
    */
   @Test
   public void testModelXmlSerialization004() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient004");
+    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization004");
     XmlSerializationTester tester = new XmlSerializationTester(object);
     // Set up objects
     tester.proxy(Set.class, 1, s1);

@@ -103,7 +103,7 @@ public class ModelUnit003Test {
    */
   @Test
   public void testModelXmlSerialization003() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient003");
+    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization003");
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     UserPreferences up = new UserPreferencesJpa();

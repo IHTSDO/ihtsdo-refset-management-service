@@ -3,10 +3,14 @@
  */
 package org.ihtsdo.otf.refset.lists;
 
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -52,6 +56,14 @@ public class ListUnit013Test extends AbstractListUnit<ReleaseInfo> {
     ProxyTester tester = new ProxyTester(new ReleaseInfoJpa());
     o1 = (ReleaseInfo) tester.createObject(1);
     o2 = (ReleaseInfo) tester.createObject(2);
+
+    ProxyTester tester1 = new ProxyTester(new RefsetJpa());
+    o1.setRefset((Refset) tester1.createObject(1));
+    o2.setRefset((Refset) tester1.createObject(2));
+
+    tester1 = new ProxyTester(new TranslationJpa());
+    o1.setTranslation((Translation) tester1.createObject(1));
+    o2.setTranslation((Translation) tester1.createObject(2));
 
   }
 

@@ -365,7 +365,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         prime * result + ((externalUrl == null) ? 0 : externalUrl.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((project == null) ? 0 : project.hashCode());
     result =
         prime * result
             + ((refsetDescriptor == null) ? 0 : refsetDescriptor.hashCode());
@@ -411,11 +410,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
-      return false;
-    if (project == null) {
-      if (other.project != null)
-        return false;
-    } else if (!project.equals(other.project))
       return false;
     if (refsetDescriptor == null) {
       if (other.refsetDescriptor != null)
