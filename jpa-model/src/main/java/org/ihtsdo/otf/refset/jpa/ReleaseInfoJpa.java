@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -89,11 +90,11 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   private Date lastModified = new Date();
 
   /** The refset. */
-  @Column(nullable = true)
+  @ManyToOne(targetEntity = RefsetJpa.class)
   private Refset refset;
 
   /** The translation. */
-  @Column(nullable = true)
+  @ManyToOne(targetEntity = TranslationJpa.class)
   private Translation translation;
 
   /** The release properties. */

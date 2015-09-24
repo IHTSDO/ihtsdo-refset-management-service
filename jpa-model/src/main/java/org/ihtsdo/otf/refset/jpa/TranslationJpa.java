@@ -76,13 +76,11 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
-  @Column(nullable = false)
   @ContainedIn
   private Refset refset;
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
-  @Column(nullable = false)
   private Project project;
 
   /** The descriptions. */
