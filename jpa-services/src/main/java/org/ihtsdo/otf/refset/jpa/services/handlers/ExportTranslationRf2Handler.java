@@ -18,7 +18,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 
 /**
@@ -109,8 +109,8 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
         descSb.append(description.getCaseSignificanceId()).append("\t");
         descSb.append("\r\n");
 
-        for (LanguageRefSetMember member : description
-            .getLanguageRefSetMembers()) {
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
           Logger.getLogger(getClass()).debug("    member = " + member);
           langSb.append(member.getTerminologyId()).append("\t");
           langSb.append(
@@ -118,7 +118,7 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
               .append("\t");
           langSb.append(member.isActive() ? "1" : "0").append("\t");
           langSb.append(member.getModuleId()).append("\t");
-          langSb.append(member.getRefSetId()).append("\t");
+          langSb.append(member.getRefsetId()).append("\t");
           langSb.append(description.getTerminologyId()).append("\t");
           langSb.append(member.getAcceptabilityId()).append("\t");
           langSb.append("\r\n");

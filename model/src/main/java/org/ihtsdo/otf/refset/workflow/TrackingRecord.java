@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.workflow;
 
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
@@ -27,6 +28,20 @@ public interface TrackingRecord extends HasLastModified {
    * @param user the user
    */
   public void setUser(User user);
+
+  /**
+   * Returns the refset.
+   *
+   * @return the refset
+   */
+  public Refset getRefset();
+
+  /**
+   * Sets the refset.
+   *
+   * @param refset the refset
+   */
+  public void setRefset(Refset refset);
 
   /**
    * Returns the translation.

@@ -95,108 +95,38 @@ public interface Description extends Component {
   public void setConcept(Concept concept);
 
   /**
-   * Base method for returning LanguageValueRefSetMember of this Concept
-   * @return the LanguageValueRefSetMember of this Concept
+   * Base method for returning LanguageValueRefsetMember of this Concept
+   * @return the LanguageValueRefsetMember of this Concept
    */
 
   /**
-   * Returns the set of LanguageRefSetMembers
+   * Returns the set of LanguageRefsetMembers
    * 
-   * @return the set of LanguageRefSetMembers
+   * @return the set of LanguageRefsetMembers
    */
-  public List<LanguageRefSetMember> getLanguageRefSetMembers();
+  public List<LanguageRefsetMember> getLanguageRefsetMembers();
 
   /**
-   * Sets the set of LanguageRefSetMembers
+   * Sets the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMembers the set of LanguageRefSetMembers
+   * @param languageRefsetMembers the set of LanguageRefsetMembers
    */
-  public void setLanguageRefSetMembers(
-    List<LanguageRefSetMember> languageRefSetMembers);
+  public void setLanguageRefsetMembers(
+    List<LanguageRefsetMember> languageRefsetMembers);
 
   /**
-   * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
+   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMember the LanguageRefSetMembers to be added
+   * @param languageRefsetMember the LanguageRefsetMembers to be added
    */
-  public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember);
+  public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember);
 
   /**
-   * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
+   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMember the LanguageRefSetMember to be removed
+   * @param languageRefsetMember the LanguageRefsetMember to be removed
    */
-  public void removeLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember);
-
-  /**
-   * Returns the set of AttributeValueRefSetMembers
-   * 
-   * @return the set of AttributeValueRefSetMembers
-   */
-  public List<AttributeValueDescriptionRefSetMember> getAttributeValueRefSetMembers();
-
-  /**
-   * Sets the set of AttributeValueRefSetMembers
-   * 
-   * @param attributeValueRefSetMembers the set of AttributeValueRefSetMembers
-   */
-  public void setAttributeValueRefSetMembers(
-    List<AttributeValueDescriptionRefSetMember> attributeValueRefSetMembers);
-
-  /**
-   * Adds a AttributeValueRefSetMember to the set of AttributeValueRefSetMembers
-   * 
-   * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
-   *          added
-   */
-  public void addAttributeValueRefSetMember(
-    AttributeValueDescriptionRefSetMember attributeValueRefSetMember);
-
-  /**
-   * Removes a AttributeValueRefSetMember from the set of
-   * AttributeValueRefSetMembers
-   * 
-   * @param attributeValueRefSetMember the AttributeValueRefSetMember to be
-   *          removed
-   */
-  public void removeAttributeValueRefSetMember(
-    AttributeValueDescriptionRefSetMember attributeValueRefSetMember);
-
-  /**
-   * Returns the set of AssociationReferenceRefSetMembers
-   * 
-   * @return the set of AssociationReferenceRefSetMembers
-   */
-  public List<AssociationReferenceDescriptionRefSetMember> getAssociationReferenceRefSetMembers();
-
-  /**
-   * Sets the set of AssociationReferenceRefSetMembers
-   * 
-   * @param associationReferenceRefSetMembers the set of
-   *          AssociationReferenceRefSetMembers
-   */
-  public void setAssociationReferenceRefSetMembers(
-    List<AssociationReferenceDescriptionRefSetMember> associationReferenceRefSetMembers);
-
-  /**
-   * Adds a AssociationReferenceRefSetMember to the set of
-   * AssociationReferenceRefSetMembers
-   * 
-   * @param associationReferenceRefSetMember the
-   *          AssociationReferenceRefSetMembers to be added
-   */
-  public void addAssociationReferenceRefSetMember(
-    AssociationReferenceDescriptionRefSetMember associationReferenceRefSetMember);
-
-  /**
-   * Removes a AssociationReferenceRefSetMember from the set of
-   * AssociationReferenceRefSetMembers
-   * 
-   * @param associationReferenceRefSetMember the
-   *          AssociationReferenceRefSetMember to be removed
-   */
-  public void removeAssociationReferenceRefSetMember(
-    AssociationReferenceDescriptionRefSetMember associationReferenceRefSetMember);
+  public void removeLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember);
 
 }

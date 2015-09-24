@@ -29,12 +29,23 @@ public interface WorkflowService extends ProjectService {
    * Returns the tracking record.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecordList getTrackingRecords(Long translationId, Long userId)
-    throws Exception;
+  public TrackingRecordList getTrackingRecordsForTranslation(
+    Long translationId, String userName) throws Exception;
+
+  /**
+   * Returns the tracking records for refset. The refset is assigned to at most
+   * one person at a time.
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @return the tracking records for refset
+   * @throws Exception the exception
+   */
+  public TrackingRecord getTrackingRecordsForRefset(Long refsetId,
+    String userName) throws Exception;
 
   /**
    * Adds the tracking record.
@@ -66,13 +77,12 @@ public interface WorkflowService extends ProjectService {
   /**
    * Find tracking records.
    *
-   * @param translationId the translation id
    * @param query the query
    * @param pfs the pfs
    * @return the tracking record list
    * @throws Exception the exception
    */
-  public TrackingRecordList findTrackingRecordsForQuery(Long translationId,
+  public TrackingRecordList findTrackingRecordsForQuery(
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -86,11 +96,12 @@ public interface WorkflowService extends ProjectService {
    * Perform workflow action.
    *
    * @param refsetId the refset id
-   * @param userId the user id
+   * @param userName the user name
    * @param action the action
+   * @return the tracking record
    * @throws Exception the exception
    */
-  public void performWorkflowAction(Long refsetId, Long userId,
+  public TrackingRecord performWorkflowAction(Long refsetId, String userName,
     WorkflowAction action) throws Exception;
 
   // Translation services
@@ -99,61 +110,61 @@ public interface WorkflowService extends ProjectService {
    * Find available editing work.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(Long translationId, Long userId,
-    PfsParameter pfs) throws Exception;
+  public ConceptList findAvailableEditingWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Find assigned editing work.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedEditingWork(Long translationId, Long userId,
-    PfsParameter pfs) throws Exception;
+  public ConceptList findAssignedEditingWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Find available review work.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(Long translationId, Long userId,
-    PfsParameter pfs) throws Exception;
+  public ConceptList findAvailableReviewWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Find assigned review work.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedReviewWork(Long translationId, Long userId,
-    PfsParameter pfs) throws Exception;
+  public ConceptList findAssignedReviewWork(Long translationId,
+    String userName, PfsParameter pfs) throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param action the action
    * @param concept the concept
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord performWorkflowAction(Long translationId, Long userId,
-    WorkflowAction action, Concept concept) throws Exception;
+  public TrackingRecord performWorkflowAction(Long translationId,
+    String userName, WorkflowAction action, Concept concept) throws Exception;
 
 }

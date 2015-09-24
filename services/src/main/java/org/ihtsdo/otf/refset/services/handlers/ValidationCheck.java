@@ -8,7 +8,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 /**
  * Generically represents a validation check on a refset.
@@ -29,7 +29,7 @@ public interface ValidationCheck extends Configurable {
    * @param member the member
    * @return the validation result
    */
-  public ValidationResult validate(SimpleRefSetMember member);
+  public ValidationResult validate(SimpleRefsetMember member);
   
   /**
    * Validate.

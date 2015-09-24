@@ -7,7 +7,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 
 /**
  * Represents a service for validating content.
@@ -55,7 +55,7 @@ public interface ValidationServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateSimpleRefSetMember(
-    SimpleRefSetMemberJpa member, String authToken) throws Exception;
+  public ValidationResult validateSimpleRefsetMember(
+    SimpleRefsetMemberJpa member, String authToken) throws Exception;
 
 }

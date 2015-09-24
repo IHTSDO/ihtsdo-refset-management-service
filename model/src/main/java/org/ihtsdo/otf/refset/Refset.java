@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -138,14 +138,14 @@ public interface Refset extends Component, Searchable {
    *
    * @return the refset descriptor refset id
    */
-  public RefsetDescriptorRefSetMember getRefsetDescriptor();
+  public RefsetDescriptorRefsetMember getRefsetDescriptor();
 
   /**
    * Sets the refset descriptor refset id.
    *
    * @param refsetDescriptor the refset descriptor refset id
    */
-  public void setRefsetDescriptor(RefsetDescriptorRefSetMember refsetDescriptor);
+  public void setRefsetDescriptor(RefsetDescriptorRefsetMember refsetDescriptor);
 
   /**
    * Returns the workflow status.

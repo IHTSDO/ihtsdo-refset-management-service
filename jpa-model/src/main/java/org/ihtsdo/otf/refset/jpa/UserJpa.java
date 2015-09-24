@@ -13,6 +13,7 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -30,7 +31,9 @@ import org.ihtsdo.otf.refset.UserRole;
  * JPA enabled implementation of {@link User}.
  */
 @Entity
-@Table(name = "users")
+@Table(name = "users", uniqueConstraints = @UniqueConstraint(columnNames = {
+  "userName"
+}))
 @Audited
 @XmlRootElement(name = "user")
 public class UserJpa implements User {

@@ -8,11 +8,11 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -87,100 +87,100 @@ public interface TerminologyHandler extends Configurable {
   public void removeDescription(Long id) throws Exception;
 
   /**
-   * Adds the languageRefSetMember.
+   * Adds the languageRefsetMember.
    *
-   * @param languageRefSetMember the languageRefSetMember
-   * @return the languageRefSetMember
+   * @param languageRefsetMember the languageRefsetMember
+   * @return the languageRefsetMember
    * @throws Exception the exception
    */
-  public LanguageRefSetMember addLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember) throws Exception;
+  public LanguageRefsetMember addLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember) throws Exception;
 
   /**
-   * Returns the languageRefSetMember.
+   * Returns the languageRefsetMember.
    *
    * @param id the id
-   * @return the languageRefSetMember
+   * @return the languageRefsetMember
    * @throws Exception the exception
    */
-  public LanguageRefSetMember getLanguageRefSetMember(Long id) throws Exception;
+  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception;
 
   /**
-   * Returns the languageRefSetMembers.
+   * Returns the languageRefsetMembers.
    *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
-   * @return the languageRefSetMembers
+   * @return the languageRefsetMembers
    * @throws Exception the exception
    */
-  public LanguageRefSetMember getLanguageRefSetMember(String terminologyId,
+  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
     String terminology, String version) throws Exception;
 
   /**
-   * Update languageRefSetMember.
+   * Update languageRefsetMember.
    *
-   * @param languageRefSetMember the languageRefSetMember
+   * @param languageRefsetMember the languageRefsetMember
    * @throws Exception the exception
    */
-  public void updateLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember) throws Exception;
+  public void updateLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember) throws Exception;
 
   /**
-   * Removes the languageRefSetMember.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeLanguageRefSetMember(Long id) throws Exception;
-
-  /**
-   * Adds the simpleRefSetMember.
-   *
-   * @param simpleRefSetMember the simpleRefSetMember
-   * @return the simpleRefSetMember
-   * @throws Exception the exception
-   */
-  public SimpleRefSetMember addSimpleRefSetMember(
-    SimpleRefSetMember simpleRefSetMember) throws Exception;
-
-  /**
-   * Returns the simpleRefSetMember.
+   * Removes the languageRefsetMember.
    *
    * @param id the id
-   * @return the simpleRefSetMember
    * @throws Exception the exception
    */
-  public SimpleRefSetMember getSimpleRefSetMember(Long id) throws Exception;
+  public void removeLanguageRefsetMember(Long id) throws Exception;
 
   /**
-   * Returns the simpleRefSetMember.
+   * Adds the simpleRefsetMember.
+   *
+   * @param simpleRefsetMember the simpleRefsetMember
+   * @return the simpleRefsetMember
+   * @throws Exception the exception
+   */
+  public SimpleRefsetMember addSimpleRefsetMember(
+    SimpleRefsetMember simpleRefsetMember) throws Exception;
+
+  /**
+   * Returns the simpleRefsetMember.
+   *
+   * @param id the id
+   * @return the simpleRefsetMember
+   * @throws Exception the exception
+   */
+  public SimpleRefsetMember getSimpleRefsetMember(Long id) throws Exception;
+
+  /**
+   * Returns the simpleRefsetMember.
    *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
-   * @return the simpleRefSetMember
+   * @return the simpleRefsetMember
    * @throws Exception the exception
    */
-  public SimpleRefSetMember getSimpleRefSetMember(String terminologyId,
+  public SimpleRefsetMember getSimpleRefsetMember(String terminologyId,
     String terminology, String version) throws Exception;
 
   /**
-   * Update simpleRefSetMember.
+   * Update simpleRefsetMember.
    *
-   * @param simpleRefSetMember the simpleRefSetMember
+   * @param simpleRefsetMember the simpleRefsetMember
    * @throws Exception the exception
    */
-  public void updateSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember)
+  public void updateSimpleRefsetMember(SimpleRefsetMember simpleRefsetMember)
     throws Exception;
 
   /**
-   * Removes the simpleRefSetMember.
+   * Removes the simpleRefsetMember.
    *
    * @param id the id
    * @throws Exception the exception
    */
-  public void removeSimpleRefSetMember(Long id) throws Exception;
+  public void removeSimpleRefsetMember(Long id) throws Exception;
 
   /**
    * Find members for refset.
@@ -191,7 +191,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public SimpleRefSetMemberList findMembersForRefset(Long refsetId,
+  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -203,7 +203,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public SimpleRefSetMemberList findMembersForHistoricalRefset(Refset refset,
+  public SimpleRefsetMemberList findMembersForHistoricalRefset(Refset refset,
     String query, PfsParameter pfs) throws Exception;
 
   /**

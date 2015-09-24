@@ -54,7 +54,7 @@ public class ListUnit005Test extends AbstractListUnit<Description> {
     Concept c1 = new ConceptJpa();
     c1.setId(1L);
     c1.setTerminologyId("1");
-    c1.setDefaultPreferredName("1");
+    c1.setName("1");
     o1.setConcept(c1);
 
     o2 = new DescriptionJpa();
@@ -64,7 +64,7 @@ public class ListUnit005Test extends AbstractListUnit<Description> {
     Concept c2 = new ConceptJpa();
     c2.setId(2L);
     c2.setTerminologyId("2");
-    c2.setDefaultPreferredName("2");
+    c2.setName("2");
     o2.setConcept(c2);
 
   }

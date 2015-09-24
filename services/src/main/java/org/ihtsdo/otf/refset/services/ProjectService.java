@@ -12,9 +12,9 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
@@ -222,26 +222,26 @@ public interface ProjectService extends RootService {
    * @param id the id
    * @throws Exception the exception
    */
-  public void removeRefsetDescriptorRefSetMember(Long id) throws Exception;
+  public void removeRefsetDescriptorRefsetMember(Long id) throws Exception;
 
   /**
    * Update refset descriptor ref set member.
    *
-   * @param refsetDescriptorRefSetMember the refset descriptor ref set member
+   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public void updateRefsetDescriptorRefSetMember(
-    RefsetDescriptorRefSetMember refsetDescriptorRefSetMember) throws Exception;
+  public void updateRefsetDescriptorRefsetMember(
+    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
   /**
    * Adds the refset descriptor ref set member.
    *
-   * @param refsetDescriptorRefSetMember the refset descriptor ref set member
+   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember addRefsetDescriptorRefSetMember(
-    RefsetDescriptorRefSetMember refsetDescriptorRefSetMember) throws Exception;
+  public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
+    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
   /**
    * Returns the refset descriptor ref set member.
@@ -253,7 +253,7 @@ public interface ProjectService extends RootService {
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember getRefsetDescriptorRefSetMember(
+  public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(
     String terminologyId, String terminology, String version, String branch)
     throws Exception;
 
@@ -264,27 +264,27 @@ public interface ProjectService extends RootService {
    * @return the refset descriptor ref set member
    * @throws Exception the exception
    */
-  public RefsetDescriptorRefSetMember getRefsetDescriptorRefSetMember(Long id)
+  public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(Long id)
     throws Exception;
 
   /**
    * Update description type ref set member.
    *
-   * @param descriptionTypeRefSetMember the description type ref set member
+   * @param descriptionTypeRefsetMember the description type ref set member
    * @throws Exception the exception
    */
-  public void updateDescriptionTypeRefSetMember(
-    DescriptionTypeRefSetMember descriptionTypeRefSetMember) throws Exception;
+  public void updateDescriptionTypeRefsetMember(
+    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
 
   /**
    * Adds the description type ref set member.
    *
-   * @param descriptionTypeRefSetMember the description type ref set member
+   * @param descriptionTypeRefsetMember the description type ref set member
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember addDescriptionTypeRefSetMember(
-    DescriptionTypeRefSetMember descriptionTypeRefSetMember) throws Exception;
+  public DescriptionTypeRefsetMember addDescriptionTypeRefsetMember(
+    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
 
   /**
    * Returns the description type ref set member.
@@ -296,7 +296,7 @@ public interface ProjectService extends RootService {
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember getDescriptionTypeRefSetMember(
+  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(
     String terminologyId, String terminology, String version, String branch)
     throws Exception;
 
@@ -307,7 +307,7 @@ public interface ProjectService extends RootService {
    * @return the description type ref set member
    * @throws Exception the exception
    */
-  public DescriptionTypeRefSetMember getDescriptionTypeRefSetMember(Long id)
+  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(Long id)
     throws Exception;
 
   /**
@@ -316,7 +316,7 @@ public interface ProjectService extends RootService {
    * @param id the id
    * @throws Exception the exception
    */
-  public void removeDescriptionTypeRefSetMember(Long id) throws Exception;
+  public void removeDescriptionTypeRefsetMember(Long id) throws Exception;
 
   /**
    * Returns the terminology handler.
@@ -400,7 +400,7 @@ public interface ProjectService extends RootService {
    * @return the simple ref set member list
    * @throws Exception the exception
    */
-  public SimpleRefSetMemberList findMembersForRefset(Long refsetId,
+  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
 
 }

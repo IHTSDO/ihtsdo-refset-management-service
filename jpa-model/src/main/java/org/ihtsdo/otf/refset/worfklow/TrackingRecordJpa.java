@@ -24,8 +24,10 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -74,6 +76,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   @IndexedEmbedded
   private Translation translation = null;
 
+  /** The Refset. */
+  @ManyToOne(targetEntity = RefsetJpa.class)
+  private Refset refset = null;
+
   /** The concepts. */
   @OneToOne(targetEntity = ConceptJpa.class)
   @IndexedEmbedded
@@ -100,6 +106,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     forReview = record.isForReview();
     user = new UserJpa(record.getUser());
     translation = new TranslationJpa(record.getTranslation());
+    refset = new RefsetJpa(record.getRefset());
     concept = new ConceptJpa(record.getConcept(), false);
   }
 
@@ -186,6 +193,18 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
+  public Refset getRefset() {
+    return refset;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRefset(Refset refset) {
+    this.refset = refset;
+  }
+
+  /* see superclass */
+  @Override
   public Concept getConcept() {
     return concept;
   }
@@ -220,6 +239,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.forEditing = forEditing;
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -233,6 +253,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -264,10 +285,11 @@ public class TrackingRecordJpa implements TrackingRecord {
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return "TrackingRecordJpa [id=" + id + ", forEditing=" + forEditing
-        + ", forReview=" + forReview + ", user=" + user + ", translation="
-        + translation + ", concept=" + concept + "]";
+        + ", forReview=" + forReview + ", user=" + user + ", refset=" + refset
+        + ", translation=" + translation + ", concept=" + concept + "]";
   }
 }

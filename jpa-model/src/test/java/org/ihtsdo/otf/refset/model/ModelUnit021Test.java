@@ -6,16 +6,15 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -23,12 +22,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link SimpleRefSetMemberJpa}.
+ * Unit testing for {@link SimpleRefsetMemberJpa}.
  */
 public class ModelUnit021Test {
 
   /** The model object to test. */
-  private SimpleRefSetMemberJpa object;
+  private SimpleRefsetMemberJpa object;
 
   /** The test fixture c1. */
   private Concept c1;
@@ -49,7 +48,7 @@ public class ModelUnit021Test {
    */
   @Before
   public void setup() {
-    object = new SimpleRefSetMemberJpa();
+    object = new SimpleRefsetMemberJpa();
     // Set up some objects
     c1 = new ConceptJpa();
     c1.setId(1L);
@@ -88,10 +87,8 @@ public class ModelUnit021Test {
     tester.include("terminology");
     tester.include("terminologyId");
     tester.include("version");
-    tester.include("refSetId");
-    tester.include("concept");
-    // needed for generic refset class
-    tester.include("component");
+    tester.include("refsetId");
+    tester.include("conceptId");
 
     // Set up some objects
     tester.proxy(Concept.class, 1, c1);
@@ -119,7 +116,7 @@ public class ModelUnit021Test {
     tester.proxy(Concept.class, 1, c1);
     tester.proxy(Concept.class, 2, c2);
 
-    assertTrue(tester.testCopyConstructor(SimpleRefSetMember.class));
+    assertTrue(tester.testCopyConstructor(SimpleRefsetMember.class));
   }
 
   /**
@@ -138,33 +135,10 @@ public class ModelUnit021Test {
     c.setTerminology("1");
     c.setTerminologyId("1");
     c.setVersion("1");
-    c.setDefaultPreferredName("1");
+    c.setName("1");
     tester.proxy(Concept.class, 1, c);
 
     assertTrue(tester.testXmlSerialization());
-  }
-
-  /**
-   * Test concept reference in XML serialization.
-   *
-   * @throws Exception the exception
-   */
-  @Test
-  public void testModelXmlTransient021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient021");
-    Concept c = new ConceptJpa();
-    c.setId(1L);
-    c.setTerminologyId("1");
-    c.setDefaultPreferredName("1");
-    SimpleRefSetMember member = new SimpleRefSetMemberJpa();
-    member.setId(1L);
-    member.setTerminologyId("1");
-    member.setConcept(c);
-    c.addSimpleRefSetMember(member);
-    String xml = ConfigUtility.getStringForGraph(member);
-    assertTrue(xml.contains("<conceptId>"));
-    assertTrue(xml.contains("<conceptTerminologyId>"));
-    assertTrue(xml.contains("<conceptPreferredName>"));
   }
 
   /**
@@ -186,7 +160,8 @@ public class ModelUnit021Test {
     tester.include("terminology");
     tester.include("version");
 
-    tester.include("refSetId");
+    tester.include("refsetId");
+    tester.include("conceptId");
     assertTrue(tester.testNotNullFields());
   }
 

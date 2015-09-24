@@ -86,9 +86,10 @@ public interface WorkflowActionHandler extends Configurable {
    * @param user the user
    * @param action the action
    * @param service the service
+   * @return the tracking record
    * @throws Exception the exception
    */
-  public void performWorkflowAction(Refset refset, User user,
+  public TrackingRecord performWorkflowAction(Refset refset, User user,
     WorkflowAction action, WorkflowService service) throws Exception;
 
   /**

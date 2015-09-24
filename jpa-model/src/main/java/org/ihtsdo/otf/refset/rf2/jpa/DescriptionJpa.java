@@ -25,11 +25,9 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
-import org.ihtsdo.otf.refset.rf2.AssociationReferenceDescriptionRefSetMember;
-import org.ihtsdo.otf.refset.rf2.AttributeValueDescriptionRefSetMember;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 
 /**
  * Concrete implementation of {@link Description} for use with JPA.
@@ -69,19 +67,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @ContainedIn
   private Concept concept;
 
-  /** The language RefSet members */
-  @OneToMany(mappedBy = "description", fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefSetMemberJpa.class)
-  private List<LanguageRefSetMember> languageRefSetMembers = null;
-
-  /** The attributeValue RefSet members. */
-  @OneToMany(mappedBy = "description", targetEntity = AttributeValueDescriptionRefSetMemberJpa.class)
-  private List<AttributeValueDescriptionRefSetMember> attributeValueRefSetMembers =
-      null;
-
-  /** The associationReference RefSet members. */
-  @OneToMany(mappedBy = "description", targetEntity = AssociationReferenceDescriptionRefSetMemberJpa.class)
-  private List<AssociationReferenceDescriptionRefSetMember> associationReferenceRefSetMembers =
-      null;
+  /** The language Refset members */
+  @OneToMany(mappedBy = "description", fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefsetMemberJpa.class)
+  private List<LanguageRefsetMember> languageRefsetMembers = null;
 
   /**
    * Instantiates an empty {@link Description}.
@@ -106,30 +94,12 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     workflowStatus = description.getWorkflowStatus();
 
     if (deepCopy) {
-      languageRefSetMembers = new ArrayList<>();
-      for (LanguageRefSetMember member : description.getLanguageRefSetMembers()) {
-        LanguageRefSetMember newMember = new LanguageRefSetMemberJpa(member);
-        newMember.setDescription(this);
-        languageRefSetMembers.add(newMember);
+      languageRefsetMembers = new ArrayList<>();
+      for (LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
+        LanguageRefsetMember newMember = new LanguageRefsetMemberJpa(member);
+        newMember.setDescriptionId(this.getTerminologyId());
+        languageRefsetMembers.add(newMember);
       }
-      attributeValueRefSetMembers = new ArrayList<>();
-      for (AttributeValueDescriptionRefSetMember member : description
-          .getAttributeValueRefSetMembers()) {
-        AttributeValueDescriptionRefSetMember newMember =
-            new AttributeValueDescriptionRefSetMemberJpa(member);
-        newMember.setDescription(this);
-        attributeValueRefSetMembers.add(newMember);
-      }
-
-      associationReferenceRefSetMembers = new ArrayList<>();
-      for (AssociationReferenceDescriptionRefSetMember member : description
-          .getAssociationReferenceRefSetMembers()) {
-        AssociationReferenceDescriptionRefSetMember newMember =
-            new AssociationReferenceDescriptionRefSetMemberJpa(member);
-        newMember.setDescription(this);
-        associationReferenceRefSetMembers.add(newMember);
-      }
-
     }
   }
 
@@ -288,7 +258,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    */
   @XmlElement
   private String getConceptPreferredName() {
-    return concept != null ? concept.getDefaultPreferredName() : "";
+    return concept != null ? concept.getName() : "";
   }
 
   /**
@@ -327,153 +297,62 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /**
-   * Returns the set of SimpleRefSetMembers
+   * Returns the set of SimpleRefsetMembers
    * 
-   * @return the set of SimpleRefSetMembers
+   * @return the set of SimpleRefsetMembers
    */
-  @XmlElement(type = LanguageRefSetMemberJpa.class, name = "languages")
+  @XmlElement(type = LanguageRefsetMemberJpa.class, name = "languages")
   @Override
-  public List<LanguageRefSetMember> getLanguageRefSetMembers() {
-    if (languageRefSetMembers == null) {
-      languageRefSetMembers = new ArrayList<>();
+  public List<LanguageRefsetMember> getLanguageRefsetMembers() {
+    if (languageRefsetMembers == null) {
+      languageRefsetMembers = new ArrayList<>();
     }
-    return this.languageRefSetMembers;
+    return this.languageRefsetMembers;
   }
 
   /**
-   * Sets the set of LanguageRefSetMembers
+   * Sets the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMembers the set of LanguageRefSetMembers
+   * @param languageRefsetMembers the set of LanguageRefsetMembers
    */
   @Override
-  public void setLanguageRefSetMembers(
-    List<LanguageRefSetMember> languageRefSetMembers) {
-    if (languageRefSetMembers != null) {
-      this.languageRefSetMembers = new ArrayList<>();
-      for (LanguageRefSetMember member : languageRefSetMembers) {
-        member.setDescription(this);
+  public void setLanguageRefsetMembers(
+    List<LanguageRefsetMember> languageRefsetMembers) {
+    if (languageRefsetMembers != null) {
+      this.languageRefsetMembers = new ArrayList<>();
+      for (LanguageRefsetMember member : languageRefsetMembers) {
+        member.setDescriptionId(this.getTerminologyId());
       }
-      this.languageRefSetMembers.addAll(languageRefSetMembers);
+      this.languageRefsetMembers.addAll(languageRefsetMembers);
     }
   }
 
   /**
-   * Adds a LanguageRefSetMember to the set of LanguageRefSetMembers
+   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMember the LanguageRefSetMembers to be added
+   * @param languageRefsetMember the LanguageRefsetMembers to be added
    */
   @Override
-  public void addLanguageRefSetMember(LanguageRefSetMember languageRefSetMember) {
-    if (languageRefSetMembers == null) {
-      languageRefSetMembers = new ArrayList<>();
+  public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember) {
+    if (languageRefsetMembers == null) {
+      languageRefsetMembers = new ArrayList<>();
     }
-    languageRefSetMember.setDescription(this);
-    languageRefSetMembers.add(languageRefSetMember);
+    languageRefsetMember.setDescriptionId(this.getTerminologyId());
+    languageRefsetMembers.add(languageRefsetMember);
   }
 
   /**
-   * Removes a LanguageRefSetMember from the set of LanguageRefSetMembers
+   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers
    * 
-   * @param languageRefSetMember the LanguageRefSetMember to be removed
+   * @param languageRefsetMember the LanguageRefsetMember to be removed
    */
   @Override
-  public void removeLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember) {
-    if (languageRefSetMembers == null) {
+  public void removeLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember) {
+    if (languageRefsetMembers == null) {
       return;
     }
-    languageRefSetMembers.remove(languageRefSetMember);
-  }
-
-  /**
-   * Returns the set of AttributeValueRefSetMembers.
-   *
-   * @return the set of AttributeValueRefSetMembers
-   */
-  @XmlTransient
-  @Override
-  public List<AttributeValueDescriptionRefSetMember> getAttributeValueRefSetMembers() {
-    if (attributeValueRefSetMembers == null) {
-      attributeValueRefSetMembers = new ArrayList<>();
-    }
-    return this.attributeValueRefSetMembers;
-  }
-
-  @Override
-  public void setAttributeValueRefSetMembers(
-    List<AttributeValueDescriptionRefSetMember> attributeValueRefSetMembers) {
-    if (attributeValueRefSetMembers != null) {
-      this.attributeValueRefSetMembers = new ArrayList<>();
-      for (AttributeValueDescriptionRefSetMember member : attributeValueRefSetMembers) {
-        member.setDescription(this);
-      }
-      this.attributeValueRefSetMembers.addAll(attributeValueRefSetMembers);
-    }
-  }
-
-  @Override
-  public void addAttributeValueRefSetMember(
-    AttributeValueDescriptionRefSetMember attributeValueRefSetMember) {
-    if (attributeValueRefSetMembers == null) {
-      attributeValueRefSetMembers = new ArrayList<>();
-    }
-    attributeValueRefSetMember.setDescription(this);
-    attributeValueRefSetMembers.add(attributeValueRefSetMember);
-  }
-
-  @Override
-  public void removeAttributeValueRefSetMember(
-    AttributeValueDescriptionRefSetMember attributeValueRefSetMember) {
-    if (attributeValueRefSetMembers == null) {
-      return;
-    }
-    attributeValueRefSetMembers.remove(attributeValueRefSetMember);
-  }
-
-  /**
-   * Returns the set of AssociationReferenceRefSetMembers.
-   *
-   * @return the set of AssociationReferenceRefSetMembers
-   */
-  @XmlTransient
-  @Override
-  public List<AssociationReferenceDescriptionRefSetMember> getAssociationReferenceRefSetMembers() {
-    if (associationReferenceRefSetMembers == null) {
-      associationReferenceRefSetMembers = new ArrayList<>();
-    }
-    return this.associationReferenceRefSetMembers;
-  }
-
-  @Override
-  public void setAssociationReferenceRefSetMembers(
-    List<AssociationReferenceDescriptionRefSetMember> associationReferenceRefSetMembers) {
-    if (associationReferenceRefSetMembers != null) {
-      this.associationReferenceRefSetMembers = new ArrayList<>();
-      for (AssociationReferenceDescriptionRefSetMember member : associationReferenceRefSetMembers) {
-        member.setDescription(this);
-      }
-      this.associationReferenceRefSetMembers
-          .addAll(associationReferenceRefSetMembers);
-    }
-  }
-
-  @Override
-  public void addAssociationReferenceRefSetMember(
-    AssociationReferenceDescriptionRefSetMember associationReferenceRefSetMember) {
-    if (associationReferenceRefSetMembers == null) {
-      associationReferenceRefSetMembers = new ArrayList<>();
-    }
-    associationReferenceRefSetMember.setDescription(this);
-    associationReferenceRefSetMembers.add(associationReferenceRefSetMember);
-  }
-
-  @Override
-  public void removeAssociationReferenceRefSetMember(
-    AssociationReferenceDescriptionRefSetMember associationReferenceRefSetMember) {
-    if (associationReferenceRefSetMembers == null) {
-      return;
-    }
-    associationReferenceRefSetMembers.remove(associationReferenceRefSetMember);
+    languageRefsetMembers.remove(languageRefsetMember);
   }
 
   @Override

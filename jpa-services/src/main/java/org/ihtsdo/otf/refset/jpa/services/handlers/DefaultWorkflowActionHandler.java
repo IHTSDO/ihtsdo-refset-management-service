@@ -243,7 +243,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   /* see superclass */
   @Override
-  public void performWorkflowAction(Refset refset, User user,
+  public TrackingRecord performWorkflowAction(Refset refset, User user,
     WorkflowAction action, WorkflowService service) throws Exception {
 
     UserRole projectRole =
@@ -371,7 +371,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     service.updateRefset(refset);
-
+    // TODO
+    return null;
   }
 
   /* see superclass */

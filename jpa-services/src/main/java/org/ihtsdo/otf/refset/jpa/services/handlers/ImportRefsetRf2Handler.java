@@ -12,12 +12,10 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.RefSetDefinitionRefSetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.RefSetDefinitionRefSetMemberJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.RefsetDefinitionRefsetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.RefsetDefinitionRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
@@ -57,7 +55,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
-  public List<SimpleRefSetMember> importMembers(InputStream content)
+  public List<SimpleRefsetMember> importMembers(InputStream content)
     throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
@@ -70,7 +68,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     // FAIL if
     // the format of the line is wrong (e.g. unexpected number of fields)
 
-    List<SimpleRefSetMember> list = new ArrayList<>();
+    List<SimpleRefsetMember> list = new ArrayList<>();
     String line = "";
 
     Reader reader = new InputStreamReader(content, "UTF-8");
@@ -88,22 +86,17 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       if (!fields[0].equals("id")) { // header
 
-        final SimpleRefSetMember member = new SimpleRefSetMemberJpa();
-        // Universal RefSet attributes
+        final SimpleRefsetMember member = new SimpleRefsetMemberJpa();
+        // Universal Refset attributes
         member.setTerminologyId(fields[0]);
         member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setActive(fields[2].equals("1"));
         member.setModuleId(fields[3].intern());
-        member.setRefSetId(fields[4]);
+        member.setRefsetId(fields[4]);
 
-        // SimpleRefSetMember unique attributes
-        // NONE
-
-        final Concept concept = new ConceptJpa();
-        concept.setTerminologyId(fields[5]);
-
-        member.setConcept(concept);
+        // SimpleRefsetMember unique attributes
+        member.setConceptId(fields[5]);
         // Add member
         list.add(member);
         Logger.getLogger(getClass()).debug("  member = " + member);
@@ -138,17 +131,14 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       if (!fields[0].equals("id")) { // header
 
-        final RefSetDefinitionRefSetMember member =
-            new RefSetDefinitionRefSetMemberJpa();
+        final RefsetDefinitionRefsetMember member =
+            new RefsetDefinitionRefsetMemberJpa();
         member.setTerminologyId(fields[0]);
         member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setActive(fields[2].equals("1"));
         member.setModuleId(fields[3].intern());
-        member.setRefSetId(fields[4]);
-        final Concept concept = new ConceptJpa();
-        concept.setTerminologyId(fields[5]);
-        member.setConcept(concept);
+        member.setRefsetId(fields[4]);
 
         // Refset descriptor unique attributes
         member.setDefinition(fields[6]);

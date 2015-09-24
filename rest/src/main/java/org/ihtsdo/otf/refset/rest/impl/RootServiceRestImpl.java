@@ -8,6 +8,7 @@ import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 
@@ -66,8 +67,6 @@ public class RootServiceRestImpl {
 
   }
 
-
-
   /**
    * Authenticate.
    *
@@ -81,6 +80,34 @@ public class RootServiceRestImpl {
     String authToken, String perform, UserRole authRole) throws Exception {
     // authorize call
     UserRole role = securityService.getApplicationRoleForToken(authToken);
+    UserRole cmpRole = authRole;
+    if (cmpRole == null) {
+      cmpRole = UserRole.VIEWER;
+    }
+    if (!role.hasPrivilegesOf(cmpRole))
+      throw new WebApplicationException(Response.status(401)
+          .entity("User does not have permissions to " + perform + ".").build());
+  }
+
+  /**
+   * Authenticate.
+   *
+   * @param projectService the project service
+   * @param projectId the project id
+   * @param securityService the security service
+   * @param authToken the auth token
+   * @param perform the perform
+   * @param authRole the auth role
+   * @throws Exception the exception
+   */
+  public static void authenticate(ProjectService projectService,
+    Long projectId, SecurityService securityService, String authToken,
+    String perform, UserRole authRole) throws Exception {
+    // authorize call
+    UserRole role =
+        projectService.getUserRoleForProject(projectService
+            .getProject(projectId), securityService.getUser(securityService
+            .getUsernameForToken(authToken)));
     UserRole cmpRole = authRole;
     if (cmpRole == null) {
       cmpRole = UserRole.VIEWER;

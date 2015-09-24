@@ -30,48 +30,49 @@ public class WorkflowClientRest implements WorkflowServiceRest {
   }
 
   @Override
-  public void performWorkflowAction(String refsetId, String action,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public ConceptList findAvailableEditingWork(String translationId,
-    Long userId, PfsParameterJpa pfs, String authToken) throws Exception {
+  public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
+    String userName, String action, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public ConceptList findAssignedEditingWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public ConceptList findAvailableReviewWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public ConceptList findAssignedReviewWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public TrackingRecord performWorkflowAction(String translationId,
-    Long userId, String action, ConceptJpa concept, String authToken)
+  public ConceptList findAvailableEditingWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
-  // TODO: needs implO
+  @Override
+  public ConceptList findAssignedEditingWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList findAvailableReviewWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList findAssignedReviewWork(Long projectId, Long translationId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public TrackingRecord performWorkflowAction(Long projectId,
+    Long translationId, String userName, String action, ConceptJpa concept,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 
 }

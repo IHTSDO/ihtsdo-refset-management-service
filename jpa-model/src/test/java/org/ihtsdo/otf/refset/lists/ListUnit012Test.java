@@ -54,11 +54,11 @@ public class ListUnit012Test extends AbstractListUnit<Relationship> {
     Concept c1 = new ConceptJpa();
     c1.setId(1L);
     c1.setTerminologyId("1");
-    c1.setDefaultPreferredName("1");
+    c1.setName("1");
     Concept c2 = new ConceptJpa();
     c2.setId(2L);
     c2.setTerminologyId("2");
-    c2.setDefaultPreferredName("2");
+    c2.setName("2");
     o1.setSourceConcept(c1);
     o1.setDestinationConcept(c2);
 
@@ -69,11 +69,11 @@ public class ListUnit012Test extends AbstractListUnit<Relationship> {
     Concept c3 = new ConceptJpa();
     c3.setId(3L);
     c3.setTerminologyId("3");
-    c3.setDefaultPreferredName("3");
+    c3.setName("3");
     Concept c4 = new ConceptJpa();
     c4.setId(4L);
     c4.setTerminologyId("4");
-    c4.setDefaultPreferredName("4");
+    c4.setName("4");
     o2.setSourceConcept(c3);
     o2.setDestinationConcept(c4);
 

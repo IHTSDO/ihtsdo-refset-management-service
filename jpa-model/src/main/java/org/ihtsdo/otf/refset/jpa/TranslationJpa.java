@@ -25,11 +25,12 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -75,12 +76,18 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
+  @Column(nullable = false)
   @ContainedIn
   private Refset refset;
 
+  /** The project. */
+  @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
+  @Column(nullable = false)
+  private Project project;
+
   /** The descriptions. */
-  @ManyToMany(targetEntity = DescriptionTypeRefSetMemberJpa.class)
-  private List<DescriptionTypeRefSetMember> descriptionTypes = null;
+  @ManyToMany(targetEntity = DescriptionTypeRefsetMemberJpa.class)
+  private List<DescriptionTypeRefsetMember> descriptionTypes = null;
 
   /**
    * Instantiates an empty {@link TranslationJpa}.
@@ -104,8 +111,9 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     workflowStatus = translation.getWorkflowStatus();
     workflowPath = translation.getWorkflowPath();
     refset = translation.getRefset();
-    for (DescriptionTypeRefSetMember member : translation.getDescriptionTypes()) {
-      addDescriptionType(new DescriptionTypeRefSetMemberJpa(member));
+    project = translation.getProject();
+    for (DescriptionTypeRefsetMember member : translation.getDescriptionTypes()) {
+      addDescriptionType(new DescriptionTypeRefsetMemberJpa(member));
     }
   }
 
@@ -208,27 +216,62 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     refset.setId(refsetId);
   }
 
-  /* see superclass */
-  @XmlElement(type = DescriptionTypeRefSetMemberJpa.class, name = "types")
+  @XmlTransient
   @Override
-  public List<DescriptionTypeRefSetMember> getDescriptionTypes() {
+  public Project getProject() {
+    return project;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProject(Project project) {
+    this.project = project;
+  }
+
+  /**
+   * Returns the project id.
+   *
+   * @return the project id
+   */
+  @XmlElement
+  private Long getProjectId() {
+    return (project != null) ? project.getId() : 0;
+  }
+
+  /**
+   * Sets the project id.
+   *
+   * @param projectId the project id
+   */
+  @SuppressWarnings("unused")
+  private void setProjectId(Long projectId) {
+    if (project == null) {
+      project = new ProjectJpa();
+    }
+    project.setId(projectId);
+  }
+
+  /* see superclass */
+  @XmlElement(type = DescriptionTypeRefsetMemberJpa.class, name = "types")
+  @Override
+  public List<DescriptionTypeRefsetMember> getDescriptionTypes() {
     if (descriptionTypes == null) {
-      descriptionTypes = new ArrayList<DescriptionTypeRefSetMember>();
+      descriptionTypes = new ArrayList<DescriptionTypeRefsetMember>();
     }
     return descriptionTypes;
   }
 
   /* see superclass */
   @Override
-  public void setDescriptionTypes(List<DescriptionTypeRefSetMember> types) {
+  public void setDescriptionTypes(List<DescriptionTypeRefsetMember> types) {
     this.descriptionTypes = types;
   }
 
   /* see superclass */
   @Override
-  public void addDescriptionType(DescriptionTypeRefSetMember type) {
+  public void addDescriptionType(DescriptionTypeRefsetMember type) {
     if (descriptionTypes == null) {
-      descriptionTypes = new ArrayList<DescriptionTypeRefSetMember>();
+      descriptionTypes = new ArrayList<DescriptionTypeRefsetMember>();
     }
     descriptionTypes.add(type);
 
@@ -236,7 +279,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /* see superclass */
   @Override
-  public void removeDescriptionType(DescriptionTypeRefSetMember type) {
+  public void removeDescriptionType(DescriptionTypeRefsetMember type) {
     if (descriptionTypes != null) {
       descriptionTypes.remove(type);
     }

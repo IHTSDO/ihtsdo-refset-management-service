@@ -20,10 +20,10 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefSetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
@@ -36,7 +36,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
   Map<String, Description> descriptions = new HashMap<>();
 
   /** The language entries. */
-  Map<String, LanguageRefSetMember> descLangMap = new HashMap<>();
+  Map<String, LanguageRefsetMember> descLangMap = new HashMap<>();
 
   /** The desc seen. */
   boolean descSeen = false;
@@ -184,14 +184,14 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             }
 
             // Create and configure the member
-            final LanguageRefSetMember member = new LanguageRefSetMemberJpa();
+            final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             member.setTerminologyId(fields[0]);
             member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
             member.setLastModified(member.getEffectiveTime());
             member.setActive(true);
 
             // Leave module/refset id intentionally blank to be set by project
-            member.setRefSetId(null);
+            member.setRefsetId(null);
             member.setModuleId(null);
 
             // Language unique attributes
@@ -229,10 +229,10 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
       // Connect language and description
       if (descLangMap.containsKey(description.getTerminologyId())) {
-        LanguageRefSetMember member =
+        LanguageRefsetMember member =
             descLangMap.get(description.getTerminologyId());
-        member.setDescription(description);
-        description.addLanguageRefSetMember(member);
+        member.setDescriptionId(description.getTerminologyId());
+        description.addLanguageRefetMember(member);
         descLangMap.remove(description.getTerminologyId());
       }
 

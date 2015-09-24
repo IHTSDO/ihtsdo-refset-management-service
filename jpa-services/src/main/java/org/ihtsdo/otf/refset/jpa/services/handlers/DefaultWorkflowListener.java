@@ -7,8 +7,8 @@ import java.util.Properties;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefSetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefSetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
 /**
@@ -92,14 +92,14 @@ public class DefaultWorkflowListener implements WorkflowListener {
   }
 
   @Override
-  public void refsetDescriptorRefSetMemberChanged(
-    RefsetDescriptorRefSetMember member, Action action) throws Exception {
+  public void refsetDescriptorRefsetMemberChanged(
+    RefsetDescriptorRefsetMember member, Action action) throws Exception {
     // n/a
   }
 
   @Override
-  public void descriptionTypeRefSetMemberChanged(
-    DescriptionTypeRefSetMember member, Action action) throws Exception {
+  public void descriptionTypeRefsetMemberChanged(
+    DescriptionTypeRefsetMember member, Action action) throws Exception {
     // n/a
   }
 

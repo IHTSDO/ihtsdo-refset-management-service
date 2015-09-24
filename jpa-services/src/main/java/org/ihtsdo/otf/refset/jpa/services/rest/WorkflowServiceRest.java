@@ -17,79 +17,90 @@ public interface WorkflowServiceRest {
   /**
    * Perform workflow action for a {@link Refset}.
    *
+   * @param projectId the project id
    * @param refsetId the refset id
+   * @param userName the user name
    * @param action the action
    * @param authToken the auth token
+   * @return the tracking record
    * @throws Exception the exception
    */
-  public void performWorkflowAction(String refsetId, String action,
-    String authToken) throws Exception;
+  public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
+    String userName, String action, String authToken) throws Exception;
 
   /**
    * Find available editing work.
    *
+   * @param projectId the project id
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(String translationId,
-    Long userId, PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList findAvailableEditingWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Find assigned editing work.
    *
+   * @param projectId the project id
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedEditingWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList findAssignedEditingWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Find available review work.
    *
+   * @param projectId the project id
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList findAvailableReviewWork(Long projectId,
+    Long translationId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Find assigned review work.
    *
+   * @param projectId the project id
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedReviewWork(String translationId, Long userId,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList findAssignedReviewWork(Long projectId, Long translationId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Perform workflow action.
    *
+   * @param projectId the project id
    * @param translationId the translation id
-   * @param userId the user id
+   * @param userName the user name
    * @param action the action
    * @param concept the concept
    * @param authToken the auth token
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord performWorkflowAction(String translationId,
-    Long userId, String action, ConceptJpa concept, String authToken)
-    throws Exception;
+  public TrackingRecord performWorkflowAction(Long projectId,
+    Long translationId, String userName, String action, ConceptJpa concept,
+    String authToken) throws Exception;
 
 }

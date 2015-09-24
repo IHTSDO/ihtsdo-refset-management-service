@@ -48,12 +48,12 @@ public class ListUnit004Test extends AbstractListUnit<Concept> {
     o1 = new ConceptJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
-    o1.setDefaultPreferredName("1");
+    o1.setName("1");
 
     o2 = new ConceptJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
-    o2.setDefaultPreferredName("2");
+    o2.setName("2");
 
   }
 

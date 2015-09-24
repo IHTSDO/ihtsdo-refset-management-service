@@ -3,12 +3,10 @@
  */
 package org.ihtsdo.otf.refset.lists;
 
-import org.ihtsdo.otf.refset.helpers.ModuleDependencyRefSetMemberList;
-import org.ihtsdo.otf.refset.jpa.helpers.ModuleDependencyRefSetMemberListJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefSetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.ModuleDependencyRefSetMemberJpa;
+import org.ihtsdo.otf.refset.helpers.ModuleDependencyRefsetMemberList;
+import org.ihtsdo.otf.refset.jpa.helpers.ModuleDependencyRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ModuleDependencyRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -16,22 +14,22 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link ModuleDependencyRefSetMemberList}.
+ * Unit testing for {@link ModuleDependencyRefsetMemberList}.
  */
 public class ListUnit008Test extends
-    AbstractListUnit<ModuleDependencyRefSetMember> {
+    AbstractListUnit<ModuleDependencyRefsetMember> {
 
   /** The list1 test fixture . */
-  private ModuleDependencyRefSetMemberList list1;
+  private ModuleDependencyRefsetMemberList list1;
 
   /** The list2 test fixture . */
-  private ModuleDependencyRefSetMemberList list2;
+  private ModuleDependencyRefsetMemberList list2;
 
   /** The test fixture o1. */
-  private ModuleDependencyRefSetMember o1;
+  private ModuleDependencyRefsetMember o1;
 
   /** The test fixture o2. */
-  private ModuleDependencyRefSetMember o2;
+  private ModuleDependencyRefsetMember o2;
 
   /**
    * Setup class.
@@ -46,25 +44,16 @@ public class ListUnit008Test extends
    */
   @Before
   public void setup() {
-    list1 = new ModuleDependencyRefSetMemberListJpa();
-    list2 = new ModuleDependencyRefSetMemberListJpa();
-    o1 = new ModuleDependencyRefSetMemberJpa();
+    list1 = new ModuleDependencyRefsetMemberListJpa();
+    list2 = new ModuleDependencyRefsetMemberListJpa();
+    o1 = new ModuleDependencyRefsetMemberJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
-    Concept c1 = new ConceptJpa();
-    c1.setId(1L);
-    c1.setTerminologyId("1");
-    c1.setDefaultPreferredName("1");
-    o1.setComponent(c1);
-    o2 = new ModuleDependencyRefSetMemberJpa();
+    o1.setConceptId("1");
+    o2 = new ModuleDependencyRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
-    Concept c2 = new ConceptJpa();
-    c2.setId(2L);
-    c2.setTerminologyId("2");
-    c2.setDefaultPreferredName("2");
-    o2.setComponent(c2);
-
+    o2.setConceptId("2");
   }
 
   /**

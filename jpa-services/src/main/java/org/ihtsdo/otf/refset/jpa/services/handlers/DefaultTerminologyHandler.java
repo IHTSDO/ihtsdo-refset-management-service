@@ -9,12 +9,12 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SimpleRefSetMemberList;
+import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefSetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 /**
@@ -65,7 +65,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public SimpleRefSetMemberList findMembersForRefset(Long refsetId,
+  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
     // TODO
     return null;
@@ -122,22 +122,22 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public LanguageRefSetMember addLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember) throws Exception {
+  public LanguageRefsetMember addLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember) throws Exception {
     // TODO: Implement as call to terminology server
     return null;
   }
 
   /* see superclass */
   @Override
-  public LanguageRefSetMember getLanguageRefSetMember(Long id) throws Exception {
+  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception {
     // TODO: Implement as call to terminology server
     return null;
   }
 
   /* see superclass */
   @Override
-  public LanguageRefSetMember getLanguageRefSetMember(String terminologyId,
+  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
     String terminology, String version) throws Exception {
     // TODO: Implement as call to terminology server
     return null;
@@ -145,36 +145,36 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public void updateLanguageRefSetMember(
-    LanguageRefSetMember languageRefSetMember) throws Exception {
+  public void updateLanguageRefsetMember(
+    LanguageRefsetMember languageRefsetMember) throws Exception {
     // TODO: Implement as call to terminology server
 
   }
 
   /* see superclass */
   @Override
-  public void removeLanguageRefSetMember(Long id) throws Exception {
+  public void removeLanguageRefsetMember(Long id) throws Exception {
     // TODO: Implement as call to terminology server
   }
 
   /* see superclass */
   @Override
-  public SimpleRefSetMember addSimpleRefSetMember(
-    SimpleRefSetMember simpleRefSetMember) throws Exception {
+  public SimpleRefsetMember addSimpleRefsetMember(
+    SimpleRefsetMember simpleRefsetMember) throws Exception {
     // TODO: Implement as call to terminology server
     return null;
   }
 
   /* see superclass */
   @Override
-  public SimpleRefSetMember getSimpleRefSetMember(Long id) throws Exception {
+  public SimpleRefsetMember getSimpleRefsetMember(Long id) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   /* see superclass */
   @Override
-  public SimpleRefSetMember getSimpleRefSetMember(String terminologyId,
+  public SimpleRefsetMember getSimpleRefsetMember(String terminologyId,
     String terminology, String version) throws Exception {
     return null;
     // TODO: Implement as call to terminology server
@@ -182,20 +182,20 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public void updateSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember)
+  public void updateSimpleRefsetMember(SimpleRefsetMember simpleRefsetMember)
     throws Exception {
     // TODO: Implement as call to terminology server
   }
 
   /* see superclass */
   @Override
-  public void removeSimpleRefSetMember(Long id) throws Exception {
+  public void removeSimpleRefsetMember(Long id) throws Exception {
     // TODO: Implement as call to terminology server
   }
 
   /* see superclass */
   @Override
-  public SimpleRefSetMemberList findMembersForHistoricalRefset(Refset refset,
+  public SimpleRefsetMemberList findMembersForHistoricalRefset(Refset refset,
     String query, PfsParameter pfs) throws Exception {
     // TODO: implement as a local call
     return null;

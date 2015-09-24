@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.rf2;
 
 import java.util.List;
 
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -129,174 +130,26 @@ public interface Concept extends Component {
    * 
    * @return the default preferred name
    */
-  public String getDefaultPreferredName();
+  public String getName();
 
   /**
    * Sets the default preferred name.
    * 
    * @param defaultPreferredName the new default preferred name
    */
-  public void setDefaultPreferredName(String defaultPreferredName);
+  public void setName(String defaultPreferredName);
 
   /**
-   * Returns the set of SimpleRefSetMembers.
+   * Returns the translation.
    *
-   * @return the set of SimpleRefSetMembers
+   * @return the translation
    */
-  public List<SimpleRefSetMember> getSimpleRefSetMembers();
+  public Translation getTranslation();
 
   /**
-   * Sets the set of SimpleRefSetMembers.
+   * Sets the translation.
    *
-   * @param simpleRefSetMembers the set of SimpleRefSetMembers
+   * @param translation the translation
    */
-  public void setSimpleRefSetMembers(List<SimpleRefSetMember> simpleRefSetMembers);
-
-  /**
-   * Adds a SimpleRefSetMember to the set of SimpleRefSetMembers.
-   *
-   * @param simpleRefSetMember the SimpleRefSetMembers to be added
-   */
-  public void addSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember);
-
-  /**
-   * Removes a SimpleRefSetMember from the set of SimpleRefSetMembers.
-   *
-   * @param simpleRefSetMember the SimpleRefSetMember to be removed
-   */
-  public void removeSimpleRefSetMember(SimpleRefSetMember simpleRefSetMember);
-
-  /**
-   * Returns the set of SimpleMapRefSetMembers.
-   *
-   * @return the set of SimpleMapRefSetMembers
-   */
-  public List<SimpleMapRefSetMember> getSimpleMapRefSetMembers();
-
-  /**
-   * Sets the set of SimpleMapRefSetMembers.
-   *
-   * @param simpleMapRefSetMembers the set of SimpleMapRefSetMembers
-   */
-  public void setSimpleMapRefSetMembers(
-    List<SimpleMapRefSetMember> simpleMapRefSetMembers);
-
-  /**
-   * Adds a SimpleMapRefSetMember to the set of SimpleMapRefSetMembers.
-   *
-   * @param simpleMapRefSetMember the SimpleMapRefSetMembers to be added
-   */
-  public void addSimpleMapRefSetMember(
-    SimpleMapRefSetMember simpleMapRefSetMember);
-
-  /**
-   * Removes a SimpleMapRefSetMember from the set of SimpleMapRefSetMembers.
-   *
-   * @param simpleMapRefSetMember the SimpleMapRefSetMember to be removed
-   */
-  public void removeSimpleMapRefSetMember(
-    SimpleMapRefSetMember simpleMapRefSetMember);
-
-  /**
-   * Returns the set of ComplexMapRefSetMembers.
-   *
-   * @return the set of ComplexMapRefSetMembers
-   */
-  public List<ComplexMapRefSetMember> getComplexMapRefSetMembers();
-
-  /**
-   * Sets the set of ComplexMapRefSetMembers.
-   *
-   * @param complexMapRefSetMembers the set of ComplexMapRefSetMembers
-   */
-  public void setComplexMapRefSetMembers(
-    List<ComplexMapRefSetMember> complexMapRefSetMembers);
-
-  /**
-   * Adds a ComplexMapRefSetMember to the set of ComplexMapRefSetMembers.
-   *
-   * @param complexMapRefSetMember the ComplexMapRefSetMembers to be added
-   */
-  public void addComplexMapRefSetMember(
-    ComplexMapRefSetMember complexMapRefSetMember);
-
-  /**
-   * Removes a ComplexMapRefSetMember from the set of ComplexMapRefSetMembers.
-   *
-   * @param complexMapRefSetMember the ComplexMapRefSetMember to be removed
-   */
-  public void removeComplexMapRefSetMember(
-    ComplexMapRefSetMember complexMapRefSetMember);
-
-  /**
-   * Returns the set of AttributeValueRefSetMembers.
-   *
-   * @return the set of AttributeValueRefSetMembers
-   */
-  public List<AttributeValueConceptRefSetMember> getAttributeValueRefSetMembers();
-
-  /**
-   * Sets the set of AttributeValueRefSetMembers.
-   *
-   * @param attributeValueRefSetMembers the set of AttributeValueRefSetMembers
-   */
-  public void setAttributeValueRefSetMembers(
-    List<AttributeValueConceptRefSetMember> attributeValueRefSetMembers);
-
-  /**
-   * Adds a AttributeValueRefSetMember to the set of
-   * AttributeValueRefSetMembers.
-   *
-   * @param attributeValueRefSetMember the AttributeValueRefSetMembers to be
-   *          added
-   */
-  public void addAttributeValueRefSetMember(
-    AttributeValueConceptRefSetMember attributeValueRefSetMember);
-
-  /**
-   * Removes a AttributeValueRefSetMember from the set of
-   * AttributeValueRefSetMembers.
-   *
-   * @param attributeValueRefSetMember the AttributeValueRefSetMember to be
-   *          removed
-   */
-  public void removeAttributeValueRefSetMember(
-    AttributeValueConceptRefSetMember attributeValueRefSetMember);
-
-  /**
-   * Returns the set of AssociationReferenceRefSetMembers.
-   *
-   * @return the set of AssociationReferenceRefSetMembers
-   */
-  public List<AssociationReferenceConceptRefSetMember> getAssociationReferenceRefSetMembers();
-
-  /**
-   * Sets the set of AssociationReferenceRefSetMembers.
-   *
-   * @param associationReferenceRefSetMembers the set of
-   *          AssociationReferenceRefSetMembers
-   */
-  public void setAssociationReferenceRefSetMembers(
-    List<AssociationReferenceConceptRefSetMember> associationReferenceRefSetMembers);
-
-  /**
-   * Adds a AssociationReferenceRefSetMember to the set of
-   * AssociationReferenceRefSetMembers.
-   *
-   * @param associationReferenceRefSetMember the
-   *          AssociationReferenceRefSetMembers to be added
-   */
-  public void addAssociationReferenceRefSetMember(
-    AssociationReferenceConceptRefSetMember associationReferenceRefSetMember);
-
-  /**
-   * Removes a AssociationReferenceRefSetMember from the set of
-   * AssociationReferenceRefSetMembers.
-   *
-   * @param associationReferenceRefSetMember the
-   *          AssociationReferenceRefSetMember to be removed
-   */
-  public void removeAssociationReferenceRefSetMember(
-    AssociationReferenceConceptRefSetMember associationReferenceRefSetMember);
-
+  public void setTranslation(Translation translation);
 }

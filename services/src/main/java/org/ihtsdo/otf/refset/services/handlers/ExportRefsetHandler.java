@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.rf2.SimpleRefSetMember;
+import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
 
 /**
  * Generically represents a handler for exporting refset data.
@@ -39,7 +39,7 @@ public interface ExportRefsetHandler extends Configurable {
    * @throws Exception the exception
    */
   public InputStream exportMembers(Refset refset,
-    List<SimpleRefSetMember> members) throws Exception;
+    List<SimpleRefsetMember> members) throws Exception;
 
   /**
    * Import definition.

@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.refset.jpa.helpers;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.helpers.SearchResult;
