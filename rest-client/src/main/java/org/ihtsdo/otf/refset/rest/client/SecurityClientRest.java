@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response.Status.Family;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
@@ -233,6 +234,12 @@ public class SecurityClientRest extends RootClientRest implements
     } else {
       throw new Exception(response.toString());
     }
+  }
+
+  @Override
+  public StringList getApplicationRoles(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

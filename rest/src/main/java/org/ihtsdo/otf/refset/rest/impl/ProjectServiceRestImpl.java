@@ -12,12 +12,15 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
@@ -55,6 +58,108 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
    */
   public ProjectServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
+  }
+
+  @Override
+  @GET
+  @Path("/roles")
+  @ApiOperation(value = "Get project roles", notes = "Returns list of valid project roles", response = StringList.class)
+  public StringList getProjectRoles(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Project): /roles");
+
+    try {
+      authenticate(securityService, authToken, "get roles", UserRole.VIEWER);
+      StringList list = new StringList();
+      list.setTotalCount(3);
+      list.getObjects().add(UserRole.AUTHOR.toString());
+      list.getObjects().add(UserRole.REVIEWER.toString());
+      list.getObjects().add(UserRole.ADMIN.toString());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get roles");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+
+  @Override
+  @GET
+  @Path("/adduser")
+  @ApiOperation(value = "Add user to project", notes = "Adds the specified user to the specified project with the specified role.", response = ProjectJpa.class)
+  public Project addUserToProject(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userId") String userName,
+    @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @PathParam("role") String role,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /adduser " + projectId + ", " + userName
+            + ", " + role);
+
+    // Test preconditions
+    if (projectId == null || userName == null || role == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authenticate(projectService, projectId, securityService, authToken,
+          "add user to project", UserRole.ADMIN);
+
+      Project project = projectService.getProject(projectId);
+      User user = securityService.getUser(userName);
+      project.getProjectRoleMap().put(user, UserRole.valueOf(role));
+      projectService.updateProject(project);
+      return project;
+
+    } catch (Exception e) {
+      handleException(e, "trying to add user to project");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @Override
+  @GET
+  @Path("/removeuser")
+  @ApiOperation(value = "Remove user to project", notes = "Removes the specified user to the specified project with the specified role.", response = ProjectJpa.class)
+  public Project removeUserFromProject(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userId") String userName,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /removeuser " + projectId + ", "
+            + userName);
+
+    // Test preconditions
+    if (projectId == null || userName == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authenticate(projectService, projectId, securityService, authToken,
+          "remove user from project", UserRole.ADMIN);
+
+      Project project = projectService.getProject(projectId);
+      User user = securityService.getUser(userName);
+      project.getProjectRoleMap().remove(user);
+      projectService.updateProject(project);
+      return project;
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove user from project");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
   }
 
   /* see superclass */
@@ -139,23 +244,28 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  /**
+   * @param projectId
+   * @param authToken
+   * @throws Exception
+   */
   @Override
   @DELETE
-  @Path("/remove/{id}")
+  @Path("/remove/{projectId}")
   @ApiOperation(value = "Remove project", notes = "Removes the project with the specified id")
   public void removeProject(
-    @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Project): /remove/" + id);
+        "RESTful call DELETE (Project): /remove/" + projectId);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
       authenticate(securityService, authToken, "remove project", UserRole.ADMIN);
 
       // Create service and configure transaction scope
-      projectService.removeProject(id);
+      projectService.removeProject(projectId);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a project");
@@ -261,4 +371,5 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
 
   }
+
 }

@@ -5,18 +5,22 @@ package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.MapKeyClass;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -24,17 +28,19 @@ import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
 
 /**
  * JPA enabled implementation of {@link Project}. TODO: convert all sets to
@@ -80,26 +86,12 @@ public class ProjectJpa implements Project {
   private String version;
 
   /** The leads. */
-  @ManyToMany(targetEntity = UserJpa.class, fetch = FetchType.EAGER)
-  @JoinTable(name = "projects_leads", joinColumns = @JoinColumn(name = "projects_id"), inverseJoinColumns = @JoinColumn(name = "users_id"))
-  @IndexedEmbedded(targetElement = UserJpa.class)
-  private Set<User> leads = new HashSet<>();
-
-  /** The authors. */
-  @ManyToMany(targetEntity = UserJpa.class, fetch = FetchType.EAGER)
-  @JoinTable(name = "projects_authors", joinColumns = @JoinColumn(name = "projects_id"), inverseJoinColumns = @JoinColumn(name = "users_id"))
-  @IndexedEmbedded(targetElement = UserJpa.class)
-  private Set<User> authors = new HashSet<>();
-
-  /** The admins. */
-  @ManyToMany(targetEntity = UserJpa.class, fetch = FetchType.EAGER)
-  @JoinTable(name = "projects_admins", joinColumns = @JoinColumn(name = "projects_id"), inverseJoinColumns = @JoinColumn(name = "users_id"))
-  @IndexedEmbedded(targetElement = UserJpa.class)
-  private Set<User> admins = new HashSet<>();
-
-  /** The branch. */
-  @Column(nullable = true)
-  private String branch;
+  @OneToMany()
+  @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @MapKeyClass(value = UserJpa.class)
+  @Enumerated(EnumType.STRING)
+  @CollectionTable(name = "user_notification_preferences", joinColumns = @JoinColumn(name = "user_preferences_id"))
+  private Map<User, UserRole> projectRoleMap;
 
   /** The refsets. */
   @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
@@ -126,11 +118,7 @@ public class ProjectJpa implements Project {
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
-    leads = new HashSet<>(project.getReviewers());
-    authors = new HashSet<>(project.getAuthors());
-    admins = new HashSet<>(project.getAdmins());
-
-    branch = project.getBranch();
+    projectRoleMap = new HashMap<>(project.getProjectRoleMap());
   }
 
   /* see superclass */
@@ -187,81 +175,6 @@ public class ProjectJpa implements Project {
   @Override
   public void setLastModifiedBy(String lastModifiedBy) {
     this.lastModifiedBy = lastModifiedBy;
-  }
-
-  /* see superclass */
-  @Override
-  @XmlElement(type = UserJpa.class)
-  public Set<User> getReviewers() {
-    return leads;
-  }
-
-  /* see superclass */
-  @Override
-  public void setLeads(Set<User> leads) {
-    this.leads = leads;
-  }
-
-  /* see superclass */
-  @Override
-  public void addLead(User lead) {
-    leads.add(lead);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeLead(User lead) {
-    leads.remove(lead);
-  }
-
-  /* see superclass */
-  @Override
-  @XmlElement(type = UserJpa.class)
-  public Set<User> getAuthors() {
-    return authors;
-  }
-
-  /* see superclass */
-  @Override
-  public void setAuthors(Set<User> authors) {
-    this.authors = authors;
-  }
-
-  /* see superclass */
-  @Override
-  public void addAuthor(User author) {
-    authors.add(author);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeAuthor(User author) {
-    authors.remove(author);
-  }
-
-  /* see superclass */
-  @Override
-  @XmlElement(type = UserJpa.class)
-  public Set<User> getAdmins() {
-    return admins;
-  }
-
-  /* see superclass */
-  @Override
-  public void setAdmins(Set<User> admins) {
-    this.admins = admins;
-  }
-
-  /* see superclass */
-  @Override
-  public void addAdmin(User admin) {
-    admins.add(admin);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeAdmin(User admin) {
-    admins.remove(admin);
   }
 
   /* see superclass */
@@ -324,18 +237,6 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public String getBranch() {
-    return branch;
-  }
-
-  /* see superclass */
-  @Override
-  public void setBranch(String branch) {
-    this.branch = branch;
-  }
-
-  /* see superclass */
-  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
@@ -346,6 +247,34 @@ public class ProjectJpa implements Project {
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
     return result;
+  }
+
+  /* see superclass */
+  @Override
+  public String getTerminologyId() {
+    return id.toString();
+  }
+
+  /* see superclass */
+  @Override
+  public void setTerminologyId(String terminologyId) {
+    // n/a
+  }
+
+  /* see superclass */
+  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
+  @Override
+  public Map<User, UserRole> getProjectRoleMap() {
+    if (projectRoleMap == null) {
+      projectRoleMap = new HashMap<>();
+    }
+    return projectRoleMap;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProjectRoleMap(Map<User, UserRole> projectRoleMap) {
+    this.projectRoleMap = projectRoleMap;
   }
 
   /* see superclass */
@@ -415,13 +344,4 @@ public class ProjectJpa implements Project {
 
   }
 
-  @Override
-  public String getTerminologyId() {
-    return id.toString();
-  }
-
-  @Override
-  public void setTerminologyId(String terminologyId) {
-    // n/a
-  }
 }

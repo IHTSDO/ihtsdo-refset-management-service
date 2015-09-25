@@ -17,6 +17,7 @@ import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.lucene.analysis.core.LowerCaseFilterFactory;
 import org.apache.lucene.analysis.standard.StandardFilterFactory;
@@ -283,6 +284,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
   public Translation getTranslation() {
     return translation;
@@ -292,6 +294,29 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public void setTranslation(Translation translation) {
     this.translation = translation;
+  }
+
+  /**
+   * Returns the translation id.
+   *
+   * @return the translation id
+   */
+  @XmlElement
+  private Long getTranslationId() {
+    return (translation != null) ? translation.getId() : 0;
+  }
+
+  /**
+   * Sets the translation id.
+   *
+   * @param translationId the translation id
+   */
+  @SuppressWarnings("unused")
+  private void setTranslationId(Long translationId) {
+    if (translation == null) {
+      translation = new TranslationJpa();
+    }
+    translation.setId(translationId);
   }
 
   /* see superclass */

@@ -65,17 +65,6 @@ public interface ProjectService extends RootService {
   public ProjectList getProjects();
 
   /**
-   * Returns the user role for project.
-   *
-   * @param project the project
-   * @param user the user
-   * @return the user role for project
-   * @throws Exception the exception
-   */
-  public UserRole getUserRoleForProject(Project project, User user)
-    throws Exception;
-
-  /**
    * Indicates whether or not last modified flag is the case.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise

@@ -105,9 +105,12 @@ public class RootServiceRestImpl {
     String perform, UserRole authRole) throws Exception {
     // authorize call
     UserRole role =
-        projectService.getUserRoleForProject(projectService
-            .getProject(projectId), securityService.getUser(securityService
-            .getUsernameForToken(authToken)));
+        projectService
+            .getProject(projectId)
+            .getProjectRoleMap()
+            .get(
+                securityService.getUser(securityService
+                    .getUsernameForToken(authToken)));
     UserRole cmpRole = authRole;
     if (cmpRole == null) {
       cmpRole = UserRole.VIEWER;

@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -128,7 +129,8 @@ public class ProjectLoaderMojo extends AbstractMojo {
       ProjectJpa project = new ProjectJpa();
       project.setName(name);
       project.setDescription(description);
-      project.addAdmin(service.getUser(adminUser));
+      project.getProjectRoleMap().put(service.getUser(adminUser),
+          UserRole.ADMIN);
       project.setTerminology(terminology);
       project.setVersion(version);
       project.setLastModifiedBy("admin");

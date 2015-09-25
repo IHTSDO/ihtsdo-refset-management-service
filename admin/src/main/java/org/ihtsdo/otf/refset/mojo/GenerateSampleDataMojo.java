@@ -26,6 +26,7 @@ import java.util.Set;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
@@ -44,34 +45,33 @@ import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
  */
 public class GenerateSampleDataMojo extends AbstractMojo {
 
-  /**  The project. */
+  /** The project. */
   ProjectClientRest project = null;
-  
+
   /** The project1. */
   ProjectJpa project1 = null;
 
   /** The project2. */
   ProjectJpa project2 = null;
-  
-  /**  The admin1 token. */
+
+  /** The admin1 token. */
   String admin1Token = "";
-  
-  /**  The admin2 token. */
+
+  /** The admin2 token. */
   String admin2Token = "";
-  
-  /**  The viewer token. */
+
+  /** The viewer token. */
   String viewerToken = "";
-  
-  /**  The author1 token. */
+
+  /** The author1 token. */
   String author1Token = "";
-  
-  /**  The author2 token. */
+
+  /** The author2 token. */
   String author2Token = "";
-  
-  /**  The author3 token. */
+
+  /** The author3 token. */
   String author3Token = "";
-  
-  
+
   /**
    * Instantiates a {@link GenerateSampleDataMojo} from the specified
    * parameters.
@@ -81,7 +81,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   }
 
   /* see superclass */
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see org.apache.maven.plugin.Mojo#execute()
    */
   @Override
@@ -118,7 +120,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private void loadSampleData() throws Exception {
-    
+
     getLog().info("Start generating sample data");
 
     try {
@@ -126,13 +128,12 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       Properties properties = ConfigUtility.getConfigProperties();
 
       // TODO:
-      /*Create users (author1, author2, author3, lead1, lead2, lead3, admin1, admin 2)
-      Create  projects (project 1, project 2)
-      Assign users to project (different roles)
-          project 1 -> author1, author2, lead1, admin 1
-          project 2 -> author 3, lead2, lead3, admin 2
-      Create refsets
-      Create translations*/
+      /*
+       * Create users (author1, author2, author3, lead1, lead2, lead3, admin1,
+       * admin 2) Create projects (project 1, project 2) Assign users to project
+       * (different roles) project 1 -> author1, author2, lead1, admin 1 project
+       * 2 -> author 3, lead2, lead3, admin 2 Create refsets Create translations
+       */
 
       //
       // consider different versions of same edition
@@ -144,19 +145,17 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       //
       final SecurityClientRest security = new SecurityClientRest(properties);
       viewerToken = security.authenticate("guest", "guest").getAuthToken();
-      author1Token =
-          security.authenticate("author1", "author1").getAuthToken();
-      author2Token =
-          security.authenticate("author2", "author2").getAuthToken();
-      author3Token =
-          security.authenticate("author3", "author3").getAuthToken();
-      //leadToken = security.authenticate("demo_lead", "demo_lead").getAuthToken();
+      author1Token = security.authenticate("author1", "author1").getAuthToken();
+      author2Token = security.authenticate("author2", "author2").getAuthToken();
+      author3Token = security.authenticate("author3", "author3").getAuthToken();
+      // leadToken = security.authenticate("demo_lead",
+      // "demo_lead").getAuthToken();
       admin1Token = security.authenticate("admin1", "admin1").getAuthToken();
       admin2Token = security.authenticate("admin2", "admin2").getAuthToken();
-      
+
       final User viewer = security.getUser("guest", viewerToken);
       getLog().info("  viewer = " + viewer);
-      
+
       final User author1 = security.getUser("author1", author1Token);
       author1.setEmail("***REMOVED***");
       security.updateUser((UserJpa) author1, admin1Token);
@@ -169,70 +168,73 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       author3.setEmail("***REMOVED***");
       security.updateUser((UserJpa) author3, admin1Token);
       getLog().info("  author3 user = " + author3);
-      //final User lead = security.getUser("demo_lead", leadToken);
-      //getLog().info("  lead = " + lead);
-      
+      // final User lead = security.getUser("demo_lead", leadToken);
+      // getLog().info("  lead = " + lead);
+
       final User admin1 = security.getUser("admin1", admin1Token);
       getLog().info("  admin1 = " + admin1);
 
       project = new ProjectClientRest(properties);
-      
+
       // Add user preferences for all users
       // Default notification preferences.
       final UserPreferencesJpa viewerPrefs = new UserPreferencesJpa();
       viewerPrefs.setUser(viewer);
-      //project.addUserPreferences(viewerPrefs, admin1Token);
+      // project.addUserPreferences(viewerPrefs, admin1Token);
       getLog().info("  viewerPrefs = " + viewerPrefs);
       final UserPreferencesJpa authorPrefs = new UserPreferencesJpa();
       authorPrefs.setUser(author1);
-      
+
       // set default notification prefs to send ALERTS
       // on ERROR types
-      /*NotificationPreferences standardNotificationPrefs =
-          new NotificationPreferencesJpa();
-      standardNotificationPrefs
-          .setNotificationChannelType(NotificationChannelType.ALERTS);
-      standardNotificationPrefs.setNotifyOfMeasurement(true);
-      standardNotificationPrefs.addEnabledType(TelemetryEventType.ERROR);
-      standardNotificationPrefs.addEnabledType(TelemetryEventType.INFO);
-      standardNotificationPrefs.setNotifyOfMeasurement(true);
-      standardPrefs.setDefaultNotificationPreferences(standardNotificationPrefs);*/
+      /*
+       * NotificationPreferences standardNotificationPrefs = new
+       * NotificationPreferencesJpa(); standardNotificationPrefs
+       * .setNotificationChannelType(NotificationChannelType.ALERTS);
+       * standardNotificationPrefs.setNotifyOfMeasurement(true);
+       * standardNotificationPrefs.addEnabledType(TelemetryEventType.ERROR);
+       * standardNotificationPrefs.addEnabledType(TelemetryEventType.INFO);
+       * standardNotificationPrefs.setNotifyOfMeasurement(true);
+       * standardPrefs.setDefaultNotificationPreferences
+       * (standardNotificationPrefs);
+       */
 
-      //project.addUserPreferences(authorPrefs, admin1Token);
+      // project.addUserPreferences(authorPrefs, admin1Token);
       getLog().info("  standardPrefs = " + authorPrefs);
-      /*final UserPreferencesJpa leadPrefs = new UserPreferencesJpa();
-      leadPrefs.setUser(lead1);
-      //project.addUserPreferences(leadPrefs, admin1Token);
-      getLog().info("  leadPrefs = " + leadPrefs);*/
+      /*
+       * final UserPreferencesJpa leadPrefs = new UserPreferencesJpa();
+       * leadPrefs.setUser(lead1); //project.addUserPreferences(leadPrefs,
+       * admin1Token); getLog().info("  leadPrefs = " + leadPrefs);
+       */
       final UserPreferencesJpa adminPrefs = new UserPreferencesJpa();
       adminPrefs.setUser(admin1);
-      //project.addUserPreferences(adminPrefs, admin1Token);
+      // project.addUserPreferences(adminPrefs, admin1Token);
       getLog().info("  adminPrefs = " + adminPrefs);
 
       project1 = new ProjectJpa();
       project1.setId(1L);
-      //project1.setAdminNotification(true);
+      // project1.setAdminNotification(true);
       final Set<User> authors = new HashSet<>();
       authors.add(author1);
       authors.add(author2);
-      project1.setAuthors(authors);
-      //project1.setStandardUserNotification(true);
-      /*final Set<User> leads = new HashSet<>();
-      leads.add(lead1);
-      project1.setLeads(leads);
-      //project1.setLeadNotification(true);
-*/    final Set<User> admins = new HashSet<>();
+      for (User author : authors) {
+        project1.getProjectRoleMap().put(author, UserRole.AUTHOR);
+      }
+      // project1.setStandardUserNotification(true);
+      /*
+       * final Set<User> leads = new HashSet<>(); leads.add(lead1);
+       * project1.setLeads(leads); //project1.setLeadNotification(true);
+       */final Set<User> admins = new HashSet<>();
       admins.add(admin1);
-      project1.setAdmins(admins);
+      for (User admin : admins) {
+        project1.getProjectRoleMap().put(admin, UserRole.ADMIN);
+      }
       project1.setName("SNOMED CT Release Service");
       project1
           .setDescription("Represents activities related to the production of beta and official SNOMED releases.");
       project1 = (ProjectJpa) project.addProject(project1, admin1Token);
       getLog().info("  project1 = " + project1);
 
-      
-      
-      
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
