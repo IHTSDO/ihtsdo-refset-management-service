@@ -108,3 +108,8 @@ a {
   background-color: #bee4f2;
   padding:5px;
 }
+
+/* Makes font size in table smaller than default */
+table {
+	font-size: 12px;
+}

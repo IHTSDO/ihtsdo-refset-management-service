@@ -1,0 +1,23 @@
+<div class="modal-header">
+  <h4>Create New Project</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <div>
+      Project id (optional):<br> <input ng-model="project.id"><br>
+      Project name:<br> <input ng-model="project.name"><br> 
+      Description:<br> <input ng-model="project.description"><br>
+      Terminology:<br> <input ng-model="project.terminology"><br>
+      Version:<br> <input ng-model="project.version"><br>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="submitNewProject(project); 
+    ">Submit
+    Project</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

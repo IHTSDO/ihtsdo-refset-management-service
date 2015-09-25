@@ -36,6 +36,8 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled implementation of {@link Project}. TODO: convert all sets to
  * lists.
@@ -47,6 +49,7 @@ import org.ihtsdo.otf.refset.User;
 @Audited
 @Indexed
 @XmlRootElement(name = "project")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProjectJpa implements Project {
 
   /** The id. */
