@@ -9,9 +9,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -19,7 +19,6 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyClass;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -86,11 +85,10 @@ public class ProjectJpa implements Project {
   private String version;
 
   /** The leads. */
-  @OneToMany()
-  @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+  @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)
-  @CollectionTable(name = "user_notification_preferences", joinColumns = @JoinColumn(name = "user_preferences_id"))
+  @CollectionTable(name = "project_user_role_map", joinColumns = @JoinColumn(name = "user_id"))
   private Map<User, UserRole> projectRoleMap;
 
   /** The refsets. */
