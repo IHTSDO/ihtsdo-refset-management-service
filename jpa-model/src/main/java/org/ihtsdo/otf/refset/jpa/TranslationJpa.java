@@ -76,13 +76,11 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
-  @Column(nullable = false)
   @ContainedIn
   private Refset refset;
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
-  @Column(nullable = false)
   private Project project;
 
   /** The descriptions. */
@@ -320,7 +318,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     return result;
   }
 
@@ -355,11 +352,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
       if (other.namespace != null)
         return false;
     } else if (!namespace.equals(other.namespace))
-      return false;
-    if (refset == null) {
-      if (other.refset != null)
-        return false;
-    } else if (!refset.equals(other.refset))
       return false;
     return true;
   }

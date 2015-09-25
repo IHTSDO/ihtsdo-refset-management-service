@@ -12,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -19,10 +20,13 @@ import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ReleaseProperty;
+import org.ihtsdo.otf.refset.Translation;
 
 /**
  * JPA enabled implementation of a {@link ReleaseInfo}.
@@ -86,13 +90,13 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Column(nullable = false)
   private Date lastModified = new Date();
 
-  /** The refset id. */
-  @Column(nullable = true)
-  private String refsetId;
+  /** The refset. */
+  @ManyToOne(targetEntity = RefsetJpa.class)
+  private Refset refset;
 
-  /** The translation id. */
-  @Column(nullable = true)
-  private String translationId;
+  /** The translation. */
+  @ManyToOne(targetEntity = TranslationJpa.class)
+  private Translation translation;
 
   /** The release properties. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
@@ -122,8 +126,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
-    refsetId = releaseInfo.getRefsetId();
-    translationId = releaseInfo.getTranslationId();
+    refset = releaseInfo.getRefset();
+    translation = releaseInfo.getTranslation();
   }
 
   /* see superclass */
@@ -236,27 +240,75 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
-  public String getRefsetId() {
-    return refsetId;
+  public Refset getRefset() {
+    return refset;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetId(String refsetId) {
-    this.refsetId = refsetId;
+  public void setRefset(Refset refset) {
+    this.refset = refset;
+  }
+
+  /**
+   * Returns the refset id.
+   *
+   * @return the refset id
+   */
+  @XmlElement
+  private Long getRefsetId() {
+    return (refset != null) ? refset.getId() : 0;
+  }
+
+  /**
+   * Sets the refset id.
+   *
+   * @param refsetId the refset id
+   */
+  @SuppressWarnings("unused")
+  private void setRefsetId(Long refsetId) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setId(refsetId);
   }
 
   /* see superclass */
   @Override
-  public String getTranslationId() {
-    return translationId;
+  @XmlTransient
+  public Translation getTranslation() {
+    return translation;
   }
 
   /* see superclass */
   @Override
-  public void setTranslationId(String translationId) {
-    this.translationId = translationId;
+  public void setTranslation(Translation translation) {
+    this.translation = translation;
+  }
+
+  /**
+   * Returns the translation id.
+   *
+   * @return the translation id
+   */
+  @XmlElement
+  private Long getTranslationId() {
+    return (translation != null) ? translation.getId() : 0;
+  }
+
+  /**
+   * Sets the translation id.
+   *
+   * @param translationId the translation id
+   */
+  @SuppressWarnings("unused")
+  private void setTranslationId(Long translationId) {
+    if (translation == null) {
+      translation = new TranslationJpa();
+    }
+    translation.setId(translationId);
   }
 
   /* see superclass */
@@ -296,10 +348,16 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result = prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
     result =
-        prime * result
-            + ((translationId == null) ? 0 : translationId.hashCode());
+        prime
+            * result
+            + ((refset == null || refset.getId() == null) ? 0 : refset.getId()
+                .hashCode());
+    result =
+        prime
+            * result
+            + ((translation == null || translation.getId() == null) ? 0
+                : translation.getId().hashCode());
     return result;
   }
 
@@ -350,15 +408,21 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         return false;
     } else if (!version.equals(other.version))
       return false;
-    if (refsetId == null) {
-      if (other.refsetId != null)
+    if (refset == null) {
+      if (other.refset != null)
         return false;
-    } else if (!refsetId.equals(other.refsetId))
+    } else if (refset.getId() == null) {
+      if (other.refset != null && other.refset.getId() != null)
+        return false;
+    } else if (!refset.getId().equals(other.refset.getId()))
       return false;
-    if (translationId == null) {
-      if (other.translationId != null)
+    if (translation == null) {
+      if (other.translation != null)
         return false;
-    } else if (!translationId.equals(other.translationId))
+    } else if (translation.getId() == null) {
+      if (other.translation != null && other.translation.getId() != null)
+        return false;
+    } else if (!translation.getId().equals(other.translation.getId()))
       return false;
     return true;
   }
@@ -370,9 +434,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         + ", effectiveTime=" + effectiveTime + ", planned=" + planned
         + ", published=" + published + ", terminology=" + terminology
         + ", version=" + version + ", lastModifiedBy=" + lastModifiedBy
-        + ", lastModified=" + lastModified + ", refsetId=" + refsetId
-        + ", translationId=" + translationId + ", properties=" + properties
-        + "]";
+        + ", lastModified=" + lastModified + ", refsetId=" + refset
+        + ", translationId=" + translation + ", properties=" + properties + "]";
   }
 
 }
