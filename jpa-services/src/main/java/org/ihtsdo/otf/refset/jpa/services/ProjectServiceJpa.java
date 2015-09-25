@@ -200,32 +200,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public UserRole getUserRoleForProject(Project project, User user)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Project Service - get user role for project - " + user + ", "
-            + project);
-
-    // check admin
-    if (project.getAdmins().contains(user)) {
-      return UserRole.ADMIN;
-    }
-
-    // check reviewer
-    if (project.getReviewers().contains(user)) {
-      return UserRole.REVIEWER;
-    }
-
-    // check author
-    if (project.getAuthors().contains(user)) {
-      return UserRole.AUTHOR;
-    }
-
-    return null;
-  }
-
-  /* see superclass */
-  @Override
   public Project addProject(Project project) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Project Service - add project - " + project);
@@ -275,14 +249,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     if (project == null) {
       return;
     }
-    if (project.getAdmins() != null) {
-      project.getAdmins().size();
-    }
-    if (project.getAuthors() != null) {
-      project.getAuthors().size();
-    }
-    if (project.getReviewers() != null) {
-      project.getReviewers().size();
+    if (project.getProjectRoleMap() != null) {
+      project.getProjectRoleMap().size();
     }
   }
 
@@ -1143,19 +1111,18 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     if (role == UserRole.VIEWER) {
       return true;
     }
+    UserRole projectRole = project.getProjectRoleMap().get(user);
     if (role == UserRole.AUTHOR) {
-      return project.getAuthors().contains(user)
-          || project.getReviewers().contains(user)
-          || project.getAdmins().contains(user);
+      return projectRole == UserRole.AUTHOR || projectRole == UserRole.REVIEWER
+          || projectRole == UserRole.ADMIN;
     }
 
     if (role == UserRole.REVIEWER) {
-      return project.getReviewers().contains(user)
-          || project.getAdmins().contains(user);
+      return projectRole == UserRole.REVIEWER || projectRole == UserRole.ADMIN;
     }
 
     if (role == UserRole.ADMIN) {
-      return project.getAdmins().contains(user);
+      return projectRole == UserRole.ADMIN;
     }
     return false;
   }

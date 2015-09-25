@@ -8,12 +8,47 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 
 /**
  * Represents a content available via a REST service.
  */
 public interface ProjectServiceRest {
+
+  /**
+   * Returns the project roles.
+   *
+   * @param authToken the auth token
+   * @return the project roles
+   * @throws Exception the exception
+   */
+  public StringList getProjectRoles(String authToken) throws Exception;
+
+  /**
+   * Adds the user to project.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param role the role
+   * @param authToken the auth token
+   * @return the project
+   * @throws Exception the exception
+   */
+  public Project addUserToProject(Long projectId, String userName, String role,
+    String authToken) throws Exception;
+
+  /**
+   * Removes the user from project.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param authToken the auth token
+   * @return the project
+   * @throws Exception the exception
+   */
+  public Project removeUserFromProject(Long projectId, String userName,
+    String authToken) throws Exception;
 
   /**
    * Adds the project.
@@ -44,7 +79,6 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public void removeProject(Long projectId, String authToken) throws Exception;
-
 
   /**
    * Returns the project.

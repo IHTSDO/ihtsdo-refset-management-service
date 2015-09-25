@@ -172,7 +172,7 @@ public class ProjectServiceRestDegenerateUseTest extends ProjectServiceRestTest 
     user =
         securityService.getUser(properties.getProperty("bad.user"),
             adminAuthToken);
-    project.addAuthor(user);
+    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
 
     // add the project
     project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
@@ -190,8 +190,6 @@ public class ProjectServiceRestDegenerateUseTest extends ProjectServiceRestTest 
     securityService.removeUser(user.getId(), adminAuthToken);
 
   }
-
-
 
   /**
    * Teardown.

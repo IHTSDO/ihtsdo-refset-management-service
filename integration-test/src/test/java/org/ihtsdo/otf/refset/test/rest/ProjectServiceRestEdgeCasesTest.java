@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.junit.After;
@@ -74,8 +75,7 @@ public class ProjectServiceRestEdgeCasesTest extends ProjectServiceRestTest {
     Set<String> values = new HashSet<>();
     values.add("PUBLISHED");
     User user = securityService.getUser(adminUser, adminAuthToken);
-    project2.addAuthor(user);
-    project2.addLead(user);
+    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
     project2.setDescription("Sample");
     project2.setName("Sample");
     project2.setTerminology("SNOMEDCT");
