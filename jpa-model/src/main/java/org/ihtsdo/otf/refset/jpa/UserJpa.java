@@ -72,6 +72,7 @@ public class UserJpa implements User {
    * The default constructor.
    */
   public UserJpa() {
+    //n/a
   }
 
   /**
