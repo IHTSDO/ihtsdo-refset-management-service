@@ -12,7 +12,7 @@ tsApp
       'directoryService',
       function($http, $q, gpService, utilService, translationService,
     		  refsetService, directoryService) {
-        console.debug("configure refsetService");
+        console.debug("configure adminService");
 
         // Translation Service
         var translation = translationService.getModel();
@@ -20,7 +20,7 @@ tsApp
         // Refset Service
         var refset = refsetService.getModel();
 
-        // The component and the history list
+/*      // The component and the history list
         var component = {
           object : null,
           type : null,
@@ -70,9 +70,242 @@ tsApp
         // Accessor for search results
         this.getSearchResults = function() {
           return searchResults;
+        }*/
+
+        
+        // get all projects
+        this.getProjects = function() {
+          console.debug("getProjects");
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment()
+          $http.get(projectUrl + 'projects').then(
+          // success
+          function(response) {
+            console.debug("  projects = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }        
+        
+        // add project
+        this.addProject = function(project) {
+          console.debug("addProject");
+          var deferred = $q.defer();
+
+          // Add project
+          gpService.increment()
+          $http.put(projectUrl + 'add', project).then(
+          // success
+          function(response) {
+            console.debug("  project = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                
+        
+        // update project
+        this.updateProject = function(project) {
+          console.debug("updateProject");
+          var deferred = $q.defer();
+
+          // Add project
+          gpService.increment()
+          $http.post(projectUrl + 'update', project).then(
+          // success
+          function(response) {
+            console.debug("  project = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }            
+        
+        // remove project
+        this.removeProject = function(project) {
+          console.debug("removeProject");
+          var deferred = $q.defer();
+
+          // Add project
+          gpService.increment()
+          $http.delete(projectUrl + 'remove' + "/" + project.id).then(
+          // success
+          function(response) {
+            console.debug("  project = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                        
+ 
+        
+        
+        // get all users
+        this.getUsers = function() {
+          console.debug("getUsers");
+          var deferred = $q.defer();
+
+          // Get users
+          gpService.increment()
+          $http.get(securityUrl + 'user/users').then(
+          // success
+          function(response) {
+            console.debug("  users = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }        
+        
+        // add user
+        this.addUser = function(user) {
+          console.debug("addUser");
+          var deferred = $q.defer();
+
+          // Add user
+          gpService.increment()
+          $http.put(securityUrl + 'user/add', user).then(
+          // success
+          function(response) {
+            console.debug("  user = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                
+        
+        // update user
+        this.updateUser = function(user) {
+          console.debug("updateUser");
+          var deferred = $q.defer();
+
+          // Add user
+          gpService.increment()
+          $http.post(securityUrl + 'user/update', user).then(
+          // success
+          function(response) {
+            console.debug("  user = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }            
+        
+        // remove user
+        this.removeUser = function(user) {
+          console.debug("removeUser");
+          var deferred = $q.defer();
+
+          // Add user
+          gpService.increment()
+          $http.delete(securityUrl + 'user/remove' + "/" + user.id).then(
+          // success
+          function(response) {
+            console.debug("  user = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                      
+        
+        
+        // Sets the project
+        this.setProject = function(project) {
+          if (typeof project === undefined) {
+            return;
+          }
+          /*if ($scope.selectedProject
+            && project.id === $scope.selectedProject.id) {
+            return;
+          }
+          $scope.selectedProject = project;
+          // Clear selected milestone and paging
+          $scope.selectedMilestone = null;
+          $scope.pagedMilestones = null;
+          $scope.milestonePaging.page = 1;
+          $scope.milestonePaging.filter = "";
+
+          // Clear selected process and paging
+          $scope.selectedProcess = null;
+          $scope.pagedProcesses = null;
+          $scope.processPaging.page = 1;
+          $scope.processPaging.filter = "";
+
+          // Clear events/measurements
+          $scope.eventPaging.page = 1;
+          $scope.eventPaging.filter = "";
+          $scope.measurementPaging.page = 1;
+          $scope.measurementPaging.filter = "";
+
+          $scope.retrievePagedMilestones();
+          $scope.retrievePagedEvents('projectId:' + project.id);
+          $scope.retrievePagedMeasurements('projectId:' + project.id)*/
         }
 
-        // Autocomplete function
+        // Convert date to a string
+        this.toDate = function(lastModified) {
+          return errorService.toDate(lastModified);
+        }
+
+        // Convert date to a short string
+        this.toShortDate = function(lastModified) {
+          return errorService.toShortDate(lastModified);
+        }
+
+
+        
+        /*     // Autocomplete function
         this.autocomplete = function(searchTerms, autocompleteUrl) {
 
           // if invalid search terms, return empty array
@@ -599,5 +832,5 @@ tsApp
             });
 
           return deferred.promise;
-        }
+        }*/
       } ]);

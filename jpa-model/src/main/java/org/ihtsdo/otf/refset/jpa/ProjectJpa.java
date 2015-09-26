@@ -45,6 +45,8 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
 import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled implementation of {@link Project}. TODO: convert all sets to
  * lists.
@@ -56,6 +58,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
 @Audited
 @Indexed
 @XmlRootElement(name = "project")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProjectJpa implements Project {
 
   /** The id. */
