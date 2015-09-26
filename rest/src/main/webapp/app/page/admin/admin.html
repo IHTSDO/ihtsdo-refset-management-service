@@ -4,7 +4,98 @@
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
 
-  <h3>ADMIN PAGE</h3>
-  </div>
+    <accordion ng-show="user.applicationRole == 'ADMIN'" > 
+    <accordion-group heading="Application Administration" 
+    is-open="false">
+     <!-- Projects --> <accordion-heading>
+    <h5>
+      <span tooltip-placement="right" tooltip="List of the projects.">
+        Projects </span>
+    </h5>
+    </accordion-heading>
+    <div class="col-md-12 col-xs-12">
+      <h4>
+        <div style="float: right;">
+          <a title="Create new project" ng-click="openNewProjectModal(lproject)">
+            <i class="glyphicon glyphicon-plus"></i>
+          </a>
+        </div>
+      </h4>
+      <table class="table">
+        <thead>
+          <th class="col-md-2 col-xs-2">Id</th>
+          <th class="col-md-8 col-xs-8">Name</th>
+          <th class="col-md-1 col-xs-1">&nbsp;</th>
+          <th class="col-md-1 col-xs-1">&nbsp;</th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="project in projects" ng-click="setProject(project)">
+            <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
+            <td><a ng-click="project.isExpanded = !project.isExpanded">
+                [ <i
+                  ng-class="{'glyphicon-minus': project.isExpanded, 'glyphicon-plus': !project.isExpanded}"></i>
+                ]
+              </a>{{project.name}}
+              <div collapse="!project.isExpanded">{{project.description}}</div></td>
 
-</div>
+            <td><a title="Edit"
+                ng-click="openEditProjectModal(project); $event.stopPropagation()">
+                <i class="glyphicon glyphicon-pencil"></i>
+              </a></td>
+
+            <td><a title="Remove"
+                ng-click="remove('project',project,projects); $event.stopPropagation()">
+                <i class="glyphicon glyphicon-remove"></i>
+              </a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--  end Projects -->
+    </accordion-group>
+    <accordion-group> <!-- Users --> <accordion-heading>
+    <h5>
+      <span tooltip-placement="right" tooltip="List of the users and their application roles.">
+        Users </span>
+    </h5>
+    </accordion-heading>
+    <div class="col-md-12 col-xs-12">
+      <h4>
+        <div style="float: right;">
+          <a title="Create new user" ng-click="openNewUserModal(luser)">
+            <i class="glyphicon glyphicon-plus"></i>
+          </a>
+        </div>
+      </h4>
+      <table class="table">
+        <thead>
+          <th class="col-md-3 col-xs-3">Username</th>
+          <th class="col-md-5 col-xs-5">Name</th>
+          <th class="col-md-2 col-xs-2">Role</th>
+          <th class="col-md-1 col-xs-1">&nbsp;</th>
+          <th class="col-md-1 col-xs-1">&nbsp;</th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="user in users">
+            <td>{{user.userName}}</td>
+            <td>{{user.name}}</td>
+            <td>{{user.applicationRole}}</td>
+            
+            <td><a title="Edit"
+                ng-click="openEditUserModal(user); $event.stopPropagation()">
+                <i class="glyphicon glyphicon-pencil"></i>
+              </a></td>
+
+            <td><a title="Remove"
+                ng-click="remove('user',user,users); $event.stopPropagation()">
+                <i class="glyphicon glyphicon-remove"></i>
+              </a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!--  end Users -->
+    </accordion-group>
+    </accordion>
+
+  </div>

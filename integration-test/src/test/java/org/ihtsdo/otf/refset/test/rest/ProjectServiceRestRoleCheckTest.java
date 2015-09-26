@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.junit.After;
 import org.junit.Before;
@@ -60,9 +61,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     Set<String> values = new HashSet<>();
     values.add("PUBLISHED");
     User user = securityService.getUser(adminUser, adminAuthToken);
-    project.addAdmin(user);
-    project.addAuthor(user);
-    project.addLead(user);
+    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
 
     project.setDescription("Sample");
     project.setName("Sample");

@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
@@ -189,8 +190,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
 
-      authenticate(securityService, authToken, "add concept",
-          UserRole.ADMIN);
+      authenticate(securityService, authToken, "add concept", UserRole.ADMIN);
 
       // Create service and configure transaction scope
       User newUser = securityService.addUser(user);
@@ -217,8 +217,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authenticate(securityService, authToken, "remove user",
-          UserRole.ADMIN);
+      authenticate(securityService, authToken, "remove user", UserRole.ADMIN);
 
       // Remove user
       securityService.removeUser(id);
@@ -242,11 +241,35 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Security): /user/update " + user);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authenticate(securityService, authToken, "update concept",
-          UserRole.ADMIN);
+      authenticate(securityService, authToken, "update concept", UserRole.ADMIN);
       securityService.updateUser(user);
     } catch (Exception e) {
       handleException(e, "trying to update a concept");
+    } finally {
+      securityService.close();
+    }
+  }
+
+  @Override
+  @GET
+  @Path("/roles")
+  @ApiOperation(value = "Get application roles", notes = "Returns list of valid application roles", response = StringList.class)
+  public StringList getApplicationRoles(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Security): /roles");
+
+    SecurityService securityService = new SecurityServiceJpa();
+    try {
+      authenticate(securityService, authToken, "update concept", UserRole.ADMIN);
+      StringList list = new StringList();
+      list.setTotalCount(3);
+      list.getObjects().add(UserRole.VIEWER.toString());
+      list.getObjects().add(UserRole.ADMIN.toString());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get roles");
+      return null;
     } finally {
       securityService.close();
     }

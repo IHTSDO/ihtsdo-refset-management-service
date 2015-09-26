@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 
@@ -56,7 +57,7 @@ public interface SecurityServiceRest {
    *
    * @param authToken the auth token
    * @return the users
-   * @throws Exception
+   * @throws Exception the exception
    */
   public UserList getUsers(String authToken) throws Exception;
 
@@ -87,4 +88,13 @@ public interface SecurityServiceRest {
    * @throws Exception the exception
    */
   public void updateUser(UserJpa user, String authToken) throws Exception;
+
+  /**
+   * Returns the application roles.
+   *
+   * @param authToken the auth token
+   * @return the application roles
+   * @throws Exception the exception
+   */
+  public StringList getApplicationRoles(String authToken) throws Exception;
 }

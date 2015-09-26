@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
@@ -119,7 +120,6 @@ public class ProjectClientRest extends RootClientRest implements
     }
   }
 
-
   /* see superclass */
   @Override
   public Project getProject(Long id, String authToken) throws Exception {
@@ -194,5 +194,25 @@ public class ProjectClientRest extends RootClientRest implements
         throw new Exception("Unexpected status " + response.getStatus());
     }
 
+  }
+
+  @Override
+  public Project addUserToProject(Long projectId, String username, String role,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Project removeUserFromProject(Long projectId, String userName,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public StringList getProjectRoles(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

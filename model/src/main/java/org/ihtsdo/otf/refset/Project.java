@@ -4,7 +4,7 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 
@@ -28,101 +28,18 @@ public interface Project extends Searchable {
   public void setDescription(String description);
 
   /**
-   * Returns the leads.
-   * 
-   * @return the leads
-   */
-  public Set<User> getReviewers();
-
-  /**
-   * Sets the leads.
-   * 
-   * @param leads the leads
-   */
-  public void setLeads(Set<User> leads);
-
-  /**
-   * Adds the lead.
-   * 
-   * @param lead the lead
-   */
-  public void addLead(User lead);
-
-  /**
-   * Removes the lead.
-   * 
-   * @param lead the lead
-   */
-  public void removeLead(User lead);
-
-  /**
-   * Returns the administrators.
-   * 
-   * @return the administrators
-   */
-  public Set<User> getAdmins();
-
-  /**
-   * Sets the administrators.
-   * @param admins the administrators
-   */
-  public void setAdmins(Set<User> admins);
-
-  /**
-   * Adds the administrator.
-   * 
-   * @param admin a administrator
-   */
-  public void addAdmin(User admin);
-
-  /**
-   * Removes the administrator.
-   * 
-   * @param admin the administrator
-   */
-  public void removeAdmin(User admin);
-
-  /**
-   * Returns the author.
-   * 
-   * @return the author.
-   */
-  public Set<User> getAuthors();
-
-  /**
-   * Sets the authors.
-   * 
-   * @param authors the authors
-   */
-  public void setAuthors(Set<User> authors);
-
-  /**
-   * Adds the author.
-   * 
-   * @param author the author
-   */
-  public void addAuthor(User author);
-
-  /**
-   * Removes the author.
-   * 
-   * @param author the author
-   */
-  public void removeAuthor(User author);
-
-  /**
-   * Returns the branch.
+   * Returns the project role map.
    *
-   * @return the branch
+   * @return the project role map
    */
-  public String getBranch();
+  public Map<User, UserRole> getProjectRoleMap();
 
   /**
-   * Sets the branch.
+   * Sets the project role map.
    *
-   * @param branch the branch
+   * @param projectRoleMap the project role map
    */
-  public void setBranch(String branch);
+  public void setProjectRoleMap(Map<User, UserRole> projectRoleMap);
 
   /**
    * Returns the refsets.
@@ -151,6 +68,5 @@ public interface Project extends Searchable {
    * @param refset the refset
    */
   public void removeRefset(Refset refset);
-
 
 }
