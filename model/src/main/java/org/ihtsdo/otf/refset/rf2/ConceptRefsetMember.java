@@ -8,7 +8,7 @@ import org.ihtsdo.otf.refset.Refset;
 /**
  * Represents a simple reference set member.
  */
-public interface SimpleRefsetMember extends RefsetMember {
+public interface ConceptRefsetMember extends Component {
 
   /**
    * Returns the refset.
@@ -37,5 +37,19 @@ public interface SimpleRefsetMember extends RefsetMember {
    * @param conceptId the concept id
    */
   public void setConceptId(String conceptId);
+
+  /**
+   * Returns the concept name.
+   *
+   * @return the concept name
+   */
+  public String getConceptName();
+
+  /**
+   * Sets the concept name.
+   *
+   * @param conceptName the concept name
+   */
+  public void setConceptName(String conceptName);
 
 }

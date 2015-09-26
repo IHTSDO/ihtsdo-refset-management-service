@@ -11,11 +11,13 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDefinitionRefsetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDefinitionRefsetMemberJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
@@ -55,7 +57,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
-  public List<SimpleRefsetMember> importMembers(InputStream content)
+  public List<ConceptRefsetMember> importMembers(InputStream content)
     throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
@@ -68,7 +70,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     // FAIL if
     // the format of the line is wrong (e.g. unexpected number of fields)
 
-    List<SimpleRefsetMember> list = new ArrayList<>();
+    List<ConceptRefsetMember> list = new ArrayList<>();
     String line = "";
 
     Reader reader = new InputStreamReader(content, "UTF-8");
@@ -86,14 +88,16 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       if (!fields[0].equals("id")) { // header
 
-        final SimpleRefsetMember member = new SimpleRefsetMemberJpa();
+        final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         // Universal Refset attributes
         member.setTerminologyId(fields[0]);
         member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setActive(fields[2].equals("1"));
         member.setModuleId(fields[3].intern());
-        member.setRefsetId(fields[4]);
+        Refset refset = new RefsetJpa();
+        refset.setTerminologyId(fields[4]);
+        member.setRefset(refset);
 
         // SimpleRefsetMember unique attributes
         member.setConceptId(fields[5]);

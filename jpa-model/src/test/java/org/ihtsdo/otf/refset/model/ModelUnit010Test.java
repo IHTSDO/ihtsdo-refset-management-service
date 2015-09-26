@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
@@ -143,35 +142,6 @@ public class ModelUnit010Test {
     tester.proxy(Concept.class, 1, c);
 
     assertTrue(tester.testXmlSerialization());
-  }
-
-  /**
-   * Test concept reference in XML serialization.
-   *
-   * @throws Exception the exception
-   */
-  @Test
-  public void testModelXmlTransient010() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient010");
-    Relationship r = new RelationshipJpa();
-    r.setId(1L);
-    r.setTerminologyId("1");
-
-    Concept c = new ConceptJpa();
-    c.setId(1L);
-    c.setTerminologyId("1");
-    c.setName("1");
-    c.addRelationship(r);
-    r.setSourceConcept(c);
-    r.setDestinationConcept(c);
-
-    String xml = ConfigUtility.getStringForGraph(r);
-    assertTrue(xml.contains("<sourceId>"));
-    assertTrue(xml.contains("<sourceTerminologyId>"));
-    assertTrue(xml.contains("<sourcePreferredName>"));
-    assertTrue(xml.contains("<destinationId>"));
-    assertTrue(xml.contains("<destinationTerminologyId>"));
-    assertTrue(xml.contains("<destinationPreferredName>"));
   }
 
   /**

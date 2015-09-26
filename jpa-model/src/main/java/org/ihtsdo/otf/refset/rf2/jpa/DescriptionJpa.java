@@ -24,17 +24,16 @@ import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 
 /**
- * Concrete implementation of {@link Description} for use with JPA.
+ * JPA-enabled implementation of {@link Description}.
  */
 @Entity
-// @UniqueConstraint here is being used to create an index, not to enforce
-// uniqueness
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "terminology", "version", "id"
 }))
@@ -67,8 +66,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @ContainedIn
   private Concept concept;
 
-  /** The language Refset members */
+  /** The language Refset members. */
   @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefsetMemberJpa.class)
+  @IndexedEmbedded
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 
   /**
@@ -112,11 +112,13 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     this.typeId = type;
   }
 
+  /* see superclass */
   @Override
   public String getWorkflowStatus() {
     return workflowStatus;
   }
 
+  /* see superclass */
   @Override
   public void setWorkflowStatus(String workflowStatus) {
     this.workflowStatus = workflowStatus;
@@ -127,6 +129,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    * 
    * @return the language code
    */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getLanguageCode() {
     return languageCode;
@@ -193,6 +196,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    * 
    * @return the case significance id
    */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getCaseSignificanceId() {
     return caseSignificanceId;
@@ -297,8 +301,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /**
-   * Returns the set of SimpleRefsetMembers
-   * 
+   * Returns the set of SimpleRefsetMembers.
+   *
    * @return the set of SimpleRefsetMembers
    */
   @XmlElement(type = LanguageRefsetMemberJpa.class, name = "languages")
@@ -311,8 +315,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /**
-   * Sets the set of LanguageRefsetMembers
-   * 
+   * Sets the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMembers the set of LanguageRefsetMembers
    */
   @Override
@@ -328,8 +332,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /**
-   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers
-   * 
+   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMember the LanguageRefsetMembers to be added
    */
   @Override
@@ -342,8 +346,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /**
-   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers
-   * 
+   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMember the LanguageRefsetMember to be removed
    */
   @Override
@@ -355,6 +359,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     languageRefsetMembers.remove(languageRefsetMember);
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return super.toString() + "," + getConceptId() + ","
@@ -362,6 +367,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         + getTypeId() + "," + getTerm() + "," + getCaseSignificanceId();
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -382,6 +388,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

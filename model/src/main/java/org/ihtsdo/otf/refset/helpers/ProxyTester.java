@@ -280,6 +280,11 @@ public class ProxyTester {
       Map map = new HashMap<>();
       return map;
     }
+    if (type == byte[].class) {
+      byte[] data  = new byte[1];
+      data[0] = (byte)(initializer % 2 == 0 ? 0 : 1);
+      return data;
+    }
     if (type == BigInteger.class)
       return new BigInteger("" + initializer);
     // JAVA5 - Comment out or remove the next two lines on older Java versions.

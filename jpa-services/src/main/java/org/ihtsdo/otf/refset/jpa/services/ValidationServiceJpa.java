@@ -13,7 +13,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.ValidationService;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
@@ -91,7 +91,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
   }
 
   @Override
-  public ValidationResult validateMember(SimpleRefsetMember member) {
+  public ValidationResult validateMember(ConceptRefsetMember member) {
     ValidationResult result = new ValidationResultJpa();
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(member));

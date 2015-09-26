@@ -5,9 +5,12 @@ package org.ihtsdo.otf.refset.jpa;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -22,14 +25,14 @@ import org.ihtsdo.otf.refset.UserPreferences;
 @Entity
 @Table(name = "user_preferences")
 @Audited
-@XmlRootElement(name = "userPreferences")
+@XmlRootElement(name = "prefs")
 public class UserPreferencesJpa implements UserPreferences {
 
   /** The id. */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
-
   /** The user name. */
   @OneToOne(targetEntity = UserJpa.class)
   private User user;
@@ -38,6 +41,7 @@ public class UserPreferencesJpa implements UserPreferences {
    * The default constructor.
    */
   public UserPreferencesJpa() {
+    // n/a
   }
 
   /**
@@ -118,6 +122,7 @@ public class UserPreferencesJpa implements UserPreferences {
    *
    * @return the user id
    */
+  @XmlElement
   public Long getUserId() {
     return user == null ? 0L : user.getId();
   }

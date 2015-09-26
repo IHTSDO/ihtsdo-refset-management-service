@@ -20,7 +20,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
@@ -151,7 +151,7 @@ public class HistoryClientRest extends RootClientRest implements HistoryServiceR
   }
 
   @Override
-  public SimpleRefsetMemberList findMembersForRefsetRevision(Long refsetId,
+  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;

@@ -14,7 +14,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 
 /**
@@ -93,7 +93,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(SimpleRefsetMember member) throws Exception {
+  public String getTerminologyId(ConceptRefsetMember member) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

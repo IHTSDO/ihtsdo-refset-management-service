@@ -3,10 +3,11 @@
  */
 package org.ihtsdo.otf.refset.lists;
 
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
-import org.ihtsdo.otf.refset.jpa.helpers.SimpleRefsetMemberListJpa;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.SimpleRefsetMemberJpa;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -14,21 +15,21 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link SimpleRefsetMemberList}.
+ * Unit testing for {@link ConceptRefsetMemberList}.
  */
-public class ListUnit017Test extends AbstractListUnit<SimpleRefsetMember> {
+public class ListUnit017Test extends AbstractListUnit<ConceptRefsetMember> {
 
   /** The list1 test fixture . */
-  private SimpleRefsetMemberList list1;
+  private ConceptRefsetMemberList list1;
 
   /** The list2 test fixture . */
-  private SimpleRefsetMemberList list2;
+  private ConceptRefsetMemberList list2;
 
   /** The test fixture o1. */
-  private SimpleRefsetMember o1;
+  private ConceptRefsetMember o1;
 
   /** The test fixture o2. */
-  private SimpleRefsetMember o2;
+  private ConceptRefsetMember o2;
 
   /**
    * Setup class.
@@ -43,16 +44,20 @@ public class ListUnit017Test extends AbstractListUnit<SimpleRefsetMember> {
    */
   @Before
   public void setup() {
-    list1 = new SimpleRefsetMemberListJpa();
-    list2 = new SimpleRefsetMemberListJpa();
-    o1 = new SimpleRefsetMemberJpa();
+    list1 = new ConceptRefsetMemberListJpa();
+    list2 = new ConceptRefsetMemberListJpa();
+    o1 = new ConceptRefsetMemberJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
     o1.setConceptId("1");
-    o2 = new SimpleRefsetMemberJpa();
+    o1.setRefset(new RefsetJpa());
+    o1.getRefset().setId(1L);
+    o2 = new ConceptRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
     o2.setConceptId("2");
+    o2.setRefset(new RefsetJpa());
+    o2.getRefset().setId(2L);
   }
 
   /**

@@ -9,12 +9,12 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 /**
@@ -65,7 +65,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
+  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
     // TODO
     return null;
@@ -159,22 +159,22 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public SimpleRefsetMember addSimpleRefsetMember(
-    SimpleRefsetMember simpleRefsetMember) throws Exception {
+  public ConceptRefsetMember addSimpleRefsetMember(
+    ConceptRefsetMember simpleRefsetMember) throws Exception {
     // TODO: Implement as call to terminology server
     return null;
   }
 
   /* see superclass */
   @Override
-  public SimpleRefsetMember getSimpleRefsetMember(Long id) throws Exception {
+  public ConceptRefsetMember getSimpleRefsetMember(Long id) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   /* see superclass */
   @Override
-  public SimpleRefsetMember getSimpleRefsetMember(String terminologyId,
+  public ConceptRefsetMember getSimpleRefsetMember(String terminologyId,
     String terminology, String version) throws Exception {
     return null;
     // TODO: Implement as call to terminology server
@@ -182,7 +182,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public void updateSimpleRefsetMember(SimpleRefsetMember simpleRefsetMember)
+  public void updateSimpleRefsetMember(ConceptRefsetMember simpleRefsetMember)
     throws Exception {
     // TODO: Implement as call to terminology server
   }
@@ -195,7 +195,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public SimpleRefsetMemberList findMembersForHistoricalRefset(Refset refset,
+  public ConceptRefsetMemberList findMembersForHistoricalRefset(Refset refset,
     String query, PfsParameter pfs) throws Exception {
     // TODO: implement as a local call
     return null;

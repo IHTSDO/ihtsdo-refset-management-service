@@ -6,17 +6,15 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
-import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
-import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Relationship;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,40 +22,41 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link ConceptRefsetMemberJpa}.
+ * Unit testing for {@link RelationshipJpa}.
  */
-public class ModelUnit021Test {
+public class ModelUnit034Test {
 
   /** The model object to test. */
-  private ConceptRefsetMemberJpa object;
+  private RelationshipJpa object;
 
-  /** The r1. */
-  private RefsetJpa r1;
+  /** The test fixture c1. */
+  private Concept c1;
 
-  /** The r2. */
-  private RefsetJpa r2;
+  /** The test fixture c2. */
+  private Concept c2;
 
   /**
    * Setup class.
    */
   @BeforeClass
   public static void setupClass() {
-    // n/a
+    // do nothing
   }
 
   /**
    * Setup.
-   * @throws Exception 
    */
   @Before
-  public void setup() throws Exception {
-    object = new ConceptRefsetMemberJpa();
-
-    ProxyTester tester = new ProxyTester(new RefsetJpa());
-    r1 = (RefsetJpa) tester.createObject(1);
-    r2 = (RefsetJpa) tester.createObject(2);
-    r1.setProject(new ProjectJpa());
-    r2.setProject(new ProjectJpa());
+  public void setup() {
+    object = new RelationshipJpa();
+    c1 = new ConceptJpa();
+    c1.setId(1L);
+    c1.setTerminologyId("1");
+    c1.setDefinitionStatusId("1");
+    c2 = new ConceptJpa();
+    c2.setTerminologyId("2");
+    c2.setId(2L);
+    c2.setDefinitionStatusId("2");
   }
 
   /**
@@ -66,8 +65,8 @@ public class ModelUnit021Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet009");
+  public void testModelGetSet030() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -78,20 +77,26 @@ public class ModelUnit021Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode021");
+  public void testModelEqualsHashcode030() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode030");
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
     tester.include("version");
-    tester.include("refset");
-    tester.include("conceptId");
-    tester.include("conceptName");
+    tester.include("characteristicTypeId");
+    tester.include("destinationConcept");
+    tester.include("modifierId");
+    tester.include("relationshipGroup");
+    tester.include("relationshipGroup");
+    tester.include("sourceConcept");
+    tester.include("typeId");
 
-    tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);
+    // Set up objects
+    tester.proxy(Concept.class, 1, c1);
+    tester.proxy(Concept.class, 2, c2);
+
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -106,11 +111,15 @@ public class ModelUnit021Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy009");
+  public void testModelCopy030() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelCopy030");
     CopyConstructorTester tester = new CopyConstructorTester(object);
-    tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);    assertTrue(tester.testCopyConstructor(ConceptRefsetMember.class));
+
+    // Set up objects
+    tester.proxy(Concept.class, 1, c1);
+    tester.proxy(Concept.class, 2, c2);
+
+    assertTrue(tester.testCopyConstructor(Relationship.class));
   }
 
   /**
@@ -119,13 +128,19 @@ public class ModelUnit021Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient021");
+  public void testModelXmlSerialization030() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
-    Refset r = new RefsetJpa();
-    r.setId(1L);
-    tester.proxy(Refset.class, 1, r);
+    // Set up objects
+    Concept c = new ConceptJpa();
+    c.setId(1L);
+    c.setTerminology("1");
+    c.setTerminologyId("1");
+    c.setVersion("1");
+    c.setName("1");
+    tester.proxy(Concept.class, 1, c);
+
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -135,8 +150,8 @@ public class ModelUnit021Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField021");
+  public void testModelNotNullField030() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelNotNullField030");
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
@@ -147,9 +162,13 @@ public class ModelUnit021Test {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
+    tester.include("inferred");
+    tester.include("stated");
 
-    tester.include("conceptId");
-    tester.include("conceptName");
+    tester.include("typeId");
+    tester.include("characteristicTypeId");
+    tester.include("modifierId");
+
     assertTrue(tester.testNotNullFields());
   }
 

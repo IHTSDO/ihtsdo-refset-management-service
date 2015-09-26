@@ -13,7 +13,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
  * Generically represents an algorithm for assigning identifiers.
@@ -111,7 +111,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(SimpleRefsetMember member) throws Exception;
+  public String getTerminologyId(ConceptRefsetMember member) throws Exception;
 
   /**
    * Indicates whether this algorithm allows identifiers to change on an update.

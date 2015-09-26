@@ -12,7 +12,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -389,7 +389,7 @@ public interface ProjectService extends RootService {
    * @return the simple ref set member list
    * @throws Exception the exception
    */
-  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
+  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
 
 }

@@ -11,7 +11,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 
 /**
  * Generically represents a service for interacting with terminology content.
@@ -146,7 +146,7 @@ public interface HistoryService extends ProjectService {
    * @param pfs the pfs
    * @return the simple ref set member list
    */
-  public SimpleRefsetMemberList findMembersForRefsetRevision(Long refsetId, Date date, PfsParameter pfs);
+  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId, Date date, PfsParameter pfs);
 
   /**
    * Find concepts for translation revision.

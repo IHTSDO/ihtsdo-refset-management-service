@@ -17,21 +17,24 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyClass;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -40,6 +43,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
+import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
 
 /**
  * JPA enabled implementation of {@link Project}. TODO: convert all sets to
@@ -55,8 +59,9 @@ import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
 public class ProjectJpa implements Project {
 
   /** The id. */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
   /** The last modified. */
@@ -93,6 +98,7 @@ public class ProjectJpa implements Project {
 
   /** The refsets. */
   @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
+  // @IndexedEmbedded - n/a
   private List<Refset> refsets = null;
 
   /**
@@ -117,9 +123,14 @@ public class ProjectJpa implements Project {
     terminology = project.getTerminology();
     version = project.getVersion();
     projectRoleMap = new HashMap<>(project.getProjectRoleMap());
+    refsets = new ArrayList<Refset>();
+    for (Refset refset : project.getRefsets()) {
+      refsets.add(new RefsetJpa(refset));
+    }
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Long getId() {
     return this.id;
@@ -260,7 +271,8 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
+  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)  
+  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class))
   @Override
   public Map<User, UserRole> getProjectRoleMap() {
     if (projectRoleMap == null) {
@@ -309,7 +321,7 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlElement(type = RefsetJpa.class)
+  @XmlTransient
   @Override
   public List<Refset> getRefsets() {
     if (refsets == null) {

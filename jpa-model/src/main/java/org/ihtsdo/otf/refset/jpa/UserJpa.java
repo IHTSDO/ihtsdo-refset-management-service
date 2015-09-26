@@ -9,9 +9,11 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -39,8 +41,9 @@ import org.ihtsdo.otf.refset.UserRole;
 public class UserJpa implements User {
 
   /** The id. */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
   /** The user name. */
@@ -87,7 +90,7 @@ public class UserJpa implements User {
     this.email = user.getEmail();
     this.applicationRole = user.getApplicationRole();
     this.authToken = user.getAuthToken();
-    this.userPreferences = user.getUserPreferences();
+    this.userPreferences = new UserPreferencesJpa(user.getUserPreferences());
   }
 
   /* see superclass */

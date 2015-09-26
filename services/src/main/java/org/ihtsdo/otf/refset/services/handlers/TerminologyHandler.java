@@ -8,11 +8,11 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -141,8 +141,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the simpleRefsetMember
    * @throws Exception the exception
    */
-  public SimpleRefsetMember addSimpleRefsetMember(
-    SimpleRefsetMember simpleRefsetMember) throws Exception;
+  public ConceptRefsetMember addSimpleRefsetMember(
+    ConceptRefsetMember simpleRefsetMember) throws Exception;
 
   /**
    * Returns the simpleRefsetMember.
@@ -151,7 +151,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the simpleRefsetMember
    * @throws Exception the exception
    */
-  public SimpleRefsetMember getSimpleRefsetMember(Long id) throws Exception;
+  public ConceptRefsetMember getSimpleRefsetMember(Long id) throws Exception;
 
   /**
    * Returns the simpleRefsetMember.
@@ -162,7 +162,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the simpleRefsetMember
    * @throws Exception the exception
    */
-  public SimpleRefsetMember getSimpleRefsetMember(String terminologyId,
+  public ConceptRefsetMember getSimpleRefsetMember(String terminologyId,
     String terminology, String version) throws Exception;
 
   /**
@@ -171,7 +171,7 @@ public interface TerminologyHandler extends Configurable {
    * @param simpleRefsetMember the simpleRefsetMember
    * @throws Exception the exception
    */
-  public void updateSimpleRefsetMember(SimpleRefsetMember simpleRefsetMember)
+  public void updateSimpleRefsetMember(ConceptRefsetMember simpleRefsetMember)
     throws Exception;
 
   /**
@@ -191,7 +191,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
+  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -203,7 +203,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public SimpleRefsetMemberList findMembersForHistoricalRefset(Refset refset,
+  public ConceptRefsetMemberList findMembersForHistoricalRefset(Refset refset,
     String query, PfsParameter pfs) throws Exception;
 
   /**

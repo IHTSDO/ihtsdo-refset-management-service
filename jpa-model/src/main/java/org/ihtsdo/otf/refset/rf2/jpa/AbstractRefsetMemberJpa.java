@@ -7,6 +7,10 @@ import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.rf2.RefsetMember;
 
 /**
@@ -40,6 +44,7 @@ public abstract class AbstractRefsetMemberJpa extends AbstractComponent
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getRefsetId() {
     return this.refsetId;

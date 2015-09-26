@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -158,6 +159,34 @@ public interface Translation extends Component, Searchable {
    * @param type the type
    */
   public void removeDescriptionType(DescriptionTypeRefsetMember type);
+
+  /**
+   * Returns the concepts.
+   *
+   * @return the concepts
+   */
+  public List<Concept> getConcepts();
+
+  /**
+   * Sets the concepts.
+   *
+   * @param concepts the concepts
+   */
+  public void setConcepts(List<Concept> concepts);
+
+  /**
+   * Adds the concept.
+   *
+   * @param concept the concept
+   */
+  public void addConcept(Concept concept);
+
+  /**
+   * Removes the concept.
+   *
+   * @param concept the concept
+   */
+  public void removeConcept(Concept concept);
 
   // TODO: spelling correction dictionary (per translation, but reusable
   // translations in a project)

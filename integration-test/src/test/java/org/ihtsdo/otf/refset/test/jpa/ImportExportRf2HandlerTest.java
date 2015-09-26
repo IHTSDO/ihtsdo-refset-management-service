@@ -25,7 +25,7 @@ import org.ihtsdo.otf.refset.jpa.services.handlers.ExportTranslationRf2Handler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ImportRefsetRf2Handler;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ImportTranslationRf2Handler;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -161,7 +161,7 @@ public class ImportExportRf2HandlerTest {
   public void testRefsetHandlerJpa002() throws Exception {
 
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
-    List<SimpleRefsetMember> members =
+    List<ConceptRefsetMember> members =
         importHandler.importMembers(membersInputStream);
 
     // Verify the member count

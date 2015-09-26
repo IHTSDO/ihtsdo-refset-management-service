@@ -182,7 +182,7 @@ public interface ReleaseInfo {
   /**
    * Returns the translation id.
    *
-   * @return the translation 
+   * @return the translation
    */
   public Translation getTranslation();
 
@@ -206,5 +206,19 @@ public interface ReleaseInfo {
    * @param properties the properties
    */
   public void setProperties(List<ReleaseProperty> properties);
+
+  /**
+   * Returns the artifacts.
+   *
+   * @return the artifacts
+   */
+  public List<ReleaseArtifact> getArtifacts();
+
+  /**
+   * Sets the artifacts.
+   *
+   * @param artifacts the artifacts
+   */
+  public void setArtifacts(List<ReleaseArtifact> artifacts);
 
 }

@@ -10,7 +10,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
 /**
@@ -35,7 +35,7 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
   }
   
   @Override
-  public ValidationResult validate(SimpleRefsetMember member) {
+  public ValidationResult validate(ConceptRefsetMember member) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;

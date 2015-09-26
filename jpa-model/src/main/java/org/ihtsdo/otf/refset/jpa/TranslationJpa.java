@@ -12,6 +12,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -20,7 +21,6 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
@@ -28,8 +28,10 @@ import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -76,16 +78,21 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
-  @ContainedIn
   private Refset refset;
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
   private Project project;
 
-  /** The descriptions. */
+  /** The description types. */
   @ManyToMany(targetEntity = DescriptionTypeRefsetMemberJpa.class)
+  // @IndexedEmbedded - n/a
   private List<DescriptionTypeRefsetMember> descriptionTypes = null;
+
+  /** The concepts. */
+  @OneToMany(mappedBy = "translation", targetEntity = ConceptJpa.class)
+  // @IndexedEmbedded - n/a
+  private List<Concept> concepts = null;
 
   /**
    * Instantiates an empty {@link TranslationJpa}.
@@ -113,6 +120,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     for (DescriptionTypeRefsetMember member : translation.getDescriptionTypes()) {
       addDescriptionType(new DescriptionTypeRefsetMemberJpa(member));
     }
+    // DO not copy concepts
   }
 
   /* see superclass */
@@ -167,6 +175,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getLanguage() {
     return language;
@@ -197,6 +206,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    * @return the refset id
    */
   @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   private Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
   }
@@ -214,6 +224,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     refset.setId(refsetId);
   }
 
+  /* see superclass */
   @XmlTransient
   @Override
   public Project getProject() {
@@ -232,6 +243,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    * @return the project id
    */
   @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   private Long getProjectId() {
     return (project != null) ? project.getId() : 0;
   }
@@ -284,6 +296,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
@@ -296,6 +309,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
+  // n/a - @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getWorkflowPath() {
     return workflowPath;
@@ -305,6 +319,40 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setWorkflowPath(String workflowPath) {
     this.workflowPath = workflowPath;
+  }
+
+  /* see superclass */
+  @XmlTransient
+  @Override
+  public List<Concept> getConcepts() {
+    if (concepts == null) {
+      concepts = new ArrayList<>();
+    }
+    return concepts;
+  }
+
+  /* see superclass */
+  @Override
+  public void setConcepts(List<Concept> concepts) {
+    this.concepts = concepts;
+  }
+
+  /* see superclass */
+  @Override
+  public void addConcept(Concept concept) {
+    if (concepts == null) {
+      concepts = new ArrayList<>();
+    }
+    concepts.add(concept);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeConcept(Concept concept) {
+    if (concepts != null) {
+      concepts.remove(concept);
+    }
+
   }
 
   /* see superclass */
@@ -365,4 +413,5 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + workflowPath + ", refset=" + refset + ", descriptionTypes="
         + descriptionTypes + ", namespace=" + namespace + "]";
   }
+
 }

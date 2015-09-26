@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -230,4 +231,89 @@ public interface Refset extends Component, Searchable {
    * @param forTranslation the for translation
    */
   public void setForTranslation(boolean forTranslation);
+
+  /**
+   * Returns the manual inclusions.
+   *
+   * @return the manual inclusions
+   */
+  public List<ConceptRefsetMember> getInclusions();
+
+  /**
+   * Sets the manual inclusions.
+   *
+   * @param inclusions the inclusions
+   */
+  public void setInclusions(List<ConceptRefsetMember> inclusions);
+
+  /**
+   * Adds the manual inclusion.
+   *
+   * @param member the member
+   */
+  public void addInclusion(ConceptRefsetMember member);
+
+  /**
+   * Removes the manual inclusion.
+   *
+   * @param member the member
+   */
+  public void removeInclusion(ConceptRefsetMember member);
+
+  /**
+   * Returns the manual exclusions.
+   *
+   * @return the manual exclusions
+   */
+  public List<ConceptRefsetMember> getExclusions();
+
+  /**
+   * Sets the manual exclusions.
+   *
+   * @param exclusions the exclusions
+   */
+  public void setExclusions(List<ConceptRefsetMember> exclusions);
+
+  /**
+   * Adds the manual exclusion.
+   *
+   * @param member the member
+   */
+  public void addExclusion(ConceptRefsetMember member);
+
+  /**
+   * Removes the manual exclusion.
+   *
+   * @param member the member
+   */
+  public void removeExclusion(ConceptRefsetMember member);
+
+  /**
+   * Returns the refset members.
+   *
+   * @return the refset members
+   */
+  public List<ConceptRefsetMember> getRefsetMembers();
+
+  /**
+   * Sets the refset members.
+   *
+   * @param members the refset members
+   */
+  public void setRefsetMembers(List<ConceptRefsetMember> members);
+
+  /**
+   * Adds the refset member.
+   *
+   * @param member the member
+   */
+  public void addRefsetMember(ConceptRefsetMember member);
+
+  /**
+   * Removes the refset member.
+   *
+   * @param member the member
+   */
+  public void removeRefsetMember(ConceptRefsetMember member);
+
 }

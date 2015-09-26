@@ -15,6 +15,7 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
@@ -87,8 +88,10 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
     // if no parameter specified, re-index all objects
     if (indexedObjects == null || indexedObjects.isEmpty()) {
-      // TODO: list objects here, like
+
+      //objectsToReindex.add("ConceptJpa"); ??
       objectsToReindex.add("ProjectJpa");
+      objectsToReindex.add("ReleaseInfoJpa");
       objectsToReindex.add("RefsetJpa");
       objectsToReindex.add("TranslationJpa");
       objectsToReindex.add("TrackingRecordJpa");
@@ -114,7 +117,6 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     FullTextEntityManager fullTextEntityManager =
         Search.getFullTextEntityManager(manager);
 
-    // TODO: list indexed objects here, like:
     if (objectsToReindex.contains("ProjectJpa")) {
       Logger.getLogger(getClass()).info("  Creating indexes for ProjectJpa");
       fullTextEntityManager.purgeAll(ProjectJpa.class);
@@ -124,6 +126,17 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
           .threadsToLoadObjects(4).startAndWait();
 
       objectsToReindex.remove("ProjectJpa");
+    }
+
+    if (objectsToReindex.contains("ReleaseInfoJpa")) {
+      Logger.getLogger(getClass()).info("  Creating indexes for ReleaseInfoJpa");
+      fullTextEntityManager.purgeAll(ReleaseInfoJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(ReleaseInfoJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("ReleaseInfoJpa");
     }
 
     if (objectsToReindex.contains("TranslationJpa")) {
@@ -178,6 +191,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    */
   private void clearLuceneIndexes() throws Exception {
     fullTextEntityManager.purgeAll(ProjectJpa.class);
+    fullTextEntityManager.purgeAll(ReleaseInfoJpa.class);
     fullTextEntityManager.purgeAll(TranslationJpa.class);
     fullTextEntityManager.purgeAll(RefsetJpa.class);
     fullTextEntityManager.purgeAll(TrackingRecordJpa.class);

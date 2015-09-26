@@ -17,7 +17,7 @@ import org.ihtsdo.otf.refset.rf2.RefsetDefinitionRefsetMember;
 @Entity
 @Table(name = "refset_definition_refset_members")
 @Audited
-@XmlRootElement(name = "definition")
+@XmlRootElement(name = "refsetDefinition")
 public class RefsetDefinitionRefsetMemberJpa extends AbstractRefsetMemberJpa
     implements RefsetDefinitionRefsetMember {
 

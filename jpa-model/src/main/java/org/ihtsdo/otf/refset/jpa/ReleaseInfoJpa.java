@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -11,10 +12,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
@@ -23,7 +26,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ReleaseProperty;
 import org.ihtsdo.otf.refset.Translation;
@@ -38,12 +47,14 @@ import org.ihtsdo.otf.refset.Translation;
   })
 })
 @Audited
+@Indexed
 @XmlRootElement(name = "releaseInfo")
 public class ReleaseInfoJpa implements ReleaseInfo {
 
   /** The id. */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
   /** The name. */
@@ -102,6 +113,10 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
   private List<ReleaseProperty> properties;
 
+  /** The release properties. */
+  @OneToMany(mappedBy = "releaseInfo", orphanRemoval = true, targetEntity = ReleaseArtifactJpa.class)
+  private List<ReleaseArtifact> artifacts;
+
   /**
    * Instantiates an empty {@link ReleaseInfoJpa}.
    */
@@ -126,8 +141,13 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
-    refset = releaseInfo.getRefset();
-    translation = releaseInfo.getTranslation();
+    refset = new RefsetJpa(releaseInfo.getRefset());
+    translation = new TranslationJpa(releaseInfo.getTranslation());
+    properties = new ArrayList<>();
+    for (ReleaseProperty property : releaseInfo.getProperties()) {
+      properties.add(new ReleasePropertyJpa(property));
+    }
+    // Do not copy release artifacts
   }
 
   /* see superclass */
@@ -143,6 +163,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
   public String getName() {
     return name;
@@ -155,6 +176,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
   public String getDescription() {
     return description;
@@ -167,6 +189,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Date getReleaseBeginDate() {
     return releaseBeginDate;
@@ -180,6 +203,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Date getReleaseFinishDate() {
     return releaseFinishDate;
@@ -216,6 +240,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getTerminology() {
     return terminology;
@@ -228,6 +253,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getVersion() {
     return version;
@@ -258,6 +284,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    * @return the refset id
    */
   @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   private Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
   }
@@ -294,6 +321,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    * @return the translation id
    */
   @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   private Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;
   }
@@ -312,6 +340,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getLastModifiedBy() {
     return lastModifiedBy;
@@ -324,6 +353,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Date getLastModified() {
     return lastModified;
@@ -333,6 +363,35 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Override
   public void setLastModified(Date lastModified) {
     this.lastModified = lastModified;
+  }
+
+  /* see superclass */
+  @Override
+  @XmlElement(type = ReleasePropertyJpa.class)
+  public List<ReleaseProperty> getProperties() {
+    return properties;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProperties(List<ReleaseProperty> properties) {
+    this.properties = properties;
+  }
+
+  /* see superclass */
+  @XmlTransient
+  @Override
+  public List<ReleaseArtifact> getArtifacts() {
+    if (artifacts == null) {
+      artifacts = new ArrayList<>();
+    }
+    return artifacts;
+  }
+
+  /* see superclass */
+  @Override
+  public void setArtifacts(List<ReleaseArtifact> artifacts) {
+    this.artifacts = artifacts;
   }
 
   /* see superclass */
@@ -359,19 +418,6 @@ public class ReleaseInfoJpa implements ReleaseInfo {
             + ((translation == null || translation.getId() == null) ? 0
                 : translation.getId().hashCode());
     return result;
-  }
-
-  /* see superclass */
-  @Override
-  @XmlElement(type = ReleasePropertyJpa.class)
-  public List<ReleaseProperty> getProperties() {
-    return properties;
-  }
-
-  /* see superclass */
-  @Override
-  public void setProperties(List<ReleaseProperty> properties) {
-    this.properties = properties;
   }
 
   /* see superclass */

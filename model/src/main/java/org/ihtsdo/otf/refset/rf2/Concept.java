@@ -98,34 +98,6 @@ public interface Concept extends Component {
   public void removeDescription(Description description);
 
   /**
-   * Returns the relationships.
-   * 
-   * @return the relationships
-   */
-  public List<Relationship> getRelationships();
-
-  /**
-   * Adds the relationship.
-   * 
-   * @param relationship the relationship
-   */
-  public void addRelationship(Relationship relationship);
-
-  /**
-   * Removes the relationship.
-   * 
-   * @param relationship the relationship
-   */
-  public void removeRelationship(Relationship relationship);
-
-  /**
-   * Sets the relationships.
-   * 
-   * @param relationships the relationships
-   */
-  public void setRelationships(List<Relationship> relationships);
-
-  /**
    * Gets the default preferred name.
    * 
    * @return the default preferred name

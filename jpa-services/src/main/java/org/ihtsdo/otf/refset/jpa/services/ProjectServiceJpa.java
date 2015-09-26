@@ -30,7 +30,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
-import org.ihtsdo.otf.refset.helpers.SimpleRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -731,7 +731,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   }
 
   @Override
-  public SimpleRefsetMemberList findMembersForRefset(Long refsetId,
+  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
     // TODO Auto-generated method stub
     return null;

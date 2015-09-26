@@ -26,7 +26,6 @@ import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
-import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
@@ -39,7 +38,6 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -82,10 +80,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @IndexedEmbedded(targetElement = DescriptionJpa.class)
   private List<Description> descriptions = null;
 
-  /** The relationships. */
-  @OneToMany(mappedBy = "sourceConcept", orphanRemoval = true, targetEntity = RelationshipJpa.class)
-  private List<Relationship> relationships = null;
-
   /** The child count. */
   @Transient
   private int childCount = -1;
@@ -96,7 +90,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /** The translation. */
   @ManyToOne(targetEntity = TranslationJpa.class, optional = false)
-  @ContainedIn
   private Translation translation;
 
   /**
@@ -126,17 +119,11 @@ public class ConceptJpa extends AbstractComponent implements Concept {
         newDescription.setConcept(this);
         descriptions.add(newDescription);
       }
-      relationships = new ArrayList<>();
-      for (Relationship rel : concept.getRelationships()) {
-        Relationship newRel = new RelationshipJpa(rel);
-        newRel.setSourceConcept(this);
-        relationships.add(newRel);
-      }
-
     }
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
@@ -149,6 +136,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getDefinitionStatusId() {
     return definitionStatusId;
@@ -227,47 +215,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /* see superclass */
   @Override
-  @XmlElement(type = RelationshipJpa.class)
-  public List<Relationship> getRelationships() {
-    if (relationships == null) {
-      relationships = new ArrayList<>();
-    }
-    return relationships;
-  }
-
-  /* see superclass */
-  @Override
-  public void addRelationship(Relationship relationship) {
-    if (relationships == null) {
-      relationships = new ArrayList<>();
-    }
-    relationship.setSourceConcept(this);
-    relationships.add(relationship);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeRelationship(Relationship relationship) {
-    if (relationships == null) {
-      return;
-    }
-    relationships.remove(relationship);
-  }
-
-  /* see superclass */
-  @Override
-  public void setRelationships(List<Relationship> relationships) {
-    if (relationships != null) {
-      this.relationships = new ArrayList<>();
-      for (Relationship relationship : relationships) {
-        relationship.setSourceConcept(this);
-      }
-      this.relationships.addAll(relationships);
-    }
-  }
-
-  /* see superclass */
-  @Override
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -301,7 +248,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    *
    * @return the translation id
    */
-  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   private Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;
   }
@@ -355,8 +302,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     return "ConceptJpa [workflowStatus=" + workflowStatus
         + ", definitionStatusId=" + definitionStatusId + ", anonymous="
         + anonymous + ", fullyDefined=" + fullyDefined + ", descriptions="
-        + descriptions + ", relationships=" + relationships + ", childCount="
-        + childCount + ", name=" + name + ", translation=" + translation + "]";
+        + descriptions + ", childCount=" + childCount + ", name=" + name
+        + ", translation=" + translation + "]";
   }
 
 }

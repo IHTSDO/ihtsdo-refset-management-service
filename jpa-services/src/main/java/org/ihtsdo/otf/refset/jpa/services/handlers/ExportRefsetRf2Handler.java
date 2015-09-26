@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
-import org.ihtsdo.otf.refset.rf2.SimpleRefsetMember;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 
 /**
@@ -47,7 +47,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   /* see superclass */
   @Override
   public InputStream exportMembers(Refset refset,
-    List<SimpleRefsetMember> members) throws Exception {
+    List<ConceptRefsetMember> members) throws Exception {
     Logger.getLogger(getClass()).info(
         "Export refset members- " + refset.getTerminologyId() + ", "
             + refset.getName());
@@ -66,14 +66,14 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("referencedComponentId").append("\t");
     sb.append("\r\n");
 
-    for (SimpleRefsetMember member : members) {
+    for (ConceptRefsetMember member : members) {
       Logger.getLogger(getClass()).debug("  member = " + member);
       sb.append(member.getTerminologyId()).append("\t");
       sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
           .append("\t");
       sb.append(1).append("\t");
       sb.append(member.getModuleId()).append("\t");
-      sb.append(member.getRefsetId()).append("\t");
+      sb.append(member.getRefset().getTerminologyId()).append("\t");
       sb.append(member.getConceptId()).append("\t");
       sb.append("\r\n");
     }
