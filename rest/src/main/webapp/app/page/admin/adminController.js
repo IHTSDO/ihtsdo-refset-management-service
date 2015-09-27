@@ -13,9 +13,10 @@ tsApp.controller('AdminCtrl', [
   'refsetService',
   'directoryService',
   'adminService',
+  '$timeout',
   function($scope, $http, $modal, $location, $anchorScroll, gpService,
     utilService, tabService, securityService, translationService,
-    refsetService, directoryService, adminService) {
+    refsetService, directoryService, adminService, $timeout) {
     console.debug('configure AdminCtrl');
 
     // Handle resetting tabs on "back" button
@@ -29,14 +30,6 @@ tsApp.controller('AdminCtrl', [
 
     // Scope variables initialized from services
     $scope.user = securityService.getUser();
-    /*$scope.translation = translationService.getModel();
-    $scope.component = directoryService.getModel();
-    $scope.pageSizes = directoryService.getPageSizes();
-
-    // Search parameters
-    $scope.searchParams = directoryService.getSearchParams();
-    $scope.searchResults = directoryService.getSearchResults();
-*/
 
     
     // remove a project, a user
@@ -45,13 +38,15 @@ tsApp.controller('AdminCtrl', [
         + object.name + ")?")) {
         return;
       }
-      if (type == 'project') {
-        adminService.removeProject(object).then(
-          $scope.getProjects());
+      if (type == 'project') {        
+        adminService.removeProject(object).then(function() {
+          $scope.getProjects();
+        });        
       }
       if (type == 'user') {
-        adminService.removeUser(object).then(
-          $scope.getUsers());
+        adminService.removeUser(object).then(function() {
+          $scope.getUsers();
+        });
       }
     };
     
@@ -64,6 +59,7 @@ tsApp.controller('AdminCtrl', [
         $scope.projects = data.projects;
       })
     };
+    
        
     // get users
     $scope.getUsers = function() {
@@ -71,10 +67,55 @@ tsApp.controller('AdminCtrl', [
         $scope.users = data.users;
       })
     };
+    
+    // get application roles
+    $scope.getApplicationRoles = function() {
+      adminService.getApplicationRoles().then(function(data) {
+        $scope.applicationRoles = data.strings;
+      })
+    };
+    
+    // get project roles
+    $scope.getProjectRoles = function() {
+      adminService.getProjectRoles().then(function(data) {
+        $scope.projectRoles = data.strings;
+      })
+    };
+    
+    // Sets the selected project
+    $scope.setProject = function(project) {
+      if (typeof project === undefined) {
+        return;
+      }
+      if ($scope.selectedProject
+        && project.id === $scope.selectedProject.id) {
+        return;
+      }
+      $scope.selectedProject = project;
+    }
+    
+    // add user to project
+    $scope.addUserToProject = function(projectId, userName, projectRole) {
+      adminService.addUserToProject(projectId, userName, projectRole).then(function(data) {
+        $scope.getProjects();
+        $scope.selectedProject = data;
+      })
+    };    
+    
+    // remove user from project
+    $scope.removeUserFromProject = function(projectId, userName) {
+      adminService.removeUserFromProject(projectId, userName).then(function(data) {
+
+        $scope.getProjects();
+        $scope.selectedProject = data;
+      })
+    };  
 
     // call these during initialization
     $scope.getProjects();
     $scope.getUsers();
+    $scope.getApplicationRoles();
+    $scope.getProjectRoles();
 
     
     
@@ -93,12 +134,15 @@ tsApp.controller('AdminCtrl', [
         resolve : {
           project : function() {
             return lproject;
+          },
+          projects : function() {
+            return $scope.projects;
           }
         }
       });
     };
 
-    var NewProjectModalCtrl = function($scope, $modalInstance, project) {
+    var NewProjectModalCtrl = function($scope, $modalInstance, project, projects) {
 
       console.debug("Entered new project modal control");
 
@@ -115,7 +159,7 @@ tsApp.controller('AdminCtrl', [
         }
 
         adminService.addProject(project).then(function(data) {
-          // TODO: get this working $scope.projects.push(data);
+          projects.push(data);
           $modalInstance.close();
         }, function(data) {
           $modalInstance.close();
@@ -141,16 +185,23 @@ tsApp.controller('AdminCtrl', [
       resolve : {
         user : function() {
           return luser;
+        },
+        users : function() {
+          return $scope.users;
+        },
+        applicationRoles : function() {
+          return $scope.applicationRoles;
         }
       }
     });
   };
 
-  var NewUserModalCtrl = function($scope, $modalInstance, user) {
+  var NewUserModalCtrl = function($scope, $modalInstance, user, users, applicationRoles) {
 
     console.debug("Entered new user modal control");
 
     $scope.user = user;
+    $scope.applicationRoles = applicationRoles
 
     $scope.submitNewUser = function(user) {
       console.debug("Submitting new user", user);
@@ -164,7 +215,7 @@ tsApp.controller('AdminCtrl', [
       }
 
       adminService.addUser(user).then(function(data) {
-        // TODO get this working $scope.users.push(data);
+        users.push(data);
         $modalInstance.close();
       }, function(data) {
         $modalInstance.close();
@@ -230,7 +281,7 @@ tsApp.controller('AdminCtrl', [
   // modal for editing a user
   $scope.openEditUserModal = function(luser) {
 
-    console.debug("openEditUserModal ");
+    console.debug("openEditUserModal");
 
     var modalInstance = $modal.open({
       templateUrl : 'app/page/admin/editUser.html',
@@ -238,19 +289,23 @@ tsApp.controller('AdminCtrl', [
       resolve : {
         user : function() {
           return luser;
+        },
+        applicationRoles : function() {
+          return $scope.applicationRoles;
         }
       }
     });
   };  
   
-  var EditUserModalCtrl = function($scope, $modalInstance, user) {
+  var EditUserModalCtrl = function($scope, $modalInstance, user, applicationRoles) {
 
     console.debug("Entered edit user modal control");
 
     $scope.user = user;
+    $scope.applicationRoles = applicationRoles;
 
     $scope.submitEditUser = function(user) {
-      console.debug("Submitting edit user", user);
+      console.debug("Submitting edit user ", user);
 
       if (user == null || user.name == null
         || user.name == undefined || user.userName == null

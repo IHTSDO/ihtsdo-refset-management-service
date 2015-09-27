@@ -218,7 +218,7 @@ tsApp
           console.debug("updateUser");
           var deferred = $q.defer();
 
-          // Add user
+          // Update user
           gpService.increment()
           $http.post(securityUrl + 'user/update', user).then(
           // success
@@ -258,14 +258,105 @@ tsApp
           });
           return deferred.promise;
         }                      
+
+        // add user to project
+        this.addUserToProject = function(projectId, userName, projectRole) {
+          console.debug("addUserToProject");
+          var deferred = $q.defer();
+
+          // Add user to project
+          gpService.increment()
+          $http.get(projectUrl + 'adduser' + "/" + projectId + "/" + userName + "/" + projectRole).then(
+          // success
+          function(response) {
+            console.debug("  project = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                
+ 
+        // add user to project
+        this.removeUserFromProject = function(projectId, userName) {
+          console.debug("removeUserFromProject");
+          var deferred = $q.defer();
+
+          // Add user
+          gpService.increment()
+          $http.get(projectUrl + 'removeuser' + "/" + projectId + "/" + userName).then(
+          // success
+          function(response) {
+            console.debug("  project = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }                
         
+        // get application roles
+        this.getApplicationRoles = function() {
+          console.debug("getProjectsApplicationRoles");
+          var deferred = $q.defer();
+
+          // Get application roles
+          gpService.increment()
+          $http.get(securityUrl + 'roles').then(
+          // success
+          function(response) {
+            console.debug("  roles = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }        
+       
+        // get project roles
+        this.getProjectRoles = function() {
+          console.debug("getProjectRoles");
+          var deferred = $q.defer();
+
+          // Get project roles
+          gpService.increment()
+          $http.get(projectUrl + 'roles').then(
+          // success
+          function(response) {
+            console.debug("  roles = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }        
         
         // Sets the project
-        this.setProject = function(project) {
+        /*this.setProject = function(project) {
           if (typeof project === undefined) {
             return;
           }
-          /*if ($scope.selectedProject
+          if ($scope.selectedProject
             && project.id === $scope.selectedProject.id) {
             return;
           }
@@ -291,7 +382,7 @@ tsApp
           $scope.retrievePagedMilestones();
           $scope.retrievePagedEvents('projectId:' + project.id);
           $scope.retrievePagedMeasurements('projectId:' + project.id)*/
-        }
+        //} 
 
         // Convert date to a string
         this.toDate = function(lastModified) {

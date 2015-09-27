@@ -11,18 +11,39 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.NoResultException;
+import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ResultList;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.helpers.UserList;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.SearchResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.SearchResultListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.SecurityServiceHandler;
+import org.hibernate.search.SearchFactory;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.hibernate.search.SearchFactory;
+import org.hibernate.search.jpa.FullTextEntityManager;
+import org.hibernate.search.jpa.FullTextQuery;
+import org.hibernate.search.jpa.Search;
 
 /**
  * Reference implementation of the {@link SecurityService}.
@@ -337,8 +358,93 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
+  public UserList findUsers(String query, PfsParameter pfs)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Security Service - find users " + query + ", pfs= " + pfs);
+    UserList list = new UserListJpa();
+    // TODO: need to do query - User is not extending searchable
+    // Do we want to use this mechanism?
+    //getQueryResults("", "", query, UserJpa.class, UserJpa.class, pfs);
+
+    return list;
+  }
+  
+  /* see superclass */
+  @Override
   public void refreshCaches() throws Exception {
     // n/a
   }
 
+  /**
+   * Returns the query results.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param query the query
+   * @param fieldNamesKey the field names key
+   * @param clazz the clazz
+   * @param pfs the pfs
+   * @return the query results
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("unchecked")
+  public SearchResultList getQueryResults(String terminology, String version,
+    String query, Class<?> fieldNamesKey, Class<? extends Searchable> clazz,
+    PfsParameter pfs) throws Exception {
+
+    // Build query for pfs conditions
+    StringBuilder fullQuery = new StringBuilder();
+    StringBuilder pfsQuery = new StringBuilder();
+
+    if (query != null && !query.isEmpty()) {
+      fullQuery.append(query).append(" AND ");
+    }
+
+    // Apply pfs restrictions
+    if (terminology != null && !terminology.equals("") && version != null
+        && !version.equals("")) {
+      pfsQuery.append("terminology:" + terminology + " AND version:" + version);
+    }
+    if (pfs != null) {
+      if (pfs.getActiveOnly()) {
+        pfsQuery.append(" AND obsolete:false");
+      }
+      if (pfs.getInactiveOnly()) {
+        pfsQuery.append(" AND obsolete:true");
+      }
+      if (pfs.getQueryRestriction() != null
+          && !pfs.getQueryRestriction().isEmpty()) {
+        pfsQuery.append(" AND " + pfs.getQueryRestriction());
+      }
+    }
+
+    FullTextQuery fullTextQuery = null;
+    try {
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, fullQuery
+              + pfsQuery.toString(), pfs, manager);
+    } catch (ParseException e) {
+      // If parse exception, try a literal query
+      StringBuilder escapedQuery = new StringBuilder();
+      if (query != null && !query.isEmpty()) {
+        escapedQuery.append(QueryParserBase.escape(query)).append(" AND ");
+      }
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, escapedQuery
+              + pfsQuery.toString(), pfs, manager);
+    }
+
+    // execute the query
+    List<? extends Searchable> results = fullTextQuery.getResultList();
+
+    // Convert to search result list
+    SearchResultList list = new SearchResultListJpa();
+    for (Searchable result : results) {
+      list.getObjects().add(new SearchResultJpa(result));
+    }
+    list.setTotalCount(fullTextQuery.getResultSize());
+    return list;
+
+  }
 }

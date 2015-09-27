@@ -7,6 +7,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
  * Represents a security available via a REST service.
@@ -97,4 +98,16 @@ public interface SecurityServiceRest {
    * @throws Exception the exception
    */
   public StringList getApplicationRoles(String authToken) throws Exception;
+
+  /**
+   * Find users.
+   *
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the user list
+   * @throws Exception the exception
+   */
+  public UserList findUsers(String query, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 }

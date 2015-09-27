@@ -3,7 +3,7 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-
+  <h4>Application Administration</h4>
     <accordion ng-show="user.applicationRole == 'ADMIN'" > 
     <accordion-group heading="Application Administration" 
     is-open="false">
@@ -69,9 +69,10 @@
       </h4>
       <table class="table">
         <thead>
-          <th class="col-md-3 col-xs-3">Username</th>
-          <th class="col-md-5 col-xs-5">Name</th>
-          <th class="col-md-2 col-xs-2">Role</th>
+          <th class="col-md-2 col-xs-2">Username</th>
+          <th class="col-md-3 col-xs-3">Name</th>
+          <th class="col-md-3 col-xs-3">Email</th>
+          <th class="col-md-2 col-xs-2">Application Role</th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
@@ -79,6 +80,7 @@
           <tr ng-repeat="user in users">
             <td>{{user.userName}}</td>
             <td>{{user.name}}</td>
+            <td>{{user.email}}</td>
             <td>{{user.applicationRole}}</td>
             
             <td><a title="Edit"
@@ -98,4 +100,55 @@
     </accordion-group>
     </accordion>
 
+    <h4>User & Project Management</h4>
+    <div class="col-md-6 col-xs-12">
+      <table class="table">
+        <h5>Project List</h5>
+        <thead>
+          <th class="col-md-1 col-xs-1">Id</th>
+          <th class="col-md-5 col-xs-5">Name</th> 
+          <th class="col-md-6 col-xs-6">Description</th>         
+        </thead>
+        <tbody>
+          <tr ng-repeat="project in projects" ng-click="setProject(project)">
+            <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
+            <td>{{project.name}}</td>
+            <td>{{project.description}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    
+    <div class="col-md-6 col-xs-12">
+      <h5>Project User Selection & Role Assignment</h5> 
+      Select User:<br> <select ng-model="selectedUser" 
+        ng-options="item.name for item in users"></select><br>  
+      Select Project Role:<br> <select ng-model="selectedProjectRole" 
+        ng-options="item for item in projectRoles"></select><br>  
+      <button class="btn btn-sm btn-primary" type="submit"
+         ng-click="addUserToProject(selectedProject.id, selectedUser.userName, selectedProjectRole)">Add User/Role</button>
+    </div>
+    
+    <div class="col-md-6 col-xs-12">
+      <h5>Project Users</h5>
+      <table class="table">
+        <thead>
+          <th class="col-md-5 col-xs-5">Name</th> 
+          <th class="col-md-5 col-xs-5">UserName</th> 
+          <th class="col-md-2 col-xs-2">Project Role</th> 
+          <th class="col-md-1 col-xs-1">&nbsp;</th>       
+        </thead>
+        <tbody>
+          <tr ng-repeat="(key, value) in selectedProject.projectRoleMap.entry">
+            <td>{{value.key.name}}</td>
+            <td>{{value.key.userName}}</td>
+            <td>{{value.value}}</td>
+            <td><a title="Remove"
+                ng-click="removeUserFromProject(selectedProject.id, value.key.userName);">
+                <i class="glyphicon glyphicon-remove"></i>
+              </a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
