@@ -12,6 +12,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.SecurityServiceRest;
@@ -273,5 +275,36 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     } finally {
       securityService.close();
     }
+  }
+  
+  @POST
+  @Path("/user/find")
+  @ApiOperation(value = "Find user", notes = "Gets a list of all users for the specified query", response = UserList.class)
+  @Override
+  public UserList findUsers(
+    @ApiParam(value = "The query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Security): /user/find "
+            + (query == null ? "" : "query=" + query));
+
+    // Track system level information
+    SecurityService security = new SecurityServiceJpa();
+    try {
+      authenticate(security, authToken, "find users", UserRole.VIEWER);
+      StringBuilder qb = new StringBuilder(100);
+   
+      if (query != null) {
+        qb.append(" ").append(query);
+      }
+      return security.findUsers(qb.toString(), pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to find measurements");
+    } finally {
+      security.close();
+    }
+    return null;
   }
 }

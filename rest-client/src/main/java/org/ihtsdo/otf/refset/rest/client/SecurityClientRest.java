@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.SecurityServiceRest;
 
@@ -238,6 +239,13 @@ public class SecurityClientRest extends RootClientRest implements
 
   @Override
   public StringList getApplicationRoles(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public UserList findUsers(String query, PfsParameterJpa pfs, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

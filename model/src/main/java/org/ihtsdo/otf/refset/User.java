@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset;
 
+import org.ihtsdo.otf.refset.helpers.Searchable;
+
 /**
  * Represents a user.
  */

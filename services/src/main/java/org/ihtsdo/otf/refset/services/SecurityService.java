@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.UserList;
 
 /**
@@ -109,5 +110,15 @@ public interface SecurityService extends RootService {
    * @param user the user
    */
   public void updateUser(User user);
+
+  /**
+   * Find users.
+   *
+   * @param query the query
+   * @param pfs the pfs
+   * @return the user list
+   * @throws Exception the exception
+   */
+  public UserList findUsers(String query, PfsParameter pfs) throws Exception;
 
 }

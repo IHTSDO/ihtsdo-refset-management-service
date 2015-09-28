@@ -87,11 +87,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/adduser")
+  @Path("/adduser/{projectId}/{userName}/{role}")
   @ApiOperation(value = "Add user to project", notes = "Adds the specified user to the specified project with the specified role.", response = ProjectJpa.class)
   public Project addUserToProject(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userId") String userName,
+    @ApiParam(value = "Project id, e.g. 5", required = false) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @PathParam("role") String role,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -106,8 +106,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authenticate(projectService, projectId, securityService, authToken,
-          "add user to project", UserRole.ADMIN);
+      // TODO: how does this get bootstrapped?  Can't add user to project without being an admin user on the project.
+      //authenticate(projectService, projectId, securityService, authToken,
+      //    "add user to project", UserRole.ADMIN);
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
@@ -126,11 +127,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/removeuser")
+  @Path("/removeuser/{projectId}/{userName}")
   @ApiOperation(value = "Remove user to project", notes = "Removes the specified user to the specified project with the specified role.", response = ProjectJpa.class)
   public Project removeUserFromProject(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userId") String userName,
+    @ApiParam(value = "Project id, e.g. 5", required = false) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
