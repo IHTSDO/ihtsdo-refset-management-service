@@ -25,25 +25,25 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.services.HistoryService;
+import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.ValidationService;
 
 /**
  * Implementation of {@link ValidationService} that redirects to
  * terminology-specific implementations.
  */
-public class HistoryServiceJpa extends ProjectServiceJpa implements
-    HistoryService {
+public class ReleaseServiceJpa extends ProjectServiceJpa implements
+    ReleaseService {
 
   /** The config properties. */
   protected static Properties config = null;
 
   /**
-   * Instantiates an empty {@link HistoryServiceJpa}.
+   * Instantiates an empty {@link ReleaseServiceJpa}.
    *
    * @throws Exception the exception
    */
-  public HistoryServiceJpa() throws Exception {
+  public ReleaseServiceJpa() throws Exception {
     super();
   }
 
@@ -59,13 +59,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
 
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getCurrentReleaseInfoForRefset
-   * (java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId)
@@ -84,12 +77,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.refset.services.HistoryService#
-   * getCurrentReleaseInfoForTranslation(java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId)
@@ -109,13 +96,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getPreviousReleaseInfoForRefset
-   * (java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getPreviousReleaseInfoForRefset(Long refsetId)
@@ -138,12 +118,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.refset.services.HistoryService#
-   * getPreviousReleaseInfoForTranslation(java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getPreviousReleaseInfoForTranslation(Long translationId)
@@ -167,13 +141,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getPlannedReleaseInfoForRefset
-   * (java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getPlannedReleaseInfoForRefset(Long refsetId)
@@ -192,12 +159,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.refset.services.HistoryService#
-   * getPlannedReleaseInfoForTranslation(java.lang.Long)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo getPlannedReleaseInfoForTranslation(Long translationId)
@@ -217,13 +178,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getReleaseHistoryForRefset
-   * (java.lang.Long)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -250,13 +204,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getReleaseHistoryForTranslation
-   * (java.lang.Long)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -283,13 +230,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#addReleaseInfo(org.ihtsdo
-   * .otf.refset.ReleaseInfo)
-   */
   /* see superclass */
   @Override
   public ReleaseInfo addReleaseInfo(ReleaseInfo releaseInfo) throws Exception {
@@ -317,13 +257,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return releaseInfo;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#removeReleaseInfo(java.lang
-   * .Long)
-   */
   /* see superclass */
   @Override
   public void removeReleaseInfo(Long id) {
@@ -357,13 +290,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#updateReleaseInfo(org.ihtsdo
-   * .otf.refset.ReleaseInfo)
-   */
   /* see superclass */
   @Override
   public void updateReleaseInfo(ReleaseInfo releaseInfo) {
@@ -389,13 +315,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getRefsetRevision(java.lang
-   * .Long, java.util.Date)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -459,13 +378,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     translation.getWorkflowStatus().name();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#getTranslationRevision(java
-   * .lang.Long, java.util.Date)
-   */
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
@@ -501,14 +413,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return translation;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.ihtsdo.otf.refset.services.HistoryService#findMembersForRefsetRevision
-   * (java.lang.Long, java.util.Date,
-   * org.ihtsdo.otf.refset.helpers.PfsParameter)
-   */
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
@@ -517,13 +421,6 @@ public class HistoryServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.ihtsdo.otf.refset.services.HistoryService#
-   * findConceptsForTranslationRevision(java.lang.Long, java.util.Date,
-   * org.ihtsdo.otf.refset.helpers.PfsParameter)
-   */
   /* see superclass */
   @Override
   public ConceptList findConceptsForTranslationRevision(Long refsetId,

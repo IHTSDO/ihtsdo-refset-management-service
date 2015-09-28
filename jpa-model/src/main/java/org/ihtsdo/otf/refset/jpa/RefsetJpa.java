@@ -4,10 +4,13 @@
 package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -23,10 +26,12 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -85,6 +90,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean forTranslation;
 
+  /** The feedback email */
+  @Column(nullable = true)
+  private String feedbackEmail;
+
   /** The workflow status. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -110,22 +119,25 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private List<Translation> translations = new ArrayList<>();
 
   /** The inclusions. */
-  @OneToMany(orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
-  @CollectionTable(name = "refset_inclusions")
   private List<ConceptRefsetMember> inclusions = new ArrayList<>();
 
   /** The exclusions. */
-  @OneToMany(orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
-  @CollectionTable(name = "refset_exclusions")
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
   @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
-  @CollectionTable(name = "refset_members")
   private List<ConceptRefsetMember> refsetMembers = null;
+
+  /** The enabled feedback events. */
+  @ElementCollection
+  @CollectionTable(name = "refset_enabled_feedback_events")
+  @Enumerated(EnumType.STRING)
+  private Set<Refset.FeedbackEvent> enabledFeedbackEvents;
 
   /**
    * Instantiates an empty {@link RefsetJpa}.
@@ -151,9 +163,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     editionUrl = refset.getEditionUrl();
     refsetDescriptor = refset.getRefsetDescriptor();
     forTranslation = refset.isForTranslation();
+    feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
+    enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (Translation translation : refset.getTranslations()) {
       addTranslation(new TranslationJpa(translation));
     }
@@ -208,7 +222,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Type getType() {
     return type;
@@ -270,7 +284,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
@@ -304,6 +318,17 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setForTranslation(boolean forTranslation) {
     this.forTranslation = forTranslation;
+  }
+
+  @Override
+  public String getFeedbackEmail() {
+    return feedbackEmail;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFeedbackEmail(String feedbackEmail) {
+    this.feedbackEmail = feedbackEmail;
   }
 
   /* see superclass */
@@ -353,6 +378,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Override
+  public Set<FeedbackEvent> getEnabledFeedbackEvents() {
+    return enabledFeedbackEvents;
+  }
+
+  /* see superclass */
+  @Override
+  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents) {
+    this.enabledFeedbackEvents = enabledFeedbackEvents;
+  }
+
+  /* see superclass */
   @XmlTransient
   @Override
   public Project getProject() {
@@ -372,7 +409,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    */
   @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getProjectId() {
+  public Long getProjectId() {
     return (project != null) ? project.getId() : 0;
   }
 
@@ -508,6 +545,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         prime * result + ((exclusions == null) ? 0 : exclusions.hashCode());
     result =
         prime * result + ((externalUrl == null) ? 0 : externalUrl.hashCode());
+    result =
+        prime * result
+            + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
     result = prime * result + (forTranslation ? 1231 : 1237);
     result =
         prime * result + ((inclusions == null) ? 0 : inclusions.hashCode());
@@ -515,6 +555,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result =
+        prime
+            * result
+            + ((enabledFeedbackEvents == null) ? 0 : enabledFeedbackEvents
+                .hashCode());
     return result;
   }
 
@@ -560,6 +605,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (forTranslation != other.forTranslation)
       return false;
+    if (feedbackEmail == null) {
+      if (other.feedbackEmail != null)
+        return false;
+    } else if (!feedbackEmail.equals(other.feedbackEmail))
+      return false;
     if (inclusions == null) {
       if (other.inclusions != null)
         return false;
@@ -577,6 +627,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!project.equals(other.project))
       return false;
+    if (enabledFeedbackEvents == null) {
+      if (other.enabledFeedbackEvents != null)
+        return false;
+    } else if (!enabledFeedbackEvents.equals(other.enabledFeedbackEvents))
+      return false;
     if (type != other.type)
       return false;
     return true;
@@ -591,9 +646,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + externalUrl + ", editionUrl=" + editionUrl + ", forTranslation="
         + forTranslation + ", workflowStatus=" + workflowStatus
         + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project + ", translations="
-        + translations + ", inclusions=" + inclusions + ", exclusions="
-        + exclusions + "]";
+        + refsetDescriptor + ", project=" + project + ", inclusions=" + inclusions + ", exclusions="
+        + exclusions + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 
 }

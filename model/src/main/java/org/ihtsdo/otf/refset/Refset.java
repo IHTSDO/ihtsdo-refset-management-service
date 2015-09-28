@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
+import java.util.Set;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -21,7 +22,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public interface Refset extends Component, Searchable {
 
   /**
-   * The Enum Type.
+   * Enum of refset types.
    */
   public enum Type {
 
@@ -33,6 +34,27 @@ public interface Refset extends Component, Searchable {
 
     /** The external type. */
     EXTERNAL
+  }
+
+  /**
+   * Enum of feedback events upon which email may be sent.
+   */
+  public enum FeedbackEvent {
+
+    /** The member add. */
+    MEMBER_ADD,
+
+    /** The member remove. */
+    MEMBER_REMOVE,
+
+    /** The definition change. */
+    DEFINITION_CHANGE,
+
+    /** The workflow status change. */
+    WORKFLOW_STATUS_CHANGE,
+
+    /** The edition url change. */
+    EDITION_URL_CHANGE
   }
 
   /**
@@ -316,4 +338,31 @@ public interface Refset extends Component, Searchable {
    */
   public void removeRefsetMember(ConceptRefsetMember member);
 
+  /**
+   * Returns the feedback emails.
+   *
+   * @return the feedback emails
+   */
+  public String getFeedbackEmail();
+
+  /**
+   * Sets the feedback email.
+   *
+   * @param feedbackEmail the feedback email
+   */
+  public void setFeedbackEmail(String feedbackEmail);
+  
+  /**
+   * Returns the enabled feedback events.
+   *
+   * @return the enabled feedback events
+   */
+  public Set<FeedbackEvent> getEnabledFeedbackEvents();
+  
+  /**
+   * Sets the enabled feedback events.
+   *
+   * @param enabledFeedbackEvents the enabled feedback events
+   */
+  public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents);
 }

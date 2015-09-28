@@ -9,20 +9,6 @@ package org.ihtsdo.otf.refset.rf2;
 public interface Relationship extends Component {
 
   /**
-   * Returns the workflow status.
-   * 
-   * @return the workflow status
-   */
-  public String getWorkflowStatus();
-
-  /**
-   * Sets the workflow status.
-   * 
-   * @param workflowStatus the workflow status
-   */
-  public void setWorkflowStatus(String workflowStatus);
-
-  /**
    * Returns the type id.
    * 
    * @return the type id

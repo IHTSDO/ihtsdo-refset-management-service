@@ -9,11 +9,14 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
+import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -21,12 +24,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link ConceptJpa}.
+ * Unit testing for {@link DescriptionJpa}.
  */
-public class ModelUnit037Test {
+public class ModelUnit040Test {
 
   /** The model object to test. */
-  private ConceptJpa object;
+  private DescriptionJpa object;
+
+  /** the test fixture c1 */
+  private Concept c1;
+
+  /** the test fixture c2 */
+  private Concept c2;
 
   /**
    * Setup class.
@@ -38,11 +47,15 @@ public class ModelUnit037Test {
 
   /**
    * Setup.
+   * @throws Exception
    */
   @Before
-  public void setup() {
-    object = new ConceptJpa();
+  public void setup() throws Exception {
+    object = new DescriptionJpa();
 
+    ProxyTester tester = new ProxyTester(new ConceptJpa());
+    c1 = (ConceptJpa) tester.createObject(1);
+    c2 = (ConceptJpa) tester.createObject(2);
   }
 
   /**
@@ -71,8 +84,15 @@ public class ModelUnit037Test {
     tester.include("terminology");
     tester.include("terminologyId");
     tester.include("version");
-    tester.include("definitionStatusId");
+    tester.include("caseSignificanceId");
+    tester.include("translationOfId");
+    tester.include("concept");
+    tester.include("languageCode");
+    tester.include("term");
+    tester.include("typeId");
 
+    tester.proxy(Concept.class, 1, c1);
+    tester.proxy(Concept.class, 2, c2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -90,7 +110,7 @@ public class ModelUnit037Test {
   public void testModelCopy030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testModelCopy030");
     CopyConstructorTester tester = new CopyConstructorTester(object);
-    assertTrue(tester.testCopyConstructorDeep(Concept.class));
+    assertTrue(tester.testCopyConstructorDeep(Description.class));
   }
 
   /**
@@ -102,6 +122,8 @@ public class ModelUnit037Test {
   public void testModelXmlSerialization030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
     XmlSerializationTester tester = new XmlSerializationTester(object);
+    tester.proxy(Concept.class, 1, c1);
+    tester.proxy(Concept.class, 2, c2);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -123,9 +145,10 @@ public class ModelUnit037Test {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
-    tester.include("definitionStatusId");
-    tester.include("name");
-    tester.include("workflowStatus");
+    tester.include("caseSignificanceId");
+    tester.include("languageCode");
+    tester.include("term");
+    tester.include("typeId");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -136,12 +159,12 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelIndexedFields037() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields037");
+  public void testModelIndexedFields040() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields040");
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
-    tester.include("name");
+    tester.include("term");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -154,9 +177,11 @@ public class ModelUnit037Test {
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("moduleId");
-    tester.include("definitionStatusId");
-    tester.include("workflowStatus");
-    tester.include("nameSort");
+    tester.include("languageCode");
+    tester.include("typeId");
+    tester.include("termSort");
+    tester.include("caseSignificanceId");
+    tester.include("translationOfId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

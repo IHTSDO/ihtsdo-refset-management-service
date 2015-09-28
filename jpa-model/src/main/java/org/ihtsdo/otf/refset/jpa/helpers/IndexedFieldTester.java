@@ -70,6 +70,7 @@ public class IndexedFieldTester extends ProxyTester {
         "Test not analyzed indexed fields - " + clazz.getName());
 
     Map<String, Boolean> analyzedFieldsMap = getAnalyzedFieldsMap(clazz);
+    System.out.println(analyzedFieldsMap);
     for (String field : includes) {
       boolean found = true;
       if (analyzedFieldsMap.containsKey(field)) {
@@ -109,7 +110,7 @@ public class IndexedFieldTester extends ProxyTester {
 
     for (Method m : clazz.getMethods()) {
 
-      // Look at "get" method sfor field annotations
+      // Look at "get" methods for field annotations
       String fieldName = null;
       if (m.getName().startsWith("get")) {
         fieldName = m.getName().substring(3);

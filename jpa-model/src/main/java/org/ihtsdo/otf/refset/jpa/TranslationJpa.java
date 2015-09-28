@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -22,9 +23,11 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -39,12 +42,12 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * JPA enabled implementation of {@link Refset}.
  */
 @Entity
-@Table(name = "refsets", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "translations", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "name", "description"
 }))
 @Audited
 @Indexed
-@XmlRootElement(name = "refset")
+@XmlRootElement(name = "translation")
 public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The name. */
@@ -87,6 +90,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The description types. */
   @ManyToMany(targetEntity = DescriptionTypeRefsetMemberJpa.class)
   // @IndexedEmbedded - n/a
+  @CollectionTable(name = "translation_description_types")
   private List<DescriptionTypeRefsetMember> descriptionTypes = null;
 
   /** The concepts. */
@@ -207,7 +211,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    */
   @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getRefsetId() {
+  public Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
   }
 
@@ -244,7 +248,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    */
   @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getProjectId() {
+  public Long getProjectId() {
     return (project != null) ? project.getId() : 0;
   }
 
@@ -296,7 +300,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;

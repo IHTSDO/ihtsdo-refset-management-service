@@ -16,7 +16,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
  * Represents a service for accessing prior editions of domain model objects as
  * well as managing release info.
  */
-public interface HistoryServiceRest {
+public interface ReleaseServiceRest {
 
   /**
    * Returns the release history for refset.

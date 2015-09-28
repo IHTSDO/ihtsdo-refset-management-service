@@ -22,7 +22,7 @@ public interface ValidationCheck extends Configurable {
    * @return the validation result
    */
   public ValidationResult validate(Concept concept);
-  
+
   /**
    * Validate.
    *
@@ -30,7 +30,7 @@ public interface ValidationCheck extends Configurable {
    * @return the validation result
    */
   public ValidationResult validate(ConceptRefsetMember member);
-  
+
   /**
    * Validate.
    *
@@ -38,7 +38,7 @@ public interface ValidationCheck extends Configurable {
    * @return the validation result
    */
   public ValidationResult validate(Translation translation);
-  
+
   /**
    * Validate.
    *
@@ -46,6 +46,5 @@ public interface ValidationCheck extends Configurable {
    * @return the validation result
    */
   public ValidationResult validate(Refset refset);
-
 
 }

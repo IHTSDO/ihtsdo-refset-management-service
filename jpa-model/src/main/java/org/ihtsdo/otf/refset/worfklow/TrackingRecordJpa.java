@@ -18,13 +18,13 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -52,7 +52,6 @@ public class TrackingRecordJpa implements TrackingRecord {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
-
   /** The last modified. */
   @Column(nullable = false)
   @Temporal(TemporalType.TIMESTAMP)
@@ -72,12 +71,10 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The user. */
   @ManyToOne(targetEntity = UserJpa.class)
-  @IndexedEmbedded
   private User user = null;
 
   /** The Translation. */
   @ManyToOne(targetEntity = TranslationJpa.class)
-  @IndexedEmbedded
   private Translation translation = null;
 
   /** The Refset. */
@@ -86,7 +83,6 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The concepts. */
   @OneToOne(targetEntity = ConceptJpa.class)
-  @IndexedEmbedded
   private Concept concept = null;
 
   /**
@@ -171,8 +167,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
-  @XmlElement(type = UserJpa.class)
   public User getUser() {
     return user;
   }
@@ -183,7 +179,29 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.user = user;
   }
 
+  /**
+   * Returns the user name. For JAXB.
+   *
+   * @return the user name
+   */
+  public String getUserName() {
+    return user == null ? "" : user.getUserName();
+  }
+
+  /**
+   * Sets the user name. For JAXB.
+   *
+   * @param userName the user name
+   */
+  public void setUserName(String userName) {
+    if (user == null) {
+      user = new UserJpa();
+    }
+    user.setUserName(userName);
+  }
+
   /* see superclass */
+  @XmlTransient
   @Override
   public Translation getTranslation() {
     return translation;
@@ -195,7 +213,29 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.translation = translation;
   }
 
+  /**
+   * Returns the translation id. For JAXB.
+   *
+   * @return the translation id
+   */
+  public Long getTranslationId() {
+    return translation == null ? 0L : translation.getId();
+  }
+
+  /**
+   * Sets the translation id. For JAXB.
+   *
+   * @param translationId the translation id
+   */
+  public void setTranslationId(Long translationId) {
+    if (translation == null) {
+      translation = new TranslationJpa();
+    }
+    translation.setId(translationId);
+  }
+
   /* see superclass */
+  @XmlTransient
   @Override
   public Refset getRefset() {
     return refset;
@@ -207,7 +247,29 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.refset = refset;
   }
 
+  /**
+   * Returns the refset id. For JAXB.
+   *
+   * @return the refset id
+   */
+  public Long getRefsetId() {
+    return refset == null ? 0L : refset.getId();
+  }
+
+  /**
+   * Sets the refset id. For JAXB.
+   *
+   * @param refsetId the refset id
+   */
+  public void setRefsetId(Long refsetId) {
+    if (refset == null) {
+      refset = new RefsetJpa();
+    }
+    refset.setId(refsetId);
+  }
+
   /* see superclass */
+  @XmlTransient
   @Override
   public Concept getConcept() {
     return concept;
@@ -217,6 +279,27 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Override
   public void setConcept(Concept concept) {
     this.concept = concept;
+  }
+
+  /**
+   * Returns the concept id. For JAXB.
+   *
+   * @return the concept id
+   */
+  public Long getConceptId() {
+    return concept == null ? 0L : concept.getId();
+  }
+
+  /**
+   * Sets the concept id. For JAXB.
+   *
+   * @param conceptId the concept id
+   */
+  public void setConceptId(Long conceptId) {
+    if (concept == null) {
+      concept = new ConceptJpa();
+    }
+    concept.setId(conceptId);
   }
 
   /* see superclass */

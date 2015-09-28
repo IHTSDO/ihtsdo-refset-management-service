@@ -27,6 +27,7 @@ import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Analyzer;
 import org.hibernate.search.annotations.AnalyzerDef;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
@@ -34,6 +35,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
+import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -67,14 +69,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Column(nullable = false)
   private String definitionStatusId;
 
-  /** The anonymous flag. */
-  @Column(nullable = false)
-  private boolean anonymous = false;
-
-  /** The fully defined flag. */
-  @Column(nullable = false)
-  private boolean fullyDefined = false;
-
   /** The descriptions. */
   @OneToMany(mappedBy = "concept", orphanRemoval = true, targetEntity = DescriptionJpa.class)
   @IndexedEmbedded(targetElement = DescriptionJpa.class)
@@ -84,7 +78,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Transient
   private int childCount = -1;
 
-  /** The default preferred name. */
+  /** The name. */
   @Column(nullable = false, length = 256)
   private String name;
 
@@ -123,7 +117,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
     return workflowStatus;
@@ -146,30 +140,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public void setDefinitionStatusId(String definitionStatusId) {
     this.definitionStatusId = definitionStatusId;
-  }
-
-  /* see superclass */
-  @Override
-  public boolean isAnonymous() {
-    return anonymous;
-  }
-
-  /* see superclass */
-  @Override
-  public void setAnonymous(boolean anonymous) {
-    this.anonymous = anonymous;
-  }
-
-  /* see superclass */
-  @Override
-  public boolean isFullyDefined() {
-    return fullyDefined;
-  }
-
-  /* see superclass */
-  @Override
-  public void setFullyDefined(boolean fullyDefined) {
-    this.fullyDefined = fullyDefined;
   }
 
   /* see superclass */
@@ -217,7 +187,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "defaultPreferredNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   @Analyzer(definition = "noStopWord")
   public String getName() {
@@ -226,8 +196,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /* see superclass */
   @Override
-  public void setName(String defaultPreferredName) {
-    this.name = defaultPreferredName;
+  public void setName(String name) {
+    this.name = name;
   }
 
   /* see superclass */
@@ -300,8 +270,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public String toString() {
     return "ConceptJpa [workflowStatus=" + workflowStatus
-        + ", definitionStatusId=" + definitionStatusId + ", anonymous="
-        + anonymous + ", fullyDefined=" + fullyDefined + ", descriptions="
+        + ", definitionStatusId=" + definitionStatusId + ", descriptions="
         + descriptions + ", childCount=" + childCount + ", name=" + name
         + ", translation=" + translation + "]";
   }

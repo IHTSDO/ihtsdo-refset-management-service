@@ -21,16 +21,14 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
-import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -1100,31 +1098,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     list.setTotalCount(fullTextQuery.getResultSize());
     return list;
 
-  }
-
-  /* see superclass */
-  @Override
-  public boolean userHasPermissionsOf(Project project, User user, UserRole role)
-    throws Exception {
-    // Determine whether the user has at least the permissions of the specified
-    // role on the specified project
-    if (role == UserRole.VIEWER) {
-      return true;
-    }
-    UserRole projectRole = project.getProjectRoleMap().get(user);
-    if (role == UserRole.AUTHOR) {
-      return projectRole == UserRole.AUTHOR || projectRole == UserRole.REVIEWER
-          || projectRole == UserRole.ADMIN;
-    }
-
-    if (role == UserRole.REVIEWER) {
-      return projectRole == UserRole.REVIEWER || projectRole == UserRole.ADMIN;
-    }
-
-    if (role == UserRole.ADMIN) {
-      return projectRole == UserRole.ADMIN;
-    }
-    return false;
   }
 
 }

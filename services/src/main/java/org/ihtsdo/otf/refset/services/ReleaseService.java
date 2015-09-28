@@ -16,7 +16,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 /**
  * Generically represents a service for interacting with terminology content.
  */
-public interface HistoryService extends ProjectService {
+public interface ReleaseService extends ProjectService {
 
   // get object(s) for a period of time in the past
   // get object(s) for a particular release

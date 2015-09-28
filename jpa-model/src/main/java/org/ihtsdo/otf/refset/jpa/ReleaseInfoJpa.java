@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -111,6 +112,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
 
   /** The release properties. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
+  @CollectionTable(name = "release_info_properties")
   private List<ReleaseProperty> properties;
 
   /** The release properties. */
@@ -285,7 +287,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    */
   @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getRefsetId() {
+  public Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
   }
 
@@ -322,7 +324,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    */
   @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getTranslationId() {
+  public Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;
   }
 
@@ -379,7 +381,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /* see superclass */
-  @XmlTransient
+  @XmlElement(type = ReleaseArtifactJpa.class)
   @Override
   public List<ReleaseArtifact> getArtifacts() {
     if (artifacts == null) {

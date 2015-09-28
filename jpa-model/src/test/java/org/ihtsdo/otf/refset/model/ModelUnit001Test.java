@@ -6,14 +6,14 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -21,12 +21,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link ConceptJpa}.
+ * Unit testing for {@link ProjectJpa}.
  */
-public class ModelUnit037Test {
+public class ModelUnit001Test {
 
   /** The model object to test. */
-  private ConceptJpa object;
+  private ProjectJpa object;
 
   /**
    * Setup class.
@@ -38,10 +38,11 @@ public class ModelUnit037Test {
 
   /**
    * Setup.
+   * @throws Exception
    */
   @Before
-  public void setup() {
-    object = new ConceptJpa();
+  public void setup() throws Exception {
+    object = new ProjectJpa();
 
   }
 
@@ -51,27 +52,26 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
+  public void testModelGetSet001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelGetSet001");
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("objectId");
     tester.test();
   }
 
   /**
-   * Test equals and hascode methods.
+   * Test equals and hashcode methods.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode030");
+  public void testModelEqualsHashcode001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode001");
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("active");
-    tester.include("moduleId");
+    tester.include("name");
+    tester.include("description");
     tester.include("terminology");
-    tester.include("terminologyId");
     tester.include("version");
-    tester.include("definitionStatusId");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
@@ -87,10 +87,10 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy030");
+  public void testModelCopy001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelCopy001");
     CopyConstructorTester tester = new CopyConstructorTester(object);
-    assertTrue(tester.testCopyConstructorDeep(Concept.class));
+    assertTrue(tester.testCopyConstructor(Project.class));
   }
 
   /**
@@ -99,8 +99,8 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
+  public void testModelXmlSerialization001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient001");
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }
@@ -111,22 +111,15 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField030");
+  public void testModelNotNullField001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelNotNullField001");
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("active");
-    tester.include("published");
-    tester.include("publishable");
-    tester.include("moduleId");
-    tester.include("terminologyId");
+    tester.include("name");
+    tester.include("description");
     tester.include("terminology");
     tester.include("version");
-    tester.include("definitionStatusId");
-    tester.include("name");
-    tester.include("workflowStatus");
-
     assertTrue(tester.testNotNullFields());
   }
 
@@ -136,27 +129,24 @@ public class ModelUnit037Test {
    * @throws Exception the exception
    */
   @Test
-  public void testModelIndexedFields037() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields037");
+  public void testModelIndexedFields001() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields001");
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
+    tester.include("description");
+    tester.include("projectRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
-    tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
-    tester.include("effectiveTime");
+    tester.include("id");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("moduleId");
-    tester.include("definitionStatusId");
-    tester.include("workflowStatus");
-    tester.include("nameSort");
+    tester.include("terminology");
+    tester.include("version");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

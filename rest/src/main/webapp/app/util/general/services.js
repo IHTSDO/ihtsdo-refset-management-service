@@ -27,12 +27,14 @@ tsApp
           this.error.message = response.data.replace(/"/g, '');
           // If authtoken expired, relogin
           if (this.error.message.startsWith("AuthToken has expired")) {
-            // Reroute back to login page with "auth token has expired" message
+            // Reroute back to login page with "auth token has
+                        // expired" message
             $location.path("/");
           }
           if (this.error.message
             .startsWith("Attempt to access a service without an authorization token")) {
-            // Reroute back to login page with "auth token has expired" message
+            // Reroute back to login page with "auth token has
+                        // expired" message
             $location.path("/");
           }
         }
@@ -129,7 +131,7 @@ tsApp.service('gpService', function() {
 // Security service
 tsApp.service('securityService', [ '$http', '$location', 'utilService',
   'gpService', function($http, $location, utilService, gpService) {
-  console.debug('configure securityService');
+    console.debug('configure securityService');
 
     // Declare the user
     var user = {
@@ -197,23 +199,119 @@ tsApp.service('securityService', [ '$http', '$location', 'utilService',
         gpService.decrement();
       });
     }
+    
+
+    
+    // get all users
+    this.getUsers = function() {
+      console.debug("getUsers");
+      var deferred = $q.defer();
+
+      // Get users
+      gpService.increment()
+      $http.get(securityUrl + 'user/users').then(
+      // success
+      function(response) {
+        console.debug("  users = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }        
+    
+    // add user
+    this.addUser = function(user) {
+      console.debug("addUser");
+      var deferred = $q.defer();
+
+      // Add user
+      gpService.increment()
+      $http.put(securityUrl + 'user/add', user).then(
+      // success
+      function(response) {
+        console.debug("  user = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }                
+    
+    // update user
+    this.updateUser = function(user) {
+      console.debug("updateUser");
+      var deferred = $q.defer();
+
+      // Add user
+      gpService.increment()
+      $http.post(securityUrl + 'user/update', user).then(
+      // success
+      function(response) {
+        console.debug("  user = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }            
+    
+    // remove user
+    this.removeUser = function(user) {
+      console.debug("removeUser");
+      var deferred = $q.defer();
+
+      // Add user
+      gpService.increment()
+      $http.delete(securityUrl + 'user/remove' + "/" + user.id).then(
+      // success
+      function(response) {
+        console.debug("  user = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }                      
+        
+    
   } ]);
 
 // Tab service
 tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
   function($location, utilService, gpService) {
-  console.debug('configure tabService');
+    console.debug('configure tabService');
     // Available tabs
     this.tabs = [ {
       link : '#/directory',
       label : 'Directory'
-    },{
+    }, {
       link : '#/refset',
       label : 'Refset'
-    },  {
+    }, {
       link : '#/translation',
       label : 'Translation'
-    },  {
+    }, {
       link : '#/admin',
       label : 'Admin'
     } ];
@@ -244,7 +342,7 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
 
 tsApp.service('websocketService', [ '$location', 'utilService', 'gpService',
   function($location, utilService, gpService) {
-  console.debug('configure websocketService');
+    console.debug('configure websocketService');
     this.data = {
       message : null
     };
@@ -256,7 +354,6 @@ tsApp.service('websocketService', [ '$location', 'utilService', 'gpService',
       var url = window.location.href;
       url = url.replace('http', 'ws');
       url = url.replace('index.html', '');
-      url = url.replace('index2.html', '');
       url = url.substring(0, url.indexOf('#'));
       url = url + "/websocket";
       console.debug("url = " + url);

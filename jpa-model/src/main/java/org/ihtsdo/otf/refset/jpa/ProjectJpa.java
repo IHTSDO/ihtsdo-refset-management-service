@@ -274,8 +274,8 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)  
-  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class))
+  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
+  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
   public Map<User, UserRole> getProjectRoleMap() {
     if (projectRoleMap == null) {

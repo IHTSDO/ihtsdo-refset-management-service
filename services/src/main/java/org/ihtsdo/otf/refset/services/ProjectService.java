@@ -6,13 +6,11 @@ package org.ihtsdo.otf.refset.services;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
-import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -22,6 +20,65 @@ import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
  * Generically represents a service for accessing {@link Project} information.
  */
 public interface ProjectService extends RootService {
+
+  /**
+   * Indicates whether or not last modified flag is the case. Used when adding
+   * or updating objects to determine if the last modified date should be reset
+   * to the current value.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isLastModifiedFlag();
+
+  /**
+   * Sets the last modified flag.
+   *
+   * @param lastModifiedFlag the last modified flag
+   */
+  public void setLastModifiedFlag(boolean lastModifiedFlag);
+
+  /**
+   * Sets the assign identifiers flag. Used when adding or updating objects to
+   * determine if the identifier should be computed based on the id assignment
+   * handler.
+   *
+   * @param assignIdentifiersFlag the assign identifiers flag
+   */
+  public void setAssignIdentifiersFlag(boolean assignIdentifiersFlag);
+
+  /**
+   * Indicates whether or not assign identifiers flag is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isAssignIdentifiersFlag();
+
+  /**
+   * Returns the identifier assignment handler.
+   *
+   * @param terminology the terminology
+   * @return the identifier assignment handler
+   * @throws Exception the exception
+   */
+  public IdentifierAssignmentHandler getIdentifierAssignmentHandler(
+    String terminology) throws Exception;
+
+  /**
+   * Enable listeners.
+   */
+  public void enableListeners();
+
+  /**
+   * Disable listeners.
+   */
+  public void disableListeners();
+
+  /**
+   * Returns the projects.
+   *
+   * @return the projects
+   */
+  public ProjectList getProjects();
 
   /**
    * Returns the project.
@@ -56,61 +113,6 @@ public interface ProjectService extends RootService {
    * @throws Exception the exception
    */
   public void removeProject(Long projectId) throws Exception;
-
-  /**
-   * Returns the projects.
-   *
-   * @return the projects
-   */
-  public ProjectList getProjects();
-
-  /**
-   * Indicates whether or not last modified flag is the case.
-   *
-   * @return <code>true</code> if so, <code>false</code> otherwise
-   */
-  public boolean isLastModifiedFlag();
-
-  /**
-   * Sets the last modified flag.
-   *
-   * @param lastModifiedFlag the last modified flag
-   */
-  public void setLastModifiedFlag(boolean lastModifiedFlag);
-
-  /**
-   * Sets the assign identifiers flag.
-   *
-   * @param assignIdentifiersFlag the assign identifiers flag
-   */
-  public void setAssignIdentifiersFlag(boolean assignIdentifiersFlag);
-
-  /**
-   * Returns the identifier assignment handler.
-   *
-   * @param terminology the terminology
-   * @return the identifier assignment handler
-   * @throws Exception the exception
-   */
-  public IdentifierAssignmentHandler getIdentifierAssignmentHandler(
-    String terminology) throws Exception;
-
-  /**
-   * Indicates whether or not assign identifiers flag is the case.
-   *
-   * @return <code>true</code> if so, <code>false</code> otherwise
-   */
-  public boolean isAssignIdentifiersFlag();
-
-  /**
-   * Enable listeners.
-   */
-  public void enableListeners();
-
-  /**
-   * Disable listeners.
-   */
-  public void disableListeners();
 
   /**
    * Returns the refset.
@@ -355,18 +357,6 @@ public interface ProjectService extends RootService {
    */
   public SearchResultList findProjectsForQuery(String terminology,
     String version, String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * User has permissions of.
-   *
-   * @param project the project
-   * @param user the user
-   * @param role the role
-   * @return true, if successful
-   * @throws Exception the exception
-   */
-  public boolean userHasPermissionsOf(Project project, User user, UserRole role)
-    throws Exception;
 
   /**
    * Find concepts for translation.

@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rf2.jpa;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -41,10 +42,6 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 @XmlRootElement(name = "description")
 public class DescriptionJpa extends AbstractComponent implements Description {
 
-  /** The workflow status. */
-  @Column(nullable = true)
-  private String workflowStatus;
-
   /** The language code. */
   @Column(nullable = false, length = 10)
   private String languageCode;
@@ -61,6 +58,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Column(nullable = false)
   private String caseSignificanceId;
 
+  /** The case significance id. */
+  @Column(nullable = true)
+  private String translationOfId;
+
   /** The concept. */
   @ManyToOne(targetEntity = ConceptJpa.class, optional = false)
   @ContainedIn
@@ -68,6 +69,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language Refset members. */
   @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefsetMemberJpa.class)
+  @CollectionTable(name="description_language_refset_members")
   @IndexedEmbedded
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 
@@ -88,10 +90,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     super(description);
     caseSignificanceId = description.getCaseSignificanceId();
     concept = description.getConcept();
+    translationOfId = description.getTranslationOfId();
     languageCode = description.getLanguageCode();
     term = description.getTerm();
     typeId = description.getTypeId();
-    workflowStatus = description.getWorkflowStatus();
 
     if (deepCopy) {
       languageRefsetMembers = new ArrayList<>();
@@ -113,64 +115,32 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   }
 
   /* see superclass */
-  @Override
-  public String getWorkflowStatus() {
-    return workflowStatus;
-  }
-
-  /* see superclass */
-  @Override
-  public void setWorkflowStatus(String workflowStatus) {
-    this.workflowStatus = workflowStatus;
-  }
-
-  /**
-   * Returns the language code.
-   * 
-   * @return the language code
-   */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getLanguageCode() {
     return languageCode;
   }
 
-  /**
-   * Sets the language code.
-   * 
-   * @param languageCode the language code
-   */
+  /* see superclass */
   @Override
   public void setLanguageCode(String languageCode) {
     this.languageCode = languageCode;
   }
 
-  /**
-   * Returns the type.
-   * 
-   * @return the type
-   */
+  /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTypeId() {
     return typeId;
   }
 
-  /**
-   * Sets the type.
-   * 
-   * @param type the type
-   */
+  /* see superclass */
   @Override
   public void setTypeId(String type) {
     this.typeId = type;
   }
 
-  /**
-   * Returns the term.
-   * 
-   * @return the term
-   */
+  /* see superclass */
   @Override
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
@@ -181,61 +151,54 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     return term;
   }
 
-  /**
-   * Sets the term.
-   * 
-   * @param term the term
-   */
+  /* see superclass */
   @Override
   public void setTerm(String term) {
     this.term = term;
   }
 
-  /**
-   * Returns the case significance id.
-   * 
-   * @return the case significance id
-   */
+  /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getCaseSignificanceId() {
     return caseSignificanceId;
   }
 
-  /**
-   * Sets the case significance id.
-   * 
-   * @param caseSignificanceId the case significance id
-   */
+  /* see superclass */
   @Override
   public void setCaseSignificanceId(String caseSignificanceId) {
     this.caseSignificanceId = caseSignificanceId;
   }
 
-  /**
-   * Returns the concept.
-   * 
-   * @return the concept
-   */
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getTranslationOfId() {
+    return translationOfId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslationOfId(String translationOfId) {
+    this.translationOfId = translationOfId;
+  }
+
+  /* see superclass */
   @XmlTransient
   @Override
   public Concept getConcept() {
     return this.concept;
   }
 
-  /**
-   * Sets the concept.
-   * 
-   * @param concept the concept
-   */
+  /* see superclass */
   @Override
   public void setConcept(Concept concept) {
     this.concept = concept;
   }
 
   /**
-   * Returns the concept id. Used for XML/JSON serialization.
-   * 
+   * Returns the concept id.
+   *
    * @return the concept id
    */
   @XmlElement
@@ -300,11 +263,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     concept.setVersion(getVersion());
   }
 
-  /**
-   * Returns the set of SimpleRefsetMembers.
-   *
-   * @return the set of SimpleRefsetMembers
-   */
+  /* see superclass */
   @XmlElement(type = LanguageRefsetMemberJpa.class, name = "languages")
   @Override
   public List<LanguageRefsetMember> getLanguageRefsetMembers() {
@@ -314,11 +273,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     return this.languageRefsetMembers;
   }
 
-  /**
-   * Sets the set of LanguageRefsetMembers.
-   *
-   * @param languageRefsetMembers the set of LanguageRefsetMembers
-   */
+  /* see superclass */
   @Override
   public void setLanguageRefsetMembers(
     List<LanguageRefsetMember> languageRefsetMembers) {
@@ -331,11 +286,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     }
   }
 
-  /**
-   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers.
-   *
-   * @param languageRefsetMember the LanguageRefsetMembers to be added
-   */
+  /* see superclass */
   @Override
   public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember) {
     if (languageRefsetMembers == null) {
@@ -345,11 +296,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     languageRefsetMembers.add(languageRefsetMember);
   }
 
-  /**
-   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers.
-   *
-   * @param languageRefsetMember the LanguageRefsetMember to be removed
-   */
+  /* see superclass */
   @Override
   public void removeLanguageRefsetMember(
     LanguageRefsetMember languageRefsetMember) {
@@ -362,9 +309,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   /* see superclass */
   @Override
   public String toString() {
-    return super.toString() + "," + getConceptId() + ","
-        + getConceptTerminologyId() + ", " + getLanguageCode() + ","
-        + getTypeId() + "," + getTerm() + "," + getCaseSignificanceId();
+    return "DescriptionJpa [, languageCode=" + languageCode + ", typeId=" + typeId + ", term="
+        + term + ", caseSignificanceId=" + caseSignificanceId
+        + ", translationOfId=" + translationOfId + ", concept=" + concept
+        + ", languageRefsetMembers=" + languageRefsetMembers + "]";
   }
 
   /* see superclass */
@@ -376,6 +324,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         prime
             * result
             + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
+    result =
+        prime * result
+            + ((translationOfId == null) ? 0 : translationOfId.hashCode());
     result =
         prime
             * result
@@ -402,6 +353,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
       if (other.caseSignificanceId != null)
         return false;
     } else if (!caseSignificanceId.equals(other.caseSignificanceId))
+      return false;
+    if (translationOfId == null) {
+      if (other.translationOfId != null)
+        return false;
+    } else if (!translationOfId.equals(other.translationOfId))
       return false;
     if (concept == null) {
       if (other.concept != null)

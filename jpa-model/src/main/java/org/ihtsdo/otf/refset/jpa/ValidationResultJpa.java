@@ -12,7 +12,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.ihtsdo.otf.refset.ValidationResult;
 
 /**
- * JPA enabled implementation of {@link ValidationResult}.
+ * JAXB enabled implementation of {@link ValidationResult}.
  */
 @XmlRootElement
 public class ValidationResultJpa implements ValidationResult {

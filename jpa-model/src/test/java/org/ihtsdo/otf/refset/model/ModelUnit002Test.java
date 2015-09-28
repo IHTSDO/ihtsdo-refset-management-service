@@ -18,6 +18,7 @@ import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -180,6 +181,38 @@ public class ModelUnit002Test {
     tester.include("lastModifiedBy");
 
     assertTrue(tester.testNotNullFields());
+  }
+
+  /**
+   * Test field indexing.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testModelIndexedFields002() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields002");
+
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("name");
+    tester.include("description");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    assertTrue(tester.testAnalyzedIndexedFields());
+    tester = new IndexedFieldTester(object);
+    tester.include("terminology");
+    tester.include("version");
+    tester.include("releaseBeginDate");
+    tester.include("releaseFinishDate");
+    tester.include("lastModified");
+    tester.include("lastModifiedBy");
+    tester.include("refsetId");
+    tester.include("translationId");
+
+
+    assertTrue(tester.testNotAnalyzedIndexedFields());
+
   }
 
   /**

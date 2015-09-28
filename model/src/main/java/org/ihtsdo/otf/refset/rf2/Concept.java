@@ -14,34 +14,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public interface Concept extends Component {
 
   /**
-   * Indicates whether or not the concept is anonymous.
-   *
-   * @return the is anonymous
-   */
-  public boolean isAnonymous();
-
-  /**
-   * Sets the anonymous flag.
-   *
-   * @param anonymous the new is anonymous
-   */
-  public void setAnonymous(boolean anonymous);
-
-  /**
-   * Indicates whether or not fully defined is the case.
-   *
-   * @return <code>true</code> if so, <code>false</code> otherwise
-   */
-  public boolean isFullyDefined();
-
-  /**
-   * Sets the fully defined.
-   *
-   * @param fullyDefined the fully defined
-   */
-  public void setFullyDefined(boolean fullyDefined);
-
-  /**
    * Returns the workflow status.
    * 
    * @return the workflow status
@@ -105,11 +77,11 @@ public interface Concept extends Component {
   public String getName();
 
   /**
-   * Sets the default preferred name.
+   * Sets the name
    * 
-   * @param defaultPreferredName the new default preferred name
+   * @param name the name
    */
-  public void setName(String defaultPreferredName);
+  public void setName(String name);
 
   /**
    * Returns the translation.

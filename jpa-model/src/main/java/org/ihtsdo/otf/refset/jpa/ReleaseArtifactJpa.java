@@ -18,6 +18,8 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
@@ -29,7 +31,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 @Entity
 @Table(name = "release_artifacts")
 @Audited
-// @XmlRootElement - n/a - not XML serializeable
+@XmlRootElement(name = "artifact")
 public class ReleaseArtifactJpa implements ReleaseArtifact {
 
   /** The id. */
@@ -148,6 +150,7 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
   public byte[] getData() {
     return data;

@@ -22,44 +22,48 @@ tsApp.run(function($rootScope, $http, $location) {
 });
 
 // Route provider configuration
-tsApp.config([ '$routeProvider', '$locationProvider', 
-               function($routeProvider, $locationProvider) {
-  console.debug('configure $routeProvider');
+tsApp.config([
+  '$routeProvider',
+  '$locationProvider',
+  function($routeProvider, $locationProvider) {
+    console.debug('configure $routeProvider');
 
-  // Set reloadOnSearch so that $location.hash() calls do not reload the
-  // controller
-  $routeProvider.when('/', {
-    templateUrl : 'app/page/login/login.html',
-    controller : 'LoginCtrl',
-    reloadOnSearch : false
-  }).when('/refset', {
-	    templateUrl : 'app/page/refset/refset.html',
-	    controller : 'RefsetCtrl',
-	    reloadOnSearch : false
-  }).when('/translation', {
-	    templateUrl : 'app/page/translation/translation.html',
-	    controller : 'TranslationCtrl',
-	    reloadOnSearch : false
-  }).when('/directory', {
-	    templateUrl : 'app/page/directory/directory.html',
-	    controller : 'DirectoryCtrl',
-	    reloadOnSearch : false
-  }).when('/admin', {
-	    templateUrl : 'app/page/admin/admin.html',
-	    controller : 'AdminCtrl',
-	    reloadOnSearch : false
-  }).when('/help/:type', {
-	    templateUrl : function(params) {
-	    	return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
-	    } 
-  }).otherwise({
-    redirectTo : '/'
-  });
-  
+    // Set reloadOnSearch so that $location.hash() calls do not reload the
+    // controller
+    $routeProvider.when('/', {
+      templateUrl : 'app/page/login/login.html',
+      controller : 'LoginCtrl',
+      reloadOnSearch : false
+    }).when('/refset', {
+      templateUrl : 'app/page/refset/refset.html',
+      controller : 'RefsetCtrl',
+      reloadOnSearch : false
+    }).when('/translation', {
+      templateUrl : 'app/page/translation/translation.html',
+      controller : 'TranslationCtrl',
+      reloadOnSearch : false
+    }).when('/directory', {
+      templateUrl : 'app/page/directory/directory.html',
+      controller : 'DirectoryCtrl',
+      reloadOnSearch : false
+    }).when('/admin', {
+      templateUrl : 'app/page/admin/admin.html',
+      controller : 'AdminCtrl',
+      reloadOnSearch : false
+    }).when(
+      '/help/:type',
+      {
+        templateUrl : function(params) {
+          return 'app/page/' + params.type + '/help/' + params.type
+            + 'Help.html';
+        }
+      }).otherwise({
+      redirectTo : '/'
+    });
 
-  //$locationProvider.html5Mode(true);
+    // $locationProvider.html5Mode(true);
 
-} ]);
+  } ]);
 
 // Simple glass pane controller
 tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService',
@@ -129,18 +133,18 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
     $scope.logout = function() {
       securityService.logout();
     }
-    
-	$scope.goToHelp = function() {
-		var path = $location.path();
 
-		path = "/help" + path;
-		
-        var currentUrl = window.location.href;
-        var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
-        var newUrl = baseUrl + path;
-        var myWindow = window.open(newUrl, "helpWindow");
-        myWindow.focus();
-	};
+    $scope.goToHelp = function() {
+      var path = $location.path();
+
+      path = "/help" + path;
+
+      var currentUrl = window.location.href;
+      var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
+      var newUrl = baseUrl + path;
+      var myWindow = window.open(newUrl, "helpWindow");
+      myWindow.focus();
+    };
 
   } ]);
 
@@ -163,7 +167,6 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
     $scope.getGlassPaneCounter = function() {
       return gpService.glassPane.counter;
     }
-
   }
 
 ]);

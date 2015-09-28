@@ -27,7 +27,6 @@
     <site.tracking.code></site.tracking.code>
     <deploy.footer.copyright>(c)2015</deploy.footer.copyright>
     <deploy.presented.by></deploy.presented.by>
-    >
   </properties>
 
   <dependencies>

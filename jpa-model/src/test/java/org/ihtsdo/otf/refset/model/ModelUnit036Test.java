@@ -6,7 +6,9 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -18,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -26,7 +29,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 
 /**
  * Unit testing for {@link RefsetJpa}.
@@ -56,6 +58,12 @@ public class ModelUnit036Test {
   @SuppressWarnings("rawtypes")
   private List l2;
 
+  /** The test fixture s1. */
+  private Set<Refset.FeedbackEvent> s1;
+
+  /** The test fixture s2. */
+  private Set<Refset.FeedbackEvent> s2;
+
   /**
    * Setup class.
    */
@@ -68,7 +76,9 @@ public class ModelUnit036Test {
    * Setup.
    * @throws Exception
    */
-  @SuppressWarnings("rawtypes")
+  @SuppressWarnings({
+      "rawtypes", "cast", "unchecked"
+  })
   @Before
   public void setup() throws Exception {
     object = new RefsetJpa();
@@ -81,6 +91,10 @@ public class ModelUnit036Test {
     l1 = (List) new ArrayList();
     l1.add(null);
     l2 = (List) new ArrayList();
+    s1 = (Set) new HashSet<>();
+    s1.add(Refset.FeedbackEvent.DEFINITION_CHANGE);
+    s2 = (Set) new HashSet<>();
+    s2.add(Refset.FeedbackEvent.MEMBER_ADD);
   }
 
   /**
@@ -121,14 +135,18 @@ public class ModelUnit036Test {
     tester.include("name");
     tester.include("project");
     tester.include("type");
+    tester.include("feedbackEmail");
+    tester.include("enabledFeedbackEvents");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
     tester.proxy(RefsetDescriptorRefsetMember.class, 1, r1);
     tester.proxy(RefsetDescriptorRefsetMember.class, 1, r2);
-    tester.proxy(List.class,1, l1);
-    tester.proxy(List.class,2, l2);
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
+    tester.proxy(Set.class, 1, s1);
+    tester.proxy(Set.class, 2, s2);
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
@@ -172,6 +190,7 @@ public class ModelUnit036Test {
     p.setId(1L);
     tester.proxy(Project.class, 1, p);
     tester.proxy(RefsetDescriptorRefsetMember.class, 1, r1);
+    tester.proxy(Set.class, 1, s1);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -203,6 +222,42 @@ public class ModelUnit036Test {
     tester.include("workflowPath");
 
     assertTrue(tester.testNotNullFields());
+  }
+
+  /**
+   * Test field indexing.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testModelIndexedFields036() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields036");
+
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("name");
+    tester.include("description");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    assertTrue(tester.testAnalyzedIndexedFields());
+    tester = new IndexedFieldTester(object);
+    tester.include("effectiveTime");
+    tester.include("terminologyId");
+    tester.include("terminology");
+    tester.include("version");
+    tester.include("lastModified");
+    tester.include("lastModifiedBy");
+    tester.include("moduleId");
+    tester.include("type");
+    tester.include("workflowStatus");
+
+    tester.include("type");
+    tester.include("workflowStatus");
+    tester.include("projectId");
+
+    assertTrue(tester.testNotAnalyzedIndexedFields());
+
   }
 
   /**

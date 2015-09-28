@@ -24,30 +24,35 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
     // n/a
   }
 
+  /* see superclass */
   @Override
   public abstract String getName();
 
+  /* see superclass */
   @Override
   public ValidationResult validate(Concept concept) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
   }
-  
+
+  /* see superclass */
   @Override
-  public ValidationResult validate(ConceptRefsetMember member) {
+  public ValidationResult validate(ConceptRefsetMember members) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
   }
-  
+
+  /* see superclass */
   @Override
   public ValidationResult validate(Translation translation) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
   }
-  
+
+  /* see superclass */
   @Override
   public ValidationResult validate(Refset refset) {
     ValidationResult result = new ValidationResultJpa();

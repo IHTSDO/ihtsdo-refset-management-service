@@ -24,22 +24,22 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.services.rest.HistoryServiceRest;
+import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
 
 /**
  * A client for connecting to a history REST service.
  */
-public class HistoryClientRest extends RootClientRest implements HistoryServiceRest {
+public class ReleaseClientRest extends RootClientRest implements ReleaseServiceRest {
 
   /** The config. */
   private Properties config = null;
 
   /**
-   * Instantiates a {@link HistoryClientRest} from the specified parameters.
+   * Instantiates a {@link ReleaseClientRest} from the specified parameters.
    *
    * @param config the config
    */
-  public HistoryClientRest(Properties config) {
+  public ReleaseClientRest(Properties config) {
     this.config = config;
   }
 

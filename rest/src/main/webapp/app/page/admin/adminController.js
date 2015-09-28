@@ -1,280 +1,262 @@
 // Administration controller
-tsApp.controller('AdminCtrl', [
-  '$scope',
-  '$http',
-  '$modal',
-  '$location',
-  '$anchorScroll',
-  'gpService',
-  'utilService',
-  'tabService',
-  'securityService',
-  'translationService',
-  'refsetService',
-  'directoryService',
-  'adminService',
-  function($scope, $http, $modal, $location, $anchorScroll, gpService,
-    utilService, tabService, securityService, translationService,
-    refsetService, directoryService, adminService) {
-    console.debug('configure AdminCtrl');
+tsApp
+  .controller(
+    'AdminCtrl',
+    [
+      '$scope',
+      '$http',
+      '$modal',
+      '$location',
+      '$anchorScroll',
+      'gpService',
+      'utilService',
+      'tabService',
+      'securityService',
+      'adminService',
+      function($scope, $http, $modal, $location, $anchorScroll, gpService,
+        utilService, tabService, securityService, adminService) {
+        console.debug('configure AdminCtrl');
 
-    // Handle resetting tabs on "back" button
-    if (tabService.selectedTab.label != 'Admin') {
-      tabService.setSelectedTabByLabel('Admin');
-    }
-
-    //
-    // Scope Variables
-    //
-
-    // Scope variables initialized from services
-    $scope.user = securityService.getUser();
-    /*$scope.translation = translationService.getModel();
-    $scope.component = directoryService.getModel();
-    $scope.pageSizes = directoryService.getPageSizes();
-
-    // Search parameters
-    $scope.searchParams = directoryService.getSearchParams();
-    $scope.searchResults = directoryService.getSearchResults();
-*/
-
-    
-    // remove a project, a user
-    $scope.remove = function(type, object, objArray) {
-      if (!confirm("Are you sure you want to remove the " + type + " ("
-        + object.name + ")?")) {
-        return;
-      }
-      if (type == 'project') {
-        adminService.removeProject(object).then(
-          $scope.getProjects());
-      }
-      if (type == 'user') {
-        adminService.removeUser(object).then(
-          $scope.getUsers());
-      }
-    };
-    
-    // get projects
-    $scope.getProjects = function() {
-      adminService.getProjects().then(function(data) {
-        for (var i = 0; i < data.projects.length; i++) {
-          data.projects[i].isExpanded = false;
+        // Handle resetting tabs on "back" button
+        if (tabService.selectedTab.label != 'Admin') {
+          tabService.setSelectedTabByLabel('Admin');
         }
-        $scope.projects = data.projects;
-      })
-    };
-       
-    // get users
-    $scope.getUsers = function() {
-      adminService.getUsers().then(function(data) {
-        $scope.users = data.users;
-      })
-    };
 
-    // call these during initialization
-    $scope.getProjects();
-    $scope.getUsers();
+        // Scope variables
+        $scope.user = securityService.getUser();
+        // TODO: consider making this an admin service object
+        $scope.projects = [];
+        // TODO: consider making this an admin service object
+        $scope.users = [];
 
-    
-    
-    //
-    // Modals
-    //
-    
-    // modal for creating a new project
-    $scope.openNewProjectModal = function(lproject) {
-
-      console.debug("openNewProjectModal ");
-
-      var modalInstance = $modal.open({
-        templateUrl : 'app/page/admin/newProject.html',
-        controller : NewProjectModalCtrl,
-        resolve : {
-          project : function() {
-            return lproject;
+        // remove a project, a user
+        $scope.remove = function(type, object, objArray) {
+          if (!confirm("Are you sure you want to remove the " + type + " ("
+            + object.name + ")?")) {
+            return;
           }
-        }
-      });
-    };
+          if (type == 'project') {
+            adminService.removeProject(object).then($scope.getProjects());
+          }
+          if (type == 'user') {
+            adminService.removeUser(object).then($scope.getUsers());
+          }
+        };
 
-    var NewProjectModalCtrl = function($scope, $modalInstance, project) {
+        // get projects
+        $scope.getProjects = function() {
+          adminService.getProjects().then(function(data) {
+            for (var i = 0; i < data.projects.length; i++) {
+              data.projects[i].isExpanded = false;
+            }
+            $scope.projects = data.projects;
+          })
+        };
 
-      console.debug("Entered new project modal control");
+        // get users
+        $scope.getUsers = function() {
+          adminService.getUsers().then(function(data) {
+            $scope.users = data.users;
+          })
+        };
 
-      $scope.project = project;
+        // modal for creating a new project
+        $scope.openNewProjectModal = function(lproject) {
 
-      $scope.submitNewProject = function(project) {
-        console.debug("Submitting new project", project);
+          console.debug("openNewProjectModal ");
 
-        if (project == null || project.name == null
-          || project.name == undefined || project.description == null
-          || project.description == undefined) {
-          window.alert("The name and description fields cannot be blank. ");
-          return;
-        }
+          var modalInstance = $modal.open({
+            templateUrl : 'app/page/admin/newProject.html',
+            controller : NewProjectModalCtrl,
+            resolve : {
+              project : function() {
+                return lproject;
+              }
+            }
+          });
+        };
 
-        adminService.addProject(project).then(function(data) {
-          // TODO: get this working $scope.projects.push(data);
-          $modalInstance.close();
-        }, function(data) {
-          $modalInstance.close();
-        })
+        var NewProjectModalCtrl = function($scope, $modalInstance, project) {
 
-      };
+          console.debug("Entered new project modal control");
 
-      $scope.cancel = function() {
-        $modalInstance.dismiss('cancel');
-      };
+          $scope.project = project;
 
-    };
+          $scope.submitNewProject = function(project) {
+            console.debug("Submitting new project", project);
 
-  
-  // modal for creating a new user
-  $scope.openNewUserModal = function(luser) {
+            if (project == null || project.name == null
+              || project.name == undefined || project.description == null
+              || project.description == undefined) {
+              window.alert("The name and description fields cannot be blank. ");
+              return;
+            }
 
-    console.debug("openNewUserModal ");
+            adminService.addProject(project).then(function(data) {
+              // TODO: get this working
+              // $scope.projects.push(data);
+              $modalInstance.close();
+            }, function(data) {
+              $modalInstance.close();
+            })
 
-    var modalInstance = $modal.open({
-      templateUrl : 'app/page/admin/newUser.html',
-      controller : NewUserModalCtrl,
-      resolve : {
-        user : function() {
-          return luser;
-        }
-      }
-    });
-  };
+          };
 
-  var NewUserModalCtrl = function($scope, $modalInstance, user) {
+          $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+          };
 
-    console.debug("Entered new user modal control");
+        };
 
-    $scope.user = user;
+        // Modal for new user
+        $scope.openNewUserModal = function(luser) {
 
-    $scope.submitNewUser = function(user) {
-      console.debug("Submitting new user", user);
+          console.debug("openNewUserModal ");
 
-      if (user == null || user.name == null
-        || user.name == undefined || user.userName == null
-        || user.userName == undefined|| user.applicationRole == null
-        || user.applicationRole == undefined) {
-        window.alert("The name, user name, and application role fields cannot be blank. ");
-        return;
-      }
+          var modalInstance = $modal.open({
+            templateUrl : 'app/page/admin/newUser.html',
+            controller : NewUserModalCtrl,
+            resolve : {
+              user : function() {
+                return luser;
+              }
+            }
+          });
+        };
 
-      adminService.addUser(user).then(function(data) {
-        // TODO get this working $scope.users.push(data);
-        $modalInstance.close();
-      }, function(data) {
-        $modalInstance.close();
-      })
+        // Controller for new user modal
+        var NewUserModalCtrl = function($scope, $modalInstance, user) {
+          console.debug("Entered new user modal control");
+          $scope.user = user;
 
-    };
+          $scope.submitNewUser = function(user) {
+            console.debug("Submitting new user", user);
 
-    $scope.cancel = function() {
-      $modalInstance.dismiss('cancel');
-    };
+            if (user == null || user.name == null || user.name == undefined
+              || user.userName == null || user.userName == undefined
+              || user.applicationRole == null
+              || user.applicationRole == undefined) {
+              window
+                .alert("The name, user name, and application role fields cannot be blank. ");
+              return;
+            }
 
-  };
-  
-  
-  // modal for editing a project
-  $scope.openEditProjectModal = function(lproject) {
+            securityService.addUser(user).then(function(data) {
+              // TODO get this working $scope.users.push(data);
+              $modalInstance.close();
+            }, function(data) {
+              $modalInstance.close();
+            })
 
-    console.debug("openEditProjectModal ");
+          };
 
-    var modalInstance = $modal.open({
-      templateUrl : 'app/page/admin/editProject.html',
-      controller : EditProjectModalCtrl,
-      resolve : {
-        project : function() {
-          return lproject;
-        }
-      }
-    });
-  };
+          $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+          };
 
-  var EditProjectModalCtrl = function($scope, $modalInstance, project) {
+        };
 
-    console.debug("Entered edit project modal control");
+        // Modal for edit project
+        $scope.openEditProjectModal = function(lproject) {
+          console.debug("openEditProjectModal ");
 
-    $scope.project = project;
+          var modalInstance = $modal.open({
+            templateUrl : 'app/page/admin/editProject.html',
+            controller : EditProjectModalCtrl,
+            resolve : {
+              project : function() {
+                return lproject;
+              }
+            }
+          });
+        };
 
-    $scope.submitEditProject = function(project) {
-      console.debug("Submitting edit project", project);
+        // Controller for edit project modal
+        var EditProjectModalCtrl = function($scope, $modalInstance, project) {
+          console.debug("Entered edit project modal control");
 
-      if (project == null || project.name == null
-        || project.name == undefined || project.description == null
-        || project.description == undefined|| project.terminology == null
-        || project.terminology == undefined) {
-        window.alert("The name, description, and terminology fields cannot be blank. ");
-        return;
-      }
+          $scope.project = project;
 
-      adminService.updateProject(project).then(function(data) {
-        // TODO get this working $scope.projects.push(data);
-        $modalInstance.close();
-      }, function(data) {
-        $modalInstance.close();
-      })
+          $scope.submitEditProject = function(project) {
+            console.debug("Submitting edit project", project);
 
-    };
+            if (project == null || project.name == null
+              || project.name == undefined || project.description == null
+              || project.description == undefined
+              || project.terminology == null
+              || project.terminology == undefined) {
+              window
+                .alert("The name, description, and terminology fields cannot be blank. ");
+              return;
+            }
 
-    $scope.cancel = function() {
-      $modalInstance.dismiss('cancel');
-    };
+            adminService.updateProject(project).then(function(data) {
+              // TODO get this working $scope.projects.push(data);
+              $modalInstance.close();
+            }, function(data) {
+              $modalInstance.close();
+            })
 
-  };
-  
-  // modal for editing a user
-  $scope.openEditUserModal = function(luser) {
+          };
 
-    console.debug("openEditUserModal ");
+          $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+          };
 
-    var modalInstance = $modal.open({
-      templateUrl : 'app/page/admin/editUser.html',
-      controller : EditUserModalCtrl,
-      resolve : {
-        user : function() {
-          return luser;
-        }
-      }
-    });
-  };  
-  
-  var EditUserModalCtrl = function($scope, $modalInstance, user) {
+        };
 
-    console.debug("Entered edit user modal control");
+        // Modal for edit user
+        $scope.openEditUserModal = function(luser) {
+          console.debug("openEditUserModal ");
 
-    $scope.user = user;
+          var modalInstance = $modal.open({
+            templateUrl : 'app/page/admin/editUser.html',
+            controller : EditUserModalCtrl,
+            resolve : {
+              user : function() {
+                return luser;
+              }
+            }
+          });
+        };
 
-    $scope.submitEditUser = function(user) {
-      console.debug("Submitting edit user", user);
+        // Controller for edit user modal
+        var EditUserModalCtrl = function($scope, $modalInstance, user) {
+          console.debug("Entered edit user modal control");
 
-      if (user == null || user.name == null
-        || user.name == undefined || user.userName == null
-        || user.userName == undefined|| user.applicationRole == null
-        || user.applicationRole == undefined) {
-        window.alert("The name, user name, and application role fields cannot be blank. ");
-        return;
-      }
+          $scope.user = user;
 
-      adminService.updateUser(user).then(function(data) {
-        // TODO get this working $scope.users.push(data);
-        $modalInstance.close();
-      }, function(data) {
-        $modalInstance.close();
-      })
+          $scope.submitEditUser = function(user) {
+            console.debug("Submitting edit user", user);
 
-    };
+            if (user == null || user.name == null || user.name == undefined
+              || user.userName == null || user.userName == undefined
+              || user.applicationRole == null
+              || user.applicationRole == undefined) {
+              window
+                .alert("The name, user name, and application role fields cannot be blank. ");
+              return;
+            }
 
-    $scope.cancel = function() {
-      $modalInstance.dismiss('cancel');
-    };
+            securityService.updateUser(user).then(function(data) {
+              // TODO get this working $scope.users.push(data);
+              $modalInstance.close();
+            }, function(data) {
+              $modalInstance.close();
+            })
 
-  };
-}
+          };
 
+          $scope.cancel = function() {
+            $modalInstance.dismiss('cancel');
+          };
 
-]);
+        };
+
+        // 
+        // Initialization
+        //
+        $scope.getProjects();
+        $scope.getUsers();
+
+      } ]);

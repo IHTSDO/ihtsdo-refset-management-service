@@ -5,12 +5,8 @@ package org.ihtsdo.otf.refset.jpa.services.validation;
 
 import java.util.Properties;
 
-import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-
 /**
- * Default checks that apply to all terminologies.
+ * Default checks that apply to all refsets/translations.
  */
 public class DefaultValidationCheck extends AbstractValidationCheck {
 
@@ -20,12 +16,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     // n/a
   }
 
-  @Override
-  public ValidationResult validate(Concept c) {
-    ValidationResult result = new ValidationResultJpa();
-    // tbd
-    return result;
-  } 
+  // TODO:
+  // need default checks
 
   @Override
   public String getName() {

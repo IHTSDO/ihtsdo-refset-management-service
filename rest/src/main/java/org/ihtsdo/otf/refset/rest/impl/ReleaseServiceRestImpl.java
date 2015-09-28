@@ -25,9 +25,9 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.services.HistoryServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.rest.HistoryServiceRest;
-import org.ihtsdo.otf.refset.services.HistoryService;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
+import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -35,15 +35,15 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
 
 /**
- * REST implementation for {@link HistoryServiceRest}.
+ * REST implementation for {@link ReleaseServiceRest}.
  */
 @Path("/history")
 @Api(value = "/history", description = "Operations for accessing prior editions of domain model objects and interacting with release info.")
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-public class HistoryServiceRestImpl extends RootServiceRestImpl implements
-    HistoryServiceRest {
+public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
+    ReleaseServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -61,7 +61,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (History): /" + refsetId + " " + date);
 
-    HistoryService historyService = new HistoryServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authenticate(securityService, authToken,
           "retrieve the release history for a refset", UserRole.VIEWER);
@@ -72,7 +72,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
       
       
       Refset refset =
-          historyService.getRefsetRevision(refsetId,
+          releaseService.getRefsetRevision(refsetId,
               ConfigUtility.DATE_FORMAT.parse(date));
 
       return refset;
@@ -80,7 +80,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to retrieve a refset");
       return null;
     } finally {
-      historyService.close();
+      releaseService.close();
       securityService.close();
     }
 
@@ -96,20 +96,20 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (History): /" + refsetId);
 
-    HistoryService historyService = new HistoryServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authenticate(securityService, authToken,
           "retrieve the release history for the refset", UserRole.VIEWER);
 
       ReleaseInfoList releaseInfoList =
-          historyService.getReleaseHistoryForRefset(refsetId);
+          releaseService.getReleaseHistoryForRefset(refsetId);
 
       return releaseInfoList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve release history for a refset");
       return null;
     } finally {
-      historyService.close();
+      releaseService.close();
       securityService.close();
     }
 
@@ -126,20 +126,20 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (History): /" + translationId);
 
-    HistoryService historyService = new HistoryServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authenticate(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfoList releaseInfoList =
-          historyService.getReleaseHistoryForTranslation(translationId);
+          releaseService.getReleaseHistoryForTranslation(translationId);
 
       return releaseInfoList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve release history for a translation");
       return null;
     } finally {
-      historyService.close();
+      releaseService.close();
       securityService.close();
     }
 
@@ -157,7 +157,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (History): /" + translationId + " " + date);
 
-    HistoryService historyService = new HistoryServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authenticate(securityService, authToken,
           "retrieve the release history for a translation", UserRole.VIEWER);
@@ -167,7 +167,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
       
       Translation translation =
-          historyService.getTranslationRevision(translationId,
+          releaseService.getTranslationRevision(translationId,
               ConfigUtility.DATE_FORMAT.parse(date));
 
       return translation;
@@ -175,7 +175,7 @@ public class HistoryServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to retrieve a translation");
       return null;
     } finally {
-      historyService.close();
+      releaseService.close();
       securityService.close();
     }
 

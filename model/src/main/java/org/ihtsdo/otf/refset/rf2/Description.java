@@ -11,20 +11,6 @@ import java.util.List;
 public interface Description extends Component {
 
   /**
-   * Returns the workflow status.
-   * 
-   * @return the workflow status
-   */
-  public String getWorkflowStatus();
-
-  /**
-   * Sets the workflow status.
-   * 
-   * @param workflowStatus the workflow status
-   */
-  public void setWorkflowStatus(String workflowStatus);
-
-  /**
    * Returns the language code.
    * 
    * @return the language code
@@ -95,7 +81,8 @@ public interface Description extends Component {
   public void setConcept(Concept concept);
 
   /**
-   * Base method for returning LanguageValueRefsetMember of this Concept
+   * Base method for returning LanguageValueRefsetMember of this Concept.
+   *
    * @return the LanguageValueRefsetMember of this Concept
    */
 
@@ -107,26 +94,39 @@ public interface Description extends Component {
   public List<LanguageRefsetMember> getLanguageRefsetMembers();
 
   /**
-   * Sets the set of LanguageRefsetMembers
-   * 
+   * Sets the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMembers the set of LanguageRefsetMembers
    */
   public void setLanguageRefsetMembers(
     List<LanguageRefsetMember> languageRefsetMembers);
 
   /**
-   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers
-   * 
+   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMember the LanguageRefsetMembers to be added
    */
   public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember);
 
   /**
-   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers
-   * 
+   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers.
+   *
    * @param languageRefsetMember the LanguageRefsetMember to be removed
    */
   public void removeLanguageRefsetMember(
     LanguageRefsetMember languageRefsetMember);
 
+  /**
+   * Returns the translation of.
+   *
+   * @return the translation of
+   */
+  public String getTranslationOfId();
+
+  /**
+   * Sets the translation of.
+   *
+   * @param translationOfId the translation of id
+   */
+  public void setTranslationOfId(String translationOfId);
 }

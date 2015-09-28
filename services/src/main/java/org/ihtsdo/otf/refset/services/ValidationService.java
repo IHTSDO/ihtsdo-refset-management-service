@@ -9,7 +9,6 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
-
 /**
  * Generically represents a service for validating content.
  */
@@ -22,7 +21,7 @@ public interface ValidationService extends RootService {
    * @return the validation result
    */
   public ValidationResult validateConcept(Concept concept);
-  
+
   /**
    * Validate translation.
    *
@@ -30,7 +29,7 @@ public interface ValidationService extends RootService {
    * @return the validation result
    */
   public ValidationResult validateTranslation(Translation translation);
-  
+
   /**
    * Validate member.
    *
@@ -38,7 +37,7 @@ public interface ValidationService extends RootService {
    * @return the validation result
    */
   public ValidationResult validateMember(ConceptRefsetMember member);
-  
+
   /**
    * Validate refset.
    *
@@ -46,6 +45,5 @@ public interface ValidationService extends RootService {
    * @return the validation result
    */
   public ValidationResult validateRefset(Refset refset);
-  
-  
+
 }

@@ -68,7 +68,7 @@ public class UserJpa implements User {
   private String authToken;
 
   /** The user preferences. */
-  @OneToOne(targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, mappedBy = "user", optional = true)
+  @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, optional = true)
   private UserPreferences userPreferences;
 
   /**
