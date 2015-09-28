@@ -144,7 +144,7 @@ public class ModelUnit041Test {
     tester.exclude("refsetId");
     tester.exclude("translationId");
     tester.exclude("conceptId");
-    tester.exclude("userId");
+    tester.exclude("userName");
     tester.test();
   }
 
