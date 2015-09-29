@@ -6,10 +6,8 @@ package org.ihtsdo.otf.refset.services;
 import java.util.Date;
 
 import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
@@ -139,69 +137,6 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Returns the current release info for refset.
-   *
-   * @param refsetId the refset id
-   * @return the current release info for refset
-   * @throws Exception
-   */
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId)
-    throws Exception;
-
-  /**
-   * Returns the previous release info for refset.
-   *
-   * @param refsetId the refset id
-   * @return the previous release info for refset
-   * @throws Exception
-   */
-  public ReleaseInfo getPreviousReleaseInfoForRefset(Long refsetId)
-    throws Exception;
-
-  /**
-   * Returns the planned current release info for refset.
-   *
-   * @param refsetId the refset id
-   * @return the planned current release info for refset
-   * @throws Exception
-   */
-  public ReleaseInfo getPlannedReleaseInfoForRefset(Long refsetId)
-    throws Exception;
-
-  /**
-   * Returns the release history for refset.
-   *
-   * @param refsetId the refset id
-   * @return the release history for refset
-   * @throws Exception
-   */
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId)
-    throws Exception;
-
-  /**
-   * Adds the release info.
-   *
-   * @param releaseInfo the release info
-   * @return the release info
-   * @throws Exception the exception
-   */
-  public ReleaseInfo addReleaseInfo(ReleaseInfo releaseInfo) throws Exception;
-
-  /**
-   * Removes the release info.
-   *
-   * @param id the id
-   */
-  public void removeReleaseInfo(Long id);
-
-  /**
-   * Update release info.
-   *
-   * @param releaseInfo the release info
-   */
-  public void updateReleaseInfo(ReleaseInfo releaseInfo);
 
   /**
    * Returns the refset revision.

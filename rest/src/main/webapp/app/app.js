@@ -12,9 +12,9 @@ var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree' ])
 var securityUrl = "security/";
 var refsetUrl = "refset/";
 var translationUrl = "translation/";
-var directoryUrl = "directory/";
-var adminUrl = "admin/";
 var projectUrl = "project/";
+var workflowUrl = "workflow/";
+var validationUrl = "validation/";
 
 // Initialization of tsApp
 tsApp.run(function($rootScope, $http, $location) {

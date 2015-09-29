@@ -19,9 +19,7 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
@@ -58,36 +56,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
-  @Override
-  @GET
-  @Path("/{translationId}/releases")
-  @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
-  public ReleaseInfoList getReleaseHistoryForTranslation(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Translation): /" + translationId);
-
-    TranslationService releaseService = new TranslationServiceJpa();
-    try {
-      authenticate(securityService, authToken,
-          "retrieve the release history for the translation", UserRole.VIEWER);
-
-      ReleaseInfoList releaseInfoList =
-          releaseService.getReleaseHistoryForTranslation(translationId);
-
-      return releaseInfoList;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve release history for a translation");
-      return null;
-    } finally {
-      releaseService.close();
-      securityService.close();
-    }
-
-  }
-
+  /* see superclass */
   @Override
   @GET
   @Path("/{translationId}/{date}")
@@ -100,7 +69,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): /" + translationId + " " + date);
 
-    TranslationService releaseService = new TranslationServiceJpa();
+    TranslationService translationService = new TranslationServiceJpa();
     try {
       authenticate(securityService, authToken,
           "retrieve the release history for a translation", UserRole.VIEWER);
@@ -110,7 +79,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
 
       Translation translation =
-          releaseService.getTranslationRevision(translationId,
+          translationService.getTranslationRevision(translationId,
               ConfigUtility.DATE_FORMAT.parse(date));
 
       return translation;
@@ -118,12 +87,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to retrieve a translation");
       return null;
     } finally {
-      releaseService.close();
+      translationService.close();
       securityService.close();
     }
 
   }
 
+  /* see superclass */
   @Override
   public ConceptList findConceptsForTranslationRevision(Long translationId,
     Date date, PfsParameter pfs, String authToken) throws Exception {

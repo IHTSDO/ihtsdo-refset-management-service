@@ -49,23 +49,23 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/authenticate/{username}")
+  @Path("/authenticate/{userName}")
   @Consumes({
     MediaType.TEXT_PLAIN
   })
-  @ApiOperation(value = "Authenticate a user", notes = "Performs authentication on specified username and password and returns a token upon successful authentication. Throws 401 error if not.", response = UserJpa.class)
+  @ApiOperation(value = "Authenticate a user", notes = "Performs authentication on specified userName and password and returns a token upon successful authentication. Throws 401 error if not.", response = UserJpa.class)
   public User authenticate(
-    @ApiParam(value = "Username, e.g. 'guest'", required = true) @PathParam("username") String username,
+    @ApiParam(value = "Username, e.g. 'guest'", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Password, as string post data, e.g. 'guest'", required = true) String password)
     throws Exception {
 
     Logger.getLogger(getClass())
         .info(
             "RESTful call (Authentication): /authentication for user = "
-                + username);
+                + userName);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      User user = securityService.authenticate(username, password);
+      User user = securityService.authenticate(userName, password);
       securityService.close();
 
       if (user == null || user.getAuthToken() == null)
@@ -132,22 +132,22 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/user/name/{username}")
+  @Path("/user/name/{userName}")
   @ApiOperation(value = "Get user by name", notes = "Gets the user for the specified name", response = UserJpa.class)
   public User getUser(
-    @ApiParam(value = "Username, e.g. \"guest\"", required = true) @PathParam("username") String username,
+    @ApiParam(value = "Username, e.g. \"guest\"", required = true) @PathParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Security): /user/name/" + username);
+        "RESTful call (Security): /user/name/" + userName);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authenticate(securityService, authToken, "retrieve the user by username",
+      authenticate(securityService, authToken, "retrieve the user by userName",
           UserRole.VIEWER);
-      User user = securityService.getUser(username);
+      User user = securityService.getUser(userName);
       return user;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a user by username");
+      handleException(e, "trying to retrieve a user by userName");
       return null;
     } finally {
       securityService.close();

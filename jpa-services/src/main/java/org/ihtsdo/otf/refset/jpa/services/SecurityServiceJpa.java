@@ -39,7 +39,7 @@ import org.ihtsdo.otf.refset.services.handlers.SecurityServiceHandler;
 public class SecurityServiceJpa extends RootServiceJpa implements
     SecurityService {
 
-  /** The token username . */
+  /** The token userName . */
   private static Map<String, String> tokenUsernameMap = Collections
       .synchronizedMap(new HashMap<String, String>());
 
@@ -64,10 +64,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public User authenticate(String username, String password) throws Exception {
-    // Check username and password are not null
-    if (username == null || username.isEmpty())
-      throw new LocalException("Invalid username: null");
+  public User authenticate(String userName, String password) throws Exception {
+    // Check userName and password are not null
+    if (userName == null || userName.isEmpty())
+      throw new LocalException("Invalid userName: null");
     if (password == null || password.isEmpty())
       throw new LocalException("Invalid password: null");
 
@@ -84,7 +84,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     //
     // Call the security service
     //
-    User authUser = handler.authenticate(username, password);
+    User authUser = handler.authenticate(userName, password);
     return authHelper(authUser);
   }
 
@@ -160,12 +160,12 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     // Replace double quotes in auth token.
     String parsedToken = authToken.replace("\"", "");
 
-    // Check auth token against the username map
+    // Check auth token against the userName map
     if (tokenUsernameMap.containsKey(parsedToken)) {
-      String username = tokenUsernameMap.get(parsedToken);
+      String userName = tokenUsernameMap.get(parsedToken);
 
       // Validate that the user has not timed out.
-      if (handler.timeoutUser(username)) {
+      if (handler.timeoutUser(userName)) {
 
         if (tokenTimeoutMap.get(parsedToken) == null) {
           throw new Exception("No login timeout set for authToken.");
@@ -178,9 +178,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         tokenTimeoutMap.put(parsedToken, new Date(new Date().getTime()
             + timeout));
       }
-      return username;
+      return userName;
     } else {
-      throw new LocalException("AuthToken does not have a valid username.");
+      throw new LocalException("AuthToken does not have a valid userName.");
     }
   }
 
@@ -193,18 +193,18 @@ public class SecurityServiceJpa extends RootServiceJpa implements
           "Attempt to access a service without an authorization token, the user is likely not logged in.");
     }
     String parsedToken = authToken.replace("\"", "");
-    String username = getUsernameForToken(parsedToken);
-    // check for null username
-    if (username == null) {
+    String userName = getUsernameForToken(parsedToken);
+    // check for null userName
+    if (userName == null) {
       throw new LocalException(
           "Unable to find user for the authoriztaion token");
     }
-    User user = getUser(username.toLowerCase());
+    User user = getUser(userName.toLowerCase());
     if (user == null) {
       return UserRole.VIEWER;
       // throw new
-      // LocalException("Unable to obtain user information for username = " +
-      // username);
+      // LocalException("Unable to obtain user information for userName = " +
+      // userName);
     }
     return user.getApplicationRole();
   }
@@ -221,11 +221,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       throw new Exception("Unexpected null project id");
     }
 
-    String username = getUsernameForToken(authToken);
+    String userName = getUsernameForToken(authToken);
     ProjectService service = new ProjectServiceJpa();
     UserRole result =
         service.getProject(projectId).getProjectRoleMap()
-            .get(getUser(username));
+            .get(getUser(userName));
     service.close();
     if (result == null) {
       result = UserRole.VIEWER;
@@ -241,11 +241,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public User getUser(String username) throws Exception {
+  public User getUser(String userName) throws Exception {
     javax.persistence.Query query =
         manager
             .createQuery("select u from UserJpa u where userName = :userName");
-    query.setParameter("userName", username);
+    query.setParameter("userName", userName);
     try {
       return (User) query.getSingleResult();
     } catch (NoResultException e) {

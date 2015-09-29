@@ -19,9 +19,7 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
@@ -73,8 +71,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authenticate(securityService, authToken,
-          "retrieve the release refset for a refset", UserRole.VIEWER);
+      authenticate(securityService, authToken, "retrieve the refset revision",
+          UserRole.VIEWER);
 
       // check date format
       if (!date.matches("([0-9]{8})"))
@@ -95,34 +93,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  @Override
-  @GET
-  @Path("/{refsetId}/releases")
-  @ApiOperation(value = "Get release history for refsetId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
-  public ReleaseInfoList getReleaseHistoryForRefset(
-    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Refset): /" + refsetId);
-
-    RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authenticate(securityService, authToken,
-          "retrieve the release history for the refset", UserRole.VIEWER);
-      ReleaseInfoList releaseInfoList =
-          refsetService.getReleaseHistoryForRefset(refsetId);
-
-      return releaseInfoList;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve release history for a refset");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
-
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs, String authToken) throws Exception {

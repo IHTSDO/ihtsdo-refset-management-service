@@ -122,13 +122,14 @@ public class ProjectClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Project getProject(Long id, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get project " + id);
-    validateNotEmpty(id, "id");
+  public Project getProject(Long projectId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get project " + projectId);
+    validateNotEmpty(projectId, "projectId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/" + id);
+        client.target(config.getProperty("base.url") + "/project/" + projectId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -153,7 +154,7 @@ public class ProjectClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug("Project Client - get projects");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/projects");
+        client.target(config.getProperty("base.url") + "/project/all");
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -170,6 +171,80 @@ public class ProjectClientRest extends RootClientRest implements
         (ProjectListJpa) ConfigUtility.getGraphForString(resultString,
             ProjectListJpa.class);
     return list;
+  }
+
+  /* see superclass */
+  @Override
+  public Project assignUserToProject(Long projectId, String userName,
+    String role, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - assign user to project " + projectId + ", "
+            + userName + ", " + role);
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+    validateNotEmpty(role, "role");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/assign?projectId="
+            + projectId + "&userName=" + userName + "&role=" + role);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ProjectJpa project =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
+    return project;
+
+  }
+
+  /* see superclass */
+  @Override
+  public Project removeUserFromProject(Long projectId, String userName,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - assign user to project " + projectId + ", "
+            + userName);
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/unassign?projectId="
+            + projectId + "&userName=" + userName);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ProjectJpa project =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
+    return project;
+
+  }
+
+  /* see superclass */
+  @Override
+  public StringList getProjectRoles(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   /* see superclass */
@@ -194,25 +269,5 @@ public class ProjectClientRest extends RootClientRest implements
         throw new Exception("Unexpected status " + response.getStatus());
     }
 
-  }
-
-  @Override
-  public Project addUserToProject(Long projectId, String username, String role,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Project removeUserFromProject(Long projectId, String userName,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public StringList getProjectRoles(String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
   }
 }

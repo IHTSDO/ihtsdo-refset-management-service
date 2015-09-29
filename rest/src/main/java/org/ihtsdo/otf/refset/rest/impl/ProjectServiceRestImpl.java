@@ -12,6 +12,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -86,16 +87,16 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/adduser/{projectId}/{userName}/{role}")
-  @ApiOperation(value = "Add user to project", notes = "Adds the specified user to the specified project with the specified role.", response = ProjectJpa.class)
-  public Project addUserToProject(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. guest", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @PathParam("role") String role,
+  @Path("/assign")
+  @ApiOperation(value = "Assign user to project", notes = "Assigns the specified user to the specified project with the specified role.", response = ProjectJpa.class)
+  public Project assignUserToProject(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @QueryParam("role") String role,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /adduser " + projectId + ", " + userName
+        "RESTful POST call (Project): /assign " + projectId + ", " + userName
             + ", " + role);
 
     // Test preconditions
@@ -127,11 +128,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/removeuser/{projectId}/{userName}")
-  @ApiOperation(value = "Remove user to project", notes = "Removes the specified user to the specified project with the specified role.", response = ProjectJpa.class)
+  @Path("/unassign")
+  @ApiOperation(value = "Unassign user from project", notes = "Unassign the specified user from the specified project with the specified role.", response = ProjectJpa.class)
   public Project removeUserFromProject(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "User name, e.g. guest", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -280,20 +281,20 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/{id}")
+  @Path("/{projectId}")
   @ApiOperation(value = "Get project for id", notes = "Gets the project for the specified id", response = ProjectJpa.class)
   public Project getProject(
-    @ApiParam(value = "Project internal id, e.g. 2", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Project internal id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Project): /" + id);
+    Logger.getLogger(getClass()).info("RESTful call (Project): /" + projectId);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
       authenticate(securityService, authToken, "retrieve the project",
           UserRole.VIEWER);
 
-      Project project = projectService.getProject(id);
+      Project project = projectService.getProject(projectId);
 
       return project;
     } catch (Exception e) {
@@ -309,12 +310,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/projects")
+  @Path("/all")
   @ApiOperation(value = "Get all projects", notes = "Gets all projects", response = ProjectListJpa.class)
   public ProjectList getProjects(
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Project): /projects");
+    Logger.getLogger(getClass()).info("RESTful call (Project): /all");
 
     ProjectService projectService = new ProjectServiceJpa();
     try {

@@ -4,7 +4,7 @@ tsApp
     'utilService',
     [
       '$location',
-      function($location) {
+       function($location) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -20,7 +20,6 @@ tsApp
         this.clearError = function() {
           this.error.message = null;
         }
-
         // Handle error message
         this.handleError = function(response) {
           console.debug("Handle error: ", response);
@@ -129,8 +128,8 @@ tsApp.service('gpService', function() {
 });
 
 // Security service
-tsApp.service('securityService', [ '$http', '$location', 'utilService',
-  'gpService', function($http, $location, utilService, gpService) {
+tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
+  'gpService', function($http, $location, $q, utilService, gpService) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -277,11 +276,35 @@ tsApp.service('securityService', [ '$http', '$location', 'utilService',
       var deferred = $q.defer();
 
       // Add user
-      gpService.increment()
+      gpService.increment();
       $http.delete(securityUrl + 'user/remove' + "/" + user.id).then(
       // success
       function(response) {
         console.debug("  user = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+       function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }                      
+        
+    
+    // get application roles
+    this.getApplicationRoles = function() {
+      console.debug("getProjectsApplicationRoles");
+      var deferred = $q.defer();
+
+      // Get application roles
+      gpService.increment()
+      $http.get(securityUrl + 'roles').then(
+      // success
+      function(response) {
+        console.debug("  roles = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -292,9 +315,7 @@ tsApp.service('securityService', [ '$http', '$location', 'utilService',
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }                      
-        
-    
+    }     
   } ]);
 
 // Tab service

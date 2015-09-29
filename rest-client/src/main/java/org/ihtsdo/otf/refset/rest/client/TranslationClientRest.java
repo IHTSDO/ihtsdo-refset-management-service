@@ -18,9 +18,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 
 /**
@@ -43,44 +41,19 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get release history for translation "
-            + translationId);
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/releases");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    ReleaseInfoListJpa releaseInfoList =
-        (ReleaseInfoListJpa) ConfigUtility.getGraphForString(resultString,
-            ReleaseInfoListJpa.class);
-    return releaseInfoList;
-  }
-
-  /* see superclass */
-  @Override
   public Translation getTranslationRevision(Long translationId, String date,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - get translation revision at the given date "
             + translationId + " " + date);
     validateNotEmpty(translationId, "translationId");
-
+    // Validate date format
+    try {
+      ConfigUtility.DATE_FORMAT.parse(date);
+    } catch (Exception e) {
+      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
+    }
+    
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"

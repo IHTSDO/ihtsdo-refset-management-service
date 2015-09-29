@@ -11,24 +11,11 @@ import java.util.Date;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 
 /**
- * Represents a content available via a REST service.
+ * Represents a translations available via a REST service.
  */
 public interface TranslationServiceRest {
-
-
-  /**
-   * Returns the release history for translation.
-   *
-   * @param translationId the translation id
-   * @param authToken the auth token
-   * @return the release history for translation
-   * @throws Exception the exception
-   */
-  public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId,
-    String authToken) throws Exception;
 
   /**
    * Returns the translation revision.

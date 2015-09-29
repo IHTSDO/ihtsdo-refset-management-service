@@ -136,8 +136,8 @@ public class UserJpa implements User {
 
   /* see superclass */
   @Override
-  public void setUserName(String username) {
-    this.userName = username;
+  public void setUserName(String userName) {
+    this.userName = userName;
   }
 
   /* see superclass */

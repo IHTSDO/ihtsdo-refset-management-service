@@ -6,21 +6,16 @@ package org.ihtsdo.otf.refset.jpa.services;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.NoResultException;
-
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
-import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -271,93 +266,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return null;
   }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "History Service - get current release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get max release that is published and not planned
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
-        return results.get(i);
-      }
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPreviousReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "History Service - get previous release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
-        if (i > 0) {
-          return results.get(i - 1);
-        } else {
-          return null;
-        }
-      }
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPlannedReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "History Service - get planned release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
-        return results.get(i);
-      }
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "History Service - get translation history " + translationId);
-    javax.persistence.Query query =
-        manager.createQuery("select a from ReleaseInfoJpa a, "
-            + " TranslationJpa b where b.id = :translationId and "
-            + "a.translation = b order by a.effectiveTime");
-    /*
-     * Try to retrieve the single expected result If zero or more than one
-     * result are returned, log error and set result to null
-     */
-    try {
-      query.setParameter("translationId", translationId);
-      List<ReleaseInfo> releaseInfos = query.getResultList();
-      ReleaseInfoList releaseInfoList = new ReleaseInfoListJpa();
-      releaseInfoList.setObjects(releaseInfos);
-      return releaseInfoList;
-    } catch (NoResultException e) {
-      return null;
-    }
-  }
-
   /**
    * Handle translation lazy initialization.
    *
@@ -377,7 +285,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public Translation getTranslationRevision(Long translationId, Date date)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "History Service - get translation revision for date :"
+        "Translation Service - get translation revision for date :"
             + ConfigUtility.DATE_FORMAT.format(date));
     // make envers call for date = lastModifiedDate
     AuditReader reader = AuditReaderFactory.get(manager);

@@ -34,7 +34,7 @@ public class UtsSecurityServiceHandler implements SecurityServiceHandler {
 
   /* see superclass */
   @Override
-  public User authenticate(String username, String password) throws Exception {
+  public User authenticate(String userName, String password) throws Exception {
 
     final String licenseCode = properties.getProperty("license.code");
     if (licenseCode == null) {
@@ -45,7 +45,7 @@ public class UtsSecurityServiceHandler implements SecurityServiceHandler {
             + URLEncoder.encode(licenseCode, "UTF-8");
     data +=
         "&" + URLEncoder.encode("user", "UTF-8") + "="
-            + URLEncoder.encode(username, "UTF-8");
+            + URLEncoder.encode(userName, "UTF-8");
     data +=
         "&" + URLEncoder.encode("password", "UTF-8") + "="
             + URLEncoder.encode(password, "UTF-8");
@@ -80,12 +80,12 @@ public class UtsSecurityServiceHandler implements SecurityServiceHandler {
 
     /*
      * Synchronize the information sent back from ITHSDO with the User object.
-     * Add a new user if there isn't one matching the username If there is, load
+     * Add a new user if there isn't one matching the userName If there is, load
      * and update that user and save the changes
      */
-    String authUserName = username;
+    String authUserName = userName;
     String authEmail = "test@example.com";
-    String authGivenName = "UTS User - " + username;
+    String authGivenName = "UTS User - " + userName;
     String authSurname = "";
 
     User returnUser = new UserImpl();

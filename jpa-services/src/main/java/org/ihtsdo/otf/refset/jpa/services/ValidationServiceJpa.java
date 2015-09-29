@@ -18,8 +18,7 @@ import org.ihtsdo.otf.refset.services.ValidationService;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
 /**
- * Implementation of {@link ValidationService} that redirects to
- * terminology-specific implementations.
+ * JPA-enabled implementation of {@link ValidationService}.
  */
 public class ValidationServiceJpa extends RootServiceJpa implements
     ValidationService {

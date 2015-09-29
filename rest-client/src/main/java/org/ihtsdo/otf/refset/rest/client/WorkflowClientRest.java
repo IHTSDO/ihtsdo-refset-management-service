@@ -29,6 +29,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     this.config = config;
   }
 
+  /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
     String userName, String action, String authToken) throws Exception {
@@ -36,6 +37,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findAvailableEditingWork(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
@@ -44,6 +46,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findAssignedEditingWork(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
@@ -52,6 +55,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findAvailableReviewWork(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
@@ -60,6 +64,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findAssignedReviewWork(Long projectId, Long translationId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -67,6 +72,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
     return null;
   }
 
+  /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long projectId,
     Long translationId, String userName, String action, ConceptJpa concept,

@@ -43,15 +43,15 @@ public class SecurityClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public User authenticate(String username, String password) throws Exception {
+  public User authenticate(String userName, String password) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Security Client - authenticate " + username);
-    validateNotEmpty(username, "username");
+        "Security Client - authenticate " + userName);
+    validateNotEmpty(userName, "userName");
     validateNotEmpty(password, "password");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/security/authenticate/" + username);
+            + "/security/authenticate/" + userName);
 
     Response response =
         target.request(MediaType.APPLICATION_JSON).post(Entity.text(password));
@@ -115,14 +115,14 @@ public class SecurityClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public User getUser(String username, String authToken) throws Exception {
+  public User getUser(String userName, String authToken) throws Exception {
     Logger.getLogger(getClass())
-        .debug("Security Client - get user " + username);
-    validateNotEmpty(username, "username");
+        .debug("Security Client - get user " + userName);
+    validateNotEmpty(userName, "userName");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/security/user/name/"
-            + username);
+            + userName);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();

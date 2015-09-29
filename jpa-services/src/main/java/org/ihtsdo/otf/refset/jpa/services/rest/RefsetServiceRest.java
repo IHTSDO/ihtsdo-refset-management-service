@@ -11,23 +11,11 @@ import java.util.Date;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 
 /**
- * Represents a content available via a REST service.
+ * Represents a refsets available via a REST service.
  */
 public interface RefsetServiceRest {
-
-  /**
-   * Returns the release history for refset.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the release history for refset
-   * @throws Exception the exception
-   */
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId,
-    String authToken) throws Exception;
 
   /**
    * Returns the refset revision.

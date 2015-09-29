@@ -20,12 +20,12 @@ public interface SecurityService extends RootService {
   /**
    * Authenticate the user.
    * 
-   * @param username the username
+   * @param userName the userName
    * @param password the password
    * @return the token
    * @throws Exception the exception
    */
-  public User authenticate(String username, String password) throws Exception;
+  public User authenticate(String userName, String password) throws Exception;
 
   /**
    * Logout.
@@ -36,10 +36,10 @@ public interface SecurityService extends RootService {
   public void logout(String authToken) throws Exception;
 
   /**
-   * Returns the username for token.
+   * Returns the userName for token.
    * 
    * @param authToken the auth token
-   * @return the username for token
+   * @return the userName for token
    * @throws Exception the exception
    */
   public String getUsernameForToken(String authToken) throws Exception;
@@ -76,11 +76,11 @@ public interface SecurityService extends RootService {
   /**
    * Get user by user.
    *
-   * @param username the username
+   * @param userName the userName
    * @return the user
    * @throws Exception the exception
    */
-  public User getUser(String username) throws Exception;
+  public User getUser(String userName) throws Exception;
 
   /**
    * Returns the users.

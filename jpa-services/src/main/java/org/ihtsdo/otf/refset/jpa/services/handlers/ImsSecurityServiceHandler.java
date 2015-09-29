@@ -24,7 +24,7 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
 
   /* see superclass */
   @Override
-  public User authenticate(String username, String password) throws Exception {
+  public User authenticate(String userName, String password) throws Exception {
     // password contains the IMS user document
 
     ObjectMapper mapper = new ObjectMapper();

@@ -12,7 +12,7 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 
 /**
- * Represents a content available via a REST service.
+ * Represents a projects available via a REST service.
  */
 public interface ProjectServiceRest {
 
@@ -35,7 +35,7 @@ public interface ProjectServiceRest {
    * @return the project
    * @throws Exception the exception
    */
-  public Project addUserToProject(Long projectId, String userName, String role,
+  public Project assignUserToProject(Long projectId, String userName, String role,
     String authToken) throws Exception;
 
   /**

@@ -12,7 +12,7 @@ import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 
 /**
- * Generically represents a service for interacting with terminology content.
+ * Generically represents a service for performing workflow operations.
  */
 public interface WorkflowService extends TranslationService {
 

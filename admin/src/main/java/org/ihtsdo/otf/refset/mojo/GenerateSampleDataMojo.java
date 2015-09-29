@@ -45,7 +45,10 @@ import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
  */
 public class GenerateSampleDataMojo extends AbstractMojo {
 
-  /** The project. */
+  /** The security service. */
+  SecurityClientRest security = null;
+
+  /** The project service. */
   ProjectClientRest project = null;
 
   /** The project1. */

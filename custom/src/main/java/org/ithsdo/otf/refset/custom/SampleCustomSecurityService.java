@@ -27,10 +27,10 @@ public class SampleCustomSecurityService implements SecurityServiceHandler {
 
   /* see superclass */
   @Override
-  public User authenticate(String username, String password) throws Exception {
+  public User authenticate(String userName, String password) throws Exception {
 
-    // username must not be null
-    if (username == null)
+    // userName must not be null
+    if (userName == null)
       return null;
 
     // password must not be null
@@ -38,7 +38,7 @@ public class SampleCustomSecurityService implements SecurityServiceHandler {
       return null;
 
     // for default security service, the password must equal the user name
-    if (!username.equals(password))
+    if (!userName.equals(password))
       return null;
 
     // check properties
@@ -49,21 +49,21 @@ public class SampleCustomSecurityService implements SecurityServiceHandler {
     User user = new UserImpl();
 
     // check specified admin users list from config file
-    if (getAdminUsersFromConfigFile().contains(username)) {
+    if (getAdminUsersFromConfigFile().contains(userName)) {
       user.setApplicationRole(UserRole.ADMIN);
-      user.setUserName(username);
-      user.setName(username.substring(0, 1).toUpperCase()
-          + username.substring(1));
-      user.setEmail(username + "@example.com");
+      user.setUserName(userName);
+      user.setName(userName.substring(0, 1).toUpperCase()
+          + userName.substring(1));
+      user.setEmail(userName + "@example.com");
       return user;
     }
 
-    if (getViewerUsersFromConfigFile().contains(username)) {
+    if (getViewerUsersFromConfigFile().contains(userName)) {
       user.setApplicationRole(UserRole.VIEWER);
-      user.setUserName(username);
-      user.setName(username.substring(0, 1).toUpperCase()
-          + username.substring(1));
-      user.setEmail(username + "@example.com");
+      user.setUserName(userName);
+      user.setName(userName.substring(0, 1).toUpperCase()
+          + userName.substring(1));
+      user.setEmail(userName + "@example.com");
       return user;
     }
 

@@ -17,12 +17,12 @@ public interface SecurityServiceRest {
   /**
    * Authenticate.
    * 
-   * @param username the username
+   * @param userName the userName
    * @param password the password
    * @return the string
    * @throws Exception if anything goes wrong
    */
-  public User authenticate(String username, String password) throws Exception;
+  public User authenticate(String userName, String password) throws Exception;
 
   /**
    * Logout.
@@ -46,12 +46,12 @@ public interface SecurityServiceRest {
   /**
    * Get user by user.
    *
-   * @param username the username
+   * @param userName the userName
    * @param authToken the auth token
    * @return the user
    * @throws Exception the exception
    */
-  public User getUser(String username, String authToken) throws Exception;
+  public User getUser(String userName, String authToken) throws Exception;
 
   /**
    * Returns the users.

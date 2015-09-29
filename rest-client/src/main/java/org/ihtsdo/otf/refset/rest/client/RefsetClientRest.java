@@ -18,9 +18,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 
 /**
@@ -41,42 +39,25 @@ public class RefsetClientRest extends RootClientRest implements
     this.config = config;
   }
 
-
-  @Override
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - get release refset for refset " + refsetId);
-    validateNotEmpty(refsetId, "refsetId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/" + refsetId + "/releases");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    ReleaseInfoListJpa releaseInfoList =
-        (ReleaseInfoListJpa) ConfigUtility.getGraphForString(resultString,
-            ReleaseInfoListJpa.class);
-    return releaseInfoList;
-  }
-
+  /* see superclass */
   @Override
   public Refset getRefsetRevision(Long refsetId, String date, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - get refset revision at the given date " + refsetId + " " + date);
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - get refset revision at the given date " + refsetId
+            + " " + date);
     validateNotEmpty(refsetId, "refsetId");
+    // Validate date format
+    try {
+      ConfigUtility.DATE_FORMAT.parse(date);
+    } catch (Exception e) {
+      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
+    }
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/" + refsetId  + "/" + date);
+        client.target(config.getProperty("base.url") + "/refset/" + refsetId
+            + "/" + date);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -95,13 +76,12 @@ public class RefsetClientRest extends RootClientRest implements
     return refset;
   }
 
-
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
-
 
 }
