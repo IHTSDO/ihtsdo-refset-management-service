@@ -11,6 +11,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -90,7 +91,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The description types. */
   @ManyToMany(targetEntity = DescriptionTypeRefsetMemberJpa.class)
   // @IndexedEmbedded - n/a
-  @CollectionTable(name = "translation_description_types")
+  @CollectionTable(name = "translation_description_types", joinColumns = @JoinColumn(name = "translation_id"))
   private List<DescriptionTypeRefsetMember> descriptionTypes = null;
 
   /** The concepts. */

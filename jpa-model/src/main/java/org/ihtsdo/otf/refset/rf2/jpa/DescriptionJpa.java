@@ -10,6 +10,7 @@ import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -69,7 +70,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language Refset members. */
   @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefsetMemberJpa.class)
-  @CollectionTable(name="description_language_refset_members")
+  @CollectionTable(name="description_language_refset_members", joinColumns = @JoinColumn(name = "description_id"))
   @IndexedEmbedded
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 

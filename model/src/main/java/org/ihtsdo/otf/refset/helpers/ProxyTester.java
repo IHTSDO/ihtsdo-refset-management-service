@@ -137,13 +137,16 @@ public class ProxyTester {
       includesSeen.add(fieldName.toLowerCase());
       /* Check the field name against our include/exclude list. */
       if (includeFlag) {
-        if (includes != null && !includes.contains(fieldName.toLowerCase()))
+        if (includes != null && !includes.contains(fieldName.toLowerCase())) {
           continue;
-        if (excludes.contains(fieldName.toLowerCase()))
+        }
+        if (excludes.contains(fieldName.toLowerCase())) {
           continue;
+        }
       } else {
-        if (includes != null && includes.contains(fieldName.toLowerCase()))
+        if (includes != null && includes.contains(fieldName.toLowerCase())) {
           continue;
+        }
       }
 
       /* Is there a getter that returns the same type? */
@@ -167,7 +170,7 @@ public class ProxyTester {
       setField(o, getter, m, args[0], initializer);
     }
 
-    // If includes contains entries and not all have been seen - error\
+    // If includes contains entries and not all have been seen - error
     if (includes != null) {
       Set<String> notSeen = new HashSet<>();
       for (String field : includes) {
@@ -281,8 +284,8 @@ public class ProxyTester {
       return map;
     }
     if (type == byte[].class) {
-      byte[] data  = new byte[1];
-      data[0] = (byte)(initializer % 2 == 0 ? 0 : 1);
+      byte[] data = new byte[1];
+      data[0] = (byte) (initializer % 2 == 0 ? 0 : 1);
       return data;
     }
     if (type == BigInteger.class)

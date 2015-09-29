@@ -14,6 +14,7 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -135,7 +136,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The enabled feedback events. */
   @ElementCollection
-  @CollectionTable(name = "refset_enabled_feedback_events")
+  @CollectionTable(name = "refset_enabled_feedback_events", joinColumns = @JoinColumn(name = "refset_id"))
   @Enumerated(EnumType.STRING)
   private Set<Refset.FeedbackEvent> enabledFeedbackEvents;
 
@@ -646,8 +647,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + externalUrl + ", editionUrl=" + editionUrl + ", forTranslation="
         + forTranslation + ", workflowStatus=" + workflowStatus
         + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project + ", inclusions=" + inclusions + ", exclusions="
-        + exclusions + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + refsetDescriptor + ", project=" + project + ", inclusions="
+        + inclusions + ", exclusions=" + exclusions
+        + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 
 }

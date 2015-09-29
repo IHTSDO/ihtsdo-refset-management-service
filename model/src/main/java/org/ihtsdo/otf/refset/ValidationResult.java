@@ -123,8 +123,8 @@ public interface ValidationResult {
   public void addErrors(Set<String> errors);
 
   /**
-   * Merge a second validation result into this validation result
-   * 
+   * Merge a second validation result into this validation result.
+   *
    * @param validationResult the validation result
    */
   public void merge(ValidationResult validationResult);

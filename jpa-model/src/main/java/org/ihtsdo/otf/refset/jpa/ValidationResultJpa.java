@@ -14,7 +14,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 /**
  * JAXB enabled implementation of {@link ValidationResult}.
  */
-@XmlRootElement
+@XmlRootElement(name = "validationResult")
 public class ValidationResultJpa implements ValidationResult {
 
   /** The errors. */

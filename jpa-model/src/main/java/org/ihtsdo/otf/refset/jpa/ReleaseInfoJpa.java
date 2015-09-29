@@ -15,6 +15,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -112,7 +113,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
 
   /** The release properties. */
   @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
-  @CollectionTable(name = "release_info_properties")
+  @CollectionTable(name = "release_info_properties", joinColumns = @JoinColumn(name = "release_info_id"))
   private List<ReleaseProperty> properties;
 
   /** The release properties. */
