@@ -4,10 +4,14 @@
 package org.ihtsdo.otf.refset.lists;
 
 import org.ihtsdo.otf.refset.MemberValidationResult;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.jpa.MemberValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.MemberValidationResultListJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -17,8 +21,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link MemberValidationResultList}.
  */
-public class ListUnit022Test extends
-    AbstractListUnit<MemberValidationResult> {
+public class ListUnit022Test extends AbstractListUnit<MemberValidationResult> {
 
   /** The list1 test fixture . */
   private MemberValidationResultList list1;
@@ -50,10 +53,23 @@ public class ListUnit022Test extends
     list1 = new MemberValidationResultListJpa();
     list2 = new MemberValidationResultListJpa();
 
-    ProxyTester tester =
-        new ProxyTester(new MemberValidationResultJpa());
+    ProxyTester tester = new ProxyTester(new MemberValidationResultJpa());
     o1 = (MemberValidationResult) tester.createObject(1);
     o2 = (MemberValidationResult) tester.createObject(2);
+    Refset r1 = new RefsetJpa();
+    r1.setId(1L);
+    Refset r2 = new RefsetJpa();
+    r2.setId(2L);
+    ConceptRefsetMember m1 = new ConceptRefsetMemberJpa();
+    m1.setId(1L);
+    ConceptRefsetMember m2 = new ConceptRefsetMemberJpa();
+    m2.setId(2L);
+    m1.setRefset(r1);
+    m2.setRefset(r2);
+    o1.setMember(m1);
+    o2.setMember(m2);
+    o1.addComment("1");
+    o2.addComment("2");
   }
 
   /**

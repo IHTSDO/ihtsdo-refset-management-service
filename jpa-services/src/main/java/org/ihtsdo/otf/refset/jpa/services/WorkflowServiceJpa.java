@@ -36,7 +36,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 /**
  * JPA enabled implementation of {@link WorkflowService}.
  */
-public class WorkflowServiceJpa extends ProjectServiceJpa implements
+public class WorkflowServiceJpa extends TranslationServiceJpa implements
     WorkflowService {
 
   /** The workflow action handlers. */

@@ -145,10 +145,13 @@ public class ModelUnit043Test {
     Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization043");
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
-    ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+    ConceptRefsetMember member = new ConceptRefsetMemberJpa();    
     member.setId(1L);
+    Refset refset = new RefsetJpa();
+    refset.setId(1L);
+    member.setRefset(refset);
 
-    tester.proxy(Refset.class, 1, member);
+    tester.proxy(ConceptRefsetMember.class, 1, member);
     assertTrue(tester.testXmlSerialization());
   }
 

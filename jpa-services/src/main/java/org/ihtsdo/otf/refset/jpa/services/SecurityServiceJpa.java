@@ -11,19 +11,19 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.NoResultException;
-import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParserBase;
+import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ResultList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.helpers.UserList;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.SearchResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.SearchResultListJpa;
@@ -32,18 +32,6 @@ import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.SecurityServiceHandler;
-import org.hibernate.search.SearchFactory;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.queryparser.classic.QueryParserBase;
-import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
-import org.hibernate.search.SearchFactory;
-import org.hibernate.search.jpa.FullTextEntityManager;
-import org.hibernate.search.jpa.FullTextQuery;
-import org.hibernate.search.jpa.Search;
 
 /**
  * Reference implementation of the {@link SecurityService}.
@@ -358,18 +346,17 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public UserList findUsers(String query, PfsParameter pfs)
-    throws Exception {
+  public UserList findUsers(String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
         "Security Service - find users " + query + ", pfs= " + pfs);
     UserList list = new UserListJpa();
     // TODO: need to do query - User is not extending searchable
     // Do we want to use this mechanism?
-    //getQueryResults("", "", query, UserJpa.class, UserJpa.class, pfs);
+    // getQueryResults("", "", query, UserJpa.class, UserJpa.class, pfs);
 
     return list;
   }
-  
+
   /* see superclass */
   @Override
   public void refreshCaches() throws Exception {

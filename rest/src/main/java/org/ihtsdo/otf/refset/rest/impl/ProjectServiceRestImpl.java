@@ -12,7 +12,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
@@ -106,9 +105,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      // TODO: how does this get bootstrapped?  Can't add user to project without being an admin user on the project.
-      //authenticate(projectService, projectId, securityService, authToken,
-      //    "add user to project", UserRole.ADMIN);
+      // TODO: how does this get bootstrapped? Can't add user to project without
+      // being an admin user on the project.
+      // authenticate(projectService, projectId, securityService, authToken,
+      // "add user to project", UserRole.ADMIN);
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);

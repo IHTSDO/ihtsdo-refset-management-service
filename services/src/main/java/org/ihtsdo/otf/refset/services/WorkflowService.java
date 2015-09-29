@@ -14,7 +14,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 /**
  * Generically represents a service for interacting with terminology content.
  */
-public interface WorkflowService extends ProjectService {
+public interface WorkflowService extends TranslationService {
 
   /**
    * Returns the tracking record.
@@ -82,8 +82,8 @@ public interface WorkflowService extends ProjectService {
    * @return the tracking record list
    * @throws Exception the exception
    */
-  public TrackingRecordList findTrackingRecordsForQuery(
-    String query, PfsParameter pfs) throws Exception;
+  public TrackingRecordList findTrackingRecordsForQuery(String query,
+    PfsParameter pfs) throws Exception;
 
   /**
    * Returns the workflow paths defined by the supported listeners.

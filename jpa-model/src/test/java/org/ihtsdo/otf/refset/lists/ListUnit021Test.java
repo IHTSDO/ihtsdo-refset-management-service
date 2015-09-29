@@ -8,6 +8,8 @@ import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.jpa.ConceptValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptValidationResultListJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,6 +54,14 @@ public class ListUnit021Test extends AbstractListUnit<ConceptValidationResult> {
     ProxyTester tester = new ProxyTester(new ConceptValidationResultJpa());
     o1 = (ConceptValidationResult) tester.createObject(1);
     o2 = (ConceptValidationResult) tester.createObject(2);
+    Concept c1 = new ConceptJpa();
+    c1.setId(1L);
+    c1.setTerminologyId("1");
+    Concept c2 = new ConceptJpa();
+    c2.setId(2L);
+    c2.setTerminologyId("2");
+    o1.setConcept(c1);
+    o2.setConcept(c2);
   }
 
   /**

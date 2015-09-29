@@ -22,7 +22,7 @@ public interface MemberDiffReport {
   /**
    * Sets the old refset1.
    *
-   * @param oldRfset the old refset
+   * @param oldRefset the old refset
    */
   public void setOldRefset(Refset oldRefset);
 
