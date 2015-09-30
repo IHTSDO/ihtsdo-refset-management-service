@@ -126,7 +126,7 @@
       Select Project Role:<br> <select ng-model="selectedProjectRole" 
         ng-options="item for item in projectRoles"></select><br>  
       <button class="btn btn-sm btn-primary" type="submit"
-         ng-click="addUserToProject(selectedProject.id, selectedUser.userName, selectedProjectRole)">Add User/Role</button>
+         ng-click="assignUserToProject(selectedProject.id, selectedUser.userName, selectedProjectRole)">Assign User/Role</button>
     </div>
     
     <div class="col-md-6 col-xs-12">
@@ -143,8 +143,8 @@
             <td>{{value.key.name}}</td>
             <td>{{value.key.userName}}</td>
             <td>{{value.value}}</td>
-            <td><a title="Remove"
-                ng-click="removeUserFromProject(selectedProject.id, value.key.userName);">
+            <td><a title="Unassign"
+                ng-click="unassignUserFromProject(selectedProject.id, value.key.userName);">
                 <i class="glyphicon glyphicon-remove"></i>
               </a></td>
           </tr>

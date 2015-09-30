@@ -99,12 +99,12 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
 
-    // add user to project
+    // assign user to project
     this.assignUserToProject = function(projectId, userName, projectRole) {
       console.debug("assignUserToProject");
       var deferred = $q.defer();
 
-      // Add user to project
+      // Assign user to project
       gpService.increment()
       $http.get(
         projectUrl + 'assign' + "?projectId=" + projectId + "&userName="
@@ -124,12 +124,12 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
 
-    // add user to project
+    // unassign user from project
     this.unassignUserFromProject = function(projectId, userName) {
       console.debug("unassignUserFromProject");
       var deferred = $q.defer();
 
-      // Add user
+      // Unassign user from project
       gpService.increment()
       $http.get(
         projectUrl + 'unassign' + "?projectId=" + projectId + "&userName="

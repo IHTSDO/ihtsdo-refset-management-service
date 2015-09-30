@@ -92,8 +92,12 @@ tsApp
           $scope.selectedProject = project;
         }
 
-        // add user to project
+        // assign user to project
         $scope.assignUserToProject = function(projectId, userName, projectRole) {
+          if (projectId == null || projectId == undefined) {
+            window.alert("Select a project before assigning a user! ");
+            return;
+          }
           projectService.assignUserToProject(projectId, userName, projectRole).then(
             function(data) {
               $scope.getProjects();
