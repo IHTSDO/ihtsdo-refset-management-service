@@ -4,7 +4,7 @@ tsApp
     'utilService',
     [
       '$location',
-       function($location) {
+      function($location) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -27,13 +27,13 @@ tsApp
           // If authtoken expired, relogin
           if (this.error.message.startsWith("AuthToken has expired")) {
             // Reroute back to login page with "auth token has
-                        // expired" message
+            // expired" message
             $location.path("/");
           }
           if (this.error.message
             .startsWith("Attempt to access a service without an authorization token")) {
             // Reroute back to login page with "auth token has
-                        // expired" message
+            // expired" message
             $location.path("/");
           }
         }
@@ -198,9 +198,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         gpService.decrement();
       });
     }
-    
 
-    
     // get all users
     this.getUsers = function() {
       console.debug("getUsers");
@@ -222,8 +220,8 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }        
-    
+    }
+
     // add user
     this.addUser = function(user) {
       console.debug("addUser");
@@ -245,8 +243,8 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }                
-    
+    }
+
     // update user
     this.updateUser = function(user) {
       console.debug("updateUser");
@@ -268,8 +266,8 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }            
-    
+    }
+
     // remove user
     this.removeUser = function(user) {
       console.debug("removeUser");
@@ -277,7 +275,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
 
       // Add user
       gpService.increment();
-      $http.delete(securityUrl + 'user/remove' + "/" + user.id).then(
+      $http['delete'](securityUrl + 'user/remove' + "/" + user.id).then(
       // success
       function(response) {
         console.debug("  user = ", response.data);
@@ -285,15 +283,14 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         deferred.resolve(response.data);
       },
       // error
-       function(response) {
+      function(response) {
         utilService.handleError(response);
         gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }                      
-        
-    
+    }
+
     // get application roles
     this.getApplicationRoles = function() {
       console.debug("getProjectsApplicationRoles");
@@ -315,13 +312,15 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }     
+    }
   } ]);
 
 // Tab service
 tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
-  function($location, utilService, gpService) {
+  'securityService',
+  function($location, utilService, gpService, securityService) {
     console.debug('configure tabService');
+
     // Available tabs
     this.tabs = [ {
       link : '#/directory',
@@ -337,8 +336,14 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
       label : 'Admin'
     } ];
 
-    // the selected tab
     this.selectedTab = this.tabs[0];
+
+    // Show admin tab for admins only
+    this.showTab = function(tab) {
+      console.debug("tab label",tab.label);
+      return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
+    }
+    
 
     // Sets the selected tab
     this.setSelectedTab = function(tab) {

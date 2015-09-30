@@ -209,7 +209,7 @@ public class ProjectClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Project removeUserFromProject(Long projectId, String userName,
+  public Project unassignUserFromProject(Long projectId, String userName,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Project Client - assign user to project " + projectId + ", "

@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.client;
 
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Properties;
 
@@ -18,7 +19,9 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 
 /**
@@ -53,7 +56,7 @@ public class TranslationClientRest extends RootClientRest implements
     } catch (Exception e) {
       throw new Exception("Unable to parse date according to YYYYMMDD " + date);
     }
-    
+
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
@@ -80,6 +83,55 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public ConceptList findConceptsForTranslationRevision(Long translationId,
     Date date, PfsParameter pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Translation getTranslation(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public TranslationList getTranslationsForRefset(Long refsetId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public TranslationList findTranslationsForQuery(String query,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Translation addTranslation(Translation translation, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void updateTranslation(Translation translation, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void removeTranslation(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public InputStream exportTranslation(Long translationId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

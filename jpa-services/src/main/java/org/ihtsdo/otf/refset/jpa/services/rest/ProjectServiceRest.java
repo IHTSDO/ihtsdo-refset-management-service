@@ -47,7 +47,7 @@ public interface ProjectServiceRest {
    * @return the project
    * @throws Exception the exception
    */
-  public Project removeUserFromProject(Long projectId, String userName,
+  public Project unassignUserFromProject(Long projectId, String userName,
     String authToken) throws Exception;
 
   /**

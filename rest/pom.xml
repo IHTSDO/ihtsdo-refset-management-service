@@ -27,6 +27,7 @@
     <site.tracking.code></site.tracking.code>
     <deploy.footer.copyright>(c)2015</deploy.footer.copyright>
     <deploy.presented.by></deploy.presented.by>
+    <base.url>http://localhost:8080</base.url>
   </properties>
 
   <dependencies>

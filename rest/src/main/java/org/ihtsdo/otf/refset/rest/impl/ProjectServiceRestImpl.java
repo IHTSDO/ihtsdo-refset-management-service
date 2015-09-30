@@ -130,7 +130,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/unassign")
   @ApiOperation(value = "Unassign user from project", notes = "Unassign the specified user from the specified project with the specified role.", response = ProjectJpa.class)
-  public Project removeUserFromProject(
+  public Project unassignUserFromProject(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
