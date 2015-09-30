@@ -4,7 +4,7 @@ var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree' ])
   .config(function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
-    $rootScopeProvider.digestTtl(15);
+    // $rootScopeProvider.digestTtl(15);
 
   });
 
@@ -18,10 +18,9 @@ var workflowUrl = "workflow/";
 var validationUrl = "validation/";
 
 // Initialization of tsApp
-tsApp
-  .run(function($rootScope, $http, $window) {
-// n/a
-  });
+tsApp.run(function($rootScope, $http, $window) {
+  // n/a
+});
 
 // Route provider configuration
 tsApp.config([
@@ -118,7 +117,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
         }
       }
     }
-    
+
     // Set "active" or not
     $scope.tabClass = function(tab) {
       if (tabService.selectedTab == tab) {
@@ -163,6 +162,11 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
       var myWindow = window.open(newUrl, "helpWindow");
       myWindow.focus();
     };
+    
+    // for ng-show
+    $scope.isShowing = function() {
+      return securityService.isLoggedIn();
+    }
 
   } ]);
 

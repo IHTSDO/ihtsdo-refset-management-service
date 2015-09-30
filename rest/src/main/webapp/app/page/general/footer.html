@@ -3,54 +3,35 @@
   <div>
     <!--  Show logout button at the bottom in XS mode -->
     <div style="margin-top: 10px" id="mobileFooter" ng-show="isShowing()"
-      class="visible-xs hidden-md col-xs-12">
-      <button class="btn btn-sm btn-primary "
-         ng-click="logout()">Logout</button>
-      <span> &nbsp; {{user.name}}
-        ({{user.applicationRole}})</span>
+      class="visible-xs col-xs-12 header-footer-bg">
+      <div style="padding:15px;" class="nobreak">
+        <span class="header-footer-text">
+          {{user.name}} ({{user.applicationRole}})
+          <a class="header-footer-link" ng-click="logout()">Logout</a>
+          &nbsp;
+        </span>
+      </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <nav style="background-color: #ffffff"
-    class="hidden-xs navbar navbar-default navbar-fixed-bottom">
+  <!--  footer -->
+  <nav
+    class="hidden-xs navbar navbar-default navbar-fixed-bottom header-footer-bg">
     <div class="container-fluid">
-      <div class="navbar-header">
-        <ul class="nav navbar-nav navbar-left">
-          <li><p class="navbar-text">
-              <a class="navbar-link" href="${deploy.link}">${deploy.footer.copyright}</a>
-            </p></li>
-          <li>
-            <button class="btn btn-sm btn-primary btn-structure"
-              style="margin-top: 10px" ng-click="logout()"
-              ng-show="user.authToken != null">Logout</button>
-          </li>
-          <li>&nbsp;
-            <p class="navbar-text">${project.version}</p>
-          </li>
-          <li>
-            <div style="text-align: center; padding: 5px; margin: 0 0 0 0;"
-              class="alert alert-danger" ng-show="isGlassPaneNegative()">
+      <table class="col-md-12" style="width: 100%; margin-top: 18px;">
+        <tr>
+          <td><a class="header-footer-text header-footer-link"
+              href="${deploy.link}">${deploy.footer.copyright}</a></td>
+          <td style="width: 70%"><div ng-include src="'footerLinks.html'"></div></td>
+          <td><div class="alert alert-danger"
+              ng-show="isGlassPaneNegative()">
               The Glass Pane activity indicator may not be functioning
               correctly.<br>Please send a screenshot to an administrator.
               (GPC: {{getGlassPaneCounter()}})
-            </div>
-          </li>
-        </ul>
-      </div>
-      <div class="collapse navbar-collapse">
-        <ul class="nav navbar-nav navbar-right">
-          <li>
-            <p id="userAndRole" class="navbar-text" ng-show="isShowing()">
-              {{user.name}} ({{user.applicationRole}})</p>
-          </li>
-          <li>
-            <p class="navbar-text">${deploy.presented.by}</p>
-          </li>
-        </ul>
-      </div>
+            </div></td>
+          <td></td>
+        </tr>
+      </table>
     </div>
-    </
   </nav>
 </div>
-<!--  end Footer -->
