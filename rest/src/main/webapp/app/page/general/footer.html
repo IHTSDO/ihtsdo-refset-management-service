@@ -2,12 +2,12 @@
 <div ng-controller="FooterCtrl">
   <div>
     <!--  Show logout button at the bottom in XS mode -->
-    <div id="mobileFooter" class="visible-xs hidden-md col-xs-12">
-      <button class="btn btn-sm btn-primary btn-structure"
-        style="margin-top: 10px" ng-click="logout()"
-        ng-show="user.authToken != null">Logout</button>
-        <span class="navbar-text" ng-show="user.authToken"> &nbsp;
-        {{user.name}} ({{user.applicationRole}})</span>
+    <div style="margin-top: 10px" id="mobileFooter" ng-show="isShowing()"
+      class="visible-xs hidden-md col-xs-12">
+      <button class="btn btn-sm btn-primary "
+         ng-click="logout()">Logout</button>
+      <span> &nbsp; {{user.name}}
+        ({{user.applicationRole}})</span>
     </div>
   </div>
 
@@ -40,6 +40,10 @@
       </div>
       <div class="collapse navbar-collapse">
         <ul class="nav navbar-nav navbar-right">
+          <li>
+            <p id="userAndRole" class="navbar-text" ng-show="isShowing()">
+              {{user.name}} ({{user.applicationRole}})</p>
+          </li>
           <li>
             <p class="navbar-text">${deploy.presented.by}</p>
           </li>

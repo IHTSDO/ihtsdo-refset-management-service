@@ -19,9 +19,8 @@ tsApp.controller('DirectoryCtrl', [
       tabService.setSelectedTabByLabel('Directory');
     }
 
-    //
-    // Scope Variables
-    //
+    // eventually need to make some kind of call so that a failed call can redirect 
+    // to login page
 
   }
 

@@ -18,9 +18,10 @@ var workflowUrl = "workflow/";
 var validationUrl = "validation/";
 
 // Initialization of tsApp
-tsApp.run(function($rootScope, $http, $location) {
-  // nothing yet -- may want to put metadata retrieval here
-});
+tsApp
+  .run(function($rootScope, $http, $window) {
+// n/a
+  });
 
 // Route provider configuration
 tsApp.config([
@@ -106,6 +107,18 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
       tabService.setSelectedTab(tab);
     }
 
+    // sets the selected tab by label
+    // to be called by controllers when their
+    // respective tab is select3ed
+    this.setSelectedTabByLabel = function(label) {
+      for (var i = 0; i < this.tabs.length; i++) {
+        if (this.tabs[i].label === label) {
+          this.selectedTab = this.tabs[i];
+          break;
+        }
+      }
+    }
+    
     // Set "active" or not
     $scope.tabClass = function(tab) {
       if (tabService.selectedTab == tab) {
@@ -118,6 +131,11 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
     // for ng-show
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
+    }
+
+    // for ng-show
+    $scope.isAdmin = function() {
+      return securityService.isAdmin();
     }
 
   } ]);
@@ -135,11 +153,10 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
       securityService.logout();
     }
 
+    // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
-
       path = "/help" + path;
-
       var currentUrl = window.location.href;
       var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
       var newUrl = baseUrl + path;
@@ -159,15 +176,11 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
     // Logout method
     $scope.logout = securityService.logout;
 
-    // Check gp status
-    $scope.isGlassPaneNegative = function() {
-      return gpService.isGlassPaneNegative();
+    // for ng-show
+    $scope.isShowing = function() {
+      return securityService.isLoggedIn();
     }
 
-    // Get gp counter
-    $scope.getGlassPaneCounter = function() {
-      return gpService.glassPane.counter;
-    }
   }
 
 ]);

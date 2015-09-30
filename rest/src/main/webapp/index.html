@@ -49,8 +49,9 @@
 <script src="app/component/report/reportDirective.js"></script>
 <script src="app/page/login/loginController.js"></script>
 <script src="app/page/admin/adminController.js"></script>
-<script src="app/page/translation/translationController.js"></script>
 <script src="app/page/directory/directoryController.js"></script>
+<script src="app/page/refset/refsetController.js"></script>
+<script src="app/page/translation/translationController.js"></script>
 
 </head>
 <body>
@@ -77,6 +78,7 @@
     <div ng-include src="'app/page/general/error.html'"></div>
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
       <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"><a 
+      ng-show="tab.label != 'Admin' || isAdmin()"
           href="{{tab.link}}" ng-click="setSelectedTab(tab)"> {{tab.label}}
         </a></li>
     </ul>

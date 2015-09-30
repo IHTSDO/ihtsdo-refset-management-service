@@ -171,6 +171,12 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       return user.authToken;
     }
 
+    // isAdmin function
+    this.isAdmin = function() {
+      return user.applicationRole == 'ADMIN';
+    }
+
+    // Logout
     this.logout = function() {
       if (user.authToken == null) {
         alert("You are not currently logged in");

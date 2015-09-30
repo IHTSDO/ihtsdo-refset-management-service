@@ -19,6 +19,9 @@ tsApp.controller('RefsetCtrl', [
       tabService.setSelectedTabByLabel('Refset');
     }
     
+    // eventually need to make some kind of call so that a failed call can redirect 
+    // to login page
+
     // TODO
   }
 
