@@ -29,6 +29,7 @@ tsApp
 
         // Scope variables initialized from services
         $scope.user = securityService.getUser();
+        $scope.users = null;
 
         // remove a project, a user
         $scope.remove = function(type, object, objArray) {

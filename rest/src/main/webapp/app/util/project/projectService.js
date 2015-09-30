@@ -1,4 +1,4 @@
-// Admin Service
+// Project Service
 tsApp.service('projectService', [
   '$http',
   '$q',
