@@ -106,9 +106,6 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/remove/" + id);
 
-    if (id == null)
-      return;
-
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).delete();

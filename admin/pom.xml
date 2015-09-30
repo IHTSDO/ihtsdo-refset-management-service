@@ -240,24 +240,9 @@
                     of other objects and perform referential integrity tests here. -->
                   <queries>
                     <property>
-                      <name>Validate concept default preferred names</name>
+                      <name>sample</name>
                       <value>
-                        SELECT terminologyId, name
-                        FROM
-                        concepts a
-                        WHERE
-                        NOT
-                        EXISTS
-                        (SELECT * FROM
-                        atoms b
-                        WHERE a.conceptId =
-                        b.terminologyId
-                        AND
-                        a.terminology = b.terminology
-                        AND
-                        a.version = b.version
-                        AND a.name =
-                        b.name);
+                        sample query;
                       </value>
                     </property>
                   </queries>

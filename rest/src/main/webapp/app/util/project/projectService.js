@@ -1,11 +1,11 @@
 // Admin Service
-tsApp.service('adminService', [
+tsApp.service('projectService', [
   '$http',
   '$q',
   'gpService',
   'utilService',
   function($http, $q, gpService, utilService) {
-    console.debug("configure adminService");
+    console.debug("configure projectService");
 
     // get all projects
     this.getProjects = function() {

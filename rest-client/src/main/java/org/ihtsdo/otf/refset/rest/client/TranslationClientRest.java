@@ -82,7 +82,7 @@ public class TranslationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptList findConceptsForTranslationRevision(Long translationId,
-    Date date, PfsParameter pfs, String authToken) throws Exception {
+    String date, PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

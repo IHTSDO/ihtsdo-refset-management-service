@@ -7,11 +7,9 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import java.io.InputStream;
-import java.util.Date;
 
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
@@ -119,6 +117,6 @@ public interface TranslationServiceRest {
    * @throws Exception the exception
    */
   public ConceptList findConceptsForTranslationRevision(Long translationId,
-    Date date, PfsParameter pfs, String authToken) throws Exception;
+    String date, PfsParameterJpa pfs, String authToken) throws Exception;
 
 }

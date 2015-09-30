@@ -7,11 +7,9 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import java.io.InputStream;
-import java.util.Date;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
@@ -126,6 +124,6 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
-    Date date, PfsParameter pfs, String authToken) throws Exception;
+    String date, PfsParameterJpa pfs, String authToken) throws Exception;
 
 }

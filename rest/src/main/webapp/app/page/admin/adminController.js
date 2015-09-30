@@ -13,9 +13,9 @@ tsApp
       'utilService',
       'tabService',
       'securityService',
-      'adminService',
+      'projectService',
       function($scope, $http, $modal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, adminService) {
+        utilService, tabService, securityService, projectService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -37,7 +37,7 @@ tsApp
             return;
           }
           if (type == 'project') {
-            adminService.removeProject(object).then(function() {
+            projectService.removeProject(object).then(function() {
               $scope.getProjects();
             });
           }
@@ -50,7 +50,7 @@ tsApp
 
         // get projects
         $scope.getProjects = function() {
-          adminService.getProjects().then(function(data) {
+          projectService.getProjects().then(function(data) {
             for (var i = 0; i < data.projects.length; i++) {
               data.projects[i].isExpanded = false;
             }
@@ -74,7 +74,7 @@ tsApp
 
         // get project roles
         $scope.getProjectRoles = function() {
-          adminService.getProjectRoles().then(function(data) {
+          projectService.getProjectRoles().then(function(data) {
             $scope.projectRoles = data.strings;
           })
         };
@@ -93,7 +93,7 @@ tsApp
 
         // add user to project
         $scope.assignUserToProject = function(projectId, userName, projectRole) {
-          adminService.assignUserToProject(projectId, userName, projectRole).then(
+          projectService.assignUserToProject(projectId, userName, projectRole).then(
             function(data) {
               $scope.getProjects();
               $scope.selectedProject = data;
@@ -102,7 +102,7 @@ tsApp
 
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
-          adminService.unassignUserFromProject(projectId, userName).then(
+          projectService.unassignUserFromProject(projectId, userName).then(
             function(data) {
 
               $scope.getProjects();
@@ -156,7 +156,7 @@ tsApp
               return;
             }
 
-            adminService.addProject(project).then(function(data) {
+            projectService.addProject(project).then(function(data) {
               projects.push(data);
               $modalInstance.close();
             }, function(data) {
@@ -263,7 +263,7 @@ tsApp
               return;
             }
 
-            adminService.updateProject(project).then(function(data) {
+            projectService.updateProject(project).then(function(data) {
               // TODO get this working $scope.projects.push(data);
               $modalInstance.close();
             }, function(data) {
