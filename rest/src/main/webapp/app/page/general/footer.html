@@ -4,7 +4,7 @@
     <!--  Show logout button at the bottom in XS mode -->
     <div style="margin-top: 10px" id="mobileFooter" ng-show="isShowing()"
       class="visible-xs col-xs-12 header-footer-bg">
-      <div style="padding:15px;" class="nobreak">
+      <div style="padding: 15px;" class="nobreak">
         <span class="header-footer-text">
           {{user.name}} ({{user.applicationRole}})
           <a class="header-footer-link" ng-click="logout()">Logout</a>
@@ -18,20 +18,19 @@
   <nav
     class="hidden-xs navbar navbar-default navbar-fixed-bottom header-footer-bg">
     <div class="container-fluid">
-      <table class="col-md-12" style="width: 100%; margin-top: 18px;">
-        <tr>
-          <td><a class="header-footer-text header-footer-link"
-              href="${deploy.link}">${deploy.footer.copyright}</a></td>
-          <td style="width: 70%"><div ng-include src="'footerLinks.html'"></div></td>
-          <td><div class="alert alert-danger"
-              ng-show="isGlassPaneNegative()">
-              The Glass Pane activity indicator may not be functioning
-              correctly.<br>Please send a screenshot to an administrator.
-              (GPC: {{getGlassPaneCounter()}})
-            </div></td>
-          <td></td>
-        </tr>
-      </table>
+      <div style="width: 100%; margin-top: 15px;" >
+        <div style="width: 1%; white-space: nowrap; display: table-cell;" >
+          <a class="header-footer-text header-footer-link" href="${deploy.link}">${deploy.footer.copyright}</a>
+        </div>
+        <div style="display: table-cell;">&nbsp;&nbsp;
+          <span ng-include src="'app/page/general/footerLinks.html'"></span>
+          <div class="alert alert-danger" ng-show="isGlassPaneNegative()">
+            The Glass Pane activity indicator may not be functioning correctly.<br>Please
+            send a screenshot to an administrator. (GPC:
+            {{getGlassPaneCounter()}})
+          </div>
+        </div>
+      </div>
     </div>
   </nav>
 </div>

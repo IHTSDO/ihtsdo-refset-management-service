@@ -31,8 +31,12 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
+import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.services.SecurityService;
 
 /**
  * Goal which generates sample data in an empty database. Uses JPA services
@@ -44,6 +48,12 @@ import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
  * @phase package
  */
 public class GenerateSampleDataMojo extends AbstractMojo {
+
+  /**
+   * Mode - for recreating db
+   * @parameter
+   */
+  private String mode = null;
 
   /** The security service. */
   SecurityClientRest security = null;
@@ -93,15 +103,38 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   public void execute() throws MojoFailureException {
     try {
       getLog().info("Sample data generation called via mojo.");
+      getLog().info("  Mode               : " + mode);
+
+      // Handle creating the database if the mode parameter is set
+      Properties properties = ConfigUtility.getConfigProperties();
+      if (mode != null && mode.equals("create")) {
+        getLog().info("Recreate database");
+        // This will trigger a rebuild of the db
+        properties.setProperty("hibernate.hbm2ddl.auto", mode);
+        // Trigger a JPA event
+        new ProjectServiceJpa().close();
+        properties.remove("hibernate.hbm2ddl.auto");
+      }
+
+      // authenticate
+      SecurityService service = new SecurityServiceJpa();
+      String authToken =
+          service.authenticate(properties.getProperty("admin.user"),
+              properties.getProperty("admin.password")).getAuthToken();
+      service.close();
+
+      // Handle reindexing database if mode is set
+      if (mode != null && mode.equals("create")) {
+        ProjectServiceRestImpl contentService = new ProjectServiceRestImpl();
+        contentService.luceneReindex(null, authToken);
+      }
 
       boolean serverRunning = ConfigUtility.isServerActive();
       getLog().info(
           "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
-      if (!serverRunning) {
-        throw new Exception("Server must be running");
+      if (serverRunning) {
+        throw new Exception("Server must not be running to generate data");
       }
-
-      getLog().info("Running against server");
 
       loadSampleData();
 

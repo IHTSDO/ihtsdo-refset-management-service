@@ -15,6 +15,10 @@
   <description>Maven-based administration tools.</description>
   <packaging>maven-plugin</packaging>
 
+  <!-- Mojo parameters -->
+  <properties>
+    <mode>do not create</mode>
+  </properties>
 
   <dependencies>
     <!-- Inter-module dependencies -->
@@ -212,6 +216,9 @@
                 <goals>
                   <goal>sample-data</goal>
                 </goals>
+                <configuration>
+                  <mode>${mode}</mode>
+                </configuration>
               </execution>
             </executions>
           </plugin>

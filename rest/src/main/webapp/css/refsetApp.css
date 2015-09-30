@@ -1,13 +1,3 @@
-//
-museo300
-
- 
-
-font
-
-
-
-
 @import url("//hello.myfonts.net/count/2f4f94");
 
 @font-face {
@@ -25,6 +15,11 @@ body {
 
 a {
 	cursor: pointer;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #00a6e5;
 }
 
 .intro-text {
@@ -139,4 +134,4 @@ a {
 	display: inline-block;
 	white-space: nowrap;
 }
-}
+
