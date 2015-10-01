@@ -108,6 +108,6 @@ public interface SecurityServiceRest {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findUsers(String query, PfsParameterJpa pfs, String authToken)
+  public UserList findUsersForQuery(String query, PfsParameterJpa pfs, String authToken)
     throws Exception;
 }

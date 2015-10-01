@@ -17,6 +17,7 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -95,6 +96,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
       objectsToReindex.add("RefsetJpa");
       objectsToReindex.add("TranslationJpa");
       objectsToReindex.add("TrackingRecordJpa");
+      objectsToReindex.add("UserJpa");
 
       // otherwise, construct set of indexed objects
     } else {
@@ -174,6 +176,17 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
       objectsToReindex.remove("TrackingRecordJpa");
     }
 
+    if (objectsToReindex.contains("UserJpa")) {
+      Logger.getLogger(getClass()).info("  Creating indexes for UserJpa");
+      fullTextEntityManager.purgeAll(UserJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(UserJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("UserJpa");
+    }
+    
     if (objectsToReindex.size() != 0) {
       throw new Exception(
           "The following objects were specified for re-indexing, but do not exist as indexed objects: "
@@ -195,6 +208,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     fullTextEntityManager.purgeAll(TranslationJpa.class);
     fullTextEntityManager.purgeAll(RefsetJpa.class);
     fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
+    fullTextEntityManager.purgeAll(UserJpa.class);
   }
 
   /**

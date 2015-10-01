@@ -3,11 +3,10 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-  <h4>Application Administration</h4>
-    <accordion ng-show="user.applicationRole == 'ADMIN'" > 
-    <accordion-group heading="Application Administration" 
-    is-open="false">
-     <!-- Projects --> <accordion-heading>
+    <h4>Application Administration</h4>
+    <accordion ng-show="user.applicationRole == 'ADMIN'"> <accordion-group
+      heading="Application Administration" is-open="false"> <!-- Projects -->
+    <accordion-heading>
     <h5>
       <span tooltip-placement="right" tooltip="List of the projects.">
         Projects </span>
@@ -21,6 +20,27 @@
           </a>
         </div>
       </h4>
+
+      <span style="display: block;">
+        <pagination items-per-page="projectsPageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          ng-show="pagedProjects.totalCount > projectsPageSize || projectPaging.filter"
+          total-items="pagedProjects.totalCount" ng-model="projectPaging.page"
+          ng-change="retrievePagedProjects()"></pagination>
+
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="pagedProjects.totalCount > projectsPageSize || projectPaging.filter"
+          type="text" ng-model="projectPaging.filter"
+          ng-model-options="{ debounce: 300 }"
+          ng-change="retrievePagedProjects()">
+
+        <button class="btn btn-xs btn-warning" ng-show="projectPaging.filter"
+          ng-click="projectPaging.filter = ''; retrievePagedProjects()"
+          title="Click to clear filter text">Clear</button>
+      </span>
+
+
       <table class="table">
         <thead>
           <th class="col-md-2 col-xs-2">Id</th>
@@ -29,8 +49,8 @@
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
-          <tr ng-repeat="project in projects" ng-click="setProject(project)">
-            <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
+          <tr ng-repeat="project in pagedProjects">
+            <td>{{project.id}}</td>
             <td><a ng-click="project.isExpanded = !project.isExpanded">
                 [ <i
                   ng-class="{'glyphicon-minus': project.isExpanded, 'glyphicon-plus': !project.isExpanded}"></i>
@@ -51,12 +71,10 @@
         </tbody>
       </table>
     </div>
-    <!--  end Projects -->
-    </accordion-group>
-    <accordion-group> <!-- Users --> <accordion-heading>
+    <!--  end Projects --> </accordion-group> <accordion-group> <!-- Users --> <accordion-heading>
     <h5>
-      <span tooltip-placement="right" tooltip="List of the users and their application roles.">
-        Users </span>
+      <span tooltip-placement="right"
+        tooltip="List of the users and their application roles."> Users </span>
     </h5>
     </accordion-heading>
     <div class="col-md-12 col-xs-12">
@@ -82,7 +100,7 @@
             <td>{{user.name}}</td>
             <td>{{user.email}}</td>
             <td>{{user.applicationRole}}</td>
-            
+
             <td><a title="Edit"
                 ng-click="openEditUserModal(user); $event.stopPropagation()">
                 <i class="glyphicon glyphicon-pencil"></i>
@@ -96,59 +114,81 @@
         </tbody>
       </table>
     </div>
-    <!--  end Users -->
-    </accordion-group>
-    </accordion>
+    <!--  end Users --> </accordion-group> </accordion>
 
     <h4>User & Project Management</h4>
     <div class="col-md-6 col-xs-12">
       <table class="table">
-        <h5>Project List</h5>
+        <h5 class="section-header">Project List</h5>
         <thead>
           <th class="col-md-1 col-xs-1">Id</th>
-          <th class="col-md-5 col-xs-5">Name</th> 
-          <th class="col-md-6 col-xs-6">Description</th>         
+          <th class="col-md-5 col-xs-5">Name</th>
+          <th class="col-md-6 col-xs-6">Description</th>
         </thead>
         <tbody>
           <tr ng-repeat="project in projects" ng-click="setProject(project)">
             <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
-            <td>{{project.name}}</td>
-            <td>{{project.description}}</td>
+            <td ng-class="{selected: project.id === selectedProject.id}">{{project.name}}</td>
+            <td ng-class="{selected: project.id === selectedProject.id}">{{project.description}}</td>
           </tr>
         </tbody>
       </table>
     </div>
-    
+
     <div class="col-md-6 col-xs-12">
-      <h5>Project User Selection & Role Assignment</h5> 
-      Select User:<br> <select ng-model="selectedUser" 
-        ng-options="item.name for item in users"></select><br>  
-      Select Project Role:<br> <select ng-model="selectedProjectRole" 
-        ng-options="item for item in projectRoles"></select><br>  
-      <button class="btn btn-sm btn-primary" type="submit"
-         ng-click="assignUserToProject(selectedProject.id, selectedUser.userName, selectedProjectRole)">Assign User/Role</button>
-    </div>
-    
-    <div class="col-md-6 col-xs-12">
-      <h5>Project Users</h5>
-      <table class="table">
-        <thead>
-          <th class="col-md-5 col-xs-5">Name</th> 
-          <th class="col-md-5 col-xs-5">UserName</th> 
-          <th class="col-md-2 col-xs-2">Project Role</th> 
-          <th class="col-md-1 col-xs-1">&nbsp;</th>       
-        </thead>
-        <tbody>
-          <tr ng-repeat="(key, value) in selectedProject.projectRoleMap.entry">
-            <td>{{value.key.name}}</td>
-            <td>{{value.key.userName}}</td>
-            <td>{{value.value}}</td>
-            <td><a title="Unassign"
-                ng-click="unassignUserFromProject(selectedProject.id, value.key.userName);">
-                <i class="glyphicon glyphicon-remove"></i>
-              </a></td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="col-md-12 col-xs-12">
+        <h5 class="section-header">User Selection & Role Assignment</h5>
+
+        <input type="text" ng-model="searchParams.query"
+          placeholder="Enter user search terms">
+
+        <button class="btn btn-sm btn-primary" type="submit"
+          ng-click="searchParams.page = 1 && findUsers()">Search</button>
+        <table class="table">
+          <thead>
+            <th class="col-md-5 col-xs-5">Name</th>
+            <th class="col-md-4 col-xs-4">UserName</th>
+            <th class="col-md-2 col-xs-2">Project Role</th>
+            <th class="col-md-1 col-xs-1">&nbsp;</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="user in userResults">
+              <td>{{user.name}}</td>
+              <td>{{user.userName}}</td>
+              <td><select ng-model="user.projectRole"
+                ng-options="item for item in projectRoles"></select></td>
+              <td><a title="Add user to project with selected role."
+                  ng-init="user.projectRole='AUTHOR'"
+                  ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)">
+                  <i class="glyphicon glyphicon-plus"></i>
+                </a></td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+      <div class="col-md-12 col-xs-12">
+        <h5 class="section-header">Project Users</h5>
+        <table class="table">
+          <thead>
+            <th class="col-md-5 col-xs-5">Name</th>
+            <th class="col-md-5 col-xs-5">UserName</th>
+            <th class="col-md-2 col-xs-2">Project Role</th>
+            <th class="col-md-1 col-xs-1">&nbsp;</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="(key, value) in selectedProject.projectRoleMap.entry">
+              <td>{{value.key.name}}</td>
+              <td>{{value.key.userName}}</td>
+              <td>{{value.value}}</td>
+              <td><a title="Unassign"
+                  ng-click="unassignUserFromProject(selectedProject.id, value.key.userName);">
+                  <i class="glyphicon glyphicon-remove"></i>
+                </a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>

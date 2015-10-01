@@ -14,8 +14,9 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -137,14 +138,19 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
-  public SearchResultList findTranslationsForQuery(String terminology,
-    String version, String query, PfsParameter pfs) throws Exception {
+  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Translation Service - find translations " + terminology + "/"
-            + version + "/" + query);
-    return getQueryResults(terminology, version, query, TranslationJpa.class,
-        TranslationJpa.class, pfs);
+        "Translation Service - find translations " + query);
+    int[] totalCt = new int[1];
+    List<Translation> list = (List<Translation>)getQueryResults(query == null || query.isEmpty()
+        ? "id:[* TO *]" : query,  TranslationJpa.class,
+        TranslationJpa.class, pfs, totalCt);
+    TranslationList result = new TranslationListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 
   /* see superclass */

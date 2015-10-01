@@ -30,6 +30,21 @@ tsApp
         // Scope variables initialized from services
         $scope.user = securityService.getUser();
         $scope.users = null;
+        
+
+        $scope.pageSize = 5;
+        $scope.projectsPageSize = 1;
+        
+        $scope.pagedProjects = null;
+
+        $scope.projectPaging = {
+          page : 1,
+          filter : ""
+        }
+        
+        // Search parameters
+        $scope.searchParams = securityService.getSearchParams();
+        //$scope.searchResults = securityService.getSearchResults();
 
         // remove a project, a user
         $scope.remove = function(type, object, objArray) {
@@ -59,12 +74,41 @@ tsApp
           })
         };
 
+        // get paged projects
+        $scope.retrievePagedProjects = function() {
+
+          var pfs = {
+            startIndex : ($scope.projectPaging.page - 1) * $scope.pageSize,
+            maxResults : $scope.pageSize,
+            sortField : 'lastModified',
+            queryRestriction : null
+          };
+
+          $scope.projectsPageSize = $scope.pageSize;
+          
+          projectService.findProjectsAsList($scope.projectPaging.filter, pfs).then(function(data) {
+            $scope.pagedProjects = data.projects;
+            $scope.pagedProjects.totalCount = data.totalCount;
+          })
+          
+        };
+        
         // get users
         $scope.getUsers = function() {
           securityService.getUsers().then(function(data) {
             $scope.users = data.users;
           })
         };
+        
+        // find users
+        $scope.findUsers = function() {
+          securityService
+          .findUsersAsList($scope.searchParams.query, $scope.searchParams.page)
+          .then(
+            function(data) {
+              $scope.userResults = data.users;
+            });
+        }
 
         // get application roles
         $scope.getApplicationRoles = function() {
@@ -89,6 +133,12 @@ tsApp
             && project.id === $scope.selectedProject.id) {
             return;
           }
+          /*var projectRole = getProjectRoleForUser(project, $scope.selectedUser);
+          if (projectRole == null || !projectRole == 'ADMIN') {
+            window.alert("User must have administrator privledges on this project in order to manage users on this project.");
+          }*/
+            
+          
           $scope.selectedProject = project;
         }
 
@@ -98,11 +148,39 @@ tsApp
             window.alert("Select a project before assigning a user! ");
             return;
           }
+          
+          if (isUserAssignedToSelectedProject(userName)) {
+            window.alert("The " + userName + " user has already been assigned to the project!");
+            return;
+          }
+          
           projectService.assignUserToProject(projectId, userName, projectRole).then(
             function(data) {
               $scope.getProjects();
               $scope.selectedProject = data;
+              for (var i = $scope.userResults.length - 1; i >= 0; i--) {
+                if (userName == $scope.userResults[i].userName) {
+                  $scope.userResults.splice(i, 1);
+                }
+              }
             })
+        };
+        
+        // find out if user is already assigned to selected project
+        function isUserAssignedToSelectedProject(userName) {
+          for (var i = 0; i < $scope.selectedProject.projectRoleMap.entry.length; i++) {
+            if ($scope.selectedProject.projectRoleMap.entry[i].key.userName == userName)
+              return true;
+          }
+          return false;
+        };
+        
+        function getProjectRoleForUser(project, user) {
+          for (var i = 0; i < project.projectRoleMap.entry.length; i++) {
+            if (project.projectRoleMap.entry[i].key.userName == user.userName)
+              return project.projectRoleMap.entry[i].value;
+          }
+          return null;
         };
 
         // remove user from project
@@ -117,6 +195,8 @@ tsApp
 
         // call these during initialization
         $scope.getProjects();
+
+        $scope.retrievePagedProjects();
         $scope.getUsers();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();

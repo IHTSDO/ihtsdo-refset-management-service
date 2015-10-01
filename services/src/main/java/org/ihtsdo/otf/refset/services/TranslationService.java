@@ -9,6 +9,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 
 /**
@@ -118,15 +119,12 @@ public interface TranslationService extends RefsetService {
   /**
    * Find translations for query.
    *
-   * @param terminology the terminology
-   * @param version the version
    * @param query the query
    * @param pfs the pfs
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findTranslationsForQuery(String terminology,
-    String version, String query, PfsParameter pfs) throws Exception;
+  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find concepts for translation.

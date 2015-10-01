@@ -279,9 +279,9 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   
   @POST
   @Path("/user/find")
-  @ApiOperation(value = "Find user", notes = "Gets a list of all users for the specified query", response = UserList.class)
+  @ApiOperation(value = "Find user", notes = "Gets a list of all users for the specified query", response = UserListJpa.class)
   @Override
-  public UserList findUsers(
+  public UserList findUsersForQuery(
     @ApiParam(value = "The query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -294,14 +294,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService security = new SecurityServiceJpa();
     try {
       authorize(security, authToken, "find users", UserRole.VIEWER);
-      StringBuilder qb = new StringBuilder(100);
-   
-      if (query != null) {
-        qb.append(" ").append(query);
-      }
-      return security.findUsers(qb.toString(), pfs);
+      
+      return security.findUsersForQuery(query, pfs);
     } catch (Exception e) {
-      handleException(e, "trying to find measurements");
+      handleException(e, "trying to find users");
     } finally {
       security.close();
     }

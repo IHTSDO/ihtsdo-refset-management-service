@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
  * Represents a projects available via a REST service.
@@ -107,6 +108,18 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public void luceneReindex(String indexedObjects, String authToken)
+    throws Exception;
+
+  /**
+   * Find projects.
+   *
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the project list
+   * @throws Exception the exception
+   */
+  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
 }

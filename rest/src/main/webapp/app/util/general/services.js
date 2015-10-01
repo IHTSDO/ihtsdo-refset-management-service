@@ -131,6 +131,14 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       authToken : null,
       applicationRole : null
     };
+    
+
+    // Search results
+    var searchParams = {
+      page : 1,
+      query : null
+    }
+
 
     // Gets the user
     this.getUser = function() {
@@ -195,6 +203,13 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         gpService.decrement();
       });
     }
+
+
+    // Accessor for search params
+    this.getSearchParams = function() {
+      return searchParams;
+    }
+
 
     // get all users
     this.getUsers = function() {
@@ -290,7 +305,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
 
     // get application roles
     this.getApplicationRoles = function() {
-      console.debug("getProjectsApplicationRoles");
+      console.debug("getApplicationRoles");
       var deferred = $q.defer();
 
       // Get application roles
@@ -310,7 +325,57 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       });
       return deferred.promise;
     }
+    
+ // Finds users as a list
+    this.findUsersAsList = function(queryStr, 
+      page) {
+      console.debug("findUsersAsList", queryStr, 
+        page);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      // PFS
+      /*var pfs = {
+        startIndex : (page - 1) * pageSizes.general,
+        maxResults : pageSizes.general,
+        sortField : null,
+        queryRestriction : null
+      }*/
+      
+      var pfs = {
+        startIndex : 0,
+        maxResults : 10,
+        sortField : null,
+        queryRestriction : null
+      }
+
+      // Make POST call
+      gpService.increment();
+      $http.post(
+        securityUrl
+          + "user/find"
+          +  "?query=" + queryStr, pfs)
+          //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+
+      return deferred.promise;
+    }
   } ]);
+
+
+
 
 // Tab service
 tsApp.service('tabService', [

@@ -99,7 +99,8 @@ a:hover {
 }
 
 /* Makes font size in table smaller than default */
-.table-small-font {
+/* TODO: renaming this table-small-font breaks all the other table styling */
+.table {
 	font-size: 12px;
 }
 

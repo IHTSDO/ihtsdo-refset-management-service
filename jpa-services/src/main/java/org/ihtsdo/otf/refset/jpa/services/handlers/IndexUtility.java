@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 
 /**
@@ -57,7 +58,7 @@ public class IndexUtility {
       Class<?>[] classes =
           new Class<?>[] {
               RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
-              TrackingRecordJpa.class
+              TrackingRecordJpa.class, UserJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
