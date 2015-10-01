@@ -294,12 +294,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService security = new SecurityServiceJpa();
     try {
       authorize(security, authToken, "find users", UserRole.VIEWER);
-      StringBuilder qb = new StringBuilder(100);
-   
-      if (query != null) {
-        qb.append(query);
-      }
-      return security.findUsersForQuery(qb.toString(), pfs);
+      
+      return security.findUsersForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to find users");
     } finally {

@@ -144,7 +144,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).info(
         "Translation Service - find translations " + query);
     int[] totalCt = new int[1];
-    List<Translation> list = (List<Translation>)getQueryResults(query, TranslationJpa.class,
+    List<Translation> list = (List<Translation>)getQueryResults(query == null || query.isEmpty()
+        ? "id:[* TO *]" : query,  TranslationJpa.class,
         TranslationJpa.class, pfs, totalCt);
     TranslationList result = new TranslationListJpa();
     result.setTotalCount(totalCt[0]);

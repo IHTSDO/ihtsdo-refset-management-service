@@ -211,13 +211,16 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public ProjectList findProjectsForQuery(String query, PfsParameter pfs) throws Exception {
+  public ProjectList findProjectsForQuery(String query, PfsParameter pfs)
+    throws Exception {
     Logger.getLogger(getClass()).info(
-        "Project Service - find projects " + "/*"
-            + query + "*");
+        "Project Service - find projects " + "/" + query);
+
     int[] totalCt = new int[1];
-    List<Project> list = (List<Project>)getQueryResults(query, ProjectJpa.class,
-        ProjectJpa.class, pfs, totalCt);
+    List<Project> list =
+        (List<Project>) getQueryResults(query == null || query.isEmpty()
+            ? "id:[* TO *]" : query, ProjectJpa.class, ProjectJpa.class, pfs,
+            totalCt);
     ProjectList result = new ProjectListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);

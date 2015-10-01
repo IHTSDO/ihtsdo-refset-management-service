@@ -344,7 +344,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         "Security Service - find users " + query + ", pfs= " + pfs);
 
     int[] totalCt = new int[1];
-    List<User> list = (List<User>)getQueryResults(query, UserJpa.class,
+    List<User> list = (List<User>)getQueryResults(query == null || query.isEmpty()
+        ? "id:[* TO *]" : query, UserJpa.class,
         UserJpa.class, pfs, totalCt);
     UserList result = new UserListJpa();
     result.setTotalCount(totalCt[0]);

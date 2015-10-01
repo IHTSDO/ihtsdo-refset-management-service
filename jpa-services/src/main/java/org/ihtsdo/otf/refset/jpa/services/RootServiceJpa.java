@@ -261,29 +261,25 @@ public abstract class RootServiceJpa implements RootService {
     String query, Class<?> fieldNamesKey, Class<T> clazz,
     PfsParameter pfs, int[] totalCt) throws Exception {
 
-    // Build query for pfs conditions
-    StringBuilder fullQuery = new StringBuilder();
-    StringBuilder pfsQuery = new StringBuilder();
 
-    if (query != null && !query.isEmpty()) {
-      fullQuery.append(query);
+    if (query == null || query.isEmpty()) {
+      throw new Exception("Unexpected empty query.");
     }
 
 
     FullTextQuery fullTextQuery = null;
     try {
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, fullQuery
-              + pfsQuery.toString(), pfs, manager);
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs, manager);
     } catch (ParseException e) {
       // If parse exception, try a literal query
       StringBuilder escapedQuery = new StringBuilder();
       if (query != null && !query.isEmpty()) {
-        escapedQuery.append(QueryParserBase.escape(query)).append(" AND ");
+        escapedQuery.append(QueryParserBase.escape(query));
       }
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, escapedQuery
-              + pfsQuery.toString(), pfs, manager);
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, escapedQuery.toString()
+              , pfs, manager);
     }
 
 

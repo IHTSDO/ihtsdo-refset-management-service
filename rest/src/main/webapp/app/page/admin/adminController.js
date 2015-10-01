@@ -39,7 +39,7 @@ tsApp
 
         $scope.projectPaging = {
           page : 1,
-          filter : "description"
+          filter : ""
         }
         
         // Search parameters
@@ -133,10 +133,10 @@ tsApp
             && project.id === $scope.selectedProject.id) {
             return;
           }
-          var projectRole = getProjectRoleForUser(project, $scope.selectedUser);
+          /*var projectRole = getProjectRoleForUser(project, $scope.selectedUser);
           if (projectRole == null || !projectRole == 'ADMIN') {
             window.alert("User must have administrator privledges on this project in order to manage users on this project.");
-          }
+          }*/
             
           
           $scope.selectedProject = project;

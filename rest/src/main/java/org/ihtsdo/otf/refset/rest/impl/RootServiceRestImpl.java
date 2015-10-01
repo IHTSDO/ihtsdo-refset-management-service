@@ -103,6 +103,12 @@ public class RootServiceRestImpl {
   public static void authorize(ProjectService projectService,
     Long projectId, SecurityService securityService, String authToken,
     String perform, UserRole authRole) throws Exception {
+    
+    UserRole appRole = securityService.getApplicationRoleForToken(authToken);
+    if (appRole == UserRole.ADMIN) {
+      return;
+    }
+      
     // authorize call
     UserRole role =
         projectService

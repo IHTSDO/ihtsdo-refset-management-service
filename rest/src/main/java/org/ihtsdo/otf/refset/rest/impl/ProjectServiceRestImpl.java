@@ -107,15 +107,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      // Check if user is either an admin overall or an ADMIN on this project
-      try {
-        authorize(securityService, authToken, "add user to project",
-            UserRole.ADMIN);
-      } catch (Exception e) {
+        // Check if user is either an admin overall or an ADMIN on this project
         // now try to validate project role
         authorize(projectService, projectId, securityService, authToken,
             "add user to project", UserRole.ADMIN);
-      }
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
@@ -364,15 +359,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authenticate(securityService, authToken, "find projects",
+      authorize(securityService, authToken, "find projects",
           UserRole.VIEWER);
 
-      StringBuilder qb = new StringBuilder(100);
+     
       
-
-      String queryStr = query == null ? "" : query;
-      
-      return projectService.findProjectsForQuery(queryStr, pfs);
+      return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
       return null;
