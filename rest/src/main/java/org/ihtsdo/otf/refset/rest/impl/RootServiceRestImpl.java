@@ -106,14 +106,14 @@ public class RootServiceRestImpl {
   public static String authorize(ProjectService projectService, Long projectId,
     SecurityService securityService, String authToken, String perform,
     UserRole authRole) throws Exception {
-    
+
+    final String userName = securityService.getUsernameForToken(authToken);
     UserRole appRole = securityService.getApplicationRoleForToken(authToken);
     if (appRole == UserRole.ADMIN) {
-      return;
+      return userName;
     }
-      
+
     // authorize call
-    final String userName = securityService.getUsernameForToken(authToken);
     UserRole role =
         projectService.getProject(projectId).getProjectRoleMap()
             .get(securityService.getUser(userName));
