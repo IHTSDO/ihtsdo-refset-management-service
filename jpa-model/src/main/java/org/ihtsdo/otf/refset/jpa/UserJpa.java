@@ -40,10 +40,10 @@ import org.ihtsdo.otf.refset.UserRole;
 @XmlRootElement(name = "user")
 public class UserJpa implements User {
 
-  /** The id. */
-  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
+  /** The id. Set initial value to 5 to bypass entries in import.sql */
+  @TableGenerator(name = "EntityIdGenUser", table = "table_generator_users", pkColumnValue = "Entity", initialValue = 50)
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGenUser")
   private Long id;
 
   /** The user name. */
@@ -75,7 +75,7 @@ public class UserJpa implements User {
    * The default constructor.
    */
   public UserJpa() {
-    //n/a
+    // n/a
   }
 
   /**

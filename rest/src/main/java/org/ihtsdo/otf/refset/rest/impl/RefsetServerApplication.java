@@ -37,6 +37,7 @@ public class RefsetServerApplication extends Application {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   public RefsetServerApplication() throws Exception {
     Logger.getLogger(getClass()).info(
         "IHTSDO refset management service APPLICATION START");
@@ -57,24 +58,8 @@ public class RefsetServerApplication extends Application {
     today.set(Calendar.HOUR_OF_DAY, 2);
     today.set(Calendar.MINUTE, 0);
     today.set(Calendar.SECOND, 0);
-    timer.scheduleAtFixedRate(task, today.getTime(), 6 * 60 * 60 * 1000);
+    //timer.scheduleAtFixedRate(task, today.getTime(), 6 * 60 * 60 * 1000);
 
-    // Cache the "guest" user.
-    // SecurityService service;
-    // try {
-    // service = new SecurityServiceJpa();
-    // Properties config = ConfigUtility.getConfigProperties();
-    // if (config.getProperty("security.handler").equals("DEFAULT")) {
-    // service.authenticate("guest", "guest");
-    // }
-    // } catch (Exception e) {
-    // try {
-    // ExceptionHandler.handleException(e, "Cacheing guest user info");
-    // } catch (Exception e1) {
-    // // do nothing
-    // e1.printStackTrace();
-    // }
-    // }
   }
 
   /**

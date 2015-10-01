@@ -57,7 +57,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
    * @throws Exception the exception
    */
   public ProjectServiceRestImpl() throws Exception {
-    securityService = new SecurityServiceJpa();
   }
 
   @Override
@@ -190,7 +189,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "add project", UserRole.ADMIN);
+      final String userName = authorize(securityService, authToken, "add project", UserRole.ADMIN);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -202,7 +201,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Add project
-      project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
       return newProject;
     } catch (Exception e) {

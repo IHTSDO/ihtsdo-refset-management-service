@@ -74,9 +74,10 @@ public class RootServiceRestImpl {
    * @param authToken the auth token
    * @param perform the perform
    * @param authRole the auth role
+   * @return the username
    * @throws Exception the exception
    */
-  public static void authorize(SecurityService securityService,
+  public static String authorize(SecurityService securityService,
     String authToken, String perform, UserRole authRole) throws Exception {
     // authorize call
     UserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -87,6 +88,7 @@ public class RootServiceRestImpl {
     if (!role.hasPrivilegesOf(cmpRole))
       throw new WebApplicationException(Response.status(401)
           .entity("User does not have permissions to " + perform + ".").build());
+    return securityService.getUsernameForToken(authToken);
   }
 
   /**
@@ -98,19 +100,17 @@ public class RootServiceRestImpl {
    * @param authToken the auth token
    * @param perform the perform
    * @param authRole the auth role
+   * @return the username
    * @throws Exception the exception
    */
-  public static void authorize(ProjectService projectService,
-    Long projectId, SecurityService securityService, String authToken,
-    String perform, UserRole authRole) throws Exception {
+  public static String authorize(ProjectService projectService, Long projectId,
+    SecurityService securityService, String authToken, String perform,
+    UserRole authRole) throws Exception {
     // authorize call
+    final String userName = securityService.getUsernameForToken(authToken);
     UserRole role =
-        projectService
-            .getProject(projectId)
-            .getProjectRoleMap()
-            .get(
-                securityService.getUser(securityService
-                    .getUsernameForToken(authToken)));
+        projectService.getProject(projectId).getProjectRoleMap()
+            .get(securityService.getUser(userName));
     UserRole cmpRole = authRole;
     if (cmpRole == null) {
       cmpRole = UserRole.VIEWER;
@@ -118,6 +118,7 @@ public class RootServiceRestImpl {
     if (!role.hasPrivilegesOf(cmpRole))
       throw new WebApplicationException(Response.status(401)
           .entity("User does not have permissions to " + perform + ".").build());
+    return userName;
   }
 
   /**
