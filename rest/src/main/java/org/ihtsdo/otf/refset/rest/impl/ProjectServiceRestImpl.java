@@ -25,7 +25,6 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -189,7 +188,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String userName = authorize(securityService, authToken, "add project", UserRole.ADMIN);
+      final String userName =
+          authorize(securityService, authToken, "add project", UserRole.ADMIN);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {

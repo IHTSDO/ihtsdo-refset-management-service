@@ -70,7 +70,6 @@ public abstract class RootServiceJpa implements RootService {
     }
 
     // created on each instantiation
-    System.out.println("CREATE entity manager");
     manager = factory.createEntityManager();
     tx = manager.getTransaction();
   }
