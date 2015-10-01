@@ -23,6 +23,7 @@ import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -337,6 +338,39 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  @Override
+  @POST
+  @Path("/projects")
+  @ApiOperation(value = "Finds projects", notes = "Finds projects based on pfs parameter and query", response = ProjectListJpa.class)
+  public ProjectList findProjectsForQuery(
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,    
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call (Project): projects");
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authenticate(securityService, authToken, "find projects",
+          UserRole.VIEWER);
+
+      StringBuilder qb = new StringBuilder(100);
+      
+
+      String queryStr = query == null ? "" : query;
+      
+      return projectService.findProjectsForQuery(queryStr, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve projects ");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+
+  }
+  
   /* see superclass */
   @Override
   @POST

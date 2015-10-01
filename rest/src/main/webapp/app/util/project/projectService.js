@@ -99,6 +99,44 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
 
+    // Finds projects as a list
+    this.findProjectsAsList = function(queryStr, 
+      pfs) {
+
+      var query = (queryStr == null) ? "" : queryStr;
+      console.debug("findProjectsAsList", query, 
+        pfs);
+      // Setup deferred
+      var deferred = $q.defer();
+
+
+      
+
+
+      // Make POST call
+      gpService.increment();
+      $http.post(
+        projectUrl
+          + "projects"
+          +  "?query=" + query, pfs)
+          //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+
+      return deferred.promise;
+    };
+    
     // assign user to project
     this.assignUserToProject = function(projectId, userName, projectRole) {
       console.debug("assignUserToProject");

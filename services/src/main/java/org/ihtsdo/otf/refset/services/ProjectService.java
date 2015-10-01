@@ -118,8 +118,7 @@ public interface ProjectService extends RootService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findProjectsForQuery(String terminology,
-    String version, String query, PfsParameter pfs) throws Exception;
+  public ProjectList findProjectsForQuery(String query, PfsParameter pfs) throws Exception;
 
   /**
    * Returns the terminology handler.
@@ -128,6 +127,8 @@ public interface ProjectService extends RootService {
    * @return the terminology handler
    * @throws Exception the exception
    */
-  TerminologyHandler getTerminologyHandler(String terminology) throws Exception;
+  public TerminologyHandler getTerminologyHandler(String terminology) throws Exception;
+
+
 
 }

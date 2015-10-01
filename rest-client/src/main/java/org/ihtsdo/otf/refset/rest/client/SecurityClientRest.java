@@ -244,7 +244,7 @@ public class SecurityClientRest extends RootClientRest implements
   }
 
   @Override
-  public UserList findUsers(String query, PfsParameterJpa pfs, String authToken)
+  public UserList findUsersForQuery(String query, PfsParameterJpa pfs, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;

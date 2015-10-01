@@ -10,13 +10,19 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -141,13 +147,16 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public SearchResultList findRefsetsForQuery(String terminology,
-    String version, String query, PfsParameter pfs) throws Exception {
+  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Refset Service - find refsets " + terminology + "/" + version + "/"
-            + query);
-    return getQueryResults(terminology, version, query, RefsetJpa.class,
-        RefsetJpa.class, pfs);
+        "Refset Service - find refsets " + query);
+    int[] totalCt = new int[1];
+    List<Refset> list = (List<Refset>)getQueryResults(query, RefsetJpa.class,
+        RefsetJpa.class, pfs, totalCt);
+    RefsetList result = new RefsetListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 
   /**

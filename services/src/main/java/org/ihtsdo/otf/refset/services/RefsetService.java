@@ -8,6 +8,7 @@ import java.util.Date;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
@@ -116,15 +117,12 @@ public interface RefsetService extends ProjectService {
   /**
    * Find refsets for query.
    *
-   * @param terminology the terminology
-   * @param version the version
    * @param query the query
    * @param pfs the pfs
    * @return the search result list
    * @throws Exception the exception
    */
-  public SearchResultList findRefsetsForQuery(String terminology,
-    String version, String query, PfsParameter pfs) throws Exception;
+  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs) throws Exception;
 
   /**
    * Find members for refset.
@@ -158,5 +156,6 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs);
+
 
 }

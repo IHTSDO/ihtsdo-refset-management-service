@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 
@@ -266,5 +267,12 @@ public class ProjectClientRest extends RootClientRest implements
         throw new Exception("Unexpected status " + response.getStatus());
     }
 
+  }
+
+  @Override
+  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

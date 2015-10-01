@@ -23,8 +23,11 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
@@ -37,6 +40,7 @@ import org.ihtsdo.otf.refset.UserRole;
   "userName"
 }))
 @Audited
+@Indexed
 @XmlRootElement(name = "user")
 public class UserJpa implements User {
 
@@ -168,6 +172,7 @@ public class UserJpa implements User {
 
   /* see superclass */
   @Override
+  @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public UserRole getApplicationRole() {
     return applicationRole;
   }

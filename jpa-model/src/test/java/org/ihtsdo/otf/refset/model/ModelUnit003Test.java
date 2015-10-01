@@ -152,6 +152,7 @@ public class ModelUnit003Test {
     tester = new IndexedFieldTester(object);
     tester.include("userName");
     tester.include("email");
+    tester.include("applicationRole");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
