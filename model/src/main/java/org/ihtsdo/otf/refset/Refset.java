@@ -118,7 +118,6 @@ public interface Refset extends Component, Searchable {
    *
    * @return the definition uuid
    */
-  // TODO: nullable
   public String getDefinitionUuid();
 
   /**

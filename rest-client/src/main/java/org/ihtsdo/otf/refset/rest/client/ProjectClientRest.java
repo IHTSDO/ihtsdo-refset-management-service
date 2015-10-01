@@ -241,8 +241,27 @@ public class ProjectClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public StringList getProjectRoles(String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Project Client - getProjectRoles");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/roles");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    StringList list =
+        (StringList) ConfigUtility.getGraphForString(resultString,
+            StringList.class);
+    return list;
   }
 
   /* see superclass */

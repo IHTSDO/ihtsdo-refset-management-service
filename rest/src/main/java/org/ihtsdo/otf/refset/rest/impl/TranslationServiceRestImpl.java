@@ -72,7 +72,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authenticate(securityService, authToken,
+      authorize(securityService, authToken,
           "retrieve the release history for a translation", UserRole.VIEWER);
 
       // check date format

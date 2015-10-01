@@ -72,7 +72,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authenticate(securityService, authToken, "retrieve the refset revision",
+      authorize(securityService, authToken, "retrieve the refset revision",
           UserRole.VIEWER);
 
       // check date format

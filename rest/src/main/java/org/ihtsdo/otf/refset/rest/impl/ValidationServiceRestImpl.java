@@ -62,7 +62,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
     ValidationService validationService = new ValidationServiceJpa();
     try {
-      authenticate(securityService, authToken, "validate concept",
+      authorize(securityService, authToken, "validate concept",
           UserRole.VIEWER);
 
       return validationService.validateConcept(concept);
@@ -89,7 +89,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
     ValidationService validationService = new ValidationServiceJpa();
     try {
-      authenticate(securityService, authToken, "validate refset",
+      authorize(securityService, authToken, "validate refset",
           UserRole.VIEWER);
 
       return validationService.validateRefset(refset);
@@ -115,7 +115,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
     ValidationService validationService = new ValidationServiceJpa();
     try {
-      authenticate(securityService, authToken, "validate translation",
+      authorize(securityService, authToken, "validate translation",
           UserRole.VIEWER);
 
       return validationService.validateTranslation(translation);
@@ -142,7 +142,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
     ValidationService validationService = new ValidationServiceJpa();
     try {
-      authenticate(securityService, authToken, "validate member",
+      authorize(securityService, authToken, "validate member",
           UserRole.VIEWER);
 
       return validationService.validateMember(member);

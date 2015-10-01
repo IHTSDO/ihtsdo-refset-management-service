@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -18,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;

@@ -64,7 +64,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      authenticate(securityService, authToken,
+      authorize(securityService, authToken,
           "retrieve the release history for the refset", UserRole.VIEWER);
       ReleaseInfoList releaseInfoList =
           releaseService.getReleaseHistoryForRefset(refsetId);
@@ -94,7 +94,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      authenticate(securityService, authToken,
+      authorize(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfoList releaseInfoList =

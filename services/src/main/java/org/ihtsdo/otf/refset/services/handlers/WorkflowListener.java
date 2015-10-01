@@ -6,6 +6,8 @@ package org.ihtsdo.otf.refset.services.handlers;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
@@ -47,41 +49,6 @@ public interface WorkflowListener extends Configurable {
    * @throws Exception the exception
    */
   public void postCommit() throws Exception;
-
-  /**
-   * Classification started.
-   *
-   * @throws Exception the exception
-   */
-  public void classificationStarted() throws Exception;
-
-  /**
-   * Classification finished.
-   *
-   * @throws Exception the exception
-   */
-  public void classificationFinished() throws Exception;
-
-  /**
-   * Pre classification started.
-   *
-   * @throws Exception the exception
-   */
-  public void preClassificationStarted() throws Exception;
-
-  /**
-   * Pre classification finished.
-   *
-   * @throws Exception the exception
-   */
-  public void preClassificationFinished() throws Exception;
-
-  // TODO: need "content changed" events for refset/translation
-
-  /**
-   * Metadata changed.
-   */
-  public void metadataChanged();
 
   /**
    * Notification of a cancelled operation.
@@ -126,4 +93,23 @@ public interface WorkflowListener extends Configurable {
    */
   public void descriptionTypeRefsetMemberChanged(
     DescriptionTypeRefsetMember member, Action action) throws Exception;
+
+  /**
+   * Concept changed.
+   *
+   * @param concept the concept
+   * @param action the action
+   * @throws Exception the exception
+   */
+  public void conceptChanged(Concept concept, Action action) throws Exception;
+
+  /**
+   * Member changed.
+   *
+   * @param member the member
+   * @param action the action
+   * @throws Exception the exception
+   */
+  public void memberChanged(ConceptRefsetMember member, Action action)
+    throws Exception;
 }

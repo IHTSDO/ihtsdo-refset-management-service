@@ -1,103 +1,94 @@
 // Error service
-tsApp
-  .service(
-    'utilService',
-    [
-      '$location',
-      function($location) {
-        console.debug('configure utilService');
-        // declare the error
-        this.error = {
-          message : null
-        };
+tsApp.service('utilService', [
+  '$location',
+  function($location) {
+    console.debug('configure utilService');
+    // declare the error
+    this.error = {
+      message : null
+    };
 
-        // Sets the error
-        this.setError = function(message) {
-          this.error.message = message;
-        }
+    // Sets the error
+    this.setError = function(message) {
+      this.error.message = message;
+    }
 
-        // Clears the error
-        this.clearError = function() {
-          this.error.message = null;
-        }
-        // Handle error message
-        this.handleError = function(response) {
-          console.debug("Handle error: ", response);
-          this.error.message = response.data.replace(/"/g, '');
-          // If authtoken expired, relogin
-          if (this.error.message.startsWith("AuthToken has expired")) {
-            // Reroute back to login page with "auth token has
-            // expired" message
-            $location.path("/");
-          }
-          if (this.error.message
-            .startsWith("Attempt to access a service without an authorization token")) {
-            // Reroute back to login page with "auth token has
-            // expired" message
-            $location.path("/");
-          }
-        }
+    // Clears the error
+    this.clearError = function() {
+      this.error.message = null;
+    }
+    // Handle error message
+    this.handleError = function(response) {
+      console.debug("Handle error: ", response);
+      this.error.message = response.data.replace(/"/g, '');
+      // If authtoken expired, relogin
+      if (this.error.message.contains("AuthToken")) {
+        // Reroute back to login page with "auth token has
+        // expired" message
+        $location.path("/");
+      }
+    }
 
-        // Convert date to a string
-        this.toDate = function(lastModified) {
-          var date = new Date(lastModified);
-          var year = "" + date.getFullYear();
-          var month = "" + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = "0" + month;
-          }
-          var day = "" + date.getDate();
-          if (day.length == 1) {
-            day = "0" + day;
-          }
-          var hour = "" + date.getHours();
-          if (hour.length == 1) {
-            hour = "0" + hour;
-          }
-          var minute = "" + date.getMinutes();
-          if (minute.length == 1) {
-            minute = "0" + minute;
-          }
-          var second = "" + date.getSeconds();
-          if (second.length == 1) {
-            second = "0" + second;
-          }
-          return year + "-" + month + "-" + day + " " + hour + ":" + minute
-            + ":" + second;
-        }
+    // Convert date to a string
+    this.toDate = function(lastModified) {
+      var date = new Date(lastModified);
+      var year = "" + date.getFullYear();
+      var month = "" + (date.getMonth() + 1);
+      if (month.length == 1) {
+        month = "0" + month;
+      }
+      var day = "" + date.getDate();
+      if (day.length == 1) {
+        day = "0" + day;
+      }
+      var hour = "" + date.getHours();
+      if (hour.length == 1) {
+        hour = "0" + hour;
+      }
+      var minute = "" + date.getMinutes();
+      if (minute.length == 1) {
+        minute = "0" + minute;
+      }
+      var second = "" + date.getSeconds();
+      if (second.length == 1) {
+        second = "0" + second;
+      }
+      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":"
+        + second;
+    }
 
-        // Convert date to a short string
-        this.toShortDate = function(lastModified) {
-          var date = new Date(lastModified);
-          var year = "" + date.getFullYear();
-          var month = "" + (date.getMonth() + 1);
-          if (month.length == 1) {
-            month = "0" + month;
-          }
-          var day = "" + date.getDate();
-          if (day.length == 1) {
-            day = "0" + day;
-          }
-          return year + "-" + month + "-" + day;
-        }
+    // Convert date to a short string
+    this.toShortDate = function(lastModified) {
+      var date = new Date(lastModified);
+      var year = "" + date.getFullYear();
+      var month = "" + (date.getMonth() + 1);
+      if (month.length == 1) {
+        month = "0" + month;
+      }
+      var day = "" + date.getDate();
+      if (day.length == 1) {
+        day = "0" + day;
+      }
+      return year + "-" + month + "-" + day;
+    }
 
-        // Utility for cleaning a query
-        this.cleanQuery = function(queryStr) {
-          if (queryStr == null) {
-            return "";
-          }
-          var cleanQuery = queryStr;
-          // Replace all slash characters
-          cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
-          // Remove brackets if not using a fielded query
-          if (queryStr.indexOf(':') == -1) {
-            cleanQuery = queryStr.replace(new RegExp(
-              '[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
-          }
-          // console.debug(queryStr, " => ", cleanQuery);
-          return cleanQuery;
-        }
-      } ]);
+    // Utility for cleaning a query
+    this.cleanQuery = function(queryStr) {
+      if (queryStr == null) {
+        return "";
+      }
+      var cleanQuery = queryStr;
+      // Replace all slash characters
+      cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
+      // Remove brackets if not using a fielded query
+      if (queryStr.indexOf(':') == -1) {
+        cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]',
+          'g'), ' ');
+      }
+      // console.debug(queryStr, " => ", cleanQuery);
+      return cleanQuery;
+    }
+  } ]);
 
 // Glass pane service
 tsApp.service('gpService', function() {
@@ -387,7 +378,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
 
 
 // Tab service
-tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
+tsApp.service('tabService', [
+  '$location',
+  'utilService',
+  'gpService',
   'securityService',
   function($location, utilService, gpService, securityService) {
     console.debug('configure tabService');
@@ -411,10 +405,10 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService',
 
     // Show admin tab for admins only
     this.showTab = function(tab) {
-      console.debug("tab label",tab.label);
-      return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
+      console.debug("tab label", tab.label);
+      return tab.label != 'Admin'
+        || securityService.getUser().applicationRole == 'ADMIN';
     }
-    
 
     // Sets the selected tab
     this.setSelectedTab = function(tab) {

@@ -14,7 +14,7 @@
 
 <!-- Material Design Icons -->
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
+  rel="stylesheet">
 
 <!-- Angular core  -->
 <script type="text/javascript"
@@ -34,7 +34,7 @@
   href="ui/components/angular-ui-tree/dist/angular-ui-tree.min.css">
 
 <!-- Application style overrides -->
-<link href="css/tsApp.css" rel="stylesheet">
+<link href="css/refsetApp.css" rel="stylesheet">
 
 <!-- Refset Angular application -->
 <script src="app/app.js"></script>
@@ -59,7 +59,7 @@
   <noscript>
     <style type="text/css">
 .container-fluid {
-  display: none;
+	display: none;
 }
 </style>
     <div class="alert alert-danger">You must have Javascript enabled to
@@ -72,17 +72,16 @@
 
   <!-- Blank for header -->
   <div class="hidden-xs" style="height: 94px;">Makes room for content</div>
-  <div class="visible-xs" style="height: 60px;">Makes room for content</div>
+  <div class="visible-xs" style="height: 85px;">Makes room for content</div>
   <div class="container-fluid">
     <!-- Show global error message -->
     <div ng-include src="'app/page/general/error.html'"></div>
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
-      <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"><a 
-      ng-show="tab.label != 'Admin' || isAdmin()"
+      <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"><a
           href="{{tab.link}}" ng-click="setSelectedTab(tab)"> {{tab.label}}
         </a></li>
     </ul>
-    <!-- Body --> 
+    <!-- Body -->
     <div ng-view=""></div>
   </div>
 
@@ -92,7 +91,7 @@
   <!-- Glass Pane -->
   <div ng-controller="GlassPaneCtrl" ng-show="glassPane.counter > 0"
     class="top-layer"></div>
-    
+
   <!-- Analytics -->
   ${site.tracking.code}
 </body>

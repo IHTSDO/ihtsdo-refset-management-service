@@ -38,10 +38,12 @@ public class RefsetServerApplication extends Application {
    * @throws Exception the exception
    */
   public RefsetServerApplication() throws Exception {
-    Logger.getLogger(getClass()).info("IHTSDO refset management service APPLICATION START");
+    Logger.getLogger(getClass()).info(
+        "IHTSDO refset management service APPLICATION START");
     BeanConfig beanConfig = new BeanConfig();
     beanConfig.setTitle("IHTSDO refset management service API");
-    beanConfig.setDescription("RESTful calls for IHTSDO refset management service");
+    beanConfig
+        .setDescription("RESTful calls for IHTSDO refset management service");
     beanConfig.setVersion(API_VERSION);
     beanConfig.setBasePath(ConfigUtility.getConfigProperties().getProperty(
         "base.url"));
@@ -83,7 +85,7 @@ public class RefsetServerApplication extends Application {
     /* see superclass */
     @Override
     public void run() {
-      // TODO:
+      // TODO: ??
     }
   }
 
@@ -94,6 +96,11 @@ public class RefsetServerApplication extends Application {
     // TODO: need to list services here
     classes.add(SecurityServiceRestImpl.class);
     classes.add(ProjectServiceRestImpl.class);
+    classes.add(RefsetServiceRestImpl.class);
+    classes.add(TranslationServiceRestImpl.class);
+    classes.add(ReleaseServiceRestImpl.class);
+    classes.add(ValidationServiceRestImpl.class);
+    classes.add(WorkflowServiceRestImpl.class);
     classes
         .add(com.wordnik.swagger.jersey.listing.ApiListingResourceJSON.class);
     classes

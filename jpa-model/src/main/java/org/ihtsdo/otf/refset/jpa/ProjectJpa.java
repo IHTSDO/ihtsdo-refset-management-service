@@ -48,8 +48,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * JPA enabled implementation of {@link Project}. TODO: convert all sets to
- * lists.
+ * JPA enabled implementation of {@link Project}. 
  */
 @Entity
 @Table(name = "projects", uniqueConstraints = @UniqueConstraint(columnNames = {
