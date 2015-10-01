@@ -80,7 +80,6 @@ public class RootServiceRestImpl {
   public static String authorize(SecurityService securityService,
     String authToken, String perform, UserRole authRole) throws Exception {
     // authorize call
-    System.out.println("SeCURITY SERVICE: " + securityService);
     UserRole role = securityService.getApplicationRoleForToken(authToken);
     if (!role.hasPrivilegesOf(authRole == null ? UserRole.VIEWER : authRole))
       throw new WebApplicationException(Response.status(401)
