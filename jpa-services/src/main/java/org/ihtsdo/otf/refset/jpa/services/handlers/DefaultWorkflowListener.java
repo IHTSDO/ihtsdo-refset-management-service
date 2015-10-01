@@ -7,6 +7,8 @@ import java.util.Properties;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
@@ -40,44 +42,9 @@ public class DefaultWorkflowListener implements WorkflowListener {
   }
 
   @Override
-  public void classificationStarted() throws Exception {
-    // n/a
-
-  }
-
-  @Override
-  public void classificationFinished() throws Exception {
-    // n/a
-
-  }
-
-  @Override
-  public void preClassificationStarted() throws Exception {
-    // n/a
-
-  }
-
-  @Override
-  public void preClassificationFinished() throws Exception {
-    // n/a
-
-  }
-
-  @Override
   public void cancel() {
     // n/a
 
-  }
-
-  @Override
-  public void metadataChanged() {
-    // n/a
-
-  }
-
-  @Override
-  public String getName() {
-    return "Default workflow listener";
   }
 
   @Override
@@ -103,4 +70,19 @@ public class DefaultWorkflowListener implements WorkflowListener {
     // n/a
   }
 
+  @Override
+  public void conceptChanged(Concept concept, Action action) throws Exception {
+    // n/a
+  }
+
+  @Override
+  public void memberChanged(ConceptRefsetMember member, Action action)
+    throws Exception {
+    // n/a
+  }
+
+  @Override
+  public String getName() {
+    return "Default workflow listener";
+  }
 }

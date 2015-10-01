@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.client;
 
+import java.net.URLEncoder;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -239,15 +240,62 @@ public class SecurityClientRest extends RootClientRest implements
 
   @Override
   public StringList getApplicationRoles(String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Security Client - getApplicationRoles");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/security/roles");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    StringList list =
+        (StringList) ConfigUtility.getGraphForString(resultString,
+            StringList.class);
+    return list;
   }
 
   @Override
   public UserList findUsers(String query, PfsParameterJpa pfs, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    Logger.getLogger(getClass()).debug(
+        "Security Client - find users " + query + ", " + pfs);
+    validateNotEmpty(query, "query");
 
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/security/user/find"
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    UserListJpa list =
+        (UserListJpa) ConfigUtility.getGraphForString(resultString,
+            UserListJpa.class);
+    return list;
+
+  }
 }

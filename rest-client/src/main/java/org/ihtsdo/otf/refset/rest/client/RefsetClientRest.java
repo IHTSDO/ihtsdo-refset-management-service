@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
-import java.util.Date;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -18,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -116,13 +114,13 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public void updateRefset(Refset refset, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void removeRefset(Long refsetId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override

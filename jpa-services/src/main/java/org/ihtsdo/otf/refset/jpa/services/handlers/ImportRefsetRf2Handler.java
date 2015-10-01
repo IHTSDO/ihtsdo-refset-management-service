@@ -61,33 +61,29 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
-    // Read lines of RF2 from the input stream
-    // - skip header
-    // - create SimpleRefsetMember objects (like RF2 snapshot loader)\
-    // - put into list
-    // return list
 
-    // FAIL if
-    // the format of the line is wrong (e.g. unexpected number of fields)
-
+    // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
     String line = "";
-
     Reader reader = new InputStreamReader(content, "UTF-8");
     PushBackReader pbr = new PushBackReader(reader);
     while ((line = pbr.readLine()) != null) {
 
+      // Strip \r and split lines
       line = line.replace("\r", "");
       final String fields[] = line.split("\t");
 
+      // Check field lengths
       if (fields.length != 6) {
         pbr.close();
         throw new Exception(
             "Unexpected field count in simple refset member file.");
       }
 
+      // skip header
       if (!fields[0].equals("id")) { // header
 
+        // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         // Universal Refset attributes
         member.setTerminologyId(fields[0]);
@@ -114,27 +110,28 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   @Override
   public String importDefinition(InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import refset definition");
-    // Read lines of RF2 from the input stream
-    // - skip header
-    // - Assume there are 7 fields, save value of the last field
-    // TODO: - verify there is only one line besides the header
-    // Return the value of that 7th field.
+
     String line = "";
 
+    // Read from input stream
     Reader reader = new InputStreamReader(content, "UTF-8");
     PushBackReader pbr = new PushBackReader(reader);
     while ((line = pbr.readLine()) != null) {
 
+      // Strip \r chars and split line
       line = line.replace("\r", "");
       final String fields[] = line.split("\t");
 
+      // Check fields
       if (fields.length != 7) {
         pbr.close();
         throw new Exception("Unexpected field count in refset definition file.");
       }
 
+      // skip header
       if (!fields[0].equals("id")) { // header
 
+        // Instantiate definition member and populate it
         final RefsetDefinitionRefsetMember member =
             new RefsetDefinitionRefsetMemberJpa();
         member.setTerminologyId(fields[0]);

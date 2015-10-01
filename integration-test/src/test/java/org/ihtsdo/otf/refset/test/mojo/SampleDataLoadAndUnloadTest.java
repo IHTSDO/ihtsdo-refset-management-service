@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Implementation of the "RF2 Full Load and Unload Test Case".
  */
-public class Rf2SnapshotLoadAndUnloadTest {
+public class SampleDataLoadAndUnloadTest {
 
   /** The properties. */
   static Properties config;

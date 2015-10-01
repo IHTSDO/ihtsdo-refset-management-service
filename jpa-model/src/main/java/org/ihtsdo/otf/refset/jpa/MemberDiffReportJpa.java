@@ -36,6 +36,9 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   /** The active now inactive. */
   private List<ConceptRefsetMember> activeNowInactive = new ArrayList<>();
 
+  // TODO: inclusionsNowInactive
+  // TODO: exclusionsNowInactive
+  
   /**
    * Instantiates an empty {@link MemberDiffReportJpa}.
    */

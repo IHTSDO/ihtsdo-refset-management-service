@@ -80,7 +80,7 @@ public interface RefsetServiceRest {
   public void removeRefset(Long refsetId, String authToken) throws Exception;
 
   /**
-   * Export refset definition.
+   * Export refset definition. // TODO: needs String IoHandlerInfoId
    *
    * @param refsetId the refset id
    * @param authToken the auth token

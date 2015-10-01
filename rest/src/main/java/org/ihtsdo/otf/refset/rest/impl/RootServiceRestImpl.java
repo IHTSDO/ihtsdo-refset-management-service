@@ -68,7 +68,7 @@ public class RootServiceRestImpl {
   }
 
   /**
-   * Authenticate.
+   * Authorize the users application role.
    *
    * @param securityService the security service
    * @param authToken the auth token
@@ -76,7 +76,7 @@ public class RootServiceRestImpl {
    * @param authRole the auth role
    * @throws Exception the exception
    */
-  public static void authenticate(SecurityService securityService,
+  public static void authorize(SecurityService securityService,
     String authToken, String perform, UserRole authRole) throws Exception {
     // authorize call
     UserRole role = securityService.getApplicationRoleForToken(authToken);
@@ -90,7 +90,7 @@ public class RootServiceRestImpl {
   }
 
   /**
-   * Authenticate.
+   * Authorize the users project role.
    *
    * @param projectService the project service
    * @param projectId the project id
@@ -100,7 +100,7 @@ public class RootServiceRestImpl {
    * @param authRole the auth role
    * @throws Exception the exception
    */
-  public static void authenticate(ProjectService projectService,
+  public static void authorize(ProjectService projectService,
     Long projectId, SecurityService securityService, String authToken,
     String perform, UserRole authRole) throws Exception {
     // authorize call
