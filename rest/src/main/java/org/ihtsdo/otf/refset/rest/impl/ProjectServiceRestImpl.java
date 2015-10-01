@@ -26,6 +26,7 @@ import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -57,6 +58,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
    * @throws Exception the exception
    */
   public ProjectServiceRestImpl() throws Exception {
+    securityService = new SecurityServiceJpa();
   }
 
   @Override
@@ -105,10 +107,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-        // Check if user is either an admin overall or an ADMIN on this project
-        // now try to validate project role
-        authorize(projectService, projectId, securityService, authToken,
-            "add user to project", UserRole.ADMIN);
+      // Check if user is either an admin overall or an ADMIN on this project
+      // now try to validate project role
+      authorize(projectService, projectId, securityService, authToken,
+          "add user to project", UserRole.ADMIN);
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
@@ -349,7 +351,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Path("/projects")
   @ApiOperation(value = "Finds projects", notes = "Finds projects based on pfs parameter and query", response = ProjectListJpa.class)
   public ProjectList findProjectsForQuery(
-    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,    
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -358,11 +360,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find projects",
-          UserRole.VIEWER);
+      authorize(securityService, authToken, "find projects", UserRole.VIEWER);
 
-     
-      
       return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
@@ -373,7 +372,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
 
   }
-  
+
   /* see superclass */
   @Override
   @POST

@@ -80,12 +80,9 @@ public class RootServiceRestImpl {
   public static String authorize(SecurityService securityService,
     String authToken, String perform, UserRole authRole) throws Exception {
     // authorize call
+    System.out.println("SeCURITY SERVICE: " + securityService);
     UserRole role = securityService.getApplicationRoleForToken(authToken);
-    UserRole cmpRole = authRole;
-    if (cmpRole == null) {
-      cmpRole = UserRole.VIEWER;
-    }
-    if (!role.hasPrivilegesOf(cmpRole))
+    if (!role.hasPrivilegesOf(authRole == null ? UserRole.VIEWER : authRole))
       throw new WebApplicationException(Response.status(401)
           .entity("User does not have permissions to " + perform + ".").build());
     return securityService.getUsernameForToken(authToken);
