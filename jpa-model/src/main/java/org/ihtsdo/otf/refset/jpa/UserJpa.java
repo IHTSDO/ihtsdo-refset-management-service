@@ -4,9 +4,13 @@
 package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -14,7 +18,9 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
+import javax.persistence.MapKeyClass;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -24,6 +30,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -37,6 +44,8 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
+import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.SearchableListIdBridge;
 
 /**
@@ -82,9 +91,12 @@ public class UserJpa implements User {
   @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, optional = true)
   private UserPreferences userPreferences;
 
-  /** The projects. */
-  @ManyToMany(targetEntity = ProjectJpa.class, fetch = FetchType.EAGER)
-  private List<Project> projects;
+  /** The project role map. */
+  @ElementCollection(fetch = FetchType.EAGER)
+  @MapKeyClass(value = ProjectJpa.class)
+  @Enumerated(EnumType.STRING)
+  @CollectionTable(name = "user_project_role_map", joinColumns = @JoinColumn(name = "project_id"))
+  private Map<Project, UserRole> projectRoleMap;
 
   /**
    * The default constructor.
@@ -107,7 +119,7 @@ public class UserJpa implements User {
     applicationRole = user.getApplicationRole();
     authToken = user.getAuthToken();
     userPreferences = new UserPreferencesJpa(user.getUserPreferences());
-    projects = new ArrayList<>(user.getProjects());
+    projectRoleMap = new HashMap<>(user.getProjectRoleMap());
   }
 
   /* see superclass */
@@ -207,21 +219,19 @@ public class UserJpa implements User {
     this.authToken = authToken;
   }
 
-  /* see superclass */
-  @XmlTransient
-  @Field(bridge = @FieldBridge(impl = SearchableListIdBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
+  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
-  public List<Project> getProjects() {
-    if (projects == null) {
-      projects = new ArrayList<>();
+  public Map<Project, UserRole> getProjectRoleMap() {
+    if (projectRoleMap == null) {
+      projectRoleMap = new HashMap<>();
     }
-    return projects;
+    return projectRoleMap;
   }
 
-  /* see superclass */
   @Override
-  public void setProjects(List<Project> projects) {
-    this.projects = projects;
+  public void setProjectRoleMap(Map<Project, UserRole> projectRoleMap) {
+    this.projectRoleMap = projectRoleMap;
   }
 
   /* see superclass */

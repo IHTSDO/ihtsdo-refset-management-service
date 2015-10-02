@@ -3,8 +3,9 @@
  */
 package org.ihtsdo.otf.refset.helpers;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
@@ -38,7 +39,7 @@ public class UserImpl implements User {
   private String authToken;
 
   /** The projects. */
-  private List<Project> projects;
+  private Map<Project,UserRole> projectRoleMap;
 
   /**
    * Instantiates an empty {@link UserImpl}.
@@ -59,7 +60,7 @@ public class UserImpl implements User {
     applicationRole = user.getApplicationRole();
     authToken = user.getAuthToken();
     userPreferences = user.getUserPreferences();
-    projects = new ArrayList<>(user.getProjects());
+    projectRoleMap = new HashMap<>(user.getProjectRoleMap());
   }
 
   /* see superclass */
@@ -146,16 +147,17 @@ public class UserImpl implements User {
     this.userPreferences = preferences;
   }
 
-  /* see superclass */
   @Override
-  public List<Project> getProjects() {
-    return projects;
+  public Map<Project, UserRole> getProjectRoleMap() {
+    if (projectRoleMap == null) {
+      projectRoleMap = new HashMap<>();
+    }
+    return projectRoleMap;
   }
 
-  /* see superclass */
   @Override
-  public void setProjects(List<Project> projects) {
-    this.projects = projects;
+  public void setProjectRoleMap(Map<Project, UserRole> projectRoleMap) {
+    this.projectRoleMap = projectRoleMap;
   }
 
   /* see superclass */
@@ -201,5 +203,7 @@ public class UserImpl implements User {
       return false;
     return true;
   }
+
+
 
 }

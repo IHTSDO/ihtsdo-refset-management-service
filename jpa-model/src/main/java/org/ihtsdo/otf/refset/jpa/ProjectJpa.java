@@ -91,7 +91,7 @@ public class ProjectJpa implements Project {
   @Column(nullable = false)
   private String version;
 
-  /** The leads. */
+  /** The role map. */
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)

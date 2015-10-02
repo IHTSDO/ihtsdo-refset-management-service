@@ -3,7 +3,7 @@
  */
 package org.ihtsdo.otf.refset;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a user.
@@ -109,17 +109,17 @@ public interface User {
   public void setAuthToken(String authToken);
 
   /**
-   * Returns the projects.
+   * Returns the project role map.
    *
-   * @return the projects
+   * @return the project role map
    */
-  public List<Project> getProjects();
+  public Map<Project,UserRole> getProjectRoleMap();
   
   /**
-   * Sets the projects.
+   * Sets the project role map.
    *
-   * @param projects the projects
+   * @param projectRoleMap the project role map
    */
-  public void setProjects(List<Project> projects);
+  public void setProjectRoleMap(Map<Project,UserRole>projectRoleMap);
 
 }
