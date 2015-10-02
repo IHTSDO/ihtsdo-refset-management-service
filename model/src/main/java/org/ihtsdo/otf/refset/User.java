@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset;
 
+import java.util.List;
+
 /**
  * Represents a user.
  */
@@ -105,4 +107,19 @@ public interface User {
    * @param authToken the auth token
    */
   public void setAuthToken(String authToken);
+
+  /**
+   * Returns the projects.
+   *
+   * @return the projects
+   */
+  public List<Project> getProjects();
+  
+  /**
+   * Sets the projects.
+   *
+   * @param projects the projects
+   */
+  public void setProjects(List<Project> projects);
+
 }

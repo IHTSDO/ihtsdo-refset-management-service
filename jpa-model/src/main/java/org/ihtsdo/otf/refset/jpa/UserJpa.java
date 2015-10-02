@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -11,6 +14,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -19,6 +23,7 @@ import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -28,9 +33,11 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.SearchableListIdBridge;
 
 /**
  * JPA enabled implementation of {@link User}.
@@ -75,6 +82,10 @@ public class UserJpa implements User {
   @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, optional = true)
   private UserPreferences userPreferences;
 
+  /** The projects. */
+  @ManyToMany(targetEntity = ProjectJpa.class, fetch = FetchType.EAGER)
+  private List<Project> projects;
+
   /**
    * The default constructor.
    */
@@ -89,13 +100,14 @@ public class UserJpa implements User {
    */
   public UserJpa(User user) {
     super();
-    this.id = user.getId();
-    this.userName = user.getUserName();
-    this.name = user.getName();
-    this.email = user.getEmail();
-    this.applicationRole = user.getApplicationRole();
-    this.authToken = user.getAuthToken();
-    this.userPreferences = new UserPreferencesJpa(user.getUserPreferences());
+    id = user.getId();
+    userName = user.getUserName();
+    name = user.getName();
+    email = user.getEmail();
+    applicationRole = user.getApplicationRole();
+    authToken = user.getAuthToken();
+    userPreferences = new UserPreferencesJpa(user.getUserPreferences());
+    projects = new ArrayList<>(user.getProjects());
   }
 
   /* see superclass */
@@ -193,6 +205,23 @@ public class UserJpa implements User {
   @Override
   public void setAuthToken(String authToken) {
     this.authToken = authToken;
+  }
+
+  /* see superclass */
+  @XmlTransient
+  @Field(bridge = @FieldBridge(impl = SearchableListIdBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public List<Project> getProjects() {
+    if (projects == null) {
+      projects = new ArrayList<>();
+    }
+    return projects;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProjects(List<Project> projects) {
+    this.projects = projects;
   }
 
   /* see superclass */

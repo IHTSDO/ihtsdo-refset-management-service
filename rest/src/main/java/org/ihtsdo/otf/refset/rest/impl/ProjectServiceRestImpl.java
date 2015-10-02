@@ -115,6 +115,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
       project.getProjectRoleMap().put(user, UserRole.valueOf(role));
+      user.getProjects().add(project);
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
@@ -160,6 +162,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
       project.getProjectRoleMap().remove(user);
+      user.getProjects().remove(project);
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
