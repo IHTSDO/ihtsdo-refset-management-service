@@ -328,26 +328,11 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
     
  // Finds users as a list
     this.findUsersAsList = function(queryStr, 
-      page) {
+      pfs) {
       console.debug("findUsersAsList", queryStr, 
-        page);
+        pfs);
       // Setup deferred
       var deferred = $q.defer();
-
-      // PFS
-      /*var pfs = {
-        startIndex : (page - 1) * pageSizes.general,
-        maxResults : pageSizes.general,
-        sortField : null,
-        queryRestriction : null
-      }*/
-      
-      var pfs = {
-        startIndex : 0,
-        maxResults : 10,
-        sortField : null,
-        queryRestriction : null
-      }
 
       // Make POST call
       gpService.increment();
