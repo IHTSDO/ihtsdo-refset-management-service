@@ -109,10 +109,6 @@ tsApp.service('projectService', [
       // Setup deferred
       var deferred = $q.defer();
 
-
-      
-
-
       // Make POST call
       gpService.increment();
       $http.post(

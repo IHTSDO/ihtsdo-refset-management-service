@@ -26,65 +26,47 @@ tsApp
         //
         // Scope Variables
         //
-
-        // Scope variables initialized from services
         $scope.user = securityService.getUser();
-        $scope.users = null;
         
-
-        $scope.pageSize = 5;
-        $scope.projectsPageSize = 1;
+        $scope.pageSize = 4;
         
         $scope.pagedProjects = null;
+        $scope.pagedUsers = null;
 
         $scope.projectPaging = {
           page : 1,
-          filter : ""
+          filter : "",
+          sortField : 'lastModified',
+          ascending : []
         }
         
+        $scope.userPaging = {
+          page : 1,
+          filter : "",
+          sortField : 'email',
+          ascending : []
+        }        
+        
         // Search parameters
-        $scope.searchParams = securityService.getSearchParams();
-        //$scope.searchResults = securityService.getSearchResults();
+        //$scope.searchParams = securityService.getSearchParams();
 
-        // remove a project, a user
-        $scope.remove = function(type, object, objArray) {
-          if (!confirm("Are you sure you want to remove the " + type + " ("
-            + object.name + ")?")) {
-            return;
-          }
-          if (type == 'project') {
-            projectService.removeProject(object).then(function() {
-              $scope.getProjects();
-            });
-          }
-          if (type == 'user') {
-            securityService.removeUser(object).then(function() {
-              $scope.getUsers();
-            });
-          }
-        };
 
-        // get projects
-        $scope.getProjects = function() {
-          projectService.getProjects().then(function(data) {
-            for (var i = 0; i < data.projects.length; i++) {
-              data.projects[i].isExpanded = false;
-            }
-            $scope.projects = data.projects;
-          })
-        };
 
         // get paged projects
         $scope.retrievePagedProjects = function() {
-
+          
           var pfs = {
             startIndex : ($scope.projectPaging.page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : 'lastModified',
-            queryRestriction : null
+            sortField : $scope.projectPaging.sortField,
+            ascending : $scope.projectPaging.ascending.indexOf($scope.projectPaging.sortField) != -1 ? true : false,
+            queryRestriction : 'projectRoleMap:' + $scope.user.userName + 'ADMIN'
           };
 
-          $scope.projectsPageSize = $scope.pageSize;
+          // clear queryRestriction for application admins
+          if ($scope.user.applicationRole == 'ADMIN') {
+            pfs.queryRestriction = null;
+          }
           
           projectService.findProjectsAsList($scope.projectPaging.filter, pfs).then(function(data) {
             $scope.pagedProjects = data.projects;
@@ -93,23 +75,25 @@ tsApp
           
         };
         
-        // get users
-        $scope.getUsers = function() {
-          securityService.getUsers().then(function(data) {
-            $scope.users = data.users;
+
+        // get paged users
+        $scope.retrievePagedUsers = function() {
+
+          var pfs = {
+            startIndex : ($scope.userPaging.page - 1) * $scope.pageSize,
+            maxResults : $scope.pageSize,
+            sortField : $scope.userPaging.sortField,
+            ascending : $scope.userPaging.ascending.indexOf($scope.userPaging.sortField) != -1 ? true : false,  
+            queryRestriction : null
+          };
+         
+          securityService.findUsersAsList($scope.userPaging.filter, pfs).then(function(data) {
+            $scope.pagedUsers = data.users;
+            $scope.pagedUsers.totalCount = data.totalCount;
           })
+          
         };
         
-        // find users
-        $scope.findUsers = function() {
-          securityService
-          .findUsersAsList($scope.searchParams.query, $scope.searchParams.page)
-          .then(
-            function(data) {
-              $scope.userResults = data.users;
-            });
-        }
-
         // get application roles
         $scope.getApplicationRoles = function() {
           securityService.getApplicationRoles().then(function(data) {
@@ -133,15 +117,52 @@ tsApp
             && project.id === $scope.selectedProject.id) {
             return;
           }
-          /*var projectRole = getProjectRoleForUser(project, $scope.selectedUser);
-          if (projectRole == null || !projectRole == 'ADMIN') {
-            window.alert("User must have administrator privledges on this project in order to manage users on this project.");
-          }*/
-            
           
           $scope.selectedProject = project;
         }
+        
+        // remove a project, a user
+        $scope.remove = function(type, object, objArray) {
+          if (!confirm("Are you sure you want to remove the " + type + " ("
+            + object.name + ")?")) {
+            return;
+          }
+          if (type == 'project') {
+            projectService.removeProject(object).then(function() {
+              $scope.retrievePagedProjects();
+            });
+          }
+          if (type == 'user') {
+            securityService.removeUser(object).then(function() {
+              $scope.retrievePagedUsers();
+            });
+          }
+        };
 
+        // sort mechanism for project table
+        $scope.setProjectSortField = function(field) {
+          $scope.projectPaging.sortField = field;
+          var fieldIndex = $scope.projectPaging.ascending.indexOf(field);
+          if (fieldIndex != -1) {
+            $scope.projectPaging.ascending.splice(fieldIndex, 1);
+          } else {
+            $scope.projectPaging.ascending.push(field);
+          }
+          $scope.retrievePagedProjects();
+        }
+        
+        // sort mechanism for user table
+        $scope.setUserSortField = function(field) {
+          $scope.userPaging.sortField = field;
+          var fieldIndex = $scope.userPaging.ascending.indexOf(field);
+          if (fieldIndex != -1) {
+            $scope.userPaging.ascending.splice(fieldIndex, 1);
+          } else {
+            $scope.userPaging.ascending.push(field);
+          }
+          $scope.retrievePagedUsers();
+        }
+        
         // assign user to project
         $scope.assignUserToProject = function(projectId, userName, projectRole) {
           if (projectId == null || projectId == undefined) {
@@ -156,7 +177,7 @@ tsApp
           
           projectService.assignUserToProject(projectId, userName, projectRole).then(
             function(data) {
-              $scope.getProjects();
+              $scope.retrievePagedProjects();
               $scope.selectedProject = data;
               for (var i = $scope.userResults.length - 1; i >= 0; i--) {
                 if (userName == $scope.userResults[i].userName) {
@@ -165,7 +186,17 @@ tsApp
               }
             })
         };
-        
+
+        // remove user from project
+        $scope.unassignUserFromProject = function(projectId, userName) {
+          projectService.unassignUserFromProject(projectId, userName).then(
+            function(data) {
+
+              $scope.retrievePagedProjects();
+              $scope.selectedProject = data;
+            })
+        };
+
         // find out if user is already assigned to selected project
         function isUserAssignedToSelectedProject(userName) {
           for (var i = 0; i < $scope.selectedProject.projectRoleMap.entry.length; i++) {
@@ -175,6 +206,7 @@ tsApp
           return false;
         };
         
+        // get project role for user
         function getProjectRoleForUser(project, user) {
           for (var i = 0; i < project.projectRoleMap.entry.length; i++) {
             if (project.projectRoleMap.entry[i].key.userName == user.userName)
@@ -182,22 +214,13 @@ tsApp
           }
           return null;
         };
-
-        // remove user from project
-        $scope.unassignUserFromProject = function(projectId, userName) {
-          projectService.unassignUserFromProject(projectId, userName).then(
-            function(data) {
-
-              $scope.getProjects();
-              $scope.selectedProject = data;
-            })
-        };
-
+        
+        //
         // call these during initialization
-        $scope.getProjects();
-
+        //
+        
         $scope.retrievePagedProjects();
-        $scope.getUsers();
+        $scope.retrievePagedUsers();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
 
@@ -218,7 +241,7 @@ tsApp
                 return lproject;
               },
               projects : function() {
-                return $scope.projects;
+                return $scope.pagedProjects;
               }
             }
           });
@@ -269,7 +292,7 @@ tsApp
                 return luser;
               },
               users : function() {
-                return $scope.users;
+                return $scope.pagedUsers;
               },
               applicationRoles : function() {
                 return $scope.applicationRoles;

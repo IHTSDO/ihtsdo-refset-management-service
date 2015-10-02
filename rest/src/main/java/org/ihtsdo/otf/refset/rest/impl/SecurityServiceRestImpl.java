@@ -263,7 +263,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "update concept", UserRole.ADMIN);
+      authorize(securityService, authToken, "get application roles", UserRole.VIEWER);
       StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.VIEWER.toString());

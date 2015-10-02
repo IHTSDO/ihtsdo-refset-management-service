@@ -77,7 +77,6 @@ a:hover {
 /* Material Design Icons */
 .material-icons.md-18 {
 	font-size: 18px;
-	line-height: 70px;
 }
 
 .material-icons.md-24 {
@@ -136,3 +135,6 @@ a:hover {
 	white-space: nowrap;
 }
 
+.table-select-row {
+	cursor: pointer;
+}

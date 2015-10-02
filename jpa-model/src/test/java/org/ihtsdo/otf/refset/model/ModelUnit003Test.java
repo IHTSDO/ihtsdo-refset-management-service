@@ -153,6 +153,7 @@ public class ModelUnit003Test {
     tester.include("userName");
     tester.include("email");
     tester.include("applicationRole");
+    tester.include("nameSort");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

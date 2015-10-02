@@ -148,6 +148,8 @@ public class ModelUnit001Test {
     tester.include("lastModifiedBy");
     tester.include("terminology");
     tester.include("version");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
