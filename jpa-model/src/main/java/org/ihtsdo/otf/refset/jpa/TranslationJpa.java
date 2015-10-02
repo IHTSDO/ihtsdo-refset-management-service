@@ -55,10 +55,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Column(nullable = false)
   private String name;
 
-  /** The namespace. */
-  @Column(nullable = true)
-  private String namespace;
-
   /** The description. */
   @Column(nullable = false)
   private String description;
@@ -114,7 +110,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   public TranslationJpa(Translation translation) {
     super(translation);
     name = translation.getName();
-    namespace = translation.getNamespace();
     description = translation.getDescription();
     isPublic = translation.isPublic();
     language = translation.getLanguage();
@@ -152,19 +147,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setDescription(String description) {
     this.description = description;
-  }
-
-  /* see superclass */
-  @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public String getNamespace() {
-    return namespace;
-  }
-
-  /* see superclass */
-  @Override
-  public void setNamespace(String namespace) {
-    this.namespace = namespace;
   }
 
   /* see superclass */
@@ -369,7 +351,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
-    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     return result;
   }
@@ -401,11 +382,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         return false;
     } else if (!name.equals(other.name))
       return false;
-    if (namespace == null) {
-      if (other.namespace != null)
-        return false;
-    } else if (!namespace.equals(other.namespace))
-      return false;
     return true;
   }
 
@@ -416,7 +392,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + ", isPublic=" + isPublic + ", language=" + language
         + ", workflowStatus=" + workflowStatus + ", workflowPath="
         + workflowPath + ", refset=" + refset + ", descriptionTypes="
-        + descriptionTypes + ", namespace=" + namespace + "]";
+        + descriptionTypes + "]";
   }
 
 }

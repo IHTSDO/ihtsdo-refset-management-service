@@ -8,13 +8,12 @@ import java.util.Properties;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
-import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 
 /**
@@ -42,21 +41,17 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public String getTerminologyId(Concept concept) throws Exception {
-    // TODO Auto-generated method stub
+    concept.getTranslation().getRefset().getProject().getNamespace();
+    // partitionId 00 or 10
     return null;
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(Description description) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public String getTerminologyId(Relationship relationship) throws Exception {
-    // TODO Auto-generated method stub
+    description.getConcept().getTranslation().getRefset().getProject()
+        .getNamespace();
+    // partitionId 01 or 11
     return null;
   }
 
@@ -64,14 +59,14 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(DescriptionTypeRefsetMember member)
     throws Exception {
-    // TODO Auto-generated method stub
+    // UUID.randomUUID().toString();
     return null;
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(LanguageRefsetMember member) throws Exception {
-    // TODO Auto-generated method stub
+    // UUID.randomUUID().toString();
     return null;
   }
 
@@ -79,7 +74,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(ModuleDependencyRefsetMember member)
     throws Exception {
-    // TODO Auto-generated method stub
+    // UUID.randomUUID().toString();
     return null;
   }
 
@@ -87,28 +82,26 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(RefsetDescriptorRefsetMember member)
     throws Exception {
-    // TODO Auto-generated method stub
+    // UUID.randomUUID().toString();
     return null;
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(ConceptRefsetMember member) throws Exception {
-    // TODO Auto-generated method stub
+    // UUID.randomUUID().toString();
     return null;
   }
 
   /* see superclass */
   @Override
   public boolean allowIdChangeOnUpdate() {
-    // TODO Auto-generated method stub
     return false;
   }
 
   /* see superclass */
   @Override
   public boolean allowConceptIdChangeOnUpdate() {
-    // TODO Auto-generated method stub
     return false;
   }
 
@@ -119,13 +112,16 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   @Override
   public String getTerminologyId(Refset refset) throws Exception {
-    // TODO Auto-generated method stub
+    // use concept id assignment
+    // getProject().getNamespace()
     return null;
   }
 
   @Override
   public String getTerminologyId(Translation translation) throws Exception {
-    // TODO Auto-generated method stub
+    // must be user assigned, simply return translation.getTerminologyId();
+    // may also use getRefset().getTerminologyId()
+    //
     return null;
   }
 

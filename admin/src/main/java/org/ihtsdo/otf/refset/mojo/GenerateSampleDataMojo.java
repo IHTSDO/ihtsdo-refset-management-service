@@ -206,6 +206,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project2 =
           (ProjectJpa) project.addProject(project3, admin.getAuthToken());
 
+      //
+      // Assign project roles
+      //
+      Logger.getLogger(getClass()).info("Assign users to projects");
+      project = new ProjectServiceRestImpl();
+      project2 =
+          (ProjectJpa) project.addProject(project2, admin.getAuthToken());
+
       // Create a refset in project 1 (extensional)
 
       // TODO: import members (e.g. from sample data)

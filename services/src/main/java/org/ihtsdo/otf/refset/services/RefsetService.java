@@ -9,7 +9,6 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
 /**

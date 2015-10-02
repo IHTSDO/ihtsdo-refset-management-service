@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.helpers;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.ihtsdo.otf.refset.Project;
