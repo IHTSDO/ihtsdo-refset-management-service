@@ -18,6 +18,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
@@ -291,6 +292,13 @@ public class ProjectClientRest extends RootClientRest implements
   @Override
   public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs, String authToken)
     throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public UserList findUsersForProject(Long projectId, PfsParameterJpa pfs,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

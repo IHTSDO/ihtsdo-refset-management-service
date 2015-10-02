@@ -3,15 +3,15 @@
  */
 package org.ihtsdo.otf.refset.jpa.helpers;
 
-import java.util.List;
+import java.util.Map;
 
 import org.hibernate.search.bridge.StringBridge;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 
 /**
- * Hibernate search field bridge for a list of {@link Searchable} objects.
+ * Hibernate search field bridge for a map of {@link Searchable} -> anything.
  */
-public class SearchableListIdBridge implements StringBridge {
+public class SearchableMapIdBridge implements StringBridge {
 
   /* see superclass */
   @SuppressWarnings("unchecked")
@@ -20,8 +20,8 @@ public class SearchableListIdBridge implements StringBridge {
     if (value != null) {
       StringBuffer buf = new StringBuffer();
 
-      List<Searchable> list = (List<Searchable>) value;
-      for (Searchable item : list) {
+      Map<Searchable, ?> list = (Map<Searchable, ?>) value;
+      for (Searchable item : list.keySet()) {
         buf.append(item.getId()).append(",");
       }
       return buf.toString();

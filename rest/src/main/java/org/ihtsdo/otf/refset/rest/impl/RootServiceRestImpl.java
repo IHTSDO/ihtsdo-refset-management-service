@@ -111,7 +111,7 @@ public class RootServiceRestImpl {
 
     // authorize call
     UserRole role =
-        projectService.getProject(projectId).getProjectRoleMap()
+        projectService.getProject(projectId).getUserRoleMap()
             .get(securityService.getUser(userName));
     UserRole cmpRole = authRole;
     if (cmpRole == null) {

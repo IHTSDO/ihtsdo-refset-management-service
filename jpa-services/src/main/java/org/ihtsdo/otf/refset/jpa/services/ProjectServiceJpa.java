@@ -240,8 +240,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     if (project.getRefsets() != null) {
       project.getRefsets().size();
     }
-    if (project.getProjectRoleMap() != null) {
-      project.getProjectRoleMap().size();
+    if (project.getUserRoleMap() != null) {
+      project.getUserRoleMap().size();
     }
   }
 

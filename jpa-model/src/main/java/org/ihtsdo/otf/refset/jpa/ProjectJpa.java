@@ -44,8 +44,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
-import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
-import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -98,7 +97,7 @@ public class ProjectJpa implements Project {
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "project_user_role_map", joinColumns = @JoinColumn(name = "user_id"))
-  private Map<User, UserRole> projectRoleMap;
+  private Map<User, UserRole> userRoleMap;
 
   /** The refsets. */
   @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
@@ -126,7 +125,7 @@ public class ProjectJpa implements Project {
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
-    projectRoleMap = new HashMap<>(project.getProjectRoleMap());
+    userRoleMap = new HashMap<>(project.getUserRoleMap());
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
       refsets.add(new RefsetJpa(refset));
@@ -281,19 +280,19 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
-  @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
-  public Map<User, UserRole> getProjectRoleMap() {
-    if (projectRoleMap == null) {
-      projectRoleMap = new HashMap<>();
+  public Map<User, UserRole> getUserRoleMap() {
+    if (userRoleMap == null) {
+      userRoleMap = new HashMap<>();
     }
-    return projectRoleMap;
+    return userRoleMap;
   }
 
   /* see superclass */
   @Override
-  public void setProjectRoleMap(Map<User, UserRole> projectRoleMap) {
-    this.projectRoleMap = projectRoleMap;
+  public void setUserRoleMap(Map<User, UserRole> userRoleMap) {
+    this.userRoleMap = userRoleMap;
   }
 
   /* see superclass */

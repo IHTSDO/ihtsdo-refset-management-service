@@ -3,9 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CollectionTable;
@@ -19,7 +17,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyClass;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -29,7 +26,6 @@ import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
@@ -45,9 +41,9 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
-import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
-import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
-import org.ihtsdo.otf.refset.jpa.helpers.SearchableListIdBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
+import org.ihtsdo.otf.refset.jpa.helpers.SearchableMapIdBridge;
 
 /**
  * JPA enabled implementation of {@link User}.
@@ -172,8 +168,8 @@ public class UserJpa implements User {
   /* see superclass */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   public String getName() {
     return name;
@@ -223,8 +219,20 @@ public class UserJpa implements User {
     this.authToken = authToken;
   }
 
-  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
-  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  /*
+   * <pre>
+   * This supports searching both for a particular role on a particular project
+   * or to determine if this user is assigned to any project.  For example:
+   * 
+   *   "projectRoleMap:10ADMIN" -> finds where the user has an ADMIN role on project 10
+   *   "projectAnyRole:10" -> finds where the user has any role on project 10
+   * </pre>
+   */
+  @XmlJavaTypeAdapter(ProjectRoleMapAdapter.class)
+  @Fields({
+      @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = SearchableMapIdBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   @Override
   public Map<Project, UserRole> getProjectRoleMap() {
     if (projectRoleMap == null) {
@@ -233,6 +241,7 @@ public class UserJpa implements User {
     return projectRoleMap;
   }
 
+  /* see superclass */
   @Override
   public void setProjectRoleMap(Map<Project, UserRole> projectRoleMap) {
     this.projectRoleMap = projectRoleMap;

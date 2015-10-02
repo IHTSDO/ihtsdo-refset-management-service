@@ -60,7 +60,7 @@ tsApp
             maxResults : $scope.pageSize,
             sortField : $scope.projectPaging.sortField,
             ascending : $scope.projectPaging.ascending.indexOf($scope.projectPaging.sortField) != -1 ? true : false,
-            queryRestriction : 'projectRoleMap:' + $scope.user.userName + 'ADMIN'
+            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
 
           // clear queryRestriction for application admins
@@ -199,8 +199,8 @@ tsApp
 
         // find out if user is already assigned to selected project
         function isUserAssignedToSelectedProject(userName) {
-          for (var i = 0; i < $scope.selectedProject.projectRoleMap.entry.length; i++) {
-            if ($scope.selectedProject.projectRoleMap.entry[i].key.userName == userName)
+          for (var i = 0; i < $scope.selectedProject.userRoleMap.entry.length; i++) {
+            if ($scope.selectedProject.userRoleMap.entry[i].key.userName == userName)
               return true;
           }
           return false;
@@ -208,9 +208,9 @@ tsApp
         
         // get project role for user
         function getProjectRoleForUser(project, user) {
-          for (var i = 0; i < project.projectRoleMap.entry.length; i++) {
-            if (project.projectRoleMap.entry[i].key.userName == user.userName)
-              return project.projectRoleMap.entry[i].value;
+          for (var i = 0; i < project.userRoleMap.entry.length; i++) {
+            if (project.userRoleMap.entry[i].key.userName == user.userName)
+              return project.userRoleMap.entry[i].value;
           }
           return null;
         };
