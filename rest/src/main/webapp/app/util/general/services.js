@@ -22,7 +22,7 @@ tsApp.service('utilService', [
       console.debug("Handle error: ", response);
       this.error.message = response.data.replace(/"/g, '');
       // If authtoken expired, relogin
-      if (this.error.message.contains("AuthToken")) {
+      if (this.error.message.indexOf("AuthToken") != -1) {
         // Reroute back to login page with "auth token has
         // expired" message
         $location.path("/");

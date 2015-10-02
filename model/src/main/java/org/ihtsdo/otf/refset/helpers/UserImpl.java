@@ -3,6 +3,10 @@
  */
 package org.ihtsdo.otf.refset.helpers;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
@@ -33,6 +37,9 @@ public class UserImpl implements User {
   /** The auth token. */
   private String authToken;
 
+  /** The projects. */
+  private List<Project> projects;
+
   /**
    * Instantiates an empty {@link UserImpl}.
    */
@@ -52,6 +59,7 @@ public class UserImpl implements User {
     applicationRole = user.getApplicationRole();
     authToken = user.getAuthToken();
     userPreferences = user.getUserPreferences();
+    projects = new ArrayList<>(user.getProjects());
   }
 
   /* see superclass */
@@ -102,6 +110,7 @@ public class UserImpl implements User {
     this.applicationRole = role;
   }
 
+  /* see superclass */
   @Override
   public String getAuthToken() {
     return authToken;
@@ -123,6 +132,30 @@ public class UserImpl implements User {
   @Override
   public void setId(Long id) {
     this.id = id;
+  }
+
+  /* see superclass */
+  @Override
+  public UserPreferences getUserPreferences() {
+    return userPreferences;
+  }
+
+  /* see superclass */
+  @Override
+  public void setUserPreferences(UserPreferences preferences) {
+    this.userPreferences = preferences;
+  }
+
+  /* see superclass */
+  @Override
+  public List<Project> getProjects() {
+    return projects;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProjects(List<Project> projects) {
+    this.projects = projects;
   }
 
   /* see superclass */
@@ -167,18 +200,6 @@ public class UserImpl implements User {
     } else if (!userName.equals(other.userName))
       return false;
     return true;
-  }
-
-  /* see superclass */
-  @Override
-  public UserPreferences getUserPreferences() {
-    return userPreferences;
-  }
-
-  /* see superclass */
-  @Override
-  public void setUserPreferences(UserPreferences preferences) {
-    this.userPreferences = preferences;
   }
 
 }

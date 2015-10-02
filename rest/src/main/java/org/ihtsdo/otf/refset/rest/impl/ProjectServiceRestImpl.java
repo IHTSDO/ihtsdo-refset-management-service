@@ -107,14 +107,16 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-        // Check if user is either an admin overall or an ADMIN on this project
-        // now try to validate project role
-        authorize(projectService, projectId, securityService, authToken,
-            "add user to project", UserRole.ADMIN);
+      // Check if user is either an admin overall or an ADMIN on this project
+      // now try to validate project role
+      authorize(projectService, projectId, securityService, authToken,
+          "add user to project", UserRole.ADMIN);
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
       project.getProjectRoleMap().put(user, UserRole.valueOf(role));
+      user.getProjects().add(project);
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
@@ -160,6 +162,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
       project.getProjectRoleMap().remove(user);
+      user.getProjects().remove(project);
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
@@ -186,7 +190,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "add project", UserRole.ADMIN);
+      final String userName =
+          authorize(securityService, authToken, "add project", UserRole.ADMIN);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -198,7 +203,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Add project
-      project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
       return newProject;
     } catch (Exception e) {
@@ -350,7 +355,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Path("/projects")
   @ApiOperation(value = "Finds projects", notes = "Finds projects based on pfs parameter and query", response = ProjectListJpa.class)
   public ProjectList findProjectsForQuery(
-    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,    
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -359,11 +364,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find projects",
-          UserRole.VIEWER);
+      authorize(securityService, authToken, "find projects", UserRole.VIEWER);
 
-     
-      
       return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
@@ -374,7 +376,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
 
   }
-  
+
   /* see superclass */
   @Override
   @POST
