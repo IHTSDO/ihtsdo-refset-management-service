@@ -7,13 +7,12 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
-import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
  * Generically represents an algorithm for assigning identifiers.
@@ -55,15 +54,6 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @throws Exception the exception
    */
   public String getTerminologyId(Description description) throws Exception;
-
-  /**
-   * Returns the terminology id.
-   *
-   * @param relationship the relationship
-   * @return the string
-   * @throws Exception the exception
-   */
-  public String getTerminologyId(Relationship relationship) throws Exception;
 
   /**
    * Returns the terminology id.

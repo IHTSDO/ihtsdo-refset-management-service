@@ -28,18 +28,18 @@ public interface Project extends Searchable {
   public void setDescription(String description);
 
   /**
-   * Returns the project role map.
+   * Returns the user role map.
    *
-   * @return the project role map
+   * @return the user role map
    */
-  public Map<User, UserRole> getProjectRoleMap();
+  public Map<User, UserRole> getUserRoleMap();
 
   /**
-   * Sets the project role map.
+   * Sets the user role map.
    *
-   * @param projectRoleMap the project role map
+   * @param userRoleMap the user role map
    */
-  public void setProjectRoleMap(Map<User, UserRole> projectRoleMap);
+  public void setUserRoleMap(Map<User, UserRole> userRoleMap);
 
   /**
    * Returns the refsets.
@@ -68,5 +68,20 @@ public interface Project extends Searchable {
    * @param refset the refset
    */
   public void removeRefset(Refset refset);
+
+
+  /**
+   * Returns the namespace.
+   *
+   * @return the namespace
+   */
+  public String getNamespace();
+
+  /**
+   * Sets the namespace.
+   *
+   * @param namepace the namespace
+   */
+  public void setNamespace(String namepace);
 
 }

@@ -3,7 +3,12 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -11,6 +16,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.MapKeyClass;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -19,18 +26,24 @@ import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
+import org.ihtsdo.otf.refset.jpa.helpers.SearchableMapIdBridge;
 
 /**
  * JPA enabled implementation of {@link User}.
@@ -75,6 +88,13 @@ public class UserJpa implements User {
   @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, optional = true)
   private UserPreferences userPreferences;
 
+  /** The project role map. */
+  @ElementCollection(fetch = FetchType.EAGER)
+  @MapKeyClass(value = ProjectJpa.class)
+  @Enumerated(EnumType.STRING)
+  @CollectionTable(name = "user_project_role_map", joinColumns = @JoinColumn(name = "project_id"))
+  private Map<Project, UserRole> projectRoleMap;
+
   /**
    * The default constructor.
    */
@@ -89,13 +109,14 @@ public class UserJpa implements User {
    */
   public UserJpa(User user) {
     super();
-    this.id = user.getId();
-    this.userName = user.getUserName();
-    this.name = user.getName();
-    this.email = user.getEmail();
-    this.applicationRole = user.getApplicationRole();
-    this.authToken = user.getAuthToken();
-    this.userPreferences = new UserPreferencesJpa(user.getUserPreferences());
+    id = user.getId();
+    userName = user.getUserName();
+    name = user.getName();
+    email = user.getEmail();
+    applicationRole = user.getApplicationRole();
+    authToken = user.getAuthToken();
+    userPreferences = new UserPreferencesJpa(user.getUserPreferences());
+    projectRoleMap = new HashMap<>(user.getProjectRoleMap());
   }
 
   /* see superclass */
@@ -146,7 +167,10 @@ public class UserJpa implements User {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getName() {
     return name;
   }
@@ -193,6 +217,34 @@ public class UserJpa implements User {
   @Override
   public void setAuthToken(String authToken) {
     this.authToken = authToken;
+  }
+
+  /*
+   * <pre>
+   * This supports searching both for a particular role on a particular project
+   * or to determine if this user is assigned to any project.  For example:
+   * 
+   *   "projectRoleMap:10ADMIN" -> finds where the user has an ADMIN role on project 10
+   *   "projectAnyRole:10" -> finds where the user has any role on project 10
+   * </pre>
+   */
+  @XmlJavaTypeAdapter(ProjectRoleMapAdapter.class)
+  @Fields({
+      @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = SearchableMapIdBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
+  @Override
+  public Map<Project, UserRole> getProjectRoleMap() {
+    if (projectRoleMap == null) {
+      projectRoleMap = new HashMap<>();
+    }
+    return projectRoleMap;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProjectRoleMap(Map<Project, UserRole> projectRoleMap) {
+    this.projectRoleMap = projectRoleMap;
   }
 
   /* see superclass */

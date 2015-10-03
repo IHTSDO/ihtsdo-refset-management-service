@@ -145,6 +145,8 @@ public class ModelUnit003Test {
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
+    tester.include("projectAnyRole");
+    tester.include("projectRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -153,6 +155,7 @@ public class ModelUnit003Test {
     tester.include("userName");
     tester.include("email");
     tester.include("applicationRole");
+    tester.include("nameSort");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

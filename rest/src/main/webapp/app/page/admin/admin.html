@@ -3,7 +3,7 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-    <h4>Application Administration</h4>
+    <h4 ng-show="user.applicationRole == 'ADMIN'">Application Administration</h4>
     <accordion ng-show="user.applicationRole == 'ADMIN'"> <accordion-group
       heading="Application Administration" is-open="false"> <!-- Projects -->
     <accordion-heading>
@@ -16,21 +16,21 @@
       <h4>
         <div style="float: right;">
           <a title="Create new project" ng-click="openNewProjectModal(lproject)">
-            <i class="glyphicon glyphicon-plus"></i>
+                <i title="Create new project" class="material-icons md-24">add</i>
           </a>
         </div>
       </h4>
 
       <span style="display: block;">
-        <pagination items-per-page="projectsPageSize" max-size="5"
+        <pagination items-per-page="pageSize" max-size="5"
           boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
           next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-          ng-show="pagedProjects.totalCount > projectsPageSize || projectPaging.filter"
+          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
           total-items="pagedProjects.totalCount" ng-model="projectPaging.page"
           ng-change="retrievePagedProjects()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
-          ng-show="pagedProjects.totalCount > projectsPageSize || projectPaging.filter"
+          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
           type="text" ng-model="projectPaging.filter"
           ng-model-options="{ debounce: 300 }"
           ng-change="retrievePagedProjects()">
@@ -44,28 +44,22 @@
       <table class="table">
         <thead>
           <th class="col-md-2 col-xs-2">Id</th>
-          <th class="col-md-8 col-xs-8">Name</th>
-          <th class="col-md-1 col-xs-1">&nbsp;</th>
+          <th class="col-md-4 col-xs-4">Name</th>
+          <th class="col-md-5 col-xs-5">Description</th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
           <tr ng-repeat="project in pagedProjects">
             <td>{{project.id}}</td>
-            <td><a ng-click="project.isExpanded = !project.isExpanded">
-                [ <i
-                  ng-class="{'glyphicon-minus': project.isExpanded, 'glyphicon-plus': !project.isExpanded}"></i>
-                ]
-              </a>{{project.name}}
-              <div collapse="!project.isExpanded">{{project.description}}</div></td>
+            <td>{{project.name}}</td>
+            <td>{{project.description}}</td>
 
-            <td><a title="Edit"
+            <td class="nobreak"><a title="Edit"
                 ng-click="openEditProjectModal(project); $event.stopPropagation()">
-                <i class="glyphicon glyphicon-pencil"></i>
-              </a></td>
-
-            <td><a title="Remove"
+                <i title="Edit" class="material-icons md-18">edit</i>
+              </a>&nbsp;<a title="Remove"
                 ng-click="remove('project',project,projects); $event.stopPropagation()">
-                <i class="glyphicon glyphicon-remove"></i>
+                <i title="Delete" class="material-icons md-18">delete</i>
               </a></td>
           </tr>
         </tbody>
@@ -81,34 +75,51 @@
       <h4>
         <div style="float: right;">
           <a title="Create new user" ng-click="openNewUserModal(luser)">
-            <i class="glyphicon glyphicon-plus"></i>
+                <i title="Create new user" class="material-icons md-24">add</i>
           </a>
         </div>
       </h4>
+      
+      <span style="display: block;">
+        <pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
+          total-items="pagedUsers.totalCount" ng-model="userPaging.page"
+          ng-change="retrievePagedUsers()"></pagination>
+
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
+          type="text" ng-model="userPaging.filter"
+          ng-model-options="{ debounce: 300 }"
+          ng-change="retrievePagedUsers()">
+
+        <button class="btn btn-xs btn-warning" ng-show="userPaging.filter"
+          ng-click="userPaging.filter = ''; retrievePagedUsers()"
+          title="Click to clear filter text">Clear</button>
+      </span>
+      
       <table class="table">
         <thead>
           <th class="col-md-2 col-xs-2">Username</th>
-          <th class="col-md-3 col-xs-3">Name</th>
+          <th class="col-md-4 col-xs-4">Name</th>
           <th class="col-md-3 col-xs-3">Email</th>
           <th class="col-md-2 col-xs-2">Application Role</th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
-          <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
-          <tr ng-repeat="user in users">
+          <tr ng-repeat="user in pagedUsers">
             <td>{{user.userName}}</td>
             <td>{{user.name}}</td>
             <td>{{user.email}}</td>
             <td>{{user.applicationRole}}</td>
 
-            <td><a title="Edit"
+            <td class="nobreak"><a title="Edit"
                 ng-click="openEditUserModal(user); $event.stopPropagation()">
-                <i class="glyphicon glyphicon-pencil"></i>
-              </a></td>
-
-            <td><a title="Remove"
+                <i title="Edit" class="material-icons md-18">edit</i>
+              </a>&nbsp;<a title="Remove"
                 ng-click="remove('user',user,users); $event.stopPropagation()">
-                <i class="glyphicon glyphicon-remove"></i>
+                <i title="Delete" class="material-icons md-18">delete</i>
               </a></td>
           </tr>
         </tbody>
@@ -118,15 +129,36 @@
 
     <h4>User & Project Management</h4>
     <div class="col-md-6 col-xs-12">
-      <table class="table">
         <h5 class="section-header">Project List</h5>
-        <thead>
-          <th class="col-md-1 col-xs-1">Id</th>
-          <th class="col-md-5 col-xs-5">Name</th>
-          <th class="col-md-6 col-xs-6">Description</th>
+        
+        <span style="display: block;">
+        <pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
+          total-items="pagedProjects.totalCount" ng-model="projectPaging.page"
+          ng-change="retrievePagedProjects()"></pagination>
+
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
+          type="text" ng-model="projectPaging.filter"
+          ng-model-options="{ debounce: 300 }"
+          ng-change="retrievePagedProjects()">
+
+        <button class="btn btn-xs btn-warning" ng-show="projectPaging.filter"
+          ng-click="projectPaging.filter = ''; retrievePagedProjects()"
+          title="Click to clear filter text">Clear</button>
+      </span>
+        
+
+      <table class="table">        
+        <thead class="table-select-row">
+          <th class="col-md-1 col-xs-1" ng-click="setProjectSortField('id')">Id</th>
+          <th class="col-md-5 col-xs-5" ng-click="setProjectSortField('name')">Name</th>
+          <th class="col-md-6 col-xs-6"ng-click="setProjectSortField('description')">Description</th>
         </thead>
         <tbody>
-          <tr ng-repeat="project in projects" ng-click="setProject(project)">
+          <tr class="table-select-row" ng-repeat="project in pagedProjects" ng-click="setProject(project)">
             <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
             <td ng-class="{selected: project.id === selectedProject.id}">{{project.name}}</td>
             <td ng-class="{selected: project.id === selectedProject.id}">{{project.description}}</td>
@@ -139,28 +171,51 @@
       <div class="col-md-12 col-xs-12">
         <h5 class="section-header">User Selection & Role Assignment</h5>
 
-        <input type="text" ng-model="searchParams.query"
+        <!-- <input type="text" ng-model="searchParams.query"
           placeholder="Enter user search terms">
 
         <button class="btn btn-sm btn-primary" type="submit"
-          ng-click="searchParams.page = 1 && findUsers()">Search</button>
+          ng-click="searchParams.page = 1 && findUsers()">Search</button> -->
+        
+        
+      <span style="display: block;">
+        <pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
+          total-items="pagedUsers.totalCount" ng-model="userPaging.page"
+          ng-change="retrievePagedUsers()"></pagination>
+          
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
+          type="text" ng-model="userPaging.filter"
+          ng-model-options="{ debounce: 300 }"
+          ng-change="retrievePagedUsers()">
+
+        <button class="btn btn-xs btn-warning" ng-show="userPaging.filter"
+          ng-click="userPaging.filter = ''; retrievePagedUsers()"
+          title="Click to clear filter text">Clear</button>
+  
+
+      </span>
+        
         <table class="table">
           <thead>
-            <th class="col-md-5 col-xs-5">Name</th>
-            <th class="col-md-4 col-xs-4">UserName</th>
-            <th class="col-md-2 col-xs-2">Project Role</th>
-            <th class="col-md-1 col-xs-1">&nbsp;</th>
+            <th class="col-md-5 col-xs-5 table-select-row" ng-click="setUserSortField('name')">Name</th>
+            <th class="col-md-4 col-xs-4 table-select-row" ng-click="setUserSortField('userName')">UserName</th>
+            <th class="col-md-2 col-xs-2" >Project Role</th>
+            <th class="col-md-1 col-xs-1" >&nbsp;</th>
           </thead>
           <tbody>
-            <tr ng-repeat="user in userResults">
+            <tr ng-repeat="user in pagedUsers">
               <td>{{user.name}}</td>
               <td>{{user.userName}}</td>
               <td><select ng-model="user.projectRole"
                 ng-options="item for item in projectRoles"></select></td>
               <td><a title="Add user to project with selected role."
                   ng-init="user.projectRole='AUTHOR'"
-                  ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)">
-                  <i class="glyphicon glyphicon-plus"></i>
+                  ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)">                 
+                <i title="Add user to project with selected role." class="material-icons md-18">add</i>
                 </a></td>
             </tr>
           </tbody>
@@ -178,13 +233,13 @@
             <th class="col-md-1 col-xs-1">&nbsp;</th>
           </thead>
           <tbody>
-            <tr ng-repeat="(key, value) in selectedProject.projectRoleMap.entry">
+            <tr ng-repeat="(key, value) in selectedProject.userRoleMap.entry">
               <td>{{value.key.name}}</td>
               <td>{{value.key.userName}}</td>
               <td>{{value.value}}</td>
               <td><a title="Unassign"
-                  ng-click="unassignUserFromProject(selectedProject.id, value.key.userName);">
-                  <i class="glyphicon glyphicon-remove"></i>
+                  ng-click="unassignUserFromProject(selectedProject.id, value.key.userName);">                
+                <i title="Unassign user" class="material-icons md-18">remove</i>
                 </a></td>
             </tr>
           </tbody>

@@ -129,7 +129,7 @@ public class ProjectLoaderMojo extends AbstractMojo {
       ProjectJpa project = new ProjectJpa();
       project.setName(name);
       project.setDescription(description);
-      project.getProjectRoleMap().put(service.getUser(adminUser),
+      project.getUserRoleMap().put(service.getUser(adminUser),
           UserRole.ADMIN);
       project.setTerminology(terminology);
       project.setVersion(version);

@@ -75,7 +75,7 @@ public class ProjectServiceRestEdgeCasesTest extends ProjectServiceRestTest {
     Set<String> values = new HashSet<>();
     values.add("PUBLISHED");
     User user = securityService.getUser(adminUser, adminAuthToken);
-    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
+    project.getUserRoleMap().put(user, UserRole.AUTHOR);
     project2.setDescription("Sample");
     project2.setName("Sample");
     project2.setTerminology("SNOMEDCT");

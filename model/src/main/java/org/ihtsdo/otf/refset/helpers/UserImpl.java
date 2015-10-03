@@ -3,6 +3,10 @@
  */
 package org.ihtsdo.otf.refset.helpers;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
@@ -33,6 +37,9 @@ public class UserImpl implements User {
   /** The auth token. */
   private String authToken;
 
+  /** The projects. */
+  private Map<Project,UserRole> projectRoleMap;
+
   /**
    * Instantiates an empty {@link UserImpl}.
    */
@@ -52,6 +59,7 @@ public class UserImpl implements User {
     applicationRole = user.getApplicationRole();
     authToken = user.getAuthToken();
     userPreferences = user.getUserPreferences();
+    projectRoleMap = new HashMap<>(user.getProjectRoleMap());
   }
 
   /* see superclass */
@@ -102,6 +110,7 @@ public class UserImpl implements User {
     this.applicationRole = role;
   }
 
+  /* see superclass */
   @Override
   public String getAuthToken() {
     return authToken;
@@ -123,6 +132,31 @@ public class UserImpl implements User {
   @Override
   public void setId(Long id) {
     this.id = id;
+  }
+
+  /* see superclass */
+  @Override
+  public UserPreferences getUserPreferences() {
+    return userPreferences;
+  }
+
+  /* see superclass */
+  @Override
+  public void setUserPreferences(UserPreferences preferences) {
+    this.userPreferences = preferences;
+  }
+
+  @Override
+  public Map<Project, UserRole> getProjectRoleMap() {
+    if (projectRoleMap == null) {
+      projectRoleMap = new HashMap<>();
+    }
+    return projectRoleMap;
+  }
+
+  @Override
+  public void setProjectRoleMap(Map<Project, UserRole> projectRoleMap) {
+    this.projectRoleMap = projectRoleMap;
   }
 
   /* see superclass */
@@ -169,16 +203,6 @@ public class UserImpl implements User {
     return true;
   }
 
-  /* see superclass */
-  @Override
-  public UserPreferences getUserPreferences() {
-    return userPreferences;
-  }
 
-  /* see superclass */
-  @Override
-  public void setUserPreferences(UserPreferences preferences) {
-    this.userPreferences = preferences;
-  }
 
 }

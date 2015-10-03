@@ -35,6 +35,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -43,12 +44,12 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
-import org.ihtsdo.otf.refset.jpa.helpers.MapValueToCsvBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * JPA enabled implementation of {@link Project}. 
+ * JPA enabled implementation of {@link Project}.
  */
 @Entity
 @Table(name = "projects", uniqueConstraints = @UniqueConstraint(columnNames = {
@@ -79,6 +80,10 @@ public class ProjectJpa implements Project {
   @Column(nullable = false)
   private String name;
 
+  /** The namespace. */
+  @Column(nullable = true)
+  private String namespace;
+
   /** The description. */
   @Column(nullable = false)
   private String description;
@@ -91,12 +96,12 @@ public class ProjectJpa implements Project {
   @Column(nullable = false)
   private String version;
 
-  /** The leads. */
+  /** The role map. */
   @ElementCollection(fetch = FetchType.EAGER)
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "project_user_role_map", joinColumns = @JoinColumn(name = "user_id"))
-  private Map<User, UserRole> projectRoleMap;
+  private Map<User, UserRole> userRoleMap;
 
   /** The refsets. */
   @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
@@ -121,10 +126,11 @@ public class ProjectJpa implements Project {
     lastModified = project.getLastModified();
     lastModifiedBy = project.getLastModifiedBy();
     name = project.getName();
+    namespace = project.getNamespace();
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
-    projectRoleMap = new HashMap<>(project.getProjectRoleMap());
+    userRoleMap = new HashMap<>(project.getUserRoleMap());
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
       refsets.add(new RefsetJpa(refset));
@@ -216,16 +222,12 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getName() {
     return name;
-  }
-
-  /* see superclass */
-  @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  public String getDescription() {
-    return description;
   }
 
   /* see superclass */
@@ -236,14 +238,38 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public void setDescription(String description) {
-    this.description = description;
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getNamespace() {
+    return namespace;
   }
 
   /* see superclass */
   @Override
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /* see superclass */
+  @Override
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  public String getDescription() {
+    return description;
+  }
+
+  /* see superclass */
+  @Override
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  @Override
   public String toString() {
-    return getName() + " " + getId();
+    return "ProjectJpa [name=" + name + ", namespace=" + namespace
+        + ", description=" + description + ", terminology=" + terminology
+        + ", version=" + version + "]";
   }
 
   /* see superclass */
@@ -254,6 +280,7 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
@@ -274,19 +301,19 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
-  @Field(bridge = @FieldBridge(impl = MapValueToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
-  public Map<User, UserRole> getProjectRoleMap() {
-    if (projectRoleMap == null) {
-      projectRoleMap = new HashMap<>();
+  public Map<User, UserRole> getUserRoleMap() {
+    if (userRoleMap == null) {
+      userRoleMap = new HashMap<>();
     }
-    return projectRoleMap;
+    return userRoleMap;
   }
 
   /* see superclass */
   @Override
-  public void setProjectRoleMap(Map<User, UserRole> projectRoleMap) {
-    this.projectRoleMap = projectRoleMap;
+  public void setUserRoleMap(Map<User, UserRole> userRoleMap) {
+    this.userRoleMap = userRoleMap;
   }
 
   /* see superclass */
@@ -308,6 +335,11 @@ public class ProjectJpa implements Project {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
+      return false;
+    if (namespace == null) {
+      if (other.namespace != null)
+        return false;
+    } else if (!namespace.equals(other.namespace))
       return false;
     if (terminology == null) {
       if (other.terminology != null)

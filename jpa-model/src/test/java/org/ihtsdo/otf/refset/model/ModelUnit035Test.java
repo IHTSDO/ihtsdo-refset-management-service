@@ -98,7 +98,6 @@ public class ModelUnit035Test {
     tester.include("public");
     tester.include("language");
     tester.include("name");
-    tester.include("namespace");
 
     // Set up objects
     tester.proxy(Refset.class, 1, r1);
@@ -207,7 +206,6 @@ public class ModelUnit035Test {
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("moduleId");
-    tester.include("namespace");
     tester.include("language");
     tester.include("refsetId");
     tester.include("projectId");

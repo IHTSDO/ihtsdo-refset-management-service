@@ -62,7 +62,7 @@ public class ProjectServiceRestNormalUseTest extends ProjectServiceRestTest {
     Set<String> values = new HashSet<>();
     values.add("PUBLISHED");
     User user = securityService.getUser(adminUser, adminAuthToken);
-    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
+    project.getUserRoleMap().put(user, UserRole.AUTHOR);
     project.setDescription("Sample");
     project.setName("Sample");
     project.setTerminology("SNOMEDCT");
@@ -112,7 +112,7 @@ public class ProjectServiceRestNormalUseTest extends ProjectServiceRestTest {
     Set<String> values = new HashSet<>();
     values.add("PUBLISHED");
     User user = securityService.getUser(adminUser, adminAuthToken);
-    project.getProjectRoleMap().put(user, UserRole.AUTHOR);
+    project.getUserRoleMap().put(user, UserRole.AUTHOR);
     project.setDescription("Sample");
     project.setName("Sample");
     project.setTerminology("SNOMEDCT");

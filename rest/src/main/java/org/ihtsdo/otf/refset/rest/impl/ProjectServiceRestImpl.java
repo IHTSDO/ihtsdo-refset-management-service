@@ -21,10 +21,12 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
@@ -114,7 +116,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
-      project.getProjectRoleMap().put(user, UserRole.valueOf(role));
+      project.getUserRoleMap().put(user, UserRole.valueOf(role));
+      user.getProjectRoleMap().put(project, UserRole.valueOf(role));
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
@@ -159,7 +163,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
-      project.getProjectRoleMap().remove(user);
+      project.getUserRoleMap().remove(user);
+      user.getProjectRoleMap().remove(project);
+      securityService.updateUser(user);
       projectService.updateProject(project);
       return project;
 
@@ -170,6 +176,36 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/users/{projectId}")
+  @ApiOperation(value = "Find user assigned to project", notes = "Finds users with assigned roles on the specified project", response = UserListJpa.class)
+  public UserList findUsersForProject(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Project): /users/ " + projectId + ", " + pfs);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorize(securityService, authToken, "find users for project",
+          UserRole.VIEWER);
+
+      // TODO
+
+      return null;
+    } catch (Exception e) {
+      handleException(e, "find users for project");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */

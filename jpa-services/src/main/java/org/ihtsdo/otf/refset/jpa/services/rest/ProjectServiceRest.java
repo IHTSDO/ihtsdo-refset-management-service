@@ -9,6 +9,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
@@ -36,8 +37,8 @@ public interface ProjectServiceRest {
    * @return the project
    * @throws Exception the exception
    */
-  public Project assignUserToProject(Long projectId, String userName, String role,
-    String authToken) throws Exception;
+  public Project assignUserToProject(Long projectId, String userName,
+    String role, String authToken) throws Exception;
 
   /**
    * Removes the user from project.
@@ -49,6 +50,18 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public Project unassignUserFromProject(Long projectId, String userName,
+    String authToken) throws Exception;
+
+  /**
+   * Find users who have roles on the specified project.
+   *
+   * @param projectId the project id
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the user list
+   * @throws Exception the exception
+   */
+  public UserList findUsersForProject(Long projectId, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
   /**
@@ -119,7 +132,7 @@ public interface ProjectServiceRest {
    * @return the project list
    * @throws Exception the exception
    */
-  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs,
+    String authToken) throws Exception;
 
 }

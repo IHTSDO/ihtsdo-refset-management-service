@@ -70,6 +70,7 @@ public class ModelUnit001Test {
     Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode001");
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
+    tester.include("namespace");
     tester.include("description");
     tester.include("terminology");
     tester.include("version");
@@ -137,17 +138,19 @@ public class ModelUnit001Test {
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
     tester.include("description");
-    tester.include("projectRoleMap");
+    tester.include("userRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
-    assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
+    tester.include("namespace");
     tester.include("id");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("terminology");
     tester.include("version");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

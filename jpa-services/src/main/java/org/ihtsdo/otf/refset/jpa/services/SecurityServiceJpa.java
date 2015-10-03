@@ -216,7 +216,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     String userName = getUsernameForToken(authToken);
     ProjectService service = new ProjectServiceJpa();
     UserRole result =
-        service.getProject(projectId).getProjectRoleMap()
+        service.getProject(projectId).getUserRoleMap()
             .get(getUser(userName));
     service.close();
     if (result == null) {

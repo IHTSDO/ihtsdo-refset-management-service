@@ -70,7 +70,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ValidationResult result = new ValidationResultJpa();
 
     // Validate actions that users are not allowed to perform.
-    UserRole projectRole = refset.getProject().getProjectRoleMap().get(user);
+    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
     if (projectRole == UserRole.AUTHOR) {
       if (action == WorkflowAction.PREVIEW || action == WorkflowAction.PUBLISH
           || action == WorkflowAction.RE_REVIEW) {
@@ -149,7 +149,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate actions that users are not allowed to perform.
     UserRole projectRole =
-        translation.getProject().getProjectRoleMap().get(user);
+        translation.getProject().getUserRoleMap().get(user);
     if (projectRole == UserRole.AUTHOR) {
       if (action == WorkflowAction.PREVIEW || action == WorkflowAction.PUBLISH
           || action == WorkflowAction.RE_REVIEW) {
@@ -244,7 +244,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public TrackingRecord performWorkflowAction(Refset refset, User user,
     WorkflowAction action, WorkflowService service) throws Exception {
 
-    UserRole projectRole = refset.getProject().getProjectRoleMap().get(user);
+    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
 
     switch (action) {
       case ASSIGN_FROM_SCRATCH:
@@ -379,7 +379,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     throws Exception {
 
     UserRole projectRole =
-        translation.getProject().getProjectRoleMap().get(user);
+        translation.getProject().getUserRoleMap().get(user);
 
     switch (action) {
       case ASSIGN_FROM_SCRATCH:

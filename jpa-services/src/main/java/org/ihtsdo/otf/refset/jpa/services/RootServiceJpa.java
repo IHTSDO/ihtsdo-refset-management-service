@@ -245,32 +245,31 @@ public abstract class RootServiceJpa implements RootService {
       return null;
     }
   }
-  
+
   /**
    * Returns the query results.
    *
+   * @param <T> the
    * @param query the query
    * @param fieldNamesKey the field names key
    * @param clazz the clazz
    * @param pfs the pfs
+   * @param totalCt the total ct
    * @return the query results
    * @throws Exception the exception
    */
-  @SuppressWarnings("unchecked")
-  protected <T> List<?> getQueryResults(
-    String query, Class<?> fieldNamesKey, Class<T> clazz,
-    PfsParameter pfs, int[] totalCt) throws Exception {
-
+  protected <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
+    Class<T> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
 
     if (query == null || query.isEmpty()) {
       throw new Exception("Unexpected empty query.");
     }
 
-
     FullTextQuery fullTextQuery = null;
     try {
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs, manager);
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, query, pfs,
+              manager);
     } catch (ParseException e) {
       // If parse exception, try a literal query
       StringBuilder escapedQuery = new StringBuilder();
@@ -278,15 +277,13 @@ public abstract class RootServiceJpa implements RootService {
         escapedQuery.append(QueryParserBase.escape(query));
       }
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey, escapedQuery.toString()
-              , pfs, manager);
+          IndexUtility.applyPfsToLuceneQuery(clazz, fieldNamesKey,
+              escapedQuery.toString(), pfs, manager);
     }
-
 
     totalCt[0] = fullTextQuery.getResultSize();
     return fullTextQuery.getResultList();
 
   }
-
 
 }
