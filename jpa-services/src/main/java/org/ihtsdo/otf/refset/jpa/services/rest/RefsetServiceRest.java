@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
@@ -59,7 +60,7 @@ public interface RefsetServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset addRefset(Refset refset, String authToken) throws Exception;
+  public Refset addRefset(RefsetJpa refset, String authToken) throws Exception;
 
   /**
    * Update refset.
@@ -68,7 +69,7 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void updateRefset(Refset refset, String authToken) throws Exception;
+  public void updateRefset(RefsetJpa refset, String authToken) throws Exception;
 
   /**
    * Removes the refset.
