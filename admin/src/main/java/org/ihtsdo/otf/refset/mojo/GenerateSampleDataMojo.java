@@ -211,9 +211,63 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       //
       Logger.getLogger(getClass()).info("Assign users to projects");
       project = new ProjectServiceRestImpl();
-      project2 =
-          (ProjectJpa) project.addProject(project2, admin.getAuthToken());
+      project.assignUserToProject(project1.getId(), admin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
 
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), reviewer1.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), author1.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), author2.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), admin2.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), reviewer2.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), reviewer3.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), author3.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+      
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), admin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), admin3.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), reviewer1.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), reviewer3.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), author1.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project2.getId(), author3.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+
+
+      
+      
       // Create a refset in project 1 (extensional)
 
       // TODO: import members (e.g. from sample data)
