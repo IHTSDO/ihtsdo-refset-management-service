@@ -21,20 +21,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public interface Translation extends Component, Searchable {
 
   /**
-   * Returns the namespace.
-   *
-   * @return the namespace
-   */
-  public String getNamespace();
-
-  /**
-   * Sets the namespace.
-   *
-   * @param namepace the namespace
-   */
-  public void setNamespace(String namepace);
-
-  /**
    * Returns the description.
    * 
    * @return the description

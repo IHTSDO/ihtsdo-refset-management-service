@@ -8,7 +8,6 @@ import java.util.Date;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 
@@ -124,7 +123,8 @@ public interface TranslationService extends RefsetService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs) throws Exception;
+  public TranslationList findTranslationsForQuery(String query, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Find concepts for translation.
@@ -138,7 +138,6 @@ public interface TranslationService extends RefsetService {
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception;
 
-  
   /**
    * Returns the translation revision.
    *

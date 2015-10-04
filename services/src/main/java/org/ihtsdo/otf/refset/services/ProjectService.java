@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.services;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
@@ -111,14 +110,13 @@ public interface ProjectService extends RootService {
   /**
    * Find projects for query.
    *
-   * @param terminology the terminology
-   * @param version the version
    * @param query the query
    * @param pfs the pfs
    * @return the search result list
    * @throws Exception the exception
    */
-  public ProjectList findProjectsForQuery(String query, PfsParameter pfs) throws Exception;
+  public ProjectList findProjectsForQuery(String query, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Returns the terminology handler.
@@ -127,8 +125,7 @@ public interface ProjectService extends RootService {
    * @return the terminology handler
    * @throws Exception the exception
    */
-  public TerminologyHandler getTerminologyHandler(String terminology) throws Exception;
-
-
+  public TerminologyHandler getTerminologyHandler(String terminology)
+    throws Exception;
 
 }

@@ -50,7 +50,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * JPA enabled implementation of {@link Project}. 
+ * JPA enabled implementation of {@link Project}.
  */
 @Entity
 @Table(name = "projects", uniqueConstraints = @UniqueConstraint(columnNames = {
@@ -80,6 +80,10 @@ public class ProjectJpa implements Project {
   /** The name. */
   @Column(nullable = false)
   private String name;
+
+  /** The namespace. */
+  @Column(nullable = true)
+  private String namespace;
 
   /** The description. */
   @Column(nullable = false)
@@ -123,6 +127,7 @@ public class ProjectJpa implements Project {
     lastModified = project.getLastModified();
     lastModifiedBy = project.getLastModifiedBy();
     name = project.getName();
+    namespace = project.getNamespace();
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
@@ -217,22 +222,13 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @Override  
+  @Override
   @Fields({
     @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   public String getName() {
     return name;
-  }
-
-  /* see superclass */
-  @Override  @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  })
-  public String getDescription() {
-    return description;
   }
 
   /* see superclass */
@@ -243,14 +239,38 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public void setDescription(String description) {
-    this.description = description;
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getNamespace() {
+    return namespace;
   }
 
   /* see superclass */
   @Override
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /* see superclass */
+  @Override
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  public String getDescription() {
+    return description;
+  }
+
+  /* see superclass */
+  @Override
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  @Override
   public String toString() {
-    return getName() + " " + getId();
+    return "ProjectJpa [name=" + name + ", namespace=" + namespace
+        + ", description=" + description + ", terminology=" + terminology
+        + ", version=" + version + "]";
   }
 
   /* see superclass */
@@ -261,6 +281,7 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
@@ -315,6 +336,11 @@ public class ProjectJpa implements Project {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
+      return false;
+    if (namespace == null) {
+      if (other.namespace != null)
+        return false;
+    } else if (!namespace.equals(other.namespace))
       return false;
     if (terminology == null) {
       if (other.terminology != null)

@@ -69,4 +69,19 @@ public interface Project extends Searchable {
    */
   public void removeRefset(Refset refset);
 
+
+  /**
+   * Returns the namespace.
+   *
+   * @return the namespace
+   */
+  public String getNamespace();
+
+  /**
+   * Sets the namespace.
+   *
+   * @param namepace the namespace
+   */
+  public void setNamespace(String namepace);
+
 }
