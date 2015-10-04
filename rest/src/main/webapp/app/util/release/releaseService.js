@@ -1,0 +1,49 @@
+// Release Service
+tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
+  function($http, $q, gpService, utilService) {
+    console.debug("configure releaseService");
+
+    // Get release history for refsetId
+    this.getReleaseHistoryForRefset = function(refsetId) {
+      console.debug("getReleaseHistoryForRefset");
+      var deferred = $q.defer();
+
+      // Get release history for refsetId
+      gpService.increment()
+      $http.get(projectUrl + 'refset' + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  refset = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    }
+
+    // Get release history for translationId
+    this.getReleaseHistoryForTranslation = function(translationId) {
+      console.debug("getReleaseHistoryForTranslation");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(projectUrl + 'translation' + translationId).then(
+      // success
+      function(response) {
+        console.debug("  translation = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    }
+
+  } ]);
