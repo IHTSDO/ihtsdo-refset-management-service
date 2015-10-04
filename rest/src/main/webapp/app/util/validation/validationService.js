@@ -8,7 +8,7 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
       console.debug("validateConcept");
       var deferred = $q.defer();
 
-      // Add concept
+      // validate concept
       gpService.increment()
       $http.post(projectUrl + 'concept', concept).then(
       // success

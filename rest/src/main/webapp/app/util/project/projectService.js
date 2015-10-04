@@ -100,11 +100,11 @@ tsApp.service('projectService', [
     }
 
     // Finds projects as a list
-    this.findProjectsForQuery = function(queryStr, 
+    this.findProjectsAsList = function(queryStr, 
       pfs) {
 
       var query = (queryStr == null) ? "" : queryStr;
-      console.debug("findProjectsForQuery", query, 
+      console.debug("findProjectsAsList", query, 
         pfs);
       // Setup deferred
       var deferred = $q.defer();
