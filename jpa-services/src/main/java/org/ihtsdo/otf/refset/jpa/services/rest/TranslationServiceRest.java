@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
@@ -60,7 +61,7 @@ public interface TranslationServiceRest {
    * @return the translation
    * @throws Exception the exception
    */
-  public Translation addTranslation(Translation translation, String authToken)
+  public Translation addTranslation(TranslationJpa translation, String authToken)
     throws Exception;
 
   /**
@@ -70,7 +71,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void updateTranslation(Translation translation, String authToken)
+  public void updateTranslation(TranslationJpa translation, String authToken)
     throws Exception;
 
   /**

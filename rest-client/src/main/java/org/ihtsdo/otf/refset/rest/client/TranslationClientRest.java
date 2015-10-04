@@ -107,14 +107,14 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public Translation addTranslation(Translation translation, String authToken)
+  public Translation addTranslation(TranslationJpa translation, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public void updateTranslation(Translation translation, String authToken)
+  public void updateTranslation(TranslationJpa translation, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
 

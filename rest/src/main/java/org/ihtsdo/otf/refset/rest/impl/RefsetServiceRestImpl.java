@@ -103,7 +103,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/{refsetId}/{date}/members")
-  @ApiOperation(value = "Finds refsets", notes = "Finds refsets based on pfs parameter and query", response = RefsetListJpa.class)
+  @ApiOperation(value = "Finds members of refset revision", notes = "Finds members of refset with the given date based on pfs parameter and query", response = RefsetListJpa.class)
   public ConceptRefsetMemberList findMembersForRefsetRevision(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
@@ -161,7 +161,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/all")
+  @Path("/refsets/{projectid}")
   public RefsetList getRefsetsForProject(
     @ApiParam(value = "Project internal id, e.g. 2", required = true) Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
