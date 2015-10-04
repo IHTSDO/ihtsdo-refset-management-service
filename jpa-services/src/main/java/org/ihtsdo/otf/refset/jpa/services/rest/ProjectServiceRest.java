@@ -56,12 +56,13 @@ public interface ProjectServiceRest {
    * Find users who have roles on the specified project.
    *
    * @param projectId the project id
+   * @param query the query
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findUsersForProject(Long projectId, PfsParameterJpa pfs,
+  public UserList findUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
   /**
@@ -133,6 +134,19 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs,
+    String authToken) throws Exception;
+
+  /**
+   * Find potential users for project.
+   *
+   * @param projectId the project id
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the user list
+   * @throws Exception the exception
+   */
+  public UserList findPotentialUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
 }

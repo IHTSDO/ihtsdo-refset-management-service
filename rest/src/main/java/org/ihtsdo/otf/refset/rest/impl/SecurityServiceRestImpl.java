@@ -192,7 +192,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
 
-      authorize(securityService, authToken, "add concept", UserRole.ADMIN);
+      authorize(securityService, authToken, "add new user", UserRole.ADMIN);
 
       // Create service and configure transaction scope
       User newUser = securityService.addUser(user);

@@ -182,23 +182,27 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/users/{projectId}")
-  @ApiOperation(value = "Find user assigned to project", notes = "Finds users with assigned roles on the specified project", response = UserListJpa.class)
+  @ApiOperation(value = "Find users assigned to project", notes = "Finds users with assigned roles on the specified project", response = UserListJpa.class)
   public UserList findUsersForProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /users/ " + projectId + ", " + pfs);
+        "RESTful call PUT (Project): /users/ " + projectId + ", " + query + ", " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
       authorize(securityService, authToken, "find users for project",
           UserRole.VIEWER);
 
-      // TODO
+      // return all users assigned to the project
+      // TODO: should this query restriction be appended to one that is supplied?
+      pfs.setQueryRestriction("projectAnyRole:" + projectId);
+      UserList list = securityService.findUsersForQuery(query, pfs);
 
-      return null;
+      return list;
     } catch (Exception e) {
       handleException(e, "find users for project");
       return null;
@@ -208,6 +212,39 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  @Override
+  @PUT
+  @Path("/potential/users/{projectId}")
+  @ApiOperation(value = "Find potential users for project", notes = "Finds users who do not yet have assigned roles on the specified project", response = UserListJpa.class)
+  public UserList findPotentialUsersForProject(
+    @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Project): /potential/users/ " + projectId + ", " + query + ", " + pfs);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorize(securityService, authToken, "find potential users for project",
+          UserRole.VIEWER);
+
+      // return all users assigned to the project
+      // TODO: should this query restriction be appended to one that is supplied?
+      pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
+      UserList list = securityService.findUsersForQuery(query, pfs);
+
+      return list;
+    } catch (Exception e) {
+      handleException(e, "find users for project");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+  }
+  
   /* see superclass */
   @Override
   @PUT

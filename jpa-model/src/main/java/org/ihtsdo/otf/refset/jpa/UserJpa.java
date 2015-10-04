@@ -120,6 +120,7 @@ public class UserJpa implements User {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Long getId() {
     return id;

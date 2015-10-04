@@ -45,6 +45,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
@@ -102,7 +103,7 @@ public class ProjectJpa implements Project {
   /** The refsets. */
   @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
   // @IndexedEmbedded - n/a
-  private List<Refset> refsets = null;
+  private List<Refset> refsets = new ArrayList<>();
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -279,7 +280,7 @@ public class ProjectJpa implements Project {
   }
 
   /* see superclass */
-  @XmlJavaTypeAdapter(XmlGenericMapAdapter.class)
+  @XmlJavaTypeAdapter(UserRoleMapAdapter.class)
   @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
   public Map<User, UserRole> getUserRoleMap() {

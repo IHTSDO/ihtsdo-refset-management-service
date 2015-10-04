@@ -18,35 +18,31 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
  * A map adapber for Map<Project,UserRole>.
  */
 public class ProjectRoleMapAdapter extends
-    XmlAdapter<MapType<Long, String>, Map<Project, UserRole>> {
+    XmlAdapter<HashMap<Long, String>, Map<Project, UserRole>> {
 
   /* see superclass */
   @Override
-  public Map<Project, UserRole> unmarshal(MapType<Long, String> v)
+  public Map<Project, UserRole> unmarshal(HashMap<Long, String> v)
     throws Exception {
     HashMap<Project, UserRole> map = new HashMap<Project, UserRole>();
 
-    for (MapEntryType<Long, String> mapEntryType : v.getEntry()) {
+    for (Map.Entry<Long, String> entry : v.entrySet()) {
       Project project = new ProjectJpa();
-      project.setId(mapEntryType.getKey());
-      map.put(project, UserRole.valueOf(mapEntryType.getValue()));
+      project.setId(entry.getKey());
+      map.put(project, UserRole.valueOf(entry.getValue()));
     }
     return map;
   }
 
   /* see superclass */
-  @SuppressWarnings("rawtypes")
   @Override
-  public MapType marshal(Map<Project, UserRole> v) throws Exception {
-    MapType<Long, String> mapType = new MapType<Long, String>();
+  public HashMap<Long, String> marshal(Map<Project, UserRole> v) throws Exception {
+    HashMap<Long, String> map = new HashMap<Long, String>();
 
     for (Map.Entry<Project,UserRole> entry : v.entrySet()) {
-      MapEntryType<Long, String> mapEntryType = new MapEntryType<Long, String>();
-      mapEntryType.setKey(entry.getKey().getId());
-      mapEntryType.setValue(entry.getValue().toString());
-      mapType.getEntry().add(mapEntryType);
+      map.put(entry.getKey().getId(), entry.getValue().toString());
     }
-    return mapType;
+    return map;
   }
 
 }
