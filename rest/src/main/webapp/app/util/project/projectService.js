@@ -165,10 +165,10 @@ tsApp.service('projectService', [
     };
     
     // Finds users NOT on given project
-    this.findPotentialUsersForProject = function(projectId, query, 
+    this.findCandidateUsersForProject = function(projectId, query, 
       pfs) {
 
-      console.debug("findPotentialUsersForProject", projectId, 
+      console.debug("findCandidateUsersForProject", projectId, 
         pfs);
       // Setup deferred
       var deferred = $q.defer();
@@ -177,7 +177,7 @@ tsApp.service('projectService', [
       gpService.increment();
       $http.put(
         projectUrl
-          + "potential/users/" + projectId + "?query=" + query, pfs)
+          + "candidate/users/" + projectId + "?query=" + query, pfs)
         .then(
         // success
         function(response) {

@@ -214,20 +214,20 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @PUT
-  @Path("/potential/users/{projectId}")
-  @ApiOperation(value = "Find potential users for project", notes = "Finds users who do not yet have assigned roles on the specified project", response = UserListJpa.class)
-  public UserList findPotentialUsersForProject(
+  @Path("/candidate/users/{projectId}")
+  @ApiOperation(value = "Find candidate users for project", notes = "Finds users who do not yet have assigned roles on the specified project", response = UserListJpa.class)
+  public UserList findCandidateUsersForProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /potential/users/ " + projectId + ", " + query + ", " + pfs);
+        "RESTful call PUT (Project): /candidate/users/ " + projectId + ", " + query + ", " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find potential users for project",
+      authorize(securityService, authToken, "find candidate users for project",
           UserRole.VIEWER);
 
       // return all users assigned to the project

@@ -31,10 +31,10 @@ tsApp
         $scope.pageSize = 4;
         
         $scope.pagedProjects = null;
-        $scope.pagedPotentialProjects = null;
+        $scope.pagedCandidateProjects = null;
         $scope.pagedUsers = null;
         $scope.pagedAssignedUsers = null;
-        $scope.pagedPotentialUsers = null;
+        $scope.pagedCandidateUsers = null;
 
         $scope.projectPaging = {
           page : 1,
@@ -43,7 +43,7 @@ tsApp
           ascending : []
         }
         
-        $scope.potentialProjectPaging = {
+        $scope.candidateProjectPaging = {
           page : 1,
           filter : "",
           sortField : 'lastModified',
@@ -64,7 +64,7 @@ tsApp
           ascending : []
         }        
         
-        $scope.potentialUserPaging = {
+        $scope.candidateUserPaging = {
           page : 1,
           filter : "",
           sortField : 'email',
@@ -89,15 +89,15 @@ tsApp
           
         };
         
-        // get potential projects
+        // get candidate projects
         // one of these projects can be selected for user and role assignment
-        $scope.retrievePotentialProjects = function() {
+        $scope.retrieveCandidateProjects = function() {
           
           var pfs = {
-            startIndex : ($scope.potentialProjectPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.candidateProjectPaging.page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.potentialProjectPaging.sortField,
-            ascending : $scope.potentialProjectPaging.ascending.indexOf($scope.potentialProjectPaging.sortField) != -1 ? true : false,
+            sortField : $scope.candidateProjectPaging.sortField,
+            ascending : $scope.candidateProjectPaging.ascending.indexOf($scope.candidateProjectPaging.sortField) != -1 ? true : false,
             queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
 
@@ -106,9 +106,9 @@ tsApp
             pfs.queryRestriction = null;
           }
           
-          projectService.findProjectsAsList($scope.potentialProjectPaging.filter, pfs).then(function(data) {
-            $scope.pagedPotentialProjects = data.projects;
-            $scope.pagedPotentialProjects.totalCount = data.totalCount;
+          projectService.findProjectsAsList($scope.candidateProjectPaging.filter, pfs).then(function(data) {
+            $scope.pagedCandidateProjects = data.projects;
+            $scope.pagedCandidateProjects.totalCount = data.totalCount;
           })
           
         };
@@ -131,20 +131,20 @@ tsApp
           
         };
         
-        // get potential users - this is the list of users that are not yet
+        // get candidate users - this is the list of users that are not yet
         // assigned to the selected project
-        $scope.retrievePagedPotentialUsers = function() {
+        $scope.retrievePagedCandidateUsers = function() {
           var pfs = {
-            startIndex : ($scope.potentialUserPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.candidateUserPaging.page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.potentialUserPaging.sortField,
-            ascending : $scope.potentialUserPaging.ascending.indexOf($scope.potentialUserPaging.sortField) != -1 ? true : false,  
+            sortField : $scope.candidateUserPaging.sortField,
+            ascending : $scope.candidateUserPaging.ascending.indexOf($scope.candidateUserPaging.sortField) != -1 ? true : false,  
             queryRestriction : null
           };
          
-          projectService.findPotentialUsersForProject($scope.selectedProject.id, $scope.potentialUserPaging.filter, pfs).then(function(data) {
-            $scope.pagedPotentialUsers = data.users;
-            $scope.pagedPotentialUsers.totalCount = data.totalCount;
+          projectService.findCandidateUsersForProject($scope.selectedProject.id, $scope.candidateUserPaging.filter, pfs).then(function(data) {
+            $scope.pagedCandidateUsers = data.users;
+            $scope.pagedCandidateUsers.totalCount = data.totalCount;
           }) 
         };
         
@@ -192,7 +192,7 @@ tsApp
           
           $scope.selectedProject = project;
 
-          $scope.retrievePagedPotentialUsers();
+          $scope.retrievePagedCandidateUsers();
           $scope.retrievePagedAssignedUsers();
         }
         
@@ -210,7 +210,7 @@ tsApp
           }
             projectService.removeProject(object).then(function() {
               $scope.retrievePagedProjects();
-              $scope.retrievePotentialProjects();
+              $scope.retrieveCandidateProjects();
             });
           }
           if (type == 'user') {
@@ -222,7 +222,7 @@ tsApp
               securityService.removeUser(object).then(function() {
               $scope.retrievePagedUsers();
               if ($scope.selectedProject != null) {
-                $scope.retrievePagedPotentialUsers();
+                $scope.retrievePagedCandidateUsers();
                 $scope.retrievePagedAssignedUsers();
               }
             });
@@ -241,17 +241,17 @@ tsApp
           $scope.retrievePagedProjects();
         }
         
-        // sort mechanism for potential project table
-        $scope.setPotentialProjectSortField = function(field) {
-          console.debug("setPotentialProjectSortField " + field);
-          $scope.potentialProjectPaging.sortField = field;
-          var fieldIndex = $scope.potentialProjectPaging.ascending.indexOf(field);
+        // sort mechanism for candidate project table
+        $scope.setCandidateProjectSortField = function(field) {
+          console.debug("setCandidateProjectSortField " + field);
+          $scope.candidateProjectPaging.sortField = field;
+          var fieldIndex = $scope.candidateProjectPaging.ascending.indexOf(field);
           if (fieldIndex != -1) {
-            $scope.potentialProjectPaging.ascending.splice(fieldIndex, 1);
+            $scope.candidateProjectPaging.ascending.splice(fieldIndex, 1);
           } else {
-            $scope.potentialProjectPaging.ascending.push(field);
+            $scope.candidateProjectPaging.ascending.push(field);
           }
-          $scope.retrievePotentialProjects();
+          $scope.retrieveCandidateProjects();
         }
         
         // sort mechanism for user table
@@ -266,16 +266,16 @@ tsApp
           $scope.retrievePagedUsers();
         }
         
-        // sort mechanism for potential user table
-        $scope.setPotentialUserSortField = function(field) {
-          $scope.potentialUserPaging.sortField = field;
-          var fieldIndex = $scope.potentialUserPaging.ascending.indexOf(field);
+        // sort mechanism for candidate user table
+        $scope.setCandidateUserSortField = function(field) {
+          $scope.candidateUserPaging.sortField = field;
+          var fieldIndex = $scope.candidateUserPaging.ascending.indexOf(field);
           if (fieldIndex != -1) {
-            $scope.potentialUserPaging.ascending.splice(fieldIndex, 1);
+            $scope.candidateUserPaging.ascending.splice(fieldIndex, 1);
           } else {
-            $scope.potentialUserPaging.ascending.push(field);
+            $scope.candidateUserPaging.ascending.push(field);
           }
-          $scope.retrievePagedPotentialUsers();
+          $scope.retrievePagedCandidateUsers();
         }
         
         // sort mechanism for assigned user table
@@ -302,7 +302,7 @@ tsApp
               $scope.retrievePagedProjects();
               $scope.selectedProject = data;
               $scope.retrievePagedAssignedUsers();
-              $scope.retrievePagedPotentialUsers();
+              $scope.retrievePagedCandidateUsers();
             })
         };
 
@@ -314,7 +314,7 @@ tsApp
               $scope.retrievePagedProjects();
               $scope.selectedProject = data;
               $scope.retrievePagedAssignedUsers();
-              $scope.retrievePagedPotentialUsers();
+              $scope.retrievePagedCandidateUsers();
             })
         };
 
@@ -325,7 +325,7 @@ tsApp
         
         $scope.retrievePagedProjects();
         $scope.retrievePagedUsers();
-        $scope.retrievePotentialProjects();
+        $scope.retrieveCandidateProjects();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
 
@@ -352,7 +352,7 @@ tsApp
           });
           
           modalInstance.result.finally(function() {
-            $scope.retrievePotentialProjects();
+            $scope.retrieveCandidateProjects();
           });
         };
 
@@ -410,7 +410,7 @@ tsApp
           });
           
           modalInstance.result.finally(function() {
-            $scope.retrievePagedPotentialUsers();
+            $scope.retrievePagedCandidateUsers();
             $scope.retrievePagedAssignedUsers();
           });
         };
@@ -466,7 +466,7 @@ tsApp
           });
           
           modalInstance.result.finally(function() {
-            $scope.retrievePotentialProjects();
+            $scope.retrieveCandidateProjects();
           });
         };
 
@@ -523,7 +523,7 @@ tsApp
           });
           
           modalInstance.result.finally(function() {
-            $scope.retrievePagedPotentialUsers();
+            $scope.retrievePagedCandidateUsers();
             $scope.retrievePagedAssignedUsers();
           });
         };

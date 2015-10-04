@@ -146,7 +146,7 @@ public interface ProjectServiceRest {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findPotentialUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
+  public UserList findCandidateUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
 }
