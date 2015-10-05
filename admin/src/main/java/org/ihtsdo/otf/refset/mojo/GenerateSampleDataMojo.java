@@ -155,9 +155,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       Logger.getLogger(getClass()).info("Add new reviewer users");
       UserJpa reviewer1 = makeUser("reviewer1", "Reviewer1");
       reviewer1 = (UserJpa) security.addUser(reviewer1, admin.getAuthToken());
-      UserJpa reviewer2 = makeUser("reviewer3", "Reviewer2");
+      UserJpa reviewer2 = makeUser("reviewer2", "Reviewer2");
       reviewer2 = (UserJpa) security.addUser(reviewer2, admin.getAuthToken());
-      UserJpa reviewer3 = makeUser("reviewer2", "Reviewer3");
+      UserJpa reviewer3 = makeUser("reviewer3", "Reviewer3");
       reviewer3 = (UserJpa) security.addUser(reviewer3, admin.getAuthToken());
 
       //
@@ -166,9 +166,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       Logger.getLogger(getClass()).info("Add new author users");
       UserJpa author1 = makeUser("author1", "Author1");
       author1 = (UserJpa) security.addUser(author1, admin.getAuthToken());
-      UserJpa author2 = makeUser("author3", "Author2");
+      UserJpa author2 = makeUser("author2", "Author2");
       author2 = (UserJpa) security.addUser(author2, admin.getAuthToken());
-      UserJpa author3 = makeUser("author2", "Author3");
+      UserJpa author3 = makeUser("author3", "Author3");
       author3 = (UserJpa) security.addUser(author3, admin.getAuthToken());
 
       /**

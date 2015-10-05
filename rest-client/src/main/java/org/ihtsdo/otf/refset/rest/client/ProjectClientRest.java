@@ -297,8 +297,15 @@ public class ProjectClientRest extends RootClientRest implements
   }
 
   @Override
-  public UserList findUsersForProject(Long projectId, PfsParameterJpa pfs,
+  public UserList findUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
     String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public UserList findCandidateUsersForProject(Long projectId, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

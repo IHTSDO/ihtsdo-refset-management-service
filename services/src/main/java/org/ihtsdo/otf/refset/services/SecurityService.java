@@ -61,7 +61,7 @@ public interface SecurityService extends RootService {
    * @return the application role
    * @throws Exception the exception
    */
-  public UserRole getProjectRoleForToken(String authToken, Long projectId)
+  public UserRole getUserRoleForToken(String authToken, Long projectId)
     throws Exception;
 
   /**

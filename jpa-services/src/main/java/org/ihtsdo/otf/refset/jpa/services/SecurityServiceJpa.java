@@ -203,7 +203,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public UserRole getProjectRoleForToken(String authToken, Long projectId)
+  public UserRole getUserRoleForToken(String authToken, Long projectId)
     throws Exception {
     if (authToken == null) {
       throw new LocalException(
@@ -225,6 +225,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return result;
   }
 
+  
+  
   /* see superclass */
   @Override
   public User getUser(Long id) throws Exception {

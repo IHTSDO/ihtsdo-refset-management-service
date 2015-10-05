@@ -133,6 +133,68 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
     
+    // Finds users on given project
+    this.findUsersForProject = function(projectId, query, 
+      pfs) {
+
+      console.debug("findUsersForProject", projectId, 
+        pfs);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      // Make PUT call
+      gpService.increment();
+      $http.put(
+        projectUrl
+          + "users/" + projectId +  "?query=" + query, pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+
+      return deferred.promise;
+    };
+    
+    // Finds users NOT on given project
+    this.findCandidateUsersForProject = function(projectId, query, 
+      pfs) {
+
+      console.debug("findCandidateUsersForProject", projectId, 
+        pfs);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      // Make PUT call
+      gpService.increment();
+      $http.put(
+        projectUrl
+          + "candidate/users/" + projectId + "?query=" + query, pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+
+      return deferred.promise;
+    };
+    
     // assign user to project
     this.assignUserToProject = function(projectId, userName, projectRole) {
       console.debug("assignUserToProject");

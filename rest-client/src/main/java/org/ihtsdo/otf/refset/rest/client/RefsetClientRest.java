@@ -106,13 +106,13 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public Refset addRefset(Refset refset, String authToken) throws Exception {
+  public Refset addRefset(RefsetJpa refset, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public void updateRefset(Refset refset, String authToken) throws Exception {
+  public void updateRefset(RefsetJpa refset, String authToken) throws Exception {
     // TODO Auto-generated method stub
 
   }
