@@ -19,8 +19,8 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyClass;
+import javax.persistence.MapKeyJoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -43,7 +43,6 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
-import org.ihtsdo.otf.refset.helpers.XmlGenericMapAdapter;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleMapAdapter;
 
@@ -98,10 +97,12 @@ public class ProjectJpa implements Project {
   private String version;
 
   /** The role map. */
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)
-  @CollectionTable(name = "project_user_role_map", joinColumns = @JoinColumn(name = "user_id"))
+  @MapKeyJoinColumn(name = "user_id")
+  @Column(name = "role")
+  @CollectionTable(name = "project_user_role_map")
   private Map<User, UserRole> userRoleMap;
 
   /** The refsets. */
@@ -224,7 +225,7 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   public String getName() {

@@ -133,7 +133,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // Initialize
       Logger.getLogger(getClass()).info("Authenticate admin user");
-      Properties properties = ConfigUtility.getConfigProperties();
       SecurityServiceRest security = new SecurityServiceRestImpl();
       ProjectServiceRest project = new ProjectServiceRestImpl();
       User admin = security.authenticate("admin", "admin");
@@ -203,7 +202,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           (ProjectJpa) project.addProject(project2, admin.getAuthToken());
       project = new ProjectServiceRestImpl();
       ProjectJpa project3 = makeProject("Project 3");
-      project2 =
+      project3 =
           (ProjectJpa) project.addProject(project3, admin.getAuthToken());
 
       //
@@ -240,34 +239,31 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project2.getId(), author3.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
-      
+
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), admin1.getUserName(),
+      project.assignUserToProject(project3.getId(), admin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), admin3.getUserName(),
+      project.assignUserToProject(project3.getId(), admin3.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
 
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), reviewer1.getUserName(),
+      project.assignUserToProject(project3.getId(), reviewer1.getUserName(),
           UserRole.REVIEWER.toString(), admin.getAuthToken());
 
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), reviewer3.getUserName(),
+      project.assignUserToProject(project3.getId(), reviewer3.getUserName(),
           UserRole.REVIEWER.toString(), admin.getAuthToken());
 
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), author1.getUserName(),
+      project.assignUserToProject(project3.getId(), author1.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
       project = new ProjectServiceRestImpl();
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project2.getId(), author3.getUserName(),
+      project.assignUserToProject(project3.getId(), author3.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
       project = new ProjectServiceRestImpl();
 
-
-      
-      
       // Create a refset in project 1 (extensional)
 
       // TODO: import members (e.g. from sample data)
@@ -297,6 +293,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @param name the name
    * @return the user
    */
+  @SuppressWarnings("static-method")
   private UserJpa makeUser(String userName, String name) {
     final UserJpa user = new UserJpa();
     user.setUserName(userName);
@@ -312,6 +309,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @param name the name
    * @return the project jpa
    */
+  @SuppressWarnings("static-method")
   private ProjectJpa makeProject(String name) {
     final ProjectJpa project = new ProjectJpa();
     project.setName(name);

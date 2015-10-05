@@ -136,6 +136,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  @Override
   @GET
   @Path("/{translationId}")
   @ApiOperation(value = "Get translation for id", notes = "Gets the translation for the specified id", response = TranslationJpa.class)
