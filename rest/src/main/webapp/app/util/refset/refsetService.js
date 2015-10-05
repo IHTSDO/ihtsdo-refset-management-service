@@ -14,7 +14,7 @@ tsApp.service('refsetService', [
 
       // get refset revision
       gpService.increment()
-      $http.get(projectUrl + "?refsetId=" + refsetId + "&date=" + date).then(
+      $http.get(projectUrl + refsetId + "/" + date).then(
       // success
       function(response) {
         console.debug("  refset revision = ", response.data);
@@ -37,8 +37,7 @@ tsApp.service('refsetService', [
 
       // find refsets
       gpService.increment()
-      $http.post(
-        projectUrl + "?refsetId=" + refsetId + "&date=" + date + "&pfs=" + pfs)
+      $http.post(projectUrl + refsetId + "/" + date + "/" + 'members' , pfs)
         .then(
         // success
         function(response) {
@@ -62,7 +61,7 @@ tsApp.service('refsetService', [
 
       // get refset for id
       gpService.increment()
-      $http.get(projectUrl + "?refsetId=" + refsetId).then(
+      $http.get(projectUrl + "/" + refsetId).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -79,13 +78,13 @@ tsApp.service('refsetService', [
     }
 
     // get refset for project
-    this.getRefsetsForProject = function() {
+    this.getRefsetsForProject = function(projectId) {
       console.debug("getRefsetsForProject");
       var deferred = $q.defer();
 
       // get refset for project
       gpService.increment()
-      $http.get(projectUrl + 'all').then(
+      $http.get(projectUrl + 'refsets', projectId).then(
       // success
       function(response) {
         console.debug("  projects = ", response.data);
