@@ -27,7 +27,7 @@ public class MemoryEntryJpa implements MemoryEntry {
   @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
-  private Long isd;
+  private Long id;
 
   @Override
   public String getName() {

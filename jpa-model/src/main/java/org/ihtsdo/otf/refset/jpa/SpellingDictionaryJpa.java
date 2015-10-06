@@ -11,7 +11,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
-import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.SpellingDictionary;
@@ -21,9 +20,7 @@ import org.ihtsdo.otf.refset.Translation;
  * JPA enabled implementation of {@link SpellingDictionary}.
  */
 @Entity
-@Table(name = "spelling_dictionaries", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "name", "id"
-}))
+@Table(name = "spelling_dictionaries")
 @XmlRootElement(name = "dictionary")
 public class SpellingDictionaryJpa implements SpellingDictionary {
 

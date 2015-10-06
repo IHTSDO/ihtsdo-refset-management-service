@@ -154,4 +154,18 @@ public class ReleaseClientRest extends RootClientRest implements
     return null;
   }
 
+  @Override
+  public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult cancelTranslationRelease(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }

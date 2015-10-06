@@ -413,7 +413,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /**
-   * Returns the project id.
+   * Returns the project id. For JAXB
    *
    * @return the project id
    */

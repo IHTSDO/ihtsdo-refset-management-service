@@ -325,9 +325,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // Do this as "reviewer1"
       reviewer1 = (UserJpa) security.authenticate("reviewer1", "reviewer1");
       RefsetServiceRest refset = new RefsetServiceRestImpl();
-      Refset refset1 =
-          makeRefset("refset1", null, false, project1, "11111912342013");
-      refset.addRefset((RefsetJpa) refset1, reviewer1.getAuthToken());
+     // Refset refset1 =
+       //   makeRefset("refset1", null, false, project1, "11111912342013");
+      //refset.addRefset((RefsetJpa) refset1, reviewer1.getAuthToken());
 
       // TODO: import members (e.g. from sample data)
 

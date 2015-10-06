@@ -83,6 +83,17 @@ public interface ReleaseServiceRest {
     throws Exception;
 
   /**
+   * Cancel refset release.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
    * Begin translation release.
    *
    * @param translationId the translation id
@@ -126,6 +137,17 @@ public interface ReleaseServiceRest {
    * @throws Exception the exception
    */
   public ValidationResult finishTranslationRelease(Long translationId,
+    String authToken) throws Exception;
+
+  /**
+   * Cancel translation release.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult cancelTranslationRelease(Long translationId,
     String authToken) throws Exception;
 
 }

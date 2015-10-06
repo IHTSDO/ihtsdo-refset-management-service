@@ -212,7 +212,6 @@ public class ModelUnit036Test {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
-
     tester.include("name");
     tester.include("description");
     tester.include("isPublic");
