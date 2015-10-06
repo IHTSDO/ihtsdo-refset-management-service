@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
@@ -20,10 +21,13 @@ import org.ihtsdo.otf.refset.MemoryEntry;
 @XmlRootElement(name = "entry")
 public class MemoryEntryJpa implements MemoryEntry {
 
-  @SuppressWarnings("javadoc")
+  /**
+   * 
+   */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
-  private Long id;
+  private Long isd;
 
   @Override
   public String getName() {

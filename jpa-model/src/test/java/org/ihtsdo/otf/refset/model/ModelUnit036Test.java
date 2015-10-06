@@ -238,6 +238,7 @@ public class ModelUnit036Test {
     tester.include("name");
     tester.include("description");
     tester.include("definition");
+    tester.include("userRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields

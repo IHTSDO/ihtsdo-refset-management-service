@@ -353,6 +353,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    *
    * @return the user role map
    */
+  @XmlTransient
   @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
@@ -411,6 +412,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + descriptionTypes + "]";
   }
 
+  @XmlTransient
   @Override
   public SpellingDictionary getSpellingDictionary() {
     // TODO Auto-generated method stub
@@ -423,6 +425,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   }
 
+  @XmlTransient
   @Override
   public Map<String, PhraseMemory> getPhraseMemoryMap() {
     // TODO Auto-generated method stub

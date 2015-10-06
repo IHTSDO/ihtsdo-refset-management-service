@@ -10,6 +10,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.TableGenerator;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -27,6 +28,7 @@ import org.ihtsdo.otf.refset.Translation;
 public class SpellingDictionaryJpa implements SpellingDictionary {
 
   /** The id. Set initial value to 5 to bypass entries in import.sql */
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;

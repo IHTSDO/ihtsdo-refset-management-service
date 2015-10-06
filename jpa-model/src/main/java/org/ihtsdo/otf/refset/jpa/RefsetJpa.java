@@ -542,6 +542,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    *
    * @return the user role map
    */
+  @XmlTransient
   @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public Map<User, UserRole> getUserRoleMap() {
      return getProject().getUserRoleMap();

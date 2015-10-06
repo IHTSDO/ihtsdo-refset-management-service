@@ -77,6 +77,8 @@ public class ModelUnit035Test {
   public void testModelGetSet030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("phraseMemoryMap");
+    tester.exclude("spellingDictionary");
     tester.test();
   }
 
@@ -194,6 +196,7 @@ public class ModelUnit035Test {
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
     tester.include("description");
+    tester.include("userRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
