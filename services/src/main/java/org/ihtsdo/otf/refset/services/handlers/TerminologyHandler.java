@@ -3,16 +3,14 @@
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
-import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.Translation;
+import java.util.List;
+
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -20,43 +18,47 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 public interface TerminologyHandler extends Configurable {
 
   /**
-   * Returns the concept.
+   * Returns the terminology editions.
    *
-   * @param id the id
-   * @return the concept
+   * @return the terminology editions
    * @throws Exception the exception
    */
-  public Concept getConcept(Long id) throws Exception;
+  public List<String> getTerminologyEditions() throws Exception;
 
   /**
-   * Returns the concept.
+   * Returns the terminology versions.
+   *
+   * @param edition the edition
+   * @return the terminology versions
+   * @throws Exception the exception
+   */
+  public List<Terminology> getTerminologyVersions(String edition)
+    throws Exception;
+
+  /**
+   * Resolve expression.
+   *
+   * @param expr the expr
+   * @param terminolgy the terminolgy
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList resolveExpression(String expr, String terminolgy,
+    String version, PfsParameter pfs) throws Exception;
+
+  /**
+   * Returns the concept with descriptions.
    *
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
-   * @return the concept
+   * @return the concept with descriptions
    * @throws Exception the exception
    */
-  public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception;
-
-  /**
-   * Adds the description.
-   *
-   * @param description the description
-   * @return the description
-   * @throws Exception the exception
-   */
-  public Description addDescription(Description description) throws Exception;
-
-  /**
-   * Returns the description.
-   *
-   * @param id the id
-   * @return the description
-   * @throws Exception the exception
-   */
-  public Description getDescription(Long id) throws Exception;
+  public Concept getConceptWithDescriptions(String terminologyId,
+    String terminology, String version) throws Exception;
 
   /**
    * Returns the description.
@@ -71,162 +73,30 @@ public interface TerminologyHandler extends Configurable {
     String version) throws Exception;
 
   /**
-   * Update description.
+   * Find concepts for query.
    *
-   * @param description the description
-   * @throws Exception the exception
-   */
-  public void updateDescription(Description description) throws Exception;
-
-  /**
-   * Removes the description.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeDescription(Long id) throws Exception;
-
-  /**
-   * Adds the languageRefsetMember.
-   *
-   * @param languageRefsetMember the languageRefsetMember
-   * @return the languageRefsetMember
-   * @throws Exception the exception
-   */
-  public LanguageRefsetMember addLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember) throws Exception;
-
-  /**
-   * Returns the languageRefsetMember.
-   *
-   * @param id the id
-   * @return the languageRefsetMember
-   * @throws Exception the exception
-   */
-  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception;
-
-  /**
-   * Returns the languageRefsetMembers.
-   *
-   * @param terminologyId the terminology id
+   * @param query the query
    * @param terminology the terminology
    * @param version the version
-   * @return the languageRefsetMembers
-   * @throws Exception the exception
-   */
-  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception;
-
-  /**
-   * Update languageRefsetMember.
-   *
-   * @param languageRefsetMember the languageRefsetMember
-   * @throws Exception the exception
-   */
-  public void updateLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember) throws Exception;
-
-  /**
-   * Removes the languageRefsetMember.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeLanguageRefsetMember(Long id) throws Exception;
-
-  /**
-   * Adds the simpleRefsetMember.
-   *
-   * @param simpleRefsetMember the simpleRefsetMember
-   * @return the simpleRefsetMember
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMember addSimpleRefsetMember(
-    ConceptRefsetMember simpleRefsetMember) throws Exception;
-
-  /**
-   * Returns the simpleRefsetMember.
-   *
-   * @param id the id
-   * @return the simpleRefsetMember
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMember getSimpleRefsetMember(Long id) throws Exception;
-
-  /**
-   * Returns the simpleRefsetMember.
-   *
-   * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param version the version
-   * @return the simpleRefsetMember
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMember getSimpleRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception;
-
-  /**
-   * Update simpleRefsetMember.
-   *
-   * @param simpleRefsetMember the simpleRefsetMember
-   * @throws Exception the exception
-   */
-  public void updateSimpleRefsetMember(ConceptRefsetMember simpleRefsetMember)
-    throws Exception;
-
-  /**
-   * Removes the simpleRefsetMember.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeSimpleRefsetMember(Long id) throws Exception;
-
-  /**
-   * Find members for refset.
-   *
-   * @param refsetId the refset id
-   * @param query the query
    * @param pfs the pfs
-   * @return the list
+   * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs) throws Exception;
+  public ConceptList findConceptsForQuery(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception;
 
+  // TODO: other methods (if using term server storage)
   /**
-   * Find members for historical refset.
-   *
-   * @param refset the refset
-   * @param query the query
-   * @param pfs the pfs
-   * @return the list
-   * @throws Exception the exception
+   * <pre>
+   * Refset methods
+   *  - add/update/remove/get/find refset
+   *  - add/remove/get/find refset member
+   *  - get/find refset members
+   * Translation (some of these likely already exist)
+   *  - add/update/remove concept (get/find already defined)
+   *  - add/update/remove description (get alread implemented)
+   *  - add/update/remove language refset member
+   * </pre>
    */
-  public ConceptRefsetMemberList findMembersForHistoricalRefset(Refset refset,
-    String query, PfsParameter pfs) throws Exception;
 
-  /**
-   * Find concepts for translation.
-   *
-   * @param translationId the translation id
-   * @param query the query
-   * @param pfs the pfs
-   * @return the list
-   * @throws Exception the exception
-   */
-  public ConceptList findConceptsForTranslation(Long translationId,
-    String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find concepts for historical translation.
-   *
-   * @param translation the translation
-   * @param query the query
-   * @param pfs the pfs
-   * @return the list
-   * @throws Exception the exception
-   */
-  public ConceptList findConceptsForHistoricalTranslation(
-    Translation translation, String query, PfsParameter pfs) throws Exception;
 }

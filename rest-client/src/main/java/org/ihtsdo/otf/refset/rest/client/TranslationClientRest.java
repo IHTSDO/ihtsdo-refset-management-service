@@ -8,12 +8,15 @@ import java.util.Properties;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -127,11 +130,61 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
+  @SuppressWarnings("resource")
   @Override
-  public InputStream exportTranslation(Long translationId, String authToken)
+  public void importConcepts(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Translation Client - import translation");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+
+    FormDataMultiPart multiPart =
+        new FormDataMultiPart().field("name", in,
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/import/members"
+            + "?translationId=" + translationId + "&handlerId=" + ioHandlerInfoId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    
   }
+
+  @Override
+  public InputStream exportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - export translation concepts - " + translationId + ", "
+            + ioHandlerInfoId);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/export/members"
+            + "?translationId=" + translationId + "&handlerId=" + ioHandlerInfoId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    InputStream in = response.readEntity(InputStream.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return in;
+  }
+
 
 }

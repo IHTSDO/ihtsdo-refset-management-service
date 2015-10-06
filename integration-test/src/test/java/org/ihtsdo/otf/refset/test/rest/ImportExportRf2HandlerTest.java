@@ -1,7 +1,7 @@
 /*
  * Copyright 2015 West Coast Informatics, LLC
  */
-package org.ihtsdo.otf.refset.test.jpa;
+package org.ihtsdo.otf.refset.test.rest;
 
 import java.io.BufferedReader;
 import java.io.File;

@@ -8,6 +8,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import java.io.InputStream;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
@@ -85,15 +86,31 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
+   * Import translation.
+   *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
+   * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void importConcepts(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
+    throws Exception;
+
+  /**
    * Export translation.
    *
    * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportTranslation(Long translationId, String authToken)
-    throws Exception;
+  public InputStream exportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Returns the translation revision.

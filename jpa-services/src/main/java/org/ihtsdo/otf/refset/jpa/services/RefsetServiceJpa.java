@@ -27,7 +27,9 @@ import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -226,8 +228,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   @Override
   public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(Long id)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get refsetDescriptorRefsetMember " + id);
+    Logger.getLogger(getClass()).debug("Refset Service - get member " + id);
     return getHasLastModified(id, RefsetDescriptorRefsetMemberJpa.class);
   }
 
@@ -237,8 +238,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     String terminologyId, String terminology, String version, String branch)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - get refsetDescriptorRefsetMember " + terminologyId
-            + "/" + terminology + "/" + version + "/" + branch);
+        "Refset Service - get member " + terminologyId + "/" + terminology
+            + "/" + version + "/" + branch);
     return getHasLastModified(terminologyId, terminology, version,
         RefsetDescriptorRefsetMemberJpa.class);
   }
@@ -246,74 +247,65 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - add refsetDescriptorRefsetMember "
-            + refsetDescriptorRefsetMember);
+    RefsetDescriptorRefsetMember member) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler =
-          getIdentifierAssignmentHandler(refsetDescriptorRefsetMember
-              .getTerminology());
+      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
-            + refsetDescriptorRefsetMember.getTerminology());
+            + member.getTerminology());
       }
-      String id = idHandler.getTerminologyId(refsetDescriptorRefsetMember);
-      refsetDescriptorRefsetMember.setTerminologyId(id);
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
     }
 
     // Add component
-    RefsetDescriptorRefsetMember newRefsetDescriptorRefsetMember =
-        addHasLastModified(refsetDescriptorRefsetMember);
+    RefsetDescriptorRefsetMember newMember = addHasLastModified(member);
 
     // Inform listeners
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            newRefsetDescriptorRefsetMember, WorkflowListener.Action.ADD);
+        listener.refsetDescriptorRefsetMemberChanged(newMember,
+            WorkflowListener.Action.ADD);
       }
     }
-    return newRefsetDescriptorRefsetMember;
+    return newMember;
   }
 
   /* see superclass */
   @Override
   public void updateRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception {
+    RefsetDescriptorRefsetMember member) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - update refsetDescriptorRefsetMember "
-            + refsetDescriptorRefsetMember);
+        "Refset Service - update member " + member);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(refsetDescriptorRefsetMember
-            .getTerminology());
+        getIdentifierAssignmentHandler(member.getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
-        RefsetDescriptorRefsetMember refsetDescriptorRefsetMember2 =
-            getRefsetDescriptorRefsetMember(refsetDescriptorRefsetMember
-                .getId());
-        if (!idHandler.getTerminologyId(refsetDescriptorRefsetMember).equals(
-            idHandler.getTerminologyId(refsetDescriptorRefsetMember2))) {
+        RefsetDescriptorRefsetMember member2 =
+            getRefsetDescriptorRefsetMember(member.getId());
+        if (!idHandler.getTerminologyId(member).equals(
+            idHandler.getTerminologyId(member2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
       } else {
-        // set refsetDescriptorRefsetMember id on update
-        refsetDescriptorRefsetMember.setTerminologyId(idHandler
-            .getTerminologyId(refsetDescriptorRefsetMember));
+        // set member id on update
+        member.setTerminologyId(idHandler.getTerminologyId(member));
       }
     }
     // update component
-    this.updateHasLastModified(refsetDescriptorRefsetMember);
+    this.updateHasLastModified(member);
 
     // Inform listeners
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            refsetDescriptorRefsetMember, WorkflowListener.Action.UPDATE);
+        listener.refsetDescriptorRefsetMemberChanged(member,
+            WorkflowListener.Action.UPDATE);
       }
     }
   }
@@ -321,18 +313,52 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public void removeRefsetDescriptorRefsetMember(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - remove refsetDescriptorRefsetMember " + id);
+    Logger.getLogger(getClass()).debug("Refset Service - remove member " + id);
     // Remove the component
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember =
+    RefsetDescriptorRefsetMember member =
         removeHasLastModified(id, RefsetDescriptorRefsetMemberJpa.class);
 
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            refsetDescriptorRefsetMember, WorkflowListener.Action.REMOVE);
+        listener.refsetDescriptorRefsetMemberChanged(member,
+            WorkflowListener.Action.REMOVE);
       }
     }
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptRefsetMember addMember(ConceptRefsetMember member)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + member.getTerminology());
+      }
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
+    }
+
+    // Add component
+    ConceptRefsetMember newMember = addHasLastModified(member);
+
+    // do not inform listeners
+    return newMember;
+
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - remove refset member " + id);
+    // Remove the component
+    removeHasLastModified(id, ConceptRefsetMemberJpa.class);
+    // Do not inform listeners
   }
 
   /* see superclass */

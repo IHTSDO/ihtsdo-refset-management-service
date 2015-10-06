@@ -43,6 +43,6 @@ public interface ImportTranslationHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public List<Concept> importTranslation(InputStream content) throws Exception;
+  public List<Concept> importConcepts(InputStream content) throws Exception;
 
 }

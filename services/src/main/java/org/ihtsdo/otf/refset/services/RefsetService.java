@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
@@ -92,6 +93,24 @@ public interface RefsetService extends ProjectService {
    */
   public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
     RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
+
+
+  /**
+   * Adds the refset member.
+   *
+   * @param member the member
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addMember(ConceptRefsetMember member) throws Exception;
+
+  /**
+   * Removes the refset member.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeMember(Long id) throws Exception;
 
   /**
    * Returns the refset descriptor ref set member.

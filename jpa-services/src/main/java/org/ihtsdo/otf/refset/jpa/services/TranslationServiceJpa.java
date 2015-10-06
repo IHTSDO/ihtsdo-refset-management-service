@@ -26,8 +26,14 @@ import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -107,10 +113,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public Translation getTranslation(String terminologyId, String terminology,
-    String version, String branch) throws Exception {
+    String version) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get translation " + terminologyId + "/"
-            + terminology + "/" + version + "/" + branch);
+            + terminology + "/" + version);
     return getHasLastModified(terminologyId, terminology, version,
         TranslationJpa.class);
   }
@@ -225,11 +231,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(
-    String terminologyId, String terminology, String version, String branch)
-    throws Exception {
+    String terminologyId, String terminology, String version) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get descriptionTypeRefsetMember "
-            + terminologyId + "/" + terminology + "/" + version + "/" + branch);
+            + terminologyId + "/" + terminology + "/" + version);
     return getHasLastModified(terminologyId, terminology, version,
         DescriptionTypeRefsetMemberJpa.class);
   }
@@ -464,4 +469,225 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     });
     return list;
   }
+
+  @Override
+  public Concept addConcept(Concept concept) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add concept " + concept);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler = getIdentifierAssignmentHandler(concept.getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + concept.getTerminology());
+      }
+      String id = idHandler.getTerminologyId(concept);
+      concept.setTerminologyId(id);
+    }
+
+    // Add component
+    Concept newConcept = addHasLastModified(concept);
+    return newConcept;
+
+  }
+
+  @Override
+  public void updateConcept(Concept concept) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update concept " + concept);
+
+    // Id assignment should not change
+    final IdentifierAssignmentHandler idHandler =
+        getIdentifierAssignmentHandler(concept.getTerminology());
+    if (assignIdentifiersFlag) {
+      if (!idHandler.allowIdChangeOnUpdate()) {
+        Concept concept2 = getConcept(concept.getId());
+        if (!idHandler.getTerminologyId(concept).equals(
+            idHandler.getTerminologyId(concept2))) {
+          throw new Exception(
+              "Update cannot be used to change object identity.");
+        }
+      } else {
+        // set concept id on update
+        concept.setTerminologyId(idHandler.getTerminologyId(concept));
+      }
+    }
+    // update component
+    this.updateHasLastModified(concept);
+  }
+
+  @Override
+  public void removeConcept(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove concept " + id);
+    // Remove the component
+    removeHasLastModified(id, ConceptJpa.class);
+  }
+
+  @Override
+  public Concept getConcept(Long id) throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Translation Service - get concept" + id);
+    return getHasLastModified(id, ConceptJpa.class);
+  }
+
+  @Override
+  public Concept getConcept(String terminologyId, String terminology,
+    String version) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get concept " + terminologyId + "/"
+            + terminology + "/" + version);
+    return getHasLastModified(terminologyId, terminology, version,
+        ConceptJpa.class);
+  }
+
+  @Override
+  public Description addDescription(Description description) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add description " + description);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler = getIdentifierAssignmentHandler(description.getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + description.getTerminology());
+      }
+      String id = idHandler.getTerminologyId(description);
+      description.setTerminologyId(id);
+    }
+
+    // Add component
+    Description newDescription = addHasLastModified(description);
+    return newDescription;
+
+  }
+
+  @Override
+  public void updateDescription(Description description) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update description " + description);
+
+    // Id assignment should not change
+    final IdentifierAssignmentHandler idHandler =
+        getIdentifierAssignmentHandler(description.getTerminology());
+    if (assignIdentifiersFlag) {
+      if (!idHandler.allowIdChangeOnUpdate()) {
+        Description description2 = getDescription(description.getId());
+        if (!idHandler.getTerminologyId(description).equals(
+            idHandler.getTerminologyId(description2))) {
+          throw new Exception(
+              "Update cannot be used to change object identity.");
+        }
+      } else {
+        // set description id on update
+        description.setTerminologyId(idHandler.getTerminologyId(description));
+      }
+    }
+    // update component
+    this.updateHasLastModified(description);
+
+  }
+
+  @Override
+  public void removeDescription(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove description " + id);
+    // Remove the component
+    removeHasLastModified(id, DescriptionJpa.class);
+  }
+
+  @Override
+  public Description getDescription(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get description " + id);
+    return getHasLastModified(id, DescriptionJpa.class);
+  }
+
+  @Override
+  public Description getDescription(String terminologyId, String terminology,
+    String version) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get description " + terminologyId + "/"
+            + terminology + "/" + version);
+    return getHasLastModified(terminologyId, terminology, version,
+        DescriptionJpa.class);
+
+  }
+
+  @Override
+  public LanguageRefsetMember addLanguageRefsetMember(
+    LanguageRefsetMember member) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add language refset member " + member);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + member.getTerminology());
+      }
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
+    }
+
+    // Add component
+    LanguageRefsetMember newLanguageRefsetMember = addHasLastModified(member);
+    return newLanguageRefsetMember;
+  }
+
+  @Override
+  public void updateLanguageRefsetMember(LanguageRefsetMember member)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update language refset member " + member);
+
+    // Id assignment should not change
+    final IdentifierAssignmentHandler idHandler =
+        getIdentifierAssignmentHandler(member.getTerminology());
+    if (assignIdentifiersFlag) {
+      if (!idHandler.allowIdChangeOnUpdate()) {
+        LanguageRefsetMember member2 = getLanguageRefsetMember(member.getId());
+        if (!idHandler.getTerminologyId(member).equals(
+            idHandler.getTerminologyId(member2))) {
+          throw new Exception(
+              "Update cannot be used to change object identity.");
+        }
+      } else {
+        // set member id on update
+        member.setTerminologyId(idHandler.getTerminologyId(member));
+      }
+    }
+    // update component
+    this.updateHasLastModified(member);
+  }
+
+  @Override
+  public void removeLanguageRefsetMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove language refset member " + id);
+    // Remove the component
+    removeHasLastModified(id, LanguageRefsetMemberJpa.class);
+  }
+
+  @Override
+  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get language refset member " + id);
+    return getHasLastModified(id, LanguageRefsetMemberJpa.class);
+  }
+
+  @Override
+  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
+    String terminology, String version) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get language refset member " + terminologyId
+            + "/" + terminology + "/" + version);
+    return getHasLastModified(terminologyId, terminology, version,
+        LanguageRefsetMemberJpa.class);
+
+  }
+
 }
