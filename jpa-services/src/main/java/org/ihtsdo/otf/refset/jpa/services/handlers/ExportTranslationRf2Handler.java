@@ -150,15 +150,13 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
     return new ByteArrayInputStream(baos.toByteArray());
   }
 
-  /* see superclass */
   @Override
-  public void refreshCaches() throws Exception {
+  public void setProperties(Properties p) throws Exception {
     // n/a
   }
 
-  /* see superclass */
   @Override
-  public void setProperties(Properties p) throws Exception {
+  public void refreshCaches() throws Exception {
     // n/a
   }
 

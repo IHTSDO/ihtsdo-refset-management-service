@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -29,9 +30,14 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
@@ -342,6 +348,16 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   }
 
+  /**
+   * Returns the user role map. For indexing.
+   *
+   * @return the user role map
+   */
+  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public Map<User, UserRole> getUserRoleMap() {
+    return getProject().getUserRoleMap();
+  }
+
   /* see superclass */
   @Override
   public int hashCode() {
@@ -393,6 +409,30 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + ", workflowStatus=" + workflowStatus + ", workflowPath="
         + workflowPath + ", refset=" + refset + ", descriptionTypes="
         + descriptionTypes + "]";
+  }
+
+  @Override
+  public SpellingDictionary getSpellingDictionary() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void setSpellingDictionary(SpellingDictionary dictionary) {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public Map<String, PhraseMemory> getPhraseMemoryMap() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void setPhraseMemoryMap(Map<String, PhraseMemory> phraseMemoryMap) {
+    // TODO Auto-generated method stub
+
   }
 
 }

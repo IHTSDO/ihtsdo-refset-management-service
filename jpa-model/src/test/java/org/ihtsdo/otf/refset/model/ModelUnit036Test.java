@@ -237,6 +237,7 @@ public class ModelUnit036Test {
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
     tester.include("description");
+    tester.include("definition");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -250,6 +251,8 @@ public class ModelUnit036Test {
     tester.include("lastModifiedBy");
     tester.include("moduleId");
     tester.include("type");
+    tester.include("editionUrl");
+    tester.include("externalUrl");
     tester.include("workflowStatus");
 
     tester.include("type");

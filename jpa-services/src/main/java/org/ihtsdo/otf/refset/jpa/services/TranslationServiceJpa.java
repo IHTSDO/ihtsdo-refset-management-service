@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -324,6 +325,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public ConceptList findConceptsForTranslationRevision(Long translationId,
     Date date, PfsParameter pfs) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public SearchResultList findTranslationReleaseRevisions(Long translationId)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

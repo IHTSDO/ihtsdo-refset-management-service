@@ -54,7 +54,20 @@ public interface Refset extends Component, Searchable {
     WORKFLOW_STATUS_CHANGE,
 
     /** The edition url change. */
-    EDITION_URL_CHANGE
+    EDITION_URL_CHANGE,
+
+    /** The inclusion add. */
+    INCLUSION_ADD,
+
+    /** The inclusion remove. */
+    INCLUSION_REMOVE,
+    /** The exnclusion add. */
+    EXCLUSION_ADD,
+
+    /** The exnclusion remove. */
+    EXCLUSION_REMOVE
+
+    ;
   }
 
   /**
@@ -350,14 +363,14 @@ public interface Refset extends Component, Searchable {
    * @param feedbackEmail the feedback email
    */
   public void setFeedbackEmail(String feedbackEmail);
-  
+
   /**
    * Returns the enabled feedback events.
    *
    * @return the enabled feedback events
    */
   public Set<FeedbackEvent> getEnabledFeedbackEvents();
-  
+
   /**
    * Sets the enabled feedback events.
    *

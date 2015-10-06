@@ -13,6 +13,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
@@ -95,6 +96,62 @@ public class ReleaseClientRest extends RootClientRest implements
         (ReleaseInfoListJpa) ConfigUtility.getGraphForString(resultString,
             ReleaseInfoListJpa.class);
     return releaseInfoList;
+  }
+
+  @Override
+  public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult performRefsetRelease(Long refsetId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult previewRefsetRelease(Long refsetId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult beginTranslationRelease(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult performTranslationRelease(Long translationId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult previewTranslationRelease(Long translationId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult finishTranslationRelease(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

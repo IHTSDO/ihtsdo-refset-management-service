@@ -28,7 +28,7 @@ public interface ImportTranslationHandler extends Configurable {
    * @return the file type filter
    */
   public String getFileTypeFilter();
-  
+
   /**
    * Import descriptions and language refset members connected to them.
    *

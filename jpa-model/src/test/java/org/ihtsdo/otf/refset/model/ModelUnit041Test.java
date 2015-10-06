@@ -5,6 +5,9 @@ package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -65,6 +68,12 @@ public class ModelUnit041Test {
   /** the test fixture p2 */
   private Project p2;
 
+  /** the test fixture l1 */
+  private List<User> l1;
+
+  /** the test fixture l2 */
+  private List<User> l2;
+
   /** the test fixture u1 */
   private User u1;
 
@@ -120,6 +129,10 @@ public class ModelUnit041Test {
     u1.setUserPreferences(up1);
     u2.setUserPreferences(up2);
 
+    l1 = new ArrayList<>();
+    l1.add(u1);
+    l2 = new ArrayList<>();
+    l2.add(u2);
     r1.setProject(p1);
     r2.setProject(p2);
     t1.setProject(p1);
@@ -144,7 +157,6 @@ public class ModelUnit041Test {
     tester.exclude("refsetId");
     tester.exclude("translationId");
     tester.exclude("conceptId");
-    tester.exclude("userName");
     tester.test();
   }
 
@@ -158,10 +170,11 @@ public class ModelUnit041Test {
     Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode041");
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("concept");
-    tester.include("forEditing");
+    tester.include("forAuthoring");
     tester.include("forReview");
     tester.include("translation");
-    tester.include("user");
+    tester.include("authors");
+    tester.include("reviewers");
     tester.include("concept");
 
     tester.proxy(Translation.class, 1, t1);
@@ -172,10 +185,8 @@ public class ModelUnit041Test {
     tester.proxy(Concept.class, 2, c2);
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
-    tester.proxy(User.class, 1, u1);
-    tester.proxy(User.class, 2, u2);
-    tester.proxy(UserPreferences.class, 1, up1);
-    tester.proxy(UserPreferences.class, 2, up2);
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -201,10 +212,8 @@ public class ModelUnit041Test {
     tester.proxy(Concept.class, 2, c2);
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
-    tester.proxy(User.class, 1, u1);
-    tester.proxy(User.class, 2, u2);
-    tester.proxy(UserPreferences.class, 1, up1);
-    tester.proxy(UserPreferences.class, 2, up2);
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
     assertTrue(tester.testCopyConstructor(TrackingRecord.class));
   }
 
@@ -230,13 +239,13 @@ public class ModelUnit041Test {
     project.setId(1L);
     UserPreferences prefs = new UserPreferencesJpa();
     prefs.setId(1L);
-
+    List<User> list = new ArrayList<>();
+    list.add(user);
     tester.proxy(Translation.class, 1, translation);
     tester.proxy(Refset.class, 1, refset);
     tester.proxy(Concept.class, 1, concept);
     tester.proxy(Project.class, 1, project);
-    tester.proxy(User.class, 1, user);
-    tester.proxy(UserPreferences.class, 1, prefs);
+    tester.proxy(List.class, 1, list);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -251,7 +260,7 @@ public class ModelUnit041Test {
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("forEditing");
+    tester.include("forAuthoring");
     tester.include("forReview");
     assertTrue(tester.testNotNullFields());
   }

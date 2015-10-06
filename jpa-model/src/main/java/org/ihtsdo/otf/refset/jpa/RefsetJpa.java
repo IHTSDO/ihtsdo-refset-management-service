@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CollectionTable;
@@ -36,6 +37,9 @@ import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
@@ -91,7 +95,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean forTranslation;
 
-  /** The feedback email */
+  /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
 
@@ -103,6 +107,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
+  
 
   /** The refset descriptors. */
   @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
@@ -236,6 +241,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
   public String getDefinition() {
     return definition;
@@ -248,6 +254,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getExternalUrl() {
     return externalUrl;
@@ -260,6 +267,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getEditionUrl() {
     return editionUrl;
@@ -321,6 +329,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     this.forTranslation = forTranslation;
   }
 
+  /* see superclass */
   @Override
   public String getFeedbackEmail() {
     return feedbackEmail;
@@ -528,6 +537,16 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     }
   }
 
+  /**
+   * Returns the user role map. For indexing.
+   *
+   * @return the user role map
+   */
+  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public Map<User, UserRole> getUserRoleMap() {
+     return getProject().getUserRoleMap();
+  }
+  
   /* see superclass */
   @Override
   public int hashCode() {

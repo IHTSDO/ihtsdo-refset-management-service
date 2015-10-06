@@ -8,6 +8,7 @@ import java.util.Date;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 
@@ -148,6 +149,19 @@ public interface TranslationService extends RefsetService {
    */
   public Translation getTranslationRevision(Long translationId, Date date)
     throws Exception;
+  
+
+  /**
+   * Find translation release revisions. This is the max revision number before
+   * the finalization date of the release for releases that were published.
+   * 
+   *
+   * @param translationId the translation id
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findTranslationReleaseRevisions(Long translationId) throws Exception;
+
 
   /**
    * Find concepts for translation revision.

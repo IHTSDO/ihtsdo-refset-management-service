@@ -9,6 +9,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
 /**
@@ -121,7 +122,8 @@ public interface RefsetService extends ProjectService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs) throws Exception;
+  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Find members for refset.
@@ -146,6 +148,17 @@ public interface RefsetService extends ProjectService {
   public Refset getRefsetRevision(Long refsetId, Date date) throws Exception;
 
   /**
+   * Find release revisions. This is the max revision number before the
+   * finalization date of the release for releases that were published.
+   *
+   * @param refsetId the refset id
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
+    throws Exception;
+
+  /**
    * Find members for refset revision.
    *
    * @param refsetId the refset id
@@ -155,6 +168,5 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs);
-
 
 }

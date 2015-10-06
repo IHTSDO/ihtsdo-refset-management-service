@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -174,16 +175,32 @@ public interface Translation extends Component, Searchable {
    */
   public void removeConcept(Concept concept);
 
-  // TODO: spelling correction dictionary (per translation, but reusable
-  // translations in a project)
-  // need an API call for "available spelling correction dictionaries" for this
-  // project
-  // need a loader for spelling correction (e.g. an API call for
-  // downloading/uploading a file)
-  // TODO: translation memory (per translation, but reusable across translations
-  // in a project)
-  // need an API call for "available translation memories" for this project
-  // need a loader for translation memory (e.g. an API call for
-  // downloading/uploading a file)
+  /**
+   * Returns the spelling dictionary.
+   *
+   * @return the spelling dictionary
+   */
+  public SpellingDictionary getSpellingDictionary();
+
+  /**
+   * Sets the spelling dictionary.
+   *
+   * @param dictionary the spelling dictionary
+   */
+  public void setSpellingDictionary(SpellingDictionary dictionary);
+
+  /**
+   * Returns the phrase memory map.
+   *
+   * @return the phrase memory map
+   */
+  public Map<String, PhraseMemory> getPhraseMemoryMap();
+
+  /**
+   * Sets the phrase memory map.
+   *
+   * @param phraseMemoryMap the phrase memory map
+   */
+  public void setPhraseMemoryMap(Map<String, PhraseMemory> phraseMemoryMap);
 
 }

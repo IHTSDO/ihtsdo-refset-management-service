@@ -14,8 +14,8 @@ tsApp
       'tabService',
       'securityService',
       'projectService',
-      function($scope, $http, $modal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, projectService) {
+      function($scope, $http, $modal, $location, $anchorScroll, $timeout,
+        gpService, utilService, tabService, securityService, projectService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -27,145 +27,165 @@ tsApp
         // Scope Variables
         //
         $scope.user = securityService.getUser();
-        
-        $scope.pageSize = 4;
-        
-        $scope.pagedProjects = null;
-        $scope.pagedCandidateProjects = null;
-        $scope.pagedUsers = null;
-        $scope.pagedAssignedUsers = null;
-        $scope.pagedCandidateUsers = null;
 
-        $scope.projectPaging = {
+        // Model variables
+        $scope.projects = null;
+        $scope.candidateProjects = null;
+        $scope.users = null;
+        $scope.assignedUsers = null;
+        $scope.candidateUsers = null;
+
+        // Paging variables
+        $scope.pageSize = 10;
+
+        $scope.paging = {};
+        $scope.paging["project"] = {
           page : 1,
           filter : "",
           sortField : 'lastModified',
-          ascending : []
+          ascending : null
         }
-        
-        $scope.candidateProjectPaging = {
+
+        $scope.paging["candidateProject"] = {
           page : 1,
           filter : "",
           sortField : 'lastModified',
-          ascending : []
+          ascending : null
         }
-        
-        $scope.userPaging = {
+
+        $scope.paging["user"] = {
           page : 1,
           filter : "",
-          sortField : 'email',
-          ascending : []
-        }        
-        
-        $scope.assignedUserPaging = {
+          sortField : 'userName',
+          ascending : null
+        }
+
+        $scope.paging["assignedUser"] = {
           page : 1,
           filter : "",
-          sortField : 'email',
-          ascending : []
-        }        
-        
-        $scope.candidateUserPaging = {
+          sortField : 'userName',
+          ascending : null
+        }
+
+        $scope.paging["candidateUser"] = {
           page : 1,
           filter : "",
-          sortField : 'email',
-          ascending : []
-        }        
+          sortField : 'userName',
+          ascending : null
+        }
 
         // get projects
-        $scope.retrievePagedProjects = function() {
-          
+        $scope.retrieveProjects = function() {
+
           var pfs = {
-            startIndex : ($scope.projectPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging["project"].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.projectPaging.sortField,
-            ascending : $scope.projectPaging.ascending.indexOf($scope.projectPaging.sortField) != -1 ? true : false,
+            sortField : $scope.paging["project"].sortField,
+            ascending : $scope.paging["project"].ascending == null ? true
+              : $scope.paging["project"].ascending,
             queryRestriction : null
           };
-       
-          projectService.findProjectsAsList($scope.projectPaging.filter, pfs).then(function(data) {
-            $scope.pagedProjects = data.projects;
-            $scope.pagedProjects.totalCount = data.totalCount;
+
+          projectService.findProjectsAsList($scope.paging["project"].filter,
+            pfs).then(function(data) {
+            $scope.projects = data.projects;
+            $scope.projects.totalCount = data.totalCount;
           })
-          
+
         };
-        
+
         // get candidate projects
-        // one of these projects can be selected for user and role assignment
+        // one of these projects can be selected for user and role
+        // assignment
         $scope.retrieveCandidateProjects = function() {
-          
+
           var pfs = {
-            startIndex : ($scope.candidateProjectPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging["candidateProject"].page - 1)
+              * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.candidateProjectPaging.sortField,
-            ascending : $scope.candidateProjectPaging.ascending.indexOf($scope.candidateProjectPaging.sortField) != -1 ? true : false,
+            sortField : $scope.paging["candidateProject"].sortField,
+            ascending : $scope.paging["candidateProject"].ascending == null ? true
+              : $scope.paging["candidateProject"].ascending,
             queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
-
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
             pfs.queryRestriction = null;
           }
-          
-          projectService.findProjectsAsList($scope.candidateProjectPaging.filter, pfs).then(function(data) {
-            $scope.pagedCandidateProjects = data.projects;
-            $scope.pagedCandidateProjects.totalCount = data.totalCount;
+
+          projectService.findProjectsAsList(
+            $scope.paging["candidateProject"].filter, pfs).then(function(data) {
+            $scope.candidateProjects = data.projects;
+            $scope.candidateProjects.totalCount = data.totalCount;
           })
-          
+
         };
-        
+
         // get users
-        $scope.retrievePagedUsers = function() {
+        $scope.retrieveUsers = function() {
 
           var pfs = {
-            startIndex : ($scope.userPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging["user"].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.userPaging.sortField,
-            ascending : $scope.userPaging.ascending.indexOf($scope.userPaging.sortField) != -1 ? true : false,  
+            sortField : $scope.paging["user"].sortField,
+            ascending : $scope.paging["user"].ascending,
+            ascending : $scope.paging["user"].ascending == null ? true
+              : $scope.paging["user"].ascending,
             queryRestriction : null
           };
-         
-          securityService.findUsersAsList($scope.userPaging.filter, pfs).then(function(data) {
-            $scope.pagedUsers = data.users;
-            $scope.pagedUsers.totalCount = data.totalCount;
-          })
-          
+
+          securityService.findUsersAsList($scope.paging["user"].filter, pfs)
+            .then(function(data) {
+              $scope.users = data.users;
+              $scope.users.totalCount = data.totalCount;
+            })
+
         };
-        
-        // get candidate users - this is the list of users that are not yet
+
+        // get candidate users - this is the list of users that are not
+        // yet
         // assigned to the selected project
-        $scope.retrievePagedCandidateUsers = function() {
+        $scope.retrieveCandidateUsers = function() {
           var pfs = {
-            startIndex : ($scope.candidateUserPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging["candidateUser"].page - 1)
+              * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.candidateUserPaging.sortField,
-            ascending : $scope.candidateUserPaging.ascending.indexOf($scope.candidateUserPaging.sortField) != -1 ? true : false,  
+            sortField : $scope.paging["candidateUser"].sortField,
+            ascending : $scope.paging["candidateUser"].ascending == null ? true
+              : $scope.paging["candidateUser"].ascending,
             queryRestriction : null
           };
-         
-          projectService.findCandidateUsersForProject($scope.selectedProject.id, $scope.candidateUserPaging.filter, pfs).then(function(data) {
-            $scope.pagedCandidateUsers = data.users;
-            $scope.pagedCandidateUsers.totalCount = data.totalCount;
-          }) 
+
+          projectService.findCandidateUsersForProject(
+            $scope.selectedProject.id, $scope.paging["candidateUser"].filter,
+            pfs).then(function(data) {
+            $scope.candidateUsers = data.users;
+            $scope.candidateUsers.totalCount = data.totalCount;
+          })
         };
-        
-        // get assigned users - this is the list of users that are already
+
+        // get assigned users - this is the list of users that are
+        // already
         // assigned to the selected project
-        $scope.retrievePagedAssignedUsers = function() {
+        $scope.retrieveAssignedUsers = function() {
 
           var pfs = {
-            startIndex : ($scope.assignedUserPaging.page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging["assignedUser"].page - 1)
+              * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.assignedUserPaging.sortField,
-            ascending : $scope.assignedUserPaging.ascending.indexOf($scope.assignedUserPaging.sortField) != -1 ? true : false,  
+            sortField : $scope.paging["assignedUser"].sortField,
+            ascending : $scope.paging["assignedUser"].ascending == null ? true
+              : $scope.paging["assignedUser"].ascending,
             queryRestriction : null
           };
-          projectService.findUsersForProject($scope.selectedProject.id, $scope.assignedUserPaging.filter, pfs).then(function(data) {
-            $scope.pagedAssignedUsers = data.users;
-            $scope.pagedAssignedUsers.totalCount = data.totalCount;
+          projectService.findUsersForProject($scope.selectedProject.id,
+            $scope.paging["assignedUser"].filter, pfs).then(function(data) {
+            $scope.assignedUsers = data.users;
+            $scope.assignedUsers.totalCount = data.totalCount;
           })
-          
+
         };
-        
+
         // get application roles
         $scope.getApplicationRoles = function() {
           securityService.getApplicationRoles().then(function(data) {
@@ -189,41 +209,47 @@ tsApp
             && project.id === $scope.selectedProject.id) {
             return;
           }
-          
-          $scope.selectedProject = project;
 
-          $scope.retrievePagedCandidateUsers();
-          $scope.retrievePagedAssignedUsers();
+          $scope.selectedProject = project;
+          $scope.retrieveCandidateUsers();
+          $scope.retrieveAssignedUsers();
+
+          // TODO: need to reset paging for candidate and assigned
+          // users
         }
-        
-        // remove a project, a user - only application admins can do this
+
+        // remove a project, a user - only application admins can do
+        // this
         $scope.remove = function(type, object, objArray) {
           if (!confirm("Are you sure you want to remove the " + type + " ("
             + object.name + ")?")) {
             return;
           }
           if (type == 'project') {
-            if (object.userRoleMap != null && object.userRoleMap != undefined 
+            if (object.userRoleMap != null && object.userRoleMap != undefined
               && Object.keys(object.userRoleMap).length > 0) {
-            window.alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
-            return;
-          }
+              window
+                .alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
+              return;
+            }
             projectService.removeProject(object).then(function() {
-              $scope.retrievePagedProjects();
+              $scope.retrieveProjects();
               $scope.retrieveCandidateProjects();
             });
           }
           if (type == 'user') {
-            if (object.projectRoleMap != null && object.projectRoleMap != undefined 
-                && Object.keys(object.projectRoleMap).length > 0) {
-              window.alert("You can not delete a user that is assigned to a project. Remove this user from all projects before deleting it.");
+            if (object.projectRoleMap != null
+              && object.projectRoleMap != undefined
+              && Object.keys(object.projectRoleMap).length > 0) {
+              window
+                .alert("You can not delete a user that is assigned to a project. Remove this user from all projects before deleting it.");
               return;
             }
-              securityService.removeUser(object).then(function() {
-              $scope.retrievePagedUsers();
+            securityService.removeUser(object).then(function() {
+              $scope.retrieveUsers();
               if ($scope.selectedProject != null) {
-                $scope.retrievePagedCandidateUsers();
-                $scope.retrievePagedAssignedUsers();
+                $scope.retrieveCandidateUsers();
+                $scope.retrieveAssignedUsers();
               }
             });
           }
@@ -231,78 +257,69 @@ tsApp
 
         // sort mechanism for project table
         $scope.setProjectSortField = function(field) {
-          $scope.projectPaging.sortField = field;
-          var fieldIndex = $scope.projectPaging.ascending.indexOf(field);
-          if (fieldIndex != -1) {
-            $scope.projectPaging.ascending.splice(fieldIndex, 1);
+          $scope.paging["project"].sortField = field;
+          if ($scope.paging["project"].ascending == null) {
+            $scope.paging["project"].ascending = true;
           } else {
-            $scope.projectPaging.ascending.push(field);
+            $scope.paging["project"].ascending = !$scope.paging["project"].ascending;
           }
-          $scope.retrievePagedProjects();
+          $scope.retrieveProjects();
         }
-        
+
         // sort mechanism for candidate project table
-        $scope.setCandidateProjectSortField = function(field) {
-          console.debug("setCandidateProjectSortField " + field);
-          $scope.candidateProjectPaging.sortField = field;
-          var fieldIndex = $scope.candidateProjectPaging.ascending.indexOf(field);
-          if (fieldIndex != -1) {
-            $scope.candidateProjectPaging.ascending.splice(fieldIndex, 1);
+        $scope.setSortField = function(table, field) {
+          console.debug("set " + table + " sortField " + field);
+          $scope.paging[table].sortField = field;
+          // reset page number too
+          $scope.paging[table].page = 1;
+          // handles null case also
+          if (!$scope.paging[table].ascending) {
+            $scope.paging[table].ascending = true;
           } else {
-            $scope.candidateProjectPaging.ascending.push(field);
+            $scope.paging[table].ascending = false;
           }
-          $scope.retrieveCandidateProjects();
-        }
-        
-        // sort mechanism for user table
-        $scope.setUserSortField = function(field) {
-          $scope.userPaging.sortField = field;
-          var fieldIndex = $scope.userPaging.ascending.indexOf(field);
-          if (fieldIndex != -1) {
-            $scope.userPaging.ascending.splice(fieldIndex, 1);
-          } else {
-            $scope.userPaging.ascending.push(field);
+          // retrieve the correct table
+          if (table === 'candidateProject') {
+            $scope.retrieveCandidateProjects();
+          } else if (table === 'project') {
+            $scope.retrieveProjects();
+          } else if (table === 'user') {
+            $scope.retrieveUsers();
+          } else if (table === 'assignedUser') {
+            $scope.retrieveAssignedUsers();
+          } else if (table === 'candidateUser') {
+            $scope.retrieveCandidateUsers();
           }
-          $scope.retrievePagedUsers();
         }
-        
-        // sort mechanism for candidate user table
-        $scope.setCandidateUserSortField = function(field) {
-          $scope.candidateUserPaging.sortField = field;
-          var fieldIndex = $scope.candidateUserPaging.ascending.indexOf(field);
-          if (fieldIndex != -1) {
-            $scope.candidateUserPaging.ascending.splice(fieldIndex, 1);
-          } else {
-            $scope.candidateUserPaging.ascending.push(field);
+
+        // Return up or down sort chars if sorted
+        $scope.getSortIndicator = function(table, field) {
+          if ($scope.paging[table].ascending == null) {
+            return "";
           }
-          $scope.retrievePagedCandidateUsers();
-        }
-        
-        // sort mechanism for assigned user table
-        $scope.setAssignedUserSortField = function(field) {
-          $scope.assignedUserPaging.sortField = field;
-          var fieldIndex = $scope.assignedUserPaging.ascending.indexOf(field);
-          if (fieldIndex != -1) {
-            $scope.assignedUserPaging.ascending.splice(fieldIndex, 1);
-          } else {
-            $scope.assignedUserPaging.ascending.push(field);
+          if ($scope.paging[table].sortField == field
+            && $scope.paging[table].ascending) {
+            return "▴";
           }
-          $scope.retrievePagedAssignedUsers();
+          if ($scope.paging[table].sortField == field
+            && !$scope.paging[table].ascending) {
+            return "▾";
+          }
         }
-        
+
         // assign user to project
         $scope.assignUserToProject = function(projectId, userName, projectRole) {
           if (projectId == null || projectId == undefined) {
             window.alert("Select a project before assigning a user! ");
             return;
           }
-          
-          projectService.assignUserToProject(projectId, userName, projectRole).then(
-            function(data) {
-              $scope.retrievePagedProjects();
+
+          projectService.assignUserToProject(projectId, userName, projectRole)
+            .then(function(data) {
+              $scope.retrieveProjects();
               $scope.selectedProject = data;
-              $scope.retrievePagedAssignedUsers();
-              $scope.retrievePagedCandidateUsers();
+              $scope.retrieveAssignedUsers();
+              $scope.retrieveCandidateUsers();
             })
         };
 
@@ -310,21 +327,19 @@ tsApp
         $scope.unassignUserFromProject = function(projectId, userName) {
           projectService.unassignUserFromProject(projectId, userName).then(
             function(data) {
-
-              $scope.retrievePagedProjects();
+              $scope.retrieveProjects();
               $scope.selectedProject = data;
-              $scope.retrievePagedAssignedUsers();
-              $scope.retrievePagedCandidateUsers();
+              $scope.retrieveAssignedUsers();
+              $scope.retrieveCandidateUsers();
             })
         };
 
-        
         //
         // call these during initialization
         //
-        
-        $scope.retrievePagedProjects();
-        $scope.retrievePagedUsers();
+
+        $scope.retrieveProjects();
+        $scope.retrieveUsers();
         $scope.retrieveCandidateProjects();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
@@ -333,7 +348,8 @@ tsApp
         // Modals
         //
 
-        // modal for creating a new project - only application admins can do this
+        // modal for creating a new project - only application admins
+        // can do this
         $scope.openNewProjectModal = function(lproject) {
 
           console.debug("openNewProjectModal ");
@@ -346,12 +362,14 @@ tsApp
                 return lproject;
               },
               projects : function() {
-                return $scope.pagedProjects;
+                return $scope.projects;
               }
             }
           });
-          
-          modalInstance.result.finally(function() {
+
+          modalInstance.result.then(
+          // Success
+          function() {
             $scope.retrieveCandidateProjects();
           });
         };
@@ -388,7 +406,8 @@ tsApp
 
         };
 
-        // modal for creating a new user- only application admins can do this
+        // modal for creating a new user- only application admins can do
+        // this
         $scope.openNewUserModal = function(luser) {
 
           console.debug("openNewUserModal ");
@@ -401,17 +420,19 @@ tsApp
                 return luser;
               },
               users : function() {
-                return $scope.pagedUsers;
+                return $scope.users;
               },
               applicationRoles : function() {
                 return $scope.applicationRoles;
               }
             }
           });
-          
-          modalInstance.result.finally(function() {
-            $scope.retrievePagedCandidateUsers();
-            $scope.retrievePagedAssignedUsers();
+
+          modalInstance.result.then(
+          // Success
+          function() {
+            $scope.retrieveCandidateUsers();
+            $scope.retrieveAssignedUsers();
           });
         };
 
@@ -450,7 +471,8 @@ tsApp
 
         };
 
-        // modal for editing a project - only application admins can do this
+        // modal for editing a project - only application admins can do
+        // this
         $scope.openEditProjectModal = function(lproject) {
 
           console.debug("openEditProjectModal ");
@@ -464,8 +486,10 @@ tsApp
               }
             }
           });
-          
-          modalInstance.result.finally(function() {
+
+          modalInstance.result.then(
+          // Success
+          function() {
             $scope.retrieveCandidateProjects();
           });
         };
@@ -504,7 +528,8 @@ tsApp
 
         };
 
-        // modal for editing a user - only application admins can do this
+        // modal for editing a user - only application admins can do
+        // this
         $scope.openEditUserModal = function(luser) {
 
           console.debug("openEditUserModal");
@@ -521,10 +546,12 @@ tsApp
               }
             }
           });
-          
-          modalInstance.result.finally(function() {
-            $scope.retrievePagedCandidateUsers();
-            $scope.retrievePagedAssignedUsers();
+
+          modalInstance.result.then(
+          // Success
+          function() {
+            $scope.retrieveCandidateUsers();
+            $scope.retrieveAssignedUsers();
           });
         };
 

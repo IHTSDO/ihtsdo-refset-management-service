@@ -16,6 +16,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -337,6 +338,13 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   @Override
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

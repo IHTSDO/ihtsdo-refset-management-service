@@ -183,14 +183,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @PUT
   @Path("/users/{projectId}")
   @ApiOperation(value = "Find users assigned to project", notes = "Finds users with assigned roles on the specified project", response = UserListJpa.class)
-  public UserList findUsersForProject(
+  public UserList findAssignedUsersForProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /users/ " + projectId + ", " + query + ", " + pfs);
+        "RESTful call PUT (Project): /users/ " + projectId + ", " + query
+            + ", " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -198,7 +199,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           UserRole.VIEWER);
 
       // return all users assigned to the project
-      // TODO: should this query restriction be appended to one that is supplied?
+      // TODO: should this query restriction be appended to one that is
+      // supplied?
       pfs.setQueryRestriction("projectAnyRole:" + projectId);
       UserList list = securityService.findUsersForQuery(query, pfs);
 
@@ -214,16 +216,17 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @PUT
-  @Path("/candidate/users/{projectId}")
+  @Path("/users/{projectId}/unassigned")
   @ApiOperation(value = "Find candidate users for project", notes = "Finds users who do not yet have assigned roles on the specified project", response = UserListJpa.class)
-  public UserList findCandidateUsersForProject(
+  public UserList findUnassignedUsersForProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /candidate/users/ " + projectId + ", " + query + ", " + pfs);
+        "RESTful call PUT (Project): /users/ " + projectId + "/unassigned, "
+            + query + ", " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -231,7 +234,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           UserRole.VIEWER);
 
       // return all users assigned to the project
-      // TODO: should this query restriction be appended to one that is supplied?
+      // TODO: should this query restriction be appended to one that is
+      // supplied?
       pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
       UserList list = securityService.findUsersForQuery(query, pfs);
 
@@ -244,7 +248,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-  
+
   /* see superclass */
   @Override
   @PUT
@@ -429,7 +433,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info("RESTful call (Project): projects");
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): find projects for query, " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -481,6 +486,40 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
+  }
+
+  @Override
+  @GET
+  @Path("/user/anyrole")
+  @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project.", response = Boolean.class)
+  public Boolean userHasSomeProjectRole(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      String user =
+          authorize(securityService, authToken, "check for any project role",
+              UserRole.VIEWER);
+      Logger.getLogger(getClass()).info(
+          "RESTful POST call (Project): /user/anyrole " + user);
+
+      StringBuilder sb = new StringBuilder();
+      sb.append("(");
+      sb.append("userRoleMap:" + user + UserRole.ADMIN).append(" OR ");
+      sb.append("userRoleMap:" + user + UserRole.REVIEWER).append(" OR ");
+      sb.append("userRoleMap:" + user + UserRole.AUTHOR).append(")");
+      ProjectList list =
+          projectService.findProjectsForQuery(sb.toString(),
+              new PfsParameterJpa());
+      return list.getTotalCount() != 0;
+
+    } catch (Exception e) {
+      handleException(e, "trying to check for any project role");
+    } finally {
+      securityService.close();
+    }
+    return false;
   }
 
 }

@@ -25,16 +25,22 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
+import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.jpa.services.rest.SecurityServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
@@ -170,6 +176,16 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       UserJpa author3 = makeUser("author3", "Author3");
       author3 = (UserJpa) security.addUser(author3, admin.getAuthToken());
 
+      //
+      // Add some viewer users to trigger paging
+      //
+      security.addUser(makeUser("viewer1", "Viewer 1"), admin.getAuthToken());
+      security.addUser(makeUser("viewer2", "Viewer 2"), admin.getAuthToken());
+      security.addUser(makeUser("viewer3", "Viewer 3"), admin.getAuthToken());
+      security.addUser(makeUser("viewer4", "Viewer 4"), admin.getAuthToken());
+      security.addUser(makeUser("viewer5", "Viewer 5"), admin.getAuthToken());
+      security.addUser(makeUser("viewer6", "Viewer 6"), admin.getAuthToken());
+
       /**
        * Add Projects
        * 
@@ -204,6 +220,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       ProjectJpa project3 = makeProject("Project 3");
       project3 =
           (ProjectJpa) project.addProject(project3, admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      ProjectJpa project4 = makeProject("Project 4");
+      project4 =
+          (ProjectJpa) project.addProject(project4, admin.getAuthToken());
+
+      // Make additional projects to trigger paging
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 5"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 6"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 7"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 8"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 9"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 10"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 11"), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.addProject(makeProject("Project 12"), admin.getAuthToken());
 
       //
       // Assign project roles
@@ -213,6 +251,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project.assignUserToProject(project1.getId(), admin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
 
+      // Project 1
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project1.getId(), reviewer1.getUserName(),
           UserRole.REVIEWER.toString(), admin.getAuthToken());
@@ -224,6 +263,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project.assignUserToProject(project1.getId(), author2.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
 
+      // Project 2
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project2.getId(), admin2.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
@@ -240,6 +280,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project.assignUserToProject(project2.getId(), author3.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
 
+      // Project 3
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project3.getId(), admin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
@@ -262,9 +303,31 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project3.getId(), author3.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
+
+      // Project 4
       project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project4.getId(), admin2.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project4.getId(), reviewer2.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project4.getId(), reviewer3.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project4.getId(), author3.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       // Create a refset in project 1 (extensional)
+      // Do this as "reviewer1"
+      reviewer1 = (UserJpa) security.authenticate("reviewer1", "reviewer1");
+      RefsetServiceRest refset = new RefsetServiceRestImpl();
+      Refset refset1 =
+          makeRefset("refset1", null, false, project1, "11111912342013");
+      refset.addRefset((RefsetJpa) refset1, reviewer1.getAuthToken());
 
       // TODO: import members (e.g. from sample data)
 
@@ -279,6 +342,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // TODO: import translation (e.g. from sample data)
 
+      // Consider "relase info" as well.
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -319,5 +383,40 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
     return project;
+  }
+
+  /**
+   * Make refset.
+   *
+   * @param name the name
+   * @param definition the definition
+   * @param forTranslation the for translation
+   * @param project the project
+   * @param refsetId the refset id
+   * @return the refset jpa
+   */
+  @SuppressWarnings("static-method")
+  private RefsetJpa makeRefset(String name, String definition,
+    boolean forTranslation, Project project, String refsetId) {
+    final RefsetJpa refset = new RefsetJpa();
+    refset.setName(name);
+    refset.setDescription("Description of refset " + name);
+    refset.setDefinition(definition);
+    // For now, use "MAIN" and this will be a way of determining which branch to
+    // access in terminology server calls.
+    refset.setEditionUrl("http://snomed.info/sct/900000000000207008/");
+    refset.setExternalUrl(null);
+    refset.setFeedbackEmail("***REMOVED***");
+    refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
+    refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
+    refset.setForTranslation(forTranslation);
+    refset.setLastModified(new Date());
+    refset.setModuleId("900000000000445007");
+    refset.setProject(project);
+    refset.setTerminology("SNOMEDCT");
+    refset.setTerminologyId(refsetId);
+    // This is an opportunity to use "branch"
+    refset.setVersion("MAIN");
+    return refset;
   }
 }

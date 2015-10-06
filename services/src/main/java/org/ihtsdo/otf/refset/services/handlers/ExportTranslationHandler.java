@@ -33,12 +33,12 @@ public interface ExportTranslationHandler extends Configurable {
   /**
    * Export descriptions and language refset members connected to them.
    *
-   * @param transalation the transalation
+   * @param translation the translation
    * @param concepts the concepts
    * @return the list
    * @throws Exception the exception
    */
-  public InputStream exportConcepts(Translation transalation,
+  public InputStream exportConcepts(Translation translation,
     List<Concept> concepts) throws Exception;
 
 }

@@ -26,32 +26,34 @@
         <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
           class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
           first-text="&laquo;" last-text="&raquo;"
-          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
-          total-items="pagedProjects.totalCount" ng-model="projectPaging.page"
-          ng-change="retrievePagedProjects()"></pagination>
+          ng-show="projects.totalCount > pageSize || paging['project'].filter"
+          total-items="projects.totalCount" ng-model="paging['project'].page"
+          ng-change="retrieveProjects()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
-          ng-show="pagedProjects.totalCount > pageSize || projectPaging.filter"
-          type="text" ng-model="projectPaging.filter"
-          ng-model-options="{ debounce: 300 }"
-          ng-change="retrievePagedProjects()">
+          ng-show="projects.totalCount > pageSize || paging['project'].filter"
+          type="text" ng-model="paging['project'].filter"
+          ng-model-options="{ debounce: 300 }" ng-change="retrieveProjects()">
 
-        <button class="btn btn-xs btn-warning" ng-show="projectPaging.filter"
-          ng-click="projectPaging.filter = ''; retrievePagedProjects()"
+        <button class="btn btn-xs btn-warning" ng-show="paging['project'].filter"
+          ng-click="paging['project'].filter = ''; retrieveProjects()"
           title="Click to clear filter text">Clear</button>
       </span>
 
 
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-2 col-xs-2" ng-click="setProjectSortField('id')">Id</th>
-          <th class="col-md-4 col-xs-4" ng-click="setProjectSortField('name')">Name</th>
+          <th class="col-md-2 col-xs-2" ng-click="setSortField('project','id')">Id<span
+              ng-bind="getSortIndicator('project','id')"></span></th>
+          <th class="col-md-4 col-xs-4" ng-click="setSortField('project','name')">Name<span
+              ng-bind="getSortIndicator('project','name')"></span></th>
           <th class="col-md-5 col-xs-5"
-            ng-click="setProjectSortField('description')">Description</th>
+            ng-click="setSortField('project','description')">Description<span
+              ng-bind="getSortIndicator('project','description')"></span></th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
-          <tr ng-repeat="project in pagedProjects">
+          <tr ng-repeat="project in projects">
             <td>{{project.id}}</td>
             <td>{{project.name}}</td>
             <td>{{project.description}}</td>
@@ -86,31 +88,35 @@
         <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
           class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
           first-text="&laquo;" last-text="&raquo;"
-          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
-          total-items="pagedUsers.totalCount" ng-model="userPaging.page"
-          ng-change="retrievePagedUsers()"></pagination>
+          ng-show="users.totalCount > pageSize || paging['user'].filter"
+          total-items="users.totalCount" ng-model="paging['user'].page"
+          ng-change="retrieveUsers()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
-          ng-show="pagedUsers.totalCount > pageSize || userPaging.filter"
-          type="text" ng-model="userPaging.filter"
-          ng-model-options="{ debounce: 300 }" ng-change="retrievePagedUsers()">
+          ng-show="users.totalCount > pageSize || paging['user'].filter" type="text"
+          ng-model="paging['user'].filter" ng-model-options="{ debounce: 300 }"
+          ng-change="retrieveUsers()">
 
-        <button class="btn btn-xs btn-warning" ng-show="userPaging.filter"
-          ng-click="userPaging.filter = ''; retrievePagedUsers()"
+        <button class="btn btn-xs btn-warning" ng-show="paging['user'].filter"
+          ng-click="paging['user'].filter = ''; retrieveUsers()"
           title="Click to clear filter text">Clear</button>
       </span>
 
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-2 col-xs-2" ng-click="setUserSortField('userName')">Username</th>
-          <th class="col-md-4 col-xs-4" ng-click="setUserSortField('name')">Name</th>
-          <th class="col-md-3 col-xs-3" ng-click="setUserSortField('email')">Email</th>
+          <th class="col-md-2 col-xs-2" ng-click="setSortField('user','userName')">Username<span
+              ng-bind="getSortIndicator('user','userName')"></span></th>
+          <th class="col-md-4 col-xs-4" ng-click="setSortField('user','name')">Name<span
+              ng-bind="getSortIndicator('user','name')"></span></th>
+          <th class="col-md-3 col-xs-3" ng-click="setSortField('user','email')">Email<span
+              ng-bind="getSortIndicator('user','email')"></span></th>
           <th class="col-md-2 col-xs-2"
-            ng-click="setUserSortField('applicationRole')">Application Role</th>
+            ng-click="setSortField('user','applicationRole')">Application Role<span
+              ng-bind="getSortIndicator('user','applicationRole')"></span></th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
-          <tr ng-repeat="user in pagedUsers">
+          <tr ng-repeat="user in users">
             <td>{{user.userName}}</td>
             <td>{{user.name}}</td>
             <td>{{user.email}}</td>
@@ -133,50 +139,56 @@
     <div class="col-md-6 col-xs-12">
       <h5 class="section-header">Project List</h5>
 
-      <span style="display: block;">
+      <span ng-show="candidateProjects.totalCount != 0" style="display: block;">
         <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
           class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
           first-text="&laquo;" last-text="&raquo;"
-          ng-show="pagedCandidateProjects.totalCount > pageSize || candidateProjectPaging.filter"
-          total-items="pagedCandidateProjects.totalCount"
-          ng-model="candidateProjectPaging.page"
+          ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
+          total-items="candidateProjects.totalCount"
+          ng-model="paging['candidateProject'].page"
           ng-change="retrieveCandidateProjects()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
-          ng-show="pagedCandidateProjects.totalCount > pageSize || candidateProjectPaging.filter"
-          type="text" ng-model="candidateProjectPaging.filter"
+          ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
+          type="text" ng-model="paging['candidateProject'].filter"
           ng-model-options="{ debounce: 300 }"
           ng-change="retrieveCandidateProjects()">
 
         <button class="btn btn-xs btn-warning"
-          ng-show="candidateProjectPaging.filter"
-          ng-click="candidateProjectPaging.filter = ''; retrieveCandidateProjects()"
+          ng-show="paging['candidateProject'].filter"
+          ng-click="paging['candidateProject'].filter = ''; retrieveCandidateProjects()"
           title="Click to clear filter text">Clear</button>
+
+        <table class="table">
+          <thead class="table-select-row">
+            <th class="col-md-1 col-xs-1"
+              ng-click="setSortField('candidateProject','id')">Id<span
+                ng-bind="getSortIndicator('candidateProject','id')"></span>
+            </th>
+            <th class="col-md-5 col-xs-5"
+              ng-click="setSortField('candidateProject','name')">Name<span
+                ng-bind="getSortIndicator('candidateProject','name')"></span></th>
+            <th class="col-md-6 col-xs-6"
+              ng-click="setSortField('candidateProject','description')">Description<span
+                ng-bind="getSortIndicator('candidateProject','description')"></span></th>
+          </thead>
+          <tbody>
+            <tr class="table-select-row"
+              ng-repeat="project in candidateProjects"
+              ng-click="setProject(project)">
+              <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
+              <td ng-class="{selected: project.id === selectedProject.id}">{{project.name}}</td>
+              <td ng-class="{selected: project.id === selectedProject.id}">{{project.description}}</td>
+            </tr>
+          </tbody>
+        </table>
       </span>
+      <span ng-show="candidateProjects.totalCount == 0" style="display: block;"
+        class="alert alert-warning"> No projects with admin role </span>
 
-
-      <table class="table">
-        <thead class="table-select-row">
-          <th class="col-md-1 col-xs-1"
-            ng-click="setCandidateProjectSortField('id')">Id</th>
-          <th class="col-md-5 col-xs-5"
-            ng-click="setCandidateProjectSortField('name')">Name</th>
-          <th class="col-md-6 col-xs-6"
-            ng-click="setCandidateProjectSortField('description')">Description</th>
-        </thead>
-        <tbody>
-          <tr class="table-select-row"
-            ng-repeat="project in pagedCandidateProjects"
-            ng-click="setProject(project)">
-            <td ng-class="{selected: project.id === selectedProject.id}">{{project.id}}</td>
-            <td ng-class="{selected: project.id === selectedProject.id}">{{project.name}}</td>
-            <td ng-class="{selected: project.id === selectedProject.id}">{{project.description}}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
 
-    <div class="col-md-6 col-xs-12">
+    <div ng-show="candidateProjects.totalCount != 0" class="col-md-6 col-xs-12">
       <div class="col-md-12 col-xs-12">
         <h5 class="section-header">User Selection & Role Assignment</h5>
 
@@ -184,34 +196,36 @@
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-            ng-show="pagedCandidateUsers.totalCount > pageSize || candidateUserPaging.filter"
-            total-items="pagedCandidateUsers.totalCount"
-            ng-model="candidateUserPaging.page"
-            ng-change="retrievePagedCandidateUsers()"></pagination>
+            ng-show="candidateUsers.totalCount > pageSize || project['candidateUser'].filter"
+            total-items="candidateUsers.totalCount"
+            ng-model="project['candidateUser'].page"
+            ng-change="retrieveCandidateUsers()"></pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
-            ng-show="pagedCandidateUsers.totalCount > pageSize || candidateUserPaging.filter"
-            type="text" ng-model="candidateUserPaging.filter"
+            ng-show="candidateUsers.totalCount > pageSize || project['candidateUser'].filter"
+            type="text" ng-model="project['candidateUser'].filter"
             ng-model-options="{ debounce: 300 }"
-            ng-change="retrievePagedCandidateUsers()">
+            ng-change="retrieveCandidateUsers()">
 
           <button class="btn btn-xs btn-warning"
-            ng-show="candidateUserPaging.filter"
-            ng-click="candidateUserPaging.filter = ''; retrievePagedCandidateUsers()"
+            ng-show="project['candidateUser'].filter"
+            ng-click="project['candidateUser'].filter = ''; retrieveCandidateUsers()"
             title="Click to clear filter text">Clear</button>
         </span>
 
         <table class="table">
           <thead>
             <th class="col-md-5 col-xs-5 table-select-row"
-              ng-click="setCandidateUserSortField('name')">Name</th>
+              ng-click="setSortField('candidateUser','name')">Name<span
+                ng-bind="getSortIndicator('candidateUser','name')"></span></th>
             <th class="col-md-4 col-xs-4 table-select-row"
-              ng-click="setCandidateUserSortField('userName')">UserName</th>
+              ng-click="setSortField('candidateUser','userName')">UserName<span
+                ng-bind="getSortIndicator('candidateUser','userName')"></span></th>
             <th class="col-md-2 col-xs-2">Project Role</th>
             <th class="col-md-1 col-xs-1">&nbsp;</th>
           </thead>
           <tbody>
-            <tr ng-repeat="user in pagedCandidateUsers">
+            <tr ng-repeat="user in candidateUsers">
               <td>{{user.name}}</td>
               <td>{{user.userName}}</td>
               <td><select ng-model="user.projectRole"
@@ -228,41 +242,44 @@
 
       </div>
 
-      <div class="col-md-12 col-xs-12">
+      <div ng-show="candidateProjects.totalCount != 0"
+        class="col-md-12 col-xs-12">
         <h5 class="section-header">Project Users</h5>
 
         <span style="display: block;">
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-            ng-show="pagedAssignedUsers.totalCount > pageSize || assignedUserPaging.filter"
-            total-items="pagedAssignedUsers.totalCount"
-            ng-model="assignedUserPaging.page"
-            ng-change="retrievePagedAssignedUsers()"></pagination>
+            ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
+            total-items="assignedUsers.totalCount"
+            ng-model="paging['assignedUser'].page"
+            ng-change="retrieveAssignedUsers()"></pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
-            ng-show="pagedAssignedUsers.totalCount > pageSize || assignedUserPaging.filter"
-            type="text" ng-model="assignedUserPaging.filter"
+            ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
+            type="text" ng-model="paging['assignedUser'].filter"
             ng-model-options="{ debounce: 300 }"
-            ng-change="retrievePagedAssignedUsers()">
+            ng-change="retrieveAssignedUsers()">
 
           <button class="btn btn-xs btn-warning"
-            ng-show="assignedUserPaging.filter"
-            ng-click="assignedUserPaging.filter = ''; retrievePagedAssignedUsers()"
+            ng-show="paging['assignedUser'].filter"
+            ng-click="paging['assignedUser'].filter = ''; retrieveAssignedUsers()"
             title="Click to clear filter text">Clear</button>
         </span>
 
         <table class="table">
           <thead>
             <th class="col-md-5 col-xs-5 table-select-row"
-              ng-click="setAssignedUserSortField('name')">Name</th>
+              ng-click="setSortField('assignedUser','name')">Name<span
+                ng-bind="getSortIndicator('assignedUser','name')"></span></th>
             <th class="col-md-4 col-xs-4 table-select-row"
-              ng-click="setAssignedUserSortField('userName')">UserName</th>
+              ng-click="setSortField('assignedUser','userName')">UserName<span
+                ng-bind="getSortIndicator('assignedUser','userName')"></span></th>
             <th class="col-md-2 col-xs-2">Project Role</th>
             <th class="col-md-1 col-xs-1">&nbsp;</th>
           </thead>
           <tbody>
-            <tr ng-repeat="user in pagedAssignedUsers">
+            <tr ng-repeat="user in assignedUsers">
               <td>{{user.name}}</td>
               <td>{{user.userName}}</td>
               <td>{{user.projectRoleMap[selectedProject.id]}}</td>

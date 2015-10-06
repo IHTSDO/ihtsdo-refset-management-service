@@ -11,7 +11,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -75,26 +74,7 @@ public class UserPreferencesJpa implements UserPreferences {
     this.id = id;
   }
 
-  /**
-   * Returns the object id. Needed for JAXB id
-   *
-   * @return the object id
-   */
-  @XmlID
-  public String getObjectId() {
-    return id == null ? "" : id.toString();
-  }
-
-  /**
-   * Sets the object id.
-   *
-   * @param id the object id
-   */
-  public void setObjectId(String id) {
-    if (id != null) {
-      this.id = Long.parseLong(id);
-    }
-  }
+ 
 
   /**
    * Returns the user.

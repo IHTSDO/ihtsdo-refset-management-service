@@ -13,6 +13,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
@@ -109,6 +110,62 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
+  }
+
+  @Override
+  public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult performRefsetRelease(Long refsetId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult previewRefsetRelease(Long refsetId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult beginTranslationRelease(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult performTranslationRelease(Long translationId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult previewTranslationRelease(Long translationId,
+    String ioHandlerId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult finishTranslationRelease(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }
