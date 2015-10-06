@@ -50,4 +50,18 @@ public interface IoHandlerInfo {
    * @param fileTypeFilter the file type filter
    */
   public void setFileTypeFilter(String fileTypeFilter);
+
+  /**
+   * Returns the mime type.
+   *
+   * @return the mime type
+   */
+  public String getMimeType();
+  
+  /**
+   * Sets the mime type.
+   *
+   * @param mimeType the mime type
+   */
+  public void setMimeType(String mimeType);
 }

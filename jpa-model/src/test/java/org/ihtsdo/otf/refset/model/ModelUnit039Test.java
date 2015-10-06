@@ -66,6 +66,7 @@ public class ModelUnit039Test {
     tester.include("id");
     tester.include("name");
     tester.include("fileTypeFilter");
+    tester.include("mimeType");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());

@@ -27,13 +27,15 @@ tsApp
         // Scope Variables
         //
         $scope.user = securityService.getUser();
-
+        $scope.selectedProject = null;
+        $scope.projectRoles = [];
+        
         // Model variables
         $scope.projects = null;
         $scope.candidateProjects = null;
         $scope.users = null;
         $scope.assignedUsers = null;
-        $scope.candidateUsers = null;
+        $scope.unassignedUsers = null;
 
         // Paging variables
         $scope.pageSize = 10;
@@ -142,10 +144,10 @@ tsApp
 
         };
 
-        // get candidate users - this is the list of users that are not
+        // get unassigned users - this is the list of users that are not
         // yet
         // assigned to the selected project
-        $scope.retrieveCandidateUsers = function() {
+        $scope.retrieveUnassignedUsers = function() {
           var pfs = {
             startIndex : ($scope.paging["candidateUser"].page - 1)
               * $scope.pageSize,
@@ -156,11 +158,11 @@ tsApp
             queryRestriction : null
           };
 
-          projectService.findCandidateUsersForProject(
+          projectService.findUnassignedUsersForProject(
             $scope.selectedProject.id, $scope.paging["candidateUser"].filter,
             pfs).then(function(data) {
-            $scope.candidateUsers = data.users;
-            $scope.candidateUsers.totalCount = data.totalCount;
+            $scope.unassignedUsers = data.users;
+            $scope.unassignedUsers.totalCount = data.totalCount;
           })
         };
 
@@ -178,7 +180,7 @@ tsApp
               : $scope.paging["assignedUser"].ascending,
             queryRestriction : null
           };
-          projectService.findUsersForProject($scope.selectedProject.id,
+          projectService.findAssignedUsersForProject($scope.selectedProject.id,
             $scope.paging["assignedUser"].filter, pfs).then(function(data) {
             $scope.assignedUsers = data.users;
             $scope.assignedUsers.totalCount = data.totalCount;
@@ -195,7 +197,9 @@ tsApp
 
         // get project roles
         $scope.getProjectRoles = function() {
+          console.debug("getProjectRoles");
           projectService.getProjectRoles().then(function(data) {
+            console.debug("adminController.roles =",data.strings);
             $scope.projectRoles = data.strings;
           })
         };
@@ -211,7 +215,7 @@ tsApp
           }
 
           $scope.selectedProject = project;
-          $scope.retrieveCandidateUsers();
+          $scope.retrieveUnassignedUsers();
           $scope.retrieveAssignedUsers();
 
           // TODO: need to reset paging for candidate and assigned
@@ -248,7 +252,7 @@ tsApp
             securityService.removeUser(object).then(function() {
               $scope.retrieveUsers();
               if ($scope.selectedProject != null) {
-                $scope.retrieveCandidateUsers();
+                $scope.retrieveUnassignedUsers();
                 $scope.retrieveAssignedUsers();
               }
             });
@@ -288,7 +292,7 @@ tsApp
           } else if (table === 'assignedUser') {
             $scope.retrieveAssignedUsers();
           } else if (table === 'candidateUser') {
-            $scope.retrieveCandidateUsers();
+            $scope.retrieveUnassignedUsers();
           }
         }
 
@@ -319,7 +323,7 @@ tsApp
               $scope.retrieveProjects();
               $scope.selectedProject = data;
               $scope.retrieveAssignedUsers();
-              $scope.retrieveCandidateUsers();
+              $scope.retrieveUnassignedUsers();
             })
         };
 
@@ -330,7 +334,7 @@ tsApp
               $scope.retrieveProjects();
               $scope.selectedProject = data;
               $scope.retrieveAssignedUsers();
-              $scope.retrieveCandidateUsers();
+              $scope.retrieveUnassignedUsers();
             })
         };
 
@@ -431,7 +435,7 @@ tsApp
           modalInstance.result.then(
           // Success
           function() {
-            $scope.retrieveCandidateUsers();
+            $scope.retrieveUnassignedUsers();
             $scope.retrieveAssignedUsers();
           });
         };
@@ -550,7 +554,7 @@ tsApp
           modalInstance.result.then(
           // Success
           function() {
-            $scope.retrieveCandidateUsers();
+            $scope.retrieveUnassignedUsers();
             $scope.retrieveAssignedUsers();
           });
         };
