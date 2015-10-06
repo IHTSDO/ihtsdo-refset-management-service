@@ -7,10 +7,13 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
 /**
  * Generically represents a service for accessing {@link Refset} information.
@@ -143,7 +146,7 @@ public interface RefsetService extends ProjectService {
    * @param refsetId the refset id
    * @param date the date
    * @return the refset revision
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Refset getRefsetRevision(Long refsetId, Date date) throws Exception;
 
@@ -169,4 +172,39 @@ public interface RefsetService extends ProjectService {
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs);
 
+  /**
+   * Returns the import refset handler.
+   *
+   * @param key the key
+   * @return the import refset handler
+   * @throws Exception the exception
+   */
+  public ImportRefsetHandler getImportRefsetHandler(String key)
+    throws Exception;
+
+  /**
+   * Returns the export refset handler.
+   *
+   * @param key the key
+   * @return the export refset handler
+   * @throws Exception the exception
+   */
+  public ExportRefsetHandler getExportRefsetHandler(String key)
+    throws Exception;
+
+  /**
+   * Returns the import refset handler info.
+   *
+   * @return the import refset handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getImportRefsetHandlerInfo() throws Exception;
+
+  /**
+   * Returns the export refset handler info.
+   *
+   * @return the export refset handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception;
 }

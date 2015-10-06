@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link IoHandlerInfoJpa}.
  */
-public class ModelUnit039Test {
+public class ModelUnit039Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private IoHandlerInfoJpa object;
@@ -49,7 +49,7 @@ public class ModelUnit039Test {
    */
   @Test
   public void testModelGetSet039() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet039");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -61,7 +61,7 @@ public class ModelUnit039Test {
    */
   @Test
   public void testModelEqualsHashcode039() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode039");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("id");
     tester.include("name");
@@ -83,7 +83,7 @@ public class ModelUnit039Test {
    */
   @Test
   public void testModelCopy039() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy039");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructor(IoHandlerInfo.class));
   }
@@ -95,7 +95,7 @@ public class ModelUnit039Test {
    */
   @Test
   public void testModelXmlSerialization039() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization039");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }

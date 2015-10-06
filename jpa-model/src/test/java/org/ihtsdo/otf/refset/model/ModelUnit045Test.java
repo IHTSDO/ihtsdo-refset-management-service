@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ConceptDiffReportJpa}.
  */
-public class ModelUnit045Test {
+public class ModelUnit045Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ConceptDiffReportJpa object;
@@ -88,7 +88,7 @@ public class ModelUnit045Test {
    */
   @Test
   public void testModelGetSet044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("valid");
     tester.test();
@@ -101,7 +101,7 @@ public class ModelUnit045Test {
    */
   @Test
   public void testModelEqualsHashcode044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("oldTranslation");
     tester.include("newTranslation");
@@ -129,7 +129,7 @@ public class ModelUnit045Test {
    */
   @Test
   public void testModelCopy044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Translation.class, 1, t1);
     tester.proxy(Translation.class, 2, t2);
@@ -146,7 +146,7 @@ public class ModelUnit045Test {
    */
   @Test
   public void testModelXmlSerialization044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     ConceptDiffReport report = new ConceptDiffReportJpa();
@@ -169,7 +169,7 @@ public class ModelUnit045Test {
    */
   @Test
   public void testModelXmlTransient044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     ConceptDiffReport report = new ConceptDiffReportJpa();
 
     Translation t1 = new TranslationJpa();

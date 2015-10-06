@@ -219,6 +219,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Path("/add")
   @ApiOperation(value = "Add new refset", notes = "Creates a new refset", response = RefsetJpa.class)
   public Refset addRefset(
+    @ApiParam(value = "Project id, e.g. 1", required = true) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Refset, e.g. newRefset", required = true) RefsetJpa refset,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {

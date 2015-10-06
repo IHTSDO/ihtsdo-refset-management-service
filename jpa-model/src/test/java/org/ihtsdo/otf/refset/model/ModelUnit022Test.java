@@ -20,7 +20,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link UserImpl}.
  */
-public class ModelUnit022Test {
+public class ModelUnit022Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private UserImpl object;
@@ -48,7 +48,7 @@ public class ModelUnit022Test {
    */
   @Test
   public void testModelGetSet022() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet022");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("objectId");
     tester.test();
@@ -61,7 +61,7 @@ public class ModelUnit022Test {
    */
   @Test
   public void testModelEqualsHashcode022() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode022");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("applicationRole");
     tester.include("email");
@@ -83,7 +83,7 @@ public class ModelUnit022Test {
    */
   @Test
   public void testModelCopy022() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy022");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructor(User.class));
   }

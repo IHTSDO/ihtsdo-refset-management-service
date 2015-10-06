@@ -29,7 +29,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ReleaseInfoJpa}.
  */
-public class ModelUnit002Test {
+public class ModelUnit002Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ReleaseInfoJpa object;
@@ -78,7 +78,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelGetSet002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -90,7 +90,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelEqualsHashcode002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("description");
     tester.include("name");
@@ -121,7 +121,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelCopy002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -137,7 +137,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelXmlSerialization002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -153,7 +153,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelXmlTransient010() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient010");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     ReleaseInfo info = new ReleaseInfoJpa();
     info.setRefset(r1);
     info.setTranslation(t1);
@@ -169,7 +169,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelNotNullField002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("name");
     tester.include("description");
@@ -190,7 +190,7 @@ public class ModelUnit002Test {
    */
   @Test
   public void testModelIndexedFields002() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields002");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);

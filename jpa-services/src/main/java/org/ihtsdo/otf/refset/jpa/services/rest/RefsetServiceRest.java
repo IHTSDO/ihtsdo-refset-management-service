@@ -55,12 +55,13 @@ public interface RefsetServiceRest {
   /**
    * Adds the refset.
    *
+   * @param projectId the project id
    * @param refset the refset
    * @param authToken the auth token
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset addRefset(RefsetJpa refset, String authToken) throws Exception;
+  public Refset addRefset(Long projectId, RefsetJpa refset, String authToken) throws Exception;
 
   /**
    * Update refset.

@@ -30,6 +30,12 @@ public interface ImportRefsetHandler extends Configurable {
   public String getFileTypeFilter();
 
   /**
+   * Returns the mime type.
+   *
+   * @return the mime type
+   */
+  public String getMimeType();
+  /**
    * Import members.
    *
    * @param content the content

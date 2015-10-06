@@ -7,10 +7,13 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 /**
  * Generically represents a service for accessing {@link Translation}
@@ -173,5 +176,39 @@ public interface TranslationService extends RefsetService {
    */
   public ConceptList findConceptsForTranslationRevision(Long translationId,
     Date date, PfsParameter pfs);
+
+  /**
+   * Returns the import translation handler.
+   *
+   * @param key the key
+   * @return the import translation handler
+   * @throws Exception the exception
+   */
+  public ImportTranslationHandler getImportTranslationHandler(String key) throws Exception;
+  
+  /**
+   * Returns the export translation handler.
+   *
+   * @param key the key
+   * @return the export translation handler
+   * @throws Exception the exception
+   */
+  public ExportTranslationHandler getExportTranslationHandler(String key) throws Exception;
+
+  /**
+   * Returns the import translation handler info.
+   *
+   * @return the import translation handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getImportTranslationHandlerInfo() throws Exception;
+  
+  /**
+   * Returns the export translation handler info.
+   *
+   * @return the export translation handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getExportTranslationHandlerInfo() throws Exception;
 
 }

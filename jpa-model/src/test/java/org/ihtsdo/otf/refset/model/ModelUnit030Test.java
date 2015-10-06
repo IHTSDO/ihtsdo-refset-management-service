@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link RelationshipJpa}.
  */
-public class ModelUnit030Test {
+public class ModelUnit030Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private UserPreferencesJpa object;
@@ -65,7 +65,7 @@ public class ModelUnit030Test {
    */
   @Test
   public void testModelGetSet030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("userName");
     tester.exclude("userId");
@@ -79,7 +79,7 @@ public class ModelUnit030Test {
    */
   @Test
   public void testModelEqualsHashcode030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
 
     // Off for now, the user/userId/userName interaction is causing issues
@@ -102,7 +102,7 @@ public class ModelUnit030Test {
    */
   @Test
   public void testModelCopy030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up objects
@@ -119,7 +119,7 @@ public class ModelUnit030Test {
    */
   @Test
   public void testModelXmlSerialization030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     // Set up objects
@@ -138,7 +138,7 @@ public class ModelUnit030Test {
    */
   @Test
   public void testModelNotNullField030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
 
     assertTrue(tester.testNotNullFields());

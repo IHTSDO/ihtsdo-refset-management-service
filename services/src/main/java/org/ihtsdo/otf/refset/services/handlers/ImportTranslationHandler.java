@@ -30,6 +30,13 @@ public interface ImportTranslationHandler extends Configurable {
   public String getFileTypeFilter();
 
   /**
+   * Returns the mime type.
+   *
+   * @return the mime type
+   */
+  public String getMimeType();
+
+  /**
    * Import descriptions and language refset members connected to them.
    *
    * @param content the content

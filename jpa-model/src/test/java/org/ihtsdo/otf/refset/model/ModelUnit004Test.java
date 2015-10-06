@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ValidationResultJpa}.
  */
-public class ModelUnit004Test {
+public class ModelUnit004Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ValidationResultJpa object;
@@ -62,7 +62,7 @@ public class ModelUnit004Test {
    */
   @Test
   public void testModelGetSet004() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet004");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("valid");
     tester.test();
@@ -75,7 +75,7 @@ public class ModelUnit004Test {
    */
   @Test
   public void testModelEqualsHashcode004() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode004");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("errors");
     tester.include("warnings");
@@ -100,7 +100,7 @@ public class ModelUnit004Test {
    */
   @Test
   public void testModelCopy004() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy004");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up objects
@@ -117,7 +117,7 @@ public class ModelUnit004Test {
    */
   @Test
   public void testModelXmlSerialization004() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization004");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     // Set up objects
     tester.proxy(Set.class, 1, s1);

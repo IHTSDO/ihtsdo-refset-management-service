@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ReleaseArtifactJpa}.
  */
-public class ModelUnit032Test {
+public class ModelUnit032Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ReleaseArtifactJpa object;
@@ -63,7 +63,7 @@ public class ModelUnit032Test {
    */
   @Test
   public void testModelGetSet032() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet032");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -75,7 +75,7 @@ public class ModelUnit032Test {
    */
   @Test
   public void testModelEqualsHashcode032() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode032");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
     tester.include("releaseInfo");
@@ -100,7 +100,7 @@ public class ModelUnit032Test {
    */
   @Test
   public void testModelCopy032() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy032");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up objects
@@ -117,7 +117,7 @@ public class ModelUnit032Test {
    */
   @Test
   public void testModelNotNullField032() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField032");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("name");
     tester.include("timestamp");

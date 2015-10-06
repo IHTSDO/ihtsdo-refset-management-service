@@ -46,6 +46,12 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
+  public String getMimeType() {
+    return "application/zip";
+  }
+  
+  /* see superclass */
+  @Override
   public String getName() {
     return "Export RF2";
   }

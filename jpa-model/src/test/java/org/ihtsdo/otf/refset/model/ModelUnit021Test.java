@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ConceptRefsetMemberJpa}.
  */
-public class ModelUnit021Test {
+public class ModelUnit021Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ConceptRefsetMemberJpa object;
@@ -67,7 +67,7 @@ public class ModelUnit021Test {
    */
   @Test
   public void testModelGetSet021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet009");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -79,7 +79,7 @@ public class ModelUnit021Test {
    */
   @Test
   public void testModelEqualsHashcode021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode021");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
@@ -107,7 +107,7 @@ public class ModelUnit021Test {
    */
   @Test
   public void testModelCopy021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy009");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 1, r2);    assertTrue(tester.testCopyConstructor(ConceptRefsetMember.class));
@@ -120,7 +120,7 @@ public class ModelUnit021Test {
    */
   @Test
   public void testModelXmlSerialization021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient021");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     Refset r = new RefsetJpa();
@@ -136,7 +136,7 @@ public class ModelUnit021Test {
    */
   @Test
   public void testModelNotNullField021() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField021");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");

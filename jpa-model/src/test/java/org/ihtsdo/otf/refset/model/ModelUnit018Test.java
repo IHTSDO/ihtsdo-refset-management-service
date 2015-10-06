@@ -24,7 +24,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ModuleDependencyRefsetMemberJpa}.
  */
-public class ModelUnit018Test {
+public class ModelUnit018Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ModuleDependencyRefsetMemberJpa object;
@@ -68,7 +68,7 @@ public class ModelUnit018Test {
    */
   @Test
   public void testModelGetSet018() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet009");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -80,7 +80,7 @@ public class ModelUnit018Test {
    */
   @Test
   public void testModelEqualsHashcode018() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode018");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
@@ -111,7 +111,7 @@ public class ModelUnit018Test {
    */
   @Test
   public void testModelCopy018() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy009");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up some objects
@@ -128,7 +128,7 @@ public class ModelUnit018Test {
    */
   @Test
   public void testModelXmlSerialization018() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient018");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     // Set up some objects
@@ -151,7 +151,7 @@ public class ModelUnit018Test {
    */
   @Test
   public void testModelNotNullField018() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField018");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");

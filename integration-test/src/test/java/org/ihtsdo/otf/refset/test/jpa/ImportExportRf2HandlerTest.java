@@ -71,16 +71,16 @@ public class ImportExportRf2HandlerTest {
     membersInputStream =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/test-data/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+                "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
 
     definitionInputStream =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/test-data/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+                "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
 
     translationInputStream =
         new FileInputStream(new File(
-            "../config/src/main/resources/data/test-data/test-data.zip"));
+            "../config/src/main/resources/data/translation/translation.zip"));
   }
 
   /**

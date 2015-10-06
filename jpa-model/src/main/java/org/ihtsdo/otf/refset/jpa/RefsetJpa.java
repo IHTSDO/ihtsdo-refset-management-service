@@ -390,6 +390,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   public Set<FeedbackEvent> getEnabledFeedbackEvents() {
+    if (enabledFeedbackEvents == null) {
+      enabledFeedbackEvents = new HashSet<>();
+    }
     return enabledFeedbackEvents;
   }
 

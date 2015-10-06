@@ -535,7 +535,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       return terminologyHandlerMap.get(terminology);
     }
     return terminologyHandlerMap.get(ConfigUtility.DEFAULT);
-
   }
 
 

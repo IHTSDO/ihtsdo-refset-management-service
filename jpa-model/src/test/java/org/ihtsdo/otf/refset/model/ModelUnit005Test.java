@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link RestPrimitiveJpa}.
  */
-public class ModelUnit005Test {
+public class ModelUnit005Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private RestPrimitiveJpa object;
@@ -49,7 +49,7 @@ public class ModelUnit005Test {
    */
   @Test
   public void testModelGetSet005() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet005");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -61,7 +61,7 @@ public class ModelUnit005Test {
    */
   @Test
   public void testModelEqualsHashcode005() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode005");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("type");
     tester.include("value");
@@ -81,7 +81,7 @@ public class ModelUnit005Test {
    */
   @Test
   public void testModelCopy005() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy005");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructor(RestPrimitive.class));
   }
@@ -93,7 +93,7 @@ public class ModelUnit005Test {
    */
   @Test
   public void testModelXmlSerialization005() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization005");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }
