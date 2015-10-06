@@ -175,10 +175,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(refsetId);
 
-      int[] totalCt = new int[1];
       TranslationList result = new TranslationListJpa();
-      result.setTotalCount(totalCt[0]);
       result.setObjects(refset.getTranslations());
+      result.setTotalCount(result.getCount());
       return result;
    } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
