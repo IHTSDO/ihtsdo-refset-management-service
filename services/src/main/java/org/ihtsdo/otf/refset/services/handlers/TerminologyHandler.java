@@ -61,6 +61,18 @@ public interface TerminologyHandler extends Configurable {
     String terminology, String version) throws Exception;
 
   /**
+   * Returns the concept with terminologyId and name.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept
+   * @throws Exception the exception
+   */
+  public Concept getConcept(String terminologyId,
+    String terminology, String version) throws Exception;
+
+  /**
    * Returns the description.
    *
    * @param terminologyId the terminology id

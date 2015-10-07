@@ -54,9 +54,6 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   /** The auth token. */
   private String authToken;
 
-  /** The cookies. */
-  Map<String, NewCookie> cookies;
-
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {

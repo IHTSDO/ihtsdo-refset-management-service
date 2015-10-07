@@ -138,6 +138,21 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     return null;
   }
 
+  @Override
+  public Concept getConcept(String terminologyId, String terminology,
+    String version) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList findConceptsForQuery(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   /* see superclass */
   @Override
   public Description getDescription(String terminologyId, String terminology,
@@ -219,12 +234,5 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     return description;
   }
 
-  /* see superclass */
-  @Override
-  public ConceptList findConceptsForQuery(String query, String terminology,
-    String version, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
 }
