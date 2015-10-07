@@ -53,21 +53,21 @@ tsApp
         $scope.userPaging = {
           page : 1,
           filter : "",
-          sortField : 'email',
+          sortField : 'userName',
           ascending : []
         }        
         
         $scope.assignedUserPaging = {
           page : 1,
           filter : "",
-          sortField : 'email',
+          sortField : 'userName',
           ascending : []
         }        
         
         $scope.candidateUserPaging = {
           page : 1,
           filter : "",
-          sortField : 'email',
+          sortField : 'userName',
           ascending : []
         }        
 

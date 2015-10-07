@@ -46,8 +46,10 @@
         <thead class="table-select-row">
           <th class="col-md-2 col-xs-2" ng-click="setProjectSortField('id')">Id</th>
           <th class="col-md-4 col-xs-4" ng-click="setProjectSortField('name')">Name</th>
-          <th class="col-md-5 col-xs-5"
+          <th class="col-md-4 col-xs-4"
             ng-click="setProjectSortField('description')">Description</th>
+          <th class="col-md-1 col-xs-1"
+            ng-click="setProjectSortField('namespace')">Namespace</th>
           <th class="col-md-1 col-xs-1">&nbsp;</th>
         </thead>
         <tbody>
@@ -55,6 +57,7 @@
             <td>{{project.id}}</td>
             <td>{{project.name}}</td>
             <td>{{project.description}}</td>
+            <td>{{project.namespace}}</td>
 
             <td class="nobreak"><a title="Edit"
                 ng-click="openEditProjectModal(project); $event.stopPropagation()">
