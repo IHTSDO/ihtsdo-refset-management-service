@@ -88,7 +88,7 @@ public class RootServiceRestImpl {
   }
 
   /**
-   * Authorize the users project role.
+   * Authorize the users project role or accept application ADMIN.
    *
    * @param projectService the project service
    * @param projectId the project id

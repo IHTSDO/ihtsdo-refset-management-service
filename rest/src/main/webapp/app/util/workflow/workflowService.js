@@ -17,7 +17,7 @@ tsApp.service('workflowService',
         // Perform workflow action on a refset
         gpService.increment()
         $http.get(
-          projectUrl + 'refset' + "?action=" + action + "&refsetId=" + refsetId
+          projectUrl + 'refset' + "/" + action + "?refsetId=" + refsetId
             + "&userName=" + userName + "&projectId=" + projectId).then(
         // success
         function(response) {
@@ -43,9 +43,9 @@ tsApp.service('workflowService',
         // Find available editing work
         gpService.increment()
         $http.post(
-          projectUrl + 'translation/available/editing' + "?projectId="
+          projectUrl + "translation/available/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName + "&pfs=" + pfs).then(
+            + userName , pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -70,9 +70,9 @@ tsApp.service('workflowService',
         // Find assigned editing work
         gpService.increment()
         $http.post(
-          projectUrl + 'translation/assigned/editing' + "?projectId="
+          projectUrl + "translation/assigned/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName + "&pfs=" + pfs).then(
+            + userName , pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -97,36 +97,9 @@ tsApp.service('workflowService',
         // Find available review work
         gpService.increment()
         $http.post(
-          projectUrl + 'translation/assigned/editing' + "?projectId="
+          projectUrl + "translation/available/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName + "&pfs=" + pfs).then(
-        // success
-        function(response) {
-          console.debug("  work = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
-        return deferred.promise;
-      }
-
-      // Find available review work
-      this.findAvailableReviewWork = function(projectId, translationId,
-        userName, pfs) {
-        console.debug("findAvailableReviewWork");
-        var deferred = $q.defer();
-
-        // Find available review work
-        gpService.increment()
-        $http.post(
-          projectUrl + 'translation/assigned/review' + "?projectId="
-            + projectId + "&translationId=" + translationId + "&userName="
-            + userName + "&pfs=" + pfs).then(
+            + userName , pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -151,9 +124,9 @@ tsApp.service('workflowService',
         // Find assigned review work
         gpService.increment()
         $http.post(
-          projectUrl + 'translation/assigned/review' + "?projectId="
+          projectUrl + "translation/assigned/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName + "&pfs=" + pfs).then(
+            + userName , pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -178,8 +151,9 @@ tsApp.service('workflowService',
         // Perform workflow action on a translation
         gpService.increment()
         $http.post(
-          projectUrl + 'translation' + "?action=" + action + "&translationId="
-            + translationId + "&userName=").then(
+          projectUrl + 'translation' + "/" + action + "?translationId="
+            + translationId + "&userName=" + userName + "&projectId="
+            + projectId).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);

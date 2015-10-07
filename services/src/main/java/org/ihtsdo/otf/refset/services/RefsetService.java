@@ -7,9 +7,14 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
 /**
  * Generically represents a service for accessing {@link Refset} information.
@@ -89,6 +94,24 @@ public interface RefsetService extends ProjectService {
   public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
     RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
+
+  /**
+   * Adds the refset member.
+   *
+   * @param member the member
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addMember(ConceptRefsetMember member) throws Exception;
+
+  /**
+   * Removes the refset member.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeMember(Long id) throws Exception;
+
   /**
    * Returns the refset descriptor ref set member.
    *
@@ -121,7 +144,8 @@ public interface RefsetService extends ProjectService {
    * @return the search result list
    * @throws Exception the exception
    */
-  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs) throws Exception;
+  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Find members for refset.
@@ -141,9 +165,20 @@ public interface RefsetService extends ProjectService {
    * @param refsetId the refset id
    * @param date the date
    * @return the refset revision
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Refset getRefsetRevision(Long refsetId, Date date) throws Exception;
+
+  /**
+   * Find release revisions. This is the max revision number before the
+   * finalization date of the release for releases that were published.
+   *
+   * @param refsetId the refset id
+   * @return the search result list
+   * @throws Exception the exception
+   */
+  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
+    throws Exception;
 
   /**
    * Find members for refset revision.
@@ -156,5 +191,39 @@ public interface RefsetService extends ProjectService {
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs);
 
+  /**
+   * Returns the import refset handler.
+   *
+   * @param key the key
+   * @return the import refset handler
+   * @throws Exception the exception
+   */
+  public ImportRefsetHandler getImportRefsetHandler(String key)
+    throws Exception;
 
+  /**
+   * Returns the export refset handler.
+   *
+   * @param key the key
+   * @return the export refset handler
+   * @throws Exception the exception
+   */
+  public ExportRefsetHandler getExportRefsetHandler(String key)
+    throws Exception;
+
+  /**
+   * Returns the import refset handler info.
+   *
+   * @return the import refset handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getImportRefsetHandlerInfo() throws Exception;
+
+  /**
+   * Returns the export refset handler info.
+   *
+   * @return the export refset handler info
+   * @throws Exception the exception
+   */
+  public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception;
 }

@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link MemberDiffReportJpa}.
  */
-public class ModelUnit044Test {
+public class ModelUnit044Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private MemberDiffReportJpa object;
@@ -88,7 +88,7 @@ public class ModelUnit044Test {
    */
   @Test
   public void testModelGetSet044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("valid");
     tester.test();
@@ -101,7 +101,7 @@ public class ModelUnit044Test {
    */
   @Test
   public void testModelEqualsHashcode044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("oldRefset");
     tester.include("newRefset");
@@ -129,7 +129,7 @@ public class ModelUnit044Test {
    */
   @Test
   public void testModelCopy044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -146,7 +146,7 @@ public class ModelUnit044Test {
    */
   @Test
   public void testModelXmlSerialization044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     MemberDiffReport report = new MemberDiffReportJpa();
@@ -169,7 +169,7 @@ public class ModelUnit044Test {
    */
   @Test
   public void testModelXmlTransient044() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient044");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     MemberDiffReport report = new MemberDiffReportJpa();
 
     Refset r1 = new RefsetJpa();

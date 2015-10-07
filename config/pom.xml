@@ -47,6 +47,7 @@
     <module>dev-windows</module>
     <module>uat</module>
     <module>prod</module>
+    <module>prod-wci</module>
   </modules>
 
 </project>

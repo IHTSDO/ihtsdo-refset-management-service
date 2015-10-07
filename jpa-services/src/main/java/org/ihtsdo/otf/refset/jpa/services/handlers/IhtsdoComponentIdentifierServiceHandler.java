@@ -3,7 +3,19 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
+
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -14,7 +26,11 @@ import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Implementation of {@link IdentifierAssignmentHandler} that interacts with the
@@ -23,74 +39,175 @@ import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 public class IhtsdoComponentIdentifierServiceHandler implements
     IdentifierAssignmentHandler {
 
+  /** The accept. */
+  private final String accept = "application/json";
+
   /** The url. */
-  @SuppressWarnings("unused")
   private String url;
+
+  /** The userName. */
+  private String userName;
+
+  /** The password. */
+  private String password;
+
+  /** The auth token. */
+  private String authToken;
+
+  /** The cookies. */
+  Map<String, NewCookie> cookies;
 
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {
     // Obtain URL for the component id service
     if (p.containsKey("url")) {
-      this.url = p.getProperty("url");
+      url = p.getProperty("url");
     } else {
       throw new Exception("Required property url not specified.");
     }
+    if (p.containsKey("userName")) {
+      userName = p.getProperty("userName");
+    } else {
+      throw new Exception("Required property userName not specified.");
+    }
+    if (p.containsKey("password")) {
+      password = p.getProperty("password");
+    } else {
+      throw new Exception("Required property password not specified.");
+    }
+    authToken = login(userName, password);
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(Concept concept) throws Exception {
-    concept.getTranslation().getRefset().getProject().getNamespace();
-    // partitionId 00 or 10
-    return null;
+
+    // If already assigned, reuse it
+    if (concept.getTerminologyId() != null
+        && !concept.getTerminologyId().isEmpty()) {
+      return concept.getTerminologyId();
+    }
+
+    boolean tried = false;
+    Exception failedException = null;
+    while (true) {
+      try {
+        String namespace = null;
+        if (concept != null && concept.getTranslation() != null
+            && concept.getTranslation().getProject() != null) {
+          namespace = concept.getTranslation().getProject().getNamespace();
+        }
+        // Obtain the ID
+        return getTerminologyId(namespace,
+            (namespace != null && !namespace.isEmpty() && !namespace
+                .equals("0")) ? "00" : "10", authToken);
+      } catch (Exception e) {
+        if (tried) {
+          failedException = e;
+          break;
+        }
+        authToken = login(userName, password);
+      }
+      tried = true;
+    }
+    throw new Exception("Unexpected failure...", failedException);
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(Description description) throws Exception {
-    description.getConcept().getTranslation().getRefset().getProject()
-        .getNamespace();
-    // partitionId 01 or 11
-    return null;
+
+    // If already assigned, reuse it
+    if (description.getTerminologyId() != null
+        && !description.getTerminologyId().isEmpty()) {
+      return description.getTerminologyId();
+    }
+
+    boolean tried = false;
+    Exception failedException = null;
+    while (true) {
+      try {
+        String namespace = null;
+        if (description != null && description.getConcept() != null
+            && description.getConcept().getTranslation() != null
+            && description.getConcept().getTranslation().getProject() != null) {
+          namespace =
+              description.getConcept().getTranslation().getProject()
+                  .getNamespace();
+        }
+        // Obtain the ID
+        return getTerminologyId(namespace,
+            (namespace != null && !namespace.isEmpty() && !namespace
+                .equals("0")) ? "01" : "11", authToken);
+      } catch (Exception e) {
+        if (tried) {
+          failedException = e;
+          break;
+        }
+        authToken = login(userName, password);
+      }
+      tried = true;
+    }
+    throw new Exception("Unexpected failure...", failedException);
+
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(DescriptionTypeRefsetMember member)
     throws Exception {
-    // UUID.randomUUID().toString();
-    return null;
+    return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(LanguageRefsetMember member) throws Exception {
-    // UUID.randomUUID().toString();
-    return null;
+    return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(ModuleDependencyRefsetMember member)
     throws Exception {
-    // UUID.randomUUID().toString();
-    return null;
+    return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(RefsetDescriptorRefsetMember member)
     throws Exception {
-    // UUID.randomUUID().toString();
-    return null;
+    return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(ConceptRefsetMember member) throws Exception {
-    // UUID.randomUUID().toString();
-    return null;
+    return UUID.randomUUID().toString();
+  }
+
+  /* see superclass */
+  @Override
+  public String getTerminologyId(Refset refset) throws Exception {
+    // If already assigned, reuse it
+    if (refset.getTerminologyId() != null
+        && !refset.getTerminologyId().isEmpty()) {
+      return refset.getTerminologyId();
+    }
+    // Reuse concept logic
+    return getTerminologyId(new ConceptJpa());
+  }
+
+  /* see superclass */
+  @Override
+  public String getTerminologyId(Translation translation) throws Exception {
+    // If already assigned, reuse it
+    if (translation.getTerminologyId() != null
+        && !translation.getTerminologyId().isEmpty()) {
+      return translation.getTerminologyId();
+    }
+
+    return UUID.randomUUID().toString();
   }
 
   /* see superclass */
@@ -105,24 +222,100 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     return false;
   }
 
+  /* see superclass */
   @Override
   public String getName() {
     return "IHTSDO Component Identifier Service handler";
   }
 
-  @Override
-  public String getTerminologyId(Refset refset) throws Exception {
-    // use concept id assignment
-    // getProject().getNamespace()
-    return null;
+  /**
+   * Authenticate.
+   *
+   * @param userName the user name
+   * @param password the password
+   * @return the string
+   * @throws Exception the exception
+   */
+  private String login(String userName, String password) throws Exception {
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(url + "/login");
+    Builder builder = target.request(MediaType.APPLICATION_JSON);
+    Response response =
+        builder.post(Entity.json("{ \"username\": \"" + userName
+            + "\", \"password\": \"" + password + "\" }"));
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new Exception(response.toString());
+    }
+    String resultString = response.readEntity(String.class);
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+    return doc.get("token").asText();
   }
 
-  @Override
-  public String getTerminologyId(Translation translation) throws Exception {
-    // must be user assigned, simply return translation.getTerminologyId();
-    // may also use getRefset().getTerminologyId()
-    //
-    return null;
-  }
+  /**
+   * Returns the terminology id.
+   *
+   * @param namespace the namespace
+   * @param partitionId the partition id
+   * @param authToken the auth token
+   * @return the terminology id
+   * @throws Exception the exception
+   */
+  private String getTerminologyId(String namespace, String partitionId,
+    String authToken) throws Exception {
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    WebTarget target = client.target(url + "/sct/generate?token=" + authToken);
 
+    String postData =
+        "{ " + "\"namespace\": " + (namespace == null ? 0 : namespace) + ", "
+            + "\"partitionId\": \"" + partitionId + "\", "
+            + "\"systemId\": \"refset\", " + "\"software\": \"refset\", "
+            + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
+            + "}";
+    Response response = target.request(accept).post(Entity.json(postData));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception("Unexpected failure to get termionlogy id: "
+          + resultString);
+    }
+    /**
+     * <pre>
+     * {
+     *   "sctid": "string",
+     *   "sequence": 0,
+     *   "namespace": 0,
+     *   "partitionId": "string",
+     *   "checkDigit": 0,
+     *   "systemId": "string",
+     *   "status": "string",
+     *   "author": "string",
+     *   "software": "string",
+     *   "expirationDate": "string",
+     *   "comment": "string",
+     *   "additionalIds": [
+     *     {
+     *       "scheme": "string",
+     *       "schemeId": "string",
+     *       "sequence": 0,
+     *       "checkDigit": 0,
+     *       "systemId": "string",
+     *       "status": "string",
+     *       "author": "string",
+     *       "software": "string",
+     *       "expirationDate": "string",
+     *       "comment": "string"
+     *     }
+     *   ]
+     * }
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+    return doc.get("sctid").asText();
+  }
 }

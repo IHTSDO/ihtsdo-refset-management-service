@@ -71,16 +71,16 @@ public class ImportExportRf2HandlerTest {
     membersInputStream =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/test-data/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+                "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
 
     definitionInputStream =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/test-data/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+                "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
 
     translationInputStream =
         new FileInputStream(new File(
-            "../config/src/main/resources/data/test-data/test-data.zip"));
+            "../config/src/main/resources/data/translation/translation.zip"));
   }
 
   /**
@@ -97,7 +97,7 @@ public class ImportExportRf2HandlerTest {
     ImportTranslationRf2Handler importHandler =
         new ImportTranslationRf2Handler();
     List<Concept> concepts =
-        importHandler.importTranslation(translationInputStream);
+        importHandler.importConcepts(translationInputStream);
 
     // Verify concept, description and language refset count
     int conceptCt = concepts.size();

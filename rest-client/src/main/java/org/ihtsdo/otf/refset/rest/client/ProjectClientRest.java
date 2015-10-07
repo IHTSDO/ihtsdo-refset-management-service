@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.client;
 
+import java.net.URLEncoder;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -22,6 +23,7 @@ import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 
 /**
@@ -289,24 +291,132 @@ public class ProjectClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
-  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public UserList findUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
+  public ProjectList findProjectsForQuery(String query, PfsParameterJpa pfs,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    validateNotEmpty(query, "query");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project"
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ProjectList list =
+        (ProjectListJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectListJpa.class);
+    return list;
   }
 
+  /* see superclass */
   @Override
-  public UserList findCandidateUsersForProject(Long projectId, String query,
+  public UserList findAssignedUsersForProject(Long projectId, String query,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(query, "query");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/users/"
+            + projectId
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    UserList list =
+        (UserListJpa) ConfigUtility.getGraphForString(resultString,
+            UserListJpa.class);
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public UserList findUnassignedUsersForProject(Long projectId, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(query, "query");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/users/"
+            + projectId
+            + "/unassigned"
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    UserList list =
+        (UserListJpa) ConfigUtility.getGraphForString(resultString,
+            UserListJpa.class);
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public Boolean userHasSomeProjectRole(String authToken) throws Exception {
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/user/anyrole");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    return resultString.equals("true");
+
   }
 }

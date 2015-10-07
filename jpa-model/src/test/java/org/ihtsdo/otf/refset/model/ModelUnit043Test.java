@@ -29,7 +29,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link MemberValidationResultJpa}.
  */
-public class ModelUnit043Test {
+public class ModelUnit043Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private MemberValidationResultJpa object;
@@ -84,7 +84,7 @@ public class ModelUnit043Test {
    */
   @Test
   public void testModelGetSet043() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet043");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("valid");
     tester.test();
@@ -97,7 +97,7 @@ public class ModelUnit043Test {
    */
   @Test
   public void testModelEqualsHashcode043() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode043");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("member");
     tester.include("errors");
@@ -124,7 +124,7 @@ public class ModelUnit043Test {
    */
   @Test
   public void testModelCopy043() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy043");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(ConceptRefsetMember.class, 1, c1);
     tester.proxy(ConceptRefsetMember.class, 2, c2);
@@ -142,7 +142,7 @@ public class ModelUnit043Test {
    */
   @Test
   public void testModelXmlSerialization043() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization043");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     ConceptRefsetMember member = new ConceptRefsetMemberJpa();    

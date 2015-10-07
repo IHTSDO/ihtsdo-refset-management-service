@@ -8,6 +8,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import java.io.InputStream;
 
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -81,26 +82,56 @@ public interface RefsetServiceRest {
   public void removeRefset(Long refsetId, String authToken) throws Exception;
 
   /**
+   * Import refset definition.
+   *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void importDefinition(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+
+  /**
+   * Import refset members.
+   *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
+   * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void importMembers(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+
+  /**
    * Export refset definition. // TODO: needs String IoHandlerInfoId
    *
    * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportRefsetDefinition(Long refsetId, String authToken)
-    throws Exception;
+  public InputStream exportDefinition(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Export refset members.
    *
    * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportRefsetMembers(Long refsetId, String authToken)
-    throws Exception;
+  public InputStream exportMembers(Long refsetId, String ioHandlerInfoId,
+    String authToken) throws Exception;
 
   /**
    * Returns the refset revision.

@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link DescriptionJpa}.
  */
-public class ModelUnit040Test {
+public class ModelUnit040Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private DescriptionJpa object;
@@ -65,7 +65,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelGetSet030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -77,7 +77,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelEqualsHashcode030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
@@ -108,7 +108,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelCopy030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructorDeep(Description.class));
   }
@@ -120,7 +120,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelXmlSerialization030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     tester.proxy(Concept.class, 1, c1);
     tester.proxy(Concept.class, 2, c2);
@@ -134,7 +134,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelNotNullField030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
@@ -160,7 +160,7 @@ public class ModelUnit040Test {
    */
   @Test
   public void testModelIndexedFields040() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields040");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);

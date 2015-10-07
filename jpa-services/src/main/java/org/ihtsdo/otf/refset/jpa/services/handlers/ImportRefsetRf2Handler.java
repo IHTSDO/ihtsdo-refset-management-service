@@ -48,6 +48,13 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   public String getFileTypeFilter() {
     return ".txt";
   }
+  
+  /* see superclass */
+  @Override
+  public String getMimeType() {
+    return "text/plain";
+  }
+  
 
   /* see superclass */
   @Override

@@ -3,19 +3,34 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Properties;
 
-import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.Translation;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
+
+import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Default implementation of {@link TerminologyHandler}. Leverages the IHTSDO
@@ -34,19 +49,37 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     super();
   }
 
+  /** The accept. */
+  private final String accept =
+      "application/vnd.com.b2international.snowowl+json";
+
   /** The url. */
-  @SuppressWarnings("unused")
   private String url;
+
+  /** The branch. */
+  private String branch;
+
+  /** The auth header. */
+  private String authHeader;
 
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {
     if (p.containsKey("url")) {
-      this.url = p.getProperty("url");
+      url = p.getProperty("url");
     } else {
       throw new Exception("Required property url not specified.");
     }
-
+    if (p.containsKey("branch")) {
+      branch = p.getProperty("branch");
+    } else {
+      throw new Exception("Required property branch not specified.");
+    }
+    if (p.containsKey("authHeader")) {
+      authHeader = p.getProperty("authHeader");
+    } else {
+      throw new Exception("Required property url not specified.");
+    }
   }
 
   /* see superclass */
@@ -57,46 +90,51 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findConceptsForTranslation(Long translationId,
-    String query, PfsParameter pfs) throws Exception {
-    // TODO
-    return null;
+  public void refreshCaches() throws Exception {
+    // n/a
   }
 
   /* see superclass */
   @Override
-  public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
-    String query, PfsParameter pfs) throws Exception {
-    // TODO
-    return null;
+  public List<String> getTerminologyEditions() throws Exception {
+    return Arrays.asList(new String[] {
+      "SNOMEDCT"
+    });
   }
 
   /* see superclass */
   @Override
-  public Concept getConcept(Long id) throws Exception {
+  public List<Terminology> getTerminologyVersions(String edition)
+    throws Exception {
+    List<Terminology> list = new ArrayList<Terminology>();
+    if (edition.equals("SNOMEDCT")) {
+      // Make first version
+      Terminology terminology = new TerminologyJpa();
+      terminology.setTerminology(edition);
+      terminology.setEditionUrl("http://snomed.info/sct/900000000000207008");
+      terminology.setVersion("20150731");
+      list.add(terminology);
+      // Copy and make another verison
+      terminology = new TerminologyJpa(terminology);
+      terminology.setVersion("20160131");
+      list.add(terminology);
+    }
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList resolveExpression(String expr, String terminolgy,
+    String version, PfsParameter pfs) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   /* see superclass */
   @Override
-  public Concept getConcept(String terminologyId, String terminology,
-    String version) throws Exception {
+  public Concept getConceptWithDescriptions(String terminologyId,
+    String terminology, String version) throws Exception {
     // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public Description addDescription(Description description) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public Description getDescription(Long id) throws Exception {
-    // TODO: Implement as call to terminology server
     return null;
   }
 
@@ -104,114 +142,89 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public Description getDescription(String terminologyId, String terminology,
     String version) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
+
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(url + "/" + branch + "/descriptions/" + terminologyId);
+    Response response =
+        target.request(accept).header("Authorization", authHeader).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * {
+     *   "inactivationIndicator": "",
+     *   "associationTargets": {},
+     *   "acceptabilityMap": [
+     *     {
+     *       "key": ""
+     *     }
+     *   ],
+     *   "typeId": "",
+     *   "languageCode": "",
+     *   "caseSignificance": "",
+     *   "conceptId": "",
+     *   "term": "",
+     *   "effectiveTime": "date-time",
+     *   "moduleId": "",
+     *   "active": false,
+     *   "released": false,
+     *   "id": ""
+     * }
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    final Description description = new DescriptionJpa();
+    description.setActive(doc.get("active").asText().equals("true"));
+    description.setCaseSignificanceId(doc.get("caseSignificance").asText());
+    final Concept concept = new ConceptJpa();
+    concept.setTerminology(terminology);
+    concept.setVersion(version);
+    concept.setTerminologyId(doc.get("conceptId").asText());
+    description.setConcept(concept);
+    description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
+        "effectiveTime").asText()));
+    description.setLanguageCode(doc.get("languageCode").asText());
+    description.setLastModified(description.getEffectiveTime());
+    description.setLastModifiedBy(terminology);
+    description.setModuleId(doc.get("moduleId").asText());
+    description.setPublishable(true);
+    description.setPublished(true);
+    description.setTerm(doc.get("term").asText());
+    description.setTerminology(terminology);
+    description.setTerminologyId(terminologyId);
+    description.setVersion(version);
+    description.setTypeId(doc.get("typeId").asText());
+    Logger.getLogger(getClass()).debug("  description = " + description);
+
+    for (JsonNode language : doc.findValues("acceptabilityMap")) {
+      final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+      member.setActive(true);
+      member.setDescriptionId(terminologyId);
+      String key = language.fieldNames().next();
+      member.setRefsetId(key);
+      member.setAcceptabilityId(language.get(key).asText());
+      description.addLanguageRefetMember(member);
+      Logger.getLogger(getClass()).debug("    member = " + member);
+    }
+
+    return description;
   }
 
   /* see superclass */
   @Override
-  public void updateDescription(Description description) throws Exception {
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public void removeDescription(Long id) throws Exception {
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public LanguageRefsetMember addLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public void updateLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember) throws Exception {
-    // TODO: Implement as call to terminology server
-
-  }
-
-  /* see superclass */
-  @Override
-  public void removeLanguageRefsetMember(Long id) throws Exception {
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMember addSimpleRefsetMember(
-    ConceptRefsetMember simpleRefsetMember) throws Exception {
-    // TODO: Implement as call to terminology server
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMember getSimpleRefsetMember(Long id) throws Exception {
+  public ConceptList findConceptsForQuery(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
-  /* see superclass */
-  @Override
-  public ConceptRefsetMember getSimpleRefsetMember(String terminologyId,
-    String terminology, String version) throws Exception {
-    return null;
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public void updateSimpleRefsetMember(ConceptRefsetMember simpleRefsetMember)
-    throws Exception {
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public void removeSimpleRefsetMember(Long id) throws Exception {
-    // TODO: Implement as call to terminology server
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findMembersForHistoricalRefset(Refset refset,
-    String query, PfsParameter pfs) throws Exception {
-    // TODO: implement as a local call
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptList findConceptsForHistoricalTranslation(
-    Translation translation, String query, PfsParameter pfs) throws Exception {
-    // TODO: implement as a local call
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
-  }
 }

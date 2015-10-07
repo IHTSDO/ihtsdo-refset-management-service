@@ -28,7 +28,14 @@ public interface ImportTranslationHandler extends Configurable {
    * @return the file type filter
    */
   public String getFileTypeFilter();
-  
+
+  /**
+   * Returns the mime type.
+   *
+   * @return the mime type
+   */
+  public String getMimeType();
+
   /**
    * Import descriptions and language refset members connected to them.
    *
@@ -36,6 +43,6 @@ public interface ImportTranslationHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public List<Concept> importTranslation(InputStream content) throws Exception;
+  public List<Concept> importConcepts(InputStream content) throws Exception;
 
 }

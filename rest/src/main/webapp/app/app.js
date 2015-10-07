@@ -93,13 +93,20 @@ tsApp.controller('ErrorCtrl', [ '$scope', 'utilService',
   } ]);
 
 // Tab controller
-tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
-  'securityService', 'tabService',
-  function($scope, $interval, $timeout, securityService, tabService) {
+tsApp.controller('TabCtrl', [
+  '$scope',
+  '$interval',
+  '$timeout',
+  'securityService',
+  'tabService',
+  'projectService',
+  function($scope, $interval, $timeout, securityService, tabService,
+    projectService) {
     console.debug('configure TabCtrl');
 
     // Setup tabs
     $scope.tabs = tabService.tabs;
+    $scope.userProjectsInfo = projectService.getUserProjectsInfo();
 
     // Set selected tab (change the view)
     $scope.setSelectedTab = function(tab) {
@@ -137,6 +144,14 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout',
       return securityService.isAdmin();
     }
 
+    // for ng-show
+    $scope.isTabShowing = function(tab) {
+      return $scope.isAdmin() || tab.label == 'Directory'
+        || $scope.userProjectsInfo.anyrole;
+    }
+
+    // Initialize anyrole setting
+    projectService.getUserHasAnyRole();
   } ]);
 
 // Header controller
@@ -162,7 +177,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
       var myWindow = window.open(newUrl, "helpWindow");
       myWindow.focus();
     };
-    
+
     // for ng-show
     $scope.isShowing = function() {
       return securityService.isLoggedIn();

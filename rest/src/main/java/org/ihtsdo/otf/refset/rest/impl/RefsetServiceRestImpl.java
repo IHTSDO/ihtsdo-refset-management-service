@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -18,6 +19,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -29,8 +32,11 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -224,13 +230,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Refset): /add " + refset);
+    if (refset.getProject() == null || refset.getProject().getId() == null) {
+      throw new Exception(
+          "Refset must have a project with a non null identifier.");
+    }
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       final String userName =
-          authorize(securityService, authToken, "add refset", UserRole.ADMIN);
+          authorize(refsetService, refset.getProjectId(), securityService,
+              authToken, "add refset", UserRole.REVIEWER);
 
-      // Add refset
+      // Add refset - if the project is invalid, this will fail
       refset.setLastModifiedBy(userName);
       Refset newRefset = refsetService.addRefset(refset);
       return newRefset;
@@ -285,9 +296,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "remove refset", UserRole.ADMIN);
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset.getProject() == null || refset.getProject().getId() == null) {
+        throw new Exception(
+            "Refset must have a project with a non null identifier.");
+      }
 
-      // Create service and configure transaction scope
+      authorize(refsetService, refset.getProject().getId(), securityService,
+          authToken, "removerefset", UserRole.REVIEWER);
+
+      // remove refset
       refsetService.removeRefset(refsetId);
 
     } catch (Exception e) {
@@ -299,20 +317,211 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  @Produces("text/plain")
+  /* see superclass */
+  @POST
   @Override
-  public InputStream exportRefsetDefinition(Long refsetId, String authToken)
+  @Path("/import/definition")
+  @ApiOperation(value = "Import refset definition", notes = "Imports the refset definition into the specified refset")
+  public void importDefinition(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/definition " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorize(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset definition",
+              UserRole.REVIEWER);
+
+      // Obtain the import handler
+      ImportRefsetHandler handler =
+          refsetService.getImportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Load definition and assign it
+      String definition = handler.importDefinition(in);
+      refset.setDefinition(definition);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import refset definition");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
-  @Produces("text/plain")
+  @POST
   @Override
-  public InputStream exportRefsetMembers(Long refsetId, String authToken)
+  @Path("/import/members")
+  @ApiOperation(value = "Import refset members", notes = "Imports the refset members into the specified refset")
+  public void importMembers(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/members " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorize(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset members",
+              UserRole.REVIEWER);
+
+      // Obtain the import handler
+      ImportRefsetHandler handler =
+          refsetService.getImportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // TODO: what if refset already has members?
+      // what if some of the members match these?
+
+      // Load members into memory and add to refset
+      List<ConceptRefsetMember> members = handler.importMembers(in);
+      for (ConceptRefsetMember member : members) {
+        member.setRefset(refset);
+        member.setId(null);
+        member.setLastModifiedBy(userName);
+        refsetService.addMember(member);
+      }
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
+  @GET
+  @Override
+  @Produces("application/octet-stream")
+  @Path("/export/definition")
+  @ApiOperation(value = "Export refset definition", notes = "Exports the definition for the specified refset", response = InputStream.class)
+  public InputStream exportDefinition(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Refset): /export/definition " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorize(refsetService, refset.getProject().getId(), securityService,
+          authToken, "export refset definition", UserRole.AUTHOR);
+
+      // Obtain the export handler
+      ExportRefsetHandler handler =
+          refsetService.getExportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // export the definition
+      return handler.exportDefinition(refset);
+
+    } catch (Exception e) {
+      handleException(e, "trying to export refset definition");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+
+  }
+
+  @GET
+  @Override
+  @Produces("application/octet-stream")
+  @Path("/export/members")
+  @ApiOperation(value = "Export refset members", notes = "Exports the members for the specified refset", response = InputStream.class)
+  public InputStream exportMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Refset): /export/members " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorize(refsetService, refset.getProject().getId(), securityService,
+          authToken, "export refset members ", UserRole.AUTHOR);
+
+      // Obtain the export handler
+      ExportRefsetHandler handler =
+          refsetService.getExportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // export the members
+      return handler.exportMembers(refset,
+          refsetService.findMembersForRefset(refset.getId(), "", null)
+              .getObjects());
+
+    } catch (Exception e) {
+      handleException(e, "trying to export refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+
+  }
 }

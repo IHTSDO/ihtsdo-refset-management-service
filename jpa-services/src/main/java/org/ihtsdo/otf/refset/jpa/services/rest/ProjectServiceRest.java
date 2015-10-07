@@ -28,6 +28,16 @@ public interface ProjectServiceRest {
   public StringList getProjectRoles(String authToken) throws Exception;
 
   /**
+   * Indicates whether the user has ANY role on ANY project. Good way to control
+   * the UI if not.
+   *
+   * @param authToken the auth token
+   * @return the boolean
+   * @throws Exception the exception
+   */
+  public Boolean userHasSomeProjectRole(String authToken) throws Exception;
+
+  /**
    * Adds the user to project.
    *
    * @param projectId the project id
@@ -62,8 +72,8 @@ public interface ProjectServiceRest {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
-    String authToken) throws Exception;
+  public UserList findAssignedUsersForProject(Long projectId, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Adds the project.
@@ -146,7 +156,7 @@ public interface ProjectServiceRest {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findCandidateUsersForProject(Long projectId, String query, PfsParameterJpa pfs,
-    String authToken) throws Exception;
+  public UserList findUnassignedUsersForProject(Long projectId, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
 }

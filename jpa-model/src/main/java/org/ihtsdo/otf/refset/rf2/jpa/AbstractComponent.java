@@ -13,7 +13,6 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.xml.bind.annotation.XmlID;
 
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
@@ -113,26 +112,6 @@ public abstract class AbstractComponent implements Component {
     this.id = id;
   }
 
-  /**
-   * Returns the object id. Needed for JAXB id
-   *
-   * @return the object id
-   */
-  @XmlID
-  public String getObjectId() {
-    return id == null ? "" : id.toString();
-  }
-
-  /**
-   * Sets the object id.
-   *
-   * @param id the object id
-   */
-  public void setObjectId(String id) {
-    if (id != null) {
-      this.id = Long.parseLong(id);
-    }
-  }
 
   /* see superclass */
   @Override
@@ -301,7 +280,6 @@ public abstract class AbstractComponent implements Component {
 
   /* see superclass */
   @Override
-  @XmlID
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getTerminologyId() {
     return terminologyId;

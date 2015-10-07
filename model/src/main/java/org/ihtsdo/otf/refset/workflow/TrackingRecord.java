@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.workflow;
 
+import java.util.List;
+
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -10,24 +12,38 @@ import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
 /**
- * Represents a tracking record for editing being performed for a translation
+ * Represents a tracking record for authoring being performed for a translation
  * refset. This indicates when a concept is assigned to an author or lead.
  */
 public interface TrackingRecord extends HasLastModified {
 
   /**
-   * Returns the user.
+   * Returns the author users.
    *
-   * @return the user
+   * @return the author users
    */
-  public User getUser();
+  public List<User> getAuthors();
 
   /**
-   * Sets the user.
+   * Sets the author users.
    *
-   * @param user the user
+   * @param authors the author users
    */
-  public void setUser(User user);
+  public void setAuthors(List<User> authors);
+
+  /**
+   * Returns the reviewers users.
+   *
+   * @return the reviewers users
+   */
+  public List<User> getReviewers();
+
+  /**
+   * Sets the reviewers users.
+   *
+   * @param reviewers the reviewers
+   */
+  public void setReviewers(List<User> reviewers);
 
   /**
    * Returns the refset.
@@ -86,16 +102,16 @@ public interface TrackingRecord extends HasLastModified {
   public void setForReview(boolean forReview);
 
   /**
-   * Indicates whether or not for editing is the case.
+   * Indicates whether or not for authoring is the case.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  public boolean isForEditing();
+  public boolean isForAuthoring();
 
   /**
-   * Sets the for editing.
+   * Sets the for authoring flag.
    *
-   * @param forEditing the for editing
+   * @param forAuthoring the for authoring flag
    */
-  public void setForEditing(boolean forEditing);
+  public void setForAuthoring(boolean forAuthoring);
 }

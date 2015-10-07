@@ -21,7 +21,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link PfsParameterJpa}.
  */
-public class ModelUnit024Test {
+public class ModelUnit024Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private PfsParameterJpa object;
@@ -49,7 +49,7 @@ public class ModelUnit024Test {
    */
   @Test
   public void testModelGetSet024() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet024");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -61,7 +61,7 @@ public class ModelUnit024Test {
    */
   @Test
   public void testModelEqualsHashcode024() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode024");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("maxResults");
     tester.include("startIndex");
@@ -87,7 +87,7 @@ public class ModelUnit024Test {
    */
   @Test
   public void testModelCopy024() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy024");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructor(PfsParameter.class));
   }
@@ -99,7 +99,7 @@ public class ModelUnit024Test {
    */
   @Test
   public void testModelXmlSerialization024() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlTransient024");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }

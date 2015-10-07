@@ -28,7 +28,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link TranslationJpa}.
  */
-public class ModelUnit035Test {
+public class ModelUnit035Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private Translation object;
@@ -75,8 +75,10 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelGetSet030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("phraseMemoryMap");
+    tester.exclude("spellingDictionary");
     tester.test();
   }
 
@@ -87,7 +89,7 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelEqualsHashcode030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
@@ -120,7 +122,7 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelCopy030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up objects
@@ -139,7 +141,7 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelXmlSerialization030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     // Set up objects
@@ -160,7 +162,7 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelNotNullField030() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField030");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
@@ -188,12 +190,13 @@ public class ModelUnit035Test {
    */
   @Test
   public void testModelIndexedFields034() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelIndexedFields034");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
     tester.include("description");
+    tester.include("userRoleMap");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields

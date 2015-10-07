@@ -3,8 +3,12 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
@@ -14,14 +18,23 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
 /**
@@ -30,6 +43,45 @@ import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 public class RefsetServiceJpa extends ProjectServiceJpa implements
     RefsetService {
 
+  /** The import handlers. */
+  private static Map<String, ImportRefsetHandler> importRefsetHandlers =
+      new HashMap<>();
+
+  /** The export refset handlers. */
+  private static Map<String, ExportRefsetHandler> exportRefsetHandlers =
+      new HashMap<>();
+
+  static {
+    try {
+      if (config == null)
+        config = ConfigUtility.getConfigProperties();
+      String key = "import.refset.handler";
+      for (String handlerName : config.getProperty(key).split(",")) {
+        if (handlerName.isEmpty())
+          continue;
+        // Add handlers to map
+        ImportRefsetHandler handlerService =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, ImportRefsetHandler.class);
+        importRefsetHandlers.put(handlerName, handlerService);
+      }
+      key = "export.refset.handler";
+      for (String handlerName : config.getProperty(key).split(",")) {
+        if (handlerName.isEmpty())
+          continue;
+        // Add handlers to map
+        ExportRefsetHandler handlerService =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, ExportRefsetHandler.class);
+        exportRefsetHandlers.put(handlerName, handlerService);
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+      importRefsetHandlers = null;
+      exportRefsetHandlers = null;
+    }
+  }
+
   /**
    * Instantiates an empty {@link RefsetServiceJpa}.
    *
@@ -37,6 +89,14 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
    */
   public RefsetServiceJpa() throws Exception {
     super();
+    if (importRefsetHandlers == null) {
+      throw new Exception(
+          "Import refset handlers did not properly initialize, serious error.");
+    }
+    if (exportRefsetHandlers == null) {
+      throw new Exception(
+          "Export refset handlers did not properly initialize, serious error.");
+    }
   }
 
   /**
@@ -143,13 +203,14 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Refset Service - find refsets " + query);
+  public RefsetList findRefsetsForQuery(String query, PfsParameter pfs)
+    throws Exception {
+    Logger.getLogger(getClass()).info("Refset Service - find refsets " + query);
     int[] totalCt = new int[1];
-    List<Refset> list = (List<Refset>)getQueryResults(query == null || query.isEmpty()
-        ? "id:[* TO *]" : query,  RefsetJpa.class,
-        RefsetJpa.class, pfs, totalCt);
+    List<Refset> list =
+        (List<Refset>) getQueryResults(query == null || query.isEmpty()
+            ? "id:[* TO *]" : query, RefsetJpa.class, RefsetJpa.class, pfs,
+            totalCt);
     RefsetList result = new RefsetListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -167,8 +228,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   @Override
   public RefsetDescriptorRefsetMember getRefsetDescriptorRefsetMember(Long id)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get refsetDescriptorRefsetMember " + id);
+    Logger.getLogger(getClass()).debug("Refset Service - get member " + id);
     return getHasLastModified(id, RefsetDescriptorRefsetMemberJpa.class);
   }
 
@@ -178,8 +238,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     String terminologyId, String terminology, String version, String branch)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - get refsetDescriptorRefsetMember " + terminologyId
-            + "/" + terminology + "/" + version + "/" + branch);
+        "Refset Service - get member " + terminologyId + "/" + terminology
+            + "/" + version + "/" + branch);
     return getHasLastModified(terminologyId, terminology, version,
         RefsetDescriptorRefsetMemberJpa.class);
   }
@@ -187,74 +247,65 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - add refsetDescriptorRefsetMember "
-            + refsetDescriptorRefsetMember);
+    RefsetDescriptorRefsetMember member) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler =
-          getIdentifierAssignmentHandler(refsetDescriptorRefsetMember
-              .getTerminology());
+      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
-            + refsetDescriptorRefsetMember.getTerminology());
+            + member.getTerminology());
       }
-      String id = idHandler.getTerminologyId(refsetDescriptorRefsetMember);
-      refsetDescriptorRefsetMember.setTerminologyId(id);
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
     }
 
     // Add component
-    RefsetDescriptorRefsetMember newRefsetDescriptorRefsetMember =
-        addHasLastModified(refsetDescriptorRefsetMember);
+    RefsetDescriptorRefsetMember newMember = addHasLastModified(member);
 
     // Inform listeners
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            newRefsetDescriptorRefsetMember, WorkflowListener.Action.ADD);
+        listener.refsetDescriptorRefsetMemberChanged(newMember,
+            WorkflowListener.Action.ADD);
       }
     }
-    return newRefsetDescriptorRefsetMember;
+    return newMember;
   }
 
   /* see superclass */
   @Override
   public void updateRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception {
+    RefsetDescriptorRefsetMember member) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - update refsetDescriptorRefsetMember "
-            + refsetDescriptorRefsetMember);
+        "Refset Service - update member " + member);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(refsetDescriptorRefsetMember
-            .getTerminology());
+        getIdentifierAssignmentHandler(member.getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
-        RefsetDescriptorRefsetMember refsetDescriptorRefsetMember2 =
-            getRefsetDescriptorRefsetMember(refsetDescriptorRefsetMember
-                .getId());
-        if (!idHandler.getTerminologyId(refsetDescriptorRefsetMember).equals(
-            idHandler.getTerminologyId(refsetDescriptorRefsetMember2))) {
+        RefsetDescriptorRefsetMember member2 =
+            getRefsetDescriptorRefsetMember(member.getId());
+        if (!idHandler.getTerminologyId(member).equals(
+            idHandler.getTerminologyId(member2))) {
           throw new Exception(
               "Update cannot be used to change object identity.");
         }
       } else {
-        // set refsetDescriptorRefsetMember id on update
-        refsetDescriptorRefsetMember.setTerminologyId(idHandler
-            .getTerminologyId(refsetDescriptorRefsetMember));
+        // set member id on update
+        member.setTerminologyId(idHandler.getTerminologyId(member));
       }
     }
     // update component
-    this.updateHasLastModified(refsetDescriptorRefsetMember);
+    this.updateHasLastModified(member);
 
     // Inform listeners
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            refsetDescriptorRefsetMember, WorkflowListener.Action.UPDATE);
+        listener.refsetDescriptorRefsetMemberChanged(member,
+            WorkflowListener.Action.UPDATE);
       }
     }
   }
@@ -262,20 +313,55 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   /* see superclass */
   @Override
   public void removeRefsetDescriptorRefsetMember(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - remove refsetDescriptorRefsetMember " + id);
+    Logger.getLogger(getClass()).debug("Refset Service - remove member " + id);
     // Remove the component
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember =
+    RefsetDescriptorRefsetMember member =
         removeHasLastModified(id, RefsetDescriptorRefsetMemberJpa.class);
 
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(
-            refsetDescriptorRefsetMember, WorkflowListener.Action.REMOVE);
+        listener.refsetDescriptorRefsetMemberChanged(member,
+            WorkflowListener.Action.REMOVE);
       }
     }
   }
 
+  /* see superclass */
+  @Override
+  public ConceptRefsetMember addMember(ConceptRefsetMember member)
+    throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
+    // Assign id
+    IdentifierAssignmentHandler idHandler = null;
+    if (assignIdentifiersFlag) {
+      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
+      if (idHandler == null) {
+        throw new Exception("Unable to find id handler for "
+            + member.getTerminology());
+      }
+      String id = idHandler.getTerminologyId(member);
+      member.setTerminologyId(id);
+    }
+
+    // Add component
+    ConceptRefsetMember newMember = addHasLastModified(member);
+
+    // do not inform listeners
+    return newMember;
+
+  }
+
+  /* see superclass */
+  @Override
+  public void removeMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - remove refset member " + id);
+    // Remove the component
+    removeHasLastModified(id, ConceptRefsetMemberJpa.class);
+    // Do not inform listeners
+  }
+
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
@@ -339,6 +425,82 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     Date date, PfsParameter pfs) {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  public ImportRefsetHandler getImportRefsetHandler(String key)
+    throws Exception {
+    if (importRefsetHandlers.containsKey(key)) {
+      return importRefsetHandlers.get(key);
+    }
+    return importRefsetHandlers.get(ConfigUtility.DEFAULT);
+  }
+
+  /* see superclass */
+  @Override
+  public ExportRefsetHandler getExportRefsetHandler(String key)
+    throws Exception {
+    if (exportRefsetHandlers.containsKey(key)) {
+      return exportRefsetHandlers.get(key);
+    }
+    return exportRefsetHandlers.get(ConfigUtility.DEFAULT);
+  }
+
+  /* see superclass */
+  @Override
+  public IoHandlerInfoList getImportRefsetHandlerInfo() throws Exception {
+    IoHandlerInfoList list = new IoHandlerInfoListJpa();
+    for (Map.Entry<String, ImportRefsetHandler> entry : importRefsetHandlers
+        .entrySet()) {
+      final IoHandlerInfo info = new IoHandlerInfoJpa();
+      info.setId(entry.getKey());
+      info.setName(entry.getValue().getName());
+      info.setFileTypeFilter(entry.getValue().getFileTypeFilter());
+      info.setMimeType(entry.getValue().getMimeType());
+      list.getObjects().add(info);
+    }
+    list.setTotalCount(list.getCount());
+    // Sort on name
+    Collections.sort(list.getObjects(), new Comparator<IoHandlerInfo>() {
+      @Override
+      public int compare(IoHandlerInfo o1, IoHandlerInfo o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception {
+    IoHandlerInfoList list = new IoHandlerInfoListJpa();
+    for (Map.Entry<String, ExportRefsetHandler> entry : exportRefsetHandlers
+        .entrySet()) {
+      final IoHandlerInfo info = new IoHandlerInfoJpa();
+      info.setId(entry.getKey());
+      info.setName(entry.getValue().getName());
+      info.setFileTypeFilter(entry.getValue().getFileTypeFilter());
+      info.setMimeType(entry.getValue().getMimeType());
+      list.getObjects().add(info);
+    }
+    list.setTotalCount(list.getCount());
+    // Sort on name
+    Collections.sort(list.getObjects(), new Comparator<IoHandlerInfo>() {
+      @Override
+      public int compare(IoHandlerInfo o1, IoHandlerInfo o2) {
+        return o1.getName().compareTo(o2.getName());
+      }
+    });
+    return list;
   }
 
 }

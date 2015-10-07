@@ -3,19 +3,24 @@
  */
 package org.ihtsdo.otf.refset.worfklow;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -62,15 +67,21 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /** The for editing. */
   @Column(nullable = false)
-  private boolean forEditing = false;
+  private boolean forAuthoring = false;
 
   /** The for review. */
   @Column(nullable = false)
   private boolean forReview = false;
 
-  /** The user. */
-  @ManyToOne(targetEntity = UserJpa.class)
-  private User user = null;
+  /** The authors. */
+  @OneToMany(targetEntity = UserJpa.class)
+  @CollectionTable(name = "tracking_record_authors")
+  private List<User> authors = new ArrayList<>();
+
+  /** The reviewers. */
+  @OneToMany(targetEntity = UserJpa.class)
+  @CollectionTable(name = "tracking_record_reviewers")
+  private List<User> reviewers = new ArrayList<>();
 
   /** The Translation. */
   @ManyToOne(targetEntity = TranslationJpa.class)
@@ -101,9 +112,10 @@ public class TrackingRecordJpa implements TrackingRecord {
     id = record.getId();
     lastModified = record.getLastModified();
     lastModifiedBy = record.getLastModifiedBy();
-    forEditing = record.isForEditing();
+    forAuthoring = record.isForAuthoring();
     forReview = record.isForReview();
-    user = new UserJpa(record.getUser());
+    authors = new ArrayList<>(record.getAuthors());
+    reviewers = new ArrayList<>(record.getReviewers());
     translation = new TranslationJpa(record.getTranslation());
     refset = new RefsetJpa(record.getRefset());
     concept = new ConceptJpa(record.getConcept(), false);
@@ -166,37 +178,35 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlTransient
+  @XmlElement(type = UserJpa.class)
   @Override
-  public User getUser() {
-    return user;
+  public List<User> getAuthors() {
+    if (authors == null) {
+      authors = new ArrayList<>();
+    }
+    return authors;
   }
 
   /* see superclass */
   @Override
-  public void setUser(User user) {
-    this.user = user;
+  public void setAuthors(List<User> authors) {
+    this.authors = authors;
   }
 
-  /**
-   * Returns the user name. For JAXB.
-   *
-   * @return the user name
-   */
-  public String getUserName() {
-    return user == null ? "" : user.getUserName();
-  }
-
-  /**
-   * Sets the user name. For JAXB.
-   *
-   * @param userName the user name
-   */
-  public void setUserName(String userName) {
-    if (user == null) {
-      user = new UserJpa();
+  /* see superclass */
+  @XmlElement(type = UserJpa.class)
+  @Override
+  public List<User> getReviewers() {
+    if (reviewers == null) {
+      reviewers = new ArrayList<>();
     }
-    user.setUserName(userName);
+    return reviewers;
+  }
+
+  /* see superclass */
+  @Override
+  public void setReviewers(List<User> reviewers) {
+    this.reviewers = reviewers;
   }
 
   /* see superclass */
@@ -315,14 +325,14 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
-  public boolean isForEditing() {
-    return forEditing;
+  public boolean isForAuthoring() {
+    return forAuthoring;
   }
 
   /* see superclass */
   @Override
-  public void setForEditing(boolean forEditing) {
-    this.forEditing = forEditing;
+  public void setForAuthoring(boolean forAuthoring) {
+    this.forAuthoring = forAuthoring;
   }
 
   /* see superclass */
@@ -331,11 +341,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((concept == null) ? 0 : concept.hashCode());
-    result = prime * result + (forEditing ? 1231 : 1237);
+    result = prime * result + (forAuthoring ? 1231 : 1237);
     result = prime * result + (forReview ? 1231 : 1237);
     result =
         prime * result + ((translation == null) ? 0 : translation.hashCode());
-    result = prime * result + ((user == null) ? 0 : user.hashCode());
+    result = prime * result + ((authors == null) ? 0 : authors.hashCode());
+    result = prime * result + ((reviewers == null) ? 0 : reviewers.hashCode());
     return result;
   }
 
@@ -354,7 +365,7 @@ public class TrackingRecordJpa implements TrackingRecord {
         return false;
     } else if (!concept.equals(other.concept))
       return false;
-    if (forEditing != other.forEditing)
+    if (forAuthoring != other.forAuthoring)
       return false;
     if (forReview != other.forReview)
       return false;
@@ -363,10 +374,15 @@ public class TrackingRecordJpa implements TrackingRecord {
         return false;
     } else if (!translation.equals(other.translation))
       return false;
-    if (user == null) {
-      if (other.user != null)
+    if (authors == null) {
+      if (other.authors != null)
         return false;
-    } else if (!user.equals(other.user))
+    } else if (!authors.equals(other.authors))
+      return false;
+    if (reviewers == null) {
+      if (other.reviewers != null)
+        return false;
+    } else if (!reviewers.equals(other.reviewers))
       return false;
     return true;
   }
@@ -374,8 +390,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   /* see superclass */
   @Override
   public String toString() {
-    return "TrackingRecordJpa [id=" + id + ", forEditing=" + forEditing
-        + ", forReview=" + forReview + ", user=" + user + ", refset=" + refset
-        + ", translation=" + translation + ", concept=" + concept + "]";
+    return "TrackingRecordJpa [id=" + id + ", forAuthoring=" + forAuthoring
+        + ", forReview=" + forReview + ", authors=" + authors + ", reviewers="
+        + reviewers + ", translation=" + translation + ", refset=" + refset
+        + ", concept=" + concept + "]";
   }
+
 }

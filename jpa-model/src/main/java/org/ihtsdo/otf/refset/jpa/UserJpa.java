@@ -16,15 +16,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.MapKeyClass;
+import javax.persistence.MapKeyJoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Transient;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlID;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -89,10 +88,12 @@ public class UserJpa implements User {
   private UserPreferences userPreferences;
 
   /** The project role map. */
-  @ElementCollection(fetch = FetchType.EAGER)
+  @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
   @MapKeyClass(value = ProjectJpa.class)
   @Enumerated(EnumType.STRING)
-  @CollectionTable(name = "user_project_role_map", joinColumns = @JoinColumn(name = "project_id"))
+  @CollectionTable(name = "user_project_role_map")
+  @MapKeyJoinColumn(name = "project_id")
+  @Column(name = "role")
   private Map<Project, UserRole> projectRoleMap;
 
   /**
@@ -130,27 +131,6 @@ public class UserJpa implements User {
   @Override
   public void setId(Long id) {
     this.id = id;
-  }
-
-  /**
-   * Returns the object id. Needed for JAXB id
-   *
-   * @return the object id
-   */
-  @XmlID
-  public String getObjectId() {
-    return id == null ? "" : id.toString();
-  }
-
-  /**
-   * Sets the object id.
-   *
-   * @param id the object id
-   */
-  public void setObjectId(String id) {
-    if (id != null) {
-      this.id = Long.parseLong(id);
-    }
   }
 
   /* see superclass */
@@ -221,13 +201,13 @@ public class UserJpa implements User {
   }
 
   /*
-   * <pre>
-   * This supports searching both for a particular role on a particular project
-   * or to determine if this user is assigned to any project.  For example:
+   * <pre> This supports searching both for a particular role on a particular
+   * project or to determine if this user is assigned to any project. For
+   * example:
    * 
-   *   "projectRoleMap:10ADMIN" -> finds where the user has an ADMIN role on project 10
-   *   "projectAnyRole:10" -> finds where the user has any role on project 10
-   * </pre>
+   * "projectRoleMap:10ADMIN" -> finds where the user has an ADMIN role on
+   * project 10 "projectAnyRole:10" -> finds where the user has any role on
+   * project 10 </pre>
    */
   @XmlJavaTypeAdapter(ProjectRoleMapAdapter.class)
   @Fields({

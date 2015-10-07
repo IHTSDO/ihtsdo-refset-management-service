@@ -18,7 +18,7 @@ import org.ihtsdo.otf.refset.helpers.ResultList;
  *
  * @param <T> the
  */
-public class AbstractListUnit<T> {
+public class AbstractListUnit<T> extends ListUnitSupport {
 
   /**
    * Test normal use of a list.

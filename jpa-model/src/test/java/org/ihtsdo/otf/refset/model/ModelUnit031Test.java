@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * Unit testing for {@link ReleasePropertyJpa}.
  */
-public class ModelUnit031Test {
+public class ModelUnit031Test extends ModelUnitSupport {
 
   /** The model object to test. */
   private ReleaseProperty object;
@@ -50,7 +50,7 @@ public class ModelUnit031Test {
    */
   @Test
   public void testModelGetSet031() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelGetSet031");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
   }
@@ -62,7 +62,7 @@ public class ModelUnit031Test {
    */
   @Test
   public void testModelEqualsHashcode031() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelEqualsHashcode031");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
     tester.include("value");
@@ -81,7 +81,7 @@ public class ModelUnit031Test {
    */
   @Test
   public void testModelCopy031() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelCopy031");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructor(ReleaseProperty.class));
   }
@@ -93,7 +93,7 @@ public class ModelUnit031Test {
    */
   @Test
   public void testModelXmlSerialization031() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelXmlSerialization031");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
     assertTrue(tester.testXmlSerialization());
   }
@@ -105,7 +105,7 @@ public class ModelUnit031Test {
    */
   @Test
   public void testModelNotNullField031() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testModelNotNullField031");
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("name");
     tester.include("value");

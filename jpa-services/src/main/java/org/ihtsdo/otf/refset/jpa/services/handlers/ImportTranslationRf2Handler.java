@@ -66,6 +66,12 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
+  public String getMimeType() {
+    return "application/zip";
+  }
+
+  /* see superclass */
+  @Override
   public String getName() {
     return "Import RF2";
   }
@@ -73,7 +79,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
-  public List<Concept> importTranslation(InputStream content) throws Exception {
+  public List<Concept> importConcepts(InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import translation concepts");
     // Handle the input stream as a zip input stream
     ZipInputStream zin = new ZipInputStream(content);

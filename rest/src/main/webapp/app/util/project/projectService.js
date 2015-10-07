@@ -7,9 +7,18 @@ tsApp.service('projectService', [
   function($http, $q, gpService, utilService) {
     console.debug("configure projectService");
 
+    // Declare the model
+    var userProjectsInfo = {
+      anyrole : null
+    };
+
+    // Gets the user projects info
+    this.getUserProjectsInfo = function() {
+      return userProjectsInfo;
+    }
+
     // get all projects
     this.getProjects = function() {
-      console.debug("getProjects");
       var deferred = $q.defer();
 
       // Get projects
@@ -17,7 +26,6 @@ tsApp.service('projectService', [
       $http.get(projectUrl + 'all').then(
       // success
       function(response) {
-        console.debug("  projects = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -100,53 +108,44 @@ tsApp.service('projectService', [
     }
 
     // Finds projects as a list
-    this.findProjectsAsList = function(queryStr, 
-      pfs) {
+    this.findProjectsAsList = function(queryStr, pfs) {
 
       var query = (queryStr == null) ? "" : queryStr;
-      console.debug("findProjectsAsList", query, 
-        pfs);
+      console.debug("findProjectsAsList", query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(
-        projectUrl
-          + "projects"
-          +  "?query=" + query, pfs)
-          //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug("  output = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(projectUrl + "projects" + "?query=" + query, pfs)
+      // + encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
+      .then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
 
       return deferred.promise;
     };
-    
+
     // Finds users on given project
-    this.findUsersForProject = function(projectId, query, 
-      pfs) {
+    this.findAssignedUsersForProject = function(projectId, query, pfs) {
 
-      console.debug("findUsersForProject", projectId, 
-        pfs);
+      console.debug("findAssignedUsersForProject", projectId, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make PUT call
       gpService.increment();
-      $http.put(
-        projectUrl
-          + "users/" + projectId +  "?query=" + query, pfs)
+      $http.put(projectUrl + "users/" + projectId + "?query=" + query, pfs)
         .then(
         // success
         function(response) {
@@ -163,21 +162,18 @@ tsApp.service('projectService', [
 
       return deferred.promise;
     };
-    
+
     // Finds users NOT on given project
-    this.findCandidateUsersForProject = function(projectId, query, 
-      pfs) {
+    this.findUnassignedUsersForProject = function(projectId, query, pfs) {
 
-      console.debug("findCandidateUsersForProject", projectId, 
-        pfs);
+      console.debug("findUnassignedUsersForProject", projectId, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make PUT call
       gpService.increment();
       $http.put(
-        projectUrl
-          + "candidate/users/" + projectId + "?query=" + query, pfs)
+        projectUrl + "users/" + projectId + "/unassigned?query=" + query, pfs)
         .then(
         // success
         function(response) {
@@ -194,7 +190,7 @@ tsApp.service('projectService', [
 
       return deferred.promise;
     };
-    
+
     // assign user to project
     this.assignUserToProject = function(projectId, userName, projectRole) {
       console.debug("assignUserToProject");
@@ -247,7 +243,6 @@ tsApp.service('projectService', [
 
     // get project roles
     this.getProjectRoles = function() {
-      console.debug("getProjectRoles");
       var deferred = $q.defer();
 
       // Get project roles
@@ -255,7 +250,6 @@ tsApp.service('projectService', [
       $http.get(projectUrl + 'roles').then(
       // success
       function(response) {
-        console.debug("  roles = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -267,4 +261,24 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
 
+    // does user have any role on any project
+    this.getUserHasAnyRole = function() {
+      var deferred = $q.defer();
+
+      // Get project roles
+      gpService.increment()
+      $http.get(projectUrl + 'user/anyrole').then(
+      // success
+      function(response) {
+        userProjectsInfo.anyRole = response.data;
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    }
   } ]);
