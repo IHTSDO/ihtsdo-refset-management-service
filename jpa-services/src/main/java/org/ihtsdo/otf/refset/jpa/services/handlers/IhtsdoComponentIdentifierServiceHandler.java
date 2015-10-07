@@ -3,13 +3,17 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
@@ -50,6 +54,9 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   /** The auth token. */
   private String authToken;
 
+  /** The cookies. */
+  Map<String, NewCookie> cookies;
+
   /* see superclass */
   @Override
   public void setProperties(Properties p) throws Exception {
@@ -86,8 +93,11 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     Exception failedException = null;
     while (true) {
       try {
-        final String namespace =
-            concept.getTranslation().getRefset().getProject().getNamespace();
+        String namespace = null;
+        if (concept != null && concept.getTranslation() != null
+            && concept.getTranslation().getProject() != null) {
+          namespace = concept.getTranslation().getProject().getNamespace();
+        }
         // Obtain the ID
         return getTerminologyId(namespace,
             (namespace != null && !namespace.isEmpty() && !namespace
@@ -118,9 +128,14 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     Exception failedException = null;
     while (true) {
       try {
-        final String namespace =
-            description.getConcept().getTranslation().getRefset().getProject()
-                .getNamespace();
+        String namespace = null;
+        if (description != null && description.getConcept() != null
+            && description.getConcept().getTranslation() != null
+            && description.getConcept().getTranslation().getProject() != null) {
+          namespace =
+              description.getConcept().getTranslation().getProject()
+                  .getNamespace();
+        }
         // Obtain the ID
         return getTerminologyId(namespace,
             (namespace != null && !namespace.isEmpty() && !namespace
@@ -191,7 +206,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         && !translation.getTerminologyId().isEmpty()) {
       return translation.getTerminologyId();
     }
-    
+
     return UUID.randomUUID().toString();
   }
 
@@ -222,27 +237,17 @@ public class IhtsdoComponentIdentifierServiceHandler implements
    * @throws Exception the exception
    */
   private String login(String userName, String password) throws Exception {
-    // Make a webservice call to SnowOwl
+
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(url + "/login");
+    Builder builder = target.request(MediaType.APPLICATION_JSON);
     Response response =
-        target.request(accept).post(
-            Entity.json("{ \"userName\": \"" + userName
-                + "\", \"password\": \"" + password + "\" }"));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
+        builder.post(Entity.json("{ \"username\": \"" + userName
+            + "\", \"password\": \"" + password + "\" }"));
+    if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
+      throw new Exception(response.toString());
     }
-    /**
-     * <pre>
-     * {
-     *   "token": "string"
-     * }
-     * </pre>
-     */
+    String resultString = response.readEntity(String.class);
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
     return doc.get("token").asText();
@@ -261,20 +266,22 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     String authToken) throws Exception {
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(url + "/sct/generate");
+    WebTarget target = client.target(url + "/sct/generate?token=" + authToken);
 
     String postData =
-        "{ " + "\"namespace\": \"" + namespace + "\", " + "\"partitionId\": \""
-            + partitionId + "\", " + "\"systemId\": \"refset\", "
-            + "\"software\": \"refset\", " + "\"comment\": \"string\", "
-            + "\"generateLegacyIds\": \"false\" " + "}";
+        "{ " + "\"namespace\": " + (namespace == null ? 0 : namespace) + ", "
+            + "\"partitionId\": \"" + partitionId + "\", "
+            + "\"systemId\": \"refset\", " + "\"software\": \"refset\", "
+            + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
+            + "}";
     Response response = target.request(accept).post(Entity.json(postData));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected failure to get termionlogy id: "
+          + resultString);
     }
     /**
      * <pre>
