@@ -321,6 +321,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/import/definition")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import refset definition", notes = "Imports the refset definition into the specified refset")
   public void importDefinition(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -372,6 +373,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/import/members")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import refset members", notes = "Imports the refset members into the specified refset")
   public void importMembers(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
@@ -414,7 +416,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       for (ConceptRefsetMember member : members) {
         member.setRefset(refset);
         member.setId(null);
+        member.setTerminology(refset.getTerminology());
+        member.setVersion(refset.getVersion());
         member.setLastModifiedBy(userName);
+        member.setPublishable(true);
+        member.setPublished(false);
+        member.setLastModified(member.getEffectiveTime());
+        // TODO: - no efficient way to compute this
+        // each member requires a call to the terminology server!
+        // terminologyHandler.getConcept is our best bet
+        member.setConceptName("TBD");
         refsetService.addMember(member);
       }
       refset.setLastModifiedBy(userName);

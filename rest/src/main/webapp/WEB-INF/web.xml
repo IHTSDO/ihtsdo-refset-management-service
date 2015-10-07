@@ -5,9 +5,7 @@
 <web-app>
   <display-name>Refset REST Services</display-name>
 
-  <!-- Jersey configuration. 
-    For additional configuration see the class RefsetServerApplication
-  -->
+  <!-- Jersey configuration. For additional configuration see the class RefsetServerApplication -->
   <servlet>
     <servlet-name>jersey</servlet-name>
     <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
@@ -16,7 +14,7 @@
       <param-value>
         com.wordnik.swagger.jaxrs.json
       </param-value>
-    </init-param>    
+    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
 
@@ -36,7 +34,7 @@
     </init-param>
     <load-on-startup>2</load-on-startup>
   </servlet>
-    
+
   <!-- Redirect swagger ui pages to swagger UI -->
   <servlet-mapping>
     <servlet-name>default</servlet-name>

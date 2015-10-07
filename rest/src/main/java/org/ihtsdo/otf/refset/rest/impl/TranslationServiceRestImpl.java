@@ -319,6 +319,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/import")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import translation concepts", notes = "Imports concepts and descriptions into the specified translation", response = List.class)
   public void importConcepts(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,

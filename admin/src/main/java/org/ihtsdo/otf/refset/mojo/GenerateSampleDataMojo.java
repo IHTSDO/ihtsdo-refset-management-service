@@ -341,107 +341,107 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       }
       // Add refset
       refset.addRefset(refset1, reviewer1.getAuthToken());
-
-      // Import members (from file)
-      refset = new RefsetServiceRestImpl();
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refset.importMembers(null, in, refset1.getId(), "DEFAULT",
-          reviewer1.getAuthToken());
-      in.close();
-
-      // Create two refsets in project 2 (intensional and external)
-      reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
-      refset = new RefsetServiceRestImpl();
-      RefsetJpa refset2 =
-          makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
-              "222222912342013");
-      refset2.setDefinition("needs definition");
-      // Validate refset
-      validation = new ValidationServiceRestImpl();
-      result = validation.validateRefset(refset2, reviewer2.getAuthToken());
-      if (!result.isValid()) {
-        Logger.getLogger(getClass()).error(result.toString());
-        throw new Exception("Refset does not pass validation.");
-      }
-      // Add refset
-      refset.addRefset(refset2, reviewer2.getAuthToken());
-
-      // Import definition (from file)
-      refset = new RefsetServiceRestImpl();
-      in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
-      refset.importMembers(null, in, refset2.getId(), "DEFAULT",
-          reviewer2.getAuthToken());
-      in.close();
-      refset = new RefsetServiceRestImpl();
-      RefsetJpa refset3 =
-          makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
-              "33333912342013");
-      refset3.setExternalUrl("http://www.example.com/some/other/refset.txt");
-      // Validate refset
-      validation = new ValidationServiceRestImpl();
-      result = validation.validateRefset(refset3, reviewer2.getAuthToken());
-      if (!result.isValid()) {
-        Logger.getLogger(getClass()).error(result.toString());
-        throw new Exception("Refset does not pass validation.");
-      }
-      // Add refset
-      refset.addRefset(refset3, reviewer2.getAuthToken());
-
-      // Create a refset (extensional) and a translation refset in project 3
-      // (extensional)
-      reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
-      refset = new RefsetServiceRestImpl();
-      RefsetJpa refset4 =
-          makeRefset("refset4", null, Refset.Type.EXTENSIONAL, project3,
-              "44444912342013");
-      // Validate refset
-      validation = new ValidationServiceRestImpl();
-      result = validation.validateRefset(refset4, reviewer3.getAuthToken());
-      if (!result.isValid()) {
-        Logger.getLogger(getClass()).error(result.toString());
-        throw new Exception("Refset does not pass validation.");
-      }
-      // Add refset
-      refset.addRefset(refset4, reviewer3.getAuthToken());
-
-      // Import members (from file)
-      refset = new RefsetServiceRestImpl();
-      in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refset.importMembers(null, in, refset4.getId(), "DEFAULT",
-          reviewer3.getAuthToken());
-      in.close();
-
-      refset = new RefsetServiceRestImpl();
-      RefsetJpa refset5 =
-          makeRefset("refset5", null, Refset.Type.EXTENSIONAL, project3,
-              "55555912342013");
-      refset5.setForTranslation(true);
-      // Validate refset
-      validation = new ValidationServiceRestImpl();
-      result = validation.validateRefset(refset5, reviewer3.getAuthToken());
-      if (!result.isValid()) {
-        Logger.getLogger(getClass()).error(result.toString());
-        throw new Exception("Refset does not pass validation.");
-      }
-      // Add refset
-      refset.addRefset(refset5, reviewer3.getAuthToken());
-
-      // TODO: import members (e.g. from sample data)
-
-      // Create two translations in refset 4
-
-      // TODO: import translation (e.g. from sample data)
-
-      // Consider "relase info" as well.
+//
+//      // Import members (from file)
+//      refset = new RefsetServiceRestImpl();
+//      InputStream in =
+//          new FileInputStream(
+//              new File(
+//                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+//      refset.importMembers(null, in, refset1.getId(), "DEFAULT",
+//          reviewer1.getAuthToken());
+//      in.close();
+//
+//      // Create two refsets in project 2 (intensional and external)
+//      reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
+//      refset = new RefsetServiceRestImpl();
+//      RefsetJpa refset2 =
+//          makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
+//              "222222912342013");
+//      refset2.setDefinition("needs definition");
+//      // Validate refset
+//      validation = new ValidationServiceRestImpl();
+//      result = validation.validateRefset(refset2, reviewer2.getAuthToken());
+//      if (!result.isValid()) {
+//        Logger.getLogger(getClass()).error(result.toString());
+//        throw new Exception("Refset does not pass validation.");
+//      }
+//      // Add refset
+//      refset.addRefset(refset2, reviewer2.getAuthToken());
+//
+//      // Import definition (from file)
+//      refset = new RefsetServiceRestImpl();
+//      in =
+//          new FileInputStream(
+//              new File(
+//                  "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+//      refset.importMembers(null, in, refset2.getId(), "DEFAULT",
+//          reviewer2.getAuthToken());
+//      in.close();
+//      refset = new RefsetServiceRestImpl();
+//      RefsetJpa refset3 =
+//          makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
+//              "33333912342013");
+//      refset3.setExternalUrl("http://www.example.com/some/other/refset.txt");
+//      // Validate refset
+//      validation = new ValidationServiceRestImpl();
+//      result = validation.validateRefset(refset3, reviewer2.getAuthToken());
+//      if (!result.isValid()) {
+//        Logger.getLogger(getClass()).error(result.toString());
+//        throw new Exception("Refset does not pass validation.");
+//      }
+//      // Add refset
+//      refset.addRefset(refset3, reviewer2.getAuthToken());
+//
+//      // Create a refset (extensional) and a translation refset in project 3
+//      // (extensional)
+//      reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
+//      refset = new RefsetServiceRestImpl();
+//      RefsetJpa refset4 =
+//          makeRefset("refset4", null, Refset.Type.EXTENSIONAL, project3,
+//              "44444912342013");
+//      // Validate refset
+//      validation = new ValidationServiceRestImpl();
+//      result = validation.validateRefset(refset4, reviewer3.getAuthToken());
+//      if (!result.isValid()) {
+//        Logger.getLogger(getClass()).error(result.toString());
+//        throw new Exception("Refset does not pass validation.");
+//      }
+//      // Add refset
+//      refset.addRefset(refset4, reviewer3.getAuthToken());
+//
+//      // Import members (from file)
+//      refset = new RefsetServiceRestImpl();
+//      in =
+//          new FileInputStream(
+//              new File(
+//                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+//      refset.importMembers(null, in, refset4.getId(), "DEFAULT",
+//          reviewer3.getAuthToken());
+//      in.close();
+//
+//      refset = new RefsetServiceRestImpl();
+//      RefsetJpa refset5 =
+//          makeRefset("refset5", null, Refset.Type.EXTENSIONAL, project3,
+//              "55555912342013");
+//      refset5.setForTranslation(true);
+//      // Validate refset
+//      validation = new ValidationServiceRestImpl();
+//      result = validation.validateRefset(refset5, reviewer3.getAuthToken());
+//      if (!result.isValid()) {
+//        Logger.getLogger(getClass()).error(result.toString());
+//        throw new Exception("Refset does not pass validation.");
+//      }
+//      // Add refset
+//      refset.addRefset(refset5, reviewer3.getAuthToken());
+//
+//      // TODO: import members (e.g. from sample data)
+//
+//      // Create two translations in refset 4
+//
+//      // TODO: import translation (e.g. from sample data)
+//
+//      // Consider "relase info" as well.
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
