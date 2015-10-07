@@ -3,8 +3,7 @@
  */
 package org.ihtsdo.otf.refset.test.jpa;
 
-import static org.junit.Assert.*;
-import junit.framework.Assert;
+import static org.junit.Assert.assertEquals;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
