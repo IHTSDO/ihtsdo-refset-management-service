@@ -14,6 +14,7 @@ import javax.ws.rs.core.Application;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.jsonp.JsonProcessingFeature;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 
 import com.ibm.icu.util.Calendar;
@@ -101,7 +102,7 @@ public class RefsetServerApplication extends Application {
     final Set<Object> instances = new HashSet<Object>();
     instances.add(new JacksonFeature());
     instances.add(new JsonProcessingFeature());
-
+    instances.add(new MultiPartFeature());
     // Enable for LOTS of logging of HTTP requests
     // instances.add(new LoggingFilter());
     return instances;

@@ -20,9 +20,9 @@ public class SearchableMapIdBridge implements StringBridge {
     if (value != null) {
       StringBuffer buf = new StringBuffer();
 
-      Map<Searchable, ?> list = (Map<Searchable, ?>) value;
-      for (Searchable item : list.keySet()) {
-        buf.append(item.getId()).append(",");
+      Map<Searchable, ?> map = (Map<Searchable, ?>) value;
+      for (Searchable item : map.keySet()) {
+        buf.append(item.getId()).append(" ");
       }
       return buf.toString();
     }
