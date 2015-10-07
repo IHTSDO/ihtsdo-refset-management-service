@@ -218,8 +218,7 @@ tsApp
           $scope.retrieveUnassignedUsers();
           $scope.retrieveAssignedUsers();
 
-          // TODO: need to reset paging for candidate and assigned
-          // users
+          resetPaging();
         }
 
         // remove a project, a user - only application admins can do
@@ -270,7 +269,7 @@ tsApp
           $scope.retrieveProjects();
         }
 
-        // sort mechanism for candidate project table
+        // sort mechanism 
         $scope.setSortField = function(table, field) {
           console.debug("set " + table + " sortField " + field);
           $scope.paging[table].sortField = field;
@@ -281,6 +280,14 @@ tsApp
             $scope.paging[table].ascending = true;
           } else {
             $scope.paging[table].ascending = false;
+          }
+          // reset the paging for the correct table
+          for (var key in $scope.paging) {
+            if ($scope.paging.hasOwnProperty(key)) {
+              //console.debug(key + " -> " + $scope.paging[key].page);
+              if (key == table)
+                $scope.paging[key].page = 1;
+            }
           }
           // retrieve the correct table
           if (table === 'candidateProject') {
@@ -294,6 +301,7 @@ tsApp
           } else if (table === 'candidateUser') {
             $scope.retrieveUnassignedUsers();
           }
+          
         }
 
         // Return up or down sort chars if sorted
@@ -338,6 +346,19 @@ tsApp
             })
         };
 
+        // reset paging for all tables to page 1
+        var resetPaging = function() {
+          for (var key in $scope.paging) {
+            if ($scope.paging.hasOwnProperty(key)) {
+              //console.debug(key + " -> " + $scope.paging[key].page);
+              $scope.paging[key].page = 1;
+            }
+          }
+          $scope.retrieveAssignedUsers();
+          $scope.retrieveUnassignedUsers();
+        }
+        
+        
         //
         // call these during initialization
         //
@@ -518,7 +539,6 @@ tsApp
             }
 
             projectService.updateProject(project).then(function(data) {
-              // TODO get this working $scope.projects.push(data);
               $modalInstance.close();
             }, function(data) {
               $modalInstance.close();
@@ -580,7 +600,6 @@ tsApp
             }
 
             securityService.updateUser(user).then(function(data) {
-              // TODO get this working $scope.users.push(data);
               $modalInstance.close();
             }, function(data) {
               $modalInstance.close();

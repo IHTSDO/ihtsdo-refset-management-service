@@ -206,12 +206,12 @@
               last-text="&raquo;"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               total-items="unassignedUsers.totalCount"
-              ng-model="project['candidateUser'].page"
+              ng-model="paging['candidateUser'].page"
               ng-change="retrieveUnassignedUsers()"></pagination>
 
             <input class="input-filter" placeholder="Enter filter text"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
-              type="text" ng-model="project['candidateUser'].filter"
+              type="text" ng-model="paging['candidateUser'].filter"
               ng-model-options="{ debounce: 300 }"
               ng-change="retrieveUnassignedUsers()">
 
