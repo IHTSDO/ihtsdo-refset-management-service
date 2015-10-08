@@ -155,20 +155,6 @@ public interface Refset extends Component, Searchable {
   public void setExternalUrl(String url);
 
   /**
-   * Returns the edition url.
-   *
-   * @return the edition url
-   */
-  public String getEditionUrl();
-
-  /**
-   * Sets the edition url.
-   *
-   * @param editionUrl the edition url
-   */
-  public void setEditionUrl(String editionUrl);
-
-  /**
    * // TODO: make this an object Returns the refset descriptor refset id.
    *
    * @return the refset descriptor refset id

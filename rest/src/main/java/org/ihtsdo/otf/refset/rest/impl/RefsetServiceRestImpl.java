@@ -21,10 +21,12 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -33,6 +35,7 @@ import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -110,7 +113,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/{refsetId}/{date}/members")
   @ApiOperation(value = "Finds members of refset revision", notes = "Finds members of refset with the given date based on pfs parameter and query", response = RefsetListJpa.class)
-  public ConceptRefsetMemberList findMembersForRefsetRevision(
+  public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -533,5 +536,169 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
 
+  }
+
+  @Override
+  public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeRefsetMember(Long memberId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptRefsetMember addRefsetInclusion(Long refsetId,
+    ConceptRefsetMemberJpa inclusion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeRefsetInclusion(Long inclusionId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeRefsetExclusion(Long exclusionId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IoHandlerInfoList getImportRefsetHandlers(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IoHandlerInfoList getExportRefsetHandlers(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public MemberDiffReport beginImport(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishImport(Long refsetId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelImport(Long refsetId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public Refset beginMigration(Long refsetId, String newTerminology,
+    String newVersion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishMigration(Long refsetId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelMigration(Long refsetId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public Refset beginRedefinition(Long refsetId, String newDefinition,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishRedefinition(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelRedefintion(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public String compareRefsets(Long refsetId1, Long refsetId2, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptRefsetMemberList findMembersInCommon(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public MemberDiffReport getDiffReport(String reportToken, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void releaseReportToken(String reportToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public String extrapolateDefinition(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

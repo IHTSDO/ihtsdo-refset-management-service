@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.client;
 import java.util.Properties;
 
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -39,7 +40,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingWork(Long projectId,
+  public ConceptList findAvailableEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
@@ -48,7 +49,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedEditingWork(Long projectId,
+  public ConceptList findAssignedEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
@@ -57,7 +58,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableReviewWork(Long projectId,
+  public ConceptList findAvailableReviewConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
@@ -66,7 +67,7 @@ public class WorkflowClientRest implements WorkflowServiceRest {
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedReviewWork(Long projectId, Long translationId,
+  public ConceptList findAssignedReviewConcepts(Long projectId, Long translationId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -77,6 +78,34 @@ public class WorkflowClientRest implements WorkflowServiceRest {
   public TrackingRecord performWorkflowAction(Long projectId,
     Long translationId, String userName, String action, ConceptJpa concept,
     String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableEditingRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedEditingRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableReviewRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedReviewRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

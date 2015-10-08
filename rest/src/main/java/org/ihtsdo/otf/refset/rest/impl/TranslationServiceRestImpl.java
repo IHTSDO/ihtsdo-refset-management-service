@@ -21,11 +21,15 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ihtsdo.otf.refset.ConceptDiffReport;
+import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -114,7 +118,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/{translationId}/{date}/concepts")
   @ApiOperation(value = "Finds concepts for translation revision", notes = "Finds concepts for translation with the given date based on pfs parameter and query", response = TranslationListJpa.class)
-  public ConceptList findConceptsForTranslationRevision(
+  public ConceptList findTranslationRevisionConceptsForQuery(
     @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -394,8 +398,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             // Add language
             member.setDescriptionId(description.getTerminologyId());
             member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member);           
-            // If type is "synonym" 
+            translationService.addLanguageRefsetMember(member);
+            // If type is "synonym"
           }
         }
       }
@@ -458,6 +462,226 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+
+  @Override
+  public ConceptList findTranslationConceptsForQuery(Long translationId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IoHandlerInfoList getImportTranslationHandlers(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public IoHandlerInfoList getExportTranslationHandlers(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptDiffReport beginImport(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishImport(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelImport(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public Concept addTranslationConcept(Concept concept, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeTranslationConcept(Long conceptId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public TranslationList findTranslationsWithSpellingDictionary(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void copySpellingDictionary(Long fromTranslationId,
+    Long toTranslationId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void addSpellingDictionaryEntry(Long translationId, String entry,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void removeSpellingDictionaryEntry(Long translationId, String entry,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void clearSpellingDictionary(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public TranslationList findTranslationsWithPhraseMemory(String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void copyPhraseMemory(Long fromTranslationId, Long toTranslationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public MemoryEntry addPhraseMemoryEntry(Long translationId,
+    MemoryEntry entry, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void clearPhraseMemory(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void importSpellingDictionary(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public InputStream exportSpellingDictionary(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void importPhraseMemory(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public InputStream exportPhraseMemory(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public StringList suggestSpelling(String term, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public StringList suggestTranslatio(String phrase, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Translation beginMigration(Long translationId, String newTerminology,
+    String newVersion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishMigration(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelMigration(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public String compareTranslations(Long translationId1, Long translationId2,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList findMembersInCommon(String conceptToken, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptDiffReport getDiffReport(String reportToken, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void releaseReportToken(String reportToken) throws Exception {
+    // TODO Auto-generated method stub
+
   }
 
 }

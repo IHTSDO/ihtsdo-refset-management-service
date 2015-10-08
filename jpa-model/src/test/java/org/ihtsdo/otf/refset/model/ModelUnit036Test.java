@@ -126,7 +126,6 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("definition");
     tester.include("definitionUuid");
     tester.include("description");
-    tester.include("editionUrl");
     tester.include("exclusions");
     tester.include("externalUrl");
     tester.include("forTranslation");
@@ -251,7 +250,6 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("moduleId");
     tester.include("type");
-    tester.include("editionUrl");
     tester.include("externalUrl");
     tester.include("workflowStatus");
 

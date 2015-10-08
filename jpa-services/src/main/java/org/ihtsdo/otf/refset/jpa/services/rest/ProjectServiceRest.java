@@ -9,6 +9,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -150,4 +151,22 @@ public interface ProjectServiceRest {
   public UserList findUnassignedUsersForProject(Long projectId, String query,
     PfsParameterJpa pfs, String authToken) throws Exception;
 
+  /**
+   * Returns the terminology editions.
+   *
+   * @param authToken the auth token
+   * @return the terminology editions
+   * @throws Exception the exception
+   */
+  public StringList getTerminologyEditions(String authToken)throws Exception;
+  
+  /**
+   * Returns the terminology versions.
+   *
+   * @param terminology the terminology
+   * @param authToken the auth token
+   * @return the terminology versions
+   * @throws Exception the exception
+   */
+  public TerminologyList getTerminologyVersions(String terminology, String authToken)throws Exception;
 }

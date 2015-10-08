@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -13,6 +14,22 @@ import org.ihtsdo.otf.refset.workflow.TrackingRecord;
  * Represents a service for performing workflow actions.
  */
 public interface WorkflowServiceRest {
+
+  public RefsetList findAvailableEditingRefsets(Long projectId,
+    Long refsetId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
+
+
+  public RefsetList findAssignedEditingRefsets(Long projectId,
+    Long refsetId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
+
+  public RefsetList findAvailableReviewRefsets(Long projectId,
+    Long refsetId, String userName, PfsParameterJpa pfs, String authToken)
+    throws Exception;
+
+  public RefsetList findAssignedReviewRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Perform workflow action for a {@link Refset}.
@@ -39,7 +56,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(Long projectId,
+  public ConceptList findAvailableEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
@@ -54,7 +71,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedEditingWork(Long projectId,
+  public ConceptList findAssignedEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
@@ -69,7 +86,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(Long projectId,
+  public ConceptList findAvailableReviewConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
@@ -84,7 +101,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedReviewWork(Long projectId, Long translationId,
+  public ConceptList findAssignedReviewConcepts(Long projectId, Long translationId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**

@@ -26,6 +26,17 @@ public interface ValidationServiceRest {
     throws Exception;
 
   /**
+   * Validate all concepts.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateAllConcepts(Long translationId,
+    String authToken) throws Exception;
+
+  /**
    * Validate a top level refset info or its metadata.
    *
    * @param refset the refset
@@ -55,7 +66,17 @@ public interface ValidationServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateSimpleRefsetMember(
-    ConceptRefsetMemberJpa member, String authToken) throws Exception;
+  public ValidationResult validateRefsetMember(ConceptRefsetMemberJpa member,
+    String authToken) throws Exception;
 
+  /**
+   * Validate all refset members.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public ValidationResult validateAllRefsetMembers(Long refsetId,
+    String authToken) throws Exception;
 }

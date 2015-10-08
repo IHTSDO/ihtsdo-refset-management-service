@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -115,7 +116,7 @@ public interface WorkflowService extends TranslationService {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(Long translationId,
+  public ConceptList findAvailableEditingConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception;
 
   /**
@@ -127,7 +128,7 @@ public interface WorkflowService extends TranslationService {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedEditingWork(Long translationId,
+  public ConceptList findAssignedEditingConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception;
 
   /**
@@ -139,7 +140,7 @@ public interface WorkflowService extends TranslationService {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(Long translationId,
+  public ConceptList findAvailableReviewConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception;
 
   /**
@@ -151,8 +152,56 @@ public interface WorkflowService extends TranslationService {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedReviewWork(Long translationId,
+  public ConceptList findAssignedReviewConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception;
+
+  /**
+   * Find available editing refsets.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableEditingRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception;
+
+  /**
+   * Find assigned editing refsets.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAssignedEditingRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception;
+
+  /**
+   * Find available review refsets.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableReviewRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception;
+
+  /**
+   * Find assigned review refsets.
+   *
+   * @param refsetId the refset id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAssignedReviewRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception;
 
   /**
    * Perform workflow action.

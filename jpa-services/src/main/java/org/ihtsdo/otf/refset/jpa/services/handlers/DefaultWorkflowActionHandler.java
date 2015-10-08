@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -148,8 +149,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ValidationResult result = new ValidationResultJpa();
 
     // Validate actions that users are not allowed to perform.
-    UserRole projectRole =
-        translation.getProject().getUserRoleMap().get(user);
+    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
     if (projectRole == UserRole.AUTHOR) {
       if (action == WorkflowAction.PREVIEW || action == WorkflowAction.PUBLISH
           || action == WorkflowAction.RE_REVIEW) {
@@ -378,8 +378,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     User user, WorkflowAction action, Concept concept, WorkflowService service)
     throws Exception {
 
-    UserRole projectRole =
-        translation.getProject().getUserRoleMap().get(user);
+    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
 
     switch (action) {
       case ASSIGN_FROM_SCRATCH:
@@ -433,7 +432,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingWork(Translation translation,
+  public ConceptList findAvailableEditingConcepts(Translation translation,
     User user, WorkflowService service) throws Exception {
     // Find concepts of refset members that do not already have tracking records
     // for this
@@ -441,13 +440,24 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     return null;
   }
 
-  /* see superclass */
   @Override
-  public ConceptList findAvailableReviewWork(Translation translation,
+  public ConceptList findAvailableReviewConcepts(Translation translation,
     User user, WorkflowService service) throws Exception {
-    // TODO: find any concepots in the refset that do not have
-    // tracking records assigned to a user with a
-    // reviewer role on the project
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableEditingRefsets(Refset refset, User user,
+    WorkflowService service) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableReviewRefsets(Refset refset, User user,
+    WorkflowService service) throws Exception {
+    // TODO Auto-generated method stub
     return null;
   }
 

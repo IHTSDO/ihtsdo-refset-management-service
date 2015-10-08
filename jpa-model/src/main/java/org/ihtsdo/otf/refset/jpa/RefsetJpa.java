@@ -107,7 +107,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
-  
 
   /** The refset descriptors. */
   @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
@@ -166,7 +165,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     definition = refset.getDefinition();
     definitionUuid = refset.getDefinitionUuid();
     externalUrl = refset.getExternalUrl();
-    editionUrl = refset.getEditionUrl();
     refsetDescriptor = refset.getRefsetDescriptor();
     forTranslation = refset.isForTranslation();
     feedbackEmail = refset.getFeedbackEmail();
@@ -264,19 +262,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setExternalUrl(String url) {
     this.externalUrl = url;
-  }
-
-  /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  @Override
-  public String getEditionUrl() {
-    return editionUrl;
-  }
-
-  /* see superclass */
-  @Override
-  public void setEditionUrl(String editionUrl) {
-    this.editionUrl = editionUrl;
   }
 
   /* see superclass */
@@ -548,9 +533,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @XmlTransient
   @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   public Map<User, UserRole> getUserRoleMap() {
-     return getProject().getUserRoleMap();
+    return getProject().getUserRoleMap();
   }
-  
+
   /* see superclass */
   @Override
   public int hashCode() {
@@ -563,8 +548,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
             + ((definitionUuid == null) ? 0 : definitionUuid.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
-    result =
-        prime * result + ((editionUrl == null) ? 0 : editionUrl.hashCode());
     result =
         prime * result + ((exclusions == null) ? 0 : exclusions.hashCode());
     result =
@@ -611,11 +594,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (other.description != null)
         return false;
     } else if (!description.equals(other.description))
-      return false;
-    if (editionUrl == null) {
-      if (other.editionUrl != null)
-        return false;
-    } else if (!editionUrl.equals(other.editionUrl))
       return false;
     if (exclusions == null) {
       if (other.exclusions != null)
@@ -667,10 +645,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     return "RefsetJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", type=" + type + ", definition="
         + definition + ", definitionUuid=" + definitionUuid + ", externalUrl="
-        + externalUrl + ", editionUrl=" + editionUrl + ", forTranslation="
-        + forTranslation + ", workflowStatus=" + workflowStatus
-        + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + externalUrl + ", forTranslation=" + forTranslation
+        + ", workflowStatus=" + workflowStatus + ", workflowPath="
+        + workflowPath + ", refsetDescriptor=" + refsetDescriptor
+        + ", project=" + project + ", enabledFeedbackEvents="
+        + enabledFeedbackEvents + "]";
   }
 
 }

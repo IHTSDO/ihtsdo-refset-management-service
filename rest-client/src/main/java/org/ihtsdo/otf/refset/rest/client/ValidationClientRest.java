@@ -7,6 +7,7 @@ import java.util.Properties;
 
 
 
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -132,7 +133,7 @@ public class ValidationClientRest implements ValidationServiceRest {
   }
 
   @Override
-  public ValidationResult validateSimpleRefsetMember(
+  public ValidationResult validateRefsetMember(
     ConceptRefsetMemberJpa member, String authToken) throws Exception {
     Client client = ClientBuilder.newClient();
     WebTarget target =
@@ -158,6 +159,22 @@ public class ValidationClientRest implements ValidationServiceRest {
         (ValidationResult) ConfigUtility.getGraphForString(resultString,
             ValidationResultJpa.class);
     return result;
+  }
+
+  @Override
+  public ValidationResult validateAllConcepts(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+
+  @Override
+  public ValidationResult validateAllRefsetMembers(Long refsetId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 

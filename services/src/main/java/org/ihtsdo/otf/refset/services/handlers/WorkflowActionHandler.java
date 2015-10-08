@@ -9,6 +9,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -49,7 +50,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingWork(Translation translation,
+  public ConceptList findAvailableEditingConcepts(Translation translation,
     User user, WorkflowService service) throws Exception;
 
   /**
@@ -61,8 +62,32 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableReviewWork(Translation translation,
+  public ConceptList findAvailableReviewConcepts(Translation translation,
     User user, WorkflowService service) throws Exception;
+
+  /**
+   * Find available editing refsets.
+   *
+   * @param refset the refset
+   * @param user the user
+   * @param service the service
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableEditingRefsets(Refset refset, User user,
+    WorkflowService service) throws Exception;
+
+  /**
+   * Find available review refsets.
+   *
+   * @param refset the refset
+   * @param user the user
+   * @param service the service
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAvailableReviewRefsets(Refset refset, User user,
+    WorkflowService service) throws Exception;
 
   /**
    * Validate workflow action.

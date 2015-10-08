@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -97,7 +98,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/translation/available/editing")
   @ApiOperation(value = "Find available editing work", notes = "Finds concepts in the specified translation available for editing by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAvailableEditingWork(
+  public ConceptList findAvailableEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -113,8 +114,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
-      return workflowService.findAvailableEditingWork(translationId, userName,
-          pfs);
+      return workflowService.findAvailableEditingConcepts(translationId,
+          userName, pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find available editing work");
@@ -130,7 +131,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/translation/assigned/editing")
   @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedEditingWork(
+  public ConceptList findAssignedEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -146,8 +147,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
-      return workflowService.findAssignedEditingWork(translationId, userName,
-          pfs);
+      return workflowService.findAssignedEditingConcepts(translationId,
+          userName, pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned editing work");
@@ -163,7 +164,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/translation/available/review")
   @ApiOperation(value = "Find available review work", notes = "Finds concepts in the specified translation available for review by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAvailableReviewWork(
+  public ConceptList findAvailableReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -179,8 +180,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.REVIEWER);
 
-      return workflowService.findAvailableReviewWork(translationId, userName,
-          pfs);
+      return workflowService.findAvailableReviewConcepts(translationId,
+          userName, pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find available review work");
@@ -196,7 +197,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/translation/assigned/review")
   @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedReviewWork(
+  public ConceptList findAssignedReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -212,8 +213,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
-      return workflowService.findAssignedReviewWork(translationId, userName,
-          pfs);
+      return workflowService.findAssignedReviewConcepts(translationId,
+          userName, pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
@@ -260,6 +261,34 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       workflowService.close();
       securityService.close();
     }
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableEditingRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedEditingRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableReviewRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedReviewRefsets(Long projectId, Long refsetId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
     return null;
   }
 

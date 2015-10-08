@@ -3,18 +3,24 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.InputStream;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -57,18 +63,21 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/refset/{refsetId}")
   @ApiOperation(value = "Get release history for refsetId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
-  public ReleaseInfoList getReleaseHistoryForRefset(
+  public ReleaseInfoList findRefsetReleasesForQuery(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query, e.g. 2", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Release): /" + refsetId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Release): /" + refsetId + " " + query);
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "retrieve the release history for the refset", UserRole.VIEWER);
       ReleaseInfoList releaseInfoList =
-          releaseService.getReleaseHistoryForRefset(refsetId);
+          releaseService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
       return releaseInfoList;
     } catch (Exception e) {
@@ -86,8 +95,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/translation/{translationId}")
   @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
-  public ReleaseInfoList getReleaseHistoryForTranslation(
+  public ReleaseInfoList findTranslationReleasesForQuery(
     @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -178,6 +189,42 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public ValidationResult cancelTranslationRelease(Long translationId,
     String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfo getCurrentRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeReleaseArtifact(Long artifactId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void uploadReleaseArtifact(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long releaseInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public InputStream exportReleaseArtifact(Long artifactId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

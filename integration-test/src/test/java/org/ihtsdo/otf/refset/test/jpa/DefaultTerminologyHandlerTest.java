@@ -55,11 +55,12 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
   public void testGetDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    Description description = service.getTerminologyHandler("DEFAULT").getDescription("1215974010",
-        "SNOMEDCT", "latest");
-    assertEquals("Tumour of kidney",description.getTerm());
+    Description description =
+        service.getTerminologyHandler().getDescription("1215974010",
+            "SNOMEDCT", "latest");
+    assertEquals("Tumour of kidney", description.getTerm());
     assertEquals(1, description.getLanguageRefsetMembers().size());
-    
+
     service.close();
   }
 
@@ -72,10 +73,11 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
   public void testGetConcept() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    
-    Concept concept = service.getTerminologyHandler("DEFAULT").getConcept("126880001",
-        "SNOMEDCT", "latest");
-    assertEquals("Tumour of kidney",concept.getName());
+
+    Concept concept =
+        service.getTerminologyHandler().getConcept("126880001", "SNOMEDCT",
+            "latest");
+    assertEquals("Tumour of kidney", concept.getName());
     service.close();
   }
 
@@ -84,36 +86,40 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   @Test
   public void testGetConceptWithDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    
-    Concept concept = service.getTerminologyHandler("DEFAULT").getConceptWithDescriptions("126880001",
-        "SNOMEDCT", "latest");
-    //assertEquals("Tumour of kidney",concept.getName());
+
+    Concept concept =
+        service.getTerminologyHandler().getConceptWithDescriptions("126880001",
+            "SNOMEDCT", "latest");
+    // assertEquals("Tumour of kidney",concept.getName());
     service.close();
   }
-  
+
   /**
    * Test getting concepts with descriptions from Snow Owl.
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   @Test
   public void testFindConceptsForQuery() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    
+
     PfsParameter pfs = new PfsParameterJpa();
     pfs.setStartIndex(0);
     pfs.setMaxResults(50);
-    ConceptList concepts = service.getTerminologyHandler("DEFAULT").findConceptsForQuery("tumor", 
-        "SNOMEDCT", "latest", pfs);
-    //assertEquals("Tumour of kidney",concept.getName());
+    ConceptList concepts =
+        service.getTerminologyHandler().findConceptsForQuery("tumor",
+            "SNOMEDCT", "latest", pfs);
+    // assertEquals("Tumour of kidney",concept.getName());
     service.close();
   }
-  
+
   /**
    * Teardown.
    *
