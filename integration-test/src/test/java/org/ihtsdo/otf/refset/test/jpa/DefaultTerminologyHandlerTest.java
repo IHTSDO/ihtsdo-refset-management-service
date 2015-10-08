@@ -6,8 +6,12 @@ package org.ihtsdo.otf.refset.test.jpa;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultTerminologyHandler;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.junit.After;
@@ -55,9 +59,61 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
         "SNOMEDCT", "latest");
     assertEquals("Tumour of kidney",description.getTerm());
     assertEquals(1, description.getLanguageRefsetMembers().size());
+    
     service.close();
   }
 
+  /**
+   * Test getting concepts from Snow Owl.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetConcept() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+    
+    Concept concept = service.getTerminologyHandler("DEFAULT").getConcept("126880001",
+        "SNOMEDCT", "latest");
+    assertEquals("Tumour of kidney",concept.getName());
+    service.close();
+  }
+
+  /**
+   * Test getting concepts with descriptions from Snow Owl.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetConceptWithDescriptions() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+    
+    Concept concept = service.getTerminologyHandler("DEFAULT").getConceptWithDescriptions("126880001",
+        "SNOMEDCT", "latest");
+    //assertEquals("Tumour of kidney",concept.getName());
+    service.close();
+  }
+  
+  /**
+   * Test getting concepts with descriptions from Snow Owl.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testFindConceptsForQuery() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+    
+    PfsParameter pfs = new PfsParameterJpa();
+    pfs.setStartIndex(0);
+    pfs.setMaxResults(50);
+    ConceptList concepts = service.getTerminologyHandler("DEFAULT").findConceptsForQuery("tumor", 
+        "SNOMEDCT", "latest", pfs);
+    //assertEquals("Tumour of kidney",concept.getName());
+    service.close();
+  }
+  
   /**
    * Teardown.
    *

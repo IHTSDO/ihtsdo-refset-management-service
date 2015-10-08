@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -134,23 +135,283 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public Concept getConceptWithDescriptions(String terminologyId,
     String terminology, String version) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    // Make a webservice call to SnowOwl to get concept
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(url + "/" + branch + "/concepts/" + terminologyId);
+    Response response =
+        target.request(accept).header("Authorization", authHeader).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * {
+     * 
+     *   "inactivationIndicator": "",
+     *   "associationTargets": {
+     *     "empty": false
+     *   },
+     *   "subclassDefinitionStatus": "",
+     *   "definitionStatus": "",
+     *   "effectiveTime": "date-time",
+     *   "moduleId": "",
+     *   "active": false,
+     *   "released": false,
+     *   "id": ""
+     * }
+     * 
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    final Concept concept = new ConceptJpa();
+    concept.setActive(doc.get("active").asText().equals("true"));
+    concept.setTerminology(terminology);
+    concept.setVersion(version);
+    concept.setTerminologyId(doc.get("id").asText());
+    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
+        "effectiveTime").asText()));
+    concept.setLastModified(concept.getEffectiveTime());
+    concept.setLastModifiedBy(terminology);
+    concept.setModuleId(doc.get("moduleId").asText());
+    concept.setPublishable(true);
+    concept.setPublished(true);
+    
+    // make second webservice call to snowowl for descriptions
+    target =
+        client.target(url + "/" + branch + "/concepts/" + terminologyId + "/descriptions");
+    response =
+        target.request(accept).header("Authorization", authHeader).get();
+    resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * {
+     * 
+     *     {
+     *       "conceptDescriptions": [
+     *         {
+     *           "acceptabilityMap": [
+     *             {
+     *               "key": ""
+     *             }
+     *           ],
+     *           "inactivationIndicator": "",
+     *           "associationTargets": {
+     *             "empty": false
+     *           },
+     *           "typeId": "",
+     *           "caseSignificance": "",
+     *           "languageCode": "",
+     *           "conceptId": "",
+     *           "term": "",
+     *           "effectiveTime": "date-time",
+     *           "moduleId": "",
+     *           "active": false,
+     *           "released": false,
+     *           "id": ""
+     *         }
+     *       ]
+     *     }
+     * 
+     * </pre>
+     */
+    
+    mapper = new ObjectMapper();
+    doc = mapper.readTree(resultString);
+
+    for (JsonNode descriptionNode : doc.iterator().next()) {
+      final Description description = new DescriptionJpa();
+      description.setActive(descriptionNode.get("active").asText().equals("true"));
+      description.setCaseSignificanceId(descriptionNode.get("caseSignificance").asText());
+
+      description.setConcept(concept);
+      description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(descriptionNode.get(
+          "effectiveTime").asText()));
+      description.setLanguageCode(descriptionNode.get("languageCode").asText());
+      description.setLastModified(description.getEffectiveTime());
+      description.setLastModifiedBy(terminology);
+      description.setModuleId(descriptionNode.get("moduleId").asText());
+      description.setPublishable(true);
+      description.setPublished(true);
+      description.setTerm(descriptionNode.get("term").asText());
+      description.setTerminology(terminology);
+      description.setTerminologyId(terminologyId);
+      description.setVersion(version);
+      description.setTypeId(descriptionNode.get("typeId").asText());
+      Logger.getLogger(getClass()).debug("  description = " + description);
+
+      for (JsonNode language : descriptionNode.findValues("acceptabilityMap")) {
+        final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+        member.setActive(true);
+        member.setDescriptionId(terminologyId);
+        String key = language.fieldNames().next();
+        member.setRefsetId(key);
+        member.setAcceptabilityId(language.get(key).asText());
+        description.addLanguageRefetMember(member);
+        Logger.getLogger(getClass()).debug("    member = " + member);
+      }
+    }
+    return concept;
   }
 
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target("https://dev-term.ihtsdotools.org:443/snowowl/snomed-ct/v2/" + "browser/" + branch + "/concepts/" + terminologyId);
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     *     {
+     *   "relationships": [
+     *     {
+     *       "modifier": "",
+     *       "groupId": 0,
+     *       "relationshipId": "",
+     *       "moduleId": "",
+     *       "target": {
+     *         "effectiveTime": "date-time",
+     *         "moduleId": "",
+     *         "active": false,
+     *         "fsn": "",
+     *         "conceptId": "",
+     *         "definitionStatus": ""
+     *       },
+     *       "active": false,
+     *       "characteristicType": "",
+     *       "effectiveTime": "date-time",
+     *       "type": {
+     *         "fsn": "",
+     *         "conceptId": ""
+     *       },
+     *       "sourceId": ""
+     *     }
+     *   ],
+     *   "preferredSynonym": "",
+     *   "descriptions": [
+     *     {
+     *       "moduleId": "",
+     *       "term": "",
+     *       "conceptId": "",
+     *       "active": false,
+     *       "effectiveTime": "date-time",
+     *       "type": "",
+     *       "descriptionId": "",
+     *       "lang": "",
+     *       "caseSignificance": "",
+     *       "acceptabilityMap": [
+     *         {
+     *           "key": ""
+     *         }
+     *       ]
+     *     }
+     *   ],
+     *   "effectiveTime": "date-time",
+     *   "moduleId": "",
+     *   "active": false,
+     *   "fsn": "",
+     *   "conceptId": "",
+     *   "definitionStatus": "",
+     *   "isLeafStated": false,
+     *   "isLeafInferred": false
+     * }
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    final Concept concept = new ConceptJpa();
+    concept.setActive(doc.get("active").asText().equals("true"));
+    concept.setTerminology(terminology);
+    concept.setVersion(version);
+    concept.setTerminologyId(doc.get("conceptId").asText());
+    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
+        "effectiveTime").asText()));
+    concept.setLastModified(concept.getEffectiveTime());
+    concept.setLastModifiedBy(terminology);
+    concept.setModuleId(doc.get("moduleId").asText());
+    concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
+    concept.setName(doc.get("preferredSynonym").asText());
+    
+    concept.setPublishable(true);
+    concept.setPublished(true);
+    Logger.getLogger(getClass()).debug("  concept = " + concept);
+    
+
+    return concept;
   }
 
   /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    ConceptList conceptList = new ConceptListJpa();
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target("https://dev-term.ihtsdotools.org:443/snowowl/snomed-ct/v2/browser/MAIN/descriptions?query=tumor&offset=0&limit=50");
+            
+            /*
+            url + "browser/" + branch + "/descriptions?query=" + query + 
+            "&offset=" + pfs.getStartIndex() + "&limit=" + pfs.getMaxResults());*/
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * 
+     * [
+     *   {
+     *     "concept": {
+     *       "fsn": "",
+     *       "conceptId": "",
+     *       "moduleId": "",
+     *       "active": false,
+     *       "definitionStatus": ""
+     *     },
+     *     "active": false,
+     *     "term": ""
+     *   }
+     * ]
+     * 
+     * 
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+
+    return conceptList;
   }
 
   /* see superclass */
