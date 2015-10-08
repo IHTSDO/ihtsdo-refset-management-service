@@ -132,9 +132,9 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/member")
-  @ApiOperation(value = "Validate SimpleRefsetMember", notes = "Validates a simpleRefSetMember", response = ValidationResult.class)
-  public ValidationResult validateSimpleRefsetMember(
-    @ApiParam(value = "SimpleRefsetMember", required = true) ConceptRefsetMemberJpa member,
+  @ApiOperation(value = "Validate refset member", notes = "Validates a refset member", response = ValidationResult.class)
+  public ValidationResult validateRefsetMember(
+    @ApiParam(value = "Refset member", required = true) ConceptRefsetMemberJpa member,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -147,12 +147,26 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
       return validationService.validateMember(member);
     } catch (Exception e) {
-      handleException(e, "trying to validate simpleRefSetMember");
+      handleException(e, "trying to validate refset member");
       return null;
     } finally {
       validationService.close();
       securityService.close();
     }
 
+  }
+
+  @Override
+  public ValidationResult validateAllConcepts(Long translationId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ValidationResult validateAllRefsetMembers(Long refsetId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

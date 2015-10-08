@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -147,31 +148,6 @@ public class ProjectClientRest extends RootClientRest implements
         (ProjectJpa) ConfigUtility.getGraphForString(resultString,
             ProjectJpa.class);
     return project;
-  }
-
-  /* see superclass */
-  @Override
-  public ProjectList getProjects(String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get projects");
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/all");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    ProjectListJpa list =
-        (ProjectListJpa) ConfigUtility.getGraphForString(resultString,
-            ProjectListJpa.class);
-    return list;
   }
 
   /* see superclass */
@@ -418,5 +394,18 @@ public class ProjectClientRest extends RootClientRest implements
 
     return resultString.equals("true");
 
+  }
+
+  @Override
+  public StringList getTerminologyEditions(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public TerminologyList getTerminologyVersions(String terminology,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

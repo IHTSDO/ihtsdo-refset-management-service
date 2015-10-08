@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 
 /**
@@ -71,7 +72,7 @@ public interface ReleaseService extends ProjectService {
    * @return the release history for refset
    * @throws Exception
    */
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId)
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId, String query, PfsParameter pfs)
     throws Exception;
 
   /**

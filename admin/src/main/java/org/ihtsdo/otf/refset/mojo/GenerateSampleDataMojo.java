@@ -543,7 +543,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setDefinition(definition);
     // For now, use "MAIN" and this will be a way of determining which branch to
     // access in terminology server calls.
-    refset.setEditionUrl("http://snomed.info/sct/900000000000207008/");
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);

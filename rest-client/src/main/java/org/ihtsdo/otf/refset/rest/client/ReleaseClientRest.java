@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.client;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -13,9 +14,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
 
@@ -37,66 +41,6 @@ public class ReleaseClientRest extends RootClientRest implements
     this.config = config;
   }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Client - get release refset for refset " + refsetId);
-    validateNotEmpty(refsetId, "refsetId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/refset/"
-            + refsetId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    ReleaseInfoListJpa releaseInfoList =
-        (ReleaseInfoListJpa) ConfigUtility.getGraphForString(resultString,
-            ReleaseInfoListJpa.class);
-    return releaseInfoList;
-  }
-
-  /* see superclass */
-  @Override
-  public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get release history for translation "
-            + translationId);
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/"
-            + translationId + "/releases");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    ReleaseInfoListJpa releaseInfoList =
-        (ReleaseInfoListJpa) ConfigUtility.getGraphForString(resultString,
-            ReleaseInfoListJpa.class);
-    return releaseInfoList;
-  }
 
   @Override
   public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
@@ -164,6 +108,56 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ValidationResult cancelTranslationRelease(Long translationId,
     String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfo getCurrentRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void removeReleaseArtifact(Long artifactId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void uploadReleaseArtifact(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long releaseInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public InputStream exportReleaseArtifact(Long artifactId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

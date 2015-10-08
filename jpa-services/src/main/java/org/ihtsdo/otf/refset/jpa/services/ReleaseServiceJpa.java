@@ -10,6 +10,7 @@ import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
@@ -37,7 +38,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Release Service - get current release info for refset" + refsetId);
     List<ReleaseInfo> results =
-        getReleaseHistoryForRefset(refsetId).getObjects();
+        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
     // get max release that is published and not planned
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
@@ -55,7 +56,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Release Service - get previous release info for refset" + refsetId);
     List<ReleaseInfo> results =
-        getReleaseHistoryForRefset(refsetId).getObjects();
+        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
@@ -77,7 +78,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Release Service - get planned release info for refset" + refsetId);
     List<ReleaseInfo> results =
-        getReleaseHistoryForRefset(refsetId).getObjects();
+        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (!results.get(i).isPublished() && results.get(i).isPlanned()
@@ -86,32 +87,6 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
       }
     }
     return null;
-  }
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ReleaseInfoList getReleaseHistoryForRefset(Long refsetId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get refset history " + refsetId);
-    javax.persistence.Query query =
-        manager.createQuery("select a from ReleaseInfoJpa a, "
-            + " RefsetJpa b where b.id = :refsetId and "
-            + "a.refset = b order by a.effectiveTime");
-    /*
-     * Try to retrieve the single expected result If zero or more than one
-     * result are returned, log error and set result to null
-     */
-    try {
-      query.setParameter("refsetId", refsetId);
-      List<ReleaseInfo> releaseInfos = query.getResultList();
-      ReleaseInfoList releaseInfoList = new ReleaseInfoListJpa();
-      releaseInfoList.setObjects(releaseInfos);
-      return releaseInfoList;
-    } catch (NoResultException e) {
-      return null;
-    }
   }
 
   /* see superclass */
@@ -284,6 +259,13 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     } catch (NoResultException e) {
       return null;
     }
+  }
+
+  @Override
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

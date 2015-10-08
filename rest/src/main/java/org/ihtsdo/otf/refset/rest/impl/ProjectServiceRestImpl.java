@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -17,15 +19,18 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -63,6 +68,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/roles")
@@ -88,6 +94,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/assign")
@@ -131,6 +138,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/unassign")
@@ -214,6 +222,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @PUT
   @Path("/users/{projectId}/unassigned")
@@ -230,8 +239,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find candidate users for project",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken,
+          "find candidate users for project", UserRole.VIEWER);
 
       // return all users assigned to the project
       // TODO: should this query restriction be appended to one that is
@@ -264,7 +273,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     ProjectService projectService = new ProjectServiceJpa();
     try {
       final String userName =
-          authorizeApp(securityService, authToken, "add project", UserRole.ADMIN);
+          authorizeApp(securityService, authToken, "add project",
+              UserRole.ADMIN);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -333,9 +343,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   /**
-   * @param projectId
-   * @param authToken
-   * @throws Exception
+   * Removes the project.
+   *
+   * @param projectId the project id
+   * @param authToken the auth token
+   * @throws Exception the exception
    */
   @Override
   @DELETE
@@ -395,35 +407,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
-  @Path("/all")
-  @ApiOperation(value = "Get all projects", notes = "Gets all projects", response = ProjectListJpa.class)
-  public ProjectList getProjects(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Project): /all");
-
-    ProjectService projectService = new ProjectServiceJpa();
-    try {
-      authorizeApp(securityService, authToken, "retrieve projects",
-          UserRole.VIEWER);
-
-      ProjectList projects = projectService.getProjects();
-      for (Project project : projects.getObjects()) {
-        project.getRefsets().size();
-      }
-      return projects;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve the projects");
-      return null;
-    } finally {
-      projectService.close();
-      securityService.close();
-    }
-
-  }
-
-  @Override
   @POST
   @Path("/projects")
   @ApiOperation(value = "Finds projects", notes = "Finds projects based on pfs parameter and query", response = ProjectListJpa.class)
@@ -460,7 +443,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("test");
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /reindex "
             + (indexedObjects == null ? "with no objects specified"
@@ -488,6 +470,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/user/anyrole")
@@ -495,14 +478,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   public Boolean userHasSomeProjectRole(
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /user/anyrole");
     ProjectService projectService = new ProjectServiceJpa();
     try {
       String user =
-          authorizeApp(securityService, authToken, "check for any project role",
-              UserRole.VIEWER);
-      Logger.getLogger(getClass()).info(
-          "RESTful POST call (Project): /user/anyrole " + user);
+          authorizeApp(securityService, authToken,
+              "check for any project role", UserRole.VIEWER);
 
       StringBuilder sb = new StringBuilder();
       sb.append("(");
@@ -520,6 +502,67 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return false;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/terminology/all")
+  @ApiOperation(value = "Get all terminology editions", notes = "Returns all known terminology editions.", response = StringList.class)
+  public StringList getTerminologyEditions(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/all");
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get all terminologies",
+          UserRole.VIEWER);
+
+      List<String> editions =
+          projectService.getTerminologyHandler().getTerminologyEditions();
+      StringList list = new StringList();
+      list.setObjects(editions);
+      list.setTotalCount(list.getCount());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to et all terminologies");
+    } finally {
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/terminology/{terminology}/all")
+  @ApiOperation(value = "Get all terminology versions", notes = "Returns versions for the specified terminology edition.", response = StringList.class)
+  public TerminologyList getTerminologyVersions(
+    @ApiParam(value = "Edition, e.g. 'SNOMEDCT'", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/" + terminology + "/all");
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
+
+      List<Terminology> versions =
+          projectService.getTerminologyHandler().getTerminologyVersions(
+              terminology);
+      TerminologyList list = new TerminologyListJpa();
+      list.setObjects(versions);
+      list.setTotalCount(list.getCount());
+
+    } catch (Exception e) {
+      handleException(e, "trying to get versions");
+    } finally {
+      securityService.close();
+    }
+    return null;
   }
 
 }

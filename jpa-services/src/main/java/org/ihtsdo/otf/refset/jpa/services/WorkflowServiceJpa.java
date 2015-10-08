@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -107,7 +108,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingWork(Long translationId,
+  public ConceptList findAvailableEditingConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - find available editing work " + translationId
@@ -119,12 +120,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Fkind available editing work
-    return handler.findAvailableEditingWork(translation, user, this);
+    return handler.findAvailableEditingConcepts(translation, user, this);
   }
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableReviewWork(Long translationId,
+  public ConceptList findAvailableReviewConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - find available review work " + translationId + ", "
@@ -136,7 +137,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Fkind available editing work
-    return handler.findAvailableReviewWork(translation, user, this);
+    return handler.findAvailableReviewConcepts(translation, user, this);
   }
 
   /* see superclass */
@@ -325,7 +326,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedEditingWork(Long translationId,
+  public ConceptList findAssignedEditingConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception {
     ConceptList list = new ConceptListJpa();
     // Get tracking records for this translation, user, and with "for editing"
@@ -344,7 +345,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedReviewWork(Long translationId,
+  public ConceptList findAssignedReviewConcepts(Long translationId,
     String userName, PfsParameter pfs) throws Exception {
     ConceptList list = new ConceptListJpa();
     // Get tracking records for this translation, user, and with "for review"
@@ -359,6 +360,34 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
       list.getObjects().add(record.getConcept());
     }
     return list;
+  }
+
+  @Override
+  public RefsetList findAvailableEditingRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedEditingRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAvailableReviewRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public RefsetList findAssignedReviewRefsets(Long refsetId, String userName,
+    PfsParameter pfs) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

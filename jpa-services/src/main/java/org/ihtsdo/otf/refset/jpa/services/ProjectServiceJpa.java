@@ -45,8 +45,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected boolean assignIdentifiersFlag = false;
 
   /** The id assignment handler . */
-  static Map<String, TerminologyHandler> terminologyHandlerMap =
-      new HashMap<>();
+  static TerminologyHandler terminologyHandler;
 
   static {
     try {
@@ -56,19 +55,19 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       for (String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
+        if (!handlerName.equals(ConfigUtility.DEFAULT)) {
+          throw new Exception("terminology.handler." + ConfigUtility.DEFAULT
+              + " should be the only entry.");
+        }
         // Add handlers to map
         TerminologyHandler handlerService =
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, TerminologyHandler.class);
-        terminologyHandlerMap.put(handlerName, handlerService);
-      }
-      if (!terminologyHandlerMap.containsKey(ConfigUtility.DEFAULT)) {
-        throw new Exception("terminology.handler." + ConfigUtility.DEFAULT
-            + " expected and does not exist.");
+        terminologyHandler = handlerService;
       }
     } catch (Exception e) {
       e.printStackTrace();
-      terminologyHandlerMap = null;
+      terminologyHandler = null;
     }
   }
 
@@ -142,7 +141,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
           "Identifier assignment handler did not properly initialize, serious error.");
     }
 
-    if (terminologyHandlerMap == null) {
+    if (terminologyHandler == null) {
       throw new Exception(
           "Terminology handler did not properly initialize, serious error.");
     }
@@ -529,14 +528,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public TerminologyHandler getTerminologyHandler(String terminology)
-    throws Exception {
-    if (terminologyHandlerMap.containsKey(terminology)) {
-      return terminologyHandlerMap.get(terminology);
-    }
-    return terminologyHandlerMap.get(ConfigUtility.DEFAULT);
+  public TerminologyHandler getTerminologyHandler() throws Exception {
+    return terminologyHandler;
   }
-
-
 
 }
