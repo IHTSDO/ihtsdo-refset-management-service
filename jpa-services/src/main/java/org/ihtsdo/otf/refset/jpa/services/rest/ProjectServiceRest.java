@@ -116,15 +116,6 @@ public interface ProjectServiceRest {
   public Project getProject(Long id, String authToken) throws Exception;
 
   /**
-   * Returns the projects.
-   *
-   * @param authToken the auth token
-   * @return the projects
-   * @throws Exception the exception
-   */
-  public ProjectList getProjects(String authToken) throws Exception;
-
-  /**
    * Lucene reindex.
    *
    * @param indexedObjects the indexed objects

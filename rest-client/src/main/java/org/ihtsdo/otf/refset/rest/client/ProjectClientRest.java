@@ -151,31 +151,6 @@ public class ProjectClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ProjectList getProjects(String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get projects");
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/all");
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(resultString);
-    }
-
-    // converting to object
-    ProjectListJpa list =
-        (ProjectListJpa) ConfigUtility.getGraphForString(resultString,
-            ProjectListJpa.class);
-    return list;
-  }
-
-  /* see superclass */
-  @Override
   public Project assignUserToProject(Long projectId, String userName,
     String role, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(

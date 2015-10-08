@@ -14,6 +14,8 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
 /**
  * Represents a refsets available via a REST service.
@@ -118,8 +120,8 @@ public interface RefsetServiceRest {
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportDefinition(Long refsetId,
-    String ioHandlerInfoId, String authToken) throws Exception;
+  public InputStream exportDefinition(Long refsetId, String ioHandlerInfoId,
+    String authToken) throws Exception;
 
   /**
    * Export refset members.
@@ -146,16 +148,56 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
+   * Find members for refset.
+   *
+   * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the concept refset member list
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
    * Find members for refset revision.
    *
    * @param refsetId the refset id
    * @param date the date
+   * @param query the query
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the simple ref set member list
    * @throws Exception the exception
    */
-  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
-    String date, PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(Long refsetId,
+    String date, String query, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
+  /**
+   * Adds the refset inclusion.
+   *
+   * @param refsetId the refset id
+   * @param inclusion the inclusion
+   * @param authToken the auth token
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addRefsetInclusion(Long refsetId,
+    ConceptRefsetMemberJpa inclusion, String authToken) throws Exception;
+
+  public void removeRefsetInclusion(Long refsetId,
+    Long inclusionId, String authToken) throws Exception;
+
+  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  public void removeRefsetExclusion(Long refsetId,
+    Long exclusionId, String authToken) throws Exception;
+
+  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  
 }

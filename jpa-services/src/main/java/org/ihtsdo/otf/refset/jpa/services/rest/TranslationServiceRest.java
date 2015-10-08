@@ -134,7 +134,7 @@ public interface TranslationServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findConceptsForTranslationRevision(Long translationId,
+  public ConceptList findTranslationRevisionConceptsForQuery(Long translationId,
     String date, PfsParameterJpa pfs, String authToken) throws Exception;
 
 }
