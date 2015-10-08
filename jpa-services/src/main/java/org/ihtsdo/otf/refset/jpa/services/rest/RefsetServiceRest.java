@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -199,5 +200,7 @@ public interface RefsetServiceRest {
   public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
+  public IoHandlerInfoList getImportRefsetHandlers(String authToken) throws Exception;
+  public IoHandlerInfoList getExportRefsetHandlers(String authToken) throws Exception;
   
 }
