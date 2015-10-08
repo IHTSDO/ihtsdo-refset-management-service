@@ -197,6 +197,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("userRoleMap");
+    tester.include("userAnyRole");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
