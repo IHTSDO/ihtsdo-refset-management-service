@@ -23,13 +23,14 @@ tsApp.controller('DirectoryCtrl', [
     // to login page
 
     // Model variables
-    $scope.refsets = null;
+    $scope.publishedRefsets = null;
+    $scope.members = null;
 
     // Paging variables
     $scope.pageSize = 10;
 
     $scope.paging = {};
-    $scope.paging["refset"] = {
+    $scope.paging["publishedRefset"] = {
       page : 1,
       filter : "",
       sortField : 'lastModified',
@@ -42,22 +43,25 @@ tsApp.controller('DirectoryCtrl', [
       ascending : null
     }
     
-    // get refsets
-    $scope.retrieveRefsets = function() {
+    // get publishedRefsets
+    $scope.retrievePublishedRefsets = function() {
 
       var pfs = {
-        startIndex : ($scope.paging["refset"].page - 1) * $scope.pageSize,
+        startIndex : ($scope.paging["publishedRefset"].page - 1) * $scope.pageSize,
         maxResults : $scope.pageSize,
-        sortField : $scope.paging["refset"].sortField,
-        ascending : $scope.paging["refset"].ascending == null ? true
-          : $scope.paging["refset"].ascending,
-        queryRestriction : null
+        sortField : $scope.paging["publishedRefset"].sortField,
+        ascending : $scope.paging["publishedRefset"].ascending == null ? true
+          : $scope.paging["publishedRefset"].ascending,
+        queryRestriction : 'workflowStatus:PUBLISHED'
       };
 
-      refsetService.findRefsetsForQuery($scope.paging["refset"].filter,
+      refsetService.findRefsetsForQuery($scope.paging["publishedRefset"].filter,
         pfs).then(function(data) {
-        $scope.refsets = data.refsets;
-        $scope.refsets.totalCount = data.totalCount;
+        $scope.publishedRefsets = data.refsets;
+        $scope.publishedRefsets.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.publishedRefsets.length; i++) {
+          $scope.publishedRefsets[i].isExpanded = false;
+        }
       })
 
     };
@@ -74,8 +78,7 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-      // TODO: no query field for getting members?
-      memberService.findMembersForRefsetRevision(/*$scope.paging["member"].filter,*/
+      refsetService.findMembersForRefsetRevision(/*$scope.paging["member"].filter,*/
         refset.id, refset.effectiveTime, pfs).then(function(data) {
         $scope.members = data.members;
         $scope.members.totalCount = data.totalCount;
@@ -146,8 +149,8 @@ tsApp.controller('DirectoryCtrl', [
         }
       }
       // retrieve the correct table
-      if (table === 'refset') {
-        $scope.retrieveRefsets();
+      if (table === 'publishedRefset') {
+        $scope.retrievePublishedRefsets();
       } 
       
     }
@@ -172,7 +175,7 @@ tsApp.controller('DirectoryCtrl', [
     // call these during initialization
     //
 
-    $scope.retrieveRefsets();
+    $scope.retrievePublishedRefsets();
   }
 
 ]);

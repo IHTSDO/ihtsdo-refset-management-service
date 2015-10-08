@@ -4,7 +4,7 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-    <h4>Refsets</h4>
+    <h4>Published Refsets</h4>
 
     <div class="col-md-12 col-xs-12">
 
@@ -12,44 +12,118 @@
         <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
           class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
           first-text="&laquo;" last-text="&raquo;"
-          ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
-          total-items="refsets.totalCount" ng-model="paging['refset'].page"
-          ng-change="retrieveRefsets()"></pagination>
+          ng-show="publishedRefsets.totalCount > pageSize || paging['publishedRefset'].filter"
+          total-items="publishedRefsets.totalCount" ng-model="paging['publishedRefset'].page"
+          ng-change="retrievePublishedRefsets()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
-          ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
-          type="text" ng-model="paging['refset'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="retrieveRefsets()">
+          ng-show="publishedRefsets.totalCount > pageSize || paging['publishedRefset'].filter"
+          type="text" ng-model="paging['publishedRefset'].filter"
+          ng-model-options="{ debounce: 300 }" ng-change="retrievePublishedRefsets()">
 
         <button class="btn btn-xs btn-warning"
-          ng-show="paging['refset'].filter"
-          ng-click="paging['refset'].filter = ''; retrieveRefsets()"
+          ng-show="paging['publishedRefset'].filter"
+          ng-click="paging['publishedRefset'].filter = ''; retrievePublishedRefsets()"
           title="Click to clear filter text">Clear</button>
       </span>
 
 
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-2 col-xs-2" ng-click="setSortField('refset','id')">Id<span
-              ng-bind="getSortIndicator('refset','id')"></span></th>
-          <th class="col-md-4 col-xs-4"
-            ng-click="setSortField('refset','name')">Name<span
-              ng-bind="getSortIndicator('refset','name')"></span></th>
-          <th class="col-md-4 col-xs-4"
-            ng-click="setSortField('refset','description')">Description<span
-              ng-bind="getSortIndicator('refset','description')"></span></th>
+          <th class="col-md-2 col-xs-2" ng-click="setSortField('publishedRefset','terminologyId')">Id<span
+              ng-bind="getSortIndicator('publishedRefset','terminologyId')"></span></th>
+          <th class="col-md-2 col-xs-2"
+            ng-click="setSortField('publishedRefset','name')">Name<span
+              ng-bind="getSortIndicator('publishedRefset','name')"></span></th>
+          <th class="col-md-8 col-xs-8"
+            ng-click="setSortField('publishedRefset','description')">Description<span
+              ng-bind="getSortIndicator('publishedRefset','description')"></span></th>
+   
         </thead>
         <tbody>
-          <tr ng-repeat="refset in refsets">
-            <td>{{refset.id}}</td>
+          <tr ng-repeat="refset in publishedRefsets">
+            <td>{{refset.terminologyId}}</td>
             <td>{{refset.name}}</td>
-            <td>{{refset.description}}</td>
+            <td><a ng-click="refset.isExpanded = !refset.isExpanded">
+                [
+                <i
+                  ng-class="{'glyphicon-minus': refset.isExpanded, 'glyphicon-plus': !refset.isExpanded}"></i>
+                ]
+              </a>{{refset.description}}
+              <div collapse="!refset.isExpanded">{{refset.type}} {{refset.moduleId}}</div>
+              
+   <accordion> <accordion-group
+      heading="Refset Members" is-open="false"> <!-- Refset Members -->
+    <accordion-heading>
+    <h5>
+      <span tooltip-placement="right" tooltip="List of the refset members"
+      ng-click="retrieveMembers(refset)">
+        Refset Members </span>
+    </h5>
+    </accordion-heading>
+    <div class="col-md-12 col-xs-12">
 
 
+<!--       <span style="display: block;">
+        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+          first-text="&laquo;" last-text="&raquo;"
+          ng-show="projects.totalCount > pageSize || paging['project'].filter"
+          total-items="projects.totalCount" ng-model="paging['project'].page"
+          ng-change="retrieveProjects()"></pagination>
+
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="projects.totalCount > pageSize || paging['project'].filter"
+          type="text" ng-model="paging['project'].filter"
+          ng-model-options="{ debounce: 300 }" ng-change="retrieveProjects()">
+
+        <button class="btn btn-xs btn-warning"
+          ng-show="paging['project'].filter"
+          ng-click="paging['project'].filter = ''; retrieveProjects()"
+          title="Click to clear filter text">Clear</button>
+      </span> -->
+
+
+<!--       <table class="table">
+        <thead class="table-select-row">
+          <th class="col-md-2 col-xs-2" ng-click="setSortField('member','terminologyId')">Id<span
+              ng-bind="getSortIndicator('member','terminologyId')"></span></th>
+          <th class="col-md-4 col-xs-4"
+            ng-click="setSortField('member','name')">Name<span
+              ng-bind="getSortIndicator('member','name')"></span></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="member in members">
+            <td>{{member.terminologyId}}</td>
+            <td>{{member.effectiveTime}}</td>
+          </tr>
+        </tbody>
+      </table> -->
+    </div>
+    <!--  end Projects --> </accordion-group> 
+    </accordion>    
+              
+              
+              
+              
+              
+              
+              
+              
+            </td>
+<!-- 
+type
+isPublic
+definition or externalUrl
+forTranslation icon
+moduleId -
+terminology
+version
+ -->
           </tr>
         </tbody>
       </table>
     </div>
-    <!--  end Refsets --> 
+    <!--  end PublishedRefsets --> 
   </div>
 </div>
