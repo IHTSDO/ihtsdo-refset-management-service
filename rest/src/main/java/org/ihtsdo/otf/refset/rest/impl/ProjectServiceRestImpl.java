@@ -73,7 +73,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /roles");
 
     try {
-      authorize(securityService, authToken, "get roles", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get roles", UserRole.VIEWER);
       StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.AUTHOR.toString());
@@ -111,7 +111,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     try {
       // Check if user is either an admin overall or an ADMIN on this project
       // now try to validate project role
-      authorize(projectService, projectId, securityService, authToken,
+      authorizeProject(projectService, projectId, securityService, authToken,
           "add user to project", UserRole.ADMIN);
 
       Project project = projectService.getProject(projectId);
@@ -153,11 +153,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     try {
       // Check if user is either an admin overall or an ADMIN on this project
       try {
-        authorize(securityService, authToken, "add user to project",
+        authorizeApp(securityService, authToken, "add user to project",
             UserRole.ADMIN);
       } catch (Exception e) {
         // now try to validate project role
-        authorize(projectService, projectId, securityService, authToken,
+        authorizeProject(projectService, projectId, securityService, authToken,
             "add user to project", UserRole.ADMIN);
       }
 
@@ -195,7 +195,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find users for project",
+      authorizeApp(securityService, authToken, "find users for project",
           UserRole.VIEWER);
 
       // return all users assigned to the project
@@ -230,7 +230,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find candidate users for project",
+      authorizeApp(securityService, authToken, "find candidate users for project",
           UserRole.VIEWER);
 
       // return all users assigned to the project
@@ -264,7 +264,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     ProjectService projectService = new ProjectServiceJpa();
     try {
       final String userName =
-          authorize(securityService, authToken, "add project", UserRole.ADMIN);
+          authorizeApp(securityService, authToken, "add project", UserRole.ADMIN);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -304,7 +304,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "update project", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "update project", UserRole.ADMIN);
 
       // check to see if project already exists
       boolean found = false;
@@ -350,7 +350,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "remove project", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "remove project", UserRole.ADMIN);
 
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
@@ -377,7 +377,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the project",
+      authorizeApp(securityService, authToken, "retrieve the project",
           UserRole.VIEWER);
 
       Project project = projectService.getProject(projectId);
@@ -405,7 +405,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve projects",
+      authorizeApp(securityService, authToken, "retrieve projects",
           UserRole.VIEWER);
 
       ProjectList projects = projectService.getProjects();
@@ -438,7 +438,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorize(securityService, authToken, "find projects", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find projects", UserRole.VIEWER);
 
       return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
@@ -470,7 +470,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     long startTimeOrig = System.nanoTime();
     LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
     try {
-      authorize(securityService, authToken, "reindex", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "reindex", UserRole.ADMIN);
       algo.setIndexedObjects(indexedObjects);
       algo.compute();
       algo.close();
@@ -499,7 +499,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     ProjectService projectService = new ProjectServiceJpa();
     try {
       String user =
-          authorize(securityService, authToken, "check for any project role",
+          authorizeApp(securityService, authToken, "check for any project role",
               UserRole.VIEWER);
       Logger.getLogger(getClass()).info(
           "RESTful POST call (Project): /user/anyrole " + user);

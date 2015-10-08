@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
-import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -13,7 +12,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.NewCookie;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 

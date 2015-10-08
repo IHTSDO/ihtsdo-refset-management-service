@@ -83,7 +83,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the refset revision",
+      authorizeApp(securityService, authToken, "retrieve the refset revision",
           UserRole.VIEWER);
 
       // check date format
@@ -121,7 +121,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the refset revision",
+      authorizeApp(securityService, authToken, "retrieve the refset revision",
           UserRole.VIEWER);
 
       // check date format
@@ -150,7 +150,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the refset",
+      authorizeApp(securityService, authToken, "retrieve the refset",
           UserRole.VIEWER);
 
       Refset refset = refsetService.getRefset(refsetId);
@@ -176,7 +176,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "get refsets for project",
+      authorizeApp(securityService, authToken, "get refsets for project",
           UserRole.VIEWER);
 
       int[] totalCt = new int[1];
@@ -207,7 +207,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "find refsets", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find refsets", UserRole.VIEWER);
 
       return refsetService.findRefsetsForQuery(query, pfs);
     } catch (Exception e) {
@@ -238,8 +238,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       final String userName =
-          authorize(refsetService, refset.getProjectId(), securityService,
-              authToken, "add refset", UserRole.REVIEWER);
+          authorizeProject(refsetService, refset.getProjectId(),
+              securityService, authToken, "add refset", UserRole.REVIEWER);
 
       // Add refset - if the project is invalid, this will fail
       refset.setLastModifiedBy(userName);
@@ -268,7 +268,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "update refset", UserRole.ADMIN);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "update refset", UserRole.AUTHOR);
 
       // Update refset
       refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
@@ -302,8 +303,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset must have a project with a non null identifier.");
       }
 
-      authorize(refsetService, refset.getProject().getId(), securityService,
-          authToken, "removerefset", UserRole.REVIEWER);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "removerefset", UserRole.REVIEWER);
 
       // remove refset
       refsetService.removeRefset(refsetId);
@@ -344,7 +345,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       String userName =
-          authorize(refsetService, refset.getProject().getId(),
+          authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "import refset definition",
               UserRole.REVIEWER);
 
@@ -397,7 +398,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       String userName =
-          authorize(refsetService, refset.getProject().getId(),
+          authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "import refset members",
               UserRole.REVIEWER);
 
@@ -412,16 +413,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // what if some of the members match these?
 
       // Load members into memory and add to refset
-      List<ConceptRefsetMember> members = handler.importMembers(in);
+      List<ConceptRefsetMember> members = handler.importMembers(refset, in);
       for (ConceptRefsetMember member : members) {
-        member.setRefset(refset);
         member.setId(null);
-        member.setTerminology(refset.getTerminology());
-        member.setVersion(refset.getVersion());
+        member.setLastModified(member.getEffectiveTime());
         member.setLastModifiedBy(userName);
         member.setPublishable(true);
         member.setPublished(false);
-        member.setLastModified(member.getEffectiveTime());
         // TODO: - no efficient way to compute this
         // each member requires a call to the terminology server!
         // terminologyHandler.getConcept is our best bet
@@ -464,8 +462,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorize(refsetService, refset.getProject().getId(), securityService,
-          authToken, "export refset definition", UserRole.AUTHOR);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "export refset definition",
+          UserRole.AUTHOR);
 
       // Obtain the export handler
       ExportRefsetHandler handler =
@@ -511,8 +510,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorize(refsetService, refset.getProject().getId(), securityService,
-          authToken, "export refset members ", UserRole.AUTHOR);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "export refset members ", UserRole.AUTHOR);
 
       // Obtain the export handler
       ExportRefsetHandler handler =

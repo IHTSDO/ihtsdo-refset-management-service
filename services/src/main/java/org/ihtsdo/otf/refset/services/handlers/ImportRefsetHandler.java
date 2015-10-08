@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services.handlers;
 import java.io.InputStream;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
@@ -35,14 +36,16 @@ public interface ImportRefsetHandler extends Configurable {
    * @return the mime type
    */
   public String getMimeType();
+  
   /**
    * Import members.
    *
+   * @param refset the refset
    * @param content the content
    * @return the list
    * @throws Exception the exception
    */
-  public List<ConceptRefsetMember> importMembers(InputStream content)
+  public List<ConceptRefsetMember> importMembers(Refset refset,InputStream content)
     throws Exception;
 
   /**

@@ -106,7 +106,7 @@ public class ProjectJpa implements Project {
   private Map<User, UserRole> userRoleMap;
 
   /** The refsets. */
-  @OneToMany(mappedBy = "project", orphanRemoval = true, targetEntity = RefsetJpa.class)
+  @OneToMany(mappedBy = "project", targetEntity = RefsetJpa.class)
   // @IndexedEmbedded - n/a
   private List<Refset> refsets = new ArrayList<>();
 

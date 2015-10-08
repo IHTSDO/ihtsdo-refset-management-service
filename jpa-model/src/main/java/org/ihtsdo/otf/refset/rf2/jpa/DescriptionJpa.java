@@ -69,7 +69,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   private Concept concept;
 
   /** The language Refset members. */
-  @OneToMany(fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = LanguageRefsetMemberJpa.class)
+  @OneToMany(fetch = FetchType.EAGER, targetEntity = LanguageRefsetMemberJpa.class)
   @CollectionTable(name="description_language_refset_members", joinColumns = @JoinColumn(name = "description_id"))
   @IndexedEmbedded
   private List<LanguageRefsetMember> languageRefsetMembers = null;

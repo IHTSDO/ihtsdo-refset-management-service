@@ -88,7 +88,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken,
+      authorizeApp(securityService, authToken,
           "retrieve the release history for a translation", UserRole.VIEWER);
 
       // check date format
@@ -125,7 +125,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken,
+      authorizeApp(securityService, authToken,
           "retrieve the translation revision", UserRole.VIEWER);
 
       // check date format
@@ -154,7 +154,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the translation",
+      authorizeApp(securityService, authToken, "retrieve the translation",
           UserRole.VIEWER);
 
       Translation translation =
@@ -179,7 +179,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the refset",
+      authorizeApp(securityService, authToken, "retrieve the refset",
           UserRole.VIEWER);
 
       Refset refset = refsetService.getRefset(refsetId);
@@ -212,7 +212,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken, "find translations",
+      authorizeApp(securityService, authToken, "find translations",
           UserRole.VIEWER);
 
       return translationService.findTranslationsForQuery(query, pfs);
@@ -237,11 +237,19 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Translation): /add " + translation);
 
+    if (translation.getProject() == null
+        || translation.getProject().getId() == null) {
+      throw new Exception("A translation must have an associated project");
+    }
+    if (translation.getRefset() == null
+        || translation.getRefset().getId() == null) {
+      throw new Exception("A translation must have an associated refset");
+    }
     TranslationService translationService = new TranslationServiceJpa();
     try {
       final String userName =
-          authorize(securityService, authToken, "add translation",
-              UserRole.ADMIN);
+          authorizeProject(translationService, translation.getProjectId(),
+              securityService, authToken, "add translation", UserRole.REVIEWER);
 
       // Add translation
       translation.setLastModifiedBy(userName);
@@ -271,8 +279,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken, "update translation",
-          UserRole.ADMIN);
+      authorizeProject(translationService, translation.getProjectId(),
+          securityService, authToken, "update translation", UserRole.AUTHOR);
 
       // Update translation
       translation.setLastModifiedBy(securityService
@@ -301,8 +309,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorize(securityService, authToken, "remove translation",
-          UserRole.ADMIN);
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new Exception(
+            "translation must have a project with a non null identifier.");
+      }
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "removerefset", UserRole.REVIEWER);
 
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId);
@@ -343,9 +358,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       String userName =
-          authorize(translationService, translation.getProject().getId(),
-              securityService, authToken, "import translation members",
-              UserRole.REVIEWER);
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation members", UserRole.REVIEWER);
 
       // Obtain the import handler
       ImportTranslationHandler handler =
@@ -360,21 +375,28 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Load members into memory and add to translation
       translationService.setTransactionPerOperation(false);
       translationService.beginTransaction();
-      List<Concept> concepts = handler.importConcepts(in);
+      List<Concept> concepts = handler.importConcepts(translation, in);
+      // Iterate through concepts
       for (Concept concept : concepts) {
+        // Add concept
         concept.setLastModifiedBy(userName);
         translationService.addConcept(concept);
+
+        // Iterate through descriptions
         for (Description description : concept.getDescriptions()) {
+          // Add description
           description.setLastModifiedBy(userName);
           translationService.addDescription(description);
+
+          // Iterate through langauges
           for (LanguageRefsetMember member : description
               .getLanguageRefsetMembers()) {
+            // Add language
             member.setDescriptionId(description.getTerminologyId());
             member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member);
-            description.addLanguageRefetMember(member);
+            translationService.addLanguageRefsetMember(member);           
+            // If type is "synonym" 
           }
-          concept.addDescription(description);
         }
       }
       translation.setLastModifiedBy(userName);
@@ -413,7 +435,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorize(translationService, translation.getProject().getId(),
+      authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "export translation members ",
           UserRole.AUTHOR);
 

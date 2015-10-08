@@ -107,7 +107,7 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
             ConfigUtility.DATE_FORMAT.format(description.getEffectiveTime()))
             .append("\t");
         descSb.append(1).append("\t");
-        descSb.append(description.getModuleId()).append("\t");
+        descSb.append(translation.getRefset().getModuleId()).append("\t");
         descSb.append(concept.getTerminologyId()).append("\t");
         descSb.append(description.getLanguageCode()).append("\t");
         descSb.append(description.getTypeId()).append("\t");
@@ -123,8 +123,8 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
               ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
               .append("\t");
           langSb.append(member.isActive() ? "1" : "0").append("\t");
-          langSb.append(member.getModuleId()).append("\t");
-          langSb.append(member.getRefsetId()).append("\t");
+          langSb.append(translation.getRefset().getModuleId()).append("\t");
+          langSb.append(translation.getRefset().getTerminologyId()).append("\t");
           langSb.append(description.getTerminologyId()).append("\t");
           langSb.append(member.getAcceptabilityId()).append("\t");
           langSb.append("\r\n");

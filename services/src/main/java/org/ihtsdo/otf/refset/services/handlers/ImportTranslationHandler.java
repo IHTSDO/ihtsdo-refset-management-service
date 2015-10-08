@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services.handlers;
 import java.io.InputStream;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
@@ -39,10 +40,12 @@ public interface ImportTranslationHandler extends Configurable {
   /**
    * Import descriptions and language refset members connected to them.
    *
+   * @param translation the translation
    * @param content the content
    * @return the list
    * @throws Exception the exception
    */
-  public List<Concept> importConcepts(InputStream content) throws Exception;
+  public List<Concept> importConcepts(Translation translation, InputStream content)
+    throws Exception;
 
 }

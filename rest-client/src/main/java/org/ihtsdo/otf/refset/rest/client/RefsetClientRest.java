@@ -15,8 +15,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -151,7 +154,6 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   /* see superclass */
-  @SuppressWarnings("resource")
   @Override
   public void importDefinition(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -160,11 +162,17 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
-    FormDataMultiPart multiPart =
-        new FormDataMultiPart().field("name", in,
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", in, "filename.dat",
             MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
 
-    Client client = ClientBuilder.newClient();
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
+    // set file upload values
     WebTarget target =
         client.target(config.getProperty("base.url") + "/import/definition"
             + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
@@ -183,7 +191,6 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   /* see superclass */
-  @SuppressWarnings("resource")
   @Override
   public void importMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -192,11 +199,16 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
-    FormDataMultiPart multiPart =
-        new FormDataMultiPart().field("name", in,
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", in, "filename.dat",
             MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
 
-    Client client = ClientBuilder.newClient();
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
     WebTarget target =
         client.target(config.getProperty("base.url") + "/import/members"
             + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
@@ -216,8 +228,8 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public InputStream exportDefinition(Long refsetId,
-    String ioHandlerInfoId, String authToken) throws Exception {
+  public InputStream exportDefinition(Long refsetId, String ioHandlerInfoId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - export refset definition - " + refsetId + ", "
             + ioHandlerInfoId);

@@ -77,7 +77,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on refset", UserRole.AUTHOR);
 
       return workflowService.performWorkflowAction(refsetId, userName,
@@ -110,7 +110,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
       return workflowService.findAvailableEditingWork(translationId, userName,
@@ -143,7 +143,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
       return workflowService.findAssignedEditingWork(translationId, userName,
@@ -176,7 +176,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.REVIEWER);
 
       return workflowService.findAvailableReviewWork(translationId, userName,
@@ -209,7 +209,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
       return workflowService.findAssignedReviewWork(translationId, userName,
@@ -248,7 +248,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorize(workflowService, projectId, securityService, authToken,
+      authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.AUTHOR);
 
       return workflowService.performWorkflowAction(translationId, userName,

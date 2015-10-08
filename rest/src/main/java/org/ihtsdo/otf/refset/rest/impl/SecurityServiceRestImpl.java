@@ -117,7 +117,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info("RESTful call (Security): /user/" + id);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the user",
+      authorizeApp(securityService, authToken, "retrieve the user",
           UserRole.VIEWER);
       User user = securityService.getUser(id);
       return user;
@@ -142,7 +142,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Security): /user/name/" + userName);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve the user by userName",
+      authorizeApp(securityService, authToken, "retrieve the user by userName",
           UserRole.VIEWER);
       User user = securityService.getUser(userName);
       return user;
@@ -165,7 +165,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info("RESTful call (Security): /user/users");
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "retrieve all users",
+      authorizeApp(securityService, authToken, "retrieve all users",
           UserRole.VIEWER);
       UserList list = securityService.getUsers();
       return list;
@@ -192,7 +192,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
 
-      authorize(securityService, authToken, "add new user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "add new user", UserRole.ADMIN);
 
       // Create service and configure transaction scope
       User newUser = securityService.addUser(user);
@@ -219,7 +219,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "remove user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "remove user", UserRole.ADMIN);
 
       // Remove user
       securityService.removeUser(id);
@@ -243,7 +243,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Security): /user/update " + user);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "update concept", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "update concept", UserRole.ADMIN);
       securityService.updateUser(user);
     } catch (Exception e) {
       handleException(e, "trying to update a concept");
@@ -263,7 +263,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorize(securityService, authToken, "get application roles", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get application roles", UserRole.VIEWER);
       StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.VIEWER.toString());
@@ -293,7 +293,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     // Track system level information
     SecurityService security = new SecurityServiceJpa();
     try {
-      authorize(security, authToken, "find users", UserRole.VIEWER);
+      authorizeApp(security, authToken, "find users", UserRole.VIEWER);
       
       return security.findUsersForQuery(query, pfs);
     } catch (Exception e) {

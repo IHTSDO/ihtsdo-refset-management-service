@@ -120,22 +120,22 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private Project project;
 
   /** The translations. */
-  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = TranslationJpa.class)
+  @OneToMany(mappedBy = "refset", targetEntity = TranslationJpa.class)
   // @IndexedEmbedded - n/a
   private List<Translation> translations = new ArrayList<>();
 
   /** The inclusions. */
-  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
   private List<ConceptRefsetMember> inclusions = new ArrayList<>();
 
   /** The exclusions. */
-  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
-  @OneToMany(mappedBy = "refset", orphanRemoval = true, targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded
   private List<ConceptRefsetMember> refsetMembers = null;
 
@@ -670,9 +670,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + externalUrl + ", editionUrl=" + editionUrl + ", forTranslation="
         + forTranslation + ", workflowStatus=" + workflowStatus
         + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project + ", inclusions="
-        + inclusions + ", exclusions=" + exclusions
-        + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + refsetDescriptor + ", project=" + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 
 }

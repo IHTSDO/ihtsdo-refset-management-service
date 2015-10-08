@@ -15,8 +15,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -130,24 +133,30 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
-  @SuppressWarnings("resource")
   @Override
   public void importConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Client - import translation");
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - import translation");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
-    FormDataMultiPart multiPart =
-        new FormDataMultiPart().field("name", in,
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", in, "filename.dat",
             MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
 
-    Client client = ClientBuilder.newClient();
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
     WebTarget target =
         client.target(config.getProperty("base.url") + "/import/members"
-            + "?translationId=" + translationId + "&handlerId=" + ioHandlerInfoId);
+            + "?translationId=" + translationId + "&handlerId="
+            + ioHandlerInfoId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -159,20 +168,21 @@ public class TranslationClientRest extends RootClientRest implements
     } else {
       throw new Exception(response.toString());
     }
-    
+
   }
 
   @Override
-  public InputStream exportConcepts(Long translationId,
-    String ioHandlerInfoId, String authToken) throws Exception {
+  public InputStream exportConcepts(Long translationId, String ioHandlerInfoId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - export translation concepts - " + translationId + ", "
-            + ioHandlerInfoId);
+        "Translation Client - export translation concepts - " + translationId
+            + ", " + ioHandlerInfoId);
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/export/members"
-            + "?translationId=" + translationId + "&handlerId=" + ioHandlerInfoId);
+            + "?translationId=" + translationId + "&handlerId="
+            + ioHandlerInfoId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -185,6 +195,5 @@ public class TranslationClientRest extends RootClientRest implements
     }
     return in;
   }
-
 
 }
