@@ -258,17 +258,6 @@ tsApp
           }
         };
 
-        // sort mechanism for project table
-        $scope.setProjectSortField = function(field) {
-          $scope.paging["project"].sortField = field;
-          if ($scope.paging["project"].ascending == null) {
-            $scope.paging["project"].ascending = true;
-          } else {
-            $scope.paging["project"].ascending = !$scope.paging["project"].ascending;
-          }
-          $scope.retrieveProjects();
-        }
-
         // sort mechanism 
         $scope.setSortField = function(table, field) {
           console.debug("set " + table + " sortField " + field);

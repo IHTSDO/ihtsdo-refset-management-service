@@ -4,77 +4,52 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
+    <h4>Refsets</h4>
 
-    <!-- Refsets -->
     <div class="col-md-12 col-xs-12">
-      <h4 class="section-header">
-        Refsets
-        <div style="float: right;">
-          <a title="Create new refset" ng-click="openNewRefsetModal(lrefset)">
-            <i class="glyphicon glyphicon-plus"></i>
-          </a>
-        </div>
-      </h4>
+
+      <span style="display: block;">
+        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+          first-text="&laquo;" last-text="&raquo;"
+          ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
+          total-items="refsets.totalCount" ng-model="paging['refset'].page"
+          ng-change="retrieveRefsets()"></pagination>
+
+        <input class="input-filter" placeholder="Enter filter text"
+          ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
+          type="text" ng-model="paging['refset'].filter"
+          ng-model-options="{ debounce: 300 }" ng-change="retrieveRefsets()">
+
+        <button class="btn btn-xs btn-warning"
+          ng-show="paging['refset'].filter"
+          ng-click="paging['refset'].filter = ''; retrieveRefsets()"
+          title="Click to clear filter text">Clear</button>
+      </span>
+
+
       <table class="table">
-        <thead>
-          <th class="col-md-2 col-xs-2">Id</th>
-          <th class="col-md-4 col-xs-4">Name</th>
-          <th class="col-md-2 col-xs-2">Type</th>
-          <th class="col-md-1 col-xs-1">Status</th>
-          <th class="col-md-3 col-xs-3">Project</th>
+        <thead class="table-select-row">
+          <th class="col-md-2 col-xs-2" ng-click="setSortField('refset','id')">Id<span
+              ng-bind="getSortIndicator('refset','id')"></span></th>
+          <th class="col-md-4 col-xs-4"
+            ng-click="setSortField('refset','name')">Name<span
+              ng-bind="getSortIndicator('refset','name')"></span></th>
+          <th class="col-md-4 col-xs-4"
+            ng-click="setSortField('refset','description')">Description<span
+              ng-bind="getSortIndicator('refset','description')"></span></th>
         </thead>
         <tbody>
-          <tr ng-repeat="refset in refsets" ng-click="setProject(project)">
+          <tr ng-repeat="refset in refsets">
             <td>{{refset.id}}</td>
-            <td><a ng-click="refset.isExpanded = !refset.isExpanded">
-                [
-                <i
-                  ng-class="{'glyphicon-minus': refset.isExpanded, 'glyphicon-plus': !refset.isExpanded}"></i>
-                ]
-              </a>{{refset.name}}
-              <div collapse="!refset.isExpanded">{{refset.description}}</div></td>
-            <td><span class="hidden-xs">{{toDate(project.lastModified)}}</span>
-              <span class="visible-xs" title="{{toDate(project.lastModified)}}">
-                {{toShortDate(project.lastModified)}}</span></td>
+            <td>{{refset.name}}</td>
+            <td>{{refset.description}}</td>
 
-            <!-- Notification cell -->
-            <td class="hidden-xs" ng-show="user.applicationRole == 'ADMIN'"><span>
-                <input type="checkbox" ng-model="project.adminNotification"
-                  title="Enable admin notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Admin<br>
-              </span> <span>
-                <input type="checkbox" ng-model="project.leadNotification"
-                  title="Enable lead notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Lead<br>
-              </span> <span>
-                <input type="checkbox"
-                  ng-model="project.standardUserNotification"
-                  title="Enable standard user notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Standard
-              </span></td>
-            <td class="visible-xs" ng-show="user.applicationRole == 'ADMIN'"><span>
-                <input type="checkbox" ng-model="project.adminNotification"
-                  title="Enable admin notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Adm<br>
-              </span> <span>
-                <input type="checkbox" ng-model="project.leadNotification"
-                  title="Enable lead notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Lead<br>
-              </span> <span>
-                <input type="checkbox"
-                  ng-model="project.standardUserNotification"
-                  title="Enable standard user notification"
-                  ng-click="updateProject(project); $event.stopPropagation();">Std
-              </span></td>
-            <td><a title="Remove"
-                ng-click="remove('project',project,projects); $event.stopPropagation()">
-                <i class="glyphicon glyphicon-remove"></i>
-              </a></td>
+
           </tr>
         </tbody>
       </table>
-
-      <!--  end Projects -->
     </div>
+    <!--  end Refsets --> 
   </div>
 </div>

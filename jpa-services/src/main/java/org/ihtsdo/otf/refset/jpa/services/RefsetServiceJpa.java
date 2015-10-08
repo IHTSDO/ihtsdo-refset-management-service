@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -211,6 +212,10 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
         (List<Refset>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *]" : query, RefsetJpa.class, RefsetJpa.class, pfs,
             totalCt);
+
+    for (Refset refset : list) {
+      handleRefsetLazyInitialization(refset);
+    }
     RefsetList result = new RefsetListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -412,11 +417,15 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   private void handleRefsetLazyInitialization(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
-    refset.getRefsetDescriptor().getRefsetId();
+    if (refset.getRefsetDescriptor() != null)
+      refset.getRefsetDescriptor().getRefsetId();
     for (Translation translation : refset.getTranslations()) {
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();
     }
+    refset.getInclusions().size();
+    refset.getExclusions().size();
+    refset.getEnabledFeedbackEvents().size();
   }
 
   /* see superclass */

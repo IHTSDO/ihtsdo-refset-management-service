@@ -110,7 +110,7 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(projectUrl + "refsets" + "?query=" + query, pfs).then(
+      $http.post(refsetUrl + "refsets" + "?query=" + query, pfs).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
