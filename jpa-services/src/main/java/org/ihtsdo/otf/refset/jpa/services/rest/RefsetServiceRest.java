@@ -139,7 +139,6 @@ public interface RefsetServiceRest {
   /**
    * Adds the refset member.
    *
-   * @param refsetId the refset id
    * @param member the member
    * @param authToken the auth token
    * @return the concept refset member
@@ -151,8 +150,7 @@ public interface RefsetServiceRest {
   /**
    * Removes the refset member.
    *
-   * @param refsetId the refset id
-   * @param member the member
+   * @param memberId the member id
    * @param authToken the auth token
    * @throws Exception the exception
    */
@@ -187,7 +185,6 @@ public interface RefsetServiceRest {
   /**
    * Removes the refset inclusion.
    *
-   * @param refsetId the refset id
    * @param inclusionId the inclusion id
    * @param authToken the auth token
    * @throws Exception the exception
@@ -211,7 +208,6 @@ public interface RefsetServiceRest {
   /**
    * Removes the refset exclusion.
    *
-   * @param refsetId the refset id
    * @param exclusionId the exclusion id
    * @param authToken the auth token
    * @throws Exception the exception
@@ -269,7 +265,6 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param date the date
-   * @param query the query
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the simple ref set member list
@@ -290,9 +285,16 @@ public interface RefsetServiceRest {
    * @return the member diff report
    * @throws Exception the exception
    */
-  public MemberDiffReport beginImport(
+  public MemberDiffReport beginImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+
+  /**
+   * Resume import.
+   *
+   * @return the member diff report
+   */
+  public MemberDiffReport resumeImportMembers(Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Finish import.
@@ -301,7 +303,7 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImport(Long refsetId, String authToken) throws Exception;
+  public void finishImportMembers(Long refsetId, String authToken) throws Exception;
 
   /**
    * Cancel import.
@@ -310,7 +312,7 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void cancelImport(Long refsetId, String authToken) throws Exception;
+  public void cancelImportMembers(Long refsetId, String authToken) throws Exception;
 
   /**
    * Begin migration.

@@ -609,26 +609,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public MemberDiffReport beginImport(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void finishImport(Long refsetId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public void cancelImport(Long refsetId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
   public Refset beginMigration(Long refsetId, String newTerminology,
     String newVersion, String authToken) throws Exception {
     // TODO Auto-generated method stub
@@ -700,5 +680,34 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public MemberDiffReport beginImportMembers(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public MemberDiffReport resumeImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishImportMembers(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
+  }
+
+  @Override
+  public void cancelImportMembers(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+
   }
 }

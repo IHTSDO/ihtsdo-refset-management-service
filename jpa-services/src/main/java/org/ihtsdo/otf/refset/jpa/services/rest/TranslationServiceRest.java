@@ -186,8 +186,21 @@ public interface TranslationServiceRest {
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ConceptDiffReport beginImport(
+  public ConceptDiffReport beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
+    throws Exception;
+
+  /**
+   * Resume import concepts.
+   *
+   * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
+   * @param authToken the auth token
+   * @return the concept diff report
+   * @throws Exception the exception
+   */
+  public ConceptDiffReport resumeImportConcepts(
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception;
 
@@ -198,7 +211,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImport(Long translationId, String authToken)
+  public void finishImportConcepts(Long translationId, String authToken)
     throws Exception;
 
   /**
@@ -208,7 +221,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void cancelImport(Long translationId, String authToken)
+  public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception;
 
   /**

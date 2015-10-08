@@ -486,7 +486,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptDiffReport beginImport(
+  public ConceptDiffReport beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
@@ -494,15 +494,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  public ConceptDiffReport resumeImportConcepts(
+    Long translationId, String ioHandlerInfoId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
   @Override
-  public void finishImport(Long translationId, String authToken)
+  public void finishImportConcepts(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
 
   }
 
   @Override
-  public void cancelImport(Long translationId, String authToken)
+  public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
 
