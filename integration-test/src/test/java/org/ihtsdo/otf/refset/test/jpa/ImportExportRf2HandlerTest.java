@@ -92,12 +92,21 @@ public class ImportExportRf2HandlerTest {
   @SuppressWarnings("resource")
   @Test
   public void testTranslationHandlerJpa001() throws Exception {
+    // Set up superstructure
+    Translation translation = new TranslationJpa();
+    Refset refset = new RefsetJpa();
+    refset.setModuleId("sampleModuleId");
+    refset.setTerminologyId("sampleTerminologyId");
+    translation.setRefset(refset);
+    translation.setLanguage("en");
+    translation.setVersion("20140731");
 
     // Import sample translation file
     ImportTranslationRf2Handler importHandler =
         new ImportTranslationRf2Handler();
+
     List<Concept> concepts =
-        importHandler.importConcepts(translationInputStream);
+        importHandler.importConcepts(translation, translationInputStream);
 
     // Verify concept, description and language refset count
     int conceptCt = concepts.size();
@@ -112,9 +121,6 @@ public class ImportExportRf2HandlerTest {
     Assert.assertEquals(352, langCt);
 
     // Export
-    Translation translation = new TranslationJpa();
-    translation.setLanguage("en");
-    translation.setVersion("20140731");
     ExportTranslationRf2Handler exportHandler =
         new ExportTranslationRf2Handler();
     InputStream is = exportHandler.exportConcepts(translation, concepts);
@@ -159,21 +165,24 @@ public class ImportExportRf2HandlerTest {
    */
   @Test
   public void testRefsetHandlerJpa002() throws Exception {
+    // Set up refset
+    Refset refset = new RefsetJpa();
+    refset.setModuleId("sampleModuleId");
+    refset.setTerminology("sampleTerminologyId");
 
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
     List<ConceptRefsetMember> members =
-        importHandler.importMembers(membersInputStream);
+        importHandler.importMembers(refset, membersInputStream);
 
     // Verify the member count
     Assert.assertEquals(members.size(), 35);
     String definition = importHandler.importDefinition(definitionInputStream);
-    Assert.assertEquals("testDefinition", definition);
+    Assert.assertEquals("<<410675002|Route of administration|", definition);
 
-    Refset exportRefset = new RefsetJpa();
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
     BufferedReader reader =
         new BufferedReader(new InputStreamReader(exportHandler.exportMembers(
-            exportRefset, members)));
+            refset, members)));
     int ct = 0;
     while (reader.readLine() != null) {
       ct++;

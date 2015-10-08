@@ -81,6 +81,7 @@ public class IoHandlerInfoJpa implements IoHandlerInfo {
   }
 
   /* see superclass */
+  @Override
   public String getMimeType() {
     return mimeType;
   }

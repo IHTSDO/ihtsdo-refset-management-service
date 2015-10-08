@@ -5,19 +5,21 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
@@ -31,18 +33,6 @@ import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
  */
 public class ImportTranslationRf2Handler extends RootServiceJpa implements
     ImportTranslationHandler {
-
-  /** The descriptions. */
-  Map<String, Description> descriptions = new HashMap<>();
-
-  /** The language entries. */
-  Map<String, LanguageRefsetMember> descLangMap = new HashMap<>();
-
-  /** The desc seen. */
-  boolean descSeen = false;
-
-  /** The lang seen. */
-  boolean langSeen = false;
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -79,10 +69,24 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
-  public List<Concept> importConcepts(InputStream content) throws Exception {
+  public List<Concept> importConcepts(Translation translation,
+    InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import translation concepts");
+
+    /** The descriptions. */
+    Map<String, Description> descriptions = new HashMap<>();
+
+    /** The language entries. */
+    Map<String, LanguageRefsetMember> descLangMap = new HashMap<>();
+
+    /** The desc seen. */
+    boolean descSeen = false;
+
+    /** The lang seen. */
+    boolean langSeen = false;
     // Handle the input stream as a zip input stream
     ZipInputStream zin = new ZipInputStream(content);
+    Map<String, Concept> conceptCache = new HashMap<>();
 
     // Iterate through the zip entries
     for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
@@ -102,7 +106,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         descSeen = true;
 
         // Scan through the file and create descriptions and cache concepts
-        Map<String, Concept> conceptCache = new HashMap<>();
         String line = null;
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
@@ -121,19 +124,15 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
             // Create description and populate from RF2
             final Description description = new DescriptionJpa();
+            setCommonFields(description, translation.getRefset());
             description.setTerminologyId(fields[0]);
             description.setEffectiveTime(ConfigUtility.DATE_FORMAT
                 .parse(fields[1]));
             description.setLastModified(description.getEffectiveTime());
-            description.setActive(true);
             description.setLanguageCode(fields[5].intern());
             description.setTypeId(fields[6].intern());
             description.setTerm(fields[7]);
             description.setCaseSignificanceId(fields[8].intern());
-
-            // Leave the moduleId intentionally null, this should be set by
-            // the translation project
-            description.setModuleId(null);
 
             // Handle the concept the description is connected to
             Concept concept = null;
@@ -141,13 +140,16 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
               conceptCache.put(fields[4], new ConceptJpa());
             }
             concept = conceptCache.get(fields[4]);
+            setCommonFields(concept, translation.getRefset());
             concept.setTerminologyId(fields[4]);
+            concept.setDefinitionStatusId("unknown");
+            concept.setTranslation(translation);
             concept.addDescription(description);
             description.setConcept(concept);
 
             // Cache the description for lookup by the language reset member
             descriptions.put(fields[0], description);
-            Logger.getLogger(getClass()).info(
+            Logger.getLogger(getClass()).debug(
                 "  description = " + description.getTerminologyId() + ", "
                     + description.getTerm());
           }
@@ -191,14 +193,13 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
             // Create and configure the member
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
+            setCommonFields(member, translation.getRefset());
             member.setTerminologyId(fields[0]);
             member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
             member.setLastModified(member.getEffectiveTime());
-            member.setActive(true);
 
-            // Leave module/refset id intentionally blank to be set by project
-            member.setRefsetId(null);
-            member.setModuleId(null);
+            // Set from the translation refset
+            member.setRefsetId(translation.getRefset().getTerminologyId());
 
             // Language unique attributes
             member.setAcceptabilityId(fields[6].intern());
@@ -210,7 +211,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
               throw new Exception(
                   "Unexpected description with multiple langauges - " + line);
             }
-            Logger.getLogger(getClass()).info("    member = " + member);
+            Logger.getLogger(getClass()).debug("    member = " + member);
 
           }
         } // end while
@@ -228,10 +229,12 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     }
 
     // Connect descriptions and language refset member objects
-    Set<Concept> concepts = new HashSet<>();
     for (Description description : descriptions.values()) {
 
-      concepts.add(description.getConcept());
+      // assign an initial preferred name
+      if (description.getConcept().getName() == null) {
+        description.getConcept().setName(description.getTerm());
+      }
 
       // Connect language and description
       if (descLangMap.containsKey(description.getTerminologyId())) {
@@ -239,6 +242,16 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             descLangMap.get(description.getTerminologyId());
         member.setDescriptionId(description.getTerminologyId());
         description.addLanguageRefetMember(member);
+
+        // If a description is a synonym (e.g. typeId=)
+        // and language is prefered (e.g. acceptabilityId=)
+        // use as concept preferred name
+        if (description.getTypeId().equals("900000000000013009")
+            && descLangMap.get(description.getTerminologyId())
+                .getAcceptabilityId().equals("900000000000548007")) {
+          description.getConcept().setName(description.getTerm());
+        }
+
         descLangMap.remove(description.getTerminologyId());
       }
 
@@ -246,6 +259,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         throw new Exception("Unexpected description without language - "
             + description.getTerminologyId());
       }
+
     }
 
     // If any references are left in descLangMap, we've got a language without a
@@ -256,7 +270,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     }
 
     // Return list of concepts
-    return new ArrayList<>(concepts);
+    return new ArrayList<>(conceptCache.values());
   }
 
   /* see superclass */
@@ -272,4 +286,22 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
   }
 
+  /**
+   * Sets the common fields.
+   *
+   * @param c the c
+   * @param refset the refset
+   */
+  @SuppressWarnings("static-method")
+  private void setCommonFields(Component c, Refset refset) {
+    c.setActive(true);
+    c.setEffectiveTime(new Date());
+    c.setId(null);
+    c.setLastModified(new Date());
+    c.setPublishable(true);
+    c.setPublished(true);
+    c.setModuleId(refset.getModuleId());
+    c.setTerminology(refset.getTerminology());
+    c.setVersion(refset.getVersion());
+  }
 }

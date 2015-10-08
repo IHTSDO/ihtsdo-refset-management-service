@@ -77,7 +77,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
       sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
           .append("\t");
       sb.append(1).append("\t");
-      sb.append(member.getModuleId()).append("\t");
+      sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
       sb.append(member.getConceptId()).append("\t");
       sb.append("\r\n");

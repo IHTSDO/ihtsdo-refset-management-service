@@ -70,7 +70,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   private String definitionStatusId;
 
   /** The descriptions. */
-  @OneToMany(mappedBy = "concept", orphanRemoval = true, targetEntity = DescriptionJpa.class)
+  @OneToMany(mappedBy = "concept", targetEntity = DescriptionJpa.class)
   @IndexedEmbedded(targetElement = DescriptionJpa.class)
   private List<Description> descriptions = null;
 
@@ -270,9 +270,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public String toString() {
     return "ConceptJpa [workflowStatus=" + workflowStatus
-        + ", definitionStatusId=" + definitionStatusId + ", descriptions="
-        + descriptions + ", childCount=" + childCount + ", name=" + name
-        + ", translation=" + translation + "]";
+        + ", definitionStatusId=" + definitionStatusId + ", childCount="
+        + childCount + ", name=" + name + ", translation=" + translation + "]";
   }
 
 }

@@ -7,17 +7,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDefinitionRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.RefsetDefinitionRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
@@ -48,13 +47,12 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   public String getFileTypeFilter() {
     return ".txt";
   }
-  
+
   /* see superclass */
   @Override
   public String getMimeType() {
     return "text/plain";
   }
-  
 
   /* see superclass */
   @Override
@@ -64,10 +62,9 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
-  public List<ConceptRefsetMember> importMembers(InputStream content)
-    throws Exception {
+  public List<ConceptRefsetMember> importMembers(Refset refset,
+    InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
-
 
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
@@ -83,8 +80,10 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       // Check field lengths
       if (fields.length != 6) {
         pbr.close();
+        Logger.getLogger(getClass()).error("line = " + line);
         throw new Exception(
-            "Unexpected field count in simple refset member file.");
+            "Unexpected field count in simple refset member file "
+                + fields.length);
       }
 
       // skip header
@@ -92,18 +91,19 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
         // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+        setCommonFields(member, refset);
         // Universal Refset attributes
         member.setTerminologyId(fields[0]);
         member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
         member.setActive(fields[2].equals("1"));
-        member.setModuleId(fields[3].intern());
-        Refset refset = new RefsetJpa();
-        refset.setTerminologyId(fields[4]);
+
+        // use refset module id
         member.setRefset(refset);
 
         // SimpleRefsetMember unique attributes
         member.setConceptId(fields[5]);
+
         // Add member
         list.add(member);
         Logger.getLogger(getClass()).debug("  member = " + member);
@@ -136,25 +136,12 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       }
 
       // skip header
-      if (!fields[0].equals("id")) { // header
+      if (!fields[0].equals("id")) {
 
-        // Instantiate definition member and populate it
-        final RefsetDefinitionRefsetMember member =
-            new RefsetDefinitionRefsetMemberJpa();
-        member.setTerminologyId(fields[0]);
-        member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-        member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-        member.setActive(fields[2].equals("1"));
-        member.setModuleId(fields[3].intern());
-        member.setRefsetId(fields[4]);
-
-        // Refset descriptor unique attributes
-        member.setDefinition(fields[6]);
-
+        // Return fields[6]
         pbr.close();
-        Logger.getLogger(getClass()).debug(
-            "  definition = " + member.getDefinition());
-        return member.getDefinition();
+        Logger.getLogger(getClass()).debug("  definition = " + fields[6]);
+        return fields[6];
       }
     }
     pbr.close();
@@ -165,6 +152,24 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   @Override
   public void setProperties(Properties p) throws Exception {
     // n/a
+  }
 
+  /**
+   * Sets the common fields.
+   *
+   * @param c the c
+   * @param refset the refset
+   */
+  @SuppressWarnings("static-method")
+  private void setCommonFields(Component c, Refset refset) {
+    c.setActive(true);
+    c.setEffectiveTime(new Date());
+    c.setId(null);
+    c.setLastModified(new Date());
+    c.setPublishable(true);
+    c.setPublished(true);
+    c.setModuleId(refset.getModuleId());
+    c.setTerminology(refset.getTerminology());
+    c.setVersion(refset.getVersion());
   }
 }

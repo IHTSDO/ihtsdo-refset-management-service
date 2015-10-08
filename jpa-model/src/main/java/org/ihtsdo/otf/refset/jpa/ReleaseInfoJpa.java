@@ -112,12 +112,12 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   private Translation translation;
 
   /** The release properties. */
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true, targetEntity = ReleasePropertyJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = ReleasePropertyJpa.class)
   @CollectionTable(name = "release_info_properties", joinColumns = @JoinColumn(name = "release_info_id"))
   private List<ReleaseProperty> properties;
 
   /** The release properties. */
-  @OneToMany(mappedBy = "releaseInfo", orphanRemoval = true, targetEntity = ReleaseArtifactJpa.class)
+  @OneToMany(mappedBy = "releaseInfo", targetEntity = ReleaseArtifactJpa.class)
   private List<ReleaseArtifact> artifacts;
 
   /**
