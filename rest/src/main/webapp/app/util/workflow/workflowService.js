@@ -144,7 +144,7 @@ tsApp.service('workflowService',
 
       // Perform workflow action on a translation
       this.performWorkflowActionOnTranslation = function(projectId,
-        translationId, userName, action) {
+        translationId, userName, action, concept) {
         console.debug("performWorkflowActionOnTranslation");
         var deferred = $q.defer();
 
@@ -153,7 +153,7 @@ tsApp.service('workflowService',
         $http.post(
           workflowUrl + 'translation' + "/" + action + "?translationId="
             + translationId + "&userName=" + userName + "&projectId="
-            + projectId).then(
+            + projectId, concept).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);

@@ -128,7 +128,7 @@ tsApp.service('translationService',
 
         // Add new translation
         gpService.increment()
-        $http.put(translationUrl + 'add' + translation).then(
+        $http.put(translationUrl + 'add', translation).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
@@ -150,7 +150,7 @@ tsApp.service('translationService',
 
         // Update translation
         gpService.increment()
-        $http.post(translationUrl + 'update' + translation).then(
+        $http.post(translationUrl + 'update', translation).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
