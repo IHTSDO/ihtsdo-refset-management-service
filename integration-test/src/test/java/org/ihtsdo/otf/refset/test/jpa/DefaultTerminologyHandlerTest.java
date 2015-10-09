@@ -3,9 +3,12 @@
  */
 package org.ihtsdo.otf.refset.test.jpa;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+
+import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -55,6 +58,10 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
   public void testGetDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
+    List<Terminology> list =
+        service.getTerminologyHandler().getTerminologyVersions("SNOMEDCT");
+    assertTrue(list.size() >= 38);
+    service = new ProjectServiceJpa();
     Description description =
         service.getTerminologyHandler().getDescription("1215974010",
             "SNOMEDCT", "latest");

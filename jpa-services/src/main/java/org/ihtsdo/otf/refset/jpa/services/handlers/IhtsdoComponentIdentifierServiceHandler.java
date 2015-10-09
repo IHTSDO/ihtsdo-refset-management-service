@@ -266,7 +266,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     String postData =
         "{ " + "\"namespace\": " + (namespace == null ? 0 : namespace) + ", "
             + "\"partitionId\": \"" + partitionId + "\", "
-            + "\"systemId\": \"refset\", " + "\"software\": \"refset\", "
+            + "\"systemId\": \"ihtsdo-refset\", " + "\"software\": \"ihtsdo-refset\", "
             + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
             + "}";
     Response response = target.request(accept).post(Entity.json(postData));

@@ -50,18 +50,4 @@ public interface Terminology {
    */
   public void setVersion(String version);
 
-  /**
-   * Returns the edition url.
-   *
-   * @return the edition url
-   */
-  public String getEditionUrl();
-
-  /**
-   * Sets the edition url.
-   *
-   * @param editionUrl the edition url
-   */
-  public void setEditionUrl(String editionUrl);
-
 }
