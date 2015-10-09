@@ -77,7 +77,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Concept concept =
         service.getTerminologyHandler().getConcept("126880001", "SNOMEDCT",
             "latest");
-    assertEquals("Tumour of kidney", concept.getName());
+    assertEquals("Neoplasm of kidney", concept.getName());
     service.close();
   }
 
@@ -95,7 +95,8 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Concept concept =
         service.getTerminologyHandler().getConceptWithDescriptions("126880001",
             "SNOMEDCT", "latest");
-    // assertEquals("Tumour of kidney",concept.getName());
+    assertEquals("Neoplasm of kidney",concept.getName());
+    assertEquals(6, concept.getDescriptions().size());
     service.close();
   }
 
@@ -116,7 +117,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ConceptList concepts =
         service.getTerminologyHandler().findConceptsForQuery("tumor",
             "SNOMEDCT", "latest", pfs);
-    // assertEquals("Tumour of kidney",concept.getName());
+    assertEquals(concepts.getObjects().size(),49);
     service.close();
   }
 

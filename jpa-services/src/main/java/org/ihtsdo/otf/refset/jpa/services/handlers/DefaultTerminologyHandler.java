@@ -138,7 +138,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + "/descriptions/" + terminologyId);
+        client.target(url + "browser/" + branch + "/concepts/" + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);
@@ -231,33 +231,30 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     concept.setPublishable(true);
     concept.setPublished(true);
     
-    for (JsonNode descNode : doc.findValues("descriptions")) {
+    List<JsonNode> descNodes = doc.findValues("descriptions");
+    for (  JsonNode desc : descNodes.iterator().next()) {
       final Description description = new DescriptionJpa();
-      String descKey = descNode.fieldNames().next();
-      
-
-      //description.setAcceptabilityId(language.get(key).asText());
-
-      description.setActive(descNode.get("active").asText().equals("true"));
-      description.setCaseSignificanceId(descNode.get("caseSignificance").asText());
+     
+      description.setActive(desc.get("active").asText().equals("true"));
+      description.setCaseSignificanceId(desc.get("caseSignificance").asText());
 
       description.setConcept(concept);
-      description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(descNode.get(
+      description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(desc.get(
           "effectiveTime").asText()));
-      description.setLanguageCode(descNode.get("languageCode").asText());
+      description.setLanguageCode(desc.get("lang").asText());
       description.setLastModified(description.getEffectiveTime());
       description.setLastModifiedBy(terminology);
-      description.setModuleId(descNode.get("moduleId").asText());
+      description.setModuleId(desc.get("moduleId").asText());
       description.setPublishable(true);
       description.setPublished(true);
-      description.setTerm(descNode.get("term").asText());
+      description.setTerm(desc.get("term").asText());
       description.setTerminology(terminology);
       description.setTerminologyId(terminologyId);
       description.setVersion(version);
-      description.setTypeId(descNode.get("typeId").asText());
+      description.setTypeId(desc.get("type").asText());
       Logger.getLogger(getClass()).debug("  description = " + description);
 
-      for (JsonNode language : descNode.findValues("acceptabilityMap")) {
+      for (JsonNode language : desc.findValues("acceptabilityMap")) {
         final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
         member.setActive(true);
         member.setDescriptionId(terminologyId);
@@ -267,6 +264,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         description.addLanguageRefetMember(member);
         Logger.getLogger(getClass()).debug("    member = " + member);
       }
+      
+      concept.addDescription(description);
     }
     return concept;
   }
@@ -277,9 +276,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target("https://dev-term.ihtsdotools.org:443/snowowl/snomed-ct/v2/" + "browser/" + branch + "/concepts/" + terminologyId);
+        client.target(url + "browser/" + branch + "/concepts/" + terminologyId);
     Response response =
-        target.request(accept).header("Authorization", authHeader)
+        target.request("*/*").header("Authorization", authHeader)
         .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -413,7 +412,29 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
+    JsonNode entry = null;
+    int index = 0;
+    while ((entry = doc.get(index++)) != null) {
+      JsonNode cpt = entry.findValue("concept");
+      Concept concept = new ConceptJpa();
 
+      concept.setActive(entry.get("active").asText().equals("true"));
+      concept.setTerminology(terminology);
+      concept.setVersion(version);
+      concept.setTerminologyId(cpt.get("conceptId").asText());
+      // TODO: how to set effective time - no field in json
+      concept.setLastModified(concept.getEffectiveTime());
+      concept.setLastModifiedBy(terminology);
+      concept.setModuleId(cpt.get("moduleId").asText());
+      concept.setDefinitionStatusId(cpt.get("definitionStatus").asText());
+      concept.setName(entry.get("term").asText());
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+    
     return conceptList;
   }
 
