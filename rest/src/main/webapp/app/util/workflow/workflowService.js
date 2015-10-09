@@ -17,7 +17,7 @@ tsApp.service('workflowService',
         // Perform workflow action on a refset
         gpService.increment()
         $http.get(
-          projectUrl + 'refset' + "/" + action + "?refsetId=" + refsetId
+          workflowUrl + 'refset' + "/" + action + "?refsetId=" + refsetId
             + "&userName=" + userName + "&projectId=" + projectId).then(
         // success
         function(response) {
@@ -43,7 +43,7 @@ tsApp.service('workflowService',
         // Find available editing work
         gpService.increment()
         $http.post(
-          projectUrl + "translation/available/editing" + "?projectId="
+          workflowUrl + "translation/available/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
             + userName , pfs).then(
         // success
@@ -70,7 +70,7 @@ tsApp.service('workflowService',
         // Find assigned editing work
         gpService.increment()
         $http.post(
-          projectUrl + "translation/assigned/editing" + "?projectId="
+          workflowUrl + "translation/assigned/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
             + userName , pfs).then(
         // success
@@ -97,7 +97,7 @@ tsApp.service('workflowService',
         // Find available review work
         gpService.increment()
         $http.post(
-          projectUrl + "translation/available/review" + "?projectId="
+          workflowUrl + "translation/available/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
             + userName , pfs).then(
         // success
@@ -124,7 +124,7 @@ tsApp.service('workflowService',
         // Find assigned review work
         gpService.increment()
         $http.post(
-          projectUrl + "translation/assigned/review" + "?projectId="
+          workflowUrl + "translation/assigned/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
             + userName , pfs).then(
         // success
@@ -151,7 +151,7 @@ tsApp.service('workflowService',
         // Perform workflow action on a translation
         gpService.increment()
         $http.post(
-          projectUrl + 'translation' + "/" + action + "?translationId="
+          workflowUrl + 'translation' + "/" + action + "?translationId="
             + translationId + "&userName=" + userName + "&projectId="
             + projectId).then(
         // success

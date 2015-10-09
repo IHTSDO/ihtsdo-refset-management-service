@@ -10,7 +10,7 @@ tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
 
       // Get release history for refsetId
       gpService.increment()
-      $http.get(projectUrl + 'refset' + "/" + refsetId).then(
+      $http.get(releaseUrl + 'refset' + "/" + refsetId).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -31,7 +31,7 @@ tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(projectUrl + 'translation' + "/" + translationId).then(
+      $http.get(releaseUrl + 'translation' + "/" + translationId).then(
       // success
       function(response) {
         console.debug("  translation = ", response.data);

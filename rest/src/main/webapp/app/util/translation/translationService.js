@@ -15,7 +15,7 @@ tsApp.service('translationService',
 
         // Get translation for id and date
         gpService.increment()
-        $http.get(projectUrl + translationId + "/" + date).then(
+        $http.get(translationUrl + translationId + "/" + date).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
@@ -39,7 +39,7 @@ tsApp.service('translationService',
         // Finds concepts for translation revision
         gpService.increment()
         $http.post(
-          projectUrl + translationId + "/" + date + "/" + 'concepts', pfs)
+          translationUrl + translationId + "/" + date + "/" + 'concepts', pfs)
           .then(
           // success
           function(response) {
@@ -62,7 +62,7 @@ tsApp.service('translationService',
 
         // Get translation for id
         gpService.increment()
-        $http.get(projectUrl + translationId).then(
+        $http.get(translationUrl + translationId).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
@@ -84,7 +84,7 @@ tsApp.service('translationService',
 
         // Get translation for id
         gpService.increment()
-        $http.get(projectUrl + 'translations' + "/" + refsetId).then(
+        $http.get(translationUrl + 'translations' + "/" + refsetId).then(
         // success
         function(response) {
           console.debug("  translations ", response.data);
@@ -106,7 +106,7 @@ tsApp.service('translationService',
 
         // Finds translations
         gpService.increment()
-        $http.post(projectUrl + 'translations' + "?query=" + query, pfs).then(
+        $http.post(translationUrl + 'translations' + "?query=" + query, pfs).then(
         // success
         function(response) {
           console.debug("  translations ", response.data);
@@ -128,7 +128,7 @@ tsApp.service('translationService',
 
         // Add new translation
         gpService.increment()
-        $http.put(projectUrl + 'add' + translation).then(
+        $http.put(translationUrl + 'add' + translation).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
@@ -150,7 +150,7 @@ tsApp.service('translationService',
 
         // Update translation
         gpService.increment()
-        $http.post(projectUrl + 'update' + translation).then(
+        $http.post(translationUrl + 'update' + translation).then(
         // success
         function(response) {
           console.debug("  translation ", response.data);
@@ -172,7 +172,7 @@ tsApp.service('translationService',
 
         // Remove translation
         gpService.increment()
-        $http['delete'](projectUrl + 'remove' + "/" + translationId).then(
+        $http['delete'](translationUrl + 'remove' + "/" + translationId).then(
         // success
         function(response) {
           console.debug("  project = ", response.data);
