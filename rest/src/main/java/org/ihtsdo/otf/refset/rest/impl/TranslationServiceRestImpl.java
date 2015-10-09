@@ -114,6 +114,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @POST
   @Path("/{translationId}/{date}/concepts")
@@ -148,6 +149,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/{translationId}")
@@ -174,6 +176,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/translations/{refsetid}")
@@ -201,6 +204,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @POST
   @Path("/translations")
@@ -230,6 +234,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @PUT
   @Path("/add")
@@ -269,6 +274,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @POST
   @Path("/update")
@@ -300,6 +306,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @DELETE
   @Path("/remove/{translationId}")
@@ -335,6 +342,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @POST
   @Override
   @Path("/import")
@@ -414,6 +422,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @GET
   @Override
   @Produces("application/octet-stream")
@@ -464,6 +473,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findTranslationConceptsForQuery(Long translationId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -471,6 +481,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getImportTranslationHandlers(String authToken)
     throws Exception {
@@ -478,6 +489,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getExportTranslationHandlers(String authToken)
     throws Exception {
@@ -485,6 +497,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptDiffReport beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -494,13 +507,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  public ConceptDiffReport resumeImportConcepts(
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception {
+  /* see superclass */
+  @Override
+  public ConceptDiffReport resumeImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
+  /* see superclass */
   @Override
   public void finishImportConcepts(Long translationId, String authToken)
     throws Exception {
@@ -508,6 +523,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception {
@@ -515,6 +531,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public Concept addTranslationConcept(Concept concept, String authToken)
     throws Exception {
@@ -522,6 +539,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void removeTranslationConcept(Long conceptId, String authToken)
     throws Exception {
@@ -529,6 +547,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public TranslationList findTranslationsWithSpellingDictionary(String authToken)
     throws Exception {
@@ -536,6 +555,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void copySpellingDictionary(Long fromTranslationId,
     Long toTranslationId, String authToken) throws Exception {
@@ -543,6 +563,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void addSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
@@ -550,6 +571,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
@@ -557,6 +579,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void clearSpellingDictionary(Long translationId, String authToken)
     throws Exception {
@@ -564,6 +587,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public TranslationList findTranslationsWithPhraseMemory(String authToken)
     throws Exception {
@@ -571,6 +595,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void copyPhraseMemory(Long fromTranslationId, Long toTranslationId,
     String authToken) throws Exception {
@@ -578,6 +603,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public MemoryEntry addPhraseMemoryEntry(Long translationId,
     MemoryEntry entry, String authToken) throws Exception {
@@ -585,6 +611,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
     String authToken) throws Exception {
@@ -592,6 +619,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void clearPhraseMemory(Long translationId, String authToken)
     throws Exception {
@@ -599,6 +627,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void importSpellingDictionary(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -607,6 +636,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public InputStream exportSpellingDictionary(Long translationId,
     String authToken) throws Exception {
@@ -614,6 +644,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -622,6 +653,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public InputStream exportPhraseMemory(Long translationId, String authToken)
     throws Exception {
@@ -629,6 +661,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public StringList suggestSpelling(String term, String authToken)
     throws Exception {
@@ -636,6 +669,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public StringList suggestTranslatio(String phrase, String authToken)
     throws Exception {
@@ -643,6 +677,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public Translation beginMigration(Long translationId, String newTerminology,
     String newVersion, String authToken) throws Exception {
@@ -650,6 +685,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void finishMigration(Long translationId, String authToken)
     throws Exception {
@@ -657,6 +693,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public void cancelMigration(Long translationId, String authToken)
     throws Exception {
@@ -664,6 +701,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   public String compareTranslations(Long translationId1, Long translationId2,
     String authToken) throws Exception {
@@ -671,6 +709,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findMembersInCommon(String conceptToken, String query,
     PfsParameterJpa pfs, String authToken) throws Exception {
@@ -678,6 +717,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptDiffReport getDiffReport(String reportToken, String authToken)
     throws Exception {
@@ -685,6 +725,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void releaseReportToken(String reportToken) throws Exception {
     // TODO Auto-generated method stub

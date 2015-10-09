@@ -440,6 +440,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * </pre>
      */
     ObjectMapper mapper = new ObjectMapper();
+    @SuppressWarnings("unused")
     JsonNode doc = mapper.readTree(resultString);
 
     return conceptList;
