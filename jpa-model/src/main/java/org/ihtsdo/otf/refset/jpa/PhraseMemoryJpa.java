@@ -5,13 +5,18 @@ package org.ihtsdo.otf.refset.jpa;
 
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
@@ -25,59 +30,134 @@ import org.ihtsdo.otf.refset.Translation;
 @XmlRootElement(name = "memory")
 public class PhraseMemoryJpa implements PhraseMemory {
 
-  /**  The id. */
+  /** The id. */
   @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
+  @Column(nullable = false)
+  private String name;
+
+  @OneToMany(mappedBy = "phraseMemory", targetEntity = MemoryEntryJpa.class)
+  private List<MemoryEntry> entries;
+
+  @ManyToOne(targetEntity = TranslationJpa.class, optional=false)
+  private Translation translation;
+
+  public PhraseMemoryJpa() {
+    // do nothing
+  }
+
+  public PhraseMemoryJpa(PhraseMemory phraseMemory) {
+    super();
+    this.name = phraseMemory.getName();
+    this.entries = phraseMemory.getEntries();
+    this.translation = phraseMemory.getTranslation();
+  }
+
   @Override
   public String getName() {
-    // TODO Auto-generated method stub
-    return null;
+    return name;
   }
 
   @Override
   public void setName(String name) {
-    // TODO Auto-generated method stub
-    
+    this.name = name;
   }
 
   @Override
   public Long getId() {
-    // TODO Auto-generated method stub
-    return null;
+    return id;
   }
 
   @Override
   public void setId(Long id) {
-    // TODO Auto-generated method stub
-    
+    this.id = id;
   }
 
   @Override
   public List<MemoryEntry> getEntries() {
-    // TODO Auto-generated method stub
-    return null;
+    return entries;
   }
 
   @Override
-  public void setPhrases(List<MemoryEntry> entries) {
-    // TODO Auto-generated method stub
-    
+  public void setEntries(List<MemoryEntry> entries) {
+    this.entries = entries;
   }
 
+  /* see superclass */
   @Override
+  @XmlTransient
   public Translation getTranslation() {
-    // TODO Auto-generated method stub
-    return null;
+    return translation;
   }
 
+  /* see superclass */
   @Override
   public void setTranslation(Translation translation) {
-    // TODO Auto-generated method stub
-    
+    this.translation = translation;
   }
 
+  /**
+   * Returns the translation id.
+   *
+   * @return the translation id
+   */
+  @XmlElement
+  public Long getTranslationId() {
+    return (translation != null) ? translation.getId() : 0;
+  }
+
+  /**
+   * Sets the translation id.
+   *
+   * @param translationId the translation id
+   */
+  @SuppressWarnings("unused")
+  private void setTranslationId(Long translationId) {
+    if (translation == null) {
+      translation = new TranslationJpa();
+    }
+    translation.setId(translationId);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime
+            * result
+            + ((translation == null || translation.getId() == null) ? 0
+                : translation.getId().hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (!(obj instanceof PhraseMemoryJpa))
+      return false;
+    PhraseMemoryJpa other = (PhraseMemoryJpa) obj;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (translation == null) {
+      if (other.translation != null)
+        return false;
+    } else if (translation.getId() == null) {
+      if (other.translation != null && other.translation.getId() != null)
+        return false;
+    } else if (!translation.getId().equals(other.translation.getId()))
+      return false;
+    return true;
+  }
 
 }

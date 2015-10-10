@@ -23,11 +23,11 @@ public interface PhraseMemory extends HasName, HasId {
   public List<MemoryEntry> getEntries();
 
   /**
-   * Sets the phrases.
+   * Sets the entries.
    *
-   * @param entries the phrases
+   * @param entries the entries
    */
-  public void setPhrases(List<MemoryEntry> entries);
+  public void setEntries(List<MemoryEntry> entries);
 
   /**
    * Returns the translation.
