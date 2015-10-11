@@ -514,7 +514,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.setTerminology("SNOMEDCT");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
-
+    // This is the only namespace configured in the sample id generation service
+    // when there are others, we can play with this
+    project.setNamespace("1000179");
     return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
         auth.getAuthToken());
   }

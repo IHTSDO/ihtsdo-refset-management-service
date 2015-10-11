@@ -109,16 +109,43 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     throws Exception {
     List<Terminology> list = new ArrayList<Terminology>();
     if (edition.equals("SNOMEDCT")) {
-      // Make first version
-      Terminology terminology = new TerminologyJpa();
-      terminology.setTerminology(edition);
-      terminology.setEditionUrl("http://snomed.info/sct/900000000000207008");
-      terminology.setVersion("20150731");
-      list.add(terminology);
-      // Copy and make another verison
-      terminology = new TerminologyJpa(terminology);
-      terminology.setVersion("20160131");
-      list.add(terminology);
+      // Make a webservice call to SnowOwl
+      Client client = ClientBuilder.newClient();
+      WebTarget target = client.target(url + "/branches");
+      Response response =
+          target.request(accept).header("Authorization", authHeader).get();
+      String resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new Exception(resultString);
+      }
+
+      /**
+       * <pre>
+       * "items": [
+       *     {
+       *       "name": "2013-01-31",
+       *       "baseTimestamp": 1443341090129,
+       *       "headTimestamp": 1443341090129,
+       *       "deleted": false,
+       *       "path": "MAIN/2013-01-31",
+       *       "state": "BEHIND"
+       *     }, ...
+       * }
+       * </pre>
+       */
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(resultString);
+      for (JsonNode item : doc.get("items")) {
+        final String version = item.get("name").asText();
+        if (version.equals("MAIN") || version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
+          Terminology terminology = new TerminologyJpa();
+          terminology.setTerminology(edition);
+          terminology.setVersion(version);
+          list.add(terminology);
+        }
+      }
     }
     return list;
   }
@@ -230,9 +257,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     
     concept.setPublishable(true);
     concept.setPublished(true);
-    
-    List<JsonNode> descNodes = doc.findValues("descriptions");
-    for (  JsonNode desc : descNodes.iterator().next()) {
+
+    List<JsonNode> descriptionNodes = doc.findValues("descriptions");
+    for (  JsonNode desc : descriptionNodes.iterator().next()) {
       final Description description = new DescriptionJpa();
      
       description.setActive(desc.get("active").asText().equals("true"));
@@ -279,7 +306,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         client.target(url + "browser/" + branch + "/concepts/" + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -359,11 +386,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
     concept.setName(doc.get("preferredSynonym").asText());
-    
+
     concept.setPublishable(true);
     concept.setPublished(true);
     Logger.getLogger(getClass()).debug("  concept = " + concept);
-    
 
     return concept;
   }
@@ -381,7 +407,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             "&offset=" + pfs.getStartIndex() + "&limit=" + pfs.getMaxResults());
     Response response =
         target.request("*/*").header("Authorization", authHeader)
-        .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -410,6 +436,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * </pre>
      */
     ObjectMapper mapper = new ObjectMapper();
+    @SuppressWarnings("unused")
     JsonNode doc = mapper.readTree(resultString);
 
     JsonNode entry = null;
@@ -518,6 +545,5 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     return description;
   }
-
 
 }

@@ -6,21 +6,11 @@ package org.ihtsdo.otf.refset.rest.client;
 import java.io.InputStream;
 import java.util.Properties;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status.Family;
-
-import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
 
 /**
@@ -30,6 +20,7 @@ public class ReleaseClientRest extends RootClientRest implements
     ReleaseServiceRest {
 
   /** The config. */
+  @SuppressWarnings("unused")
   private Properties config = null;
 
   /**

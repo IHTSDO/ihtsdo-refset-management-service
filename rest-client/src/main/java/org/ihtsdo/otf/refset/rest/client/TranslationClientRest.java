@@ -223,28 +223,6 @@ public class TranslationClientRest extends RootClientRest implements
     return null;
   }
 
-  @Override
-  public ConceptDiffReport beginImport(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void finishImport(Long translationId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
-  @Override
-  public void cancelImport(Long translationId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
 
   @Override
   public Concept addTranslationConcept(Concept concept, String authToken)
@@ -418,6 +396,36 @@ public class TranslationClientRest extends RootClientRest implements
 
   @Override
   public void releaseReportToken(String reportToken) throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public ConceptDiffReport beginImportConcepts(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptDiffReport resumeImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void finishImportConcepts(Long translationId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void cancelImportConcepts(Long translationId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     
   }

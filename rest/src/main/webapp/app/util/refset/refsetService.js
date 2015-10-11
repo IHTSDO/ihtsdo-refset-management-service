@@ -14,7 +14,7 @@ tsApp.service('refsetService', [
 
       // get refset revision
       gpService.increment()
-      $http.get(projectUrl + refsetId + "/" + date).then(
+      $http.get(refsetUrl + refsetId + "/" + date).then(
       // success
       function(response) {
         console.debug("  refset revision = ", response.data);
@@ -37,7 +37,7 @@ tsApp.service('refsetService', [
 
       // find refsets
       gpService.increment()
-      $http.post(projectUrl + refsetId + "/" + date + "/" + 'members' , pfs)
+      $http.post(refsetUrl + refsetId + "/" + date + "/" + 'members' , pfs)
         .then(
         // success
         function(response) {
@@ -133,7 +133,7 @@ tsApp.service('refsetService', [
 
       // get refset for id
       gpService.increment()
-      $http.get(projectUrl + "/" + refsetId).then(
+      $http.get(refsetUrl + "/" + refsetId).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -149,14 +149,14 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    // get refset for project
+    // get refsets for project
     this.getRefsetsForProject = function(projectId) {
       console.debug("getRefsetsForProject");
       var deferred = $q.defer();
 
       // get refset for project
       gpService.increment()
-      $http.get(projectUrl + 'refsets', projectId).then(
+      $http.get(refsetUrl + 'refsets' + "/" + projectId).then(
       // success
       function(response) {
         console.debug("  projects = ", response.data);
@@ -205,7 +205,7 @@ tsApp.service('refsetService', [
 
       // Add refset
       gpService.increment()
-      $http.put(projectUrl + 'add', refset).then(
+      $http.put(refsetUrl + 'add', refset).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -228,7 +228,7 @@ tsApp.service('refsetService', [
 
       // update refset
       gpService.increment()
-      $http.post(projectUrl + 'update', refset).then(
+      $http.post(refsetUrl + 'update', refset).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -251,7 +251,7 @@ tsApp.service('refsetService', [
 
       // remove refset
       gpService.increment()
-      $http['delete'](projectUrl + 'remove' + "/" + refsetId).then(
+      $http['delete'](refsetUrl + 'remove' + "/" + refsetId).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);

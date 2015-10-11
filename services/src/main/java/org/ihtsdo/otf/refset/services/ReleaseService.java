@@ -69,11 +69,13 @@ public interface ReleaseService extends ProjectService {
    * Returns the release history for refset.
    *
    * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
    * @return the release history for refset
-   * @throws Exception
+   * @throws Exception the exception
    */
-  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId, String query, PfsParameter pfs)
-    throws Exception;
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameter pfs) throws Exception;
 
   /**
    * Returns the current release info for translation.

@@ -61,6 +61,15 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @XmlRootElement(name = "refset")
 public class RefsetJpa extends AbstractComponent implements Refset {
 
+  // TODO: needs to have "staging" links
+  // or we could have a separate object for this (e.g. RefsetStaging, TranslationSTaging with a label for what's happening.
+  // then we need methods fo accessing the staging objects
+  // techincally only one thing should be allowed to be staged at a time
+  // the state needs to be validated before a begin/resume/finish/cancel can succeed
+  // i.e. if the wrong data is staged (e.g.see "label") then fail
+  // or if begin is called while something is already staged, then fail...
+  
+  
   /** The name. */
   @Column(nullable = false)
   private String name;

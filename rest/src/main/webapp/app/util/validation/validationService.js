@@ -10,7 +10,7 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
 
       // validate concept
       gpService.increment()
-      $http.post(projectUrl + 'concept', concept).then(
+      $http.post(validationUrl + 'concept', concept).then(
       // success
       function(response) {
         console.debug("  concept = ", response.data);
@@ -33,7 +33,7 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
 
       // Add refset
       gpService.increment()
-      $http.post(projectUrl + 'refset', refset).then(
+      $http.post(validationUrl + 'refset', refset).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -56,7 +56,7 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
 
       // Add translation
       gpService.increment()
-      $http.post(projectUrl + 'translation', translation).then(
+      $http.post(validationUrl + 'translation', translation).then(
       // success
       function(response) {
         console.debug("  translation = ", response.data);
@@ -79,7 +79,7 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
 
       // Add translation
       gpService.increment()
-      $http.post(projectUrl + 'member', member).then(
+      $http.post(validationUrl + 'member', member).then(
       // success
       function(response) {
         console.debug("  member = ", response.data);
