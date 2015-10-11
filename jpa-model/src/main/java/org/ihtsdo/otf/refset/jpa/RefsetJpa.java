@@ -126,17 +126,21 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private List<Translation> translations = new ArrayList<>();
 
   /** The inclusions. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_inclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
   private List<ConceptRefsetMember> inclusions = new ArrayList<>();
 
   /** The exclusions. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_exclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
+  
   @IndexedEmbedded
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany( targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_refset_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
   private List<ConceptRefsetMember> refsetMembers = null;
 

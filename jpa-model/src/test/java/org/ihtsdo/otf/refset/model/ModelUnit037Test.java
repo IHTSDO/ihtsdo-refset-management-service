@@ -98,7 +98,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testModelXmlSerialization030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
@@ -157,6 +157,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
     tester.include("definitionStatusId");
     tester.include("workflowStatus");
     tester.include("nameSort");
+    tester.include("translationId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

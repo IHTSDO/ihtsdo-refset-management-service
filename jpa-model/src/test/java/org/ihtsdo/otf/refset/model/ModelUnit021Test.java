@@ -147,6 +147,7 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
+    tester.include("type");
 
     tester.include("conceptId");
     tester.include("conceptName");

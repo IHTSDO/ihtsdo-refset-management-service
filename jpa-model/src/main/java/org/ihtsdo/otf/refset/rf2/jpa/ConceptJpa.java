@@ -218,8 +218,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    *
    * @return the translation id
    */
+  @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getTranslationId() {
+  public Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;
   }
 

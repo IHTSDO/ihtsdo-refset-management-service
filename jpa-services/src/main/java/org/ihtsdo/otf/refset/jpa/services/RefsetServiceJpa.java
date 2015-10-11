@@ -22,11 +22,15 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -367,11 +371,33 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "Refset Service - find members " + "/" + query + " refsetId " + refsetId);
+    
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (refsetId == null) {
+      sb.append("refsetId:[* TO *]");
+    } else {
+      sb.append("refsetId:" + refsetId);
+    }
+
+
+    
+    int[] totalCt = new int[1];
+    List<ConceptRefsetMember> list =
+        (List<ConceptRefsetMember>) getQueryResults(sb.toString(), ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
+            totalCt);
+    ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 
   /* see superclass */

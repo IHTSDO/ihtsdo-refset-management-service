@@ -27,11 +27,14 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -158,6 +161,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     TranslationService translationService = new TranslationServiceJpa();
     try {
+      Logger.getLogger(getClass()).info(
+          "RESTful call (Translation): get translation, translationId:" + translationId );
+
       authorizeApp(securityService, authToken, "retrieve the translation",
           UserRole.VIEWER);
 
@@ -176,11 +182,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
-  @Path("/translations/{refsetid}")
+  @Path("/translations/{refsetId}")
   public TranslationList getTranslationsForRefset(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+    
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): get translations for refset, refsetId:" + refsetId);
+
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the refset",
@@ -189,8 +199,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       Refset refset = refsetService.getRefset(refsetId);
 
       TranslationList result = new TranslationListJpa();
-      result.setObjects(refset.getTranslations());
-      result.setTotalCount(result.getCount());
+      List<Translation> translations = refset.getTranslations();
+      for (Translation t : translations){
+        t.getDescriptionTypes().size();
+        t.getConcepts().size();
+      }
+      result.setObjects(translations);
+      result.setTotalCount(translations.size());
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -465,10 +480,32 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptList findTranslationConceptsForQuery(Long translationId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/concepts")
+  @ApiOperation(value = "Finds translation concepts", notes = "Finds translation concepts based on translation id, pfs parameter and query", response = ConceptListJpa.class)
+  public ConceptList findTranslationConceptsForQuery(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): find translation concepts, translationId:" + translationId + " query:" + query + " "+ pfs);
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find translation concepts", UserRole.VIEWER);
+
+      return translationService.findConceptsForTranslation(translationId,
+          query, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve translation concepts ");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
   }
 
   @Override

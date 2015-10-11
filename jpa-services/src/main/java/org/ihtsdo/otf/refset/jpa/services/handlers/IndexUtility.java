@@ -35,6 +35,7 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 
 /**
@@ -58,7 +59,7 @@ public class IndexUtility {
       Class<?>[] classes =
           new Class<?>[] {
               RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
-              TrackingRecordJpa.class, UserJpa.class
+              TrackingRecordJpa.class, UserJpa.class, ConceptRefsetMemberJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
@@ -354,7 +355,8 @@ public class IndexUtility {
 
     // Build up the query
     StringBuilder pfsQuery = new StringBuilder();
-    pfsQuery.append(query);
+    if (query != null)
+      pfsQuery.append(query);
     if (pfs != null) {
       if (pfs.getActiveOnly()) {
         pfsQuery.append(" AND obsolete:false");

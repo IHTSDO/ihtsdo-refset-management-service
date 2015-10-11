@@ -86,7 +86,6 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
   @Test
   public void testGetConceptWithDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
@@ -105,7 +104,6 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
   @Test
   public void testFindConceptsForQuery() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());

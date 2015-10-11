@@ -43,87 +43,188 @@
         <tbody>
           <tr ng-repeat="refset in publishedRefsets">
             <td>{{refset.terminologyId}}</td>
-            <td>{{refset.name}}</td>
-            <td><a ng-click="refset.isExpanded = !refset.isExpanded">
-                [
-                <i
-                  ng-class="{'glyphicon-minus': refset.isExpanded, 'glyphicon-plus': !refset.isExpanded}"></i>
-                ]
-              </a>{{refset.description}}
-              <div collapse="!refset.isExpanded">{{refset.type}} {{refset.moduleId}}</div>
-              
-   <accordion> <accordion-group
-      heading="Refset Members" is-open="false"> <!-- Refset Members -->
-    <accordion-heading>
-    <h5>
-      <span tooltip-placement="right" tooltip="List of the refset members"
-      ng-click="retrieveMembers(refset)">
-        Refset Members </span>
-    </h5>
-    </accordion-heading>
-    <div class="col-md-12 col-xs-12">
+            <td>{{refset.name}}<br>{{refset.description}}</td>
+            <td>
+              <!-- Refset Details -->
+              <accordion> <accordion-group
+                heading="Refset Details" is-open="false"> 
+              <accordion-heading>             
+                <span tooltip-placement="right"
+                  tooltip="Refset Metadata Details"> {{refset.name}} Details </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
+
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"></th>
+                    <th class="col-md-8 col-xs-8"></th>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Module Id</td>
+                      <td>{{refset.moduleId}}</td>
+                    </tr>
+                    <tr>
+                      <td>Effective Time</td>
+                      <td>{{toShortDate(refset.effectiveTime)}}</td>
+                    </tr>
+                    <tr>
+                      <td>Terminology</td>
+                      <td>{{refset.terminology}}</td>
+                    </tr>
+                    <tr>
+                      <td>Version</td>
+                      <td>{{refset.version}}</td>
+                    </tr>
+                    <tr>
+                      <td>Definition</td>
+                      <td>{{refset.definition}}</td>
+                    </tr>
+                    <tr>
+                      <td>External Url</td>
+                      <td>{{refset.externalUrl}}</td>
+                    </tr>
+                    <tr>
+                      <td>Type</td>
+                      <td>{{refset.type}}</td>
+                    </tr>
+                    <tr>
+                      <td>Organization</td>
+                      <td>TBD</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> 
+              </accordion-group> </accordion>
+              <!--  end Refset Details -->
+            
+            
+            
+            
+                <!-- Refset Members -->
+              <accordion> <accordion-group
+                heading="Refset Members" is-open="false"> 
+              <accordion-heading>
+             
+                <span tooltip-placement="right"
+                  tooltip="List of the refset members"
+                  ng-click="retrieveMembers(refset)"> Refset Members </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
 
 
-<!--       <span style="display: block;">
-        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-          first-text="&laquo;" last-text="&raquo;"
-          ng-show="projects.totalCount > pageSize || paging['project'].filter"
-          total-items="projects.totalCount" ng-model="paging['project'].page"
-          ng-change="retrieveProjects()"></pagination>
+                <span style="display: block;">
+                  <pagination items-per-page="pageSize" max-size="5"
+                    boundary-links="true" class="pagination-sm"
+                    previous-text="&lsaquo;" next-text="&rsaquo;"
+                    first-text="&laquo;" last-text="&raquo;"
+                    ng-show="members.totalCount > pageSize || paging['member'].filter"
+                    total-items="members.totalCount"
+                    ng-model="paging['member'].page"
+                    ng-change="retrieveMembers(refset)"></pagination>
 
-        <input class="input-filter" placeholder="Enter filter text"
-          ng-show="projects.totalCount > pageSize || paging['project'].filter"
-          type="text" ng-model="paging['project'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="retrieveProjects()">
+                  <input class="input-filter" placeholder="Enter filter text"
+                    ng-show="members.totalCount > pageSize || paging['member'].filter"
+                    type="text" ng-model="paging['member'].filter"
+                    ng-model-options="{ debounce: 300 }"
+                    ng-change="retrieveMembers(refset)">
 
-        <button class="btn btn-xs btn-warning"
-          ng-show="paging['project'].filter"
-          ng-click="paging['project'].filter = ''; retrieveProjects()"
-          title="Click to clear filter text">Clear</button>
-      </span> -->
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="paging['member'].filter"
+                    ng-click="paging['member'].filter = ''; retrieveMembers(refset)"
+                    title="Click to clear filter text">Clear</button>
+                </span>
 
 
-<!--       <table class="table">
-        <thead class="table-select-row">
-          <th class="col-md-2 col-xs-2" ng-click="setSortField('member','terminologyId')">Id<span
-              ng-bind="getSortIndicator('member','terminologyId')"></span></th>
-          <th class="col-md-4 col-xs-4"
-            ng-click="setSortField('member','name')">Name<span
-              ng-bind="getSortIndicator('member','name')"></span></th>
-        </thead>
-        <tbody>
-          <tr ng-repeat="member in members">
-            <td>{{member.terminologyId}}</td>
-            <td>{{member.effectiveTime}}</td>
-          </tr>
-        </tbody>
-      </table> -->
-    </div>
-    <!--  end Projects --> </accordion-group> 
-    </accordion>    
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('member','conceptId')">Concept Id<span
+                        ng-bind="getSortIndicator('member','conceptId')"></span></th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('member','conceptName')">Name<span
+                        ng-bind="getSortIndicator('member','conceptName')"></span>
+                    </th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="member in members">
+                      <td>{{member.conceptId}}</td>
+                      <td>{{member.conceptName}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> 
+              </accordion-group> </accordion>
+              <!--  end Refset Members -->
               
+              <!--  Translations -->
+              <accordion> <accordion-group
+                heading="Translation" is-open="status.isItemOpen[$index]" 
+                ng-repeat="translation in refset.translations"> <!-- Translation -->
+              <accordion-heading>             
+                <span tooltip-placement="right"
+                  tooltip="List of the translation concepts"
+                  ng-click="retrieveTranslationConcepts(translation)"> {{translation.name}} </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
+
+                <!-- <span style="display: block;">
+                  <pagination items-per-page="pageSize" max-size="5"
+                    boundary-links="true" class="pagination-sm"
+                    previous-text="&lsaquo;" next-text="&rsaquo;"
+                    first-text="&laquo;" last-text="&raquo;"
+                    ng-show="members.totalCount > pageSize || paging['member'].filter"
+                    total-items="members.totalCount"
+                    ng-model="paging['member'].page"
+                    ng-change="retrieveMembers(refset)"></pagination>
+
+                  <input class="input-filter" placeholder="Enter filter text"
+                    ng-show="members.totalCount > pageSize || paging['member'].filter"
+                    type="text" ng-model="paging['member'].filter"
+                    ng-model-options="{ debounce: 300 }"
+                    ng-change="retrieveMembers(refset)">
+
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="paging['member'].filter"
+                    ng-click="paging['member'].filter = ''; retrieveMembers(refset)"
+                    title="Click to clear filter text">Clear</button>
+                </span> -->
+
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('concept','conceptId')">Id<span
+                        ng-bind="getSortIndicator('concept','conceptId')"></span></th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('concept','effectiveTime')">Effective
+                      Time<span
+                        ng-bind="getSortIndicator('concept','effectiveTime')"></span>
+                    </th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('concept','conceptName')">Name<span
+                        ng-bind="getSortIndicator('concept','conceptName')"></span>
+                    </th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="concept in concepts">
+                      <td>{{concept.conceptId}}</td>
+                      <td>{{toShortDate(concept.effectiveTime)}}</td>
+                      <td>{{concept.conceptName}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <!--  end Translations --> 
+              </accordion-group> </accordion>              
               
-              
-              
-              
-              
-              
-              
+  
             </td>
-<!-- 
-type
-isPublic
-definition or externalUrl
-forTranslation icon
-moduleId -
-terminology
-version
- -->
+
           </tr>
         </tbody>
       </table>
     </div>
     <!--  end PublishedRefsets --> 
   </div>
+  <!-- end Content -->
 </div>

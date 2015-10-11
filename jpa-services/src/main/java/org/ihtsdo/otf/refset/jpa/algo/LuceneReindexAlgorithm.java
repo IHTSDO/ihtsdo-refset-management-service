@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
@@ -97,6 +98,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
       objectsToReindex.add("TranslationJpa");
       objectsToReindex.add("TrackingRecordJpa");
       objectsToReindex.add("UserJpa");
+      objectsToReindex.add("ConceptRefsetMemberJpa");
 
       // otherwise, construct set of indexed objects
     } else {
@@ -187,6 +189,17 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
       objectsToReindex.remove("UserJpa");
     }
     
+    if (objectsToReindex.contains("ConceptRefsetMemberJpa")) {
+      Logger.getLogger(getClass()).info("  Creating indexes for ConceptRefsetMemberJpa");
+      fullTextEntityManager.purgeAll(ConceptRefsetMemberJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(ConceptRefsetMemberJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("ConceptRefsetMemberJpa");
+    }
+    
     if (objectsToReindex.size() != 0) {
       throw new Exception(
           "The following objects were specified for re-indexing, but do not exist as indexed objects: "
@@ -209,6 +222,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     fullTextEntityManager.purgeAll(RefsetJpa.class);
     fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
     fullTextEntityManager.purgeAll(UserJpa.class);
+    fullTextEntityManager.purgeAll(ConceptRefsetMemberJpa.class);
   }
 
   /**

@@ -10,8 +10,9 @@ tsApp.controller('DirectoryCtrl', [
   'tabService',
   'securityService',
   'refsetService',
+  'translationService',
   function($scope, $http, $modal, $location, $anchorScroll, gpService,
-    utilService, tabService, securityService, refsetService) {
+    utilService, tabService, securityService, refsetService, translationService) {
     console.debug('configure DirectoryCtrl');
 
     // Handle resetting tabs on "back" button
@@ -25,6 +26,8 @@ tsApp.controller('DirectoryCtrl', [
     // Model variables
     $scope.publishedRefsets = null;
     $scope.members = null;
+    $scope.translations = null;
+    $scope.concepts = null;
 
     // Paging variables
     $scope.pageSize = 10;
@@ -37,6 +40,12 @@ tsApp.controller('DirectoryCtrl', [
       ascending : null
     }
     $scope.paging["member"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
+    $scope.paging["concept"] = {
       page : 1,
       filter : "",
       sortField : 'lastModified',
@@ -61,6 +70,7 @@ tsApp.controller('DirectoryCtrl', [
         $scope.publishedRefsets.totalCount = data.totalCount;
         for (var i = 0; i < $scope.publishedRefsets.length; i++) {
           $scope.publishedRefsets[i].isExpanded = false;
+          $scope.retrieveTranslations($scope.publishedRefsets[i]);
         }
       })
 
@@ -78,8 +88,8 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-      refsetService.findMembersForRefsetRevision(/*$scope.paging["member"].filter,*/
-        refset.id, refset.effectiveTime, pfs).then(function(data) {
+      refsetService.findRefsetMembersForQuery(refset.id, $scope.paging["member"].filter,
+        pfs).then(function(data) {
         $scope.members = data.members;
         $scope.members.totalCount = data.totalCount;
       })
@@ -89,20 +99,13 @@ tsApp.controller('DirectoryCtrl', [
     // get translations
     $scope.retrieveTranslations = function(refset) {
 
-      var pfs = {
-        startIndex : ($scope.paging["translation"].page - 1) * $scope.pageSize,
-        maxResults : $scope.pageSize,
-        sortField : $scope.paging["translation"].sortField,
-        ascending : $scope.paging["translation"].ascending == null ? true
-          : $scope.paging["translation"].ascending,
-        queryRestriction : null
-      };
-
-      // TODO: no query field for getting translations? or getTranslationsForRefset()
-      translationService.findTranslationsForQuery(/*$scope.paging["translation"].filter*/
-        translation.id, translation.effectiveTime, pfs).then(function(data) {
+      translationService.getTranslationsForRefset(refset.id).then(function(data) {
         $scope.translations = data.translations;
         $scope.translations.totalCount = data.totalCount;
+        refset.translations = data.translations;
+        /*for (var i = 0; i < $scope.translations.length; i++) {
+          $scope.retrieveTranslationConcepts($scope.translations[i].id);
+        }*/
       })
 
     };    
@@ -119,14 +122,24 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-      // TODO: no query field for getting translations?
-      translationService.findConceptsForTranslationRevision(/*$scope.paging["concept"].filter*/
-        translation.id, translation.effectiveTime, pfs).then(function(data) {
-        $scope.concepts = data.translations;
+
+      translationService.findTranslationConceptsForQuery(translation.id, 
+        $scope.paging["concept"].filter, pfs).then(function(data) {
+        $scope.concepts = data.concepts;
         $scope.concepts.totalCount = data.totalCount;
       })
 
     };    
+    
+    // Convert date to a string
+    $scope.toDate = function(lastModified) {
+      return utilService.toDate(lastModified);
+    }
+    
+    // Convert date to a string
+    $scope.toShortDate = function(lastModified) {
+      return utilService.toShortDate(lastModified);
+    }
     
     // sort mechanism 
     $scope.setSortField = function(table, field) {
@@ -170,6 +183,11 @@ tsApp.controller('DirectoryCtrl', [
       }
     }
 
+
+    $scope.status = {
+      isItemOpen: new Array(10),
+      isFirstDisabled: false
+  };
     
     //
     // call these during initialization
