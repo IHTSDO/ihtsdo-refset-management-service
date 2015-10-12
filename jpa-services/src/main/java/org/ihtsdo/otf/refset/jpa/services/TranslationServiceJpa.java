@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
+
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -339,8 +341,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Translation Service - find concepts " + "/" + query + " translationId " + translationId);
-    
+        "Translation Service - find concepts " + "/" + query
+            + " translationId " + translationId);
+
     StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
@@ -350,11 +353,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     } else {
       sb.append("translationId:" + translationId);
     }
-   
+
     int[] totalCt = new int[1];
     List<Concept> list =
-        (List<Concept>) getQueryResults(sb.toString(), ConceptJpa.class, ConceptJpa.class, pfs,
-            totalCt);
+        (List<Concept>) getQueryResults(sb.toString(), ConceptJpa.class,
+            ConceptJpa.class, pfs, totalCt);
     for (Concept c : list) {
       c.getDescriptions().size();
     }
@@ -376,7 +379,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
-    
+
   }
 
   /* see superclass */
@@ -569,8 +572,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(terminologyId, terminology, version,
         ConceptJpa.class);
   }
- 
-  
+
   @Override
   public Description addDescription(Description description) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -719,10 +721,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   }
 
-
   @Override
-  public StagedTranslationChange addStagedTranslationChange(StagedTranslationChange change)
-    throws Exception {
+  public StagedTranslationChange addStagedTranslationChange(
+    StagedTranslationChange change) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - add staged change " + change);
     if (getTransactionPerOperation()) {
@@ -741,7 +742,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     try {
       // Get transaction and object
       tx = manager.getTransaction();
-      StagedTranslationChange change = manager.find(StagedTranslationChange.class, id);
+      StagedTranslationChange change =
+          manager.find(StagedTranslationChangeJpa.class, id);
       // Remove
       if (getTransactionPerOperation()) {
         // remove translation member
@@ -768,10 +770,19 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public StagedTranslationChange getStagedTranslationChange(Long id) throws Exception {
+  public StagedTranslationChange getStagedTranslationChange(Long translationId)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - get staged change " + id);
-    return manager.find(StagedTranslationChangeJpa.class, id);
+        "Translation Service - get staged change " + translationId);
+    javax.persistence.Query query =
+        manager.createQuery("select a from StagedTranslationChangeJpa a where "
+            + "originTranslation.id = :translationId");
+    try {
+      query.setParameter("translationId", translationId);
+      return (StagedTranslationChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
 }

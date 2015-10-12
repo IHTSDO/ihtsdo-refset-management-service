@@ -247,12 +247,12 @@ public interface RefsetService extends ProjectService {
   public void removeStagedRefsetChange(Long id) throws Exception;
 
   /**
-   * Returns the staged change.
+   * Returns the staged change for the indicated refset id.
    *
-   * @param id the id
+   * @param refsetId the id
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedRefsetChange getStagedRefsetChange(Long id) throws Exception;
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId) throws Exception;
 
 }

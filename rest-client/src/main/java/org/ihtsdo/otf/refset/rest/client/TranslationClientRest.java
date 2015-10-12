@@ -381,7 +381,7 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public ConceptList findMembersInCommon(String conceptToken, String query,
+  public ConceptList findConceptsInCommon(String conceptToken, String query,
     PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;

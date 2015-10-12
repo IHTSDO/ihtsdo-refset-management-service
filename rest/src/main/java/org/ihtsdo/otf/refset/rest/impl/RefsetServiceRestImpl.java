@@ -717,7 +717,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/begin")
-  @ApiOperation(value = "Begin import of refset members", notes = "Begins the import process by validating the refset for import and marking the refset as staged.", response = ValidationResultJpa.class)
+  @ApiOperation(value = "Begin refset member import", notes = "Begins the import process by validating the refset for import and marking the refset as staged.", response = ValidationResultJpa.class)
   public ValidationResult beginImportMembers(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
@@ -764,6 +764,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Mark the record as staged and create a staging change entry
       refset.setStaged(true);
+      refset.setStagingType(Refset.StagingType.IMPORT);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
@@ -771,6 +772,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       change.setOriginRefset(refset);
       change.setType(Refset.StagingType.IMPORT);
       change.setStagedRefset(refset);
+      refsetService.addStagedRefsetChange(change);
 
       // Return a validation result based on whether the refset has members
       // already
@@ -795,7 +797,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/resume")
-  @ApiOperation(value = "Resume import of refset members", notes = "Resumes the import process by re-validating the refset for import.", response = ValidationResultJpa.class)
+  @ApiOperation(value = "Resume refset member import", notes = "Resumes the import process by re-validating the refset for import.", response = ValidationResultJpa.class)
   public ValidationResult resumeImportMembers(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
@@ -847,9 +849,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @POST
   @Override
-  @Path("/import/begin")
+  @Path("/import/finish")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import refset members", notes = "Imports the refset members into the specified refset")
+  @ApiOperation(value = "Finish refset member import", notes = "Finishes the imports the refset members into the specified refset")
   public void finishImportMembers(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
@@ -915,6 +917,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setLastModifiedBy(userName);
         member.setPublishable(true);
         member.setPublished(false);
+        member.setType(Refset.MemberType.MEMBER);
         // TODO: - no efficient way to compute this
         // each member requires a call to the terminology server!
         // terminologyHandler.getConcept is our best bet
@@ -943,7 +946,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/cancel")
-  @ApiOperation(value = "Cancel import of refset members", notes = "Cancels the import process.")
+  @ApiOperation(value = "Cancel refset member import", notes = "Cancels the import process.")
   public void cancelImportMembers(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)

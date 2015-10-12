@@ -20,7 +20,7 @@ import org.ihtsdo.otf.refset.Translation;
  * JPA enabled implementation of {@link StagedTranslationChange}.
  */
 @Entity
-@Table(name = "staged_translation_change", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "staged_translation_changes", uniqueConstraints = @UniqueConstraint(columnNames = {
   "originTranslation_id"
 }))
 public class StagedTranslationChangeJpa implements StagedTranslationChange {

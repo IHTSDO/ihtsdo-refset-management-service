@@ -20,7 +20,7 @@ import org.ihtsdo.otf.refset.StagedRefsetChange;
  * JPA enabled implementation of {@link StagedRefsetChange}.
  */
 @Entity
-@Table(name = "staged_refset_change", uniqueConstraints = @UniqueConstraint(columnNames = {
+@Table(name = "staged_refset_changes", uniqueConstraints = @UniqueConstraint(columnNames = {
   "originRefset_id"
 }))
 public class StagedRefsetChangeJpa implements StagedRefsetChange {

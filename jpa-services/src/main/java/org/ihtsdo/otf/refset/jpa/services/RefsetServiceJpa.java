@@ -10,6 +10,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
+
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
@@ -419,7 +421,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     try {
       // Get transaction and object
       tx = manager.getTransaction();
-      StagedRefsetChange change = manager.find(StagedRefsetChange.class, id);
+      StagedRefsetChange change = manager.find(StagedRefsetChangeJpa.class, id);
       // Remove
       if (getTransactionPerOperation()) {
         // remove refset member
@@ -446,10 +448,19 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   }
 
   @Override
-  public StagedRefsetChange getStagedRefsetChange(Long id) throws Exception {
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - get staged change " + id);
-    return manager.find(StagedRefsetChangeJpa.class, id);
+        "Refset Service - get staged change for refset " + refsetId);
+    javax.persistence.Query query =
+        manager.createQuery("select a from StagedRefsetChangeJpa a where "
+            + "originRefset.id = :refsetId");
+    try {
+      query.setParameter("refsetId", refsetId);
+      return (StagedRefsetChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
   /* see superclass */

@@ -54,7 +54,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Refset.MemberType type = Refset.MemberType.MEMBER;
+  private Refset.MemberType type;
 
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
@@ -141,9 +141,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     this.conceptName = conceptName;
   }
 
-  /* see superclass - no need to serialize the type, the method called always knows this. 
-   * The field is really for indexing. */
-  @XmlTransient 
+  /* see superclass  */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Refset.MemberType getType() {

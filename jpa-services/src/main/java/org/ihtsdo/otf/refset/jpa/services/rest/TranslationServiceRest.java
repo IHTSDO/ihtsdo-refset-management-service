@@ -478,7 +478,7 @@ public interface TranslationServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findMembersInCommon(String conceptToken, String query,
+  public ConceptList findConceptsInCommon(String conceptToken, String query,
     PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
