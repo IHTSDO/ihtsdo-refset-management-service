@@ -317,23 +317,23 @@
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('concept','conceptId')">Id<span
-                        ng-bind="getSortIndicator('concept','conceptId')"></span></th>
+                      ng-click="setSortField('concept','terminologyId')">Id<span
+                        ng-bind="getSortIndicator('concept','terminologyId')"></span></th>
                     <th class="col-md-4 col-xs-4"
                       ng-click="setSortField('concept','effectiveTime')">Effective
                       Time<span
                         ng-bind="getSortIndicator('concept','effectiveTime')"></span>
                     </th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('concept','conceptName')">Name<span
-                        ng-bind="getSortIndicator('concept','conceptName')"></span>
+                      ng-click="setSortField('concept','name')">Name<span
+                        ng-bind="getSortIndicator('concept','name')"></span>
                     </th>
                   </thead>
                   <tbody>
-                    <tr ng-repeat="concept in concepts">
-                      <td>{{concept.conceptId}}</td>
+                    <tr ng-repeat="concept in translation.concepts">
+                      <td>{{concept.terminologyId}}</td>
                       <td>{{toShortDate(concept.effectiveTime)}}</td>
-                      <td>{{concept.conceptName}}</td>
+                      <td>{{concept.name}}</td>
                     </tr>
                   </tbody>
                 </table>
