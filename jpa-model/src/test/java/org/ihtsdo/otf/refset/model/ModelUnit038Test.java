@@ -65,7 +65,6 @@ public class ModelUnit038Test extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("terminology");
     tester.include("version");
-    tester.include("editionUrl");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());

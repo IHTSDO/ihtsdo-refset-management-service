@@ -25,9 +25,6 @@ tsApp.controller('DirectoryCtrl', [
 
     // Model variables
     $scope.publishedRefsets = null;
-    $scope.members = null;
-    $scope.translations = null;
-    $scope.concepts = null;
 
     // Paging variables
     $scope.pageSize = 10;
@@ -36,10 +33,22 @@ tsApp.controller('DirectoryCtrl', [
     $scope.paging["publishedRefset"] = {
       page : 1,
       filter : "",
-      sortField : 'lastModified',
+      sortField : 'name',
       ascending : null
     }
     $scope.paging["member"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
+    $scope.paging["inclusion"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
+    $scope.paging["exclusion"] = {
       page : 1,
       filter : "",
       sortField : 'lastModified',
@@ -71,6 +80,8 @@ tsApp.controller('DirectoryCtrl', [
         for (var i = 0; i < $scope.publishedRefsets.length; i++) {
           $scope.publishedRefsets[i].isExpanded = false;
           $scope.retrieveTranslations($scope.publishedRefsets[i]);
+          $scope.retrieveInclusions($scope.publishedRefsets[i]);
+          $scope.retrieveExclusions($scope.publishedRefsets[i]);
         }
       })
 
@@ -90,22 +101,57 @@ tsApp.controller('DirectoryCtrl', [
 
       refsetService.findRefsetMembersForQuery(refset.id, $scope.paging["member"].filter,
         pfs).then(function(data) {
-        $scope.members = data.members;
-        $scope.members.totalCount = data.totalCount;
+        refset.members = data.members;
+        refset.members.totalCount = data.totalCount;
       })
 
     };    
 
+    // get inclusion members
+    $scope.retrieveInclusions = function(refset) {
+
+      var pfs = {
+        startIndex : ($scope.paging["inclusion"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["inclusion"].sortField,
+        ascending : $scope.paging["inclusion"].ascending == null ? true
+          : $scope.paging["inclusion"].ascending,
+        queryRestriction : null
+      };
+
+      refsetService.findRefsetInclusionsForQuery(refset.id, $scope.paging["inclusion"].filter,
+        pfs).then(function(data) {
+        refset.inclusions = data.members;
+      })
+
+    };    
+    
+    // get exclusion members
+    $scope.retrieveExclusions = function(refset) {
+
+      var pfs = {
+        startIndex : ($scope.paging["exclusion"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["exclusion"].sortField,
+        ascending : $scope.paging["exclusion"].ascending == null ? true
+          : $scope.paging["exclusion"].ascending,
+        queryRestriction : null
+      };
+
+      refsetService.findRefsetExclusionsForQuery(refset.id, $scope.paging["exclusion"].filter,
+        pfs).then(function(data) {
+        refset.exclusions = data.members;
+      })
+
+    };    
+    
     // get translations
     $scope.retrieveTranslations = function(refset) {
 
       translationService.getTranslationsForRefset(refset.id).then(function(data) {
-        $scope.translations = data.translations;
-        $scope.translations.totalCount = data.totalCount;
         refset.translations = data.translations;
-        /*for (var i = 0; i < $scope.translations.length; i++) {
-          $scope.retrieveTranslationConcepts($scope.translations[i].id);
-        }*/
+        refset.translations.totalCount = data.totalCount;
+
       })
 
     };    
@@ -125,8 +171,8 @@ tsApp.controller('DirectoryCtrl', [
 
       translationService.findTranslationConceptsForQuery(translation.id, 
         $scope.paging["concept"].filter, pfs).then(function(data) {
-        $scope.concepts = data.concepts;
-        $scope.concepts.totalCount = data.totalCount;
+        translation.concepts = data.concepts;
+        translation.totalCount = data.totalCount;
       })
 
     };    
@@ -183,11 +229,18 @@ tsApp.controller('DirectoryCtrl', [
       }
     }
 
-
+    $scope.toggleExpanded = function(refset) {
+      if (refset.isExpanded == true) {
+        refset.isExpanded = false;
+      } else {
+        refset.isExpanded = true;
+      }
+    }
+    
     $scope.status = {
       isItemOpen: new Array(10),
       isFirstDisabled: false
-  };
+    };
     
     //
     // call these during initialization

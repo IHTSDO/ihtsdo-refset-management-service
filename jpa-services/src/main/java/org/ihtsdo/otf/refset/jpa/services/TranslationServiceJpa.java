@@ -348,15 +348,18 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       sb.append(query).append(" AND ");
     }
     if (translationId == null) {
-      sb.append("id:[* TO *]");
+      sb.append("translationId:[* TO *]");
     } else {
-      sb.append("id:" + translationId);
+      sb.append("translationId:" + translationId);
     }
-    
+   
     int[] totalCt = new int[1];
     List<Concept> list =
         (List<Concept>) getQueryResults(sb.toString(), ConceptJpa.class, ConceptJpa.class, pfs,
             totalCt);
+    for (Concept c : list) {
+      c.getDescriptions().size();
+    }
     ConceptList result = new ConceptListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -374,6 +377,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getDescriptionTypes().size();
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
+    translation.getConcepts().size();
+    
   }
 
   /* see superclass */

@@ -568,11 +568,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find refset members for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+        "RESTful call (Refset): find refset members for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find refset members", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:PLAIN";
+      else
+        query = "memberType:PLAIN";
 
       return refsetService.findMembersForRefset(refsetId,
           query, pfs);
@@ -612,16 +617,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find refset inclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+        "RESTful call (Refset): find refset inclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find refset inclusions", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:INCLUSION";
+      else
+        query = "memberType:INCLUSION";
 
-      return null;
-      // TODO:
-      /*refsetService.findInclusionsForRefset(refsetId,
-          query, pfs);*/
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset inclusions ");
       return null;
@@ -651,16 +659,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find refset exclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+        "RESTful call (Refset): find refset exclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find refset exclusions", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:EXCLUSION";
+      else
+        query = "memberType:EXCLUSION";
 
-      return null;
-      // TODO: 
-      /*refsetService.findExclusionsForRefset(refsetId,
-          query, pfs);*/
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset exclusions ");
       return null;

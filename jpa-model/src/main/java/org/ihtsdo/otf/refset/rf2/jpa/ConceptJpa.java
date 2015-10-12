@@ -36,6 +36,7 @@ import org.hibernate.search.annotations.Store;
 import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -219,6 +220,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
    * @return the translation id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;

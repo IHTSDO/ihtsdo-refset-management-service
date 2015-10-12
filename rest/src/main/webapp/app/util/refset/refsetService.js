@@ -103,7 +103,7 @@ tsApp.service('refsetService', [
     }
     
     // find exclusions for refset
-    this.findRefsetInclusionsForQuery = function(refsetId, query, pfs) {
+    this.findRefsetExclusionsForQuery = function(refsetId, query, pfs) {
       console.debug("findRefsetExclusionsForQuery");
       var deferred = $q.defer();
 

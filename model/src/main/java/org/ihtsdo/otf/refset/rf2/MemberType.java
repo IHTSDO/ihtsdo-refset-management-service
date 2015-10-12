@@ -6,15 +6,15 @@ package org.ihtsdo.otf.refset.rf2;
 /**
  * Enumeration of concept refset member types.
  */
-public enum ConceptRefsetMemberType {
+public enum MemberType {
 
 
-  /**  The intensional. */
-  INTENSIONAL,
+  /**  The inclusion members. */
+  INCLUSION,
 
 
-  /**  The extensional. */
-  EXTENSIONAL,
+  /**  The exclusion members. */
+  EXCLUSION,
 
 
   /**  The plain. */

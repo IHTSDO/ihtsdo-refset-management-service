@@ -386,8 +386,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     } else {
       sb.append("refsetId:" + refsetId);
     }
-
-
     
     int[] totalCt = new int[1];
     List<ConceptRefsetMember> list =

@@ -26,7 +26,7 @@ import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMemberType;
+import org.ihtsdo.otf.refset.rf2.MemberType;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -56,7 +56,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private ConceptRefsetMemberType type = ConceptRefsetMemberType.PLAIN;
+  private MemberType memberType = MemberType.PLAIN;
 
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
@@ -76,6 +76,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     refset = member.getRefset();
     conceptId = member.getConceptId();
     conceptName = member.getConceptName();
+    memberType = member.getMemberType();
   }
 
   /* see superclass */
@@ -145,14 +146,14 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public ConceptRefsetMemberType getConceptRefsetMemberType() {
-    return type;
+  public MemberType getMemberType() {
+    return memberType;
   }
 
   /* see superclass */
   @Override
-  public void setConceptRefsetMemberType(ConceptRefsetMemberType type) {
-    this.type = type;
+  public void setMemberType(MemberType type) {
+    this.memberType = type;
   }
 
   /* see superclass */
@@ -163,6 +164,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
+    result =
+        prime * result + ((memberType == null) ? 0 : memberType.hashCode());
     result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     return result;
   }
@@ -187,6 +190,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptName.equals(other.conceptName))
       return false;
+    if (memberType == null) {
+      if (other.memberType != null)
+        return false;
+    } else if (!memberType.equals(other.memberType))
+      return false;
     if (refset == null) {
       if (other.refset != null)
         return false;
@@ -199,7 +207,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   @Override
   public String toString() {
     return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName + "]";
+        + conceptId + ", conceptName=" + conceptName + ", type=" + memberType + "]";
   }
 
 }

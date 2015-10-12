@@ -30,23 +30,32 @@
 
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-2 col-xs-2" ng-click="setSortField('publishedRefset','terminologyId')">Id<span
+          <th class="col-md-1 col-xs-1"></th>
+          <th class="col-md-1 col-xs-1" ng-click="setSortField('publishedRefset','terminologyId')">Id<span
               ng-bind="getSortIndicator('publishedRefset','terminologyId')"></span></th>
           <th class="col-md-2 col-xs-2"
             ng-click="setSortField('publishedRefset','name')">Name<span
               ng-bind="getSortIndicator('publishedRefset','name')"></span></th>
-          <th class="col-md-8 col-xs-8"
-            ng-click="setSortField('publishedRefset','description')">Description<span
-              ng-bind="getSortIndicator('publishedRefset','description')"></span></th>
+          <th class="col-md-8 col-xs-8"></th>
    
         </thead>
         <tbody>
           <tr ng-repeat="refset in publishedRefsets">
+            <td><span ng-show="refset.isExpanded == true">
+              <a ng-click="toggleExpanded(refset)">
+              <i title="Hide details" class="material-icons md-24">remove</i>
+            </a></span>
+            <span ng-show="refset.isExpanded == false">
+              <a ng-click="toggleExpanded(refset)">
+              <i title="Show details" class="material-icons md-24">add</i>
+            </a></span>
+            </td>
             <td>{{refset.terminologyId}}</td>
-            <td>{{refset.name}}<br>{{refset.description}}</td>
+            <td>{{refset.name}}<span ng-show="refset.isExpanded == true"><br>{{refset.description}}</span></td>
             <td>
+              <span ng-show="refset.isExpanded == false">{{refset.type}} / {{refset.description}}</span>
               <!-- Refset Details -->
-              <accordion> <accordion-group
+              <accordion ng-show="refset.isExpanded == true"> <accordion-group
                 heading="Refset Details" is-open="false"> 
               <accordion-heading>             
                 <span tooltip-placement="right"
@@ -76,11 +85,11 @@
                       <td>Version</td>
                       <td>{{refset.version}}</td>
                     </tr>
-                    <tr>
+                    <tr ng-show="refset.type == 'INTENSIONAL'">
                       <td>Definition</td>
                       <td>{{refset.definition}}</td>
                     </tr>
-                    <tr>
+                    <tr ng-show="refset.type == 'EXTERNAL'">
                       <td>External Url</td>
                       <td>{{refset.externalUrl}}</td>
                     </tr>
@@ -102,7 +111,7 @@
             
             
                 <!-- Refset Members -->
-              <accordion> <accordion-group
+              <accordion ng-show="refset.isExpanded == true && refset.type != 'EXTERNAL'"> <accordion-group
                 heading="Refset Members" is-open="false"> 
               <accordion-heading>
              
@@ -147,7 +156,7 @@
                     </th>
                   </thead>
                   <tbody>
-                    <tr ng-repeat="member in members">
+                    <tr ng-repeat="member in refset.members">
                       <td>{{member.conceptId}}</td>
                       <td>{{member.conceptName}}</td>
                     </tr>
@@ -156,9 +165,124 @@
               </div> 
               </accordion-group> </accordion>
               <!--  end Refset Members -->
+
+              <!-- Refset Inclusions -->
+              <accordion ng-show="refset.isExpanded == true && 
+              refset.type == 'INTENSIONAL' && refset.inclusions.length > 0"> <accordion-group
+                heading="Refset Inclusions" is-open="false"> 
+              <accordion-heading>
+             
+                <span tooltip-placement="right"
+                  tooltip="List of the refset inclusions"
+                  ng-click="retrieveInclusions(refset)"> Refset Inclusions </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
+
+
+                <span style="display: block;">
+                  <pagination items-per-page="pageSize" max-size="5"
+                    boundary-links="true" class="pagination-sm"
+                    previous-text="&lsaquo;" next-text="&rsaquo;"
+                    first-text="&laquo;" last-text="&raquo;"
+                    ng-show="inclusions.totalCount > pageSize || paging['inclusion'].filter"
+                    total-items="inclusions.totalCount"
+                    ng-model="paging['inclusion'].page"
+                    ng-change="retrieveInclusions(refset)"></pagination>
+
+                  <input class="input-filter" placeholder="Enter filter text"
+                    ng-show="inclusions.totalCount > pageSize || paging['inclusion'].filter"
+                    type="text" ng-model="paging['inclusion'].filter"
+                    ng-model-options="{ debounce: 300 }"
+                    ng-change="retrieveInclusions(refset)">
+
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="paging['inclusion'].filter"
+                    ng-click="paging['inclusion'].filter = ''; retrieveInclusions(refset)"
+                    title="Click to clear filter text">Clear</button>
+                </span>
+
+
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('inclusion','conceptId')">Concept Id<span
+                        ng-bind="getSortIndicator('inclusion','conceptId')"></span></th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('inclusion','conceptName')">Name<span
+                        ng-bind="getSortIndicator('inclusion','conceptName')"></span>
+                    </th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="inclusion in refset.inclusions">
+                      <td>{{inclusion.conceptId}}</td>
+                      <td>{{inclusion.conceptName}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> 
+              </accordion-group> </accordion>
+              <!--  end Refset Inclusions -->
+
+              <!-- Refset Exclusions -->
+              <accordion  ng-show="refset.isExpanded == true && 
+              refset.type == 'INTENSIONAL' && refset.exclusions.length > 0"> <accordion-group
+                heading="Refset Exclusions" is-open="false"> 
+              <accordion-heading>
+             
+                <span tooltip-placement="right"
+                  tooltip="List of the refset exclusions"
+                  ng-click="retrieveExclusions(refset)"> Refset Exclusions </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
+
+
+                <span style="display: block;">
+                  <pagination items-per-page="pageSize" max-size="5"
+                    boundary-links="true" class="pagination-sm"
+                    previous-text="&lsaquo;" next-text="&rsaquo;"
+                    first-text="&laquo;" last-text="&raquo;"
+                    ng-show="exclusions.totalCount > pageSize || paging['exclusion'].filter"
+                    total-items="exclusions.totalCount"
+                    ng-model="paging['exclusion'].page"
+                    ng-change="retrieveExclusions(refset)"></pagination>
+
+                  <input class="input-filter" placeholder="Enter filter text"
+                    ng-show="exclusions.totalCount > pageSize || paging['exclusion'].filter"
+                    type="text" ng-model="paging['exclusion'].filter"
+                    ng-model-options="{ debounce: 300 }"
+                    ng-change="retrieveExclusions(refset)">
+
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="paging['exclusion'].filter"
+                    ng-click="paging['exclusion'].filter = ''; retrieveExclusions(refset)"
+                    title="Click to clear filter text">Clear</button>
+                </span>
+
+
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('exclusion','conceptId')">Concept Id<span
+                        ng-bind="getSortIndicator('exclusion','conceptId')"></span></th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('exclusion','conceptName')">Name<span
+                        ng-bind="getSortIndicator('exclusion','conceptName')"></span>
+                    </th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="exclusion in refset.exclusions">
+                      <td>{{exclusion.conceptId}}</td>
+                      <td>{{exclusion.conceptName}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> 
+              </accordion-group> </accordion>
+              <!--  end Refset Exclusions -->
+
               
               <!--  Translations -->
-              <accordion> <accordion-group
+              <accordion ng-show="refset.isExpanded == true"> <accordion-group
                 heading="Translation" is-open="status.isItemOpen[$index]" 
                 ng-repeat="translation in refset.translations"> <!-- Translation -->
               <accordion-heading>             

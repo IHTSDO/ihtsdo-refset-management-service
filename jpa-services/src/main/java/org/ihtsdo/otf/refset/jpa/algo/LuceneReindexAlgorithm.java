@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -91,7 +92,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     // if no parameter specified, re-index all objects
     if (indexedObjects == null || indexedObjects.isEmpty()) {
 
-      //objectsToReindex.add("ConceptJpa"); ??
+      objectsToReindex.add("ConceptJpa"); 
       objectsToReindex.add("ProjectJpa");
       objectsToReindex.add("ReleaseInfoJpa");
       objectsToReindex.add("RefsetJpa");
@@ -200,6 +201,17 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
       objectsToReindex.remove("ConceptRefsetMemberJpa");
     }
     
+    if (objectsToReindex.contains("ConceptJpa")) {
+      Logger.getLogger(getClass()).info("  Creating indexes for ConceptJpa");
+      fullTextEntityManager.purgeAll(ConceptJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(ConceptJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("ConceptJpa");
+    }
+    
     if (objectsToReindex.size() != 0) {
       throw new Exception(
           "The following objects were specified for re-indexing, but do not exist as indexed objects: "
@@ -223,6 +235,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     fullTextEntityManager.purgeAll(TrackingRecordJpa.class);
     fullTextEntityManager.purgeAll(UserJpa.class);
     fullTextEntityManager.purgeAll(ConceptRefsetMemberJpa.class);
+    fullTextEntityManager.purgeAll(ConceptJpa.class);
   }
 
   /**
