@@ -22,6 +22,16 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public interface Translation extends Component, Searchable {
 
   /**
+   * Enum of staging types.
+   */
+  public enum StagingType {
+    /** The import. */
+    IMPORT,
+    /** The migration. */
+    MIGRATION
+  }
+
+  /**
    * Returns the description.
    * 
    * @return the description
@@ -48,6 +58,34 @@ public interface Translation extends Component, Searchable {
    * @param isPublic the new public
    */
   public void setPublic(boolean isPublic);
+
+  /**
+   * Indicates whether or not staged is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isStaged();
+
+  /**
+   * Sets the staged flag;
+   *
+   * @param staged the staged
+   */
+  public void setStaged(boolean staged);
+
+  /**
+   * Returns the staging type.
+   *
+   * @return the staging type
+   */
+  public StagingType getStagingType();
+
+  /**
+   * Sets the staging type.
+   *
+   * @param type the staging type
+   */
+  public void setStagingType(StagingType type);
 
   /**
    * Returns the language.

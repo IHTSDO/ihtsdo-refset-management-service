@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import javax.persistence.EntityManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -62,6 +63,26 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /** The auth header. */
   private String authHeader;
+
+  /** The manager. */
+  @SuppressWarnings("unused")
+  private EntityManager manager;
+
+  /* see superclass */
+  @Override
+  public TerminologyHandler copy() throws Exception {
+    DefaultTerminologyHandler handler = new DefaultTerminologyHandler();
+    handler.url = this.url;
+    handler.branch = this.branch;
+    handler.authHeader = this.authHeader;
+    return handler;
+  }
+
+  /* see superclass */
+  @Override
+  public void setEntityManager(EntityManager manager) {
+    this.manager = manager;
+  }
 
   /* see superclass */
   @Override
@@ -139,7 +160,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       JsonNode doc = mapper.readTree(resultString);
       for (JsonNode item : doc.get("items")) {
         final String version = item.get("name").asText();
-        if (version.equals("MAIN") || version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
+        if (version.equals("MAIN")
+            || version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
           Terminology terminology = new TerminologyJpa();
           terminology.setTerminology(edition);
           terminology.setVersion(version);
@@ -174,8 +196,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     } else {
       throw new Exception(resultString);
     }
-
-
 
     /**
      * <pre>
@@ -242,7 +262,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-
     concept.setActive(doc.get("active").asText().equals("true"));
     concept.setTerminology(terminology);
     concept.setVersion(version);
@@ -254,14 +273,14 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     concept.setModuleId(doc.get("moduleId").asText());
     concept.setDefinitionStatusId(doc.get("definitionStatus").asText());
     concept.setName(doc.get("preferredSynonym").asText());
-    
+
     concept.setPublishable(true);
     concept.setPublished(true);
 
     List<JsonNode> descriptionNodes = doc.findValues("descriptions");
-    for (  JsonNode desc : descriptionNodes.iterator().next()) {
+    for (JsonNode desc : descriptionNodes.iterator().next()) {
       final Description description = new DescriptionJpa();
-     
+
       description.setActive(desc.get("active").asText().equals("true"));
       description.setCaseSignificanceId(desc.get("caseSignificance").asText());
 
@@ -291,12 +310,13 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         description.addLanguageRefetMember(member);
         Logger.getLogger(getClass()).debug("    member = " + member);
       }
-      
+
       concept.addDescription(description);
     }
     return concept;
   }
 
+  /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
@@ -402,9 +422,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(
-            url + "browser/" + branch + "/descriptions?query=" + query + 
-            "&offset=" + pfs.getStartIndex() + "&limit=" + pfs.getMaxResults());
+        client.target(url + "browser/" + branch + "/descriptions?query="
+            + query + "&offset=" + pfs.getStartIndex() + "&limit="
+            + pfs.getMaxResults());
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -417,7 +437,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     /**
      * <pre>
-     * 
      * [
      *   {
      *     "concept": {
@@ -431,12 +450,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      *     "term": ""
      *   }
      * ]
-     * 
-     * 
      * </pre>
      */
     ObjectMapper mapper = new ObjectMapper();
-    @SuppressWarnings("unused")
     JsonNode doc = mapper.readTree(resultString);
 
     JsonNode entry = null;
@@ -461,7 +477,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
       conceptList.addObject(concept);
     }
-    
+
     return conceptList;
   }
 

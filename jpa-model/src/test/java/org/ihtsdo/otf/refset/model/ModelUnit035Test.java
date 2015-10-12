@@ -79,6 +79,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("phraseMemoryMap");
     tester.exclude("spellingDictionary");
+    tester.exclude("staged");
     tester.test();
   }
 
@@ -100,6 +101,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("public");
     tester.include("language");
     tester.include("name");
+    tester.include("stagingType");
 
     // Set up objects
     tester.proxy(Refset.class, 1, r1);

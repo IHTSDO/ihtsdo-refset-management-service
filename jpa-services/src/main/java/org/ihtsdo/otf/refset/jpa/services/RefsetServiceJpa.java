@@ -15,21 +15,20 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -375,8 +374,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Refset Service - find members " + "/" + query + " refsetId " + refsetId);
-    
+        "Refset Service - find members " + "/" + query + " refsetId "
+            + refsetId);
+
     StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
@@ -386,15 +386,70 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     } else {
       sb.append("refsetId:" + refsetId);
     }
-    
+
     int[] totalCt = new int[1];
     List<ConceptRefsetMember> list =
-        (List<ConceptRefsetMember>) getQueryResults(sb.toString(), ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
+        (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
+            ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
             totalCt);
     ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
+  }
+
+  @Override
+  public StagedRefsetChange addStagedRefsetChange(StagedRefsetChange change)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - add staged change " + change);
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.persist(change);
+      tx.commit();
+    } else {
+      manager.persist(change);
+    }
+    return change;
+  }
+
+  @Override
+  public void removeStagedRefsetChange(Long id) throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      StagedRefsetChange change = manager.find(StagedRefsetChange.class, id);
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove refset member
+        tx.begin();
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public StagedRefsetChange getStagedRefsetChange(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - get staged change " + id);
+    return manager.find(StagedRefsetChangeJpa.class, id);
   }
 
   /* see superclass */

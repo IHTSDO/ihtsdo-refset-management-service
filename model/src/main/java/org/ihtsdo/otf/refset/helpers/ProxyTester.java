@@ -343,6 +343,6 @@ public class ProxyTester {
   private Object makeEnum(Class<?> clazz1, int initializer) throws Exception {
     Method m = clazz1.getMethod("values", new Class[0]);
     Object[] o = (Object[]) m.invoke(null, new Object[0]);
-    return o[initializer];
+    return o[initializer-1];
   }
 }

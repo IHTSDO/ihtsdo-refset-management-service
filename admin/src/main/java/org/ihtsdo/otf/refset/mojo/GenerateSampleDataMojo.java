@@ -579,8 +579,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       throw new Exception("Refset does not pass validation.");
     }
     // Add refset
-    refsetService.addRefset(refset, auth.getAuthToken());
 
+    refsetService.addRefset(refset, auth.getAuthToken());
     if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
       refsetService = new RefsetServiceRestImpl();
@@ -588,7 +588,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           new FileInputStream(
               new File(
                   "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refsetService.importMembers(null, in, refset.getId(), "DEFAULT",
+      refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+          auth.getAuthToken());
+      refsetService.addRefset(refset, auth.getAuthToken());
+      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
     } else if (type == Refset.Type.INTENSIONAL) {

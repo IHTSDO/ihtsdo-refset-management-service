@@ -23,6 +23,7 @@ import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
@@ -87,7 +88,6 @@ public class TranslationClientRest extends RootClientRest implements
             TranslationJpa.class);
     return translation;
   }
-
 
   @Override
   public Translation getTranslation(Long translationId, String authToken)
@@ -223,7 +223,6 @@ public class TranslationClientRest extends RootClientRest implements
     return null;
   }
 
-
   @Override
   public Concept addTranslationConcept(Concept concept, String authToken)
     throws Exception {
@@ -235,7 +234,7 @@ public class TranslationClientRest extends RootClientRest implements
   public void removeTranslationConcept(Long conceptId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -249,28 +248,28 @@ public class TranslationClientRest extends RootClientRest implements
   public void copySpellingDictionary(Long fromTranslationId,
     Long toTranslationId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void addSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void clearSpellingDictionary(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -284,7 +283,7 @@ public class TranslationClientRest extends RootClientRest implements
   public void copyPhraseMemory(Long fromTranslationId, Long toTranslationId,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -298,14 +297,14 @@ public class TranslationClientRest extends RootClientRest implements
   public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void clearPhraseMemory(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -313,7 +312,7 @@ public class TranslationClientRest extends RootClientRest implements
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -328,7 +327,7 @@ public class TranslationClientRest extends RootClientRest implements
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -363,14 +362,14 @@ public class TranslationClientRest extends RootClientRest implements
   public void finishMigration(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void cancelMigration(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
@@ -397,11 +396,11 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void releaseReportToken(String reportToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
-  public ConceptDiffReport beginImportConcepts(
+  public ValidationResult beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
@@ -410,7 +409,7 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public ConceptDiffReport resumeImportConcepts(Long translationId,
+  public ValidationResult resumeImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -420,14 +419,14 @@ public class TranslationClientRest extends RootClientRest implements
   public void finishImportConcepts(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
   public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
 }

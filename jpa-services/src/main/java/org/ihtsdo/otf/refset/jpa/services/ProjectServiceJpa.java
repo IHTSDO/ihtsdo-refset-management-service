@@ -44,8 +44,8 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /** The assign identifiers flag. */
   protected boolean assignIdentifiersFlag = false;
 
-  /** The id assignment handler . */
-  static TerminologyHandler terminologyHandler;
+  /** The terminology handler . */
+  private static TerminologyHandler terminologyHandler;
 
   static {
     try {
@@ -529,7 +529,12 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   /* see superclass */
   @Override
   public TerminologyHandler getTerminologyHandler() throws Exception {
-    return terminologyHandler;
+    // Copy the template
+    TerminologyHandler handler = terminologyHandler.copy();
+    // configure it with the entity manager
+    handler.setEntityManager(manager);
+    // return it
+    return handler;
   }
 
 }

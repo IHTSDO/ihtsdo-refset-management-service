@@ -5,6 +5,8 @@ package org.ihtsdo.otf.refset.services.handlers;
 
 import java.util.List;
 
+import javax.persistence.EntityManager;
+
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
@@ -16,6 +18,23 @@ import org.ihtsdo.otf.refset.rf2.Description;
  * Generically represents a handler for accessing terminology objects.
  */
 public interface TerminologyHandler extends Configurable {
+
+  /**
+   * Copy the handler. This is needed used because of how the terminology
+   * handler is instantiated. One template object is created, and then copies of
+   * it are returned for individual requests.
+   *
+   * @return the terminology handler
+   * @throws Exception the exception
+   */
+  public TerminologyHandler copy() throws Exception;
+
+  /**
+   * Sets the entity manager.
+   *
+   * @param manager the entity manager
+   */
+  public void setEntityManager(EntityManager manager);
 
   /**
    * Returns the terminology editions.
@@ -69,8 +88,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept getConcept(String terminologyId,
-    String terminology, String version) throws Exception;
+  public Concept getConcept(String terminologyId, String terminology,
+    String version) throws Exception;
 
   /**
    * Returns the description.

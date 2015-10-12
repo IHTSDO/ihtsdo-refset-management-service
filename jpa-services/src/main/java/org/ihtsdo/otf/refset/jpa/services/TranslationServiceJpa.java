@@ -14,9 +14,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
@@ -24,18 +24,16 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
@@ -571,7 +569,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(terminologyId, terminology, version,
         ConceptJpa.class);
   }
-
+ 
+  
   @Override
   public Description addDescription(Description description) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -718,6 +717,61 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(terminologyId, terminology, version,
         LanguageRefsetMemberJpa.class);
 
+  }
+
+
+  @Override
+  public StagedTranslationChange addStagedTranslationChange(StagedTranslationChange change)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add staged change " + change);
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.persist(change);
+      tx.commit();
+    } else {
+      manager.persist(change);
+    }
+    return change;
+  }
+
+  @Override
+  public void removeStagedTranslationChange(Long id) throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      StagedTranslationChange change = manager.find(StagedTranslationChange.class, id);
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove translation member
+        tx.begin();
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public StagedTranslationChange getStagedTranslationChange(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get staged change " + id);
+    return manager.find(StagedTranslationChangeJpa.class, id);
   }
 
 }

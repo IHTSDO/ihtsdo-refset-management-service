@@ -12,6 +12,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -186,7 +187,7 @@ public interface TranslationServiceRest {
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ConceptDiffReport beginImportConcepts(
+  public ValidationResult beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception;
@@ -200,9 +201,8 @@ public interface TranslationServiceRest {
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ConceptDiffReport resumeImportConcepts(
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception;
+  public ValidationResult resumeImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Finish import.

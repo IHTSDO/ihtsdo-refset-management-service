@@ -22,11 +22,13 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -86,7 +88,6 @@ public class RefsetClientRest extends RootClientRest implements
             RefsetJpa.class);
     return refset;
   }
-
 
   /* see superclass */
   @Override
@@ -189,42 +190,6 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void importMembers(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - import members");
-    validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
-
-    StreamDataBodyPart fileDataBodyPart =
-        new StreamDataBodyPart("file", in, "filename.dat",
-            MediaType.APPLICATION_OCTET_STREAM_TYPE);
-    FormDataMultiPart multiPart = new FormDataMultiPart();
-    multiPart.bodyPart(fileDataBodyPart);
-
-    ClientConfig clientConfig = new ClientConfig();
-    clientConfig.register(MultiPartFeature.class);
-    Client client = ClientBuilder.newClient(clientConfig);
-
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/import/members"
-            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
-
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-  }
-
-  /* see superclass */
-  @Override
   public InputStream exportDefinition(Long refsetId, String ioHandlerInfoId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -273,6 +238,7 @@ public class RefsetClientRest extends RootClientRest implements
     return in;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception {
@@ -280,13 +246,15 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void removeRefsetMember(Long memberId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -294,6 +262,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
     ConceptRefsetMemberJpa inclusion, String authToken) throws Exception {
@@ -301,13 +270,15 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void removeRefsetInclusion(Long inclusionId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -315,13 +286,15 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void removeRefsetExclusion(Long exclusionId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -329,6 +302,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getImportRefsetHandlers(String authToken)
     throws Exception {
@@ -336,6 +310,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getExportRefsetHandlers(String authToken)
     throws Exception {
@@ -343,6 +318,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(
     Long refsetId, String date, PfsParameterJpa pfs, String authToken)
@@ -351,6 +327,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public Refset beginMigration(Long refsetId, String newTerminology,
     String newVersion, String authToken) throws Exception {
@@ -358,18 +335,21 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void finishMigration(Long refsetId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public void cancelMigration(Long refsetId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public Refset beginRedefinition(Long refsetId, String newDefinition,
     String authToken) throws Exception {
@@ -377,20 +357,23 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void finishRedefinition(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public void cancelRedefintion(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public String compareRefsets(Long refsetId1, Long refsetId2, String authToken)
     throws Exception {
@@ -398,6 +381,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -405,6 +389,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public MemberDiffReport getDiffReport(String reportToken, String authToken)
     throws Exception {
@@ -412,12 +397,14 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public void releaseReportToken(String reportToken) throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
+  /* see superclass */
   @Override
   public String extrapolateDefinition(Long refsetId, String authToken)
     throws Exception {
@@ -425,33 +412,124 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
-  public MemberDiffReport beginImportMembers(
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - begin import members");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/import/begin"
+            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public ValidationResult resumeImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Client - resume import members");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/import/resume"
+            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public void finishImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+
+    Logger.getLogger(getClass()).debug("Refset Client - finish import members");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
+
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", in, "filename.dat",
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
+
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/import/finish"
+            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
   }
 
-  @Override
-  public MemberDiffReport resumeImportMembers(Long refsetId,
-    String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void finishImportMembers(Long refsetId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    
-  }
-
+  /* see superclass */
   @Override
   public void cancelImportMembers(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    
+    Logger.getLogger(getClass()).debug("Refset Client - cancel import members");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/import/cancel"
+            + "?refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
   }
 
 }

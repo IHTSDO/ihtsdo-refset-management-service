@@ -26,15 +26,14 @@ import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -164,7 +163,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
     try {
       Logger.getLogger(getClass()).info(
-          "RESTful call (Translation): get translation, translationId:" + translationId );
+          "RESTful call (Translation): get translation, translationId:"
+              + translationId);
 
       authorizeApp(securityService, authToken, "retrieve the translation",
           UserRole.VIEWER);
@@ -190,9 +190,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    
+
     Logger.getLogger(getClass()).info(
-        "RESTful call (Translation): get translations for refset, refsetId:" + refsetId);
+        "RESTful call (Translation): get translations for refset, refsetId:"
+            + refsetId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -203,7 +204,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       TranslationList result = new TranslationListJpa();
       List<Translation> translations = refset.getTranslations();
-      for (Translation t : translations){
+      for (Translation t : translations) {
         t.getDescriptionTypes().size();
         t.getConcepts().size();
       }
@@ -501,10 +502,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Translation): find translation concepts, translationId:" + translationId + " query:" + query + " "+ pfs);
+        "RESTful call (Translation): find translation concepts, translationId:"
+            + translationId + " query:" + query + " " + pfs);
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find translation concepts", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find translation concepts",
+          UserRole.VIEWER);
 
       return translationService.findConceptsForTranslation(translationId,
           query, pfs);
@@ -536,7 +539,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public ConceptDiffReport beginImportConcepts(
+  public ValidationResult beginImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception {
@@ -546,7 +549,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public ConceptDiffReport resumeImportConcepts(Long translationId,
+  public ValidationResult resumeImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
