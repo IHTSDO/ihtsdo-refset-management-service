@@ -74,7 +74,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet030() throws Exception {
+  public void testModelGetSet035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("phraseMemoryMap");
@@ -88,7 +88,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode030() throws Exception {
+  public void testModelEqualsHashcode035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
@@ -121,7 +121,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy030() throws Exception {
+  public void testModelCopy035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
@@ -140,7 +140,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization030() throws Exception {
+  public void testModelXmlSerialization035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
@@ -161,7 +161,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField030() throws Exception {
+  public void testModelNotNullField035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
@@ -189,7 +189,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelIndexedFields034() throws Exception {
+  public void testModelIndexedFields035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Test analyzed fields
