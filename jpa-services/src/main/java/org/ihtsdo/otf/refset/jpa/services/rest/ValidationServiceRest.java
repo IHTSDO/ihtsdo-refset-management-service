@@ -4,6 +4,8 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
+import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -33,7 +35,7 @@ public interface ValidationServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateAllConcepts(Long translationId,
+  public ConceptValidationResultList validateAllConcepts(Long translationId,
     String authToken) throws Exception;
 
   /**
@@ -66,7 +68,7 @@ public interface ValidationServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateRefsetMember(ConceptRefsetMemberJpa member,
+  public ValidationResult validateMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception;
 
   /**
@@ -77,6 +79,6 @@ public interface ValidationServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateAllRefsetMembers(Long refsetId,
+  public MemberValidationResultList validateAllMembers(Long refsetId,
     String authToken) throws Exception;
 }

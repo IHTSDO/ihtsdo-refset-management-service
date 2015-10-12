@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.ConceptValidationResult;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 
@@ -30,6 +31,15 @@ public class ConceptValidationResultJpa extends ValidationResultJpa implements
   /**
    * Instantiates a {@link ConceptValidationResultJpa} from the specified
    * parameters.
+   *
+   * @param result the result
+   */
+  public ConceptValidationResultJpa(ValidationResult result) {
+    super(result);
+  }
+
+  /**
+   * Instantiates a {@link ConceptValidationResultJpa} from the specified parameters.
    *
    * @param result the result
    */
