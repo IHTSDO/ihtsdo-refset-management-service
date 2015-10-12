@@ -80,7 +80,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   public String getTerminologyId(Concept concept) throws Exception {
 
     // If already assigned, reuse it
-    if (concept.getTerminologyId() != null
+    if (concept != null && concept.getTerminologyId() != null
         && !concept.getTerminologyId().isEmpty()) {
       return concept.getTerminologyId();
     }
@@ -115,7 +115,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   public String getTerminologyId(Description description) throws Exception {
 
     // If already assigned, reuse it
-    if (description.getTerminologyId() != null
+    if (description != null && description.getTerminologyId() != null
         && !description.getTerminologyId().isEmpty()) {
       return description.getTerminologyId();
     }

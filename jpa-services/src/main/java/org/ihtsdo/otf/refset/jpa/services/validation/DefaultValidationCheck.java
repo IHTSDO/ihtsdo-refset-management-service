@@ -64,7 +64,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     }
 
     // Only an EXTENSIONAL refset should have members
-    if (refset.getType() != Refset.Type.EXTENSIONAL && refset.getRefsetMembers().size()>0) {
+    if (refset.getType() != Refset.Type.EXTENSIONAL && refset.getMembers().size()>0) {
       result.addError("Only extensional refsets should have members");
     }
     

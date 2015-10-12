@@ -17,10 +17,8 @@ import javax.persistence.TemporalType;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Store;
-import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.rf2.Component;
 
 /**
@@ -113,7 +111,6 @@ public abstract class AbstractComponent implements Component {
   public void setId(Long id) {
     this.id = id;
   }
-
 
   /* see superclass */
   @Override

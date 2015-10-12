@@ -26,8 +26,6 @@ import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.MemberType;
-import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * Concrete implementation of {@link ConceptRefsetMember}.
@@ -52,11 +50,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /** The concept name. */
   @Column(nullable = false)
   private String conceptName;
-  
+
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private MemberType memberType = MemberType.PLAIN;
+  private Refset.MemberType type = Refset.MemberType.MEMBER;
 
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
@@ -76,7 +74,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     refset = member.getRefset();
     conceptId = member.getConceptId();
     conceptName = member.getConceptName();
-    memberType = member.getMemberType();
+    type = member.getType();
   }
 
   /* see superclass */
@@ -142,18 +140,20 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   public void setConceptName(String conceptName) {
     this.conceptName = conceptName;
   }
-  
-  /* see superclass */
+
+  /* see superclass - no need to serialize the type, the method called always knows this. 
+   * The field is really for indexing. */
+  @XmlTransient 
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public MemberType getMemberType() {
-    return memberType;
+  public Refset.MemberType getType() {
+    return type;
   }
 
   /* see superclass */
   @Override
-  public void setMemberType(MemberType type) {
-    this.memberType = type;
+  public void setType(Refset.MemberType type) {
+    this.type = type;
   }
 
   /* see superclass */
@@ -165,7 +165,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
     result =
-        prime * result + ((memberType == null) ? 0 : memberType.hashCode());
+        prime * result + ((type == null) ? 0 : type.hashCode());
     result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     return result;
   }
@@ -190,10 +190,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptName.equals(other.conceptName))
       return false;
-    if (memberType == null) {
-      if (other.memberType != null)
+    if (type == null) {
+      if (other.type != null)
         return false;
-    } else if (!memberType.equals(other.memberType))
+    } else if (!type.equals(other.type))
       return false;
     if (refset == null) {
       if (other.refset != null)
@@ -207,7 +207,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   @Override
   public String toString() {
     return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName + ", type=" + memberType + "]";
+        + conceptId + ", conceptName=" + conceptName + ", type=" + type
+        + "]";
   }
 
 }

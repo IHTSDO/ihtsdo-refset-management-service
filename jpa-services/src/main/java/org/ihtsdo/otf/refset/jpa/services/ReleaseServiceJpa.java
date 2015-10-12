@@ -42,7 +42,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get max release that is published and not planned
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(refsetId)) {
+          && results.get(i).getId().equals(refsetId)) {
         return results.get(i);
       }
     }
@@ -60,7 +60,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(refsetId)) {
+          && results.get(i).getId().equals(refsetId)) {
         if (i > 0) {
           return results.get(i - 1);
         } else {
@@ -82,7 +82,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(refsetId)) {
+          && results.get(i).getId().equals(refsetId)) {
         return results.get(i);
       }
     }
@@ -186,7 +186,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get max release that is published and not planned
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
+          && results.get(i).getId().equals(translationId)) {
         return results.get(i);
       }
     }
@@ -205,7 +205,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
+          && results.get(i).getId().equals(translationId)) {
         if (i > 0) {
           return results.get(i - 1);
         } else {
@@ -228,7 +228,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getTerminology().equals(translationId)) {
+          && results.get(i).getId().equals(translationId)) {
         return results.get(i);
       }
     }

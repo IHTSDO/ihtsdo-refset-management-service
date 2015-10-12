@@ -145,7 +145,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_refset_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
-  private List<ConceptRefsetMember> refsetMembers = null;
+  private List<ConceptRefsetMember> members = null;
 
   /** The enabled feedback events. */
   @ElementCollection
@@ -538,33 +538,33 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @XmlTransient
   @Override
-  public List<ConceptRefsetMember> getRefsetMembers() {
-    if (refsetMembers == null) {
-      refsetMembers = new ArrayList<>();
+  public List<ConceptRefsetMember> getMembers() {
+    if (members == null) {
+      members = new ArrayList<>();
     }
-    return refsetMembers;
+    return members;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetMembers(List<ConceptRefsetMember> members) {
-    this.refsetMembers = members;
+  public void setMembers(List<ConceptRefsetMember> members) {
+    this.members = members;
   }
 
   /* see superclass */
   @Override
-  public void addRefsetMember(ConceptRefsetMember member) {
-    if (refsetMembers == null) {
-      refsetMembers = new ArrayList<>();
+  public void addMember(ConceptRefsetMember member) {
+    if (members == null) {
+      members = new ArrayList<>();
     }
-    refsetMembers.add(member);
+    members.add(member);
   }
 
   /* see superclass */
   @Override
-  public void removeRefsetMember(ConceptRefsetMember member) {
-    if (refsetMembers != null) {
-      refsetMembers.remove(member);
+  public void removeMember(ConceptRefsetMember member) {
+    if (members != null) {
+      members.remove(member);
     }
   }
 

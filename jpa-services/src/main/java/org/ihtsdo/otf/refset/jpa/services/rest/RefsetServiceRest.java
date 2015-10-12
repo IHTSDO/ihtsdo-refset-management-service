@@ -265,16 +265,14 @@ public interface RefsetServiceRest {
   /**
    * Begin import.
    *
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the member diff report
    * @throws Exception the exception
    */
-  public ValidationResult beginImportMembers(
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Resume import. - recomputes begin and produces same result without actually

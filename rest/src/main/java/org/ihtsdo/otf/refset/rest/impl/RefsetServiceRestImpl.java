@@ -775,7 +775,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Return a validation result based on whether the refset has members
       // already
       ValidationResult result = new ValidationResultJpa();
-      if (refset.getRefsetMembers().size() != 0) {
+      if (refset.getMembers().size() != 0) {
         result
             .addError("Refset already contains members, this is a chance to cancel or confirm");
       } else {
@@ -828,7 +828,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Return a validation result based on whether the refset has members
       // already - same as begin - new opportunity to confirm/reject
       ValidationResult result = new ValidationResultJpa();
-      if (refset.getRefsetMembers().size() != 0) {
+      if (refset.getMembers().size() != 0) {
         result
             .addError("Refset already contains members, this is a chance to cancel or confirm");
       } else {
@@ -894,7 +894,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Get a set of concept ids for current refset members
       Set<String> conceptIds = new HashSet<>();
-      for (ConceptRefsetMember member : refset.getRefsetMembers()) {
+      for (ConceptRefsetMember member : refset.getMembers()) {
         conceptIds.add(member.getConceptId());
       }
       Logger.getLogger(getClass())

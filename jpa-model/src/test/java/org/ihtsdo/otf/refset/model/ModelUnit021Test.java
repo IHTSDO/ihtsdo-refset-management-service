@@ -89,6 +89,7 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("refset");
     tester.include("conceptId");
     tester.include("conceptName");
+    tester.include("type");
 
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 1, r2);
@@ -148,7 +149,7 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
-    tester.include("memberType");
+    tester.include("type");
 
     tester.include("conceptId");
     tester.include("conceptName");

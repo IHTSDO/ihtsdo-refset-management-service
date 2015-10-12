@@ -143,7 +143,7 @@ public class ConfigUtility {
    * @throws Exception the exception
    */
   public static Properties getConfigProperties() throws Exception {
-    if (config == null) {
+    if (isNull(config)) {
       // Need to determine the label (default "")
       String label = "";
       Properties labelProp = new Properties();
@@ -179,7 +179,8 @@ public class ConfigUtility {
           System.getProperty("refset.config"
               + (label.isEmpty() ? "" : "." + label));
       Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  refset.config." + (label.isEmpty() ? "" : "." + label) + " = " + configFileName);
+          "  refset.config." + (label.isEmpty() ? "" : "." + label) + " = "
+              + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));
       config.load(in);
@@ -731,5 +732,15 @@ public class ConfigUtility {
       sb.append("  ");
     }
     return sb.toString();
+  }
+
+  /**
+   * Helper method to avoid a false-positive for a static code analysis issue.
+   O*
+   * @param o the o
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public static boolean isNull(Object o) {
+    return o == null;
   }
 }

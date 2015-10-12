@@ -177,20 +177,16 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
-   * Begin import.
+   * Begin import of concepts.
    *
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
    * @param translationId the translation id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ValidationResult beginImportConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception;
+  public ValidationResult beginImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Resume import concepts.
@@ -205,13 +201,18 @@ public interface TranslationServiceRest {
     String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Finish import.
+   * Finish import of concepts.
    *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
    * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImportConcepts(Long translationId, String authToken)
+  public void finishImportConcepts(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception;
 
   /**

@@ -4,7 +4,9 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,15 +26,19 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -538,37 +544,275 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @GET
   @Override
+  @Path("/import/begin")
+  @ApiOperation(value = "Begin import of translation members", notes = "Begins the import process by validating the translation for import and marking the translation as staged.", response = ValidationResultJpa.class)
   public ValidationResult beginImportConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/begin " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation members", UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.isStaged()) {
+        throw new LocalException(
+            "Begin import is not allowed while the translation is already staged.");
+
+      }
+
+      // validate the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Mark the record as staged and create a staging change entry
+      translation.setStaged(true);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+      StagedTranslationChange change = new StagedTranslationChangeJpa();
+      change.setOriginTranslation(translation);
+      change.setType(Translation.StagingType.IMPORT);
+      change.setStagedTranslation(translation);
+
+      // Return a validation result based on whether the translation has members
+      // already
+      ValidationResult result = new ValidationResultJpa();
+      if (translation.getConcepts().size() != 0) {
+        result
+            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
   /* see superclass */
+  @GET
   @Override
-  public ValidationResult resumeImportConcepts(Long translationId,
-    String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/import/resume")
+  @ApiOperation(value = "Resume import of translation concepts", notes = "Resumes the import process by re-validating the translation for import.", response = ValidationResultJpa.class)
+  public ValidationResult resumeImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/resume " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import translation concepts",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new LocalException("Translation is not staged for import.");
+
+      }
+
+      // Return a validation result based on whether the translation has
+      // concepts
+      // already - same as begin - new opportunity to confirm/reject
+      ValidationResult result = new ValidationResultJpa();
+      if (translation.getConcepts().size() != 0) {
+        result
+            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
   /* see superclass */
+  @POST
   @Override
-  public void finishImportConcepts(Long translationId, String authToken)
+  @Path("/import/begin")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import translation concepts", notes = "Imports the translation concepts into the specified translation")
+  public void finishImportConcepts(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of concepts file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/finish " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation concepts", UserRole.REVIEWER);
+
+      // verify that staged
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new Exception(
+            "Translation is not staged for import, cannot finish.");
+      }
+
+      // get the staged change tracking object
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+
+      // Obtain the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Get a set of concept ids for current translation concepts
+      Set<String> conceptIds = new HashSet<>();
+      for (Concept concept : translation.getConcepts()) {
+        conceptIds.add(concept.getTerminologyId());
+      }
+      Logger.getLogger(getClass()).info(
+          "  translation count = " + conceptIds.size());
+
+      // Load concepts into memory and add to translation
+      List<Concept> concepts = handler.importConcepts(translation, in);
+      int objectCt = 0;
+      for (Concept concept : concepts) {
+
+        // De-duplicate
+        if (conceptIds.contains(concept.getTerminologyId())) {
+          continue;
+        }
+        ++objectCt;
+        concept.setId(null);
+        concept.setLastModified(concept.getEffectiveTime());
+        concept.setLastModifiedBy(userName);
+        concept.setPublishable(true);
+        concept.setPublished(false);
+        translationService.addConcept(concept);
+        conceptIds.add(concept.getTerminologyId());
+      }
+      Logger.getLogger(getClass()).info(
+          "  translation import count = " + objectCt);
+      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+
+      // Remove the staged translation change and set staging type back to null
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
-  /* see superclass */
+  @GET
   @Override
-  public void cancelImportConcepts(Long translationId, String authToken)
+  @Path("/import/cancel")
+  @ApiOperation(value = "Cancel import of translation members", notes = "Cancels the import process.")
+  public void cancelImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
 
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/cancel " + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation members", UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new LocalException("Translation is not staged for import.");
+
+      }
+
+      // Remove the staged translation change and set staging type back to null
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import translation members");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */

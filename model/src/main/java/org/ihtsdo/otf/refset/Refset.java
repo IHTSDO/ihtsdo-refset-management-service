@@ -35,6 +35,18 @@ public interface Refset extends Component, Searchable {
   }
 
   /**
+   * Enumeration of refset member types.
+   */
+  public enum MemberType {
+    /** The inclusion members. */
+    INCLUSION,
+    /** The exclusion members. */
+    EXCLUSION,
+    /** The plain. */
+    MEMBER;
+  }
+
+  /**
    * Enum of feedback events upon which email may be sent.
    */
   public enum FeedbackEvent {
@@ -342,28 +354,28 @@ public interface Refset extends Component, Searchable {
    *
    * @return the refset members
    */
-  public List<ConceptRefsetMember> getRefsetMembers();
+  public List<ConceptRefsetMember> getMembers();
 
   /**
    * Sets the refset members.
    *
    * @param members the refset members
    */
-  public void setRefsetMembers(List<ConceptRefsetMember> members);
+  public void setMembers(List<ConceptRefsetMember> members);
 
   /**
    * Adds the refset member.
    *
    * @param member the member
    */
-  public void addRefsetMember(ConceptRefsetMember member);
+  public void addMember(ConceptRefsetMember member);
 
   /**
    * Removes the refset member.
    *
    * @param member the member
    */
-  public void removeRefsetMember(ConceptRefsetMember member);
+  public void removeMember(ConceptRefsetMember member);
 
   /**
    * Returns the feedback emails.
