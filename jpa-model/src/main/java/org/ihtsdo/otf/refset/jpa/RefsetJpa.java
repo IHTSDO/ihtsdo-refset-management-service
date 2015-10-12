@@ -29,6 +29,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
@@ -39,6 +40,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -133,17 +135,21 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private List<Translation> translations = new ArrayList<>();
 
   /** The inclusions. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_inclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
   private List<ConceptRefsetMember> inclusions = new ArrayList<>();
 
   /** The exclusions. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_exclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
+  
   @IndexedEmbedded
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
-  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany( targetEntity = ConceptRefsetMemberJpa.class)
+  @CollectionTable(name = "refset_refset_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
   private List<ConceptRefsetMember> refsetMembers = null;
 
@@ -198,14 +204,20 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getName() {
     return name;
   }
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getDescription() {
     return description;
   }
@@ -248,7 +260,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "definitionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   @Override
   public String getDefinition() {
     return definition;
@@ -540,7 +555,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    * @return the user role map
    */
   @XmlTransient
-  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
   }

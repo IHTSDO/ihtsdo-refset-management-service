@@ -54,6 +54,30 @@ tsApp.service('translationService',
           });
         return deferred.promise;
       }
+      
+      // find concepts for translation and query
+      this.findTranslationConceptsForQuery = function(translationId, query, pfs) {
+        console.debug("findTranslationConceptsForQuery");
+        var deferred = $q.defer();
+
+        // find concepts
+        gpService.increment()
+        $http.post(translationUrl + "concepts" + "?query=" + query + "&translationId=" + translationId, pfs)
+          .then(
+          // success
+          function(response) {
+            console.debug("  concepts = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+        return deferred.promise;
+      }
 
       // Get translation for id
       this.getTranslation = function(translationId) {

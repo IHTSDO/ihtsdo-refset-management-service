@@ -237,6 +237,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("description");
     tester.include("definition");
     tester.include("userRoleMap");
+    tester.include("userAnyRole");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -252,6 +253,9 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("type");
     tester.include("externalUrl");
     tester.include("workflowStatus");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
+    tester.include("definitionSort");
 
     tester.include("type");
     tester.include("workflowStatus");

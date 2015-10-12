@@ -29,6 +29,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -151,6 +152,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get refset for id, refsetId:" + refsetId);
+
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the refset",
@@ -553,10 +557,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/members")
+  @ApiOperation(value = "Finds refset members", notes = "Finds refset members based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetMembersForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset members for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset members", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:PLAIN";
+      else
+        query = "memberType:PLAIN";
+
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset members ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override
@@ -574,10 +606,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/inclusions")
+  @ApiOperation(value = "Finds refset inclusions", notes = "Finds refset inclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetInclusionsForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset inclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset inclusions", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:INCLUSION";
+      else
+        query = "memberType:INCLUSION";
+
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset inclusions ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override
@@ -588,10 +648,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/exclusions")
+  @ApiOperation(value = "Finds refset exclusions", notes = "Finds refset exclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetExclusionsForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset exclusions for query, refsetId:" + refsetId + " query:" + query + " "+ pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset exclusions", UserRole.VIEWER);
+      
+      if (query != null && !query.equals(""))
+        query = query + " AND memberType:EXCLUSION";
+      else
+        query = "memberType:EXCLUSION";
+
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset exclusions ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override

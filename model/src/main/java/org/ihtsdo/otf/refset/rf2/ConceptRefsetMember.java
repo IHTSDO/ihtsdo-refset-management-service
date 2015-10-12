@@ -52,4 +52,18 @@ public interface ConceptRefsetMember extends Component {
    */
   public void setConceptName(String conceptName);
 
+  /**
+   * Returns the concept refset member type.
+   *
+   * @return the concept refset member type
+   */
+  public MemberType getMemberType();
+
+  /**
+   * Sets the concept refset member type.
+   *
+   * @param type the concept refset member type
+   */
+  public void setMemberType(MemberType type);
+
 }
