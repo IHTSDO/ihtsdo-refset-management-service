@@ -18,6 +18,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
@@ -106,8 +107,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /available/editing " + translationId
-            + ", " + userName);
+        "RESTful POST call (Workflow): /translation/available/editing "
+            + translationId + ", " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -139,8 +140,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /assigned/editing " + translationId
-            + ", " + userName);
+        "RESTful POST call (Workflow): /translation/assigned/editing "
+            + translationId + ", " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -172,8 +173,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /available/review " + translationId
-            + ", " + userName);
+        "RESTful POST call (Workflow): /translation/available/review "
+            + translationId + ", " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -205,8 +206,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /assigned/review " + translationId
-            + ", " + userName);
+        "RESTful POST call (Workflow): /translation/assigned/review "
+            + translationId + ", " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -265,30 +266,121 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public RefsetList findAvailableEditingRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @POST
+  @Path("/refset/available/editing")
+  @ApiOperation(value = "Find available editing work", notes = "Finds refsets available for editing by the specified user.", response = RefsetListJpa.class)
+  public RefsetList findAvailableEditingRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /refset/available/editing " + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "perform workflow action on refset", UserRole.AUTHOR);
+      return workflowService.findAvailableEditingRefsets(userName, pfs);
+
+    } catch (Exception e) {
+      handleException(e, "trying to find available editing work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/refset/assigned/editing")
+  @ApiOperation(value = "Find assigned editing work", notes = "Finds refsets assigned for editing by the specified user.", response = ConceptListJpa.class)
+  public RefsetList findAssignedEditingRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /refset/assigned/editing " + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "find assigned editing work", UserRole.AUTHOR);
+
+      return workflowService.findAssignedEditingRefsets(userName, pfs);
+
+    } catch (Exception e) {
+      handleException(e, "trying to find assigned editing work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
     return null;
   }
 
   @Override
-  public RefsetList findAssignedEditingRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @GET
+  @Path("/refset/available/review")
+  @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user.", response = RefsetListJpa.class)
+  public RefsetList findAvailableReviewRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/available/review "
+            + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find available review work", UserRole.REVIEWER);
+
+      return workflowService.findAvailableReviewRefsets(userName, pfs);
+
+    } catch (Exception e) {
+      handleException(e, "trying to find available review work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
     return null;
   }
 
+  /* see superclass */
   @Override
-  public RefsetList findAvailableReviewRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  @POST
+  @Path("/refset/assigned/review")
+  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = RefsetListJpa.class)
+  public RefsetList findAssignedReviewRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/assigned/review "
+            + userName);
 
-  @Override
-  public RefsetList findAssignedReviewRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find assigned review work", UserRole.REVIEWER);
+
+      return workflowService.findAssignedReviewRefsets(userName, pfs);
+
+    } catch (Exception e) {
+      handleException(e, "trying to find assigned review work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
     return null;
   }
 

@@ -158,50 +158,46 @@ public interface WorkflowService extends TranslationService {
   /**
    * Find available editing refsets.
    *
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableEditingRefsets(Long refsetId, String userName,
+  public RefsetList findAvailableEditingRefsets(String userName,
     PfsParameter pfs) throws Exception;
 
   /**
    * Find assigned editing refsets.
    *
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedEditingRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
+  public RefsetList findAssignedEditingRefsets(String userName, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Find available review refsets.
    *
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
+  public RefsetList findAvailableReviewRefsets(String userName, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Find assigned review refsets.
    *
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
+  public RefsetList findAssignedReviewRefsets(String userName, PfsParameter pfs)
+    throws Exception;
 
   /**
    * Perform workflow action.
