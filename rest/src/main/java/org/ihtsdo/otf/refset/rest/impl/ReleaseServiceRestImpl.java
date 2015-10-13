@@ -3,6 +3,8 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -18,12 +20,14 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
@@ -233,9 +237,30 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   }
   
   @Override
-  public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @GET
+  @Path("/translation/info")
+  @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)  
+  public ReleaseInfo getCurrentTranslationRelease(
+    @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Release): /info " + translationId);
+
+    // Test preconditions
+    if (translationId == null) {
+      handleException(new Exception("Translation id has a null value"), "");
+    }
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get current translation release info", UserRole.VIEWER);     
+      return releaseService.getCurrentReleaseInfoForRefset(translationId);      
+    } catch (Exception e) {
+      handleException(e, "trying to get current translation release info");
+    } finally {
+      securityService.close();
+    }
     return null;
   }
 
@@ -255,10 +280,37 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public InputStream exportReleaseArtifact(Long artifactId, String authToken)
+  @GET
+  @Path("/export/{artifactId}")
+  @ApiOperation(value = "Exports a report", notes = "Exports a report the specified id.", response = ReleaseArtifactJpa.class)
+  @Produces("application/vnd.ms-excel")
+  public InputStream exportReleaseArtifact(
+    @ApiParam(value = "Report id", required = true) @PathParam("artifactId") Long artifactId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Release):  /export/" + artifactId);
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    
+    try {
+      // authorize call
+      authorizeApp(securityService, authToken,
+          "retrieve the release history for the translation", UserRole.VIEWER);
+
+      ReleaseArtifact artifact = releaseService.getReleaseArtifact(artifactId);
+
+      InputStream in = new ByteArrayInputStream(artifact.getData());
+           
+      return in;
+
+    } catch (Exception e) {
+      handleException(e, "trying to export release artifact");
+      return null;
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
   }
 
 }

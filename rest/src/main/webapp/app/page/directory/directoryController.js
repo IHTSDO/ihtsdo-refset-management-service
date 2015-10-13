@@ -86,7 +86,6 @@ tsApp.controller('DirectoryCtrl', [
           $scope.retrieveExclusions($scope.publishedRefsets[i]);
         }
       })
-
     };
     
     // get members
@@ -106,7 +105,6 @@ tsApp.controller('DirectoryCtrl', [
         refset.members = data.members;
         refset.members.totalCount = data.totalCount;
       })
-
     };    
 
     // get inclusion members
@@ -181,13 +179,17 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-
       translationService.findTranslationConceptsForQuery(translation.id, 
         $scope.paging["concept"].filter, pfs).then(function(data) {
         translation.concepts = data.concepts;
-        translation.totalCount = data.totalCount;
+        translation.concepts.totalCount = data.totalCount;
       })
 
+    };    
+    
+    // export release artifact
+    $scope.exportReleaseArtifact = function(artifact) {
+      releaseService.exportReleaseArtifact(artifact);
     };    
     
     // Convert date to a string
@@ -201,7 +203,7 @@ tsApp.controller('DirectoryCtrl', [
     }
     
     // sort mechanism 
-    $scope.setSortField = function(table, field) {
+    $scope.setSortField = function(table, field, object) {
       console.debug("set " + table + " sortField " + field);
       $scope.paging[table].sortField = field;
       // reset page number too
@@ -223,6 +225,12 @@ tsApp.controller('DirectoryCtrl', [
       // retrieve the correct table
       if (table === 'publishedRefset') {
         $scope.retrievePublishedRefsets();
+      } 
+      if (table === 'member') {
+        $scope.retrieveMembers(object);
+      } 
+      if (table === 'concept') {
+        $scope.retrieveTranslationConcepts(object);
       } 
       
     }

@@ -57,13 +57,13 @@ public interface ConceptRefsetMember extends Component {
    *
    * @return the member type
    */
-  public Refset.MemberType getType();
+  public Refset.MemberType getMemberType();
 
   /**
    * Sets the member type.
    *
    * @param type the member type
    */
-  public void setType(Refset.MemberType type);
+  public void setMemberType(Refset.MemberType type);
 
 }

@@ -36,6 +36,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
@@ -482,11 +483,19 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // take a refset entirely through the release cycle, including release
       // artifacts
       
-      ReleaseInfo releaseInfo = makeReleaseInfo("Refset1 release info", refset1);
-      ReleaseArtifact artifact = makeReleaseArtifact("releaseArtifact1", 
-          releaseInfo, "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
-      ReleaseArtifact artifact2 = makeReleaseArtifact("releaseArtifact2", 
-          releaseInfo, "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
+      // refset1 release info
+      ReleaseInfo refsetReleaseInfo = makeReleaseInfo("Refset1 release info", refset1);
+      makeReleaseArtifact("releaseArtifact1.txt", 
+          refsetReleaseInfo, "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
+      makeReleaseArtifact("releaseArtifact2.txt", 
+          refsetReleaseInfo, "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
+      
+      // translation1 release info
+      ReleaseInfo translationReleaseInfo = makeReleaseInfo("Translation1 release info", translation1);
+      makeReleaseArtifact("releaseArtifact1.txt", 
+          translationReleaseInfo, "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
+      makeReleaseArtifact("releaseArtifact2.txt", 
+          translationReleaseInfo, "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
       
       
 
@@ -542,15 +551,18 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * Make release info.
    *
    * @param name the name
-   * @param refset the refset
+   * @param object the object
    * @return the release info
    * @throws Exception the exception
    */
-  private ReleaseInfo makeReleaseInfo(String name, Refset refset) throws Exception {
+  private ReleaseInfo makeReleaseInfo(String name, Object object) throws Exception {
     final ReleaseInfoJpa releaseInfo = new ReleaseInfoJpa();
     releaseInfo.setName(name);
     releaseInfo.setDescription("Description of release info " + name);
-    releaseInfo.setRefset(refset);
+    if (object instanceof Refset)
+      releaseInfo.setRefset((Refset)object);
+    else if (object instanceof Translation)
+      releaseInfo.setTranslation((Translation)object);
     releaseInfo.setLastModified(new Date());
     releaseInfo.setLastModifiedBy("loader");
     releaseInfo.setPublished(true);
@@ -558,9 +570,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     releaseInfo.setReleaseFinishDate(new Date());
     releaseInfo.setTerminology("SNOMEDCT");
     releaseInfo.setVersion("latest");
-    releaseInfo.setPlanned(true);
+    releaseInfo.setPlanned(false);
     return new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
   }
+  
   
   /**
    * Make release artifact.

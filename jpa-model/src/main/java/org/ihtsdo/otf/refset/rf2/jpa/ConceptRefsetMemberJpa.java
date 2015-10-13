@@ -54,7 +54,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Refset.MemberType type;
+  private Refset.MemberType memberType;
 
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
@@ -74,7 +74,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     refset = member.getRefset();
     conceptId = member.getConceptId();
     conceptName = member.getConceptName();
-    type = member.getType();
+    memberType = member.getMemberType();
   }
 
   /* see superclass */
@@ -144,14 +144,14 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   /* see superclass  */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public Refset.MemberType getType() {
-    return type;
+  public Refset.MemberType getMemberType() {
+    return memberType;
   }
 
   /* see superclass */
   @Override
-  public void setType(Refset.MemberType type) {
-    this.type = type;
+  public void setMemberType(Refset.MemberType type) {
+    this.memberType = type;
   }
 
   /* see superclass */
@@ -163,7 +163,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
     result =
-        prime * result + ((type == null) ? 0 : type.hashCode());
+        prime * result + ((memberType == null) ? 0 : memberType.hashCode());
     result = prime * result + ((refset == null) ? 0 : refset.hashCode());
     return result;
   }
@@ -188,10 +188,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptName.equals(other.conceptName))
       return false;
-    if (type == null) {
-      if (other.type != null)
+    if (memberType == null) {
+      if (other.memberType != null)
         return false;
-    } else if (!type.equals(other.type))
+    } else if (!memberType.equals(other.memberType))
       return false;
     if (refset == null) {
       if (other.refset != null)
@@ -205,7 +205,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   @Override
   public String toString() {
     return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
-        + conceptId + ", conceptName=" + conceptName + ", type=" + type
+        + conceptId + ", conceptName=" + conceptName + ", type=" + memberType
         + "]";
   }
 

@@ -517,9 +517,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           UserRole.VIEWER);
 
       if (query != null && !query.equals(""))
-        query = query + " AND memberType:PLAIN";
+        query = query + " AND memberType:MEMBER";
       else
-        query = "memberType:PLAIN";
+        query = "memberType:MEMBER";
 
       return refsetService.findMembersForRefset(refsetId, query, pfs);
     } catch (Exception e) {
@@ -917,7 +917,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setLastModifiedBy(userName);
         member.setPublishable(true);
         member.setPublished(false);
-        member.setType(Refset.MemberType.MEMBER);
+        member.setMemberType(Refset.MemberType.MEMBER);
         // TODO: - no efficient way to compute this
         // each member requires a call to the terminology server!
         // terminologyHandler.getConcept is our best bet

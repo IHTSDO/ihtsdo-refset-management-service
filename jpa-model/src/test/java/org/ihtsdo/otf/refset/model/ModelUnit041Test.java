@@ -272,15 +272,19 @@ public class ModelUnit041Test extends ModelUnitSupport {
   public void testModelIndexedFields041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // Test analyzed fields - n/a
+    // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
-    // assertTrue(tester.testAnalyzedIndexedFields());
+    tester.include("conceptName");
+    assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
 
     tester.include("lastModified");
     tester.include("lastModifiedBy");
+    tester.include("conceptId");
+    tester.include("translationid");
+    tester.include("refsetId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

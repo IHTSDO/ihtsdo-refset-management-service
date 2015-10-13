@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
@@ -61,7 +62,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getId().equals(refsetId)) {
+          && results.get(i).getRefset().getId().equals(refsetId)) {
         if (i > 0) {
           return results.get(i - 1);
         } else {
@@ -83,7 +84,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getId().equals(refsetId)) {
+          && results.get(i).getRefset().getId().equals(refsetId)) {
         return results.get(i);
       }
     }
@@ -214,7 +215,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get max release that is published and not planned
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getId().equals(translationId)) {
+          && results.get(i).getTranslation().getId().equals(translationId)) {
         return results.get(i);
       }
     }
@@ -233,7 +234,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getId().equals(translationId)) {
+          && results.get(i).getTranslation().getId().equals(translationId)) {
         if (i > 0) {
           return results.get(i - 1);
         } else {
@@ -256,7 +257,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     // get one before the max release that is published
     for (int i = results.size() - 1; i >= 0; i--) {
       if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getId().equals(translationId)) {
+          && results.get(i).getTranslation().getId().equals(translationId)) {
         return results.get(i);
       }
     }
@@ -316,4 +317,10 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     return result;
   }
 
+  @Override
+  public ReleaseArtifact getReleaseArtifact(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug("ReleaseArtifact Service - get artifact " + id);
+    ReleaseArtifact artifact = getHasLastModified(id, ReleaseArtifactJpa.class);
+    return artifact;
+  }
 }
