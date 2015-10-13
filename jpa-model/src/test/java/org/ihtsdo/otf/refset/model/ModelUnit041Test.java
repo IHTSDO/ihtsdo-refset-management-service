@@ -156,7 +156,6 @@ public class ModelUnit041Test extends ModelUnitSupport {
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("refsetId");
     tester.exclude("translationId");
-    tester.exclude("conceptId");
     tester.test();
   }
 
@@ -169,13 +168,12 @@ public class ModelUnit041Test extends ModelUnitSupport {
   public void testModelEqualsHashcode041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("concept");
+    tester.include("conceptId");
     tester.include("forAuthoring");
     tester.include("forReview");
     tester.include("translation");
     tester.include("authors");
     tester.include("reviewers");
-    tester.include("concept");
 
     tester.proxy(Translation.class, 1, t1);
     tester.proxy(Translation.class, 2, t2);

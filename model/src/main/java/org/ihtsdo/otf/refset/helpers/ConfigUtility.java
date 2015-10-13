@@ -736,11 +736,24 @@ public class ConfigUtility {
 
   /**
    * Helper method to avoid a false-positive for a static code analysis issue.
-   O*
+   * O*
    * @param o the o
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public static boolean isNull(Object o) {
     return o == null;
+  }
+
+  /**
+   * Capitalize.
+   *
+   * @param value the value
+   * @return the string
+   */
+  public static String capitalize(String value) {
+    if (value == null) {
+      return value;
+    }
+    return value.substring(0, 1).toUpperCase() + value.substring(1);
   }
 }

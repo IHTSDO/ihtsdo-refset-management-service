@@ -180,6 +180,22 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /* see superclass */
+  @Override
+  public void refreshCaches() throws Exception {
+    // n/a
+  }
+
+  /**
+   * Returns the entity manager.
+   *
+   * @return the entity manager
+   * @throws Exception the exception
+   */
+  public EntityManager getEntityManager() throws Exception {
+    return manager;
+  }
+
   /**
    * Apply pfs to query.
    *
@@ -187,7 +203,7 @@ public abstract class RootServiceJpa implements RootService {
    * @param pfs the pfs
    * @return the javax.persistence. query
    */
-  protected javax.persistence.Query applyPfsToJqlQuery(String queryStr,
+  public javax.persistence.Query applyPfsToJqlQuery(String queryStr,
     PfsParameter pfs) {
     StringBuilder localQueryStr = new StringBuilder();
     localQueryStr.append(queryStr);
@@ -229,7 +245,7 @@ public abstract class RootServiceJpa implements RootService {
    * @return the user
    * @throws Exception the exception
    */
-  protected User getUser(String userName) throws Exception {
+  public User getUser(String userName) throws Exception {
     if (userMap.containsKey(userName)) {
       return userMap.get(userName);
     }
@@ -258,7 +274,7 @@ public abstract class RootServiceJpa implements RootService {
    * @return the query results
    * @throws Exception the exception
    */
-  protected <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
+  public <T> List<?> getQueryResults(String query, Class<?> fieldNamesKey,
     Class<T> clazz, PfsParameter pfs, int[] totalCt) throws Exception {
 
     if (query == null || query.isEmpty()) {
@@ -286,5 +302,4 @@ public abstract class RootServiceJpa implements RootService {
 
   }
 
-  
 }

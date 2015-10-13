@@ -64,12 +64,6 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   }
 
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
-  }
-
   @Override
   public ValidationResult validateConcept(Concept concept) {
     ValidationResult result = new ValidationResultJpa();

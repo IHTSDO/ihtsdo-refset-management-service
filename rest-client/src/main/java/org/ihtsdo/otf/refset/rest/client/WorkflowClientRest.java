@@ -19,19 +19,19 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 
 /**
- * A client for connecting to a workflow REST service.
+ * Client for connecting to a workflow REST service.
  */
 public class WorkflowClientRest extends RootClientRest implements
     WorkflowServiceRest {
 
   /** The config. */
-  @SuppressWarnings("unused")
   private Properties config = null;
 
   /**
@@ -273,32 +273,144 @@ public class WorkflowClientRest extends RootClientRest implements
         TrackingRecordJpa.class);
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAvailableEditingRefsets(Long projectId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find available editing refsets - " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/available/editing" + "?projectId=" + projectId
+            + "?userName=" + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAssignedEditingRefsets(Long projectId, String userName,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find assigned editing refsets - " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/assigned/editing" + "?projectId=" + projectId
+            + "?userName=" + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAvailableReviewRefsets(Long projectId, String userName,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find available review refsets - " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/available/review" + "?projectId=" + projectId
+            + "?userName=" + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAssignedReviewRefsets(Long projectId, String userName,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find assigned review refsets - " + userName);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(userName, "userName");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/assigned/review" + "?projectId=" + projectId
+            + "?userName=" + userName);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
 }

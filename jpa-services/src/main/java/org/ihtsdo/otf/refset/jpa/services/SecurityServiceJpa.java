@@ -188,8 +188,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     String userName = getUsernameForToken(parsedToken);
     // check for null userName
     if (userName == null) {
-      throw new LocalException(
-          "Unable to find user for the AuthToken");
+      throw new LocalException("Unable to find user for the AuthToken");
     }
     User user = getUser(userName.toLowerCase());
     if (user == null) {
@@ -216,8 +215,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     String userName = getUsernameForToken(authToken);
     ProjectService service = new ProjectServiceJpa();
     UserRole result =
-        service.getProject(projectId).getUserRoleMap()
-            .get(getUser(userName));
+        service.getProject(projectId).getUserRoleMap().get(getUser(userName));
     service.close();
     if (result == null) {
       result = UserRole.VIEWER;
@@ -225,8 +223,6 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     return result;
   }
 
-  
-  
   /* see superclass */
   @Override
   public User getUser(Long id) throws Exception {
@@ -341,25 +337,19 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public UserList findUsersForQuery(String query, PfsParameter pfs) throws Exception {
+  public UserList findUsersForQuery(String query, PfsParameter pfs)
+    throws Exception {
     Logger.getLogger(getClass()).info(
         "Security Service - find users " + query + ", pfs= " + pfs);
 
     int[] totalCt = new int[1];
-    List<User> list = (List<User>)getQueryResults(query == null || query.isEmpty()
-        ? "id:[* TO *]" : query, UserJpa.class,
-        UserJpa.class, pfs, totalCt);
+    List<User> list =
+        (List<User>) getQueryResults(query == null || query.isEmpty()
+            ? "id:[* TO *]" : query, UserJpa.class, UserJpa.class, pfs, totalCt);
     UserList result = new UserListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
   }
-
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
-  }
-
 
 }

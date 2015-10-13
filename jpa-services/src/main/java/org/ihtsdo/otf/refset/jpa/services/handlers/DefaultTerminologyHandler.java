@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
-import javax.persistence.EntityManager;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
@@ -64,10 +63,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   /** The auth header. */
   private String authHeader;
 
-  /** The manager. */
-  @SuppressWarnings("unused")
-  private EntityManager manager;
-
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -76,12 +71,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     handler.branch = this.branch;
     handler.authHeader = this.authHeader;
     return handler;
-  }
-
-  /* see superclass */
-  @Override
-  public void setEntityManager(EntityManager manager) {
-    this.manager = manager;
   }
 
   /* see superclass */

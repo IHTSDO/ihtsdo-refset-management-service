@@ -8,7 +8,9 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -46,48 +48,52 @@ public interface WorkflowActionHandler extends Configurable {
    *
    * @param translation the translation
    * @param user the user
+   * @param pfs the pfs
    * @param service the service
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingConcepts(Translation translation,
-    User user, WorkflowService service) throws Exception;
+  public ConceptRefsetMemberList findAvailableEditingConcepts(Translation translation,
+    User user, PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available review work.
    *
    * @param translation the translation
    * @param user the user
+   * @param pfs the pfs
    * @param service the service
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList findAvailableReviewConcepts(Translation translation,
-    User user, WorkflowService service) throws Exception;
+    User user, PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available editing refsets.
    *
-   * @param refset the refset
+   * @param projectId the project id
    * @param user the user
+   * @param pfs the pfs
    * @param service the service
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableEditingRefsets(Refset refset, User user,
-    WorkflowService service) throws Exception;
+  public RefsetList findAvailableEditingRefsets(Long projectId, User user,
+    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available review refsets.
    *
-   * @param refset the refset
+   * @param projectId the project id
    * @param user the user
+   * @param pfs the pfs
    * @param service the service
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableReviewRefsets(Refset refset, User user,
-    WorkflowService service) throws Exception;
+  public RefsetList findAvailableReviewRefsets(Long projectId, User user,
+    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Validate workflow action.

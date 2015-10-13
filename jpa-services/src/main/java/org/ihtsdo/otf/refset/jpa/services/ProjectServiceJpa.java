@@ -316,12 +316,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /* see superclass */
   @Override
-  public void refreshCaches() throws Exception {
-    // n/a
-  }
-
-  /* see superclass */
-  @Override
   public boolean isLastModifiedFlag() {
     return lastModifiedFlag;
   }
@@ -532,7 +526,6 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     // Copy the template
     TerminologyHandler handler = terminologyHandler.copy();
     // configure it with the entity manager
-    handler.setEntityManager(manager);
     // return it
     return handler;
   }
