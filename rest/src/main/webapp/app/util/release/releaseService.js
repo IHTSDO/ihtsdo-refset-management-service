@@ -69,4 +69,38 @@ tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
       });
       return deferred.promise;
     }
+    
+
+    this.exportReleaseArtifact = function(releaseArtifact) {
+      gpService.increment()
+      $http({
+          url : releaseUrl + "export/"
+          + releaseArtifact.id ,
+          dataType : "json",
+          method : "GET",
+          headers : {
+            "Content-Type" : "application/json"
+          },
+          responseType: 'arraybuffer'
+      }).success(function(data) {
+        //$scope.definitionMsg = "Successfully exported report";
+        var blob = new Blob([data], {type: ""});
+
+        // hack to download store a file having its URL
+        var fileURL = URL.createObjectURL(blob);
+        var a         = document.createElement('a');
+        a.href        = fileURL; 
+        a.target      = "_blank";
+        a.download    = releaseArtifact.name;
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      }).error(function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        //deferred.reject(response.data);
+      });
+  };
+  
   } ]);

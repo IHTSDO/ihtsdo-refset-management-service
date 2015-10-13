@@ -128,4 +128,13 @@ public interface ReleaseService extends ProjectService {
   public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
     throws Exception;
 
+  /**
+   * Returns the release artifact.
+   *
+   * @param id the id
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  public ReleaseArtifact getReleaseArtifact(Long id) throws Exception;
+
 }

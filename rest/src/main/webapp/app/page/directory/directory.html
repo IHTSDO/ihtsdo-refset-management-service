@@ -31,11 +31,11 @@
       <table class="table">
         <thead class="table-select-row">
           <th class="col-md-1 col-xs-1"></th>
-          <th class="col-md-1 col-xs-1" ng-click="setSortField('publishedRefset','terminologyId')">Id<span
+          <th class="col-md-1 col-xs-1" ng-click="setSortField('publishedRefset','terminologyId', null)">Id<span
               ng-bind="getSortIndicator('publishedRefset','terminologyId')"></span></th>
           <th class="col-md-2 col-xs-2"
-            ng-click="setSortField('publishedRefset','name')">Name<span
-              ng-bind="getSortIndicator('publishedRefset','name')"></span></th>
+            ng-click="setSortField('publishedRefset','name', null)">Name<span
+              ng-bind="getSortIndicator('publishedRefset','name',null)"></span></th>
           <th class="col-md-8 col-xs-8"></th>
    
         </thead>
@@ -110,7 +110,7 @@
               <!--  end Refset Details -->
             
               <!-- Refset Release Info -->
-              <accordion ng-show="refset.isExpanded == true && refset.releaseInfo != null"> <accordion-group
+              <accordion ng-show="refset.isExpanded == true && refset.releaseInfo.name != null"> <accordion-group
                 heading="Refset Release Info" is-open="false"> 
               <accordion-heading>             
                 <span tooltip-placement="right" 
@@ -158,17 +158,24 @@
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('member','conceptId')">Concept Id<span
+                      ng-click="setSortField('member','conceptId', refset.releaseInfo)">Artifact Name<span
                         ng-bind="getSortIndicator('member','conceptId')"></span></th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('member','conceptName')">Name<span
+                      ng-click="setSortField('member','conceptName', refset.releaseInfo)">Timestamp<span
                         ng-bind="getSortIndicator('member','conceptName')"></span>
                     </th>
+                    <th class="col-md-1 col-xs-1"></th>
                   </thead>
                   <tbody>
                     <tr ng-repeat="artifact in refset.releaseInfo.artifacts">
                       <td>{{artifact.name}}</td>
                       <td>{{toShortDate(artifact.timestamp)}}</td>
+                      <td><span>
+                          <a ng-click="exportReleaseArtifact(artifact)">
+                            <i title="Export Artifact"
+                              class="material-icons md-24">file_download</i>
+                          </a>
+                        </span></td>
                     </tr>
                   </tbody>
                 </table>
@@ -194,13 +201,13 @@
                     boundary-links="true" class="pagination-sm"
                     previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"
-                    ng-show="members.totalCount > pageSize || paging['member'].filter"
-                    total-items="members.totalCount"
+                    ng-show="refset.members.totalCount > pageSize || paging['member'].filter"
+                    total-items="refset.members.totalCount"
                     ng-model="paging['member'].page"
                     ng-change="retrieveMembers(refset)"></pagination>
 
                   <input class="input-filter" placeholder="Enter filter text"
-                    ng-show="members.totalCount > pageSize || paging['member'].filter"
+                    ng-show="refset.members.totalCount > pageSize || paging['member'].filter"
                     type="text" ng-model="paging['member'].filter"
                     ng-model-options="{ debounce: 300 }"
                     ng-change="retrieveMembers(refset)">
@@ -215,10 +222,10 @@
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('member','conceptId')">Concept Id<span
+                      ng-click="setSortField('member','conceptId', refset)">Concept Id<span
                         ng-bind="getSortIndicator('member','conceptId')"></span></th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('member','conceptName')">Name<span
+                      ng-click="setSortField('member','conceptName', refset)">Name<span
                         ng-bind="getSortIndicator('member','conceptName')"></span>
                     </th>
                   </thead>
@@ -272,10 +279,10 @@
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('inclusion','conceptId')">Concept Id<span
+                      ng-click="setSortField('inclusion','conceptId', refset)">Concept Id<span
                         ng-bind="getSortIndicator('inclusion','conceptId')"></span></th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('inclusion','conceptName')">Name<span
+                      ng-click="setSortField('inclusion','conceptName', refset)">Name<span
                         ng-bind="getSortIndicator('inclusion','conceptName')"></span>
                     </th>
                   </thead>
@@ -329,10 +336,10 @@
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('exclusion','conceptId')">Concept Id<span
+                      ng-click="setSortField('exclusion','conceptId', refset)">Concept Id<span
                         ng-bind="getSortIndicator('exclusion','conceptId')"></span></th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('exclusion','conceptName')">Name<span
+                      ng-click="setSortField('exclusion','conceptName', refset)">Name<span
                         ng-bind="getSortIndicator('exclusion','conceptName')"></span>
                     </th>
                   </thead>
@@ -359,40 +366,40 @@
               </accordion-heading>
               <div class="col-md-12 col-xs-12">
 
-                <!-- <span style="display: block;">
+                <span style="display: block;">
                   <pagination items-per-page="pageSize" max-size="5"
                     boundary-links="true" class="pagination-sm"
                     previous-text="&lsaquo;" next-text="&rsaquo;"
                     first-text="&laquo;" last-text="&raquo;"
-                    ng-show="members.totalCount > pageSize || paging['member'].filter"
-                    total-items="members.totalCount"
-                    ng-model="paging['member'].page"
-                    ng-change="retrieveMembers(refset)"></pagination>
+                    ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
+                    total-items="translation.concepts.totalCount"
+                    ng-model="paging['concept'].page"
+                    ng-change="retrieveTranslationConcepts(translation)"></pagination>
 
                   <input class="input-filter" placeholder="Enter filter text"
-                    ng-show="members.totalCount > pageSize || paging['member'].filter"
-                    type="text" ng-model="paging['member'].filter"
+                    ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
+                    type="text" ng-model="paging['concept'].filter"
                     ng-model-options="{ debounce: 300 }"
-                    ng-change="retrieveMembers(refset)">
+                    ng-change="retrieveTranslationConcepts(translation)">
 
                   <button class="btn btn-xs btn-warning"
-                    ng-show="paging['member'].filter"
-                    ng-click="paging['member'].filter = ''; retrieveMembers(refset)"
+                    ng-show="paging['concept'].filter"
+                    ng-click="paging['concept'].filter = ''; retrieveTranslationConcepts(translation)"
                     title="Click to clear filter text">Clear</button>
-                </span> -->
+                </span>
 
                 <table class="table">
                   <thead class="table-select-row">
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('concept','terminologyId')">Id<span
+                      ng-click="setSortField('concept','terminologyId', translation)">Id<span
                         ng-bind="getSortIndicator('concept','terminologyId')"></span></th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('concept','effectiveTime')">Effective
+                      ng-click="setSortField('concept','effectiveTime', translation)">Effective
                       Time<span
                         ng-bind="getSortIndicator('concept','effectiveTime')"></span>
                     </th>
                     <th class="col-md-4 col-xs-4"
-                      ng-click="setSortField('concept','name')">Name<span
+                      ng-click="setSortField('concept','name', translation)">Name<span
                         ng-bind="getSortIndicator('concept','name')"></span>
                     </th>
                   </thead>
