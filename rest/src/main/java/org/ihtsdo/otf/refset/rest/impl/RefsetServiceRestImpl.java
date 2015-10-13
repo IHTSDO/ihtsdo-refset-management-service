@@ -516,12 +516,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset members",
           UserRole.VIEWER);
 
-      if (query != null && !query.equals(""))
-        query = query + " AND memberType:MEMBER";
-      else
-        query = "memberType:MEMBER";
-
-      return refsetService.findMembersForRefset(refsetId, query, pfs);
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:MEMBER" : "memberType:MEMBER", pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset members ");
       return null;
@@ -566,12 +563,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset inclusions",
           UserRole.VIEWER);
 
-      if (query != null && !query.equals(""))
-        query = query + " AND memberType:INCLUSION";
-      else
-        query = "memberType:INCLUSION";
-
-      return refsetService.findMembersForRefset(refsetId, query, pfs);
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:INCLUSION" : "memberType:INCLUSION", pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset inclusions ");
       return null;
@@ -580,6 +574,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
+  }
+
+  @Override
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
+    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
   @Override
@@ -609,12 +610,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset exclusions",
           UserRole.VIEWER);
 
-      if (query != null && !query.equals(""))
-        query = query + " AND memberType:EXCLUSION";
-      else
-        query = "memberType:EXCLUSION";
-
-      return refsetService.findMembersForRefset(refsetId, query, pfs);
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:EXCLUSION" : "memberType:EXCLUSION", pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset exclusions ");
       return null;
@@ -647,9 +645,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public void finishMigration(Long refsetId, String authToken) throws Exception {
+  public Refset finishMigration(Long refsetId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
   @Override
@@ -662,20 +661,87 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public Refset beginRedefinition(Long refsetId, String newDefinition,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
+
+    // check assumptions
+    // * refset exists
+    // * user has permission
+    // * refset is not already staged
+    // * refset is INTENSIONAL
+
+    // turn transaction per operation off
+    // create a transaction
+    // Clone the refset
+    // * I'd recommend implementing a Jpa layer stageRefset(Refset refset) :
+    // Refset
+    // * it calls copy constructor on the parameter refset
+    // * it then sets the refset.setProvisional(true);
+    // * then it nulls the id of the refset and calls addRefset
+    // * then it iterates through all of the other object data structures of
+    // refset and clears their ids and calls corresponding add methods
+    // * inclusions, exclusions, refsetDescriptor, translations, etc..
+    // * if the refset is INTENSIONAL - DO NOT do this for "members",
+    // but if it is EXTENSIONAL, also do this for "members"
+    // * make sure you remember to null the ids before calling addXXX methods
+    // * nothing special is needed for the project/user role maps
+    // set staging parameters on the original refset
+    // * staged = true
+    // * stagingType = DEFINITION
+    //
+    // create StagedRefsetChange (for DEFINITION)
+    // origin refset is the original, staged is the new one
+    // Compute the expression (e.g. resolveExpression in terminologyhandler)
+    // add members for each expression
+    // commit
+    // return the staged refset
+
+    // NOTE: this solution involved adding a "provisional" flag to refset,
+    // in general, in other places where "findRefsetsForQuery" is being called
+    // we want a queryRestriction to include " AND provisional:false".
+
     return null;
   }
 
   @Override
-  public void finishRedefinition(Long refsetId, String authToken)
+  public RefsetJpa finishRedefinition(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // check assumptions
+    // * refset exists
+    // * user has permission
+    // * refset is staged as DEFINITION
 
+    // set transaction per opertaion flase
+    // start transaction
+    //
+    // Here the basic operation is to
+    // Look up the staged Refset change record for this refset
+    // Remove all of its members (e.g. removeMember..)
+    // Take all members from the staged refset and change their refset to be the
+    // origin refset, then update them.
+    // Remove the staged refset
+    //  * we don't define cascade on remove, so you'll have to individually
+    //  * remove anything that the clone method is cloning.
+    //  * the "members" have changed already, so you don't need to worry about them
+    // Remove the staged refset change object
+    // Set the stagingType of the original refset back to null;
+    // Commit
+    // Re-read and return the origin refset
+    //
+
+    return null;
   }
 
   @Override
   public void cancelRedefintion(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // check assumptions
+    // * refset exists
+    // * user has permission
+    // * refset is staged as DEFINITION
+
+    // See what cancelImportMembers does
+    // remove the provisional refset
+    // remove the staged refset change object
+    // set the staging parameters of original refset back.
 
   }
 

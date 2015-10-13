@@ -194,6 +194,18 @@ public interface RefsetServiceRest {
     String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
+   * Adds the refset exclusion.
+   *
+   * @param refsetId the refset id
+   * @param exclusion the exclusion
+   * @param authToken the auth token
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
+    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception;
+
+  /**
    * Removes the refset exclusion.
    *
    * @param exclusionId the exclusion id
@@ -329,9 +341,10 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishMigration(Long refsetId, String authToken) throws Exception;
+  public Refset finishMigration(Long refsetId, String authToken) throws Exception;
 
   /**
    * Cancel migration.
@@ -359,9 +372,10 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishRedefinition(Long refsetId, String authToken)
+  public Refset finishRedefinition(Long refsetId, String authToken)
     throws Exception;
 
   /**

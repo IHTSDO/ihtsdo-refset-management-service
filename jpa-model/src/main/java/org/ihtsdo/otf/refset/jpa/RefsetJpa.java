@@ -77,6 +77,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private Type type;
 
+  /** The provisional flag. */
+  @Column(nullable = false)
+  private boolean provisional;
+
   /** The staging type. */
   @Column(nullable = true)
   private StagingType stagingType;
@@ -170,6 +174,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     name = refset.getName();
     description = refset.getDescription();
     isPublic = refset.isPublic();
+    provisional = refset.isProvisional();
     stagingType = refset.getStagingType();
     type = refset.getType();
     definition = refset.getDefinition();
@@ -200,8 +205,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   public String getName() {
     return name;
@@ -230,6 +235,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public boolean isPublic() {
     return isPublic;
@@ -239,6 +245,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isProvisional() {
+    return provisional;
+  }
+
+  /* see superclass */
+  @Override
+  public void setProvisional(boolean provisional) {
+    this.provisional = provisional;
   }
 
   /* see superclass */

@@ -288,6 +288,14 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
+    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  /* see superclass */
+  @Override
   public void removeRefsetExclusion(Long exclusionId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
@@ -337,9 +345,10 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void finishMigration(Long refsetId, String authToken) throws Exception {
+  public Refset finishMigration(Long refsetId, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
   /* see superclass */
@@ -359,10 +368,10 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void finishRedefinition(Long refsetId, String authToken)
+  public Refset finishRedefinition(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
   /* see superclass */

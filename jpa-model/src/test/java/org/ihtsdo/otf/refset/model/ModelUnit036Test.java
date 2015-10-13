@@ -216,6 +216,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("isPublic");
+    tester.include("provisional");
     tester.include("type");
     tester.include("forTranslation");
     tester.include("workflowStatus");
@@ -258,6 +259,8 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("nameSort");
     tester.include("descriptionSort");
     tester.include("definitionSort");
+    tester.include("public");
+    tester.include("provisional");
 
     tester.include("type");
     tester.include("workflowStatus");

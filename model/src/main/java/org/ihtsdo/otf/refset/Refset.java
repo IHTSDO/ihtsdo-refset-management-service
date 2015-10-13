@@ -80,7 +80,7 @@ public interface Refset extends Component, Searchable {
     /** The definition. */
     DEFINITION,
     /** The migration. */
-    MIGRATION
+    MIGRATION;
   }
 
   /**
@@ -119,11 +119,25 @@ public interface Refset extends Component, Searchable {
   public boolean isStaged();
 
   /**
-   * Sets the staged flag;
+   * Sets the staged flag;.
    *
    * @param staged the staged
    */
   public void setStaged(boolean staged);
+
+  /**
+   * Indicates whether or not provisional is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isProvisional();
+
+  /**
+   * Sets the provisional flag;.
+   *
+   * @param provisional the provisional
+   */
+  public void setProvisional(boolean provisional);
 
   /**
    * Returns the staging type.

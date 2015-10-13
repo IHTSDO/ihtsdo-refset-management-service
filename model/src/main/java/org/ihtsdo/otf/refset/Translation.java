@@ -28,7 +28,7 @@ public interface Translation extends Component, Searchable {
     /** The import. */
     IMPORT,
     /** The migration. */
-    MIGRATION
+    MIGRATION;
   }
 
   /**
@@ -67,7 +67,7 @@ public interface Translation extends Component, Searchable {
   public boolean isStaged();
 
   /**
-   * Sets the staged flag;
+   * Sets the staged flag;.
    *
    * @param staged the staged
    */

@@ -891,10 +891,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public void finishMigration(Long translationId, String authToken)
+  public Translation finishMigration(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
   /* see superclass */

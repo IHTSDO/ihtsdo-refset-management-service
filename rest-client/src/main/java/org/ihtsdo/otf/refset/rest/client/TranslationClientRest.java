@@ -322,8 +322,9 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void finishMigration(Long translationId, String authToken)
+  public Translation finishMigration(Long translationId, String authToken)
     throws Exception {
+      return null;
     // TODO Auto-generated method stub
 
   }

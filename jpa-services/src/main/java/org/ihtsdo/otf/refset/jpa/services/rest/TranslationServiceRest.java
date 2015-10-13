@@ -426,9 +426,10 @@ public interface TranslationServiceRest {
    *
    * @param translationId the translation id
    * @param authToken the auth token
+   * @return the translation
    * @throws Exception the exception
    */
-  public void finishMigration(Long translationId, String authToken)
+  public Translation finishMigration(Long translationId, String authToken)
     throws Exception;
 
   /**
