@@ -1,5 +1,9 @@
 // Validation Service
-tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
+tsApp.service('validationService', [
+  '$http',
+  '$q',
+  'gpService',
+  'utilService',
   function($http, $q, gpService, utilService) {
     console.debug("configure validationService");
 
@@ -73,16 +77,60 @@ tsApp.service('validationService', [ '$http', '$q', 'gpService', 'utilService',
     }
 
     // validate member
-    this.validateSimpleRefsetMember = function(member) {
-      console.debug("validateSimpleRefsetMember");
+    this.validateMember = function(member) {
+      console.debug("validateMember");
       var deferred = $q.defer();
 
-      // Add translation
       gpService.increment()
       $http.post(validationUrl + 'member', member).then(
       // success
       function(response) {
         console.debug("  member = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // Validate all translation concept member
+    this.validateAllConcepts = function(translationId) {
+      console.debug("validateAllConcepts");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(validationUrl + 'concepts' + "?translationId=" + translationId)
+        .then(
+        // success
+        function(response) {
+          console.debug("  concepts = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
+
+    // Validate all refset members
+    this.validateAllMembers = function(refsetId) {
+      console.debug("validateAllMembers");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(validationUrl + 'members' + "?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  concepts = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
