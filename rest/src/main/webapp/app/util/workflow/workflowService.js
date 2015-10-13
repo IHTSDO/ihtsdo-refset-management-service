@@ -45,7 +45,7 @@ tsApp.service('workflowService',
         $http.post(
           workflowUrl + "translation/available/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName , pfs).then(
+            + userName, pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -72,7 +72,7 @@ tsApp.service('workflowService',
         $http.post(
           workflowUrl + "translation/assigned/editing" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName , pfs).then(
+            + userName, pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -99,7 +99,7 @@ tsApp.service('workflowService',
         $http.post(
           workflowUrl + "translation/available/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName , pfs).then(
+            + userName, pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -126,7 +126,7 @@ tsApp.service('workflowService',
         $http.post(
           workflowUrl + "translation/assigned/review" + "?projectId="
             + projectId + "&translationId=" + translationId + "&userName="
-            + userName , pfs).then(
+            + userName, pfs).then(
         // success
         function(response) {
           console.debug("  work = ", response.data);
@@ -157,6 +157,106 @@ tsApp.service('workflowService',
         // success
         function(response) {
           console.debug("  work = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
+
+      // Finds refsets available for editing by the specified user
+      this.findAvailableEditingRefsets = function(projectId, userName, pfs) {
+        console.debug("findAvailableEditingRefsets");
+        var deferred = $q.defer();
+
+        // Finds refsets available for editing by the specified user
+        gpService.increment()
+        $http.post(
+          workflowUrl + "refset/available/editing" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
+
+      // Finds refsets assigned for editing by the specified user
+      this.findAssignedEditingRefsets = function(projectId, userName, pfs) {
+        console.debug("findAssignedEditingRefsets");
+        var deferred = $q.defer();
+
+        // Finds refsets assigned for editing by the specified user
+        gpService.increment()
+        $http.post(
+          workflowUrl + "refset/assigned/editing" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
+
+      // Finds refsets available for review by the specified user
+      this.findAvailableReviewRefsets = function(projectId, userName, pfs) {
+        console.debug("findAvailableReviewRefsets");
+        var deferred = $q.defer();
+
+        // Finds refsets available for review by the specified user
+        gpService.increment()
+        $http.get(
+          workflowUrl + "refset/available/review" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
+
+      // Finds refsets assigned for review by the specified user
+      this.findAssignedReviewRefsets = function(projectId, userName, pfs) {
+        console.debug("findAssignedReviewRefsets");
+        var deferred = $q.defer();
+
+        // Finds refsets assigned for review by the specified user
+        gpService.increment()
+        $http.post(
+          workflowUrl + "refset/assigned/review" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
           gpService.decrement();
           deferred.resolve(response.data);
         },
