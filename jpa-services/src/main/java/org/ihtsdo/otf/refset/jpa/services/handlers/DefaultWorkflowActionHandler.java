@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -549,8 +550,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
-    List<ConceptRefsetMember> results = query.getResultList();
-    ConceptRefsetMemberListJpa list = new ConceptRefsetMemberListJpa();
+    List<Refset> results = query.getResultList();
+    RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
 
