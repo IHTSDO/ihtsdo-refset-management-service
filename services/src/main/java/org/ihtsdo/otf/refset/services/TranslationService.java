@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
@@ -352,5 +353,33 @@ public interface TranslationService extends RefsetService {
    */
   public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
     String terminology, String version) throws Exception;
+
+
+  /**
+   * Adds the staged change.
+   *
+   * @param change the change
+   * @return the staged translation change
+   * @throws Exception the exception
+   */
+  public StagedTranslationChange addStagedTranslationChange(StagedTranslationChange change)
+    throws Exception;
+
+  /**
+   * Removes the staged change.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeStagedTranslationChange(Long id) throws Exception;
+
+  /**
+   * Returns the staged change.
+   *
+   * @param id the id
+   * @return the staged change
+   * @throws Exception the exception
+   */
+  public StagedTranslationChange getStagedTranslationChange(Long id) throws Exception;
 
 }

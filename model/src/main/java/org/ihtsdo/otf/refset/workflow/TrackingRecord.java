@@ -9,7 +9,6 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
-import org.ihtsdo.otf.refset.rf2.Concept;
 
 /**
  * Represents a tracking record for authoring being performed for a translation
@@ -74,18 +73,32 @@ public interface TrackingRecord extends HasLastModified {
   public void setTranslation(Translation translation);
 
   /**
-   * Returns the concept.
+   * Returns the concept id.
    *
-   * @return the concept
+   * @return the concept id
    */
-  public Concept getConcept();
+  public String getConceptId();
 
   /**
-   * Sets the concept.
+   * Sets the concept id.
    *
-   * @param concept the concept
+   * @param conceptId the concept id
    */
-  public void setConcept(Concept concept);
+  public void setConceptId(String conceptId);
+
+  /**
+   * Returns the concept name.
+   *
+   * @return the concept name
+   */
+  public String getConceptName();
+
+  /**
+   * Sets the concept name.
+   *
+   * @param conceptName the concept name
+   */
+  public void setConceptName(String conceptName);
 
   /**
    * Indicates whether or not for review is the case.

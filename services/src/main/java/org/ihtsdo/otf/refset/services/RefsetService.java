@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services;
 import java.util.Date;
 
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -94,7 +95,6 @@ public interface RefsetService extends ProjectService {
   public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
     RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
-
   /**
    * Adds the refset member.
    *
@@ -102,7 +102,8 @@ public interface RefsetService extends ProjectService {
    * @return the refset
    * @throws Exception the exception
    */
-  public ConceptRefsetMember addMember(ConceptRefsetMember member) throws Exception;
+  public ConceptRefsetMember addMember(ConceptRefsetMember member)
+    throws Exception;
 
   /**
    * Removes the refset member.
@@ -226,4 +227,32 @@ public interface RefsetService extends ProjectService {
    * @throws Exception the exception
    */
   public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception;
+
+  /**
+   * Adds the staged change.
+   *
+   * @param change the change
+   * @return the staged refset change
+   * @throws Exception the exception
+   */
+  public StagedRefsetChange addStagedRefsetChange(StagedRefsetChange change)
+    throws Exception;
+
+  /**
+   * Removes the staged change.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeStagedRefsetChange(Long id) throws Exception;
+
+  /**
+   * Returns the staged change for the indicated refset id.
+   *
+   * @param refsetId the id
+   * @return the staged change
+   * @throws Exception the exception
+   */
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId) throws Exception;
+
 }

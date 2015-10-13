@@ -76,6 +76,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The refset counter. */
+  @SuppressWarnings("unused")
   private int refsetCt = 0;
 
   /** The translation ct. */
@@ -645,21 +646,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       throw new Exception("Refset does not pass validation.");
     }
     // Add refset
+
     refsetService.addRefset(refset, auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
 
     if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
+      ValidationResult vr =
+          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+              auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("import staging is invalid - " + vr);
+      }
       refsetService = new RefsetServiceRestImpl();
       InputStream in =
           new FileInputStream(
               new File(
                   "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refsetService.importMembers(null, in, refset.getId(), "DEFAULT",
+      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
     } else if (type == Refset.Type.INTENSIONAL) {
       // Import definition (from file)
-      refsetService = new RefsetServiceRestImpl();
       InputStream in =
           new FileInputStream(
               new File(
@@ -720,17 +728,29 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
     if (translationCt % 2 == 0) {
+      ValidationResult vr= translationService.beginImportConcepts(translation.getId(),
+          "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      translationService = new TranslationServiceRestImpl();
       InputStream in =
           new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
-      translationService.importConcepts(null, in, translation.getId(),
+      translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
     } else {
+      ValidationResult vr= translationService.beginImportConcepts(translation.getId(),
+          "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      translationService = new TranslationServiceRestImpl();
       InputStream in =
           new FileInputStream(new File(
-              "../config/src/main/resources/data/translation/translation.zip"));
-      translationService.importConcepts(null, in, translation.getId(),
+              "../config/src/main/resources/data/translation2/translation.zip"));
+      translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
     }

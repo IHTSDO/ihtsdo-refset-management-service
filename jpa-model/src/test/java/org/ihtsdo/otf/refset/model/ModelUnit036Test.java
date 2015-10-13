@@ -106,6 +106,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
   public void testModelGetSet036() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("staged");
     tester.test();
   }
 
@@ -131,6 +132,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("forTranslation");
     tester.include("inclusions");
     tester.include("public");
+    tester.include("stagingType");
     tester.include("name");
     tester.include("project");
     tester.include("type");

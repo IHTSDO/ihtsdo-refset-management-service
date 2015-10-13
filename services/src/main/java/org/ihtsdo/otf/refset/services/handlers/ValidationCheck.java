@@ -11,7 +11,11 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
- * Generically represents a validation check on a refset.
+ * Generically represents a validation check on a {@link Refset},
+ * {@link Translation}, {@link Concept}, or {@link ConceptRefsetMember}.
+ * Implementations will be static state checks on the objects themselves,
+ * determining whether a given state of the object is valid or not.
+ * 
  */
 public interface ValidationCheck extends Configurable {
 
@@ -24,7 +28,7 @@ public interface ValidationCheck extends Configurable {
   public ValidationResult validate(Concept concept);
 
   /**
-   * Validate.
+   * Validates the member.
    *
    * @param member the member
    * @return the validation result
@@ -32,7 +36,7 @@ public interface ValidationCheck extends Configurable {
   public ValidationResult validate(ConceptRefsetMember member);
 
   /**
-   * Validate.
+   * Validates the translation (not its members).
    *
    * @param translation the translation
    * @return the validation result
@@ -40,7 +44,7 @@ public interface ValidationCheck extends Configurable {
   public ValidationResult validate(Translation translation);
 
   /**
-   * Validate.
+   * Validates the refset (not its members).
    *
    * @param refset the refset
    * @return the validation result

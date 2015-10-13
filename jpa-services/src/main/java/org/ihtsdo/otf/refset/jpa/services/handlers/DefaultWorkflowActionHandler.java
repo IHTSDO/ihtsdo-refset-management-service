@@ -3,7 +3,10 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.List;
 import java.util.Properties;
+
+import javax.persistence.Query;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -11,9 +14,16 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -431,32 +441,127 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
-  public ConceptList findAvailableEditingConcepts(Translation translation,
-    User user, WorkflowService service) throws Exception {
-    // Find concepts of refset members that do not already have tracking records
-    // for this
-    // translation
-    return null;
+  public ConceptRefsetMemberList findAvailableEditingConcepts(
+    Translation translation, User user, PfsParameter pfs,
+    WorkflowService service) throws Exception {
+
+    RootServiceJpa rootService = new RootServiceJpa() {
+      // n/a
+    };
+
+    // Members of the refset
+    // That do not have concepts with tracking records
+    // for that refset
+    // ASSUMPTION: for translation tracking records, both translation AND refset
+    // are set as is conceptId
+    String queryStr =
+        "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
+            + "where b.id = :refsetId and a.refset = b"
+            + "and a.conceptId NOT IN "
+            + "(select c.conceptId TrackingRecordJpa c"
+            + " where c.refset = a)";
+
+    Query ctQuery =
+        rootService.getEntityManager().createQuery(
+            "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
+                + "where b.id = :refsetId and a.refset = b"
+                + "and a.conceptId NOT IN "
+                + "(select c.conceptId from TrackingRecordJpa c"
+                + " where c.refset = a)");
+
+    ctQuery.setParameter("refsetId", translation.getRefset().getId());
+
+    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    query.setParameter("refsetId", translation.getRefset().getId());
+    List<ConceptRefsetMember> results = query.getResultList();
+    ConceptRefsetMemberListJpa list = new ConceptRefsetMemberListJpa();
+    list.setObjects(results);
+    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+
+    return list;
+
   }
 
+  /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
   public ConceptList findAvailableReviewConcepts(Translation translation,
-    User user, WorkflowService service) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    User user, PfsParameter pfs, WorkflowService service) throws Exception {
+
+    RootServiceJpa rootService = new RootServiceJpa() {
+      // n/a
+    };
+
+    // Concepts of the translation with
+    // workflow status in a certain state
+    // that do not yet have tracking records
+    String queryStr =
+        "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
+            + "where a.translation = b and c.translation = b "
+            + "and a.terminologyId = c.conceptId "
+            + "and a.workflowStatus = :editingDone "
+            + "and b.translationId = :translationId";
+
+    Query ctQuery =
+        rootService.getEntityManager().createQuery(
+            "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
+                + "where a.translation = b and c.translation = b "
+                + "and a.terminologyId = c.conceptId "
+                + "and a.workflowStatus = :editingDone "
+                + "and b.translationId = :translationId");
+
+    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    ctQuery.setParameter("translationId", translation.getId());
+
+    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    query.setParameter("translationId", translation.getId());
+    List<Concept> results = query.getResultList();
+    ConceptListJpa list = new ConceptListJpa();
+    list.setObjects(results);
+    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+
+    return list;
   }
 
+  /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
-  public RefsetList findAvailableEditingRefsets(Refset refset, User user,
-    WorkflowService service) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  public RefsetList findAvailableEditingRefsets(Long projectId, User user,
+    PfsParameter pfs, WorkflowService service) throws Exception {
+
+    RootServiceJpa rootService = new RootServiceJpa() {
+      // n/a
+    };
+
+    // Refsets for this project that do not yet have tracking records
+    String queryStr =
+        "select a RefsetJpa a " + "where a.project.id = :projectId "
+            + "and a not in (select refset from TrackingRecordJpa)";
+
+    Query ctQuery =
+        rootService.getEntityManager().createQuery(
+            "select a RefsetJpa a " + "where a.project.id = :projectId "
+                + "and a not in (select refset from TrackingRecordJpa)");
+
+    ctQuery.setParameter("projectId", projectId);
+
+    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    query.setParameter("projectId", projectId);
+    List<Refset> results = query.getResultList();
+    RefsetListJpa list = new RefsetListJpa();
+    list.setObjects(results);
+    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+
+    return list;
   }
 
+  /* see superclass */
   @Override
-  public RefsetList findAvailableReviewRefsets(Refset refset, User user,
-    WorkflowService service) throws Exception {
+  public RefsetList findAvailableReviewRefsets(Long projectId, User user,
+    PfsParameter pfs, WorkflowService service) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

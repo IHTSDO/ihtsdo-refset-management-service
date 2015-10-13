@@ -18,6 +18,16 @@ import org.ihtsdo.otf.refset.rf2.Description;
 public interface TerminologyHandler extends Configurable {
 
   /**
+   * Copy the handler. This is needed used because of how the terminology
+   * handler is instantiated. One template object is created, and then copies of
+   * it are returned for individual requests.
+   *
+   * @return the terminology handler
+   * @throws Exception the exception
+   */
+  public TerminologyHandler copy() throws Exception;
+
+  /**
    * Returns the terminology editions.
    *
    * @return the terminology editions
@@ -69,8 +79,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept getConcept(String terminologyId,
-    String terminology, String version) throws Exception;
+  public Concept getConcept(String terminologyId, String terminology,
+    String version) throws Exception;
 
   /**
    * Returns the description.

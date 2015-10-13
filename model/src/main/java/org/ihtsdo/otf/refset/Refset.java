@@ -28,12 +28,22 @@ public interface Refset extends Component, Searchable {
 
     /** The extensional type. */
     EXTENSIONAL,
-
     /** The intensional type. */
     INTENSIONAL,
-
     /** The external type. */
     EXTERNAL
+  }
+
+  /**
+   * Enumeration of refset member types.
+   */
+  public enum MemberType {
+    /** The inclusion members. */
+    INCLUSION,
+    /** The exclusion members. */
+    EXCLUSION,
+    /** The plain. */
+    MEMBER;
   }
 
   /**
@@ -43,31 +53,34 @@ public interface Refset extends Component, Searchable {
 
     /** The member add. */
     MEMBER_ADD,
-
     /** The member remove. */
     MEMBER_REMOVE,
-
     /** The definition change. */
     DEFINITION_CHANGE,
-
     /** The workflow status change. */
     WORKFLOW_STATUS_CHANGE,
-
     /** The edition url change. */
     EDITION_URL_CHANGE,
-
     /** The inclusion add. */
     INCLUSION_ADD,
-
     /** The inclusion remove. */
     INCLUSION_REMOVE,
     /** The exnclusion add. */
     EXCLUSION_ADD,
-
     /** The exnclusion remove. */
-    EXCLUSION_REMOVE
+    EXCLUSION_REMOVE;
+  }
 
-    ;
+  /**
+   * Enum of staging types.
+   */
+  public enum StagingType {
+    /** The import. */
+    IMPORT,
+    /** The definition. */
+    DEFINITION,
+    /** The migration. */
+    MIGRATION
   }
 
   /**
@@ -97,6 +110,34 @@ public interface Refset extends Component, Searchable {
    * @param isPublic the new public
    */
   public void setPublic(boolean isPublic);
+
+  /**
+   * Indicates whether or not staged is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isStaged();
+
+  /**
+   * Sets the staged flag;
+   *
+   * @param staged the staged
+   */
+  public void setStaged(boolean staged);
+
+  /**
+   * Returns the staging type.
+   *
+   * @return the staging type
+   */
+  public StagingType getStagingType();
+
+  /**
+   * Sets the staging type.
+   *
+   * @param type the staging type
+   */
+  public void setStagingType(StagingType type);
 
   /**
    * Returns the type.
@@ -313,28 +354,28 @@ public interface Refset extends Component, Searchable {
    *
    * @return the refset members
    */
-  public List<ConceptRefsetMember> getRefsetMembers();
+  public List<ConceptRefsetMember> getMembers();
 
   /**
    * Sets the refset members.
    *
    * @param members the refset members
    */
-  public void setRefsetMembers(List<ConceptRefsetMember> members);
+  public void setMembers(List<ConceptRefsetMember> members);
 
   /**
    * Adds the refset member.
    *
    * @param member the member
    */
-  public void addRefsetMember(ConceptRefsetMember member);
+  public void addMember(ConceptRefsetMember member);
 
   /**
    * Removes the refset member.
    *
    * @param member the member
    */
-  public void removeRefsetMember(ConceptRefsetMember member);
+  public void removeMember(ConceptRefsetMember member);
 
   /**
    * Returns the feedback emails.

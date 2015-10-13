@@ -65,7 +65,7 @@ public class ModelUnit033Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet030() throws Exception {
+  public void testModelGetSet033() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
@@ -77,7 +77,7 @@ public class ModelUnit033Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode030() throws Exception {
+  public void testModelEqualsHashcode033() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
@@ -111,7 +111,7 @@ public class ModelUnit033Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy030() throws Exception {
+  public void testModelCopy033() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
@@ -128,7 +128,7 @@ public class ModelUnit033Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization030() throws Exception {
+  public void testModelXmlSerialization033() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
@@ -150,7 +150,7 @@ public class ModelUnit033Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField030() throws Exception {
+  public void testModelNotNullField033() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");

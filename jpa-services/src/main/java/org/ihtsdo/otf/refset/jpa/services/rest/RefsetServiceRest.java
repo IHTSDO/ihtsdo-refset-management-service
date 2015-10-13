@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -96,19 +97,6 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public void importDefinition(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
-
-  /**
-   * Import refset members. todo: replace this with beginImport/finishImport
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
-   * @param refsetId the refset id
-   * @param ioHandlerInfoId the io handler info id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void importMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
@@ -277,20 +265,18 @@ public interface RefsetServiceRest {
   /**
    * Begin import.
    *
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the member diff report
    * @throws Exception the exception
    */
-  public MemberDiffReport beginImportMembers(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Resume import.
+   * Resume import. - recomputes begin and produces same result without actually
+   * importing anything.
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
@@ -298,18 +284,22 @@ public interface RefsetServiceRest {
    * @return the member diff report
    * @throws Exception the exception
    */
-  public MemberDiffReport resumeImportMembers(Long refsetId,
+  public ValidationResult resumeImportMembers(Long refsetId,
     String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Finish import.
    *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
    * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImportMembers(Long refsetId, String authToken)
-    throws Exception;
+  public void finishImportMembers(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Cancel import.

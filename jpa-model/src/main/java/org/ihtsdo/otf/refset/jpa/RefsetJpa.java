@@ -61,15 +61,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @XmlRootElement(name = "refset")
 public class RefsetJpa extends AbstractComponent implements Refset {
 
-  // TODO: needs to have "staging" links
-  // or we could have a separate object for this (e.g. RefsetStaging, TranslationSTaging with a label for what's happening.
-  // then we need methods fo accessing the staging objects
-  // techincally only one thing should be allowed to be staged at a time
-  // the state needs to be validated before a begin/resume/finish/cancel can succeed
-  // i.e. if the wrong data is staged (e.g.see "label") then fail
-  // or if begin is called while something is already staged, then fail...
-  
-  
   /** The name. */
   @Column(nullable = false)
   private String name;
@@ -85,6 +76,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The type. */
   @Column(nullable = false)
   private Type type;
+
+  /** The staging type. */
+  @Column(nullable = true)
+  private StagingType stagingType;
 
   /** The definition. */
   @Column(nullable = true, length = 4000)
@@ -143,15 +138,14 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The exclusions. */
   @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_exclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
-  
   @IndexedEmbedded
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
-  @OneToMany( targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_refset_members", joinColumns = @JoinColumn(name = "refset_id"))
   @IndexedEmbedded
-  private List<ConceptRefsetMember> refsetMembers = null;
+  private List<ConceptRefsetMember> members = null;
 
   /** The enabled feedback events. */
   @ElementCollection
@@ -176,6 +170,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     name = refset.getName();
     description = refset.getDescription();
     isPublic = refset.isPublic();
+    stagingType = refset.getStagingType();
     type = refset.getType();
     definition = refset.getDefinition();
     definitionUuid = refset.getDefinitionUuid();
@@ -205,8 +200,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   public String getName() {
     return name;
@@ -215,8 +210,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Override
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   public String getDescription() {
     return description;
@@ -247,6 +242,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Override
+  public boolean isStaged() {
+    return stagingType != null;
+  }
+
+  /* see superclass */
+  @Override
+  public void setStaged(boolean staged) {
+    // n/a
+  }
+
+  /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Type getType() {
@@ -260,9 +267,21 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @Override
+  public StagingType getStagingType() {
+    return stagingType;
+  }
+
+  /* see superclass */
+  @Override
+  public void setStagingType(StagingType type) {
+    this.stagingType = type;
+  }
+
+  /* see superclass */
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "definitionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "definitionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   })
   @Override
   public String getDefinition() {
@@ -519,33 +538,33 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @XmlTransient
   @Override
-  public List<ConceptRefsetMember> getRefsetMembers() {
-    if (refsetMembers == null) {
-      refsetMembers = new ArrayList<>();
+  public List<ConceptRefsetMember> getMembers() {
+    if (members == null) {
+      members = new ArrayList<>();
     }
-    return refsetMembers;
+    return members;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetMembers(List<ConceptRefsetMember> members) {
-    this.refsetMembers = members;
+  public void setMembers(List<ConceptRefsetMember> members) {
+    this.members = members;
   }
 
   /* see superclass */
   @Override
-  public void addRefsetMember(ConceptRefsetMember member) {
-    if (refsetMembers == null) {
-      refsetMembers = new ArrayList<>();
+  public void addMember(ConceptRefsetMember member) {
+    if (members == null) {
+      members = new ArrayList<>();
     }
-    refsetMembers.add(member);
+    members.add(member);
   }
 
   /* see superclass */
   @Override
-  public void removeRefsetMember(ConceptRefsetMember member) {
-    if (refsetMembers != null) {
-      refsetMembers.remove(member);
+  public void removeMember(ConceptRefsetMember member) {
+    if (members != null) {
+      members.remove(member);
     }
   }
 
@@ -556,8 +575,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    */
   @XmlTransient
   @Fields({
-    @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
@@ -589,6 +608,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result =
+        prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
     result =
         prime
             * result
@@ -663,6 +684,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (type != other.type)
       return false;
+    if (stagingType != other.stagingType)
+      return false;
     return true;
   }
 
@@ -670,13 +693,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
-        + ", isPublic=" + isPublic + ", type=" + type + ", definition="
-        + definition + ", definitionUuid=" + definitionUuid + ", externalUrl="
-        + externalUrl + ", forTranslation=" + forTranslation
-        + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", refsetDescriptor=" + refsetDescriptor
-        + ", project=" + project + ", enabledFeedbackEvents="
-        + enabledFeedbackEvents + "]";
+        + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
+        + type + ", definition=" + definition + ", definitionUuid="
+        + definitionUuid + ", externalUrl=" + externalUrl + ", forTranslation="
+        + forTranslation + ", workflowStatus=" + workflowStatus
+        + ", workflowPath=" + workflowPath + ", refsetDescriptor="
+        + refsetDescriptor + ", project=" + project
+        + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 
 }

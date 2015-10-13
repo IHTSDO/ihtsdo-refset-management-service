@@ -5,9 +5,6 @@ package org.ihtsdo.otf.refset.rest.client;
 
 import java.util.Properties;
 
-
-
-
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
@@ -18,19 +15,23 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptValidationResultListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.MemberValidationResultListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ValidationServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
-
 /**
  * A client for connecting to a validation REST service.
  */
-public class ValidationClientRest implements ValidationServiceRest {
+public class ValidationClientRest extends RootClientRest implements
+    ValidationServiceRest {
 
   /** The config. */
   private Properties config = null;
@@ -46,15 +47,17 @@ public class ValidationClientRest implements ValidationServiceRest {
 
   /* see superclass */
   @Override
-  public ValidationResult validateConcept(ConceptJpa member, String authToken)
+  public ValidationResult validateConcept(ConceptJpa concept, String authToken)
     throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate concept " + concept);
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/member");
+        client.target(config.getProperty("base.url") + "/validate/concept");
 
     String memberString =
-        ConfigUtility.getStringForGraph(member == null ? new ConceptJpa()
-        : member);
+        ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
+            : concept);
     Logger.getLogger(getClass()).info(memberString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -74,16 +77,19 @@ public class ValidationClientRest implements ValidationServiceRest {
     return result;
   }
 
+  /* see superclass */
   @Override
   public ValidationResult validateRefset(RefsetJpa refset, String authToken)
     throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate refset " + refset);
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/validate/refset");
 
     String refsetString =
         ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
-        : refset);
+            : refset);
     Logger.getLogger(getClass()).info(refsetString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -103,20 +109,25 @@ public class ValidationClientRest implements ValidationServiceRest {
     return result;
   }
 
+  /* see superclass */
   @Override
   public ValidationResult validateTranslation(TranslationJpa translation,
     String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate translation " + translation);
+
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/validate/translation");
 
     String translationString =
-        ConfigUtility.getStringForGraph(translation == null ? new TranslationJpa()
-        : translation);
+        ConfigUtility.getStringForGraph(translation == null
+            ? new TranslationJpa() : translation);
     Logger.getLogger(getClass()).info(translationString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(translationString));
+            .header("Authorization", authToken)
+            .post(Entity.xml(translationString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -132,16 +143,20 @@ public class ValidationClientRest implements ValidationServiceRest {
     return result;
   }
 
+  /* see superclass */
   @Override
-  public ValidationResult validateRefsetMember(
-    ConceptRefsetMemberJpa member, String authToken) throws Exception {
+  public ValidationResult validateMember(ConceptRefsetMemberJpa member,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate member " + member);
+
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/validate/member");
 
     String memberString =
-        ConfigUtility.getStringForGraph(member == null ? new ConceptRefsetMemberJpa()
-        : member);
+        ConfigUtility.getStringForGraph(member == null
+            ? new ConceptRefsetMemberJpa() : member);
     Logger.getLogger(getClass()).info(memberString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -161,21 +176,73 @@ public class ValidationClientRest implements ValidationServiceRest {
     return result;
   }
 
+  /* see superclass */
   @Override
-  public ValidationResult validateAllConcepts(Long translationId,
+  public ConceptValidationResultList validateAllConcepts(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate all concepts " + translationId);
+
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/validate/concepts?translationId=" + translationId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    ConceptValidationResultList result =
+        (ConceptValidationResultList) ConfigUtility.getGraphForString(
+            resultString, ConceptValidationResultListJpa.class);
+    return result;
   }
 
-
-
+  /**
+   * Validate all members.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
   @Override
-  public ValidationResult validateAllRefsetMembers(Long refsetId,
+  public MemberValidationResultList validateAllMembers(Long refsetId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - validate all members " + refsetId);
 
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/validate/members?refsetId=" + refsetId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    MemberValidationResultList result =
+        (MemberValidationResultList) ConfigUtility.getGraphForString(
+            resultString, MemberValidationResultListJpa.class);
+    return result;
+  }
 
 }

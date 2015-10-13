@@ -12,6 +12,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -176,20 +177,16 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
-   * Begin import.
+   * Begin import of concepts.
    *
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
    * @param translationId the translation id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ConceptDiffReport beginImportConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception;
+  public ValidationResult beginImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Resume import concepts.
@@ -200,18 +197,22 @@ public interface TranslationServiceRest {
    * @return the concept diff report
    * @throws Exception the exception
    */
-  public ConceptDiffReport resumeImportConcepts(
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception;
+  public ValidationResult resumeImportConcepts(Long translationId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Finish import.
+   * Finish import of concepts.
    *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
    * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImportConcepts(Long translationId, String authToken)
+  public void finishImportConcepts(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception;
 
   /**
@@ -477,7 +478,7 @@ public interface TranslationServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findMembersInCommon(String conceptToken, String query,
+  public ConceptList findConceptsInCommon(String conceptToken, String query,
     PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**

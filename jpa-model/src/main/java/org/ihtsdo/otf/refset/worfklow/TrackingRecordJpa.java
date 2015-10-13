@@ -15,7 +15,6 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
@@ -27,6 +26,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -36,8 +36,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 
 /**
@@ -73,6 +72,14 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private boolean forReview = false;
 
+  /** The concept id. */
+  @Column(nullable = true)
+  private String conceptId;
+
+  /** The concept name. */
+  @Column(nullable = true, length = 3000)
+  private String conceptName;
+
   /** The authors. */
   @OneToMany(targetEntity = UserJpa.class)
   @CollectionTable(name = "tracking_record_authors")
@@ -90,10 +97,6 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The Refset. */
   @ManyToOne(targetEntity = RefsetJpa.class)
   private Refset refset = null;
-
-  /** The concepts. */
-  @OneToOne(targetEntity = ConceptJpa.class)
-  private Concept concept = null;
 
   /**
    * Instantiates an empty {@link TrackingRecordJpa}.
@@ -114,11 +117,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     lastModifiedBy = record.getLastModifiedBy();
     forAuthoring = record.isForAuthoring();
     forReview = record.isForReview();
+    conceptId = record.getConceptId();
+    conceptName = record.getConceptName();
     authors = new ArrayList<>(record.getAuthors());
     reviewers = new ArrayList<>(record.getReviewers());
     translation = new TranslationJpa(record.getTranslation());
     refset = new RefsetJpa(record.getRefset());
-    concept = new ConceptJpa(record.getConcept(), false);
   }
 
   /* see superclass */
@@ -193,6 +197,21 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.authors = authors;
   }
 
+  /**
+   * Returns the author user names. Used for indexing to allow lookup by author
+   * username.
+   *
+   * @return the author user names
+   */
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  private List<String> getAuthorUserNames() {
+    List<String> userNames = new ArrayList<>(authors.size() + 1);
+    for (User author : authors) {
+      userNames.add(author.getUserName());
+    }
+    return userNames;
+  }
+
   /* see superclass */
   @XmlElement(type = UserJpa.class)
   @Override
@@ -207,6 +226,21 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Override
   public void setReviewers(List<User> reviewers) {
     this.reviewers = reviewers;
+  }
+
+  /**
+   * Returns the reviewer user names. Used for indexing to allow lookup by
+   * reviewer username.
+   *
+   * @return the reviewer user names
+   */
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  private List<String> getReviewerUserNames() {
+    List<String> userNames = new ArrayList<>(reviewers.size() + 1);
+    for (User reviewer : reviewers) {
+      userNames.add(reviewer.getUserName());
+    }
+    return userNames;
   }
 
   /* see superclass */
@@ -227,6 +261,8 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the translation id
    */
+  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return translation == null ? 0L : translation.getId();
   }
@@ -261,6 +297,8 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the refset id
    */
+  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getRefsetId() {
     return refset == null ? 0L : refset.getId();
   }
@@ -278,37 +316,29 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public Concept getConcept() {
-    return concept;
+  public String getConceptId() {
+    return conceptId;
   }
 
   /* see superclass */
   @Override
-  public void setConcept(Concept concept) {
-    this.concept = concept;
+  public void setConceptId(String conceptId) {
+    this.conceptId = conceptId;
   }
 
-  /**
-   * Returns the concept id. For JAXB.
-   *
-   * @return the concept id
-   */
-  public Long getConceptId() {
-    return concept == null ? 0L : concept.getId();
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Override
+  public String getConceptName() {
+    return conceptName;
   }
 
-  /**
-   * Sets the concept id. For JAXB.
-   *
-   * @param conceptId the concept id
-   */
-  public void setConceptId(Long conceptId) {
-    if (concept == null) {
-      concept = new ConceptJpa();
-    }
-    concept.setId(conceptId);
+  /* see superclass */
+  @Override
+  public void setConceptName(String conceptName) {
+    this.conceptName = conceptName;
   }
 
   /* see superclass */
@@ -340,7 +370,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
+    result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result = prime * result + (forAuthoring ? 1231 : 1237);
     result = prime * result + (forReview ? 1231 : 1237);
     result =
@@ -360,10 +390,10 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (getClass() != obj.getClass())
       return false;
     TrackingRecordJpa other = (TrackingRecordJpa) obj;
-    if (concept == null) {
-      if (other.concept != null)
+    if (conceptId == null) {
+      if (other.conceptId != null)
         return false;
-    } else if (!concept.equals(other.concept))
+    } else if (!conceptId.equals(other.conceptId))
       return false;
     if (forAuthoring != other.forAuthoring)
       return false;
@@ -393,7 +423,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     return "TrackingRecordJpa [id=" + id + ", forAuthoring=" + forAuthoring
         + ", forReview=" + forReview + ", authors=" + authors + ", reviewers="
         + reviewers + ", translation=" + translation + ", refset=" + refset
-        + ", concept=" + concept + "]";
+        + ", conceptId=" + conceptId + ", conceptName=" + conceptName + "]";
   }
 
 }

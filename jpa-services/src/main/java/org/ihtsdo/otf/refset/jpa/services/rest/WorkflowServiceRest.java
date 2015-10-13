@@ -19,57 +19,53 @@ public interface WorkflowServiceRest {
    * Find available editing refsets.
    *
    * @param projectId the project id
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableEditingRefsets(Long projectId, Long refsetId,
+  public RefsetList findAvailableEditingRefsets(Long projectId,
     String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find assigned editing refsets.
    *
    * @param projectId the project id
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedEditingRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
+  public RefsetList findAssignedEditingRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find available review refsets.
    *
    * @param projectId the project id
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableReviewRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
+  public RefsetList findAvailableReviewRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find assigned review refsets.
    *
    * @param projectId the project id
-   * @param refsetId the refset id
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedReviewRefsets(Long projectId, Long refsetId,
-    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
+  public RefsetList findAssignedReviewRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Perform workflow action for a {@link Refset}.

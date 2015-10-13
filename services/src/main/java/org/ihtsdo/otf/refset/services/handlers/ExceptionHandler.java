@@ -7,12 +7,12 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
 
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
@@ -23,7 +23,8 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 public class ExceptionHandler {
 
   /** Date format */
-  public final static SimpleDateFormat df = new SimpleDateFormat("hh:mm:ss a");
+  public final static FastDateFormat df = FastDateFormat
+      .getInstance("hh:mm:ss a");
 
   /**
    * Handle exception.

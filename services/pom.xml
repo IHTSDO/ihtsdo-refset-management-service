@@ -18,9 +18,6 @@
   <!-- Declare Project Dependency Versions -->
   <dependencies>
 
-
-
-
     <!-- Required for Jersey and JSON -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
@@ -43,6 +40,11 @@
       <artifactId>jackson-module-jaxb-annotations</artifactId>
     </dependency>
 
+    <!-- JP - for EntityManager -->
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+    </dependency>
 
 
     <!-- Model interfaces. -->

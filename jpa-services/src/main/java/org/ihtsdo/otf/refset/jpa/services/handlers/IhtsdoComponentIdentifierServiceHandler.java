@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -79,7 +80,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   public String getTerminologyId(Concept concept) throws Exception {
 
     // If already assigned, reuse it
-    if (concept.getTerminologyId() != null
+    if (concept != null && concept.getTerminologyId() != null
         && !concept.getTerminologyId().isEmpty()) {
       return concept.getTerminologyId();
     }
@@ -96,7 +97,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         // Obtain the ID
         return getTerminologyId(namespace,
             (namespace != null && !namespace.isEmpty() && !namespace
-                .equals("0")) ? "00" : "10", authToken);
+                .equals("0")) ? "10" : "00", authToken);
       } catch (Exception e) {
         if (tried) {
           failedException = e;
@@ -114,7 +115,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   public String getTerminologyId(Description description) throws Exception {
 
     // If already assigned, reuse it
-    if (description.getTerminologyId() != null
+    if (description != null && description.getTerminologyId() != null
         && !description.getTerminologyId().isEmpty()) {
       return description.getTerminologyId();
     }
@@ -134,7 +135,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         // Obtain the ID
         return getTerminologyId(namespace,
             (namespace != null && !namespace.isEmpty() && !namespace
-                .equals("0")) ? "01" : "11", authToken);
+                .equals("0")) ? "11" : "01", authToken);
       } catch (Exception e) {
         if (tried) {
           failedException = e;
@@ -190,7 +191,12 @@ public class IhtsdoComponentIdentifierServiceHandler implements
       return refset.getTerminologyId();
     }
     // Reuse concept logic
-    return getTerminologyId(new ConceptJpa());
+    Concept concept = new ConceptJpa();
+    Translation translation = new TranslationJpa();
+    concept.setTranslation(translation);
+    translation.setRefset(refset);
+    translation.setProject(refset.getProject());
+    return getTerminologyId(concept);
   }
 
   /* see superclass */
@@ -266,7 +272,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     String postData =
         "{ " + "\"namespace\": " + (namespace == null ? 0 : namespace) + ", "
             + "\"partitionId\": \"" + partitionId + "\", "
-            + "\"systemId\": \"ihtsdo-refset\", " + "\"software\": \"ihtsdo-refset\", "
+            + "\"systemId\": \"\", " + "\"software\": \"ihtsdo-refset\", "
             + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
             + "}";
     Response response = target.request(accept).post(Entity.json(postData));
