@@ -46,7 +46,7 @@
               <i title="Hide details" class="material-icons md-24">remove</i>
             </a></span>
             <span ng-show="refset.isExpanded == false">
-              <a ng-click="toggleExpanded(refset)">
+              <a ng-click="toggleExpanded(refset); getCurrentRefsetReleaseInfo(refset)">
               <i title="Show details" class="material-icons md-24">add</i>
             </a></span>
             </td>
@@ -58,7 +58,7 @@
               <accordion ng-show="refset.isExpanded == true"> <accordion-group
                 heading="Refset Details" is-open="false"> 
               <accordion-heading>             
-                <span tooltip-placement="right"
+                <span tooltip-placement="right" 
                   tooltip="Refset Metadata Details"> {{refset.name}} Details </span>              
               </accordion-heading>
               <div class="col-md-12 col-xs-12">
@@ -103,11 +103,78 @@
                     </tr>
                   </tbody>
                 </table>
+                
+
               </div> 
               </accordion-group> </accordion>
               <!--  end Refset Details -->
             
-            
+              <!-- Refset Release Info -->
+              <accordion ng-show="refset.isExpanded == true && refset.releaseInfo != null"> <accordion-group
+                heading="Refset Release Info" is-open="false"> 
+              <accordion-heading>             
+                <span tooltip-placement="right" 
+                  tooltip="Refset Release Info"> {{refset.name}} Release Info </span>              
+              </accordion-heading>
+              <div class="col-md-12 col-xs-12">
+
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"></th>
+                    <th class="col-md-8 col-xs-8"></th>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Name</td>
+                      <td>{{refset.releaseInfo.name}}</td>
+                    </tr>
+                    <tr>
+                      <td>Description</td>
+                      <td>{{refset.releaseInfo.description}}</td>
+                    </tr>
+                    <tr>
+                      <td>Last Modified</td>
+                      <td>{{toShortDate(refset.releaseInfo.lastModified)}}</td>
+                    </tr>
+                    <tr>
+                      <td>Release Begin Date</td>
+                      <td>{{toShortDate(refset.releaseInfo.releaseBeginDate)}}</td>
+                    </tr>
+                    <tr>
+                      <td>Release Finish Date</td>
+                      <td>{{toShortDate(refset.releaseInfo.releaseFinishDate)}}</td>
+                    </tr>
+                    <tr>
+                      <td>Terminology</td>
+                      <td>{{refset.releaseInfo.terminology}}</td>
+                    </tr>
+                    <tr>
+                      <td>Version</td>
+                      <td>{{refset.releaseInfo.version}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <table class="table">
+                  <thead class="table-select-row">
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('member','conceptId')">Concept Id<span
+                        ng-bind="getSortIndicator('member','conceptId')"></span></th>
+                    <th class="col-md-4 col-xs-4"
+                      ng-click="setSortField('member','conceptName')">Name<span
+                        ng-bind="getSortIndicator('member','conceptName')"></span>
+                    </th>
+                  </thead>
+                  <tbody>
+                    <tr ng-repeat="artifact in refset.releaseInfo.artifacts">
+                      <td>{{artifact.name}}</td>
+                      <td>{{toShortDate(artifact.timestamp)}}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div> 
+              </accordion-group> </accordion>
+              <!--  end Refset Release Info -->            
             
             
                 <!-- Refset Members -->

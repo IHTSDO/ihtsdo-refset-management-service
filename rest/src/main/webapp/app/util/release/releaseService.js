@@ -46,4 +46,27 @@ tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
       return deferred.promise;
     }
 
+    // retrieve current refset release info
+    this.getCurrentRefsetRelease = function(refsetId) {
+      console.debug("getCurrentRefsetRelease");
+      var deferred = $q.defer();
+
+      // Assign user to project
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'info' + "?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  release info = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
   } ]);

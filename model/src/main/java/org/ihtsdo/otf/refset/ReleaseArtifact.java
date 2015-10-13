@@ -7,6 +7,8 @@
  *************************************************************/
 package org.ihtsdo.otf.refset;
 
+import java.util.Date;
+
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.helpers.HasName;
 
@@ -42,5 +44,19 @@ public interface ReleaseArtifact extends HasName, HasLastModified {
    * @param data the data
    */
   public void setData(byte[] data);
+
+  /**
+   * Sets the timestamp.
+   *
+   * @param timestamp the timestamp
+   */
+  public void setTimestamp(Date timestamp);
+
+  /**
+   * Returns the timestamp.
+   *
+   * @return the timestamp
+   */
+  public Date getTimestamp();
 
 }

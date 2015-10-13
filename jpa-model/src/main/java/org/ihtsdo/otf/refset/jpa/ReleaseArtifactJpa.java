@@ -137,7 +137,20 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
   }
 
   /* see superclass */
-  @XmlElement(type = ReleaseInfoJpa.class)
+  @Override
+  public Date getTimestamp() {
+    return timestamp;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  /* see superclass */
+  //@XmlElement(type = ReleaseInfoJpa.class)
+  @XmlTransient
   @Override
   public ReleaseInfo getReleaseInfo() {
     return releaseInfo;
