@@ -90,21 +90,6 @@ public interface TranslationServiceRest {
    */
   public void removeTranslation(Long translationId, String authToken)
     throws Exception;
-
-  /**
-   * Import translation. // TODO: replace with beginImport...
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
-   * @param translationId the translation id
-   * @param ioHandlerInfoId the io handler info id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void importConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
-    throws Exception;
-
   /**
    * Export translation.
    *

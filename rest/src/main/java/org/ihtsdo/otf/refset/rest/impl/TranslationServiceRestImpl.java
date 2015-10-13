@@ -47,8 +47,6 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -362,86 +360,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
-  }
-
-  /* see superclass */
-  @POST
-  @Override
-  @Path("/import")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import translation concepts", notes = "Imports concepts and descriptions into the specified translation", response = List.class)
-  public void importConcepts(
-    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-    @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /import" + translationId + ", "
-            + ioHandlerInfoId);
-
-    TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation concepts", UserRole.REVIEWER);
-
-      // Obtain the import handler
-      ImportTranslationHandler handler =
-          translationService.getImportTranslationHandler(ioHandlerInfoId);
-      if (handler == null) {
-        throw new Exception("invalid handler id " + ioHandlerInfoId);
-      }
-
-      // TODO: what if translation already has concepts?
-      // what if some of the concepts match these?
-
-      // Load concepts into memory and add to translation
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-      List<Concept> concepts = handler.importConcepts(translation, in);
-      // Iterate through concepts
-      for (Concept concept : concepts) {
-        // Add concept
-        concept.setLastModifiedBy(userName);
-        translationService.addConcept(concept);
-
-        // Iterate through descriptions
-        for (Description description : concept.getDescriptions()) {
-          // Add description
-          description.setLastModifiedBy(userName);
-          translationService.addDescription(description);
-
-          // Iterate through langauges
-          for (LanguageRefsetMember member : description
-              .getLanguageRefsetMembers()) {
-            // Add language
-            member.setDescriptionId(description.getTerminologyId());
-            member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member);
-            // If type is "synonym"
-          }
-        }
-      }
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-      translationService.commit();
-    } catch (Exception e) {
-      handleException(e, "trying to import translation concepts");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
   }
 
   /* see superclass */

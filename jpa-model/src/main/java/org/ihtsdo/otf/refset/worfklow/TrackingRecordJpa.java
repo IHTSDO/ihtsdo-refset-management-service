@@ -135,24 +135,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.id = id;
   }
 
-  /**
-   * Returns the object id. For JAXB.
-   *
-   * @return the object id
-   */
-  public String getObjectId() {
-    return id == null ? "" : id.toString();
-  }
-
-  /**
-   * Sets the object id. For JAXB.
-   *
-   * @param id the object id
-   */
-  public void setObjectId(String id) {
-    this.id = Long.parseLong(id);
-  }
-
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -202,7 +184,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the author user names
    */
   @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  private List<String> getAuthorUserNames() {
+  public List<String> getAuthorUserNames() {
     List<String> userNames = new ArrayList<>(authors.size() + 1);
     for (User author : authors) {
       userNames.add(author.getUserName());
@@ -233,7 +215,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the reviewer user names
    */
   @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  private List<String> getReviewerUserNames() {
+  public List<String> getReviewerUserNames() {
     List<String> userNames = new ArrayList<>(reviewers.size() + 1);
     for (User reviewer : reviewers) {
       userNames.add(reviewer.getUserName());
@@ -332,7 +314,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the concept id
    */
   @XmlElement
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getConceptId() {
     return concept == null ? "" : concept.getTerminologyId();
   }
@@ -425,12 +407,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     return true;
   }
 
-  /* see superclass */
   @Override
   public String toString() {
-    return "TrackingRecordJpa [id=" + id + ", forAuthoring=" + forAuthoring
-        + ", forReview=" + forReview + ", authors=" + authors + ", reviewers="
-        + reviewers + ", translation=" + translation + ", refset=" + refset
-        + ", concept=" + concept + "]";
+    return "TrackingRecordJpa [id=" + id + ", lastModified=" + lastModified
+        + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
+        + forAuthoring + ", forReview=" + forReview + ", authors=" + authors
+        + ", reviewers=" + reviewers + ", translation=" + translation
+        + ", refset=" + refset + ", concept=" + concept + "]";
   }
 }

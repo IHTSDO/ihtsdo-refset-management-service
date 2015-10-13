@@ -156,6 +156,7 @@ public class ModelUnit041Test extends ModelUnitSupport {
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("refsetId");
     tester.exclude("translationId");
+    tester.exclude("conceptId");
     tester.test();
   }
 
@@ -168,7 +169,7 @@ public class ModelUnit041Test extends ModelUnitSupport {
   public void testModelEqualsHashcode041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("conceptId");
+    tester.include("concept");
     tester.include("forAuthoring");
     tester.include("forReview");
     tester.include("translation");
@@ -274,15 +275,15 @@ public class ModelUnit041Test extends ModelUnitSupport {
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
-    tester.include("conceptName");
+    tester.include("authorUserNames");
+    tester.include("reviewerUserNames");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
-
+    tester.include("conceptId");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("conceptId");
     tester.include("translationid");
     tester.include("refsetId");
 

@@ -92,14 +92,13 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("memberType");
 
     tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);
-    // TODO: get this to work for memberType
-    //assertTrue(tester.testIdentitiyFieldEquals());
-    //assertTrue(tester.testNonIdentitiyFieldEquals());
-    //assertTrue(tester.testIdentityFieldNotEquals());
-    //assertTrue(tester.testIdentitiyFieldHashcode());
-    //assertTrue(tester.testNonIdentitiyFieldHashcode());
-    //assertTrue(tester.testIdentityFieldDifferentHashcode());
+    tester.proxy(Refset.class, 1, r2); 
+    assertTrue(tester.testIdentitiyFieldEquals());
+    assertTrue(tester.testNonIdentitiyFieldEquals());
+    assertTrue(tester.testIdentityFieldNotEquals());
+    assertTrue(tester.testIdentitiyFieldHashcode());
+    assertTrue(tester.testNonIdentitiyFieldHashcode());
+    assertTrue(tester.testIdentityFieldDifferentHashcode());
   }
 
   /**
