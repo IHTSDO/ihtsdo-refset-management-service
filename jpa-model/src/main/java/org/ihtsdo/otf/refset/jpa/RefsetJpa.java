@@ -54,7 +54,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 @Entity
 @Table(name = "refsets", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "name", "description", "id"
+    "terminologyId", "project_id"
 }))
 @Audited
 @Indexed
@@ -132,19 +132,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The inclusions. */
   @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_inclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
-  @IndexedEmbedded
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
   private List<ConceptRefsetMember> inclusions = new ArrayList<>();
 
   /** The exclusions. */
   @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_exclusions_members", joinColumns = @JoinColumn(name = "refset_id"))
-  @IndexedEmbedded
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
   private List<ConceptRefsetMember> exclusions = new ArrayList<>();
 
   /** The refset members. */
   @OneToMany(targetEntity = ConceptRefsetMemberJpa.class)
   @CollectionTable(name = "refset_refset_members", joinColumns = @JoinColumn(name = "refset_id"))
-  @IndexedEmbedded
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
   private List<ConceptRefsetMember> members = null;
 
   /** The enabled feedback events. */

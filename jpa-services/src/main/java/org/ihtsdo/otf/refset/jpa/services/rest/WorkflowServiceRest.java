@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -92,7 +93,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingConcepts(Long projectId,
+  public ConceptRefsetMemberList findAvailableEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 

@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
@@ -37,6 +38,8 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 
 /**
@@ -72,14 +75,6 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private boolean forReview = false;
 
-  /** The concept id. */
-  @Column(nullable = true)
-  private String conceptId;
-
-  /** The concept name. */
-  @Column(nullable = true, length = 3000)
-  private String conceptName;
-
   /** The authors. */
   @OneToMany(targetEntity = UserJpa.class)
   @CollectionTable(name = "tracking_record_authors")
@@ -97,6 +92,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The Refset. */
   @ManyToOne(targetEntity = RefsetJpa.class)
   private Refset refset = null;
+
+  /** The concept. */
+  @OneToOne(targetEntity = ConceptJpa.class)
+  private Concept concept = null;
 
   /**
    * Instantiates an empty {@link TrackingRecordJpa}.
@@ -117,12 +116,11 @@ public class TrackingRecordJpa implements TrackingRecord {
     lastModifiedBy = record.getLastModifiedBy();
     forAuthoring = record.isForAuthoring();
     forReview = record.isForReview();
-    conceptId = record.getConceptId();
-    conceptName = record.getConceptName();
     authors = new ArrayList<>(record.getAuthors());
     reviewers = new ArrayList<>(record.getReviewers());
     translation = new TranslationJpa(record.getTranslation());
     refset = new RefsetJpa(record.getRefset());
+    concept = new ConceptJpa(record.getConcept(), false);
   }
 
   /* see superclass */
@@ -316,29 +314,39 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @XmlTransient
   @Override
-  public String getConceptId() {
-    return conceptId;
+  public Concept getConcept() {
+    return concept;
   }
 
   /* see superclass */
   @Override
-  public void setConceptId(String conceptId) {
-    this.conceptId = conceptId;
+  public void setConcept(Concept concept) {
+    this.concept = concept;
   }
 
-  /* see superclass */
+  /**
+   * Returns the concept id. For JAXB and index.
+   *
+   * @return the concept id
+   */
+  @XmlElement
   @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  @Override
-  public String getConceptName() {
-    return conceptName;
+  public String getConceptId() {
+    return concept == null ? "" : concept.getTerminologyId();
   }
 
-  /* see superclass */
-  @Override
-  public void setConceptName(String conceptName) {
-    this.conceptName = conceptName;
+  /**
+   * Sets the concept id.
+   *
+   * @param conceptId the concept id
+   */
+  public void setConceptId(String conceptId) {
+    if (concept == null) {
+      concept = new ConceptJpa();
+    }
+    concept.setTerminologyId(conceptId);
   }
 
   /* see superclass */
@@ -370,7 +378,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
     result = prime * result + (forAuthoring ? 1231 : 1237);
     result = prime * result + (forReview ? 1231 : 1237);
     result =
@@ -390,10 +398,10 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (getClass() != obj.getClass())
       return false;
     TrackingRecordJpa other = (TrackingRecordJpa) obj;
-    if (conceptId == null) {
-      if (other.conceptId != null)
+    if (concept == null) {
+      if (other.concept != null)
         return false;
-    } else if (!conceptId.equals(other.conceptId))
+    } else if (!concept.equals(other.concept))
       return false;
     if (forAuthoring != other.forAuthoring)
       return false;
@@ -423,7 +431,6 @@ public class TrackingRecordJpa implements TrackingRecord {
     return "TrackingRecordJpa [id=" + id + ", forAuthoring=" + forAuthoring
         + ", forReview=" + forReview + ", authors=" + authors + ", reviewers="
         + reviewers + ", translation=" + translation + ", refset=" + refset
-        + ", conceptId=" + conceptId + ", conceptName=" + conceptName + "]";
+        + ", concept=" + concept + "]";
   }
-
 }

@@ -15,9 +15,11 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
@@ -80,7 +82,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingConcepts(Long projectId,
+  public ConceptRefsetMemberList findAvailableEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -113,8 +115,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptListJpa.class);
+    return (ConceptRefsetMemberList) ConfigUtility.getGraphForString(resultString,
+        ConceptRefsetMemberListJpa.class);
   }
 
   /* see superclass */

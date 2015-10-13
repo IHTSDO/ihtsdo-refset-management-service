@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 
@@ -82,23 +83,34 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate actions that users are not allowed to perform.
     UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
-    if (projectRole == UserRole.AUTHOR) {
-      if (action == WorkflowAction.PREVIEW || action == WorkflowAction.PUBLISH
-          || action == WorkflowAction.RE_REVIEW) {
-        result
-            .addError("User does not have permissions to perform this action - "
-                + action + ", " + user);
-      }
+    // An author cannot do review work
+    if (projectRole == UserRole.AUTHOR
+        && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+        && action == WorkflowAction.ASSIGN_FROM_EXISTING) {
+      result
+          .addError("User does not have permissions to perform this action - "
+              + action + ", " + user);
+      return result;
+
     }
 
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {
       case ASSIGN_FROM_SCRATCH:
-      case ASSIGN_FROM_EXISTING:
-      case UNASSIGN:
         throw new Exception("Illegal action for a refset " + action);
+      case ASSIGN_FROM_EXISTING:
+        // Valid for NEW or a feedback loop from later
 
+        flag =
+            EnumSet.of(WorkflowStatus.NEW, WorkflowStatus.PREVIEW,
+                WorkflowStatus.READY_FOR_PUBLICATION, WorkflowStatus.PUBLISHED)
+                .contains(refset.getWorkflowStatus());
+        break;
+      case UNASSIGN:
+        // valid depending on state of the tracking record
+        flag = true;
+        break;
       case SAVE:
         // SAVE is always valid
         flag = true;
@@ -107,8 +119,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case FINISH:
         // Only valid if "in progress" or "ready"
         flag =
-            refset.getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS
-                || refset.getWorkflowStatus() == WorkflowStatus.REVIEW_IN_PROGRESS;
+            EnumSet.of(WorkflowStatus.EDITING_IN_PROGRESS,
+                WorkflowStatus.REVIEW_IN_PROGRESS).contains(
+                refset.getWorkflowStatus());
         break;
 
       case PREVIEW:
@@ -117,8 +130,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case PUBLISH:
         flag =
-            refset.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE
-                || refset.getWorkflowStatus() == WorkflowStatus.PREVIEW;
+            EnumSet.of(WorkflowStatus.REVIEW_DONE, WorkflowStatus.PREVIEW)
+                .contains(refset.getWorkflowStatus());
         break;
 
       case CANCEL:
@@ -126,19 +139,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         flag = true;
         break;
 
-      case RE_EDIT:
-        flag =
-            refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED
-                || refset.getWorkflowStatus() == WorkflowStatus.PREVIEW
-                || refset.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE;
-
-        break;
-
-      case RE_REVIEW:
-        flag =
-            refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED
-                || refset.getWorkflowStatus() == WorkflowStatus.PREVIEW;
-        break;
       default:
         throw new Exception("Illegal workflow action");
     }
@@ -160,13 +160,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate actions that users are not allowed to perform.
     UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
-    if (projectRole == UserRole.AUTHOR) {
-      if (action == WorkflowAction.PREVIEW || action == WorkflowAction.PUBLISH
-          || action == WorkflowAction.RE_REVIEW) {
-        result
-            .addError("User does not have permissions to perform this action - "
-                + action + ", " + user);
-      }
+    // An author cannot do review work
+    if (projectRole == UserRole.AUTHOR
+        && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+        && action == WorkflowAction.ASSIGN_FROM_EXISTING) {
+      result
+          .addError("User does not have permissions to perform this action - "
+              + action + ", " + user);
+      return result;
     }
 
     // Validate actions that workflow status will allow
@@ -216,22 +217,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case CANCEL:
         // CANCEL is always valid
         flag = true;
-        break;
-
-      case RE_EDIT:
-        flag =
-            concept != null
-                && (concept.getWorkflowStatus() == WorkflowStatus.PUBLISHED
-                    || concept.getWorkflowStatus() == WorkflowStatus.PREVIEW || concept
-                    .getWorkflowStatus() == WorkflowStatus.REVIEW_DONE);
-
-        break;
-
-      case RE_REVIEW:
-        flag =
-            concept != null
-                && (concept.getWorkflowStatus() == WorkflowStatus.PUBLISHED || concept
-                    .getWorkflowStatus() == WorkflowStatus.PREVIEW);
         break;
 
       default:
@@ -343,36 +328,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
-      case RE_EDIT:
-        // PUBLISHED, PREVIEW, READY_FOR_PUBLICATION => NEW
-        if (refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
-            || refset.getWorkflowStatus() == WorkflowStatus.PREVIEW
-            || refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
-          refset.setWorkflowStatus(WorkflowStatus.NEW);
-        }
-        // Otherwise, there is an error
-        else {
-          throw new Exception(
-              "Illegal workflow action for current workflow state - " + action
-                  + ", " + refset);
-        }
-        break;
-
-      case RE_REVIEW:
-        // PUBLISHED, PREVIEW, READY_FOR_PUBLICATION => EDITING_DONE
-        if (refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION
-            || refset.getWorkflowStatus() == WorkflowStatus.PREVIEW
-            || refset.getWorkflowStatus() == WorkflowStatus.PUBLISHED) {
-          refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-        }
-        // Otherwise, there is an error
-        else {
-          throw new Exception(
-              "Illegal workflow action for current workflow state - " + action
-                  + ", " + refset);
-        }
-        break;
-
       default:
         throw new Exception("Illegal workflow action");
     }
@@ -425,13 +380,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
         break;
 
-      case RE_EDIT:
-
-        break;
-
-      case RE_REVIEW:
-
-        break;
+     
 
       default:
         throw new Exception("Illegal workflow action");
@@ -460,8 +409,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
             + "where b.id = :refsetId and a.refset = b"
             + "and a.conceptId NOT IN "
-            + "(select c.conceptId TrackingRecordJpa c"
-            + " where c.refset = a)";
+            + "(select d.terminologyId TrackingRecordJpa c, ConceptJpa d "
+            + " where c.refset = a AND c.concept = d)";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
@@ -500,16 +449,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     String queryStr =
         "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
             + "where a.translation = b and c.translation = b "
-            + "and a.terminologyId = c.conceptId "
-            + "and a.workflowStatus = :editingDone "
+            + "and a = c.concept " + "and a.workflowStatus = :editingDone "
             + "and b.translationId = :translationId";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
             "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
                 + "where a.translation = b and c.translation = b "
-                + "and a.terminologyId = c.conceptId "
-                + "and a.workflowStatus = :editingDone "
+                + "and a = c.concept " + "and a.workflowStatus = :editingDone "
                 + "and b.translationId = :translationId");
 
     ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
@@ -538,12 +485,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Refsets for this project that do not yet have tracking records
     String queryStr =
-        "select a RefsetJpa a " + "where a.project.id = :projectId "
+        "select a RefsetJpa a where a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa)";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
-            "select a RefsetJpa a " + "where a.project.id = :projectId "
+            "select count(*) RefsetJpa a where a.project.id = :projectId "
                 + "and a not in (select refset from TrackingRecordJpa)");
 
     ctQuery.setParameter("projectId", projectId);
@@ -559,11 +506,38 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
   public RefsetList findAvailableReviewRefsets(Long projectId, User user,
     PfsParameter pfs, WorkflowService service) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    RootServiceJpa rootService = new RootServiceJpa() {
+      // n/a
+    };
+
+    // Refsets for this project that do not yet have tracking records
+    String queryStr =
+        "select a RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
+            + "b.refset = a and a.workflowStatus = :editingDone";
+
+    Query ctQuery =
+        rootService
+            .getEntityManager()
+            .createQuery(
+                "select count(*) RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
+                    + "b.refset = a and a.workflowStatus = :editingDone");
+
+    ctQuery.setParameter("projectId", projectId);
+    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+
+    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    query.setParameter("projectId", projectId);
+    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    List<Refset> results = query.getResultList();
+    RefsetListJpa list = new RefsetListJpa();
+    list.setObjects(results);
+    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+
+    return list;
   }
 
 }

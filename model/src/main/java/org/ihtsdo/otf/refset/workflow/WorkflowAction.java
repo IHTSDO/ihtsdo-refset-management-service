@@ -24,9 +24,4 @@ public enum WorkflowAction {
   PUBLISH,
   /** The cancel action. */
   CANCEL,
-  /** The "re edit" */
-  RE_EDIT,
-  /** The "re review" */
-  RE_REVIEW;
-
 }
