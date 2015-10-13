@@ -30,9 +30,11 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
@@ -287,6 +289,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    * @return the refset id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
@@ -395,6 +398,15 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Override
   public void setArtifacts(List<ReleaseArtifact> artifacts) {
     this.artifacts = artifacts;
+  }
+  
+  /* see superclass */
+  @Override
+  public void addArtifact(ReleaseArtifact artifact) {
+    if (artifacts == null) {
+      artifacts = new ArrayList<>();
+    }
+    artifacts.add(artifact);
   }
 
   /* see superclass */

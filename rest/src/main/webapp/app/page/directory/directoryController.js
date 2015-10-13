@@ -11,8 +11,10 @@ tsApp.controller('DirectoryCtrl', [
   'securityService',
   'refsetService',
   'translationService',
+  'releaseService',
   function($scope, $http, $modal, $location, $anchorScroll, gpService,
-    utilService, tabService, securityService, refsetService, translationService) {
+    utilService, tabService, securityService, refsetService, translationService,
+    releaseService) {
     console.debug('configure DirectoryCtrl');
 
     // Handle resetting tabs on "back" button
@@ -141,6 +143,17 @@ tsApp.controller('DirectoryCtrl', [
       refsetService.findRefsetExclusionsForQuery(refset.id, $scope.paging["exclusion"].filter,
         pfs).then(function(data) {
         refset.exclusions = data.members;
+      })
+
+    };    
+    
+    // get current refset release info
+    $scope.getCurrentRefsetReleaseInfo = function(refset) {
+
+      releaseService.getCurrentRefsetRelease(refset.id).then(function(data) {
+        refset.releaseInfo = data;
+        refset.releaseArtifacts = data.artifacts;
+        
       })
 
     };    

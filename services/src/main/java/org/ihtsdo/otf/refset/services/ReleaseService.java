@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -115,6 +116,16 @@ public interface ReleaseService extends ProjectService {
    * @throws Exception
    */
   public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId)
+    throws Exception;
+
+  /**
+   * Adds the release artifact.
+   *
+   * @param releaseArtifact the release artifact
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
     throws Exception;
 
 }

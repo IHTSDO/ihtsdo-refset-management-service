@@ -16,15 +16,24 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
+import org.ihtsdo.otf.refset.services.ProjectService;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
@@ -193,13 +202,36 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+
+  
   @Override
-  public ReleaseInfo getCurrentRefsetRelease(Long refsetId, String authToken)
+  @GET
+  @Path("/info")
+  @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
+  public ReleaseInfo getCurrentRefsetRelease(
+    @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Release): /info " + refsetId);
+
+    // Test preconditions
+    if (refsetId == null) {
+      handleException(new Exception("Refset id has a null value"), "");
+    }
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get current refset release info", UserRole.VIEWER);     
+      return releaseService.getCurrentReleaseInfoForRefset(refsetId);      
+    } catch (Exception e) {
+      handleException(e, "trying to get current refset release info");
+    } finally {
+      securityService.close();
+    }
     return null;
   }
-
+  
   @Override
   public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
     String authToken) throws Exception {

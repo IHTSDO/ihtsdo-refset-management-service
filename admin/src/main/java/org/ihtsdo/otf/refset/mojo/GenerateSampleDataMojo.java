@@ -22,6 +22,9 @@ package org.ihtsdo.otf.refset.mojo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 
@@ -31,15 +34,20 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
@@ -392,7 +400,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeTranslation("translation2", refset5, refset5.getProject(),
               reviewer3);
 
-      // Create refsets 6-11 on project 5
+      // Create refsets 6-12 on project 5
       makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
           "666666912342013", admin);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
@@ -472,6 +480,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // take a refset entirely through the release cycle, including release
       // artifacts
+      
+      ReleaseInfo releaseInfo = makeReleaseInfo("Refset1 release info", refset1);
+      ReleaseArtifact artifact = makeReleaseArtifact("releaseArtifact1", 
+          releaseInfo, "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
+      ReleaseArtifact artifact2 = makeReleaseArtifact("releaseArtifact2", 
+          releaseInfo, "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
+      
+      
 
       getLog().info("Done ...");
     } catch (Exception e) {
@@ -521,6 +537,56 @@ public class GenerateSampleDataMojo extends AbstractMojo {
         auth.getAuthToken());
   }
 
+  /**
+   * Make release info.
+   *
+   * @param name the name
+   * @param refset the refset
+   * @return the release info
+   * @throws Exception the exception
+   */
+  private ReleaseInfo makeReleaseInfo(String name, Refset refset) throws Exception {
+    final ReleaseInfoJpa releaseInfo = new ReleaseInfoJpa();
+    releaseInfo.setName(name);
+    releaseInfo.setDescription("Description of release info " + name);
+    releaseInfo.setRefset(refset);
+    releaseInfo.setLastModified(new Date());
+    releaseInfo.setLastModifiedBy("loader");
+    releaseInfo.setPublished(true);
+    releaseInfo.setReleaseBeginDate(new Date());
+    releaseInfo.setReleaseFinishDate(new Date());
+    releaseInfo.setTerminology("SNOMEDCT");
+    releaseInfo.setVersion("latest");
+    releaseInfo.setPlanned(true);
+    return new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
+  }
+  
+  /**
+   * Make release artifact.
+   *
+   * @param name the name
+   * @param releaseInfo the release info
+   * @param pathToFile the path to file
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  private ReleaseArtifact makeReleaseArtifact(String name, ReleaseInfo releaseInfo,
+    String pathToFile) throws Exception {
+    final ReleaseArtifact artifact = new ReleaseArtifactJpa();
+    artifact.setName(name);
+    artifact.setLastModified(new Date());
+    artifact.setLastModifiedBy("loader");
+    artifact.setReleaseInfo(releaseInfo);
+    artifact.setTimestamp(new Date());
+
+    Path path = Paths.get(pathToFile);
+    byte[] data = Files.readAllBytes(path);
+    artifact.setData(data);
+    
+    releaseInfo.addArtifact(artifact);
+    return new ReleaseServiceJpa().addReleaseArtifact(artifact);
+  }
+  
   /**
    * Make refset.
    *
