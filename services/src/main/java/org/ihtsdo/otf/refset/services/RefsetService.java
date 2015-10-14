@@ -255,4 +255,14 @@ public interface RefsetService extends ProjectService {
    */
   public StagedRefsetChange getStagedRefsetChange(Long refsetId) throws Exception;
 
+  /**
+   * Stage refset.
+   *
+   * @param refset the refset
+   * @param stagingType the staging type
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception;
+
 }

@@ -376,7 +376,7 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void cancelRedefintion(Long refsetId, String authToken)
+  public void cancelRedefinition(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
 
