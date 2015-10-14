@@ -641,6 +641,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setVersion("MAIN");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setOrganization("ABC Organization");
 
     if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");
@@ -708,7 +709,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     ++translationCt;
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation " + translation);
+    translation.setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());

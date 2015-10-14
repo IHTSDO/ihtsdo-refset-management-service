@@ -210,7 +210,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   
   @Override
   @GET
-  @Path("/info")
+  @Path("/refset/info")
   @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo getCurrentRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
@@ -255,7 +255,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get current translation release info", UserRole.VIEWER);     
-      return releaseService.getCurrentReleaseInfoForRefset(translationId);      
+      return releaseService.getCurrentReleaseInfoForTranslation(translationId);      
     } catch (Exception e) {
       handleException(e, "trying to get current translation release info");
     } finally {

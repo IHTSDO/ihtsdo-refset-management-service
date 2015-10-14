@@ -51,45 +51,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPreviousReleaseInfoForRefset(Long refsetId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get previous release info for refset" + refsetId);
-    List<ReleaseInfo> results =
-        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getRefset().getId().equals(refsetId)) {
-        if (i > 0) {
-          return results.get(i - 1);
-        } else {
-          return null;
-        }
-      }
-    }
-    return null;
-  }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPlannedReleaseInfoForRefset(Long refsetId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get planned release info for refset" + refsetId);
-    List<ReleaseInfo> results =
-        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getRefset().getId().equals(refsetId)) {
-        return results.get(i);
-      }
-    }
-    return null;
-  }
 
   /* see superclass */
   @Override
@@ -222,47 +184,6 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     return null;
   }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPreviousReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get previous release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTranslation().getId().equals(translationId)) {
-        if (i > 0) {
-          return results.get(i - 1);
-        } else {
-          return null;
-        }
-      }
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ReleaseInfo getPlannedReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get planned release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get one before the max release that is published
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (!results.get(i).isPublished() && results.get(i).isPlanned()
-          && results.get(i).getTranslation().getId().equals(translationId)) {
-        return results.get(i);
-      }
-    }
-    return null;
-  }
 
   /* see superclass */
   @SuppressWarnings("unchecked")

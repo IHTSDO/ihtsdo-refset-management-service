@@ -27,12 +27,33 @@ tsApp.controller('DirectoryCtrl', [
 
     // Model variables
     $scope.publishedRefsets = null;
+    $scope.previewdRefsets = null;
+    $scope.publishedTranslations = null;
+    $scope.previewedTranslations = null;
 
     // Paging variables
     $scope.pageSize = 10;
 
     $scope.paging = {};
     $scope.paging["publishedRefset"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["previewedRefset"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["publishedTranslation"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["previewedTranslation"] = {
       page : 1,
       filter : "",
       sortField : 'name',
@@ -81,9 +102,36 @@ tsApp.controller('DirectoryCtrl', [
         $scope.publishedRefsets.totalCount = data.totalCount;
         for (var i = 0; i < $scope.publishedRefsets.length; i++) {
           $scope.publishedRefsets[i].isExpanded = false;
-          $scope.retrieveTranslations($scope.publishedRefsets[i]);
-          $scope.retrieveInclusions($scope.publishedRefsets[i]);
-          $scope.retrieveExclusions($scope.publishedRefsets[i]);
+          if ($scope.publishedRefsets[i].type == 'INTENSIONAL') {
+            $scope.retrieveInclusions($scope.publishedRefsets[i]);
+            $scope.retrieveExclusions($scope.publishedRefsets[i]);
+          }
+        }
+      })
+    };
+    
+    // get previewedRefsets
+    $scope.retrievePreviewedRefsets = function() {
+
+      var pfs = {
+        startIndex : ($scope.paging["previewedRefset"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["previewedRefset"].sortField,
+        ascending : $scope.paging["previewedRefset"].ascending == null ? true
+          : $scope.paging["previewedRefset"].ascending,
+        queryRestriction : 'workflowStatus:PREVIEW'
+      };
+
+      refsetService.findRefsetsForQuery($scope.paging["previewedRefset"].filter,
+        pfs).then(function(data) {
+        $scope.previewedRefsets = data.refsets;
+        $scope.previewedRefsets.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.previewedRefsets.length; i++) {
+          $scope.previewedRefsets[i].isExpanded = false;
+          if ($scope.previewedRefsets[i].type == 'INTENSIONAL') {
+            $scope.retrieveInclusions($scope.previewedRefsets[i]);
+            $scope.retrieveExclusions($scope.previewedRefsets[i]);
+          }
         }
       })
     };
@@ -150,21 +198,29 @@ tsApp.controller('DirectoryCtrl', [
 
       releaseService.getCurrentRefsetRelease(refset.id).then(function(data) {
         refset.releaseInfo = data;
-        refset.releaseArtifacts = data.artifacts;
-        
+        refset.releaseArtifacts = data.artifacts;        
       })
-
     };    
     
     // get translations
-    $scope.retrieveTranslations = function(refset) {
+    $scope.retrievePublishedTranslations = function() {
+      var pfs = {
+        startIndex : ($scope.paging["publishedTranslation"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["publishedTranslation"].sortField,
+        ascending : $scope.paging["publishedTranslation"].ascending == null ? true
+          : $scope.paging["publishedTranslation"].ascending,
+        queryRestriction : 'workflowStatus:PUBLISHED'
+      };
 
-      translationService.getTranslationsForRefset(refset.id).then(function(data) {
-        refset.translations = data.translations;
-        refset.translations.totalCount = data.totalCount;
-
+      translationService.findTranslationsForQuery($scope.paging["publishedTranslation"].filter,
+        pfs).then(function(data) {
+        $scope.publishedTranslations = data.translations;
+        $scope.publishedTranslations.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.publishedTranslations.length; i++) {
+          $scope.publishedTranslations[i].isExpanded = false;
+        }
       })
-
     };    
     
     // get translation concepts
@@ -185,6 +241,15 @@ tsApp.controller('DirectoryCtrl', [
         translation.concepts.totalCount = data.totalCount;
       })
 
+    };   
+    
+    // get current translation release info
+    $scope.getCurrentTranslationReleaseInfo = function(refset) {
+
+      releaseService.getCurrentTranslationRelease(refset.id).then(function(data) {
+        refset.releaseInfo = data;
+        refset.releaseArtifacts = data.artifacts;        
+      })
     };    
     
     // export release artifact
@@ -268,6 +333,8 @@ tsApp.controller('DirectoryCtrl', [
     //
 
     $scope.retrievePublishedRefsets();
+    $scope.retrievePreviewedRefsets();
+    $scope.retrievePublishedTranslations();
   }
 
 ]);

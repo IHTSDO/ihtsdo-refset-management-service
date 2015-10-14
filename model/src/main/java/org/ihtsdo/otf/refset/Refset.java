@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
@@ -418,4 +419,25 @@ public interface Refset extends Component, Searchable {
    * @param enabledFeedbackEvents the enabled feedback events
    */
   public void setEnabledFeedbackEvents(Set<FeedbackEvent> enabledFeedbackEvents);
+
+  /**
+   * Returns the user role map.
+   *
+   * @return the user role map
+   */
+  public Map<User, UserRole> getUserRoleMap();
+
+  /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  public String getOrganization();
+
+  /**
+   * Sets the organization.
+   *
+   * @param organization the organization
+   */
+  public void setOrganization(String organization);
 }
