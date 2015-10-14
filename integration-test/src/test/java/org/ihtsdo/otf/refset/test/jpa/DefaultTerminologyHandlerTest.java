@@ -87,6 +87,26 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     assertEquals("Neoplasm of kidney", concept.getName());
     service.close();
   }
+  
+
+  /**
+   * Test resolve expression.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testResolveExpression() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+    PfsParameter pfs = new PfsParameterJpa();
+    pfs.setMaxResults(25);
+    pfs.setStartIndex(5);
+    ConceptList conceptList =
+        service.getTerminologyHandler().resolveExpression("<<284009009|Route of administration|", 
+            "SNOMEDCT", "latest", pfs);
+    assertEquals(conceptList.getTotalCount(), 25);
+    service.close();
+  }
 
   /**
    * Test getting concepts with descriptions from Snow Owl.
