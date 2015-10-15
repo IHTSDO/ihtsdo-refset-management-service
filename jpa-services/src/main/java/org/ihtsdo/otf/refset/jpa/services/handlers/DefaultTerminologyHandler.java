@@ -172,6 +172,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
       localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
     }
     if (localPfs.getStartIndex() == -1) {
       localPfs.setStartIndex(0);
