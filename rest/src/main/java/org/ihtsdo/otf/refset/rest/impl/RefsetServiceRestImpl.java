@@ -42,14 +42,12 @@ import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
-import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -955,7 +953,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         
         // copy definition from staged to origin refset
         refset.setDefinition(change.getStagedRefset().getDefinition());
-    
+
         // Remove the staged refset change and set staging type back to null
         refsetService.removeStagedRefsetChange(change.getId());
         refset.setStagingType(null);

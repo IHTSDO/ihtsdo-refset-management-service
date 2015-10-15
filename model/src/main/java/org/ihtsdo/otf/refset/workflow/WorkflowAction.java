@@ -8,10 +8,8 @@ package org.ihtsdo.otf.refset.workflow;
  */
 public enum WorkflowAction {
 
-  /** The assign from scratch action. */
-  ASSIGN_FROM_SCRATCH,
   /** The assign from existing action. */
-  ASSIGN_FROM_EXISTING,
+  ASSIGN,
   /** The unassign action. */
   UNASSIGN,
   /** The save action. */
