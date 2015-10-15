@@ -149,8 +149,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       JsonNode doc = mapper.readTree(resultString);
       for (JsonNode item : doc.get("items")) {
         final String version = item.get("name").asText();
-        if (version.equals("MAIN")
-            || version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
+        if (version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
           Terminology terminology = new TerminologyJpa();
           terminology.setTerminology(edition);
           terminology.setVersion(version);
@@ -176,7 +175,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + "/concepts/" + terminologyId);
+        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
+            + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);
@@ -312,7 +312,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + "/concepts/" + terminologyId);
+        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
+            + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -411,9 +412,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + "/descriptions?query="
-            + query + "&offset=" + pfs.getStartIndex() + "&limit="
-            + pfs.getMaxResults());
+        client.target(url + "browser/" + branch + "/" + version
+            + "/descriptions?query=" + query + "&offset=" + pfs.getStartIndex()
+            + "&limit=" + pfs.getMaxResults());
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -478,7 +479,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "/" + branch + "/descriptions/" + terminologyId);
+        client.target(url + "/" + branch + "/" + version + "/descriptions/"
+            + terminologyId);
     Response response =
         target.request(accept).header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);
@@ -550,5 +552,4 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     return description;
   }
-
 }
