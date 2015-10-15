@@ -489,14 +489,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    
+    // Refset refset = refsetService.getRefset(member.getRefset().getId());
+    // refsetService.addMember(member)
+    // refset.addMember(member)
+    // refsetService.updateRefset(refset)
+    
+    return null;   
   }
 
   @Override
   public void removeRefsetMember(Long memberId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // refsetService.removeMember(memberId);
+    
+    // if this gives you JPA errors, may have to load refset, remove member from refset...
 
   }
 
@@ -536,7 +543,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
     ConceptRefsetMemberJpa inclusion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    // Refset refset = refsetService.getRefset(member.getRefset().getId());
+    // refsetService.addInclusion(member)
+    // refset.addMember(member)
+    // refsetService.updateRefset(refset)
     return null;
   }
 
@@ -630,14 +640,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public IoHandlerInfoList getImportRefsetHandlers(String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // call jpa method
     return null;
   }
 
   @Override
   public IoHandlerInfoList getExportRefsetHandlers(String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // call jpa method
     return null;
   }
 

@@ -63,9 +63,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("An external refset must have an external Url");
     }
 
-    // Only an EXTENSIONAL refset should have members
-    if (refset.getType() != Refset.Type.EXTENSIONAL && refset.getMembers().size()>0) {
-      result.addError("Only extensional refsets should have members");
+    // EXTERNAL refsets should have members
+    if (refset.getType() == Refset.Type.EXTERNAL && refset.getMembers().size()>0) {
+      result.addError("Only external refsets should have members");
     }
     
     return result;

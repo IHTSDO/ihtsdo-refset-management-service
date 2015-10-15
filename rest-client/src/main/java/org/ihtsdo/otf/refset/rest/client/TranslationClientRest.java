@@ -201,7 +201,7 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public TranslationList findTranslationsWithSpellingDictionary(String authToken)
+  public TranslationList getTranslationsWithSpellingDictionary(String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;

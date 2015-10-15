@@ -753,7 +753,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public TranslationList findTranslationsWithSpellingDictionary(String authToken)
+  public TranslationList getTranslationsWithSpellingDictionary(String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
