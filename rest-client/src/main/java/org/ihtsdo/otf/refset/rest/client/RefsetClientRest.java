@@ -541,4 +541,18 @@ public class RefsetClientRest extends RootClientRest implements
 
   }
 
+  @Override
+  public Refset resumeRedefinition(Long refsetId, String newDefinition,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Refset resumeMigration(Long refsetId, String newTerminology,
+    String newVersion, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }
