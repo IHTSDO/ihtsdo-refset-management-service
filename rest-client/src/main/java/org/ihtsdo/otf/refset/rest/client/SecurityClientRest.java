@@ -55,7 +55,7 @@ public class SecurityClientRest extends RootClientRest implements
             + "/security/authenticate/" + userName);
 
     Response response =
-        target.request(MediaType.APPLICATION_JSON).post(Entity.text(password));
+        target.request(MediaType.APPLICATION_XML).post(Entity.text(password));
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a

@@ -22,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -167,10 +168,24 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     String version, PfsParameter pfs) throws Exception {
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+      localPfs.setStartIndex(0);
+    }
+
+    // Start by just getting first 50, then check how many remaining ones there
+    // are
+    // and make a second call if needed
+    final int initialMaxLimit = 50;
+
     WebTarget target =
-        client.target(url + "/" + branch + "/concepts?escg=" + 
-      URLEncoder.encode(expr, "UTF-8") + "&limit=" + pfs.getMaxResults() +
-      "&offset=" + pfs.getStartIndex());
+        client.target(url + "/" + branch + "/concepts?escg="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + Math.min(initialMaxLimit, pfs.getMaxResults())
+            + "&offset=" + pfs.getStartIndex());
     Response response =
         target.request(accept).header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);
@@ -179,7 +194,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     } else {
       throw new Exception(resultString);
     }
-    
+
     /**
      * <pre>
      * 
@@ -193,17 +208,19 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      *     }
      * </pre>
      */
-    
+
     ConceptList conceptList = new ConceptListJpa();
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-
+    // get total amount
+    final int total = doc.get("total").asInt();
+    // Get concepts returned in this call (up to 50)
     List<JsonNode> conceptNodes = doc.findValues("items");
     for (JsonNode cptNode : conceptNodes.iterator().next()) {
       final Concept concept = new ConceptJpa();
 
-      concept.setActive(cptNode.get("active").asText().equals("true"));  
+      concept.setActive(cptNode.get("active").asText().equals("true"));
       concept.setTerminology(terminology);
       concept.setVersion(version);
       concept.setTerminologyId(cptNode.get("id").asText());
@@ -213,14 +230,75 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       concept.setModuleId(cptNode.get("moduleId").asText());
       concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
       // TODO: need to get the term somehow
-      //concept.setName(cptNode.get("term").asText());
+      // concept.setName(cptNode.get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
 
       conceptList.addObject(concept);
     }
-    conceptList.setTotalCount(conceptList.getObjects().size());
+
+    // If the total is over the initial max limit and pfs max results is too.
+    if (total > initialMaxLimit && pfs.getMaxResults() > initialMaxLimit) {
+      target =
+          client.target(url + "/" + branch + "/concepts?escg="
+              + URLEncoder.encode(expr, "UTF-8") + "&limit="
+              + (pfs.getMaxResults() - initialMaxLimit) + "&offset="
+              + (initialMaxLimit + pfs.getStartIndex()));
+      response =
+          target.request(accept).header("Authorization", authHeader).get();
+      resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new Exception(resultString);
+      }
+
+      /**
+       * <pre>
+       * 
+       *     {
+       *       "total": 0,
+       *       "limit": 0,
+       *       "offset": 0,
+       *       "items": {
+       *         "empty": false
+       *       }
+       *     }
+       * </pre>
+       */
+
+      ConceptList conceptList = new ConceptListJpa();
+      ObjectMapper mapper = new ObjectMapper();
+      JsonNode doc = mapper.readTree(resultString);
+
+      // get total amount
+      final int total = doc.get("total").asInt();
+      // Get concepts returned in this call (up to 50)
+      List<JsonNode> conceptNodes = doc.findValues("items");
+      for (JsonNode cptNode : conceptNodes.iterator().next()) {
+        final Concept concept = new ConceptJpa();
+
+        concept.setActive(cptNode.get("active").asText().equals("true"));
+        concept.setTerminology(terminology);
+        concept.setVersion(version);
+        concept.setTerminologyId(cptNode.get("id").asText());
+        concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(cptNode.get(
+            "effectiveTime").asText()));
+        concept.setLastModifiedBy(terminology);
+        concept.setModuleId(cptNode.get("moduleId").asText());
+        concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
+        // TODO: need to get the term somehow
+        // concept.setName(cptNode.get("term").asText());
+
+        concept.setPublishable(true);
+        concept.setPublished(true);
+
+        conceptList.addObject(concept);
+      }
+    }
+
+    conceptList.setTotalCount(total);
     return conceptList;
   }
 

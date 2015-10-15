@@ -207,9 +207,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           UserRole.VIEWER);
 
       // return all users assigned to the project
-      // TODO: should this query restriction be appended to one that is
-      // supplied?
-      pfs.setQueryRestriction("projectAnyRole:" + projectId);
+      if (pfs.getQueryRestriction() == null
+          || pfs.getQueryRestriction().isEmpty()) {
+        pfs.setQueryRestriction("projectAnyRole:" + projectId);
+      } else {
+        pfs.setQueryRestriction(pfs.getQueryRestriction()
+            + " AND projectAnyRole:" + projectId);
+
+      }
       UserList list = securityService.findUsersForQuery(query, pfs);
 
       return list;

@@ -69,9 +69,9 @@ AAPMR
 Aarane
 AARC
 aardwolf
-Aaron's
+Aaron
 Aarskog
-Aarskog's
+Aarskog
 AAS
 Aase
 Aastrom
@@ -93251,6 +93251,7 @@ Rystan
 Rythmol
 rytina
 Ryzolt
+s
 S.A.
 S.A.L.
 S.A.M.
@@ -100906,8 +100907,8 @@ Strophulus
 Strovite
 struck
 structural
-STRUCTURE
-STRUCTURES
+structure
+structures
 strully
 struma
 strumectomy
