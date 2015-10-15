@@ -42,14 +42,12 @@ import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
-import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -662,7 +660,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     // TODO Auto-generated method stub
 
   }
-  
+
   @GET
   @Override
   @Path("/redefinition/begin")
@@ -703,26 +701,26 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new LocalException(
             "Redefinition is only allowed for intensional type refsets.");
       }
-    
-    
+
       // turn transaction per operation off
       // create a transaction
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
-      Refset refsetCopy = refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
+      Refset refsetCopy =
+          refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
       refsetCopy.setDefinition(newDefinition);
       // TODO: confirm that this doesn't need an update for refsetCopy
-      
-    // create StagedRefsetChange (for DEFINITION)
-    // origin refset is the original, staged is the new one
-    // Compute the expression (e.g. resolveExpression in terminologyhandler)
-    // add members for each expression
-      
+
+      // create StagedRefsetChange (for DEFINITION)
+      // origin refset is the original, staged is the new one
+      // Compute the expression (e.g. resolveExpression in terminologyhandler)
+      // add members for each expression
+
       PfsParameter pfs = new PfsParameterJpa();
       // make sure that we use pfs to get all results - may take multiple calls
       ConceptList conceptList =
-          refsetService.getTerminologyHandler().resolveExpression(newDefinition, 
-              refset.getTerminology(), refset.getVersion(), pfs);
+          refsetService.getTerminologyHandler().resolveExpression(
+              newDefinition, refset.getTerminology(), refset.getVersion(), pfs);
       Date startDate = new Date();
       for (Concept concept : conceptList.getObjects()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
@@ -743,10 +741,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.commit();
       return refsetCopy;
-      
-    // TODO: this solution involved adding a "provisional" flag to refset,
-    // in general, in other places where "findRefsetsForQuery" is being called
-    // we want a queryRestriction to include " AND provisional:false".
+
+      // TODO: this solution involved adding a "provisional" flag to refset,
+      // in general, in other places where "findRefsetsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
       handleException(e, "trying to begin redefinition of refset");
@@ -767,13 +765,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     // set transaction per opertaion flase
     // start transaction
-    
-    //first remove from original members that aren't in staged
+
+    // first remove from original members that aren't in staged
     // rewire members from staged not in origin to origin
     // copy definition
     // cleanup staged refset and parts
     // cleanup staged refset change
-    
+
     //
     // Here the basic operation is to
     // Look up the staged Refset change record for this refset
@@ -781,9 +779,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     // Take all members from the staged refset and change their refset to be the
     // origin refset, then update them.
     // Remove the staged refset
-    //  * we don't define cascade on remove, so you'll have to individually
-    //  * remove anything that the clone method is cloning.
-    //  * the "members" have changed already, so you don't need to worry about them
+    // * we don't define cascade on remove, so you'll have to individually
+    // * remove anything that the clone method is cloning.
+    // * the "members" have changed already, so you don't need to worry about
+    // them
     // Remove the staged refset change object
     // Set the stagingType of the original refset back to null;
     // Commit
@@ -822,14 +821,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "cancel refset redefinition",
               UserRole.REVIEWER);
 
-
-    // See what cancelImportMembers does
-    // remove the provisional flag
-    // remove the staged refset 
+      // See what cancelImportMembers does
+      // remove the provisional flag
+      // remove the staged refset
       // remove refset change object
-    // set the staging parameters of original refset back.
-      
-      
+      // set the staging parameters of original refset back.
+
     } catch (Exception e) {
       handleException(e, "trying to begin redefinition of refset");
     } finally {
@@ -953,9 +950,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /**
-   * TODO: resumeRedefinition
-   * check assumptions
-   * returns refsetcopy  staged
+   * TODO: resumeRedefinition check assumptions returns refsetcopy staged
    * recovering the previously saved state of the staged refset
    */
   /* see superclass */

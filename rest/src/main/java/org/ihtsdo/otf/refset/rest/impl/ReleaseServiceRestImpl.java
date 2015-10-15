@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
@@ -18,26 +17,18 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.ihtsdo.otf.refset.Project;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
-import org.ihtsdo.otf.refset.services.ProjectService;
-import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
@@ -206,8 +197,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-
-  
   @Override
   @GET
   @Path("/refset/info")
@@ -226,8 +215,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get current refset release info", UserRole.VIEWER);     
-      return releaseService.getCurrentReleaseInfoForRefset(refsetId);      
+      authorizeApp(securityService, authToken,
+          "get current refset release info", UserRole.VIEWER);
+      return releaseService.getCurrentReleaseInfoForRefset(refsetId);
     } catch (Exception e) {
       handleException(e, "trying to get current refset release info");
     } finally {
@@ -235,11 +225,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   @Override
   @GET
   @Path("/translation/info")
-  @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)  
+  @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo getCurrentTranslationRelease(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -254,8 +244,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get current translation release info", UserRole.VIEWER);     
-      return releaseService.getCurrentReleaseInfoForTranslation(translationId);      
+      authorizeApp(securityService, authToken,
+          "get current translation release info", UserRole.VIEWER);
+      return releaseService.getCurrentReleaseInfoForTranslation(translationId);
     } catch (Exception e) {
       handleException(e, "trying to get current translation release info");
     } finally {
@@ -292,7 +283,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Release):  /export/" + artifactId);
 
     ReleaseService releaseService = new ReleaseServiceJpa();
-    
+
     try {
       // authorize call
       authorizeApp(securityService, authToken,
@@ -301,7 +292,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseArtifact artifact = releaseService.getReleaseArtifact(artifactId);
 
       InputStream in = new ByteArrayInputStream(artifact.getData());
-           
+
       return in;
 
     } catch (Exception e) {
