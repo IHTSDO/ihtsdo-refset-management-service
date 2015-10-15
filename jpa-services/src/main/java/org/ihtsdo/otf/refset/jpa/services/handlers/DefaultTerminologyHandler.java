@@ -172,8 +172,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
       localPfs = new PfsParameterJpa();
-      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+    if (localPfs.getStartIndex() == -1) {
       localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
     // Start by just getting first 50, then check how many remaining ones there
@@ -254,28 +256,12 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         throw new Exception(resultString);
       }
 
-      /**
-       * <pre>
-       * 
-       *     {
-       *       "total": 0,
-       *       "limit": 0,
-       *       "offset": 0,
-       *       "items": {
-       *         "empty": false
-       *       }
-       *     }
-       * </pre>
-       */
-
-      ConceptList conceptList = new ConceptListJpa();
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode doc = mapper.readTree(resultString);
-
+      conceptList = new ConceptListJpa();
+      mapper = new ObjectMapper();
+      doc = mapper.readTree(resultString);
       // get total amount
-      final int total = doc.get("total").asInt();
       // Get concepts returned in this call (up to 50)
-      List<JsonNode> conceptNodes = doc.findValues("items");
+      conceptNodes = doc.findValues("items");
       for (JsonNode cptNode : conceptNodes.iterator().next()) {
         final Concept concept = new ConceptJpa();
 
