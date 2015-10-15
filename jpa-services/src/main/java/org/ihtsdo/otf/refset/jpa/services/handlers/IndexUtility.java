@@ -33,8 +33,11 @@ import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 
 /**
@@ -52,13 +55,15 @@ public class IndexUtility {
   /** The field names map. */
   private static Map<Class<?>, Set<String>> allFieldNames = new HashMap<>();
 
+  
   // Initialize the field names maps
   static {
     try {
       Class<?>[] classes =
           new Class<?>[] {
               RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
-              TrackingRecordJpa.class, UserJpa.class
+              ReleaseInfoJpa.class, TrackingRecordJpa.class, UserJpa.class,
+              ConceptRefsetMemberJpa.class, ConceptJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
@@ -354,7 +359,8 @@ public class IndexUtility {
 
     // Build up the query
     StringBuilder pfsQuery = new StringBuilder();
-    pfsQuery.append(query);
+    if (query != null)
+      pfsQuery.append(query);
     if (pfs != null) {
       if (pfs.getActiveOnly()) {
         pfsQuery.append(" AND obsolete:false");

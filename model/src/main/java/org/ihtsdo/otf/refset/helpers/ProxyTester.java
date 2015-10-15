@@ -256,7 +256,7 @@ public class ProxyTester {
     if (type == String.class)
       return "" + initializer;
     if (type == Date.class)
-      return new Date(initializer);
+      return new Date(10L+initializer);
     if (type == Boolean.class || type == boolean.class)
       return new Boolean((initializer & 1) == 0);
     if (type == Integer.class || type == int.class)
@@ -343,6 +343,6 @@ public class ProxyTester {
   private Object makeEnum(Class<?> clazz1, int initializer) throws Exception {
     Method m = clazz1.getMethod("values", new Class[0]);
     Object[] o = (Object[]) m.invoke(null, new Object[0]);
-    return o[initializer];
+    return o[initializer-1];
   }
 }

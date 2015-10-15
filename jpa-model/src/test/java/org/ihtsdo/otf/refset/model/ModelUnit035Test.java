@@ -74,11 +74,12 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet030() throws Exception {
+  public void testModelGetSet035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("phraseMemoryMap");
     tester.exclude("spellingDictionary");
+    tester.exclude("staged");
     tester.test();
   }
 
@@ -88,7 +89,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode030() throws Exception {
+  public void testModelEqualsHashcode035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
@@ -100,6 +101,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("public");
     tester.include("language");
     tester.include("name");
+    tester.include("stagingType");
 
     // Set up objects
     tester.proxy(Refset.class, 1, r1);
@@ -121,7 +123,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy030() throws Exception {
+  public void testModelCopy035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
@@ -140,7 +142,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization030() throws Exception {
+  public void testModelXmlSerialization035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
@@ -161,7 +163,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField030() throws Exception {
+  public void testModelNotNullField035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
@@ -189,7 +191,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelIndexedFields034() throws Exception {
+  public void testModelIndexedFields035() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Test analyzed fields
@@ -197,6 +199,7 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("userRoleMap");
+    tester.include("userAnyRole");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -213,6 +216,9 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("refsetId");
     tester.include("projectId");
     tester.include("workflowStatus");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
+    
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

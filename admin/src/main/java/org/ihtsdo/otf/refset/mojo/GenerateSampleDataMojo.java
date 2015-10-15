@@ -22,6 +22,9 @@ package org.ihtsdo.otf.refset.mojo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.Properties;
 
@@ -31,15 +34,21 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
+import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
@@ -68,6 +77,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The refset counter. */
+  @SuppressWarnings("unused")
   private int refsetCt = 0;
 
   /** The translation ct. */
@@ -145,6 +155,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   private void loadSampleData() throws Exception {
 
     try {
@@ -392,7 +403,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeTranslation("translation2", refset5, refset5.getProject(),
               reviewer3);
 
-      // Create refsets 6-11 on project 5
+      // Create refsets 6-12 on project 5
       makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
           "666666912342013", admin);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
@@ -473,6 +484,30 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // take a refset entirely through the release cycle, including release
       // artifacts
 
+      // refset1 release info
+      ReleaseInfo refsetReleaseInfo =
+          makeReleaseInfo("Refset1 release info", refset1);
+      makeReleaseArtifact(
+          "releaseArtifact1.txt",
+          refsetReleaseInfo,
+          "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
+      makeReleaseArtifact(
+          "releaseArtifact2.txt",
+          refsetReleaseInfo,
+          "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
+
+      // translation1 release info
+      ReleaseInfo translationReleaseInfo =
+          makeReleaseInfo("Translation1 release info", translation1);
+      makeReleaseArtifact(
+          "releaseArtifact1.txt",
+          translationReleaseInfo,
+          "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt");
+      makeReleaseArtifact(
+          "releaseArtifact2.txt",
+          translationReleaseInfo,
+          "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
+
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -522,6 +557,62 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   }
 
   /**
+   * Make release info.
+   *
+   * @param name the name
+   * @param object the object
+   * @return the release info
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private ReleaseInfo makeReleaseInfo(String name, Object object)
+    throws Exception {
+    final ReleaseInfoJpa releaseInfo = new ReleaseInfoJpa();
+    releaseInfo.setName(name);
+    releaseInfo.setDescription("Description of release info " + name);
+    if (object instanceof Refset)
+      releaseInfo.setRefset((Refset) object);
+    else if (object instanceof Translation)
+      releaseInfo.setTranslation((Translation) object);
+    releaseInfo.setLastModified(new Date());
+    releaseInfo.setLastModifiedBy("loader");
+    releaseInfo.setPublished(true);
+    releaseInfo.setReleaseBeginDate(new Date());
+    releaseInfo.setReleaseFinishDate(new Date());
+    releaseInfo.setTerminology("SNOMEDCT");
+    releaseInfo.setVersion("latest");
+    releaseInfo.setPlanned(false);
+    return new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
+  }
+
+  /**
+   * Make release artifact.
+   *
+   * @param name the name
+   * @param releaseInfo the release info
+   * @param pathToFile the path to file
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private ReleaseArtifact makeReleaseArtifact(String name,
+    ReleaseInfo releaseInfo, String pathToFile) throws Exception {
+    final ReleaseArtifact artifact = new ReleaseArtifactJpa();
+    artifact.setName(name);
+    artifact.setLastModified(new Date());
+    artifact.setLastModifiedBy("loader");
+    artifact.setReleaseInfo(releaseInfo);
+    artifact.setTimestamp(new Date());
+
+    Path path = Paths.get(pathToFile);
+    byte[] data = Files.readAllBytes(path);
+    artifact.setData(data);
+
+    releaseInfo.addArtifact(artifact);
+    return new ReleaseServiceJpa().addReleaseArtifact(artifact);
+  }
+
+  /**
    * Make refset.
    *
    * @param name the name
@@ -543,8 +634,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     refset.setDefinition(definition);
-    // For now, use "MAIN" and this will be a way of determining which branch to
-    // access in terminology server calls.
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -558,9 +647,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setVersion("MAIN");
+    refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setOrganization("ABC Organization");
 
     if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");
@@ -579,21 +669,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       throw new Exception("Refset does not pass validation.");
     }
     // Add refset
+
     refsetService.addRefset(refset, auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
 
     if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
+      ValidationResult vr =
+          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+              auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("import staging is invalid - " + vr);
+      }
       refsetService = new RefsetServiceRestImpl();
       InputStream in =
           new FileInputStream(
               new File(
                   "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refsetService.importMembers(null, in, refset.getId(), "DEFAULT",
+      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
     } else if (type == Refset.Type.INTENSIONAL) {
       // Import definition (from file)
-      refsetService = new RefsetServiceRestImpl();
       InputStream in =
           new FileInputStream(
               new File(
@@ -621,7 +718,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     ++translationCt;
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation " + translation);
+    translation.setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());
@@ -654,17 +751,31 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
     if (translationCt % 2 == 0) {
+      ValidationResult vr =
+          translationService.beginImportConcepts(translation.getId(),
+              "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      translationService = new TranslationServiceRestImpl();
       InputStream in =
           new FileInputStream(new File(
               "../config/src/main/resources/data/translation2/translation.zip"));
-      translationService.importConcepts(null, in, translation.getId(),
+      translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
     } else {
+      ValidationResult vr =
+          translationService.beginImportConcepts(translation.getId(),
+              "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      translationService = new TranslationServiceRestImpl();
       InputStream in =
           new FileInputStream(new File(
-              "../config/src/main/resources/data/translation/translation.zip"));
-      translationService.importConcepts(null, in, translation.getId(),
+              "../config/src/main/resources/data/translation2/translation.zip"));
+      translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
     }

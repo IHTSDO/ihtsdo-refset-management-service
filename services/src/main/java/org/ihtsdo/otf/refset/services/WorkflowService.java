@@ -3,11 +3,12 @@
  */
 package org.ihtsdo.otf.refset.services;
 
-import org.ihtsdo.otf.refset.helpers.ConceptList;
+import java.util.Set;
+
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -76,17 +77,6 @@ public interface WorkflowService extends TranslationService {
   public void removeTrackingRecord(Long id) throws Exception;
 
   /**
-   * Find tracking records.
-   *
-   * @param query the query
-   * @param pfs the pfs
-   * @return the tracking record list
-   * @throws Exception the exception
-   */
-  public TrackingRecordList findTrackingRecordsForQuery(String query,
-    PfsParameter pfs) throws Exception;
-
-  /**
    * Returns the workflow paths defined by the supported listeners.
    *
    * @return the workflow paths
@@ -105,104 +95,6 @@ public interface WorkflowService extends TranslationService {
   public TrackingRecord performWorkflowAction(Long refsetId, String userName,
     WorkflowAction action) throws Exception;
 
-  // Translation services
-
-  /**
-   * Find available editing work.
-   *
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableEditingConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find assigned editing work.
-   *
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAssignedEditingConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find available review work.
-   *
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAvailableReviewConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find assigned review work.
-   *
-   * @param translationId the translation id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findAssignedReviewConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find available editing refsets.
-   *
-   * @param refsetId the refset id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableEditingRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
-
-  /**
-   * Find assigned editing refsets.
-   *
-   * @param refsetId the refset id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAssignedEditingRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
-
-  /**
-   * Find available review refsets.
-   *
-   * @param refsetId the refset id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAvailableReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
-
-  /**
-   * Find assigned review refsets.
-   *
-   * @param refsetId the refset id
-   * @param userName the user name
-   * @param pfs the pfs
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findAssignedReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception;
-
   /**
    * Perform workflow action.
    *
@@ -216,4 +108,32 @@ public interface WorkflowService extends TranslationService {
   public TrackingRecord performWorkflowAction(Long translationId,
     String userName, WorkflowAction action, Concept concept) throws Exception;
 
+  /**
+   * Returns the workflow handler for path.
+   *
+   * @param workflowPat the workflow pat
+   * @return the workflow handler for path
+   * @throws Exception the exception
+   */
+  public WorkflowActionHandler getWorkflowHandlerForPath(String workflowPat)
+    throws Exception;
+
+  /**
+   * Returns the workflow handlers.
+   *
+   * @return the workflow handlers
+   * @throws Exception the exception
+   */
+  public Set<WorkflowActionHandler> getWorkflowHandlers() throws Exception;
+
+  /**
+   * Find tracking records for query.
+   *
+   * @param query the query
+   * @param pfs the pfs
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
+  public TrackingRecordList findTrackingRecordsForQuery(String query,
+    PfsParameter pfs) throws Exception;
 }

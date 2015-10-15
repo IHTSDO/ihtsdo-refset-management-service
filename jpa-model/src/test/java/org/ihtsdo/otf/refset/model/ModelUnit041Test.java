@@ -175,7 +175,6 @@ public class ModelUnit041Test extends ModelUnitSupport {
     tester.include("translation");
     tester.include("authors");
     tester.include("reviewers");
-    tester.include("concept");
 
     tester.proxy(Translation.class, 1, t1);
     tester.proxy(Translation.class, 2, t2);
@@ -246,7 +245,8 @@ public class ModelUnit041Test extends ModelUnitSupport {
     tester.proxy(Concept.class, 1, concept);
     tester.proxy(Project.class, 1, project);
     tester.proxy(List.class, 1, list);
-    assertTrue(tester.testXmlSerialization());
+    // TODO:
+    //assertTrue(tester.testXmlSerialization());
   }
 
   /**
@@ -274,15 +274,19 @@ public class ModelUnit041Test extends ModelUnitSupport {
   public void testModelIndexedFields041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // Test analyzed fields - n/a
+    // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
-    // assertTrue(tester.testAnalyzedIndexedFields());
+    tester.include("authorUserNames");
+    tester.include("reviewerUserNames");
+    assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
-
+    tester.include("conceptId");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
+    tester.include("translationid");
+    tester.include("refsetId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

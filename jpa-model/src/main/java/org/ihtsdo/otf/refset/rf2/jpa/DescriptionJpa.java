@@ -70,8 +70,8 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /** The language Refset members. */
   @OneToMany(fetch = FetchType.EAGER, targetEntity = LanguageRefsetMemberJpa.class)
-  @CollectionTable(name="description_language_refset_members", joinColumns = @JoinColumn(name = "description_id"))
-  @IndexedEmbedded
+  @CollectionTable(name = "description_language_refset_members", joinColumns = @JoinColumn(name = "description_id"))
+  @IndexedEmbedded(targetElement = LanguageRefsetMemberJpa.class)
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 
   /**
@@ -310,10 +310,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionJpa [, languageCode=" + languageCode + ", typeId=" + typeId + ", term="
-        + term + ", caseSignificanceId=" + caseSignificanceId
-        + ", translationOfId=" + translationOfId + ", concept=" + concept
-        + ", languageRefsetMembers=" + languageRefsetMembers + "]";
+    return "DescriptionJpa [, languageCode=" + languageCode + ", typeId="
+        + typeId + ", term=" + term + ", caseSignificanceId="
+        + caseSignificanceId + ", translationOfId=" + translationOfId
+        + ", concept=" + concept + ", languageRefsetMembers="
+        + languageRefsetMembers + "]";
   }
 
   /* see superclass */

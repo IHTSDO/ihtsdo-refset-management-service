@@ -87,7 +87,7 @@ public class ModelUnit045Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet044() throws Exception {
+  public void testModelGetSet045() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("valid");
@@ -100,7 +100,7 @@ public class ModelUnit045Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode044() throws Exception {
+  public void testModelEqualsHashcode045() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("oldTranslation");
@@ -128,7 +128,7 @@ public class ModelUnit045Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy044() throws Exception {
+  public void testModelCopy045() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Translation.class, 1, t1);
@@ -145,7 +145,7 @@ public class ModelUnit045Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization044() throws Exception {
+  public void testModelXmlSerialization045() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
@@ -168,7 +168,7 @@ public class ModelUnit045Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlTransient044() throws Exception {
+  public void testModelXmlTransient045() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     ConceptDiffReport report = new ConceptDiffReportJpa();
 

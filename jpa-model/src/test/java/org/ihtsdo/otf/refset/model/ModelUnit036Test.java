@@ -106,6 +106,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
   public void testModelGetSet036() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
+    tester.exclude("staged");
     tester.test();
   }
 
@@ -131,11 +132,13 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("forTranslation");
     tester.include("inclusions");
     tester.include("public");
+    tester.include("stagingType");
     tester.include("name");
     tester.include("project");
     tester.include("type");
     tester.include("feedbackEmail");
     tester.include("enabledFeedbackEvents");
+    tester.include("organization");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -214,6 +217,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("isPublic");
+    tester.include("provisional");
     tester.include("type");
     tester.include("forTranslation");
     tester.include("workflowStatus");
@@ -237,6 +241,8 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("description");
     tester.include("definition");
     tester.include("userRoleMap");
+    tester.include("userAnyRole");
+    tester.include("organization");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -252,6 +258,12 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("type");
     tester.include("externalUrl");
     tester.include("workflowStatus");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
+    tester.include("definitionSort");
+    tester.include("public");
+    tester.include("provisional");
+    tester.include("organizationSort");
 
     tester.include("type");
     tester.include("workflowStatus");

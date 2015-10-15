@@ -17,7 +17,6 @@ import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -137,7 +136,20 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
   }
 
   /* see superclass */
-  @XmlElement(type = ReleaseInfoJpa.class)
+  @Override
+  public Date getTimestamp() {
+    return timestamp;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTimestamp(Date timestamp) {
+    this.timestamp = timestamp;
+  }
+
+  /* see superclass */
+  //@XmlElement(type = ReleaseInfoJpa.class)
+  @XmlTransient
   @Override
   public ReleaseInfo getReleaseInfo() {
     return releaseInfo;

@@ -6,10 +6,14 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
+import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -28,6 +32,12 @@ public class ModelUnit037Test extends ModelUnitSupport {
   /** The model object to test. */
   private ConceptJpa object;
 
+  /** Test fixture t1 */
+  private Translation t1;
+
+  /** Test fixture t2 */
+  private Translation t2;
+
   /**
    * Setup class.
    */
@@ -38,11 +48,16 @@ public class ModelUnit037Test extends ModelUnitSupport {
 
   /**
    * Setup.
+   * @throws Exception 
    */
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     object = new ConceptJpa();
-
+    ProxyTester tester = new ProxyTester(new TranslationJpa());
+    t1 = (TranslationJpa) tester.createObject(1);
+    t2 = (TranslationJpa) tester.createObject(2);
+    t1.setRefset(new RefsetJpa());
+    t2.setRefset(new RefsetJpa());
   }
 
   /**
@@ -51,7 +66,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet030() throws Exception {
+  public void testModelGetSet037() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.test();
@@ -63,7 +78,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode030() throws Exception {
+  public void testModelEqualsHashcode037() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
@@ -73,6 +88,8 @@ public class ModelUnit037Test extends ModelUnitSupport {
     tester.include("version");
     tester.include("definitionStatusId");
 
+    tester.proxy(Translation.class, 1, t1);
+    tester.proxy(Translation.class, 2, t2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -87,7 +104,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy030() throws Exception {
+  public void testModelCopy037() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     assertTrue(tester.testCopyConstructorDeep(Concept.class));
@@ -99,9 +116,11 @@ public class ModelUnit037Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization030() throws Exception {
+  public void testModelXmlSerialization037() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
+    tester.proxy(Translation.class, 1, t1);
+    tester.proxy(Translation.class, 2, t2);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -111,7 +130,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField030() throws Exception {
+  public void testModelNotNullField037() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
@@ -157,6 +176,7 @@ public class ModelUnit037Test extends ModelUnitSupport {
     tester.include("definitionStatusId");
     tester.include("workflowStatus");
     tester.include("nameSort");
+    tester.include("translationId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

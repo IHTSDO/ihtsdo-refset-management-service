@@ -4,7 +4,10 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -23,17 +26,26 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -151,6 +163,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get refset for id, refsetId:" + refsetId);
+
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the refset",
@@ -374,73 +389,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  @POST
-  @Override
-  @Path("/import/members")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import refset members", notes = "Imports the refset members into the specified refset")
-  public void importMembers(
-    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-    @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /import/members " + refsetId + ", "
-            + ioHandlerInfoId);
-
-    RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      // Load refset
-      Refset refset = refsetService.getRefset(refsetId);
-      if (refset == null) {
-        throw new Exception("Invalid refset id " + refsetId);
-      }
-
-      // Authorize the call
-      String userName =
-          authorizeProject(refsetService, refset.getProject().getId(),
-              securityService, authToken, "import refset members",
-              UserRole.REVIEWER);
-
-      // Obtain the import handler
-      ImportRefsetHandler handler =
-          refsetService.getImportRefsetHandler(ioHandlerInfoId);
-      if (handler == null) {
-        throw new Exception("invalid handler id " + ioHandlerInfoId);
-      }
-
-      // TODO: what if refset already has members?
-      // what if some of the members match these?
-
-      // Load members into memory and add to refset
-      List<ConceptRefsetMember> members = handler.importMembers(refset, in);
-      for (ConceptRefsetMember member : members) {
-        member.setId(null);
-        member.setLastModified(member.getEffectiveTime());
-        member.setLastModifiedBy(userName);
-        member.setPublishable(true);
-        member.setPublished(false);
-        // TODO: - no efficient way to compute this
-        // each member requires a call to the terminology server!
-        // terminologyHandler.getConcept is our best bet
-        member.setConceptName("TBD");
-        refsetService.addMember(member);
-      }
-      refset.setLastModifiedBy(userName);
-      refsetService.updateRefset(refset);
-
-    } catch (Exception e) {
-      handleException(e, "trying to import refset members");
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
-
   @GET
   @Override
   @Produces("application/octet-stream")
@@ -541,28 +489,64 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    
+    // Refset refset = refsetService.getRefset(member.getRefset().getId());
+    // refsetService.addMember(member)
+    // refset.addMember(member)
+    // refsetService.updateRefset(refset)
+    
+    return null;   
   }
 
   @Override
   public void removeRefsetMember(Long memberId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // refsetService.removeMember(memberId);
+    
+    // if this gives you JPA errors, may have to load refset, remove member from refset...
 
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/members")
+  @ApiOperation(value = "Finds refset members", notes = "Finds refset members based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetMembersForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset members for query, refsetId:"
+            + refsetId + " query:" + query + " " + pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset members",
+          UserRole.VIEWER);
+
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:MEMBER" : "memberType:MEMBER", pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset members ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
     ConceptRefsetMemberJpa inclusion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    // Refset refset = refsetService.getRefset(member.getRefset().getId());
+    // refsetService.addInclusion(member)
+    // refset.addMember(member)
+    // refsetService.updateRefset(refset)
     return null;
   }
 
@@ -574,8 +558,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+  @POST
+  @Path("/inclusions")
+  @ApiOperation(value = "Finds refset inclusions", notes = "Finds refset inclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetInclusionsForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset inclusions for query, refsetId:"
+            + refsetId + " query:" + query + " " + pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset inclusions",
+          UserRole.VIEWER);
+
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:INCLUSION" : "memberType:INCLUSION", pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset inclusions ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
+    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
@@ -588,64 +605,432 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/exclusions")
+  @ApiOperation(value = "Finds refset exclusions", notes = "Finds refset exclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList findRefsetExclusionsForQuery(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): find refset exclusions for query, refsetId:"
+            + refsetId + " query:" + query + " " + pfs);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find refset exclusions",
+          UserRole.VIEWER);
+
+      return refsetService.findMembersForRefset(refsetId,
+          (query != null && !query.equals("")) ? query
+              + " AND memberType:EXCLUSION" : "memberType:EXCLUSION", pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve refset exclusions ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override
   public IoHandlerInfoList getImportRefsetHandlers(String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // call jpa method
     return null;
   }
 
   @Override
   public IoHandlerInfoList getExportRefsetHandlers(String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // call jpa method
     return null;
   }
 
+  @GET
   @Override
-  public Refset beginMigration(Long refsetId, String newTerminology,
-    String newVersion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/migration/begin")
+  @ApiOperation(value = "Begin refset migration", notes = "Begins the migration process by validating the refset for migration and marking the refset as staged.", response = RefsetJpa.class)
+  public Refset beginMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
+    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/begin " + refsetId + ", "
+            + newTerminology + ", " + newVersion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "begin refset migration",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.isStaged()) {
+        throw new LocalException(
+            "Begin migration is not allowed while the refset is already staged.");
+
+      }
+
+      // Check refset type
+      if (refset.getType() == Refset.Type.EXTERNAL) {
+        throw new LocalException(
+            "Migration is only allowed for intensional and extensional type refsets.");
+      }
+
+      // turn transaction per operation off
+      // create a transaction
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+      Refset refsetCopy =
+          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION);
+      refsetCopy.setTerminology(newTerminology);
+      refsetCopy.setVersion(newVersion);
+      // TODO: confirm when testing that this doesn't need an update for
+      // refsetCopy
+
+      // If intensional, compute the expression on new terminology and version
+      // add members from expression results
+      if (refset.getType() == Refset.Type.INTENSIONAL) {
+        // clear initial members
+        refsetCopy.setMembers(null);
+        PfsParameter pfs = new PfsParameterJpa();
+        // make sure that we use pfs to get all results - may take multiple
+        // calls
+        ConceptList conceptList =
+            refsetService.getTerminologyHandler().resolveExpression(
+                refset.getDefinition(), newTerminology, newVersion,
+                pfs);
+        Date startDate = new Date();
+        for (Concept concept : conceptList.getObjects()) {
+          ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+          member.setActive(concept.isActive());
+          member.setConceptId(concept.getTerminologyId());
+          member.setConceptName(concept.getName());
+          member.setEffectiveTime(concept.getEffectiveTime());
+          member.setLastModified(startDate);
+          member.setLastModifiedBy(userName);
+          member.setMemberType(Refset.MemberType.MEMBER);
+          member.setModuleId(concept.getModuleId());
+          member.setPublished(false);
+          member.setPublishable(true);
+          member.setRefset(refsetCopy);
+          refsetService.addMember(member);
+        }
+      }
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+        // TODO: do we do anything here?
+      }
+
+      refsetService.commit();
+      return refsetCopy;
+
+      // TODO: this solution involved adding a "provisional" flag to refset,
+      // in general, in other places where "findRefsetsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin redefinition of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
     return null;
   }
 
-  @Override
-  public void finishMigration(Long refsetId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
 
   @Override
-  public void cancelMigration(Long refsetId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  @Override
-  public Refset beginRedefinition(Long refsetId, String newDefinition,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public void finishRedefinition(Long refsetId, String authToken)
+  public Refset finishMigration(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
+  @GET
   @Override
-  public void cancelRedefintion(Long refsetId, String authToken)
+  @Path("/migration/cancel")
+  @ApiOperation(value = "Cancel refset migration", notes = "Cancels the migration process by removing the marking as staged.")
+  public void cancelMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/cancel " + refsetId);
 
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "cancel refset migration",
+              UserRole.REVIEWER);
+
+      // Refset must be staged as MIGRATION
+      if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+        throw new LocalException("Refset is not staged for migration.");
+      }
+      
+      // Remove the staged refset change and set staging type back to null
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setStaged(false);
+      refset.setProvisional(false);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+      
+      
+    } catch (Exception e) {
+      handleException(e, "trying to cancel migration of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  
+  @GET
+  @Override
+  @Path("/redefinition/begin")
+  @ApiOperation(value = "Begin refset redefinition", notes = "Begins the redefinition process by validating the refset for redefinition and marking the refset as staged.", response = RefsetJpa.class)
+  public Refset beginRedefinition(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New definition, e.g. <<284009009|Route of administration|", required = true) @QueryParam("newDefinition") String newDefinition,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /redefinition/begin " + refsetId + ", "
+            + newDefinition);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "begin refset redefinition",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.isStaged()) {
+        throw new LocalException(
+            "Begin redefinition is not allowed while the refset is already staged.");
+
+      }
+
+      // Check refset type
+      if (refset.getType() != Refset.Type.INTENSIONAL) {
+        throw new LocalException(
+            "Redefinition is only allowed for intensional type refsets.");
+      }
+
+      // turn transaction per operation off
+      // create a transaction
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+      Refset refsetCopy =
+          refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
+      refsetCopy.setDefinition(newDefinition);
+      // TODO: confirm when testing that this doesn't need an update for
+      // refsetCopy
+
+      // Compute the expression
+      // add members from expression results
+      PfsParameter pfs = new PfsParameterJpa();
+      // make sure that we use pfs to get all results - may take multiple calls
+      ConceptList conceptList =
+          refsetService.getTerminologyHandler().resolveExpression(
+              newDefinition, refset.getTerminology(), refset.getVersion(), pfs);
+      Date startDate = new Date();
+      for (Concept concept : conceptList.getObjects()) {
+        ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+        member.setActive(concept.isActive());
+        member.setConceptId(concept.getTerminologyId());
+        member.setConceptName(concept.getName());
+        member.setEffectiveTime(concept.getEffectiveTime());
+        member.setLastModified(startDate);
+        member.setLastModifiedBy(userName);
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setModuleId(concept.getModuleId());
+        member.setPublished(false);
+        member.setPublishable(true);
+        member.setRefset(refsetCopy);
+        refsetService.addMember(member);
+      }
+
+      refsetService.commit();
+      return refsetCopy;
+
+      // TODO: this solution involved adding a "provisional" flag to refset,
+      // in general, in other places where "findRefsetsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin redefinition of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+   
+    @GET
+    @Override
+    @Path("/redefinition/finish")
+    @ApiOperation(value = "Finish refset redefinition", notes = "Finishes the redefinition process.", response = RefsetJpa.class)
+    public Refset finishRedefinition(
+      @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+      @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+      throws Exception {
+
+      Logger.getLogger(getClass()).info(
+          "RESTful call POST (Refset): /redefinition/finish " + refsetId);
+
+      RefsetService refsetService = new RefsetServiceJpa();
+      try {
+        // Load refset
+        Refset refset = refsetService.getRefset(refsetId);
+        if (refset == null) {
+          throw new Exception("Invalid refset id " + refsetId);
+        }
+
+        // Authorize the call
+        String userName =
+            authorizeProject(refsetService, refset.getProject().getId(),
+                securityService, authToken, "finish refset redefinition",
+                UserRole.REVIEWER);
+
+        // verify that staged
+        if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+          throw new Exception("Refset is not staged for redefinition, cannot finish.");
+        }
+
+        // get the staged change tracking object
+        StagedRefsetChange change =
+            refsetService.getStagedRefsetChange(refset.getId());
+
+      
+        // turn transaction per operation off
+        // create a transaction
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
+    
+        // remove from origin refsets members that aren't in staged
+        List<ConceptRefsetMember> originMembers = change.getOriginRefset().getMembers();
+        List<ConceptRefsetMember> stagedMembers = change.getStagedRefset().getMembers();
+        for (ConceptRefsetMember originMember : originMembers) {
+          if (!stagedMembers.contains(originMember)) {
+            originMembers.remove(originMember);
+          }
+        }
+        
+        // rewire members from staged that are not in origin, to origin
+        for (ConceptRefsetMember stagedMember : stagedMembers) {
+          if (!originMembers.contains(stagedMember)) {
+            refset.addMember(stagedMember);
+            stagedMember.setRefset(refset);
+          }
+        }
+        
+        // copy definition from staged to origin refset
+        refset.setDefinition(change.getStagedRefset().getDefinition());
+
+        // Remove the staged refset change and set staging type back to null
+        refsetService.removeStagedRefsetChange(change.getId());
+        refset.setStagingType(null);
+        refset.setLastModifiedBy(userName);
+        refsetService.updateRefset(refset);
+        
+        refsetService.commit();
+        
+        // Re-read and return the origin refset
+        return refsetService.getRefset(refsetId);
+        
+      } catch (Exception e) {
+        handleException(e, "trying to finish refset redefinition");
+      } finally {
+        refsetService.close();
+        securityService.close();
+      }
+    return null;
+  }
+
+  @GET
+  @Override
+  @Path("/redefinition/cancel")
+  @ApiOperation(value = "Cancel refset redefinition", notes = "Cancels the redefinition process by removing marking the refset as staged.")
+  public void cancelRedefinition(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /redefinition/cancel " + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "cancel refset redefinition",
+              UserRole.REVIEWER);
+
+      // Refset must be staged as DEFINITION
+      if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+        throw new LocalException("Refset is not staged for definition.");
+      }
+      
+      // Remove the staged refset change and set staging type back to null
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setStaged(false);
+      refset.setProvisional(false);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+      
+      
+    } catch (Exception e) {
+      handleException(e, "trying to cancel redefinition of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
 
   @Override
@@ -682,32 +1067,375 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
+  @GET
   @Override
-  public MemberDiffReport beginImportMembers(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/import/begin")
+  @ApiOperation(value = "Begin refset member import", notes = "Begins the import process by validating the refset for import and marking the refset as staged.", response = ValidationResultJpa.class)
+  public ValidationResult beginImportMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/begin " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset members",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.isStaged()) {
+        throw new LocalException(
+            "Begin import is not allowed while the refset is already staged.");
+
+      }
+
+      // Check refset type
+      if (refset.getType() != Refset.Type.EXTENSIONAL) {
+        throw new LocalException(
+            "Import is only allowed for extensional type refsets.");
+      }
+
+      // validate the import handler
+      ImportRefsetHandler handler =
+          refsetService.getImportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Mark the record as staged and create a staging change entry
+      refset.setStaged(true);
+      refset.setStagingType(Refset.StagingType.IMPORT);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+      StagedRefsetChange change = new StagedRefsetChangeJpa();
+      change.setOriginRefset(refset);
+      change.setType(Refset.StagingType.IMPORT);
+      change.setStagedRefset(refset);
+      refsetService.addStagedRefsetChange(change);
+
+      // Return a validation result based on whether the refset has members
+      // already
+      ValidationResult result = new ValidationResultJpa();
+      if (refset.getMembers().size() != 0) {
+        result
+            .addError("Refset already contains members, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin import refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
     return null;
   }
 
+  @GET
   @Override
-  public MemberDiffReport resumeImportMembers(Long refsetId,
-    String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/redefinition/resume")
+  @ApiOperation(value = "Resume refset redefinition", notes = "Resumes the redefinition process by re-validating the refset.", response = RefsetJpa.class)
+  public Refset resumeRedefinition(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New definition, e.g. <<284009009|Route of administration|", required = true) @QueryParam("newDefinition") String newDefinition,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /redefinition/resume " + refsetId + ", "
+            + newDefinition);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "resume refset redefinition",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+        throw new LocalException("Refset is not staged for redefinition.");
+
+      }
+
+      // TODO: can't there be more than one staged refset change per refset?
+      // recovering the previously saved state of the staged refset
+      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume refset redefinition");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
     return null;
   }
 
+  @GET
   @Override
-  public void finishImportMembers(Long refsetId, String authToken)
+  @Path("/migration/resume")
+  @ApiOperation(value = "Resume refset migration", notes = "Resumes the migration process by re-validating the refset.", response = RefsetJpa.class)
+  public Refset resumeMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
+    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/resume " + refsetId + ", "
+            + newTerminology + ", " + newVersion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "resume refset migration",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+        throw new LocalException("Refset is not staged for migration.");
+
+      }
+
+      // TODO: can't there be more than one staged refset change per refset?
+      // recovering the previously saved state of the staged refset
+      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume refset migration");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  
+  /* see superclass */
+  @GET
+  @Override
+  @Path("/import/resume")
+  @ApiOperation(value = "Resume refset member import", notes = "Resumes the import process by re-validating the refset for import.", response = ValidationResultJpa.class)
+  public ValidationResult resumeImportMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/resume " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "import refset members",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.IMPORT) {
+        throw new LocalException("Refset is not staged for import.");
+
+      }
+
+      // Return a validation result based on whether the refset has members
+      // already - same as begin - new opportunity to confirm/reject
+      ValidationResult result = new ValidationResultJpa();
+      if (refset.getMembers().size() != 0) {
+        result
+            .addError("Refset already contains members, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @POST
+  @Override
+  @Path("/import/finish")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Finish refset member import", notes = "Finishes the imports the refset members into the specified refset")
+  public void finishImportMembers(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/finish " + refsetId + ", "
+            + ioHandlerInfoId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset members",
+              UserRole.REVIEWER);
+
+      // verify that staged
+      if (refset.getStagingType() != Refset.StagingType.IMPORT) {
+        throw new Exception("Refset is not staged for import, cannot finish.");
+      }
+
+      // get the staged change tracking object
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+
+      // Obtain the import handler
+      ImportRefsetHandler handler =
+          refsetService.getImportRefsetHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Get a set of concept ids for current refset members
+      Set<String> conceptIds = new HashSet<>();
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        conceptIds.add(member.getConceptId());
+      }
+      Logger.getLogger(getClass())
+          .info("  refset count = " + conceptIds.size());
+
+      // Load members into memory and add to refset
+      List<ConceptRefsetMember> members = handler.importMembers(refset, in);
+      int objectCt = 0;
+      for (ConceptRefsetMember member : members) {
+
+        // De-duplicate
+        if (conceptIds.contains(member.getConceptId())) {
+          continue;
+        }
+        ++objectCt;
+        member.setId(null);
+        member.setLastModified(member.getEffectiveTime());
+        member.setLastModifiedBy(userName);
+        member.setPublishable(true);
+        member.setPublished(false);
+        member.setMemberType(Refset.MemberType.MEMBER);
+        // TODO: - no efficient way to compute this
+        // each member requires a call to the terminology server!
+        // terminologyHandler.getConcept is our best bet
+        member.setConceptName("TBD");
+        refsetService.addMember(member);
+        conceptIds.add(member.getConceptId());
+      }
+      Logger.getLogger(getClass()).info("  refset import count = " + objectCt);
+      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+
+      // Remove the staged refset change and set staging type back to null
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
 
   }
 
+  @GET
   @Override
-  public void cancelImportMembers(Long refsetId, String authToken)
+  @Path("/import/cancel")
+  @ApiOperation(value = "Cancel refset member import", notes = "Cancels the import process.")
+  public void cancelImportMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
 
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /import/cancel " + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset members",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.IMPORT) {
+        throw new LocalException("Refset is not staged for import.");
+
+      }
+
+      // Remove the staged refset change and set staging type back to null
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import refset members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
 }

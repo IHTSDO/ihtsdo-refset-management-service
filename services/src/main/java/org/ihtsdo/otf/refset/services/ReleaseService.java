@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -45,25 +46,6 @@ public interface ReleaseService extends ProjectService {
   public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId)
     throws Exception;
 
-  /**
-   * Returns the previous release info for refset.
-   *
-   * @param refsetId the refset id
-   * @return the previous release info for refset
-   * @throws Exception
-   */
-  public ReleaseInfo getPreviousReleaseInfoForRefset(Long refsetId)
-    throws Exception;
-
-  /**
-   * Returns the planned current release info for refset.
-   *
-   * @param refsetId the refset id
-   * @return the planned current release info for refset
-   * @throws Exception
-   */
-  public ReleaseInfo getPlannedReleaseInfoForRefset(Long refsetId)
-    throws Exception;
 
   /**
    * Returns the release history for refset.
@@ -85,27 +67,7 @@ public interface ReleaseService extends ProjectService {
    * @throws Exception
    */
   public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId)
-    throws Exception;
-
-  /**
-   * Returns the previous release info for translation.
-   *
-   * @param translationId the translation id
-   * @return the previous release info for translation
-   * @throws Exception
-   */
-  public ReleaseInfo getPreviousReleaseInfoForTranslation(Long translationId)
-    throws Exception;
-
-  /**
-   * Returns the planned release info for translation.
-   *
-   * @param translationId the translation id
-   * @return the planned release info for translation
-   * @throws Exception
-   */
-  public ReleaseInfo getPlannedReleaseInfoForTranslation(Long translationId)
-    throws Exception;
+    throws Exception; 
 
   /**
    * Returns the release history for refset translation.
@@ -116,5 +78,24 @@ public interface ReleaseService extends ProjectService {
    */
   public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId)
     throws Exception;
+
+  /**
+   * Adds the release artifact.
+   *
+   * @param releaseArtifact the release artifact
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
+    throws Exception;
+
+  /**
+   * Returns the release artifact.
+   *
+   * @param id the id
+   * @return the release artifact
+   * @throws Exception the exception
+   */
+  public ReleaseArtifact getReleaseArtifact(Long id) throws Exception;
 
 }

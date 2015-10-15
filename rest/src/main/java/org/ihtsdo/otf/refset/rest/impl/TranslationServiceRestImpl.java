@@ -4,7 +4,9 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,14 +26,20 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -39,8 +47,6 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -160,6 +166,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     TranslationService translationService = new TranslationServiceJpa();
     try {
+      Logger.getLogger(getClass()).info(
+          "RESTful call (Translation): get translation, translationId:"
+              + translationId);
+
       authorizeApp(securityService, authToken, "retrieve the translation",
           UserRole.VIEWER);
 
@@ -179,11 +189,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/translations/{refsetid}")
+  @Path("/translations/{refsetId}")
   public TranslationList getTranslationsForRefset(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): get translations for refset, refsetId:"
+            + refsetId);
+
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the refset",
@@ -192,8 +207,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       Refset refset = refsetService.getRefset(refsetId);
 
       TranslationList result = new TranslationListJpa();
-      result.setObjects(refset.getTranslations());
-      result.setTotalCount(result.getCount());
+      List<Translation> translations = refset.getTranslations();
+      for (Translation t : translations) {
+        t.getDescriptionTypes().size();
+        t.getConcepts().size();
+      }
+      result.setObjects(translations);
+      result.setTotalCount(translations.size());
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -343,86 +363,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
-  @POST
-  @Override
-  @Path("/import")
-  @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import translation concepts", notes = "Imports concepts and descriptions into the specified translation", response = List.class)
-  public void importConcepts(
-    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-    @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /import" + translationId + ", "
-            + ioHandlerInfoId);
-
-    TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import translation members", UserRole.REVIEWER);
-
-      // Obtain the import handler
-      ImportTranslationHandler handler =
-          translationService.getImportTranslationHandler(ioHandlerInfoId);
-      if (handler == null) {
-        throw new Exception("invalid handler id " + ioHandlerInfoId);
-      }
-
-      // TODO: what if translation already has concepts?
-      // what if some of the concepts match these?
-
-      // Load members into memory and add to translation
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-      List<Concept> concepts = handler.importConcepts(translation, in);
-      // Iterate through concepts
-      for (Concept concept : concepts) {
-        // Add concept
-        concept.setLastModifiedBy(userName);
-        translationService.addConcept(concept);
-
-        // Iterate through descriptions
-        for (Description description : concept.getDescriptions()) {
-          // Add description
-          description.setLastModifiedBy(userName);
-          translationService.addDescription(description);
-
-          // Iterate through langauges
-          for (LanguageRefsetMember member : description
-              .getLanguageRefsetMembers()) {
-            // Add language
-            member.setDescriptionId(description.getTerminologyId());
-            member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member);
-            // If type is "synonym"
-          }
-        }
-      }
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-      translationService.commit();
-    } catch (Exception e) {
-      handleException(e, "trying to import translation members");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
-  }
-
-  /* see superclass */
   @GET
   @Override
   @Produces("application/octet-stream")
@@ -449,7 +389,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "export translation members ",
+          securityService, authToken, "export translation concepts ",
           UserRole.AUTHOR);
 
       // Obtain the export handler
@@ -459,13 +399,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      // export the members
+      // export the concepts
       return handler.exportConcepts(translation, translationService
           .findConceptsForTranslation(translation.getId(), "", null)
           .getObjects());
 
     } catch (Exception e) {
-      handleException(e, "trying to export translation members");
+      handleException(e, "trying to export translation concepts");
     } finally {
       translationService.close();
       securityService.close();
@@ -475,10 +415,34 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public ConceptList findTranslationConceptsForQuery(Long translationId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @POST
+  @Path("/concepts")
+  @ApiOperation(value = "Finds translation concepts", notes = "Finds translation concepts based on translation id, pfs parameter and query", response = ConceptListJpa.class)
+  public ConceptList findTranslationConceptsForQuery(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): find translation concepts, translationId:"
+            + translationId + " query:" + query + " " + pfs);
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find translation concepts",
+          UserRole.VIEWER);
+
+      return translationService.findConceptsForTranslation(translationId,
+          query, pfs);
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve translation concepts ");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
   }
 
   /* see superclass */
@@ -498,37 +462,277 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @GET
   @Override
-  public ConceptDiffReport beginImportConcepts(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken)
+  @Path("/import/begin")
+  @ApiOperation(value = "Begin translation concept import", notes = "Begins the import process by validating the translation for import and marking the translation as staged.", response = ValidationResultJpa.class)
+  public ValidationResult beginImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/begin " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation concepts", UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.isStaged()) {
+        throw new LocalException(
+            "Begin import is not allowed while the translation is already staged.");
+
+      }
+
+      // validate the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Mark the record as staged and create a staging change entry
+      translation.setStaged(true);
+      translation.setStagingType(Translation.StagingType.IMPORT);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+      StagedTranslationChange change = new StagedTranslationChangeJpa();
+      change.setOriginTranslation(translation);
+      change.setType(Translation.StagingType.IMPORT);
+      change.setStagedTranslation(translation);
+      translationService.addStagedTranslationChange(change);
+
+      // Return a validation result based on whether the translation has concept
+      // already
+      ValidationResult result = new ValidationResultJpa();
+      if (translation.getConcepts().size() != 0) {
+        result
+            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
   /* see superclass */
+  @GET
   @Override
-  public ConceptDiffReport resumeImportConcepts(Long translationId,
-    String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/import/resume")
+  @ApiOperation(value = "Resume translation concept import", notes = "Resumes the import process by re-validating the translation for import.", response = ValidationResultJpa.class)
+  public ValidationResult resumeImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/resume " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import translation concepts",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new LocalException("Translation is not staged for import.");
+
+      }
+
+      // Return a validation result based on whether the translation has
+      // concepts
+      // already - same as begin - new opportunity to confirm/reject
+      ValidationResult result = new ValidationResultJpa();
+      if (translation.getConcepts().size() != 0) {
+        result
+            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+      } else {
+        return result;
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
   /* see superclass */
+  @POST
   @Override
-  public void finishImportConcepts(Long translationId, String authToken)
+  @Path("/import/finish")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation.")
+  public void finishImportConcepts(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of concepts file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/finish " + translationId
+            + ", " + ioHandlerInfoId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation concepts", UserRole.REVIEWER);
+
+      // verify that staged
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new Exception(
+            "Translation is not staged for import, cannot finish.");
+      }
+
+      // get the staged change tracking object
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+
+      // Obtain the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+
+      // Get a set of concept ids for current translation concepts
+      Set<String> conceptIds = new HashSet<>();
+      for (Concept concept : translation.getConcepts()) {
+        conceptIds.add(concept.getTerminologyId());
+      }
+      Logger.getLogger(getClass()).info(
+          "  translation count = " + conceptIds.size());
+
+      // Load concepts into memory and add to translation
+      List<Concept> concepts = handler.importConcepts(translation, in);
+      int objectCt = 0;
+      for (Concept concept : concepts) {
+
+        // De-duplicate
+        if (conceptIds.contains(concept.getTerminologyId())) {
+          continue;
+        }
+        ++objectCt;
+        concept.setId(null);
+        concept.setLastModified(concept.getEffectiveTime());
+        concept.setLastModifiedBy(userName);
+        concept.setPublishable(true);
+        concept.setPublished(false);
+        translationService.addConcept(concept);
+        conceptIds.add(concept.getTerminologyId());
+      }
+      Logger.getLogger(getClass()).info(
+          "  translation import count = " + objectCt);
+      Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
+
+      // Remove the staged translation change and set staging type back to null
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
-  /* see superclass */
+  @GET
   @Override
-  public void cancelImportConcepts(Long translationId, String authToken)
+  @Path("/import/cancel")
+  @ApiOperation(value = "Cancel translation concept import", notes = "Cancels the translation concept import process.")
+  public void cancelImportConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
 
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/cancel " + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation concepts", UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.getStagingType() != Translation.StagingType.IMPORT) {
+        throw new LocalException("Translation is not staged for import.");
+
+      }
+
+      // Remove the staged translation change and set staging type back to null
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume import translation concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
@@ -549,7 +753,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public TranslationList findTranslationsWithSpellingDictionary(String authToken)
+  public TranslationList getTranslationsWithSpellingDictionary(String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -687,10 +891,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public void finishMigration(Long translationId, String authToken)
+  public Translation finishMigration(Long translationId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-
+    return null;
   }
 
   /* see superclass */
@@ -711,7 +915,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public ConceptList findMembersInCommon(String conceptToken, String query,
+  public ConceptList findConceptsInCommon(String conceptToken, String query,
     PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;

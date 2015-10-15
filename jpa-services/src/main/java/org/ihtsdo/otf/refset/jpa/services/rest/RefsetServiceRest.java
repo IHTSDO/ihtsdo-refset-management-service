@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -96,19 +97,6 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public void importDefinition(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
-
-  /**
-   * Import refset members. todo: replace this with beginImport/finishImport
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
-   * @param refsetId the refset id
-   * @param ioHandlerInfoId the io handler info id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void importMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
@@ -206,6 +194,18 @@ public interface RefsetServiceRest {
     String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
+   * Adds the refset exclusion.
+   *
+   * @param refsetId the refset id
+   * @param exclusion the exclusion
+   * @param authToken the auth token
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
+    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception;
+
+  /**
    * Removes the refset exclusion.
    *
    * @param exclusionId the exclusion id
@@ -277,20 +277,18 @@ public interface RefsetServiceRest {
   /**
    * Begin import.
    *
-   * @param contentDispositionHeader the content disposition header
-   * @param in the in
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @return the member diff report
    * @throws Exception the exception
    */
-  public MemberDiffReport beginImportMembers(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
+  public ValidationResult beginImportMembers(Long refsetId,
+    String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Resume import.
+   * Resume import. - recomputes begin and produces same result without actually
+   * importing anything.
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
@@ -298,18 +296,22 @@ public interface RefsetServiceRest {
    * @return the member diff report
    * @throws Exception the exception
    */
-  public MemberDiffReport resumeImportMembers(Long refsetId,
+  public ValidationResult resumeImportMembers(Long refsetId,
     String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Finish import.
    *
+   * @param contentDispositionHeader the content disposition header
+   * @param in the in
    * @param refsetId the refset id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImportMembers(Long refsetId, String authToken)
-    throws Exception;
+  public void finishImportMembers(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Cancel import.
@@ -339,9 +341,10 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishMigration(Long refsetId, String authToken) throws Exception;
+  public Refset finishMigration(Long refsetId, String authToken) throws Exception;
 
   /**
    * Cancel migration.
@@ -369,9 +372,10 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishRedefinition(Long refsetId, String authToken)
+  public Refset finishRedefinition(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -381,7 +385,7 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void cancelRedefintion(Long refsetId, String authToken)
+  public void cancelRedefinition(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -438,4 +442,29 @@ public interface RefsetServiceRest {
    */
   public String extrapolateDefinition(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Resume redefinition.
+   *
+   * @param refsetId the refset id
+   * @param newDefinition the new definition
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public Refset resumeRedefinition(Long refsetId, String newDefinition,
+    String authToken) throws Exception;
+
+  /**
+   * Resume migration.
+   *
+   * @param refsetId the refset id
+   * @param newTerminology the new terminology
+   * @param newVersion the new version
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset resumeMigration(Long refsetId, String newTerminology,
+    String newVersion, String authToken) throws Exception;
 }

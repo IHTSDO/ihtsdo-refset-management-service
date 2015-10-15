@@ -10,8 +10,11 @@ tsApp.controller('DirectoryCtrl', [
   'tabService',
   'securityService',
   'refsetService',
+  'translationService',
+  'releaseService',
   function($scope, $http, $modal, $location, $anchorScroll, gpService,
-    utilService, tabService, securityService, refsetService) {
+    utilService, tabService, securityService, refsetService, translationService,
+    releaseService) {
     console.debug('configure DirectoryCtrl');
 
     // Handle resetting tabs on "back" button
@@ -23,16 +26,37 @@ tsApp.controller('DirectoryCtrl', [
     // to login page
 
     // Model variables
-    $scope.refsets = null;
+    $scope.publishedRefsets = null;
+    $scope.previewdRefsets = null;
+    $scope.publishedTranslations = null;
+    $scope.previewedTranslations = null;
 
     // Paging variables
     $scope.pageSize = 10;
 
     $scope.paging = {};
-    $scope.paging["refset"] = {
+    $scope.paging["publishedRefset"] = {
       page : 1,
       filter : "",
-      sortField : 'lastModified',
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["previewedRefset"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["publishedTranslation"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
+      ascending : null
+    }
+    $scope.paging["previewedTranslation"] = {
+      page : 1,
+      filter : "",
+      sortField : 'name',
       ascending : null
     }
     $scope.paging["member"] = {
@@ -41,25 +65,75 @@ tsApp.controller('DirectoryCtrl', [
       sortField : 'lastModified',
       ascending : null
     }
+    $scope.paging["inclusion"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
+    $scope.paging["exclusion"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
+    $scope.paging["concept"] = {
+      page : 1,
+      filter : "",
+      sortField : 'lastModified',
+      ascending : null
+    }
     
-    // get refsets
-    $scope.retrieveRefsets = function() {
+    // get publishedRefsets
+    $scope.retrievePublishedRefsets = function() {
 
       var pfs = {
-        startIndex : ($scope.paging["refset"].page - 1) * $scope.pageSize,
+        startIndex : ($scope.paging["publishedRefset"].page - 1) * $scope.pageSize,
         maxResults : $scope.pageSize,
-        sortField : $scope.paging["refset"].sortField,
-        ascending : $scope.paging["refset"].ascending == null ? true
-          : $scope.paging["refset"].ascending,
-        queryRestriction : null
+        sortField : $scope.paging["publishedRefset"].sortField,
+        ascending : $scope.paging["publishedRefset"].ascending == null ? true
+          : $scope.paging["publishedRefset"].ascending,
+        queryRestriction : 'workflowStatus:PUBLISHED'
       };
 
-      refsetService.findRefsetsForQuery($scope.paging["refset"].filter,
+      refsetService.findRefsetsForQuery($scope.paging["publishedRefset"].filter,
         pfs).then(function(data) {
-        $scope.refsets = data.refsets;
-        $scope.refsets.totalCount = data.totalCount;
+        $scope.publishedRefsets = data.refsets;
+        $scope.publishedRefsets.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.publishedRefsets.length; i++) {
+          $scope.publishedRefsets[i].isExpanded = false;
+          if ($scope.publishedRefsets[i].type == 'INTENSIONAL') {
+            $scope.retrieveInclusions($scope.publishedRefsets[i]);
+            $scope.retrieveExclusions($scope.publishedRefsets[i]);
+          }
+        }
       })
+    };
+    
+    // get previewedRefsets
+    $scope.retrievePreviewedRefsets = function() {
 
+      var pfs = {
+        startIndex : ($scope.paging["previewedRefset"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["previewedRefset"].sortField,
+        ascending : $scope.paging["previewedRefset"].ascending == null ? true
+          : $scope.paging["previewedRefset"].ascending,
+        queryRestriction : 'workflowStatus:PREVIEW'
+      };
+
+      refsetService.findRefsetsForQuery($scope.paging["previewedRefset"].filter,
+        pfs).then(function(data) {
+        $scope.previewedRefsets = data.refsets;
+        $scope.previewedRefsets.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.previewedRefsets.length; i++) {
+          $scope.previewedRefsets[i].isExpanded = false;
+          if ($scope.previewedRefsets[i].type == 'INTENSIONAL') {
+            $scope.retrieveInclusions($scope.previewedRefsets[i]);
+            $scope.retrieveExclusions($scope.previewedRefsets[i]);
+          }
+        }
+      })
     };
     
     // get members
@@ -74,34 +148,79 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-      // TODO: no query field for getting members?
-      memberService.findMembersForRefsetRevision(/*$scope.paging["member"].filter,*/
-        refset.id, refset.effectiveTime, pfs).then(function(data) {
-        $scope.members = data.members;
-        $scope.members.totalCount = data.totalCount;
+      refsetService.findRefsetMembersForQuery(refset.id, $scope.paging["member"].filter,
+        pfs).then(function(data) {
+        refset.members = data.members;
+        refset.members.totalCount = data.totalCount;
       })
-
     };    
 
-    // get translations
-    $scope.retrieveTranslations = function(refset) {
+    // get inclusion members
+    $scope.retrieveInclusions = function(refset) {
 
       var pfs = {
-        startIndex : ($scope.paging["translation"].page - 1) * $scope.pageSize,
+        startIndex : ($scope.paging["inclusion"].page - 1) * $scope.pageSize,
         maxResults : $scope.pageSize,
-        sortField : $scope.paging["translation"].sortField,
-        ascending : $scope.paging["translation"].ascending == null ? true
-          : $scope.paging["translation"].ascending,
+        sortField : $scope.paging["inclusion"].sortField,
+        ascending : $scope.paging["inclusion"].ascending == null ? true
+          : $scope.paging["inclusion"].ascending,
         queryRestriction : null
       };
 
-      // TODO: no query field for getting translations? or getTranslationsForRefset()
-      translationService.findTranslationsForQuery(/*$scope.paging["translation"].filter*/
-        translation.id, translation.effectiveTime, pfs).then(function(data) {
-        $scope.translations = data.translations;
-        $scope.translations.totalCount = data.totalCount;
+      refsetService.findRefsetInclusionsForQuery(refset.id, $scope.paging["inclusion"].filter,
+        pfs).then(function(data) {
+        refset.inclusions = data.members;
       })
 
+    };    
+    
+    // get exclusion members
+    $scope.retrieveExclusions = function(refset) {
+
+      var pfs = {
+        startIndex : ($scope.paging["exclusion"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["exclusion"].sortField,
+        ascending : $scope.paging["exclusion"].ascending == null ? true
+          : $scope.paging["exclusion"].ascending,
+        queryRestriction : null
+      };
+
+      refsetService.findRefsetExclusionsForQuery(refset.id, $scope.paging["exclusion"].filter,
+        pfs).then(function(data) {
+        refset.exclusions = data.members;
+      })
+
+    };    
+    
+    // get current refset release info
+    $scope.getCurrentRefsetReleaseInfo = function(refset) {
+
+      releaseService.getCurrentRefsetRelease(refset.id).then(function(data) {
+        refset.releaseInfo = data;
+        refset.releaseArtifacts = data.artifacts;        
+      })
+    };    
+    
+    // get translations
+    $scope.retrievePublishedTranslations = function() {
+      var pfs = {
+        startIndex : ($scope.paging["publishedTranslation"].page - 1) * $scope.pageSize,
+        maxResults : $scope.pageSize,
+        sortField : $scope.paging["publishedTranslation"].sortField,
+        ascending : $scope.paging["publishedTranslation"].ascending == null ? true
+          : $scope.paging["publishedTranslation"].ascending,
+        queryRestriction : 'workflowStatus:PUBLISHED'
+      };
+
+      translationService.findTranslationsForQuery($scope.paging["publishedTranslation"].filter,
+        pfs).then(function(data) {
+        $scope.publishedTranslations = data.translations;
+        $scope.publishedTranslations.totalCount = data.totalCount;
+        for (var i = 0; i < $scope.publishedTranslations.length; i++) {
+          $scope.publishedTranslations[i].isExpanded = false;
+        }
+      })
     };    
     
     // get translation concepts
@@ -116,17 +235,40 @@ tsApp.controller('DirectoryCtrl', [
         queryRestriction : null
       };
 
-      // TODO: no query field for getting translations?
-      translationService.findConceptsForTranslationRevision(/*$scope.paging["concept"].filter*/
-        translation.id, translation.effectiveTime, pfs).then(function(data) {
-        $scope.concepts = data.translations;
-        $scope.concepts.totalCount = data.totalCount;
+      translationService.findTranslationConceptsForQuery(translation.id, 
+        $scope.paging["concept"].filter, pfs).then(function(data) {
+        translation.concepts = data.concepts;
+        translation.concepts.totalCount = data.totalCount;
       })
 
+    };   
+    
+    // get current translation release info
+    $scope.getCurrentTranslationReleaseInfo = function(refset) {
+
+      releaseService.getCurrentTranslationRelease(refset.id).then(function(data) {
+        refset.releaseInfo = data;
+        refset.releaseArtifacts = data.artifacts;        
+      })
     };    
     
+    // export release artifact
+    $scope.exportReleaseArtifact = function(artifact) {
+      releaseService.exportReleaseArtifact(artifact);
+    };    
+    
+    // Convert date to a string
+    $scope.toDate = function(lastModified) {
+      return utilService.toDate(lastModified);
+    }
+    
+    // Convert date to a string
+    $scope.toShortDate = function(lastModified) {
+      return utilService.toShortDate(lastModified);
+    }
+    
     // sort mechanism 
-    $scope.setSortField = function(table, field) {
+    $scope.setSortField = function(table, field, object) {
       console.debug("set " + table + " sortField " + field);
       $scope.paging[table].sortField = field;
       // reset page number too
@@ -146,8 +288,14 @@ tsApp.controller('DirectoryCtrl', [
         }
       }
       // retrieve the correct table
-      if (table === 'refset') {
-        $scope.retrieveRefsets();
+      if (table === 'publishedRefset') {
+        $scope.retrievePublishedRefsets();
+      } 
+      if (table === 'member') {
+        $scope.retrieveMembers(object);
+      } 
+      if (table === 'concept') {
+        $scope.retrieveTranslationConcepts(object);
       } 
       
     }
@@ -167,12 +315,26 @@ tsApp.controller('DirectoryCtrl', [
       }
     }
 
+    $scope.toggleExpanded = function(refset) {
+      if (refset.isExpanded == true) {
+        refset.isExpanded = false;
+      } else {
+        refset.isExpanded = true;
+      }
+    }
+    
+    $scope.status = {
+      isItemOpen: new Array(10),
+      isFirstDisabled: false
+    };
     
     //
     // call these during initialization
     //
 
-    $scope.retrieveRefsets();
+    $scope.retrievePublishedRefsets();
+    $scope.retrievePreviewedRefsets();
+    $scope.retrievePublishedTranslations();
   }
 
 ]);

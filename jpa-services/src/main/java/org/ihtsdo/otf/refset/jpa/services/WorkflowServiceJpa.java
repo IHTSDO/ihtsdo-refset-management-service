@@ -6,8 +6,10 @@ package org.ihtsdo.otf.refset.jpa.services;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
@@ -17,12 +19,9 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -108,40 +107,6 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAvailableEditingConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - find available editing work " + translationId
-            + ", " + userName);
-    // Get object references
-    Translation translation = getTranslation(translationId);
-    User user = getUser(userName);
-    // Obtain the handler
-    WorkflowActionHandler handler =
-        getWorkflowHandlerForPath(translation.getWorkflowPath());
-    // Fkind available editing work
-    return handler.findAvailableEditingConcepts(translation, user, this);
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptList findAvailableReviewConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Service - find available review work " + translationId + ", "
-            + userName);
-    // Get object references
-    Translation translation = getTranslation(translationId);
-    User user = getUser(userName);
-    // Obtain the handler
-    WorkflowActionHandler handler =
-        getWorkflowHandlerForPath(translation.getWorkflowPath());
-    // Fkind available editing work
-    return handler.findAvailableReviewConcepts(translation, user, this);
-  }
-
-  /* see superclass */
-  @Override
   public TrackingRecordList getTrackingRecordsForTranslation(
     Long translationId, String userName) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -223,15 +188,9 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     return list;
   }
 
-  /**
-   * Returns the handler for path.
-   *
-   * @param path the path
-   * @return the handler for path
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private WorkflowActionHandler getWorkflowHandlerForPath(String path)
+  /* see superclass */
+  @Override
+  public WorkflowActionHandler getWorkflowHandlerForPath(String path)
     throws Exception {
     for (WorkflowActionHandler handler : workflowHandlerMap.values()) {
       if (handler.getWorkflowPath().equals(path)) {
@@ -326,68 +285,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedEditingConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception {
-    ConceptList list = new ConceptListJpa();
-    // Get tracking records for this translation, user, and with "for editing"
-    // flag
-    User user = getUser(userName);
-    String query =
-        "translation.id:" + translationId + " AND user.id:" + user.getId()
-            + " AND forEditing:1";
-    TrackingRecordList records = findTrackingRecordsForQuery(query, pfs);
-    list.setTotalCount(records.getTotalCount());
-    for (TrackingRecord record : records.getObjects()) {
-      list.getObjects().add(record.getConcept());
-    }
-    return list;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptList findAssignedReviewConcepts(Long translationId,
-    String userName, PfsParameter pfs) throws Exception {
-    ConceptList list = new ConceptListJpa();
-    // Get tracking records for this translation, user, and with "for review"
-    // flag
-    User user = getUser(userName);
-    String query =
-        "translation.id:" + translationId + " AND user.id:" + user.getId()
-            + " AND forReview:1";
-    TrackingRecordList records = findTrackingRecordsForQuery(query, pfs);
-    list.setTotalCount(records.getTotalCount());
-    for (TrackingRecord record : records.getObjects()) {
-      list.getObjects().add(record.getConcept());
-    }
-    return list;
-  }
-
-  @Override
-  public RefsetList findAvailableEditingRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public RefsetList findAssignedEditingRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public RefsetList findAvailableReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public RefsetList findAssignedReviewRefsets(Long refsetId, String userName,
-    PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  public Set<WorkflowActionHandler> getWorkflowHandlers() throws Exception {
+    return new HashSet<>(workflowHandlerMap.values());
   }
 
 }

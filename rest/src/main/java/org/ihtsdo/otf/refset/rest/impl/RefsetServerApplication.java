@@ -17,7 +17,6 @@ import org.glassfish.jersey.jsonp.JsonProcessingFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 
-import com.ibm.icu.util.Calendar;
 import com.wordnik.swagger.jaxrs.config.BeanConfig;
 
 /**
@@ -38,7 +37,6 @@ public class RefsetServerApplication extends Application {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
   public RefsetServerApplication() throws Exception {
     Logger.getLogger(getClass()).info(
         "IHTSDO refset management service APPLICATION START");
@@ -53,13 +51,13 @@ public class RefsetServerApplication extends Application {
     beanConfig.setScan(true);
 
     // Set up a timer task to run at 2AM every day
-    TimerTask task = new InitializationTask();
-    timer = new Timer();
-    Calendar today = Calendar.getInstance();
-    today.set(Calendar.HOUR_OF_DAY, 2);
-    today.set(Calendar.MINUTE, 0);
-    today.set(Calendar.SECOND, 0);
-    //timer.scheduleAtFixedRate(task, today.getTime(), 6 * 60 * 60 * 1000);
+    // TimerTask task = new InitializationTask();
+    // timer = new Timer();
+    // Calendar today = Calendar.getInstance();
+    // today.set(Calendar.HOUR_OF_DAY, 2);
+    // today.set(Calendar.MINUTE, 0);
+    // today.set(Calendar.SECOND, 0);
+    // //timer.scheduleAtFixedRate(task, today.getTime(), 6 * 60 * 60 * 1000);
 
   }
 

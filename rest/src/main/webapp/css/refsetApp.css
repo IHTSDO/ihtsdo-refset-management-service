@@ -138,3 +138,7 @@ a:hover {
 .table-select-row {
 	cursor: pointer;
 }
+
+.panel-title {
+    font-size: 12px;
+}

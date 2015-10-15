@@ -112,7 +112,6 @@ public abstract class AbstractComponent implements Component {
     this.id = id;
   }
 
-
   /* see superclass */
   @Override
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)

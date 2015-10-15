@@ -26,6 +26,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -37,6 +38,7 @@ import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
@@ -68,6 +70,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The is public. */
   @Column(nullable = false)
   private boolean isPublic;
+
+  /** The staging type. */
+  @Column(nullable = true)
+  private StagingType stagingType;
 
   /** The language. */
   @Column(nullable = true, length = 4000)
@@ -118,6 +124,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     name = translation.getName();
     description = translation.getDescription();
     isPublic = translation.isPublic();
+    stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
     workflowPath = translation.getWorkflowPath();
@@ -131,14 +138,20 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   public String getName() {
     return name;
   }
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getDescription() {
     return description;
   }
@@ -165,6 +178,30 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isStaged() {
+    return stagingType != null;
+  }
+
+  /* see superclass */
+  @Override
+  public void setStaged(boolean staged) {
+    // n/a
+  }
+
+  /* see superclass */
+  @Override
+  public StagingType getStagingType() {
+    return stagingType;
+  }
+
+  /* see superclass */
+  @Override
+  public void setStagingType(StagingType type) {
+    this.stagingType = type;
   }
 
   /* see superclass */
@@ -354,7 +391,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    * @return the user role map
    */
   @XmlTransient
-  @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
   }
@@ -369,6 +409,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
     return result;
   }
 
@@ -389,6 +431,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
       return false;
     if (isPublic != other.isPublic)
       return false;
+    if (stagingType != other.stagingType)
+      return false;
     if (language == null) {
       if (other.language != null)
         return false;
@@ -406,10 +450,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public String toString() {
     return "TranslationJpa [name=" + name + ", description=" + description
-        + ", isPublic=" + isPublic + ", language=" + language
-        + ", workflowStatus=" + workflowStatus + ", workflowPath="
-        + workflowPath + ", refset=" + refset + ", descriptionTypes="
-        + descriptionTypes + "]";
+        + ", isPublic=" + isPublic + ", stagingType=" + stagingType
+        + ", language=" + language + ", workflowStatus=" + workflowStatus
+        + ", workflowPath=" + workflowPath + ", refset=" + refset
+        + ", descriptionTypes=" + descriptionTypes + "]";
   }
 
   @XmlTransient

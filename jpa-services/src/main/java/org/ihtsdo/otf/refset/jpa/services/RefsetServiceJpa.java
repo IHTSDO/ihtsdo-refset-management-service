@@ -10,11 +10,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
+
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -25,6 +28,8 @@ import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -366,11 +371,96 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "Refset Service - find members " + "/" + query + " refsetId "
+            + refsetId);
+
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (refsetId == null) {
+      sb.append("refsetId:[* TO *]");
+    } else {
+      sb.append("refsetId:" + refsetId);
+    }
+
+    int[] totalCt = new int[1];
+    List<ConceptRefsetMember> list =
+        (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
+            ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
+            totalCt);
+    ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
+  }
+
+  @Override
+  public StagedRefsetChange addStagedRefsetChange(StagedRefsetChange change)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - add staged change " + change);
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.persist(change);
+      tx.commit();
+    } else {
+      manager.persist(change);
+    }
+    return change;
+  }
+
+  @Override
+  public void removeStagedRefsetChange(Long id) throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      StagedRefsetChange change = manager.find(StagedRefsetChangeJpa.class, id);
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove refset member
+        tx.begin();
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - get staged change for refset " + refsetId);
+    javax.persistence.Query query =
+        manager.createQuery("select a from StagedRefsetChangeJpa a where "
+            + "originRefset.id = :refsetId");
+    try {
+      query.setParameter("refsetId", refsetId);
+      return (StagedRefsetChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
   /* see superclass */
@@ -511,4 +601,59 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return list;
   }
 
+  @Override
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception {
+                
+    // Clone the refset and call set it provisional
+    Refset refsetCopy = new RefsetJpa(refset);
+    // only exist for staging purposes
+    // will become real if a finish operation is completed
+    // used to prevent retrieving with index
+    refsetCopy.setProvisional(true);  
+    
+    // null its id and all of its components ids
+    // then call addXXX on each component
+    refsetCopy.setId(null);
+    
+    // translations and refset descriptor not relevant for staging
+    // staging only affects members
+    // when finalized (finished) the members will be copied back to the
+    // original refset
+    refsetCopy.getTranslations().clear();
+    refsetCopy.setRefsetDescriptor(null);
+    
+    addRefset(refsetCopy);
+    
+    if (refsetCopy.getType().equals("EXTENSIONAL")) {
+      for (ConceptRefsetMember member : refsetCopy.getMembers()) {
+        member.setId(null);
+        member.setRefset(refsetCopy);
+        addMember(member);
+      }
+    }
+    for (ConceptRefsetMember member : refsetCopy.getInclusions()) {
+      member.setId(null);
+      member.setRefset(refsetCopy);
+      addMember(member);
+    }
+    for (ConceptRefsetMember member : refsetCopy.getExclusions()) {
+      member.setId(null);
+      member.setRefset(refsetCopy);
+      addMember(member);
+    }
+        
+    // set staging parameters on the original refset    
+    refset.setStaged(true);
+    refset.setStagingType(stagingType);
+    updateRefset(refset);
+    
+    StagedRefsetChange stagedChange = new StagedRefsetChangeJpa();
+    stagedChange.setType(stagingType);
+    stagedChange.setOriginRefset(refset);
+    stagedChange.setStagedRefset(refsetCopy);
+    addStagedRefsetChange(stagedChange);
+
+   
+    return refsetCopy;
+  }
 }

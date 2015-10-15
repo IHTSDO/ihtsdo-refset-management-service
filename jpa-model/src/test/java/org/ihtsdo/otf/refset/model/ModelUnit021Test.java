@@ -89,9 +89,10 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("refset");
     tester.include("conceptId");
     tester.include("conceptName");
+    tester.include("memberType");
 
     tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);
+    tester.proxy(Refset.class, 1, r2); 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -110,7 +111,8 @@ public class ModelUnit021Test extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);    assertTrue(tester.testCopyConstructor(ConceptRefsetMember.class));
+    tester.proxy(Refset.class, 1, r2);    
+    assertTrue(tester.testCopyConstructor(ConceptRefsetMember.class));
   }
 
   /**
@@ -147,6 +149,7 @@ public class ModelUnit021Test extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
+    tester.include("memberType");
 
     tester.include("conceptId");
     tester.include("conceptName");

@@ -10,10 +10,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.NoResultException;
+
 import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -23,7 +26,9 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -213,6 +218,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         (List<Translation>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *]" : query, TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
+    for (Translation translation : list) {
+      handleTranslationLazyInitialization(translation);
+    }
     TranslationList result = new TranslationListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -331,11 +339,35 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   /* see superclass */
+  @SuppressWarnings("unchecked")
   @Override
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "Translation Service - find concepts " + "/" + query
+            + " translationId " + translationId);
+
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (translationId == null) {
+      sb.append("translationId:[* TO *]");
+    } else {
+      sb.append("translationId:" + translationId);
+    }
+
+    int[] totalCt = new int[1];
+    List<Concept> list =
+        (List<Concept>) getQueryResults(sb.toString(), ConceptJpa.class,
+            ConceptJpa.class, pfs, totalCt);
+    for (Concept c : list) {
+      c.getDescriptions().size();
+    }
+    ConceptList result = new ConceptListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 
   /**
@@ -349,6 +381,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getDescriptionTypes().size();
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
+    translation.getConcepts().size();
+
   }
 
   /* see superclass */
@@ -688,6 +722,70 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(terminologyId, terminology, version,
         LanguageRefsetMemberJpa.class);
 
+  }
+
+  @Override
+  public StagedTranslationChange addStagedTranslationChange(
+    StagedTranslationChange change) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add staged change " + change);
+    if (getTransactionPerOperation()) {
+      tx = manager.getTransaction();
+      tx.begin();
+      manager.persist(change);
+      tx.commit();
+    } else {
+      manager.persist(change);
+    }
+    return change;
+  }
+
+  @Override
+  public void removeStagedTranslationChange(Long id) throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      StagedTranslationChange change =
+          manager.find(StagedTranslationChangeJpa.class, id);
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove translation member
+        tx.begin();
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(change)) {
+          manager.remove(change);
+        } else {
+          manager.remove(manager.merge(change));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  @Override
+  public StagedTranslationChange getStagedTranslationChange(Long translationId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get staged change " + translationId);
+    javax.persistence.Query query =
+        manager.createQuery("select a from StagedTranslationChangeJpa a where "
+            + "originTranslation.id = :translationId");
+    try {
+      query.setParameter("translationId", translationId);
+      return (StagedTranslationChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 
 }

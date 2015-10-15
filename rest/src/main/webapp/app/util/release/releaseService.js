@@ -46,4 +46,84 @@ tsApp.service('releaseService', [ '$http', '$q', 'gpService', 'utilService',
       return deferred.promise;
     }
 
+    // retrieve current refset release info
+    this.getCurrentRefsetRelease = function(refsetId) {
+      console.debug("getCurrentRefsetRelease");
+      var deferred = $q.defer();
+
+      // Assign user to project
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'refset/info' + "?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  release info = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
+    // retrieve current translation release info
+    this.getCurrentTranslationRelease = function(translationId) {
+      console.debug("getCurrentTranslationRelease");
+      var deferred = $q.defer();
+
+      // Assign user to project
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'translation/info' + "?translationId=" + translationId).then(
+      // success
+      function(response) {
+        console.debug("  release info = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.exportReleaseArtifact = function(releaseArtifact) {
+      gpService.increment()
+      $http({
+          url : releaseUrl + "export/"
+          + releaseArtifact.id ,
+          dataType : "json",
+          method : "GET",
+          headers : {
+            "Content-Type" : "application/json"
+          },
+          responseType: 'arraybuffer'
+      }).success(function(data) {
+        //$scope.definitionMsg = "Successfully exported report";
+        var blob = new Blob([data], {type: ""});
+
+        // hack to download store a file having its URL
+        var fileURL = URL.createObjectURL(blob);
+        var a         = document.createElement('a');
+        a.href        = fileURL; 
+        a.target      = "_blank";
+        a.download    = releaseArtifact.name;
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      }).error(function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        //deferred.reject(response.data);
+      });
+  };
+  
   } ]);

@@ -27,6 +27,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -36,6 +37,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -91,7 +93,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   @ManyToOne(targetEntity = RefsetJpa.class)
   private Refset refset = null;
 
-  /** The concepts. */
+  /** The concept. */
   @OneToOne(targetEntity = ConceptJpa.class)
   private Concept concept = null;
 
@@ -131,24 +133,6 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Override
   public void setId(Long id) {
     this.id = id;
-  }
-
-  /**
-   * Returns the object id. For JAXB.
-   *
-   * @return the object id
-   */
-  public String getObjectId() {
-    return id == null ? "" : id.toString();
-  }
-
-  /**
-   * Sets the object id. For JAXB.
-   *
-   * @param id the object id
-   */
-  public void setObjectId(String id) {
-    this.id = Long.parseLong(id);
   }
 
   /* see superclass */
@@ -193,6 +177,21 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.authors = authors;
   }
 
+  /**
+   * Returns the author user names. Used for indexing to allow lookup by author
+   * username.
+   *
+   * @return the author user names
+   */
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public List<String> getAuthorUserNames() {
+    List<String> userNames = new ArrayList<>(authors.size() + 1);
+    for (User author : authors) {
+      userNames.add(author.getUserName());
+    }
+    return userNames;
+  }
+
   /* see superclass */
   @XmlElement(type = UserJpa.class)
   @Override
@@ -207,6 +206,21 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Override
   public void setReviewers(List<User> reviewers) {
     this.reviewers = reviewers;
+  }
+
+  /**
+   * Returns the reviewer user names. Used for indexing to allow lookup by
+   * reviewer username.
+   *
+   * @return the reviewer user names
+   */
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  public List<String> getReviewerUserNames() {
+    List<String> userNames = new ArrayList<>(reviewers.size() + 1);
+    for (User reviewer : reviewers) {
+      userNames.add(reviewer.getUserName());
+    }
+    return userNames;
   }
 
   /* see superclass */
@@ -227,6 +241,8 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the translation id
    */
+  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return translation == null ? 0L : translation.getId();
   }
@@ -261,6 +277,8 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the refset id
    */
+  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getRefsetId() {
     return refset == null ? 0L : refset.getId();
   }
@@ -291,24 +309,26 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Returns the concept id. For JAXB.
+   * Returns the concept id. For JAXB and index.
    *
    * @return the concept id
    */
-  public Long getConceptId() {
-    return concept == null ? 0L : concept.getId();
+  @XmlElement
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getConceptId() {
+    return concept == null ? "" : concept.getTerminologyId();
   }
 
   /**
-   * Sets the concept id. For JAXB.
+   * Sets the concept id.
    *
    * @param conceptId the concept id
    */
-  public void setConceptId(Long conceptId) {
+  public void setConceptId(String conceptId) {
     if (concept == null) {
       concept = new ConceptJpa();
     }
-    concept.setId(conceptId);
+    concept.setTerminologyId(conceptId);
   }
 
   /* see superclass */
@@ -387,13 +407,12 @@ public class TrackingRecordJpa implements TrackingRecord {
     return true;
   }
 
-  /* see superclass */
   @Override
   public String toString() {
-    return "TrackingRecordJpa [id=" + id + ", forAuthoring=" + forAuthoring
-        + ", forReview=" + forReview + ", authors=" + authors + ", reviewers="
-        + reviewers + ", translation=" + translation + ", refset=" + refset
-        + ", concept=" + concept + "]";
+    return "TrackingRecordJpa [id=" + id + ", lastModified=" + lastModified
+        + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
+        + forAuthoring + ", forReview=" + forReview + ", authors=" + authors
+        + ", reviewers=" + reviewers + ", translation=" + translation
+        + ", refset=" + refset + ", concept=" + concept + "]";
   }
-
 }

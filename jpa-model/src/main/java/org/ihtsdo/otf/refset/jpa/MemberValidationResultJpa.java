@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.ihtsdo.otf.refset.MemberValidationResult;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 
@@ -14,8 +15,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
  * JAXB enabled implementation of {@link MemberValidationResult}.
  */
 @XmlRootElement(name = "memberValidationResult")
-public class MemberValidationResultJpa extends ValidationResultJpa
-    implements MemberValidationResult {
+public class MemberValidationResultJpa extends ValidationResultJpa implements
+    MemberValidationResult {
 
   /** The concept. */
   private ConceptRefsetMember member;
@@ -28,13 +29,22 @@ public class MemberValidationResultJpa extends ValidationResultJpa
   }
 
   /**
-   * Instantiates a {@link MemberValidationResultJpa} from the
-   * specified parameters.
+   * Instantiates a {@link MemberValidationResultJpa} from the specified
+   * parameters.
    *
    * @param result the result
    */
-  public MemberValidationResultJpa(
-      MemberValidationResult result) {
+  public MemberValidationResultJpa(ValidationResult result) {
+    super(result);
+  }
+
+  /**
+   * Instantiates a {@link MemberValidationResultJpa} from the specified
+   * parameters.
+   *
+   * @param result the result
+   */
+  public MemberValidationResultJpa(MemberValidationResult result) {
     super(result);
     member = new ConceptRefsetMemberJpa(result.getMember());
   }
@@ -70,8 +80,7 @@ public class MemberValidationResultJpa extends ValidationResultJpa
       return false;
     if (getClass() != obj.getClass())
       return false;
-    MemberValidationResultJpa other =
-        (MemberValidationResultJpa) obj;
+    MemberValidationResultJpa other = (MemberValidationResultJpa) obj;
     if (member == null) {
       if (other.member != null)
         return false;
