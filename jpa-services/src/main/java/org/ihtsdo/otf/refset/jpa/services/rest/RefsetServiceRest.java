@@ -442,4 +442,29 @@ public interface RefsetServiceRest {
    */
   public String extrapolateDefinition(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Resume redefinition.
+   *
+   * @param refsetId the refset id
+   * @param newDefinition the new definition
+   * @param authToken the auth token
+   * @return the validation result
+   * @throws Exception the exception
+   */
+  public Refset resumeRedefinition(Long refsetId, String newDefinition,
+    String authToken) throws Exception;
+
+  /**
+   * Resume migration.
+   *
+   * @param refsetId the refset id
+   * @param newTerminology the new terminology
+   * @param newVersion the new version
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset resumeMigration(Long refsetId, String newTerminology,
+    String newVersion, String authToken) throws Exception;
 }

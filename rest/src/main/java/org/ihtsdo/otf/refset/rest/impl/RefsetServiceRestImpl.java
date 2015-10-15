@@ -643,12 +643,108 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public Refset beginMigration(Long refsetId, String newTerminology,
-    String newVersion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/migration/begin")
+  @ApiOperation(value = "Begin refset migration", notes = "Begins the migration process by validating the refset for migration and marking the refset as staged.", response = RefsetJpa.class)
+  public Refset beginMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
+    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/begin " + refsetId + ", "
+            + newTerminology + ", " + newVersion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "begin refset migration",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.isStaged()) {
+        throw new LocalException(
+            "Begin migration is not allowed while the refset is already staged.");
+
+      }
+
+      // Check refset type
+      if (refset.getType() == Refset.Type.EXTERNAL) {
+        throw new LocalException(
+            "Migration is only allowed for intensional and extensional type refsets.");
+      }
+
+      // turn transaction per operation off
+      // create a transaction
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+      Refset refsetCopy =
+          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION);
+      refsetCopy.setTerminology(newTerminology);
+      refsetCopy.setVersion(newVersion);
+      // TODO: confirm when testing that this doesn't need an update for
+      // refsetCopy
+
+      // If intensional, compute the expression on new terminology and version
+      // add members from expression results
+      if (refset.getType() == Refset.Type.INTENSIONAL) {
+        // clear initial members
+        refsetCopy.setMembers(null);
+        PfsParameter pfs = new PfsParameterJpa();
+        // make sure that we use pfs to get all results - may take multiple
+        // calls
+        ConceptList conceptList =
+            refsetService.getTerminologyHandler().resolveExpression(
+                refset.getDefinition(), newTerminology, newVersion,
+                pfs);
+        Date startDate = new Date();
+        for (Concept concept : conceptList.getObjects()) {
+          ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+          member.setActive(concept.isActive());
+          member.setConceptId(concept.getTerminologyId());
+          member.setConceptName(concept.getName());
+          member.setEffectiveTime(concept.getEffectiveTime());
+          member.setLastModified(startDate);
+          member.setLastModifiedBy(userName);
+          member.setMemberType(Refset.MemberType.MEMBER);
+          member.setModuleId(concept.getModuleId());
+          member.setPublished(false);
+          member.setPublishable(true);
+          member.setRefset(refsetCopy);
+          refsetService.addMember(member);
+        }
+      }
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+        // TODO: do we do anything here?
+      }
+
+      refsetService.commit();
+      return refsetCopy;
+
+      // TODO: this solution involved adding a "provisional" flag to refset,
+      // in general, in other places where "findRefsetsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin redefinition of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
     return null;
   }
+
 
   @Override
   public Refset finishMigration(Long refsetId, String authToken)
@@ -657,11 +753,55 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public void cancelMigration(Long refsetId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/migration/cancel")
+  @ApiOperation(value = "Cancel refset migration", notes = "Cancels the migration process by removing the marking as staged.")
+  public void cancelMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/cancel " + refsetId);
 
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "cancel refset migration",
+              UserRole.REVIEWER);
+
+      // Refset must be staged as MIGRATION
+      if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+        throw new LocalException("Refset is not staged for migration.");
+      }
+      
+      // Remove the staged refset change and set staging type back to null
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setStaged(false);
+      refset.setProvisional(false);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+      
+      
+    } catch (Exception e) {
+      handleException(e, "trying to cancel migration of refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
+
   
   @GET
   @Override
@@ -703,32 +843,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new LocalException(
             "Redefinition is only allowed for intensional type refsets.");
       }
-    
-    
+
       // turn transaction per operation off
       // create a transaction
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
-      Refset refsetCopy = refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
+      Refset refsetCopy =
+          refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
       refsetCopy.setDefinition(newDefinition);
-      // TODO: confirm that this doesn't need an update for refsetCopy
-      
-    // create StagedRefsetChange (for DEFINITION)
-    // origin refset is the original, staged is the new one
-    // Compute the expression (e.g. resolveExpression in terminologyhandler)
-    // add members for each expression
-      
+      // TODO: confirm when testing that this doesn't need an update for
+      // refsetCopy
+
+      // Compute the expression
+      // add members from expression results
       PfsParameter pfs = new PfsParameterJpa();
       // make sure that we use pfs to get all results - may take multiple calls
       ConceptList conceptList =
-          refsetService.getTerminologyHandler().resolveExpression(newDefinition, 
-              refset.getTerminology(), refset.getVersion(), pfs);
+          refsetService.getTerminologyHandler().resolveExpression(
+              newDefinition, refset.getTerminology(), refset.getVersion(), pfs);
       Date startDate = new Date();
       for (Concept concept : conceptList.getObjects()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member.setActive(concept.isActive());
         member.setConceptId(concept.getTerminologyId());
-        // TODO: make sure name gets set
         member.setConceptName(concept.getName());
         member.setEffectiveTime(concept.getEffectiveTime());
         member.setLastModified(startDate);
@@ -743,10 +880,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.commit();
       return refsetCopy;
-      
-    // TODO: this solution involved adding a "provisional" flag to refset,
-    // in general, in other places where "findRefsetsForQuery" is being called
-    // we want a queryRestriction to include " AND provisional:false".
+
+      // TODO: this solution involved adding a "provisional" flag to refset,
+      // in general, in other places where "findRefsetsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
       handleException(e, "trying to begin redefinition of refset");
@@ -757,54 +894,96 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  @Override
-  public RefsetJpa finishRedefinition(Long refsetId, String authToken)
-    throws Exception {
-    // check assumptions
-    // * refset exists
-    // * user has permission
-    // * refset is staged as DEFINITION
+   
+    @GET
+    @Override
+    @Path("/redefinition/finish")
+    @ApiOperation(value = "Finish refset redefinition", notes = "Finishes the redefinition process.", response = RefsetJpa.class)
+    public Refset finishRedefinition(
+      @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+      @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+      throws Exception {
 
-    // set transaction per opertaion flase
-    // start transaction
-    
-    //first remove from original members that aren't in staged
-    // rewire members from staged not in origin to origin
-    // copy definition
-    // cleanup staged refset and parts
-    // cleanup staged refset change
-    
-    //
-    // Here the basic operation is to
-    // Look up the staged Refset change record for this refset
-    // Remove all of its members (e.g. removeMember..)
-    // Take all members from the staged refset and change their refset to be the
-    // origin refset, then update them.
-    // Remove the staged refset
-    //  * we don't define cascade on remove, so you'll have to individually
-    //  * remove anything that the clone method is cloning.
-    //  * the "members" have changed already, so you don't need to worry about them
-    // Remove the staged refset change object
-    // Set the stagingType of the original refset back to null;
-    // Commit
-    // Re-read and return the origin refset
-    //
+      Logger.getLogger(getClass()).info(
+          "RESTful call POST (Refset): /redefinition/finish " + refsetId);
 
+      RefsetService refsetService = new RefsetServiceJpa();
+      try {
+        // Load refset
+        Refset refset = refsetService.getRefset(refsetId);
+        if (refset == null) {
+          throw new Exception("Invalid refset id " + refsetId);
+        }
+
+        // Authorize the call
+        String userName =
+            authorizeProject(refsetService, refset.getProject().getId(),
+                securityService, authToken, "finish refset redefinition",
+                UserRole.REVIEWER);
+
+        // verify that staged
+        if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+          throw new Exception("Refset is not staged for redefinition, cannot finish.");
+        }
+
+        // get the staged change tracking object
+        StagedRefsetChange change =
+            refsetService.getStagedRefsetChange(refset.getId());
+
+      
+        // turn transaction per operation off
+        // create a transaction
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
+    
+        // remove from origin refsets members that aren't in staged
+        List<ConceptRefsetMember> originMembers = change.getOriginRefset().getMembers();
+        List<ConceptRefsetMember> stagedMembers = change.getStagedRefset().getMembers();
+        for (ConceptRefsetMember originMember : originMembers) {
+          if (!stagedMembers.contains(originMember)) {
+            originMembers.remove(originMember);
+          }
+        }
+        
+        // rewire members from staged that are not in origin, to origin
+        for (ConceptRefsetMember stagedMember : stagedMembers) {
+          if (!originMembers.contains(stagedMember)) {
+            refset.addMember(stagedMember);
+            stagedMember.setRefset(refset);
+          }
+        }
+        
+        // copy definition from staged to origin refset
+        refset.setDefinition(change.getStagedRefset().getDefinition());
+    
+        // Remove the staged refset change and set staging type back to null
+        refsetService.removeStagedRefsetChange(change.getId());
+        refset.setStagingType(null);
+        refset.setLastModifiedBy(userName);
+        refsetService.updateRefset(refset);
+        
+        refsetService.commit();
+        
+        // Re-read and return the origin refset
+        return refsetService.getRefset(refsetId);
+        
+      } catch (Exception e) {
+        handleException(e, "trying to finish refset redefinition");
+      } finally {
+        refsetService.close();
+        securityService.close();
+      }
     return null;
   }
 
   @GET
   @Override
   @Path("/redefinition/cancel")
-  @ApiOperation(value = "Cancel refset redefinition", notes = "Cancels the redefinition process by validating the refset for redefinition and marking the refset as staged.", response = RefsetJpa.class)
+  @ApiOperation(value = "Cancel refset redefinition", notes = "Cancels the redefinition process by removing marking the refset as staged.")
   public void cancelRedefinition(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // check assumptions
-    // * refset exists
-    // * user has permission
-    // * refset is staged as DEFINITION
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /redefinition/cancel " + refsetId);
 
@@ -822,16 +1001,24 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "cancel refset redefinition",
               UserRole.REVIEWER);
 
-
-    // See what cancelImportMembers does
-    // remove the provisional flag
-    // remove the staged refset 
-      // remove refset change object
-    // set the staging parameters of original refset back.
+      // Refset must be staged as DEFINITION
+      if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+        throw new LocalException("Refset is not staged for definition.");
+      }
+      
+      // Remove the staged refset change and set staging type back to null
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setStaged(false);
+      refset.setProvisional(false);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
       
       
     } catch (Exception e) {
-      handleException(e, "trying to begin redefinition of refset");
+      handleException(e, "trying to cancel redefinition of refset");
     } finally {
       refsetService.close();
       securityService.close();
@@ -952,12 +1139,100 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  /**
-   * TODO: resumeRedefinition
-   * check assumptions
-   * returns refsetcopy  staged
-   * recovering the previously saved state of the staged refset
-   */
+  @GET
+  @Override
+  @Path("/redefinition/resume")
+  @ApiOperation(value = "Resume refset redefinition", notes = "Resumes the redefinition process by re-validating the refset.", response = RefsetJpa.class)
+  public Refset resumeRedefinition(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New definition, e.g. <<284009009|Route of administration|", required = true) @QueryParam("newDefinition") String newDefinition,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /redefinition/resume " + refsetId + ", "
+            + newDefinition);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "resume refset redefinition",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
+        throw new LocalException("Refset is not staged for redefinition.");
+
+      }
+
+      // TODO: can't there be more than one staged refset change per refset?
+      // recovering the previously saved state of the staged refset
+      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume refset redefinition");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @GET
+  @Override
+  @Path("/migration/resume")
+  @ApiOperation(value = "Resume refset migration", notes = "Resumes the migration process by re-validating the refset.", response = RefsetJpa.class)
+  public Refset resumeMigration(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
+    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /migration/resume " + refsetId + ", "
+            + newTerminology + ", " + newVersion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "resume refset migration",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
+        throw new LocalException("Refset is not staged for migration.");
+
+      }
+
+      // TODO: can't there be more than one staged refset change per refset?
+      // recovering the previously saved state of the staged refset
+      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume refset migration");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  
   /* see superclass */
   @GET
   @Override
