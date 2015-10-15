@@ -77,6 +77,7 @@ public class PhraseMemoryJpa implements PhraseMemory {
   }
 
   @Override
+  @XmlTransient
   public List<MemoryEntry> getEntries() {
     return entries;
   }

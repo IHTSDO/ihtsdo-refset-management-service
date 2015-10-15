@@ -41,6 +41,19 @@ public class MemoryEntryJpa implements MemoryEntry {
 
   @ManyToOne(targetEntity = PhraseMemoryJpa.class)
   private PhraseMemory phraseMemory;
+  
+  
+
+  public MemoryEntryJpa() {
+    // do nothing
+  }
+
+  public MemoryEntryJpa(MemoryEntry memoryEntry) {
+    super();
+    this.name = memoryEntry.getName();
+    this.frequency = memoryEntry.getFrequency();
+    this.phraseMemory = memoryEntry.getPhraseMemory();
+  }
 
   @Override
   public String getName() {
@@ -73,10 +86,12 @@ public class MemoryEntryJpa implements MemoryEntry {
   }
 
   @XmlTransient
+  @Override
   public PhraseMemory getPhraseMemory() {
     return phraseMemory;
   }
 
+  @Override
   public void setPhraseMemory(PhraseMemory phraseMemory) {
     this.phraseMemory = phraseMemory;
   }
@@ -86,7 +101,8 @@ public class MemoryEntryJpa implements MemoryEntry {
     return phraseMemory != null ? phraseMemory.getId() : 0;
   }
   
-  public void setPhraseMemoryId(Long phraseMemoryId) {
+  @SuppressWarnings("unused")
+  private void setPhraseMemoryId(Long phraseMemoryId) {
     if(phraseMemory == null) {
       phraseMemory = new PhraseMemoryJpa();
     }

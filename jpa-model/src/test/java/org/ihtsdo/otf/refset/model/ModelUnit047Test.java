@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
@@ -13,6 +14,7 @@ import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
@@ -25,15 +27,15 @@ import org.junit.Test;
 /**
  * Unit testing for {@link PhraseMemoryJpa}.
  */
-public class ModelUnit046Test extends ModelUnitSupport {
+public class ModelUnit047Test extends ModelUnitSupport {
 
   /** The model object to test. */
-  private PhraseMemory object;
+  private MemoryEntry object;
 
   /** The test fixture r1. */
-  private Translation r1;
+  private PhraseMemory r1;
   /** The test fixture r2. */
-  private Translation r2;
+  private PhraseMemory r2;
 
 
   /**
@@ -50,10 +52,10 @@ public class ModelUnit046Test extends ModelUnitSupport {
    */
   @Before
   public void setup() throws Exception {
-    object = new PhraseMemoryJpa();
-    ProxyTester tester = new ProxyTester(new TranslationJpa());
-    r1 = (TranslationJpa) tester.createObject(1);
-    r2 = (TranslationJpa) tester.createObject(2);
+    object = new MemoryEntryJpa();
+    ProxyTester tester = new ProxyTester(new PhraseMemoryJpa());
+    r1 = (PhraseMemoryJpa) tester.createObject(1);
+    r2 = (PhraseMemoryJpa) tester.createObject(2);
   }
 
   /**
@@ -78,11 +80,12 @@ public class ModelUnit046Test extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
-    tester.include("translation");
+    tester.include("frequency");
+    tester.include("phraseMemory");
 
     // Set up objects
-    tester.proxy(Translation.class, 1, r1);
-    tester.proxy(Translation.class, 2, r2);
+    tester.proxy(PhraseMemory.class, 1, r1);
+    tester.proxy(PhraseMemory.class, 2, r2);
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
@@ -103,9 +106,9 @@ public class ModelUnit046Test extends ModelUnitSupport {
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
     // Set up objects
-    tester.proxy(Translation.class, 1, r1);
+    tester.proxy(PhraseMemory.class, 1, r1);
 
-    assertTrue(tester.testCopyConstructor(PhraseMemory.class));
+    assertTrue(tester.testCopyConstructor(MemoryEntry.class));
   }
 
   /**
@@ -119,9 +122,9 @@ public class ModelUnit046Test extends ModelUnitSupport {
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
     // Set up objects
-    PhraseMemory r = new PhraseMemoryJpa();
+    MemoryEntry r = new MemoryEntryJpa();
     r.setId(1L);
-    tester.proxy(Translation.class, 1, r1);
+    tester.proxy(PhraseMemory.class, 1, r1);
     assertTrue(tester.testXmlSerialization());
   }
 

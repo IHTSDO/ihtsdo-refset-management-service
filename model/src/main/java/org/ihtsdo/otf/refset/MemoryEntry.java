@@ -25,5 +25,17 @@ public interface MemoryEntry extends HasName, HasId {
    * @param frequency the frequency
    */
   public void setFrequency(Integer frequency);
+  
+  /**
+   * Returns the PhraseMemory
+   * @return phraseMemory
+   */
+  public PhraseMemory getPhraseMemory();
+  
+  /**
+   * Sets the PhraseMemory
+   * @param phraseMemory
+   */
+  public void setPhraseMemory(PhraseMemory phraseMemory);
 
 }
