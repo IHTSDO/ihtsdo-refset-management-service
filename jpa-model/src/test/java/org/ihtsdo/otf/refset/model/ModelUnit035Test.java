@@ -216,6 +216,9 @@ public class ModelUnit035Test extends ModelUnitSupport {
     tester.include("refsetId");
     tester.include("projectId");
     tester.include("workflowStatus");
+    tester.include("nameSort");
+    tester.include("descriptionSort");
+    
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

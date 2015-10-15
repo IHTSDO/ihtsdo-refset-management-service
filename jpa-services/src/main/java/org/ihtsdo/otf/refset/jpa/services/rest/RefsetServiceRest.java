@@ -385,7 +385,7 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void cancelRedefintion(Long refsetId, String authToken)
+  public void cancelRedefinition(Long refsetId, String authToken)
     throws Exception;
 
   /**

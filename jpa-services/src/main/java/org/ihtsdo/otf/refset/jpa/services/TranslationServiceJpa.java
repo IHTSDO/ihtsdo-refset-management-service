@@ -218,6 +218,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         (List<Translation>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *]" : query, TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
+    for (Translation translation : list) {
+      handleTranslationLazyInitialization(translation);
+    }
     TranslationList result = new TranslationListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);

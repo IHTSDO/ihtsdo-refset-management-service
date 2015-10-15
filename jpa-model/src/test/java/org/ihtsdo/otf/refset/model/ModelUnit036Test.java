@@ -138,6 +138,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("type");
     tester.include("feedbackEmail");
     tester.include("enabledFeedbackEvents");
+    tester.include("organization");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -241,6 +242,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("definition");
     tester.include("userRoleMap");
     tester.include("userAnyRole");
+    tester.include("organization");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -261,6 +263,7 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("definitionSort");
     tester.include("public");
     tester.include("provisional");
+    tester.include("organizationSort");
 
     tester.include("type");
     tester.include("workflowStatus");

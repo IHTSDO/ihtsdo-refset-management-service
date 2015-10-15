@@ -118,6 +118,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private String workflowPath;
 
+  /** The organization. */
+  @Column(nullable = true)
+  private String organization;
+
   /** The refset descriptors. */
   @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
   // @IndexedEmbedded - n/a
@@ -186,6 +190,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
+    organization = refset.getOrganization();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (Translation translation : refset.getTranslations()) {
       addTranslation(new TranslationJpa(translation));
@@ -597,8 +602,33 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
+  @Override
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
+  }
+  
+  /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  @Override
+  public String getOrganization() {
+    return organization;
+  }
+
+  /**
+   * Sets the organization.
+   *
+   * @param organization the organization
+   */
+  @Override
+  public void setOrganization(String organization) {
+    this.organization = organization;
   }
 
   /* see superclass */
@@ -629,6 +659,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((type == null) ? 0 : type.hashCode());
     result =
         prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
+    result =
+        prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
         prime
             * result
@@ -705,6 +737,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (stagingType != other.stagingType)
       return false;
+    if (organization == null) {
+      if (other.organization != null)
+        return false;
+    } else if (!organization.equals(other.organization))
+      return false;
     return true;
   }
 
@@ -717,7 +754,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + definitionUuid + ", externalUrl=" + externalUrl + ", forTranslation="
         + forTranslation + ", workflowStatus=" + workflowStatus
         + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project
+        + refsetDescriptor + ", project=" + project + ", organization=" + organization
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 

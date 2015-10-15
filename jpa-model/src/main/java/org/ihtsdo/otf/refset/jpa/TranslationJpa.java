@@ -138,14 +138,20 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  })
   public String getName() {
     return name;
   }
 
   /* see superclass */
   @Override
-  @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getDescription() {
     return description;
   }

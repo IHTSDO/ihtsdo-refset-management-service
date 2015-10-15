@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -162,10 +163,65 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList resolveExpression(String expr, String terminolgy,
+  public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    // Make a webservice call to SnowOwl to get concept
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(url + "/" + branch + "/concepts?escg=" + 
+      URLEncoder.encode(expr, "UTF-8") + "&limit=" + pfs.getMaxResults() +
+      "&offset=" + pfs.getStartIndex());
+    Response response =
+        target.request(accept).header("Authorization", authHeader).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+    
+    /**
+     * <pre>
+     * 
+     *     {
+     *       "total": 0,
+     *       "limit": 0,
+     *       "offset": 0,
+     *       "items": {
+     *         "empty": false
+     *       }
+     *     }
+     * </pre>
+     */
+    
+    ConceptList conceptList = new ConceptListJpa();
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+
+    List<JsonNode> conceptNodes = doc.findValues("items");
+    for (JsonNode cptNode : conceptNodes.iterator().next()) {
+      final Concept concept = new ConceptJpa();
+
+      concept.setActive(cptNode.get("active").asText().equals("true"));  
+      concept.setTerminology(terminology);
+      concept.setVersion(version);
+      concept.setTerminologyId(cptNode.get("id").asText());
+      concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(cptNode.get(
+          "effectiveTime").asText()));
+      concept.setLastModifiedBy(terminology);
+      concept.setModuleId(cptNode.get("moduleId").asText());
+      concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
+      // TODO: need to get the term somehow
+      //concept.setName(cptNode.get("term").asText());
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+    conceptList.setTotalCount(conceptList.getObjects().size());
+    return conceptList;
   }
 
   /* see superclass */
