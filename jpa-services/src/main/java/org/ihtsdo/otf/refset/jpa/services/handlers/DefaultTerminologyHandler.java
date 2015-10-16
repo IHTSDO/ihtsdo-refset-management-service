@@ -692,4 +692,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     return description;
   }
+
+  /* see superclass */
+  @Override
+  public boolean assignNames() {
+    return assignNames;
+  }
 }

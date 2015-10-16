@@ -374,7 +374,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "999000081000000105", reviewer1);
 
       makeRefset("Christian religion simple reference set", null, 5,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105", reviewer1);
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105",
+          reviewer1);
 
       makeRefset("Device reading body site simple reference set", null, 6,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001011000000109",
@@ -487,7 +488,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @return the release info
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
+  @SuppressWarnings({
+      "static-method", "unused"
+  })
   private ReleaseInfo makeReleaseInfo(String name, Object object)
     throws Exception {
     final ReleaseInfoJpa releaseInfo = new ReleaseInfoJpa();
@@ -517,7 +520,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @return the release artifact
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
+  @SuppressWarnings({
+      "static-method", "unused"
+  })
   private ReleaseArtifact makeReleaseArtifact(String name,
     ReleaseInfo releaseInfo, String pathToFile) throws Exception {
     final ReleaseArtifact artifact = new ReleaseArtifactJpa();
@@ -638,6 +643,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @return the translation jpa
    * @throws Exception the exception
    */
+  @SuppressWarnings("unused")
   private TranslationJpa makeTranslation(String name, Refset refset,
     Project project, User auth) throws Exception {
     ++translationCt;

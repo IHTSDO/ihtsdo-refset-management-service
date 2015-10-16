@@ -107,6 +107,13 @@ public interface TerminologyHandler extends Configurable {
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception;
 
+  /**
+   * Assign names.
+   *
+   * @return true, if successful
+   */
+  public boolean assignNames();
+
   // TODO: other methods (if using term server storage)
   /**
    * <pre>
@@ -118,7 +125,9 @@ public interface TerminologyHandler extends Configurable {
    *  - add/update/remove concept (get/find already defined)
    *  - add/update/remove description (get alread implemented)
    *  - add/update/remove language refset member
-   * </pre>
+   * </pre>.
+   *
+   * @return true, if successful
    */
 
 }
