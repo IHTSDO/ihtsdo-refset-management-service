@@ -43,16 +43,6 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("An intensional refset must have a definition");
     }
 
-    // Only an INTENSIONAL refset should have inclusions
-    if (refset.getType() != Refset.Type.INTENSIONAL && refset.getInclusions().size()>0) {
-      result.addError("Only intensional refsets should have inclusions");
-    }
-
-    // Only an INTENSIONAL refset should have exclusions
-    if (refset.getType() != Refset.Type.INTENSIONAL && refset.getExclusions().size()>0) {
-      result.addError("Only intensional refsets should have exclusions");
-    }
-
     // Only an EXTERNAL refset should have a externalUrl
     if (refset.getType() != Refset.Type.EXTERNAL && refset.getExternalUrl() != null) {
       result.addError("Only external refsets should have an external Url");

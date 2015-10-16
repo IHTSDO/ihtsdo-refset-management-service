@@ -22,6 +22,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -167,10 +168,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     String version, PfsParameter pfs) throws Exception {
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+      localPfs.setMaxResults(5);
+      localPfs.setStartIndex(0);
+    }
     WebTarget target =
         client.target(url + "/" + branch + "/concepts?escg=" + 
-      URLEncoder.encode(expr, "UTF-8") + "&limit=" + pfs.getMaxResults() +
-      "&offset=" + pfs.getStartIndex());
+      URLEncoder.encode(expr, "UTF-8") + "&limit=" + localPfs.getMaxResults() +
+      "&offset=" + localPfs.getStartIndex());
     Response response =
         target.request(accept).header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);

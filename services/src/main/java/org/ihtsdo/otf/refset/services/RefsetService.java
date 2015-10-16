@@ -265,4 +265,29 @@ public interface RefsetService extends ProjectService {
    */
   public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception;
 
+  /**
+   * Update member.
+   *
+   * @param member the member
+   * @throws Exception the exception
+   */
+  public void updateMember(ConceptRefsetMember member) throws Exception;
+
+  /**
+   * Returns the member.
+   *
+   * @param id the id
+   * @return the member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember getMember(Long id) throws Exception;
+
+  /**
+   * Removes the staged refset.
+   *
+   * @param stagedRefset the staged refset
+   * @throws Exception the exception
+   */
+  public void removeStagedRefset(Refset stagedRefset) throws Exception;
+
 }
