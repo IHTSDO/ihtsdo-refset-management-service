@@ -150,6 +150,11 @@ tsApp.controller('TabCtrl', [
         || $scope.userProjectsInfo.anyrole;
     }
 
+    // for ng-show
+    $scope.userHasAnyRole = function() {
+      return userProjectsInfo.anyRole;
+    }
+
     // Initialize anyrole setting
     projectService.getUserHasAnyRole();
   } ]);

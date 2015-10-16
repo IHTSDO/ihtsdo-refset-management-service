@@ -81,7 +81,10 @@ public interface Refset extends Component, Searchable {
     /** The definition. */
     DEFINITION,
     /** The migration. */
-    MIGRATION;
+    MIGRATION,
+
+    /** The preview. */
+    PREVIEW;
   }
 
   /**

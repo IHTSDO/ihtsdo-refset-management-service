@@ -65,6 +65,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   /** The auth header. */
   private String authHeader;
 
+  /** The assign names. */
+  private boolean assignNames = false;
+
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
@@ -92,6 +95,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       authHeader = p.getProperty("authHeader");
     } else {
       throw new Exception("Required property url not specified.");
+    }
+    if (p.containsKey("assignNames")) {
+      assignNames = Boolean.valueOf(p.getProperty("assignNames"));
     }
   }
 
@@ -234,8 +240,14 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(cptNode.get("moduleId").asText());
       concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
-      // TODO: need to get the term somehow
-      // concept.setName(cptNode.get("term").asText());
+      // TODO: - no efficient way to compute this
+      // each member requires a call to the terminology server!
+      if (assignNames) {
+        concept.setName(getConcept(concept.getTerminologyId(), terminology,
+            version).getName());
+      } else {
+        concept.setName("TBD");
+      }
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -277,9 +289,14 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(cptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
-        // TODO: need to get the term somehow
-        // concept.setName(cptNode.get("term").asText());
-
+        // TODO: - no efficient way to compute this
+        // each member requires a call to the terminology server!
+        if (assignNames) {
+          concept.setName(getConcept(concept.getTerminologyId(), terminology,
+              version).getName());
+        } else {
+          concept.setName("TBD");
+        }
         concept.setPublishable(true);
         concept.setPublished(true);
 

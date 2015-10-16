@@ -79,7 +79,7 @@
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
       <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"
         ng-show="isAdmin() || isTabShowing(tab)"><a
-          ng-show="tab.label == 'Directory' || userHasAnyRole()"
+          ng-show="tab.label == 'Directory' || userHasAnyRole() || isAdmin()"
           href="{{tab.link}}" ng-click="setSelectedTab(tab)"> {{tab.label}}
         </a></li>
     </ul>
