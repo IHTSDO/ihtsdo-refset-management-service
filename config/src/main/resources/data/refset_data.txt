@@ -1,0 +1,783 @@
+Accessible information - communication support simple reference set (foundation metadata concept)
+SCTID: 999002121000000109
+   Does lip read (finding)	441092009
+   Does use hearing aid (finding)	285055002
+    Preferred method of communication: written (finding)	520491000000109
+   Uses British sign language (finding)	415803005
+   Uses Makaton sign language (finding)	415805003
+    Uses Personal Communication Passport (finding)	837341000000108
+   Uses a citizen advocate (finding)	225834007
+   Uses a legal advocate (finding)	225833001
+    Uses alternative communication skill (finding)	761541000000100
+    Uses communication device (finding)	954831000000109
+   Uses cued speech transliterator (finding)	445129003
+    Uses deafblind intervener (finding)	957031000000107
+   Uses electronic note taker (finding)	445121000
+   Uses lipspeaker (finding)	445143008
+   Uses manual note taker (finding)	445076009
+   Uses sign language (finding)	404903008
+   Uses speech to text reporter (finding)	445123002
+   Uses telecommunications device for the deaf (finding)	445488003
+----
+Action context values simple reference set (foundation metadata concept)
+SCTID: 999001711000000106
+ Abandoned (qualifier value)	385657008
+   Accepted (qualifier value)	385645004
+   Action status unknown (qualifier value)	410537005
+   Approved and scheduled (qualifier value)	44996008
+   Attended (qualifier value)	410542002
+   Being organized (qualifier value)	385649005
+   Canceled (qualifier value)	89925002
+   Change made (qualifier value)	703465008
+   Change recommended (qualifier value)	703466009
+   Consented (qualifier value)	441898007
+   Considered and not done (qualifier value)	385661002
+   Contraindicated (qualifier value)	410536001
+   Denied (qualifier value)	441889009
+   Did not attend (qualifier value)	410543007
+   Discontinued (qualifier value)	410546004
+   Done (qualifier value)	385658003
+   Ended (qualifier value)	385656004
+   In progress (qualifier value)	385651009
+   Indicated (qualifier value)	410535002
+   Legal agent consented (qualifier value)	442633000
+   Needed (qualifier value)	410525008
+   Not done (qualifier value)	385660001
+   Not indicated (qualifier value)	410534003
+   Not needed (qualifier value)	410529002
+   Not offered (qualifier value)	410530007
+   Not to be done (qualifier value)	410521004
+   Not to be stopped (qualifier value)	385653007
+   Not wanted (qualifier value)	410528005
+   Offered (qualifier value)	410527000
+   Organized (qualifier value)	385650005
+   Performed (qualifier value)	398166005
+   Planned (qualifier value)	397943006
+   Recipient consented (qualifier value)	442681007
+   Refused (qualifier value)	443390004
+   Refused by parents of subject (qualifier value)	609589008
+   Rejected by performer (qualifier value)	385647007
+   Rejected by recipient (qualifier value)	385648002
+   Requested (qualifier value)	385644000
+   Requested by recipient (qualifier value)	443942000
+   Schedule rejected (qualifier value)	385646003
+   Scheduled - procedure status (qualifier value)	416151008
+   Started (qualifier value)	385652002
+   Stopped before completion (qualifier value)	410545000
+   Suspended (qualifier value)	385655000
+   To be done (qualifier value)	385643006
+   To be stopped (qualifier value)	385654001
+   Under consideration (qualifier value)	385642001
+   Under consideration, not wanted yet (qualifier value)	410531006
+   Under consideration, not yet offered (qualifier value)	410532004
+   Wanted (qualifier value)	410526009
+   Was not started (qualifier value)	410524007
+----
+Breathing finding simple reference set (foundation metadata concept)
+SCTID: 999001431000000106
+ Able to breathe (finding)	288848001
+   Able to clear sputum (finding)	301239007
+    Able to complete sentence in one breath (finding)	928431000000100
+   Able to control breathing (finding)	289101007
+   Able to expectorate (finding)	289117001
+   Able to huff (finding)	289109009
+   Able to take deep breaths (finding)	289096007
+   Acute respiratory distress (finding)	373895009
+   Acute respiratory distress in newborn (disorder)	707540007
+   Acute respiratory distress in newborn with surfactant disorder (disorder)	707541006
+   Apnea of prematurity (disorder)	276544005
+   Borg Breathlessness Score: 0 none at all (finding)	401275008
+   Borg Breathlessness Score: 0.5 very, very slight (just noticeable) (finding)	401323002
+   Borg Breathlessness Score: 1 very slight (finding)	401279002
+   Borg Breathlessness Score: 10 maximal (finding)	401293009
+   Borg Breathlessness Score: 2 slight (finding)	401280004
+   Borg Breathlessness Score: 3 moderate (finding)	401281000
+   Borg Breathlessness Score: 4 somewhat severe (finding)	401282007
+   Borg Breathlessness Score: 5 severe (finding)	401284008
+   Borg Breathlessness Score: 6 severe (+) (finding)	401286005
+   Borg Breathlessness Score: 7 very severe (finding)	401290007
+   Borg Breathlessness Score: 8 very severe (+) (finding)	401291006
+   Borg Breathlessness Score: 9 very, very severe (almost maximal) (finding)	401292004
+   Breathing easily (finding)	276362002
+   Breathless - mild exertion (finding)	161940008
+   Breathless - moderate exertion (finding)	161939006
+   Breathless - strenuous exertion (finding)	390871002
+   Cannot blow (finding)	248551002
+   Difficulty breathing (finding)	230145002
+   Difficulty controlling breathing (finding)	289105003
+   Difficulty expectorating (finding)	289121008
+   Difficulty huffing (finding)	289112007
+   Difficulty taking deep breaths (finding)	289100008
+   Difficulty to clear sputum (finding)	301240009
+   Does clear sputum (finding)	301242001
+   Does control breathing (finding)	289103005
+   Does expectorate (finding)	289119003
+   Does huff (finding)	289110004
+   Does not clear sputum (finding)	301243006
+   Does not control breathing (finding)	289104004
+   Does not expectorate (finding)	289120009
+   Does not huff (finding)	289111000
+   Does not take deep breaths (finding)	289099000
+   Does take deep breaths (finding)	289098008
+   Dyspnea (finding)	267036007
+   Dyspnea after eating (finding)	57769004
+   Dyspnea associated with acquired immunodeficiency syndrome (disorder)	422177004
+   Dyspnea at rest (finding)	161941007
+   Dyspnea leaning over (finding)	20112008
+   Dyspnea on exertion (finding)	60845006
+   Dyspnea raising arms (finding)	24921003
+   Dyspnea, class I (finding)	17216000
+   Dyspnea, class II (finding)	72365000
+   Dyspnea, class III (finding)	39950000
+   Dyspnea, class IV (finding)	73322006
+   Expiratory dyspnea (finding)	34560001
+   Gasping for breath (finding)	23141003
+   Increasing breathlessness (finding)	297216006
+   Ineffective airway clearance (finding)	67750007
+   Ineffective breathing pattern (finding)	20573003
+   Inspiratory dyspnea (finding)	25209001
+   Labored breathing (finding)	248549001
+   Medical Research Council Breathlessness Scale grade 1 (finding)	391120009
+   Medical Research Council Breathlessness Scale grade 2 (finding)	391123006
+   Medical Research Council Breathlessness Scale grade 4 (finding)	391125004
+   Medical Research Council Breathlessness Scale grade 5 (finding)	391126003
+   Medical Research Council Breathlessness Scale: grade 3 (finding)	391124000
+    Minimal breathlessness (finding)	852051000000107
+   Nocturnal dyspnea (finding)	248548009
+   Obstructive apnea of newborn (disorder)	276545006
+   On examination - dyspnea (finding)	162890008
+   On examination - orthopnea (finding)	162891007
+   On examination - respiratory distress (finding)	162892000
+   Orthopnea (finding)	62744007
+   Paroxysmal dyspnea (finding)	59265000
+   Paroxysmal nocturnal dyspnea (finding)	55442000
+   Perinatal respiratory distress (disorder)	34681009
+   Platypnea (finding)	30744009
+   Prolonged apnea of newborn (disorder)	276546007
+   Respiratory distress (finding)	271825005
+   Respiratory distress syndrome in the newborn (disorder)	46775006
+   Short of breath dressing/undressing (finding)	390870001
+   Trepopnea (finding)	102577000
+   Unable to breathe (finding)	288849009
+   Unable to clear sputum (finding)	301241008
+   Unable to complete a sentence in one breath (finding)	407588003
+   Unable to control breathing (finding)	289102000
+   Unable to expectorate (finding)	289118006
+   Unable to huff (finding)	248591004
+   Unable to take deep breaths (finding)	289097003
+   Winded (finding)	248552009
+----
+Care planning action context values simple reference set (foundation metadata concept)
+SCTID: 999000081000000105
+ Action status unknown (qualifier value)	410537005
+   Considered and not done (qualifier value)	385661002
+   Done (qualifier value)	385658003
+   In progress (qualifier value)	385651009
+   Not done (qualifier value)	385660001
+   Not to be done (qualifier value)	410521004
+   Stopped before completion (qualifier value)	410545000
+   To be done (qualifier value)	385643006
+   Under consideration (qualifier value)	385642001
+----
+Christian religion simple reference set (foundation metadata concept)
+SCTID: 999000441000000105
+ Anabaptist, follower of religion (person)	428315004
+   Anglican, follower of religion (person)	271448006
+   Apostolic Pentecostalist, follower of religion (person)	444870008
+   Armenian Catholic, follower of religion (person)	428816005
+    Armenian Orthodox, follower of religion (person)	344141000000104
+   Baptist, follower of religion (person)	160557009
+    Bulgarian Orthodox, follower of religion (person)	368061000000102
+   Calvinist, follower of religion (person)	429539003
+    Catholic: non Roman Catholic, follower of religion (person)	368071000000109
+    Celtic Christian, follower of religion (person)	368081000000106
+    Celtic Orthodox Christian, follower of religion (person)	368091000000108
+    Chinese Evangelical Christian, follower of religion (person)	368101000000100
+   Christadelphian, follower of religion (person)	160566008
+    Christian Existentialist, follower of religion (person)	368111000000103
+    Christian Humanist, follower of religion (person)	368121000000109
+   Christian Scientist, follower of religion (person)	160544001
+   Christian Spiritualist, follower of religion (person)	428504005
+   Christian, follower of religion (person)	160549006
+    Church in Wales, follower of religion (person)	368131000000106
+    Church of God of Prophecy, follower of religion (person)	344161000000103
+    Church of Ireland, follower of religion (person)	368141000000102
+    Church of Scotland, follower of religion (person)	344171000000105
+   Congregationalist, follower of religion (person)	427874000
+   Coptic Orthodox, follower of religion (person)	428373004
+   Eastern Catholic, follower of religion (person)	428376007
+   Elim Pentecostalist, follower of religion (person)	427729003
+   Ethiopian Orthodox Tewahedo, follower of religion (person)	428378008
+    Evangelical Christian, follower of religion (person)	368161000000101
+    Exclusive Brethren, follower of religion (person)	344281000000101
+    Follower of Church of England (person)	344151000000101
+    Follower of Church of Nazarene (person)	344241000000109
+    Follower of Free Christian Church (person)	344211000000108
+    Follower of Moravian Church (person)	344231000000100
+    Follower of New Testament Church of God (person)	344251000000107
+    Follower of United Reformed Church (person)	344361000000101
+    Free Church of Scotland, follower of religion (person)	344221000000102
+    Free Evangelical Presbyterian, follower of religion (person)	368171000000108
+    Free Presbyterian, follower of religion (person)	368181000000105
+    Greek Catholic, follower of religion (person)	368191000000107
+   Greek Orthodox, follower of religion (person)	429158002
+   Jehovah's Witness, follower of religion (person)	80587008
+    Judaic Christian, follower of religion (person)	368201000000109
+   Lutheran, follower of religion (person)	427755002
+    Mennonite, follower of religion (person)	368221000000100
+    Messianic Jew, follower of religion (person)	368421000000104
+   Methodist, follower of religion (person)	160558004
+    Mormon, follower of religion (person)	344081000000108
+   Nonconformist (person)	276119007
+    Old Catholic, follower of religion (person)	368241000000107
+    Open Brethren, follower of religion (person)	344271000000103
+    Open Episcopal Church, follower of religion (person)	968601000000101
+   Orthodox Christian, follower of religion (person)	428503004
+   Pentecostalist, follower of religion (person)	160562005
+    Plymouth Brethren, follower of religion (person)	344261000000105
+   Presbyterian, follower of religion (person)	160560002
+   Protestant, follower of religion (person)	309885004
+   Quaker, follower of religion (person)	309886003
+   Rastafarian, follower of religion (person)	248544006
+    Reformed Christian, follower of religion (person)	368251000000105
+    Reformed Presbyterian, follower of religion (person)	368261000000108
+    Reformed Protestant, follower of religion (person)	368271000000101
+   Roman Catholic, follower of religion (person)	160540005
+    Romanian Orthodox, follower of religion (person)	368281000000104
+   Russian Orthodox, follower of religion (person)	429544005
+   Salvation Army member (person)	160234004
+    Serbian Orthodox, follower of religion (person)	344321000000109
+   Seventh Day Adventist, follower of religion (person)	428821008
+    Syrian Orthodox, follower of religion (person)	368301000000103
+    Ukrainian Catholic, follower of religion (person)	368311000000101
+   Unitarian, follower of religion (person)	429708003
+----
+ Device reading body site simple reference set (foundation metadata concept)
+SCTID: 999001011000000109
+   Entire left upper arm (body structure)	72098002
+   Entire right upper arm (body structure)	59126009
+   Entire upper arm (body structure)	302538001
+----
+Emergency care investigations simple reference set (foundation metadata concept)
+SCTID: 991261000000107
+ Acetaminophen blood measurement (procedure)	250597008
+   Analysis of arterial blood gases and pH (procedure)	60170009
+   BM stix glucose measurement (procedure)	275810004
+   Blood coagulation panel (procedure)	3116009
+   Blood culture (procedure)	30088009
+   Blood gases, venous measurement (procedure)	61911006
+   Bone profile (procedure)	167036008
+   C-reactive protein measurement (procedure)	55235003
+   Cardiac enzymes/isoenzymes measurement (procedure)	74500006
+   Complete blood count (procedure)	26604007
+   Computerized axial tomography (procedure)	77477000
+   Creatine kinase measurement (procedure)	397798009
+   D-dimer assay (procedure)	70648006
+   Dementia test (procedure)	165320004
+   Diagnostic ultrasonography (procedure)	16310003
+   Echocardiography (procedure)	40701008
+   Electrocardiographic procedure (procedure)	29303009
+   Eye swab taken (situation)	269941009
+   Group and save (procedure)	252316009
+   Hepatic function panel (procedure)	26958001
+   Human chorionic gonadotropin measurement (procedure)	67900009
+   Magnetic resonance imaging (procedure)	113091000
+   Microbiology procedure (procedure)	19851009
+   Ophthalmoscopy with medical evaluation, extended, with fluorescein angiography (procedure)	410441007
+   Optical coherence tomography of retina (procedure)	700070005
+   Peak expiratory flow measurement (procedure)	29893006
+   Photograph (physical object)	257444003
+   Plain radiography (procedure)	168537006
+   Serologic test (procedure)	68793005
+   Thyroid panel (procedure)	35650009
+   Troponin measurement (procedure)	105000003
+   Tryptase release from mast cell measurement (procedure)	62847008
+   Urea and electrolytes (procedure)	252167001
+   Urinalysis (procedure)	27171005
+   Urinary microscopy, culture and sensitivities (procedure)	401324008
+   Visual acuity testing (procedure)	16830007
+   Visual field study (procedure)	86944008
+   Wound microscopy, culture and sensitivities (procedure)	401294003
+----
+Emergency care mechanism of injury simple reference set (foundation metadata concept)
+SCTID: 991281000000103
+ Acute effect of ultraviolet radiation on normal skin (disorder)	402165001
+   Asphyxia by obstruction of mouth and nose (event)	242020007
+   Asphyxiation (event)	66466001
+   Assault by striking with blunt object (event)	219236005
+   Blunt injury (disorder)	425359009
+   Crushing injury (disorder)	125665001
+   Diving barotrauma (disorder)	241977008
+   Exhaustion due to excessive exertion (finding)	64113006
+   Fall from high place (event)	429482004
+    Fall through height of less than one metre (event)	240871000000104
+   Gunshot wound (disorder)	283545005
+   Hyperpyrexia (finding)	409702008
+   Hypothermia (finding)	386689009
+   Injury due to chemical exposure (disorder)	371704001
+   Injury due to electrical exposure (disorder)	371708003
+   Injury due to explosion (disorder)	397996002
+   Injury due to exposure to ionizing radiation (disorder)	24803000
+   Injury due to projectile (disorder)	242999003
+   Kick with foot (event)	242892008
+   Nonfatal submersion (disorder)	87970004
+    Patient found hanging (finding)	241121000000102
+   Penetrating injury by glass (disorder)	426058000
+   Punch with fist (event)	242890000
+   Respiratory obstruction due to inhaled foreign body (event)	242669005
+   Slipping (event)	54670004
+   Smothering (event)	359616000
+   Stab wound (disorder)	425322008
+   Tripping (event)	75941004
+----
+Financial circumstances finding simple reference set (foundation metadata concept)
+SCTID: 999001521000000105
+ At risk of financial/material mismanagement (finding)	417051004
+   Bankruptcy (finding)	105577008
+   Benefits received (finding)	224196001
+   Delay in receiving benefits (finding)	224198000
+   Destitute (finding)	284477001
+   Drinking takes priority over financial obligations (finding)	228337008
+   Drug habit takes priority over financial obligations (finding)	228420000
+    Eligible for funded nursing care (finding)	287591000000107
+   Entitled to benefits (finding)	161040006
+   Entitlement to benefits uncertain (finding)	224195002
+   Financial affairs managed by third party (finding)	224208004
+   Financial circumstances change (finding)	160934006
+   Financial problem (finding)	160932005
+   Financially poor (finding)	11403006
+   Financially secure (finding)	224165005
+    Has appointed person with property and affairs lasting power of attorney (Mental Capacity Act 2005) (finding)	816341000000102
+   Has own savings account (finding)	224205001
+    Has personal health budget (finding)	938711000000102
+   High household income (finding)	224172006
+   High personal income (finding)	224177000
+    Holds European Health Insurance Card (finding)	896271000000104
+   Holds own cheque book (finding)	224207009
+   Holds power of attorney (finding)	186067006
+   In debt (finding)	160933000
+   Income insufficient to buy necessities (finding)	423656007
+   Income insufficient to meet needs (finding)	224191006
+   Income paid annually (finding)	224184008
+   Income paid daily (finding)	224179002
+   Income paid monthly (finding)	224181000
+   Income paid quarterly (finding)	224182007
+   Income paid six monthly (finding)	224183002
+   Income paid weekly (finding)	224180004
+   Income sufficient to buy only necessities (finding)	424739004
+   Income sufficient to meet needs (finding)	224190007
+    Insufficient income to heat home (finding)	762091000000105
+   Keeps money in own account (finding)	224204002
+   Keeps own spending money (finding)	224202003
+   Loss of benefits (finding)	224199008
+   Low household income (finding)	224170003
+   Low income (finding)	424860001
+   Low personal income (finding)	224175008
+    Manages own finance using electronic banking (finding)	762161000000103
+   Manages own financial affairs (finding)	224201005
+   Moderate household income (finding)	224171004
+   Moderate personal income (finding)	224176009
+   No benefits received (finding)	161039009
+   No household income (finding)	224169004
+   No income (finding)	425111004
+   No personal income (finding)	224174007
+   Not entitled to benefits (finding)	224194003
+   Not receiving all benefits due (finding)	224197005
+    Not receiving statutory sick pay (finding)	755961000000102
+   Patient has private medical insurance (finding)	314847007
+   Power of attorney applied for (finding)	224345007
+   Power of attorney granted (finding)	224346008
+   Power of attorney held (finding)	186066002
+   Power of attorney in existence (finding)	224347004
+   Receives own account statements (finding)	224206000
+    Receiving attendance allowance (finding)	789811000000100
+    Receiving carer allowance (finding)	794111000000107
+    Receiving contributory employment and support allowance (finding)	789821000000106
+    Receiving disability living allowance (finding)	789831000000108
+    Receiving incapacity benefit (finding)	789841000000104
+    Receiving income support (finding)	789861000000103
+    Receiving income-related employment and support allowance (finding)	789851000000101
+    Receiving pension credit (finding)	789871000000105
+    Receiving state pension (finding)	789881000000107
+   Stable income (finding)	224188006
+   Sudden financial gain (finding)	160935007
+   Transport too expensive (finding)	160695008
+   Uninsured medical expenses (finding)	424553001
+   Variable income (finding)	224187001
+   Victim of financial abuse (finding)	225827005
+   Wealthy (finding)	224166006
+----
+Laterality simple reference set (foundation metadata concept)
+SCTID: 999000821000000100
+   Left (qualifier value)	7771000
+   Right (qualifier value)	24028007
+----
+Need for interpreter findings simple reference set (foundation metadata concept)
+SCTID: 991481000000102
+   Interpreter needed (finding)	315594003
+   Interpreter not needed (finding)	315595002
+----
+Newborn blood spot screening result status simple reference set (foundation metadata concept)
+SCTID: 966281000000109
+    Carrier of cystic fibrosis gene mutation (finding)	441520002
+   Carrier of sickle cell gene mutation (finding)	442018007
+   Congenital hypothyroidism not suspected (situation)	428999001
+   Congenital hypothyroidism screening declined (situation)	428650003
+   Cystic fibrosis not suspected (situation)	428273001
+   Cystic fibrosis screening declined (situation)	428841003
+    Glutaric aciduria type 1 not screened for or screening incomplete (finding)	952201000000106
+    Glutaric aciduria type 1 not suspected (situation)	951781000000101
+    Glutaric aciduria type 1 not suspected and other disorders follow up required (situation)	951801000000100
+    Glutaric aciduria type 1 screening declined (situation)	947891000000100
+    Glutaric aciduria type 1 screening, repeat screening with further sample required (finding)	951941000000106
+    Haemoglobin S not suspected (by deoxyribonucleic acid), no other haemoglobin or thalassaemia excluded (situation)	948351000000103
+    Homocystinuria not screened for or screening incomplete (finding)	950681000000102
+    Homocystinuria not suspected (situation)	950141000000103
+    Homocystinuria not suspected and other disorders follow up required (situation)	950161000000102
+    Homocystinuria screening declined (situation)	948051000000101
+    Homocystinuria screening, repeat screening with further sample required (finding)	950411000000106
+    Isovaleric acidaemia not screened for or screening incomplete (finding)	951541000000100
+    Isovaleric acidaemia not suspected (situation)	951741000000109
+    Isovaleric acidaemia not suspected and other disorders follow up required (situation)	951761000000105
+    Isovaleric acidaemia screening declined (situation)	947831000000101
+    Isovaleric acidaemia screening, repeat screening with further sample required (finding)	951121000000101
+    Maple syrup urine disease not screened for or screening incomplete (finding)	949841000000103
+    Maple syrup urine disease not suspected (situation)	949801000000101
+    Maple syrup urine disease not suspected and other disorders follow up required (situation)	949821000000105
+    Maple syrup urine disease screening declined (situation)	949261000000103
+    Maple syrup urine disease screening, repeat screening with further sample required (finding)	949501000000104
+   Medium-chain acyl-coenzyme A dehydrogenase deficiency not suspected (situation)	428279002
+   Medium-chain acyl-coenzyme A dehydrogenase deficiency screening test declined (situation)	428042006
+    Newborn blood spot screening programme, carrier of other haemoglobin type (finding)	302571000000101
+    Newborn blood spot screening programme, congenital hypothyroidism not screened for or screening incomplete (finding)	302781000000106
+    Newborn blood spot screening programme, congenital hypothyroidism not suspected and other disorders follow up required (finding)	384411000000102
+    Newborn blood spot screening programme, congenital hypothyroidism repeat screening with further sample required (finding)	384361000000108
+    Newborn blood spot screening programme, cystic fibrosis not screened for or screening incomplete (finding)	302771000000109
+    Newborn blood spot screening programme, cystic fibrosis not suspected and other disorders follow up required (finding)	384401000000104
+    Newborn blood spot screening programme, cystic fibrosis repeat screening with further sample required (finding)	384341000000107
+    Newborn blood spot screening programme, medium chain acyl-coenzyme A dehydrogenase deficiency not screened for or screening incomplete (finding)	302761000000102
+    Newborn blood spot screening programme, medium chain acyl-coenzyme A dehydrogenase deficiency not suspected and other disorders follow up required (finding)	384421000000108
+    Newborn blood spot screening programme, medium chain acyl-coenzyme A dehydrogenase deficiency repeat screening with further sample required (finding)	384371000000101
+    Newborn blood spot screening programme, phenylketonuria not screened for or screening incomplete (finding)	302741000000103
+    Newborn blood spot screening programme, phenylketonuria not suspected and other disorders follow up required (finding)	384391000000102
+    Newborn blood spot screening programme, phenylketonuria repeat screening with further sample required (finding)	384331000000103
+    Newborn blood spot screening programme, sickle cell not screened for or screening incomplete (finding)	302751000000100
+    Newborn blood spot screening programme, sickle cell not suspected and other disorders follow up required (finding)	384381000000104
+    Newborn blood spot screening programme, sickle cell repeat screening with further sample required (finding)	384351000000105
+    Newborn blood spot specimen received (finding)	509581000000105
+   Phenylketonuria not suspected (situation)	429106008
+   Phenylketonuria screening declined (situation)	429726000
+   Sickle cell screening declined (situation)	428299008
+   Sickle cell trait not suspected (situation)	427854007
+   Suspected congenital hypothyroidism (situation)	428300000
+   Suspected cystic fibrosis (situation)	428301001
+    Suspected glutaric aciduria type 1 (situation)	951831000000106
+    Suspected homocystinuria (situation)	947451000000106
+    Suspected isovaleric acidaemia (situation)	951701000000106
+    Suspected maple syrup urine disease (situation)	950121000000105
+   Suspected medium-chain acyl-coenzyme A dehydrogenase deficiency (situation)	429244009
+   Suspected phenylketonuria (situation)	428655008
+   Suspected sickle cell trait (situation)	428485006
+----
+Occupational therapy functional observable simple reference set (foundation metadata concept)
+SCTID: 999001701000000109
+    Ability to change position (observable entity)	282869009
+   Ability to clean own teeth (observable entity)	284839003
+   Ability to dress (observable entity)	165235000
+   Ability to dry self (observable entity)	284827006
+   Ability to dry washing (observable entity)	286053001
+   Ability to engage in a hobby (observable entity)	300755007
+   Ability to grip (observable entity)	284256002
+   Ability to lie down (observable entity)	282924002
+   Ability to maintain a position (observable entity)	249868004
+   Ability to manage personal health care (observable entity)	303074009
+   Ability to mobilize indoors (observable entity)	301496004
+   Ability to mobilize using mobility aids (observable entity)	301569004
+   Ability to participate in leisure activities (observable entity)	300737003
+   Ability to perform activities of everyday life (observable entity)	284545001
+   Ability to perform general manipulative activities (observable entity)	288361006
+   Ability to pursue religious activities (observable entity)	300803002
+   Ability to put on footwear (observable entity)	284978003
+   Ability to take off footwear (observable entity)	284990001
+   Ability to undress (observable entity)	284984000
+   Ability to use washing machine (observable entity)	285867001
+   Attention, function (observable entity)	6769007
+   Body image (observable entity)	405045001
+   Conversation content (observable entity)	225918008
+   Decision making (observable entity)	247583006
+   Doing housework (observable entity)	129014002
+   Dressing (observable entity)	129003000
+   Drinking (observable entity)	30953006
+   Eating (observable entity)	48263008
+   Emotion (observable entity)	285854004
+   Energy transfer, function (observable entity)	91208009
+   Focused attention, function (observable entity)	311517002
+   Gait type (observable entity)	271705001
+   Grade of muscle power (observable entity)	249948009
+   Hair care activities, function (observable entity)	286854006
+   Hand functions (observable entity)	284364006
+   Insight, function (observable entity)	27026000
+   Joint stability (observable entity)	276329005
+   Judgement (observable entity)	61254005
+   Learning, function (observable entity)	69998004
+   Listening level (observable entity)	250891003
+   Memory function (observable entity)	303116000
+   Motivation (observable entity)	363882003
+   Muscle tone (observable entity)	6918002
+   Organizational skills (observable entity)	311466002
+   Orientation, function (observable entity)	43173001
+   Perception, function (observable entity)	81742003
+   Preparing meals (observable entity)	129012003
+   Problem solving (observable entity)	247581008
+   Reading (observable entity)	50360004
+   Self-confidence (observable entity)	225487001
+   Sensory function status: cutaneous (observable entity)	405179003
+   Sensory function status: hearing (observable entity)	405180000
+   Sensory function status: proprioception (observable entity)	405181001
+   Sensory function status: vision (observable entity)	405183003
+   Shopping (observable entity)	129011005
+   Speaking (observable entity)	87335007
+   Sustained attention, function (observable entity)	311518007
+   Thinking, function (observable entity)	88952004
+   Toileting (observable entity)	129004006
+   Transferring (observable entity)	129005007
+   Urinary continence status (observable entity)	406218000
+   Vestibular nerve function (observable entity)	49441007
+   Visual perception, function (observable entity)	311886005
+   Walking (observable entity)	129006008
+   Washing self, function (observable entity)	286852005
+   Writing (observable entity)	12261009
+----
+Respiratory medicine diagnosis simple reference set (foundation metadata concept)
+SCTID: 999001871000000106
+   Abscess of lung (disorder)	73452002
+   Acute bronchitis (disorder)	10509002
+   Acute respiratory failure (disorder)	65710008
+   Allergic bronchopulmonary aspergillosis (disorder)	37981002
+   Alpha-1-antitrypsin deficiency (disorder)	30188007
+   Anaphylaxis (disorder)	39579001
+   Asbestos-induced pleural plaque (disorder)	233659006
+   Asbestosis (disorder)	22607003
+   Aspergilloma (disorder)	10446001
+   Aspiration pneumonia (disorder)	422588002
+   Asthma (disorder)	195967001
+   Benign neoplasm of pleura (disorder)	92298003
+   Breathing-related sleep disorder (disorder)	111489007
+   Bronchiectasis (disorder)	12295008
+   Bronchiolitis obliterans organizing pneumonia (disorder)	129458007
+   Calcification of pleura (disorder)	32931001
+   Chronic cough (finding)	68154008
+   Chronic idiopathic pulmonary fibrosis (disorder)	700251005
+   Chronic obstructive lung disease (disorder)	13645005
+   Chronic respiratory failure (disorder)	39871006
+   Community acquired pneumonia (disorder)	385093006
+   Congenital anomaly of lung (disorder)	47147007
+   Cystic fibrosis (disorder)	190905008
+   Dependence on biphasic positive airway pressure ventilation (finding)	429091008
+   Dependence on continuous positive airway pressure ventilation (finding)	429487005
+   Dependence on home ventilator (finding)	60631000119109
+   Dependence on ventilator (finding)	444932008
+   Disorder of trachea (disorder)	47125007
+   Dyspnea (finding)	267036007
+   Empyema (disorder)	312682007
+   Extrinsic allergic alveolitis (disorder)	37471005
+   Fibrosis of lung (disorder)	51615001
+   Heart transplant recipient (finding)	702776000
+   Heart-lung transplant failure and rejection (disorder)	213152006
+   Hemoptysis (disorder)	66857006
+   Heritable pulmonary arterial hypertension (disorder)	697897003
+   History of being lung transplant recipient (situation)	161672008
+    History of heart-lung transplant recipient (situation)	928341000000103
+   Hypersomnia (disorder)	77692006
+   Hyperventilation (finding)	68978004
+   Hypoventilation during sleep due to neuromuscular disorder (disorder)	429456008
+   Idiopathic pulmonary arterial hypertension (disorder)	697898008
+   Immotile cilia syndrome (disorder)	86204009
+   Inflammation of bronchus due to Aspergillus (disorder)	445058002
+   Interstitial lung disease (disorder)	233703007
+   Interstitial lung disease due to collagen vascular disease (disorder)	427123006
+   Invasive pulmonary aspergillosis (disorder)	3214003
+   Langerhans cell histiocytosis of lung (disorder)	417152008
+   Lung transplant recipient (finding)	702775001
+   Malignant tumor of lung (disorder)	363358000
+   Mesothelioma (malignant, clinical disorder) (disorder)	109378008
+   Miliary tuberculosis (disorder)	47604008
+   Mixed anxiety and depressive disorder (disorder)	231504006
+   Multiple nodules of lung (finding)	445249002
+   Neoplastic pleural effusion (disorder)	83270006
+   Non-small cell lung cancer (disorder)	254637007
+   Nosocomial pneumonia (disorder)	425464007
+   Obliterative bronchiolitis (disorder)	40100001
+   Obstructive sleep apnea syndrome (disorder)	78275009
+   Occupational asthma (disorder)	57607007
+   Occupational lung disease (disorder)	86157004
+   Parasomnia (disorder)	58690002
+   Pleural effusion (disorder)	60046008
+   Pleural plaque (disorder)	233658003
+   Post-radiotherapy pulmonary fibrosis (disorder)	405570007
+   Psychogenic hyperventilation (finding)	191956005
+   Pulmonary aspergillosis (disorder)	6042001
+   Pulmonary embolism (disorder)	59282003
+   Pulmonary emphysema (disorder)	87433001
+   Pulmonary eosinophilia (disorder)	367542003
+   Pulmonary hemorrhage (disorder)	78144005
+   Pulmonary infarction (disorder)	64662007
+   Pulmonary sarcoidosis (disorder)	24369008
+   Pulmonary tuberculosis (disorder)	154283005
+   Restless legs (disorder)	32914008
+   Rhinitis (disorder)	70076002
+   Sarcoidosis (disorder)	31541009
+   Secondary malignant neoplasm of pleura (disorder)	94493005
+   Secondary pulmonary hypertension (disorder)	88223008
+   Sinusitis (disorder)	36971009
+   Small cell carcinoma of lung (disorder)	254632001
+   Solitary nodule of lung (finding)	427359005
+   Spontaneous pneumothorax (disorder)	80423007
+   Tuberculosis (disorder)	56717001
+   Urticaria (disorder)	126485001
+   Vocal cord dysfunction (finding)	134290008
+   Wheezing (finding)	56018004
+----
+Smoking simple reference set (foundation metadata concept)
+SCTID: 999000891000000102
+   Cigar smoker (finding)	59978006
+   Cigarette smoker (finding)	65568007
+   Ex-smoker (finding)	8517006
+   Never smoked tobacco (finding)	266919005
+   Non-smoker (finding)	8392000
+   Pipe smoker (finding)	82302008
+   Rolls own cigarettes (finding)	160619003
+----
+Unexpected result indicator reference set (foundation metadata concept)
+SCTID: 32568021000036109
+    Abnormal (qualifier value)	263654008
+   Abnormally high (qualifier value)	371879000
+   Abnormally low (qualifier value)	371880002
+   Borderline normal (qualifier value)	371932001
+   Decreased (qualifier value)	1250004
+   Decreasing (qualifier value)	260371004
+   High (qualifier value)	75540009
+   Highly significant (qualifier value)	371926006
+   Improved (qualifier value)	385425000
+   Improving (qualifier value)	385633008
+   Increased (qualifier value)	35105006
+   Increasing (qualifier value)	260369004
+   Low (qualifier value)	62482003
+   Maintained (qualifier value)	385630006
+   Minimally significant (qualifier value)	371929004
+   Moderately significant (qualifier value)	371927002
+   Normal (qualifier value)	17621005
+   Normality undetermined (qualifier value)	371934000
+   Not significant (qualifier value)	371928007
+   Potentially abnormal (qualifier value)	394845008
+   Raised (qualifier value)	260399008
+   Significant (qualifier value)	386134007
+   Stabilized (qualifier value)	409051000
+   Stable (qualifier value)	58158008
+   Very high (qualifier value)	260360000
+   Very low (qualifier value)	260362008
+   Worse (qualifier value)	231877006
+   Worsening (qualifier value)	230993007
+----
+Route of administration reference set (foundation metadata concept)
+SCTID: 442311000124105
+   Arteriovenous fistula route (qualifier value)	697971008
+   Arteriovenous graft route (qualifier value)	432671000124106
+   Body cavity route (qualifier value)	420254004
+   Buccal route (qualifier value)	54471007
+   Caudal route (qualifier value)	417070009
+   Colostomy route (qualifier value)	418162004
+   Conjunctival route (qualifier value)	446105004
+   Cutaneous route (qualifier value)	448598008
+   Dental route (qualifier value)	372449004
+   Digestive tract route (qualifier value)	447964005
+   Endocervical route (qualifier value)	372450004
+   Endosinusial route (qualifier value)	372451000
+   Endotracheopulmonary route (qualifier value)	372452007
+   Enteral route (qualifier value)	417985001
+   Epidural route (qualifier value)	404820008
+   Esophagostomy route (qualifier value)	420163009
+   Extra-amniotic route (qualifier value)	372453002
+   Fistula route (qualifier value)	418743005
+   Gastro-intestinal stoma route (qualifier value)	418136008
+   Gastroenteral route (qualifier value)	372454008
+   Gastrostomy route (qualifier value)	127490009
+   Gingival route (qualifier value)	372457001
+   Ileostomy route (qualifier value)	419954003
+   Interstitial route (qualifier value)	429817007
+   Intra-arterial route (qualifier value)	58100008
+   Intra-articular route (qualifier value)	12130007
+   Intraabdominal route (qualifier value)	419396008
+   Intraamniotic route (qualifier value)	372458006
+   Intrabiliary route (qualifier value)	404819002
+   Intrabronchial route (qualifier value)	419778001
+   Intrabursal route (qualifier value)	372459003
+   Intracameral route (qualifier value)	418821007
+   Intracardiac route (qualifier value)	372460008
+   Intracartilaginous route (qualifier value)	418331006
+   Intracavernous route (qualifier value)	372461007
+   Intracerebral route (qualifier value)	446540005
+   Intracerebroventricular route (qualifier value)	420719007
+   Intracisternal route (qualifier value)	418892005
+   Intracolonic route (qualifier value)	448492006
+   Intracorneal route (qualifier value)	418608002
+   Intracoronal route (qualifier value)	418287000
+   Intracoronary route (qualifier value)	372463005
+   Intracorpus cavernosum route (qualifier value)	445769006
+   Intracranial route (qualifier value)	418987007
+   Intradermal route (qualifier value)	372464004
+   Intradiscal route (qualifier value)	372465003
+   Intraductal route (qualifier value)	417989007
+   Intraduodenal route (qualifier value)	418887008
+   Intradural route (qualifier value)	445756007
+   Intraepicardial route (qualifier value)	446407004
+   Intraepidermal route (qualifier value)	448077001
+   Intraesophageal route (qualifier value)	445752009
+   Intragastric route (qualifier value)	445768003
+   Intragingival route (qualifier value)	445754005
+   Intrahepatic route (qualifier value)	445941009
+   Intraileal route (qualifier value)	447026006
+   Intrajejunal route (qualifier value)	448491004
+   Intralesional route (qualifier value)	372466002
+   Intralingual route (qualifier value)	445913005
+   Intraluminal route (qualifier value)	37737002
+   Intralymphatic route (qualifier value)	372467006
+   Intramammary route (qualifier value)	447121004
+   Intramedullary route (qualifier value)	60213007
+   Intrameningeal route (qualifier value)	445767008
+   Intramuscular route (qualifier value)	78421000
+   Intramyometrial route (qualifier value)	418133000
+   Intraocular route (qualifier value)	372468001
+   Intraosseous route (qualifier value)	417255000
+   Intraovarian route (qualifier value)	419631009
+   Intrapericardial route (qualifier value)	445771006
+   Intraperitoneal route (qualifier value)	38239002
+   Intrapleural route (qualifier value)	372469009
+   Intraprostatic route (qualifier value)	419810008
+   Intrapulmonary route (qualifier value)	420201002
+   Intrasinal route (qualifier value)	419231003
+   Intraspinal route (qualifier value)	418418000
+   Intrasternal route (qualifier value)	372470005
+   Intrasynovial route (qualifier value)	418877009
+   Intratendinous route (qualifier value)	418586008
+   Intratesticular route (qualifier value)	418947002
+   Intrathecal route (qualifier value)	72607000
+   Intrathoracic route (qualifier value)	417950001
+   Intratumor route (qualifier value)	447122006
+   Intratympanic route (qualifier value)	418091004
+   Intrauterine route (qualifier value)	62226000
+   Intravascular route (qualifier value)	445755006
+   Intravenous central route (qualifier value)	418114005
+   Intravenous peripheral route (qualifier value)	419993007
+   Intravenous route (qualifier value)	47625008
+   Intraventricular route - cardiac (qualifier value)	420287000
+   Intravesical route (qualifier value)	372471009
+   Intravitreal route (qualifier value)	418401004
+   Jejunostomy route (qualifier value)	127491008
+   Laryngeal route (qualifier value)	420185003
+   Lower respiratory tract route (qualifier value)	447081004
+   Mucous fistula route (qualifier value)	420204005
+   Nasal route (qualifier value)	46713006
+   Nasoduodenal route (qualifier value)	420218003
+   Nasogastric route (qualifier value)	127492001
+   Nasojejunal route (qualifier value)	418730005
