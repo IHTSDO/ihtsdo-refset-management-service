@@ -238,7 +238,7 @@ public interface TranslationServiceRest {
    * @return the translation list
    * @throws Exception the exception
    */
-  public TranslationList findTranslationsWithSpellingDictionary(String authToken)
+  public TranslationList getTranslationsWithSpellingDictionary(String authToken)
     throws Exception;
 
   /**

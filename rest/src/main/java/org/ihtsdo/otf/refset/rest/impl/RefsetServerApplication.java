@@ -69,7 +69,7 @@ public class RefsetServerApplication extends Application {
     /* see superclass */
     @Override
     public void run() {
-      // TODO: ??
+      // n/a
     }
   }
 
@@ -77,7 +77,6 @@ public class RefsetServerApplication extends Application {
   @Override
   public Set<Class<?>> getClasses() {
     final Set<Class<?>> classes = new HashSet<Class<?>>();
-    // TODO: need to list services here
     classes.add(SecurityServiceRestImpl.class);
     classes.add(ProjectServiceRestImpl.class);
     classes.add(RefsetServiceRestImpl.class);

@@ -245,8 +245,7 @@ public class ModelUnit041Test extends ModelUnitSupport {
     tester.proxy(Concept.class, 1, concept);
     tester.proxy(Project.class, 1, project);
     tester.proxy(List.class, 1, list);
-    // TODO:
-    //assertTrue(tester.testXmlSerialization());
+    assertTrue(tester.testXmlSerialization());
   }
 
   /**

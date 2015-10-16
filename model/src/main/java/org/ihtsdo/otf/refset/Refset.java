@@ -211,9 +211,9 @@ public interface Refset extends Component, Searchable {
   public void setExternalUrl(String url);
 
   /**
-   * // TODO: make this an object Returns the refset descriptor refset id.
+   * Returns the refset descriptor.
    *
-   * @return the refset descriptor refset id
+   * @return the refset descriptor
    */
   public RefsetDescriptorRefsetMember getRefsetDescriptor();
 

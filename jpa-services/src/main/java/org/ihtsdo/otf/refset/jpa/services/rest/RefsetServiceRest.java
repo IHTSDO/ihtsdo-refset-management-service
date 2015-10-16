@@ -102,7 +102,7 @@ public interface RefsetServiceRest {
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Export refset definition. // TODO: needs String IoHandlerInfoId
+   * Export refset definition. 
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
