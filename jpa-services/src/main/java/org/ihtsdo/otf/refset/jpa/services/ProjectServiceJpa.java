@@ -42,7 +42,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected static Properties config = null;
 
   /** The assign identifiers flag. */
-  protected boolean assignIdentifiersFlag = false;
+  protected boolean assignIdentifiersFlag = true;
 
   /** The terminology handler . */
   private static TerminologyHandler terminologyHandler;

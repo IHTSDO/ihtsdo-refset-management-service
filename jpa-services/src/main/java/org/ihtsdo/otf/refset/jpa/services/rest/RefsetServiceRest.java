@@ -94,9 +94,10 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
+   * @return the string definition
    * @throws Exception the exception
    */
-  public void importDefinition(
+  public String importDefinition(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
@@ -447,24 +448,20 @@ public interface RefsetServiceRest {
    * Resume redefinition.
    *
    * @param refsetId the refset id
-   * @param newDefinition the new definition
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
-  public Refset resumeRedefinition(Long refsetId, String newDefinition,
+  public Refset resumeRedefinition(Long refsetId, 
     String authToken) throws Exception;
 
   /**
    * Resume migration.
    *
    * @param refsetId the refset id
-   * @param newTerminology the new terminology
-   * @param newVersion the new version
    * @param authToken the auth token
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset resumeMigration(Long refsetId, String newTerminology,
-    String newVersion, String authToken) throws Exception;
+  public Refset resumeMigration(Long refsetId, String authToken) throws Exception;
 }
