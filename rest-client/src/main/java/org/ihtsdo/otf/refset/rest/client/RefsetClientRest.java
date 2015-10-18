@@ -275,14 +275,6 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void removeRefsetInclusion(Long inclusionId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  /* see superclass */
-  @Override
   public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
@@ -297,13 +289,6 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
-  /* see superclass */
-  @Override
-  public void removeRefsetExclusion(Long exclusionId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-
-  }
 
   /* see superclass */
   @Override

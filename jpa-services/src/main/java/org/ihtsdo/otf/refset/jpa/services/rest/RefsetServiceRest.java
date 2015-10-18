@@ -444,4 +444,5 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public Refset resumeMigration(Long refsetId, String authToken) throws Exception;
+
 }

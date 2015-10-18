@@ -787,8 +787,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "add translation concept",
-          UserRole.VIEWER);
+      // Load translation
+      Translation translation = concept.getTranslation();
+      if (translation == null) {
+        throw new Exception("Concept does not have a valid translation "
+            + concept.getId());
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add translation concept", UserRole.REVIEWER);
 
       // Add translation concept
       return translationService.addConcept(concept);
