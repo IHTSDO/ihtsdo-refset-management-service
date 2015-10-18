@@ -127,10 +127,8 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("definition");
     tester.include("definitionUuid");
     tester.include("description");
-    tester.include("exclusions");
     tester.include("externalUrl");
     tester.include("forTranslation");
-    tester.include("inclusions");
     tester.include("public");
     tester.include("stagingType");
     tester.include("name");
