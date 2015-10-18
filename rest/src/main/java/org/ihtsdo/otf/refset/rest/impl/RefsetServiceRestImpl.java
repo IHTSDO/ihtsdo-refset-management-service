@@ -552,12 +552,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  @Override
-  public void removeRefsetInclusion(Long inclusionId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-
-  }
 
   @Override
   @POST
@@ -599,12 +593,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  @Override
-  public void removeRefsetExclusion(Long exclusionId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-
-  }
 
   @Override
   @POST
