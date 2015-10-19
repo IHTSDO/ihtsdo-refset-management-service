@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -392,7 +393,7 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, PfsParameter pfs, String authToken) throws Exception;
 
   /**
    * Returns the diff report.
@@ -409,9 +410,10 @@ public interface RefsetServiceRest {
    * Release report token.
    *
    * @param reportToken the report token
+   * @param authToken TODO
    * @throws Exception the exception
    */
-  public void releaseReportToken(String reportToken) throws Exception;
+  public void releaseReportToken(String reportToken, String authToken) throws Exception;
 
   /**
    * Extrapolate definition.

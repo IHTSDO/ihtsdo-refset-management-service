@@ -76,14 +76,14 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Type type;
+  private Refset.Type type;
 
   /** The provisional flag. */
   @Column(nullable = false)
   private boolean provisional;
 
   /** The staging type. */
-  @Enumerated(EnumType.STRING)
+  //@Enumerated(EnumType.STRING)
   @Column(nullable = true)
   private StagingType stagingType;
 
@@ -658,5 +658,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + refsetDescriptor + ", project=" + project + ", organization=" + organization
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
+
+
 
 }
