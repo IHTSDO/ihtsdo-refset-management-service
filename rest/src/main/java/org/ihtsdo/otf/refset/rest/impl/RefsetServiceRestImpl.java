@@ -4,9 +4,12 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -39,6 +42,7 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -49,6 +53,7 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.RefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -620,6 +625,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + inclusion);
       }
 
+      for(ConceptRefsetMember c : refset.getMembers()) {
+        if (inclusion.getConceptId().equals(c.getConceptId()) &&
+            c.getMemberType() == Refset.MemberType.MEMBER) {
+          throw new Exception("Inclusion is redundant as the refset has a matching member");
+        }
+      }
       ConceptRefsetMember newMember = refsetService.addMember(inclusion);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -695,6 +706,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + exclusion);
       }
 
+      boolean found = false;
+      for(ConceptRefsetMember c : refset.getMembers()) {
+        if (exclusion.getConceptId().equals(c.getConceptId()) &&
+            c.getMemberType() == Refset.MemberType.MEMBER) {
+          found = true;
+          break;
+        }
+      }
+      
+      if (!found) {
+        throw new Exception("Exclusion is redundant as the refset does not contain a matching member");
+      }
+      
       ConceptRefsetMember newMember = refsetService.addMember(exclusion);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -1299,9 +1323,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public String compareRefsets(Long refsetId1, Long refsetId2, String authToken)
+  public String compareRefsets(Long refsetId1,Long refsetId2,String authToken)
     throws Exception {
-    //TODO: Start here
+  //TODO: Start here
     // loads refset1 and refset2
     // creates a "members in common" list (where reportToken is the key)
     // creates a "diff report"
@@ -1312,10 +1336,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     //
     return null;
   }
+  
+    
 
-  @Override
-  public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+  
+
+  /* see superclass */
+  @Override 
+  public ConceptRefsetMemberList findMembersInCommon(String reportToken,String query, PfsParameterJpa pfs, String authToken)
+    throws Exception {
     // get List<ConceptRefsetMember> from membersInCommonMap for the specified
     // key
     // if the value is null, throw an exception

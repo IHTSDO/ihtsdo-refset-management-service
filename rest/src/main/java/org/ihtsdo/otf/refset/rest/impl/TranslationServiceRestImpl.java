@@ -795,10 +795,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add translation concept", UserRole.REVIEWER);
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "add translation concept",
+          UserRole.REVIEWER);
+
+      // Check to see if the concept already exists
+      for (Concept c : translation.getConcepts()) {
+        if (c.getName().equals(concept.getName())
+            && c.getDescriptions().equals(concept.getDescriptions())) {
+          throw new Exception(
+              "A concept with this name and description already exists");
+        }
+      }
 
       // Add translation concept
       return translationService.addConcept(concept);
@@ -809,6 +817,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.close();
       securityService.close();
     }
+    
   }
 
   /* see superclass */

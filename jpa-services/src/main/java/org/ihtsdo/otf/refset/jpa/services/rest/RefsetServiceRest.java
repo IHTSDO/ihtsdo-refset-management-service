@@ -24,7 +24,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
  * Represents a refsets available via a REST service.
  */
 public interface RefsetServiceRest {
-
+  
   /**
    * Returns the refset.
    *
