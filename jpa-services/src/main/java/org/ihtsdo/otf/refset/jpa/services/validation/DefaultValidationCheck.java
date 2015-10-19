@@ -34,27 +34,27 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     ValidationResult result = new ValidationResultJpa();
 
     // Only an INTENSIONAL refset should have a definition
-    if (refset.getType() != Refset.RefsetType.INTENSIONAL && refset.getDefinition() != null) {
+    if (refset.getType() != Refset.Type.INTENSIONAL && refset.getDefinition() != null) {
       result.addError("Only intensional refsets should have a definition");
     }
 
     // An INTENSIONAL refset MUST have a definition
-    if (refset.getType() == Refset.RefsetType.INTENSIONAL && refset.getDefinition() == null) {
+    if (refset.getType() == Refset.Type.INTENSIONAL && refset.getDefinition() == null) {
       result.addError("An intensional refset must have a definition");
     }
 
     // Only an EXTERNAL refset should have a externalUrl
-    if (refset.getType() != Refset.RefsetType.EXTERNAL && refset.getExternalUrl() != null) {
+    if (refset.getType() != Refset.Type.EXTERNAL && refset.getExternalUrl() != null) {
       result.addError("Only external refsets should have an external Url");
     }
 
     // An EXTERNAL refset must have a externalUrl
-    if (refset.getType() == Refset.RefsetType.EXTERNAL && refset.getExternalUrl() == null) {
+    if (refset.getType() == Refset.Type.EXTERNAL && refset.getExternalUrl() == null) {
       result.addError("An external refset must have an external Url");
     }
 
     // EXTERNAL refsets should have members
-    if (refset.getType() == Refset.RefsetType.EXTERNAL && refset.getMembers().size()>0) {
+    if (refset.getType() == Refset.Type.EXTERNAL && refset.getMembers().size()>0) {
       result.addError("Only external refsets should have members");
     }
     

@@ -40,7 +40,6 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -50,14 +49,12 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
-import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
@@ -82,11 +79,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /** The security service. */
   private SecurityService securityService;
 
-  private static Map<String,List<ConceptRefsetMember>> membersInCommonMap = 
+  /**  The members in common map. */
+  private static Map<String, List<ConceptRefsetMember>> membersInCommonMap =
       new HashMap<>();
-  
-  private static Map<String, MemberDiffReport> memberDiffReportMap = new HashMap<>();
-  
+
+  /**  The member diff report map. */
+  private static Map<String, MemberDiffReport> memberDiffReportMap =
+      new HashMap<>();
+
   /**
    * Instantiates an empty {@link RefsetServiceRestImpl}.
    *
@@ -510,7 +510,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa member,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    
+
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (member): /member/add " + member);
 
@@ -645,7 +645,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-
   @Override
   @POST
   @Path("/inclusions")
@@ -678,7 +677,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
 
   }
-
 
   /* see superclass */
   @Override
@@ -720,7 +718,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-
   @Override
   @POST
   @Path("/exclusions")
@@ -754,7 +751,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  
   /* see superclass */
   @GET
   @Override
@@ -848,7 +844,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Check refset type
-      if (refset.getType() == Refset.RefsetType.EXTERNAL) {
+      if (refset.getType() == Refset.Type.EXTERNAL) {
         throw new LocalException(
             "Migration is only allowed for intensional and extensional type refsets.");
       }
@@ -864,7 +860,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // If intensional, compute the expression on new terminology and version
       // add members from expression results
-      if (refsetCopy.getType() == Refset.RefsetType.INTENSIONAL) {
+      if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
         // clear initial members
         refsetCopy.setMembers(null);
 
@@ -893,7 +889,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
         // updateRefset(refsetCopy);
       }
-      if (refset.getType() == Refset.RefsetType.EXTENSIONAL) {
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
         // n/a
       }
 
@@ -1093,7 +1089,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Check refset type
-      if (refset.getType() != Refset.RefsetType.INTENSIONAL) {
+      if (refset.getType() != Refset.Type.INTENSIONAL) {
         throw new LocalException(
             "Redefinition is only allowed for intensional type refsets.");
       }
@@ -1114,7 +1110,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
                   refset.getVersion(), null);
       Date startDate = new Date();
       //
-      // TODO: collect exclusions concept ids from origin refset.getMembers into set
+      // TODO: collect exclusions concept ids from origin refset.getMembers into
+      // set
 
       for (Concept concept : conceptList.getObjects()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
@@ -1145,7 +1142,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // add it as a member to the refsetCopy set id to null;
       // setRefset(refsetCopy); addMember
 
-      refsetService.updateRefset(refsetCopy); 
+      refsetService.updateRefset(refsetCopy);
       refsetService.commit();
       return refsetCopy;
 
@@ -1213,7 +1210,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           new HashSet<>(stagedRefset.getMembers());
       for (ConceptRefsetMember originMember : originMembers) {
         if (!stagedMembers.contains(originMember)) {
-          refset.removeMember(originMember);
           refsetService.removeMember(originMember.getId());
         }
       }
@@ -1223,11 +1219,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         if (!originMembers.contains(stagedMember)) {
           // member knows which refset it is a part of, not inverse
           stagedMember.setRefset(refset);
-          // TODO: requires allowIdChangeOnUpdate
           refsetService.updateMember(stagedMember);
         }
       }
-
+      stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
+      
+      
       // copy definition from staged to origin refset
       refset.setDefinition(stagedRefset.getDefinition());
 
@@ -1236,7 +1233,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      //refsetService.removeStagedRefset(stagedRefset);
+      refsetService.removeStagedRefset(stagedRefset);
 
       refsetService.commit();
 
@@ -1323,41 +1320,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "compare refsets",
           UserRole.VIEWER);
 
-    Refset refset1 = refsetService.getRefset(refsetId1);
-    Refset refset2 = refsetService.getRefset(refsetId2);
-    String reportToken = "";  // TODO
-    
-    // creates a "members in common" list (where reportToken is the key)
-    List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-    for (ConceptRefsetMember member1 : refset1.getMembers()) {
-      if (refset2.getMembers().contains(member1)){
-        membersInCommon.add(member1);
+      Refset refset1 = refsetService.getRefset(refsetId1);
+      Refset refset2 = refsetService.getRefset(refsetId2);
+      String reportToken = ""; // TODO
+
+      // creates a "members in common" list (where reportToken is the key)
+      List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
+      for (ConceptRefsetMember member1 : refset1.getMembers()) {
+        if (refset2.getMembers().contains(member1)) {
+          membersInCommon.add(member1);
+        }
       }
-    }
-    membersInCommonMap.put(reportToken, membersInCommon);
-    
-    // creates a "diff report"  
-    MemberDiffReport diffReport = new MemberDiffReportJpa();
-    List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
-    List<ConceptRefsetMember> newNotOld = new ArrayList<>();
-    
-    for (ConceptRefsetMember member1 : refset1.getMembers()) {
-      if (!refset2.getMembers().contains(member1)){
-        oldNotNew.add(member1);
+      membersInCommonMap.put(reportToken, membersInCommon);
+
+      // creates a "diff report"
+      MemberDiffReport diffReport = new MemberDiffReportJpa();
+      List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
+      List<ConceptRefsetMember> newNotOld = new ArrayList<>();
+
+      for (ConceptRefsetMember member1 : refset1.getMembers()) {
+        if (!refset2.getMembers().contains(member1)) {
+          oldNotNew.add(member1);
+        }
       }
-    }
-    for (ConceptRefsetMember member2 : refset2.getMembers()) {
-      if (!refset1.getMembers().contains(member2)){
-        newNotOld.add(member2);
+      for (ConceptRefsetMember member2 : refset2.getMembers()) {
+        if (!refset1.getMembers().contains(member2)) {
+          newNotOld.add(member2);
+        }
       }
-    }
-    diffReport.setOldNotNew(oldNotNew);
-    diffReport.setNewNotOld(newNotOld);
-    
-    memberDiffReportMap.put(reportToken, diffReport);
-    
-    return reportToken;
-    
+      diffReport.setOldNotNew(oldNotNew);
+      diffReport.setNewNotOld(newNotOld);
+
+      memberDiffReportMap.put(reportToken, diffReport);
+
+      return reportToken;
+
     } catch (Exception e) {
       handleException(e, "trying to compare refsets");
     } finally {
@@ -1367,7 +1364,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  @Override  
+  @Override
   @POST
   @Path("/common/members")
   @ApiOperation(value = "Finds members in common", notes = "Finds members in common given a reportToken based on pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
@@ -1393,8 +1390,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new LocalException("No members in common map was found.");
       }
 
-      return refsetService.applyPfsToList(commonMembersList,
-          ConceptRefsetMemberJpa.class, pfs);
+      ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      list.setTotalCount(commonMembersList.size());
+      list.setObjects(refsetService.applyPfsToList(commonMembersList,
+              ConceptRefsetMember.class, pfs));
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find members in common");
@@ -1404,7 +1404,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-
 
   @Override
   @POST
@@ -1509,7 +1508,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Check refset type
-      if (refset.getType() != Refset.RefsetType.EXTENSIONAL) {
+      if (refset.getType() != Refset.Type.EXTENSIONAL) {
         throw new LocalException(
             "Import is only allowed for extensional type refsets.");
       }

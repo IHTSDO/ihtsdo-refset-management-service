@@ -253,7 +253,6 @@ public abstract class RootServiceJpa implements RootService {
    * @throws Exception the exception
    */
   @Override
-  @SuppressWarnings("static-method")
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
     PfsParameter pfs) throws Exception {
 

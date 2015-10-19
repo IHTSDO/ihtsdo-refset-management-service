@@ -358,78 +358,78 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       makeRefset(
           "Accessible information - communication support simple reference set",
-          null, 1, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          null, 1, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "999002121000000109", reviewer1);
 
       makeRefset("Action context values simple reference set", null, 2,
-          "UK1000000", Refset.RefsetType.EXTENSIONAL, project1, "999001711000000106",
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001711000000106",
           reviewer1);
 
       makeRefset("Breathing finding simple reference set", null, 3,
-          "UK1000000", Refset.RefsetType.EXTENSIONAL, project1, "999001431000000106",
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001431000000106",
           reviewer1);
 
       makeRefset("Care planning action context values simple reference set",
-          null, 4, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          null, 4, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "999000081000000105", reviewer1);
 
       makeRefset("Christian religion simple reference set", null, 5,
-          "UK1000000", Refset.RefsetType.EXTENSIONAL, project1, "999000441000000105",
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105",
           reviewer1);
 
       makeRefset("Device reading body site simple reference set", null, 6,
-          "UK1000000", Refset.RefsetType.EXTENSIONAL, project1, "999001011000000109",
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001011000000109",
           reviewer1);
 
       makeRefset("Emergency care investigations simple reference set", null, 7,
-          "UK1000000", Refset.RefsetType.EXTENSIONAL, project1, "991261000000107",
+          "UK1000000", Refset.Type.EXTENSIONAL, project1, "991261000000107",
           reviewer1);
 
       makeRefset("Emergency care mechanism of injury simple reference set",
-          null, 8, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          null, 8, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "991281000000103", reviewer1);
 
       makeRefset("Financial circumstances finding simple reference set", null,
-          9, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          9, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "999001521000000105", reviewer1);
 
       makeRefset("Laterality simple reference set", null, 10, "UK1000000",
-          Refset.RefsetType.EXTENSIONAL, project1, "999000821000000100", reviewer1);
+          Refset.Type.EXTENSIONAL, project1, "999000821000000100", reviewer1);
 
       makeRefset("Need for interpreter findings simple reference set", null,
-          11, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          11, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "991481000000102", reviewer1);
 
       makeRefset(
           "Newborn blood spot screening result status simple reference set",
-          null, 12, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          null, 12, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "966281000000109", reviewer1);
 
       makeRefset(
           "Occupational therapy functional observable simple reference set",
-          null, 13, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          null, 13, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "999001701000000109", reviewer1);
 
       makeRefset("Respiratory medicine diagnosis simple reference set", null,
-          14, "UK1000000", Refset.RefsetType.EXTENSIONAL, project1,
+          14, "UK1000000", Refset.Type.EXTENSIONAL, project1,
           "999001871000000106", reviewer1);
 
       makeRefset("Smoking simple reference set", null, 15, "UK1000000",
-          Refset.RefsetType.EXTENSIONAL, project1, "999000891000000102", reviewer1);
+          Refset.Type.EXTENSIONAL, project1, "999000891000000102", reviewer1);
 
       // Create two refsets in project 2 (intensional and external)
       Logger.getLogger(getClass()).info("Create AU refsets");
       reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
 
       makeRefset("Unexpected result indicator reference set", null, 16,
-          "AU1000036", Refset.RefsetType.INTENSIONAL, project2, "32568021000036109",
+          "AU1000036", Refset.Type.INTENSIONAL, project2, "32568021000036109",
           reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
       makeRefset("Route of administration reference set", null, 17,
-          "US1000124", Refset.RefsetType.EXTENSIONAL, project3, "442311000124105",
+          "US1000124", Refset.Type.EXTENSIONAL, project3, "442311000124105",
           reviewer3);
 
       getLog().info("Done ...");
@@ -555,7 +555,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private RefsetJpa makeRefset(String name, String definition, int num,
-    String edition, Refset.RefsetType type, Project project, String refsetId,
+    String edition, Refset.Type type, Project project, String refsetId,
     User auth) throws Exception {
     ++refsetCt;
     final RefsetJpa refset = new RefsetJpa();
@@ -582,9 +582,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setOrganization("ABC Organization");
 
-    if (type == Refset.RefsetType.INTENSIONAL) {
+    if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");
-    } else if (type == Refset.RefsetType.EXTERNAL) {
+    } else if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
 
@@ -603,7 +603,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refsetService.addRefset(refset, auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
 
-    if (type == Refset.RefsetType.EXTENSIONAL) {
+    if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
       ValidationResult vr =
           refsetService.beginImportMembers(refset.getId(), "DEFAULT",
@@ -619,7 +619,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
-    } else if (type == Refset.RefsetType.INTENSIONAL) {
+    } else if (type == Refset.Type.INTENSIONAL) {
       // Import definition (from file)
       InputStream in =
           new FileInputStream(

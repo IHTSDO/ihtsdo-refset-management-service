@@ -20,7 +20,6 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
@@ -34,7 +33,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class RedefinitionTest  {
+public class RedefinitionTest {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -47,11 +46,11 @@ public class RedefinitionTest  {
 
   /** The security service. */
   protected static SecurityClientRest securityService;
-  
-  /**  The validation service. */
+
+  /** The validation service. */
   protected static ValidationClientRest validationService;
-  
-  /**  The project service. */
+
+  /** The project service. */
   protected static ProjectClientRest projectService;
 
   /** The properties. */
@@ -109,12 +108,13 @@ public class RedefinitionTest  {
     }
 
   }
+
   /**
    * Create test fixtures per test.
    *
    * @throws Exception the exception
    */
-
+  @SuppressWarnings("static-method")
   @Before
   public void setup() throws Exception {
 
@@ -137,23 +137,25 @@ public class RedefinitionTest  {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset2 =
-        makeRefset("refset99", "needs definition", Refset.RefsetType.INTENSIONAL, project2,
-            null, admin);
+        makeRefset("refset99", "needs definition", Refset.Type.INTENSIONAL,
+            project2, null, admin);
     // Begin redefinition
-    refsetService.beginRedefinition(refset2.getId(), "<<420254004|Body cavity route|", adminAuthToken);
+    refsetService.beginRedefinition(refset2.getId(),
+        "<<420254004|Body cavity route|", adminAuthToken);
     // Cancel redefinition
     refsetService.cancelRedefinition(refset2.getId(), adminAuthToken);
     // Begin redefinition
-    refsetService.beginRedefinition(refset2.getId(), "<<447964005|Digestive track route|", adminAuthToken);
+    refsetService.beginRedefinition(refset2.getId(),
+        "<<447964005|Digestive track route|", adminAuthToken);
     // Resume redefinition
     refsetService.resumeRedefinition(refset2.getId(), adminAuthToken);
     // Finish redefinition
     refsetService.finishRedefinition(refset2.getId(), adminAuthToken);
   }
-  
+
   /**
-   * Test redefinition including begin, finish and then redefining a second
-   * time with a broader definition.
+   * Test redefinition including begin, finish and then redefining a second time
+   * with a broader definition.
    *
    * @throws Exception the exception
    */
@@ -163,18 +165,22 @@ public class RedefinitionTest  {
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // TODO: instead of 2nd redefinition replacing members from the first definition,
-    // two refsets are added with the same refset name and both sets of members are preserved
+    // TODO: instead of 2nd redefinition replacing members from the first
+    // definition,
+    // two refsets are added with the same refset name and both sets of members
+    // are preserved
     // Create refset (intensional) and import definition
     RefsetJpa refset2 =
-        makeRefset("refset99", "needs definition", Refset.RefsetType.INTENSIONAL, project2,
-            null, admin);
+        makeRefset("refset99", "needs definition", Refset.Type.INTENSIONAL,
+            project2, null, admin);
     // Begin redefinition
-    refsetService.beginRedefinition(refset2.getId(), "<<38239002| Intraperitoneal route|", adminAuthToken);
+    refsetService.beginRedefinition(refset2.getId(),
+        "<<38239002| Intraperitoneal route|", adminAuthToken);
     // Finish redefinition
     refsetService.finishRedefinition(refset2.getId(), adminAuthToken);
     // Begin redefinition
-    refsetService.beginRedefinition(refset2.getId(), "<<420254004|Body cavity route|", adminAuthToken);
+    refsetService.beginRedefinition(refset2.getId(),
+        "<<420254004|Body cavity route|", adminAuthToken);
     // Finish redefinition
     refsetService.finishRedefinition(refset2.getId(), adminAuthToken);
   }
@@ -184,7 +190,7 @@ public class RedefinitionTest  {
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -192,25 +198,28 @@ public class RedefinitionTest  {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset2 =
-        makeRefset("refset99", "<<38239002| Intraperitoneal route|", Refset.RefsetType.INTENSIONAL, project2,
-            null, admin);
+        makeRefset("refset99", "<<38239002| Intraperitoneal route|",
+            Refset.Type.INTENSIONAL, project2, null, admin);
     // Begin redefinition
-    refsetService.beginMigration(refset2.getId(), "SNOMEDCT", "20140731", adminAuthToken);
+    refsetService.beginMigration(refset2.getId(), "SNOMEDCT", "20140731",
+        adminAuthToken);
     // Cancel redefinition
     refsetService.cancelMigration(refset2.getId(), adminAuthToken);
     // Begin redefinition
-    refsetService.beginMigration(refset2.getId(), "SNOMEDCT", "20150131", adminAuthToken);
+    refsetService.beginMigration(refset2.getId(), "SNOMEDCT", "20150131",
+        adminAuthToken);
     // Resume redefinition
     refsetService.resumeMigration(refset2.getId(), adminAuthToken);
     // Finish redefinition
     refsetService.finishMigration(refset2.getId(), adminAuthToken);
   }
-  
+
   /**
    * Teardown.
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @After
   public void teardown() throws Exception {
 
@@ -232,7 +241,7 @@ public class RedefinitionTest  {
    * @throws Exception the exception
    */
   private RefsetJpa makeRefset(String name, String definition,
-    Refset.RefsetType type, Project project, String refsetId, User auth)
+    Refset.Type type, Project project, String refsetId, User auth)
     throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
@@ -258,10 +267,9 @@ public class RedefinitionTest  {
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setOrganization("ABC Organization");
 
-    if (type == Refset.RefsetType.EXTERNAL) {
+    if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
-
 
     // Validate refset
     ValidationResult result =
@@ -272,9 +280,9 @@ public class RedefinitionTest  {
     }
     // Add refset
 
-    refset = (RefsetJpa)refsetService.addRefset(refset, auth.getAuthToken());
+    refset = (RefsetJpa) refsetService.addRefset(refset, auth.getAuthToken());
 
-    if (type == Refset.RefsetType.EXTENSIONAL) {
+    if (type == Refset.Type.EXTENSIONAL) {
       // Import members (from file)
       ValidationResult vr =
           refsetService.beginImportMembers(refset.getId(), "DEFAULT",
@@ -289,7 +297,7 @@ public class RedefinitionTest  {
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
-    } else if (type == Refset.RefsetType.INTENSIONAL) {
+    } else if (type == Refset.Type.INTENSIONAL) {
       // Import definition (from file)
       InputStream in =
           new FileInputStream(

@@ -153,12 +153,20 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(DescriptionTypeRefsetMember member)
     throws Exception {
+    if (member.getTerminologyId() != null
+        && !member.getTerminologyId().isEmpty()) {
+      return member.getTerminologyId();
+    }
     return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(LanguageRefsetMember member) throws Exception {
+    if (member.getTerminologyId() != null
+        && !member.getTerminologyId().isEmpty()) {
+      return member.getTerminologyId();
+    }
     return UUID.randomUUID().toString();
   }
 
@@ -166,6 +174,10 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(ModuleDependencyRefsetMember member)
     throws Exception {
+    if (member.getTerminologyId() != null
+        && !member.getTerminologyId().isEmpty()) {
+      return member.getTerminologyId();
+    }
     return UUID.randomUUID().toString();
   }
 
@@ -173,12 +185,20 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   @Override
   public String getTerminologyId(RefsetDescriptorRefsetMember member)
     throws Exception {
+    if (member.getTerminologyId() != null
+        && !member.getTerminologyId().isEmpty()) {
+      return member.getTerminologyId();
+    }
     return UUID.randomUUID().toString();
   }
 
   /* see superclass */
   @Override
   public String getTerminologyId(ConceptRefsetMember member) throws Exception {
+    if (member.getTerminologyId() != null
+        && !member.getTerminologyId().isEmpty()) {
+      return member.getTerminologyId();
+    }
     return UUID.randomUUID().toString();
   }
 
@@ -214,7 +234,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public boolean allowIdChangeOnUpdate() {
-    return true;
+    return false;
   }
 
   /* see superclass */

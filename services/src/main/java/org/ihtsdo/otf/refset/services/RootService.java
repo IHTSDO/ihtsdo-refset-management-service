@@ -95,6 +95,6 @@ public interface RootService {
    * @return the list
    * @throws Exception the exception
    */
-  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz, PfsParameter pfs)
-    throws Exception;
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    PfsParameter pfs) throws Exception;
 }

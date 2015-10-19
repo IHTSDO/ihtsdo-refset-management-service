@@ -76,7 +76,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Refset.RefsetType type;
+  private Refset.Type type;
 
   /** The provisional flag. */
   @Column(nullable = false)
@@ -262,13 +262,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public RefsetType getType() {
+  public Type getType() {
     return type;
   }
 
   /* see superclass */
   @Override
-  public void setType(RefsetType type) {
+  public void setType(Type type) {
     this.type = type;
   }
 
