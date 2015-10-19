@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -47,6 +48,7 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -446,19 +448,55 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @GET
   @Override
-  public IoHandlerInfoList getImportTranslationHandlers(String authToken)
+  @Path("/import/handlers")
+  @ApiOperation(value = "Get import translation handlers", notes = "Get import translation handlers", response = IoHandlerInfoListJpa.class)
+  public IoHandlerInfoList getImportTranslationHandlers(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): get import translation handlers:");
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get import translation handlers", UserRole.VIEWER);
+
+      return translationService.getImportTranslationHandlerInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to get import translation handlers ");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
   }
 
   /* see superclass */
+  @GET
   @Override
-  public IoHandlerInfoList getExportTranslationHandlers(String authToken)
+  @Path("/export/handlers")
+  @ApiOperation(value = "Get export translation handlers", notes = "Get export translation handlers", response = IoHandlerInfoListJpa.class)
+  public IoHandlerInfoList getExportTranslationHandlers(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): get export translation handlers:");
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get export translation handlers", UserRole.VIEWER);
+
+      return translationService.getExportTranslationHandlerInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to get export translation handlers ");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
   }
 
   /* see superclass */
@@ -737,17 +775,69 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public Concept addTranslationConcept(Concept concept, String authToken)
+  @PUT
+  @Path("/concept/add")
+  @ApiOperation(value = "Add new translation concept", notes = "Creates a new translation concept", response = ConceptJpa.class)
+  public Concept addTranslationConcept(
+    @ApiParam(value = "Concept, e.g. newConcept", required = true) Concept concept,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (concept): /concept/add " + concept);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = concept.getTranslation();
+      if (translation == null) {
+        throw new Exception("Concept does not have a valid translation "
+            + concept.getId());
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add translation concept", UserRole.REVIEWER);
+
+      // Add translation concept
+      return translationService.addConcept(concept);
+    } catch (Exception e) {
+      handleException(e, "trying to add a translation concept");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
   @Override
-  public void removeTranslationConcept(Long conceptId, String authToken)
+  @DELETE
+  @Path("/concept/remove/{conceptId}")
+  @ApiOperation(value = "Remove translation concept", notes = "Removes the translation concept with the specified id")
+  public void removeTranslationConcept(
+    @ApiParam(value = "Concept id, e.g. 3", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation concept): /concept/remove/"
+            + conceptId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "remove translation concept",
+          UserRole.VIEWER);
+
+      // Create service and configure transaction scope
+      translationService.removeConcept(conceptId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a translation concept");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 

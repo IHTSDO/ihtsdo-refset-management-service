@@ -40,20 +40,24 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 
@@ -497,25 +501,74 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
-  public ConceptRefsetMember addRefsetMember(ConceptRefsetMemberJpa member,
-    String authToken) throws Exception {
+  @PUT
+  @Path("/memeber/add")
+  @ApiOperation(value = "Add new refset member", notes = "Add a new refset member", response = ConceptRefsetMemberJpa.class)
+  public ConceptRefsetMember addRefsetMember(
+    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa member,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (member): /member/add " + member);
 
-    // Refset refset = refsetService.getRefset(member.getRefset().getId());
-    // refsetService.addMember(member)
-    // refset.addMember(member)
-    // refsetService.updateRefset(refset)
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "Add new refset member",
+          UserRole.VIEWER);
 
-    return null;
+      Refset refset = refsetService.getRefset(member.getRefsetId());
+      ConceptRefsetMember newMember = refsetService.addMember(member);
+      refset.addMember(newMember);
+      refsetService.updateRefset(refset);
+      return newMember;
+
+    } catch (Exception e) {
+      handleException(e, "trying to add new refset member ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @Override
-  public void removeRefsetMember(Long memberId, String authToken)
+  @DELETE
+  @Path("/member/remove/{memberId}")
+  @ApiOperation(value = "Remove refset member", notes = "Removes the refset member with the specified id")
+  public void removeRefsetMember(
+    @ApiParam(value = "Refset member id, e.g. 3", required = true) @PathParam("memberId") Long memberId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // refsetService.removeMember(memberId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Member): /member/remove/" + memberId);
 
-    // if this gives you JPA errors, may have to load refset, remove member from
-    // refset...
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "Remove a refset member",
+          UserRole.VIEWER);
+
+      // Create service and configure transaction scope
+      refsetService.removeMember(memberId);
+      /**
+       * TODO: // if this gives you JPA errors, may have to load refset, remove
+       * member from // refset...
+       * 
+       * Refset refset = refsetService.getMember(memberId).getRefset();
+       * refset.removeMember(member);
+       * 
+       * refsetService.updateRefset(refset);
+       **/
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a refset member ");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
 
   }
 
@@ -552,22 +605,46 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
-  public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    ConceptRefsetMemberJpa inclusion, String authToken) throws Exception {
-    // Refset refset = refsetService.getRefset(member.getRefset().getId());
-    // refsetService.addInclusion(member)
-    // refset.addMember(member)
-    // refsetService.updateRefset(refset)
-    return null;
-  }
-
-  @Override
-  public void removeRefsetInclusion(Long inclusionId, String authToken)
+  @PUT
+  @Path("/inclusion/add")
+  @ApiOperation(value = "Add new refset inclusion", notes = "Add a new refset inclusion", response = ConceptRefsetMemberJpa.class)
+  public ConceptRefsetMember addRefsetInclusion(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa inclusion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (inclusion): /inclusion/add " + inclusion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "Add new refset inclusion",
+          UserRole.VIEWER);
+
+      Refset refset = refsetService.getRefset(inclusion.getRefsetId());
+      if (inclusion.getMemberType() != Refset.MemberType.INCLUSION) {
+        throw new Exception("Refset memeber type is not INCLUSION: "
+            + inclusion);
+      }
+
+      ConceptRefsetMember newMember = refsetService.addMember(inclusion);
+      refset.addMember(newMember);
+      refsetService.updateRefset(refset);
+      return newMember;
+
+    } catch (Exception e) {
+      handleException(e, "trying to add new refset inclusion ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
 
   }
+
 
   @Override
   @POST
@@ -602,19 +679,47 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  @Override
-  public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
 
+  /* see superclass */
   @Override
-  public void removeRefsetExclusion(Long exclusionId, String authToken)
+  @PUT
+  @Path("/exclusion/add")
+  @ApiOperation(value = "Add new refset exclusion", notes = "Add a new refset exclusion", response = ConceptRefsetMemberJpa.class)
+  public ConceptRefsetMember addRefsetExclusion(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa exclusion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (exclusion): /exclusion/add " + exclusion);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "Add new refset exclusion",
+          UserRole.VIEWER);
+
+      Refset refset = refsetService.getRefset(exclusion.getRefsetId());
+      if (exclusion.getMemberType() != Refset.MemberType.EXCLUSION) {
+        throw new Exception("Refset memeber type is not EXCLUSION: "
+            + exclusion);
+      }
+
+      ConceptRefsetMember newMember = refsetService.addMember(exclusion);
+      refset.addMember(newMember);
+      refsetService.updateRefset(refset);
+      return newMember;
+
+    } catch (Exception e) {
+      handleException(e, "trying to add new refset exclusion ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
 
   }
+
 
   @Override
   @POST
@@ -649,18 +754,61 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  
+  /* see superclass */
+  @GET
   @Override
-  public IoHandlerInfoList getImportRefsetHandlers(String authToken)
+  @Path("/import/handlers")
+  @ApiOperation(value = "Get import refset handlers", notes = "Get import refset handlers", response = IoHandlerInfoListJpa.class)
+  public IoHandlerInfoList getImportRefsetHandlers(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // call jpa method
-    return null;
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get import refset handlers:");
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get import refset handlers",
+          UserRole.VIEWER);
+
+      return refsetService.getImportRefsetHandlerInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to get refset import handlers ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
+  /* see superclass */
+  @GET
   @Override
-  public IoHandlerInfoList getExportRefsetHandlers(String authToken)
+  @Path("/export/handlers")
+  @ApiOperation(value = "Get export refset handlers", notes = "Get export refset handlers", response = IoHandlerInfoListJpa.class)
+  public IoHandlerInfoList getExportRefsetHandlers(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // call jpa method
-    return null;
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get export refset handlers:");
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get export refset handlers",
+          UserRole.VIEWER);
+
+      return refsetService.getExportRefsetHandlerInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to get refset export handlers ");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
   }
 
   @GET
