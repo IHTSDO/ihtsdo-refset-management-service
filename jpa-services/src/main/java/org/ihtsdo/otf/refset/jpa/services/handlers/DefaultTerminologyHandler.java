@@ -195,8 +195,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     WebTarget target =
         client.target(url + "/" + branch + "/concepts?escg="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + Math.min(initialMaxLimit, pfs.getMaxResults())
-            + "&offset=" + pfs.getStartIndex());
+            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
+            + "&offset=" + localPfs.getStartIndex());
     Response response =
         target.request(accept).header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);

@@ -25,7 +25,7 @@ public interface Refset extends Component, Searchable {
   /**
    * Enum of refset types.
    */
-  public enum Type {
+  public enum RefsetType {
 
     /** The extensional type. */
     EXTENSIONAL,
@@ -162,14 +162,14 @@ public interface Refset extends Component, Searchable {
    *
    * @return the type
    */
-  public Type getType();
+  public RefsetType getType();
 
   /**
    * Sets the type.
    *
    * @param type the type
    */
-  public void setType(Type type);
+  public void setType(RefsetType type);
 
   /**
    * Returns the definition.

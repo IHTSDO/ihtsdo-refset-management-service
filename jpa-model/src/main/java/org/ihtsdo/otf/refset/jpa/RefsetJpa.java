@@ -76,14 +76,14 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Type type;
+  private Refset.RefsetType type;
 
   /** The provisional flag. */
   @Column(nullable = false)
   private boolean provisional;
 
   /** The staging type. */
-  @Enumerated(EnumType.STRING)
+  //@Enumerated(EnumType.STRING)
   @Column(nullable = true)
   private StagingType stagingType;
 
@@ -262,13 +262,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
-  public Type getType() {
+  public RefsetType getType() {
     return type;
   }
 
   /* see superclass */
   @Override
-  public void setType(Type type) {
+  public void setType(RefsetType type) {
     this.type = type;
   }
 
@@ -658,5 +658,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + refsetDescriptor + ", project=" + project + ", organization=" + organization
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
+
+
 
 }
