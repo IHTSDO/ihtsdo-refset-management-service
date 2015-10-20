@@ -385,7 +385,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (handler == null) {
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
-
       // Load definition
       String definition = handler.importDefinition(in);
 
@@ -608,10 +607,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/inclusion/add")
+  @Path("/inclusion/add/{refsetId}")
   @ApiOperation(value = "Add new refset inclusion", notes = "Add a new refset inclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetInclusion(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa inclusion,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -630,6 +629,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + inclusion);
       }
 
+      for(ConceptRefsetMember c : refset.getMembers()) {
+        if (inclusion.getConceptId().equals(c.getConceptId()) &&
+            c.getMemberType() == Refset.MemberType.MEMBER) {
+          throw new Exception("Inclusion is redundant as the refset has a matching member");
+        }
+      }
       ConceptRefsetMember newMember = refsetService.addMember(inclusion);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -681,10 +686,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/exclusion/add")
+  @Path("/exclusion/add/{refsetId}")
   @ApiOperation(value = "Add new refset exclusion", notes = "Add a new refset exclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetExclusion(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa exclusion,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -703,6 +708,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + exclusion);
       }
 
+      boolean found = false;
+      for(ConceptRefsetMember c : refset.getMembers()) {
+        if (exclusion.getConceptId().equals(c.getConceptId()) &&
+            c.getMemberType() == Refset.MemberType.MEMBER) {
+          found = true;
+          break;
+        }
+      }
+      
+      if (!found) {
+        throw new Exception("Exclusion is redundant as the refset does not contain a matching member");
+      }
+      
       ConceptRefsetMember newMember = refsetService.addMember(exclusion);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -1363,6 +1381,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
+  
+    
 
   @Override
   @POST
@@ -1465,10 +1485,34 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public String extrapolateDefinition(Long refsetId, String authToken)
+  @GET
+  @Path("/definition/{refsetId}")
+  @ApiOperation(value = "Get definition for refset id", notes = "Gets the definition for the specified refset id", response = String.class)
+  public String extrapolateDefinition(
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get definition for refset id, refsetId:"
+            + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "retrieve the definition",
+          UserRole.VIEWER);
+
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset != null) {
+        return refset.getDefinition();
+      }
+      return null;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a refset definition");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
