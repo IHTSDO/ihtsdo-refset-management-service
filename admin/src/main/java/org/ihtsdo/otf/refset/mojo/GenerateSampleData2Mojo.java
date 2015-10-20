@@ -485,7 +485,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
-      // <<58427002 | Antibiotic measurement (procedure) |
+      redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
+          reviewer3);
       migrate(refset, reviewer3);
 
       refset =
@@ -494,7 +495,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
-      // <<373236000 | Azole antifungal (substance) | )
+      redefine(refset, "<<373236000 | Azole antifungal (substance) |",
+          reviewer3);
       migrate(refset, reviewer3);
 
       refset =
@@ -503,7 +505,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
-      // <<70759006 | Pyoderma (disorder) |
+      redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
       //
