@@ -25,7 +25,7 @@
     <span ng-show="refsets.totalCount == 0" style="display: block;"
       class="alert alert-warning">No {{value}} refsets available.</span>
     <table ng-show="refsets.totalCount > 0" class="table">
-      <thead class="table-select-row">
+      <thead>
         <th class="col-md-2 col-xs-2"
           ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
             ng-bind="getSortIndicator('refset','terminologyId')"></span>
@@ -41,7 +41,7 @@
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
       </thead>
       <tbody>
-        <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);">
+        <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);" class="table-select-row">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
           <td>{{refset.name}}</td>
           <td>{{refset.organization}}</td>
@@ -72,10 +72,10 @@
   <!-- Details, Releases, Members -->
   <div ng-show="refset" class="col-md-6 col-xs-12">
     <div class="col-md-12 col-xs-12">
-      <h4>{{refset.name}}</h4>
-      <b>Description: </b>{{refset.description}}
 
       <!-- Refset Details -->
+      <h4>{{refset.name}}</h4>
+      <b>Description: </b>{{refset.description}}
       <table class="table">
         <thead>
           <th>&nbsp;</th>
@@ -114,41 +114,38 @@
       </table>
     </div>
 
+    <!-- release info -->
     <div class="col-md-12 col-xs-12">
       <span ng-show="refset.releaseInfo && !refset.releaseInfo.artifacts"
         class="alert alert-warning">Release has no associated artifacts</span>
-
-      <span
+      <div class="col-md-12 col-xs-12">
         <table ng-show="refset.releaseInfo && refset.releaseInfo.artifacts"
           class="table">
           <thead>
-            <th class="col-md-6 col-xs-6"
-              ng-click="setSortField('member','conceptId', refset.releaseInfo)">Artifact
-              <span ng-bind="getSortIndicator('member','conceptId')"></span>
-            </th>
-            <th class="col-md-6 col-xs-6"
-              ng-click="setSortField('member','conceptName', refset.releaseInfo)">Timestamp<span
-                ng-bind="getSortIndicator('member','conceptName')"></span>
-            </th>
+            <th class="col-md-6 col-xs-6">Release File</th>
+            <th class="col-md-6 col-xs-6">Timestamp</th>
             <th style="width: 1%; word-wrap: nowrap"></th>
           </thead>
           <tbody>
-            <tr ng-repeat="artifact in refset.releaseInfo.artifacts">
+            <tr
+              ng-repeat="artifact in refset.releaseInfo.artifacts | orderBy:'artifact.name'">
               <td>{{artifact.name}}</td>
               <td>{{toShortDate(artifact.timestamp)}}</td>
               <td><span>
                   <a ng-click="exportReleaseArtifact(artifact)">
-                    <i title="Export Artifact" class="material-icons md-24">file_download</i>
+                    <i title="Export {{artifact.name}}"
+                      class="material-icons md-18">file_download</i>
                   </a>
                 </span></td>
             </tr>
           </tbody>
         </table>
+      </div>
     </div>
 
     <div class="col-md-12 col-xs-12">
       <h4>Refset Members</h4>
-      <span ng-show="!refset" class="alert alert-warning">Refset has on
+      <span ng-show="!refset.members" class="alert alert-warning">Refset has no
         members</span>
 
       <span ng-show="refset.members">

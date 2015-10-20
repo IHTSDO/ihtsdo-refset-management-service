@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -48,6 +49,8 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -435,8 +438,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find translation concepts",
           UserRole.VIEWER);
 
-      return translationService.findConceptsForTranslation(translationId,
-          query, pfs);
+      ConceptList list =
+          translationService.findConceptsForTranslation(translationId, query,
+              pfs);
+      // Graph resolver - get descriptions and language refset entries
+      for (Concept c : list.getObjects()) {
+        for (Description d : c.getDescriptions()) {
+          d.getLanguageRefsetMembers().size();
+        }
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve translation concepts ");
       return null;
@@ -698,13 +709,50 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
         ++objectCt;
         concept.setId(null);
-        concept.setLastModified(concept.getEffectiveTime());
         concept.setLastModifiedBy(userName);
         concept.setPublishable(true);
         concept.setPublished(false);
+        if (translationService.getTerminologyHandler().assignNames()) {
+          concept.setName(translationService
+              .getTerminologyHandler()
+              .getConcept(concept.getTerminologyId(),
+                  translation.getTerminology(), translation.getVersion())
+              .getName());
+        } else {
+          concept.setName("TBD");
+        }
         translationService.addConcept(concept);
+
+        for (Description description : concept.getDescriptions()) {
+          List<LanguageRefsetMember> members =
+              description.getLanguageRefsetMembers();
+          description
+              .setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
+          for (LanguageRefsetMember member : members) {
+            member.setId(null);
+            member.setTerminologyId(null);
+            member.setLastModifiedBy(userName);
+            member.setPublishable(true);
+            member.setPublished(false);
+            member.setDescriptionId(description.getTerminologyId());
+            translationService.addLanguageRefsetMember(member);
+            description.addLanguageRefetMember(member);
+          }
+          description.setId(null);
+          // TODO: description.setTerminologyId(null);
+          description.setLastModifiedBy(userName);
+          description.setPublishable(true);
+          description.setPublished(false);
+          description.setConcept(concept);
+          translationService.addDescription(description);
+
+        }
+
         conceptIds.add(concept.getTerminologyId());
       }
+      
+      // TODO: add standard description type refset members - from term server.
+      
       Logger.getLogger(getClass()).info(
           "  translation import count = " + objectCt);
       Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
@@ -818,7 +866,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.close();
       securityService.close();
     }
-    
+
   }
 
   /* see superclass */

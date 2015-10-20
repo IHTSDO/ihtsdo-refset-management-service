@@ -73,7 +73,6 @@ tsApp.directive('refsetTable',
 
               refsetService.findRefsetMembersForQuery(refset.id,
                 $scope.paging["member"].filter, pfs).then(function(data) {
-                console.debug("refset members", data.members);
                 refset.members = data.members;
                 refset.members.totalCount = data.totalCount;
               })
@@ -99,7 +98,6 @@ tsApp.directive('refsetTable',
 
             // sort mechanism
             $scope.setSortField = function(table, field, object) {
-              console.debug("set " + table + " sortField " + field);
               $scope.paging[table].sortField = field;
               // reset page number too
               $scope.paging[table].page = 1;
@@ -112,8 +110,6 @@ tsApp.directive('refsetTable',
               // reset the paging for the correct table
               for ( var key in $scope.paging) {
                 if ($scope.paging.hasOwnProperty(key)) {
-                  // console.debug(key + " -> " +
-                  // $scope.paging[key].page);
                   if (key == table)
                     $scope.paging[key].page = 1;
                 }

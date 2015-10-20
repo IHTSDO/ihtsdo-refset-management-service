@@ -17,6 +17,7 @@ tsApp.directive('translationTable', [
         function($scope) {
 
           // Model variables
+          $scope.translation = null;
           $scope.translations = null;
           $scope.pageSize = 10;
           $scope.paging = {};
@@ -42,7 +43,7 @@ tsApp.directive('translationTable', [
               sortField : $scope.paging["translation"].sortField,
               ascending : $scope.paging["translation"].ascending == null ? true
                 : $scope.paging["translation"].ascending,
-              queryRestriction : 'workflowStatus:' + $scope.status
+              queryRestriction : 'workflowStatus:' + $scope.value
             };
 
             translationService.findTranslationsForQuery(
@@ -72,7 +73,8 @@ tsApp.directive('translationTable', [
               $scope.paging["concept"].filter, pfs).then(function(data) {
               translation.concepts = data.concepts;
               translation.concepts.totalCount = data.totalCount;
-            })
+              console.debug("concepts",translation.concepts);
+              })
 
           };
 
@@ -82,7 +84,6 @@ tsApp.directive('translationTable', [
             releaseService.getCurrentTranslationRelease(translation.id).then(
               function(data) {
                 translation.releaseInfo = data;
-                translation.releaseArtifacts = data.artifacts;
               })
           };
 
@@ -103,7 +104,6 @@ tsApp.directive('translationTable', [
 
           // sort mechanism
           $scope.setSortField = function(table, field, object) {
-            console.debug("set " + table + " sortField " + field);
             $scope.paging[table].sortField = field;
             // reset page number too
             $scope.paging[table].page = 1;
@@ -116,8 +116,6 @@ tsApp.directive('translationTable', [
             // reset the paging for the correct table
             for ( var key in $scope.paging) {
               if ($scope.paging.hasOwnProperty(key)) {
-                // console.debug(key + " -> " +
-                // $scope.paging[key].page);
                 if (key == table)
                   $scope.paging[key].page = 1;
               }
@@ -127,7 +125,7 @@ tsApp.directive('translationTable', [
               $scope.getTranslations();
             }
             if (table === 'concept') {
-              $scope.retrieveTranslationConcepts(object);
+              $scope.getConcepts(object);
             }
 
           }
@@ -150,12 +148,8 @@ tsApp.directive('translationTable', [
           $scope.setTranslation = function(translation) {
             $scope.translation = translation;
             $scope.getCurrentTranslationReleaseInfo(translation)
+            $scope.getConcepts(translation);
           }
-
-          $scope.status = {
-            isItemOpen : new Array(10),
-            isFirstDisabled : false
-          };
 
           // Initialize
           $scope.getTranslations();
