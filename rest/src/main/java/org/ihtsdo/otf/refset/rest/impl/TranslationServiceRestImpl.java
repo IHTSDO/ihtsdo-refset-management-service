@@ -724,6 +724,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/import/cancel")
@@ -795,10 +796,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "add translation concept", UserRole.REVIEWER);
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "add translation concept",
+          UserRole.REVIEWER);
 
       // Add translation concept
       return translationService.addConcept(concept);

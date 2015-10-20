@@ -432,6 +432,88 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "US1000124", Refset.Type.EXTENSIONAL, project3, "442311000124105",
           reviewer3);
 
+      // Create intensional refsets to test definition changes
+      Logger.getLogger(getClass()).info(
+          "  intensional refsets with definition changes");
+      RefsetJpa refset =
+          makeRefset("Antibiotic measurement reference set", null, 0,
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // START: <<58427002 | Antibiotic measurement (procedure) |
+      redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
+          reviewer3);
+
+      // NEXT: 105070004 | Ampicillin measurement (procedure) |
+
+      refset =
+          makeRefset("Ampicillin measurement reference set", null, 0,
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // START: <<105070004 | Ampicillin measurement (procedure) |
+      redefine(refset, "<<105070004 | Ampicillin measurement (procedure) |",
+          reviewer3);
+
+      // NEXT: <<58427002 | Antibiotic measurement (procedure) |
+
+      refset =
+          makeRefset("Pneumonia reference set reference set", null, 0,
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // START: <<233604007 | Pneumonia (disorder) | + !<<78895009 |
+      // Congenital pneumonia (disorder) |
+      redefine(
+          refset,
+          "<<233604007 | Pneumonia (disorder) | + !<<78895009 |Congenital pneumonia (disorder) |",
+          reviewer3);
+
+      // NEXT: <<233604007 | Pneumonia (disorder) | + !<78895009 | Congenital
+      // pneumonia (disorder) | + !<<57702005 | Unresolved pneumonia (disorder)
+      // |
+
+      // Create intensional refsets to test migration
+      Logger.getLogger(getClass()).info(
+          "  intensional refsets with version changes");
+      refset =
+          makeRefset("Antibiotic measurement reference set", null, 0,
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // <<58427002 | Antibiotic measurement (procedure) |
+      migrate(refset, reviewer3);
+
+      refset =
+          makeRefset("Azole anitfungal reference set", null, 0, "US1000124",
+              Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // <<373236000 | Azole antifungal (substance) | )
+      migrate(refset, reviewer3);
+
+      refset =
+          makeRefset("Polyderma reference set", null, 0, "US1000124",
+              Refset.Type.INTENSIONAL, project3, "", reviewer3);
+      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer3.getAuthToken());
+      // <<70759006 | Pyoderma (disorder) |
+      migrate(refset, reviewer3);
+
+      //
+      // Translations??
+      //
+      // create two refsets
+
+      //
+      // releases?
+      // Release info?
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -578,7 +660,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("2015-01-31");
-    refset.setWorkflowPath("DFEAULT");
+    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     refset.setOrganization("ABC Organization");
 
@@ -619,17 +701,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
-    } else if (type == Refset.Type.INTENSIONAL) {
-      // Import definition (from file)
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
-      refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
-          auth.getAuthToken());
-      in.close();
     }
-
     return refset;
   }
 
@@ -713,5 +785,45 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     }
 
     return translation;
+  }
+
+  /**
+   * Redefine.
+   *
+   * @param refset the refset
+   * @param definition the definition
+   * @param auth the auth
+   * @return the refset
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  public Refset redefine(Refset refset, String definition, User auth)
+    throws Exception {
+    RefsetServiceRest refsetService = new RefsetServiceRestImpl();
+    refsetService.beginRedefinition(refset.getId(), definition,
+        auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
+    refsetService.finishRedefinition(refset.getId(), auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
+    return refsetService.getRefset(refset.getId(), auth.getAuthToken());
+  }
+
+  /**
+   * Migrate.
+   *
+   * @param refset the refset
+   * @param auth the auth
+   * @return the refset
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  public Refset migrate(Refset refset, User auth) throws Exception {
+    RefsetServiceRest refsetService = new RefsetServiceRestImpl();
+    refsetService.beginMigration(refset.getId(), "SNOMEDCT", "2015-07-31",
+        auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
+    refsetService.finishMigration(refset.getId(), auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
+    return refsetService.getRefset(refset.getId(), auth.getAuthToken());
   }
 }

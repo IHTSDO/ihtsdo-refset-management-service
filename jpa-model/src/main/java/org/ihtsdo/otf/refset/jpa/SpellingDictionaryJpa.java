@@ -43,18 +43,28 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
+  /** The entries. */
   @Column(nullable = false)
   @ElementCollection
   @CollectionTable(name = "spelling_dictionary_entries")
   private List<String> entries;
 
+  /** The translation. */
   @OneToOne(targetEntity = TranslationJpa.class, optional = false)
   private Translation translation;
 
+  /**
+   * Instantiates an empty {@link SpellingDictionaryJpa}.
+   */
   public SpellingDictionaryJpa() {
     // do nothing
   }
 
+  /**
+   * Instantiates a {@link SpellingDictionaryJpa} from the specified parameters.
+   *
+   * @param spellingDictionary the spelling dictionary
+   */
   public SpellingDictionaryJpa(SpellingDictionary spellingDictionary) {
     super();
     this.entries = new ArrayList<String>();
@@ -62,16 +72,19 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     this.translation = spellingDictionary.getTranslation();
   }
 
+  /* see superclass */
   @Override
   public Long getId() {
     return this.id;
   }
 
+  /* see superclass */
   @Override
   public void setId(Long id) {
     this.id = id;
   }
 
+  /* see superclass */
   @XmlElement(type = String.class)
   @Override
   public List<String> getEntries() {
@@ -81,11 +94,13 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     return entries;
   }
 
+  /* see superclass */
   @Override
   public void setEntries(List<String> entries) {
     this.entries = entries;
   }
 
+  /* see superclass */
   @Override
   public void addEntry(String entry) {
     if (this.entries == null) {
@@ -94,6 +109,7 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     this.entries.add(entry);
   }
 
+  /* see superclass */
   @Override
   public void removeEntry(String entry) {
     if (this.entries == null || this.entries.isEmpty()) {
@@ -140,12 +156,14 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     translation.setId(translationId);
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return "SpellingDictionaryJpa [id=" + id + ", entries=" + entries
         + ", translation=" + translation + "]";
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -159,6 +177,7 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

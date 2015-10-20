@@ -1,0 +1,216 @@
+
+<div class="col-md-12 col-xs-12">
+
+  <span style="display: block;">
+    <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+      class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+      first-text="&laquo;" last-text="&raquo;"
+      ng-show="translations.totalCount > pageSize || paging['translation'].filter"
+      total-items="translations.totalCount"
+      ng-model="paging['translation'].page" ng-change="getTranslations()"></pagination>
+
+    <input class="input-filter" placeholder="Enter filter text"
+      ng-show="translations.totalCount > pageSize || paging['translation'].filter"
+      type="text" ng-model="paging['translation'].filter"
+      ng-model-options="{ debounce: 300 }" ng-change="getTranslations()">
+
+    <button class="btn btn-xs btn-warning"
+      ng-show="paging['translation'].filter"
+      ng-click="paging['translation'].filter = ''; getTranslations()"
+      title="Click to clear filter text">Clear</button>
+  </span>
+
+
+  <span ng-show="translations.totalCount == 0" style="display: block;"
+    class="alert alert-warning">No {{value}} translations available.</span>
+  <table ng-show="translations.totalCount > 0" class="table">
+    <thead class="table-select-row">
+      <th class="col-md-1 col-xs-1"></th>
+      <th class="col-md-1 col-xs-1"
+        ng-click="setSortField('translation','terminologyId', null)">Id<span
+          ng-bind="getSortIndicator('translation','terminologyId')"></span></th>
+      <th class="col-md-2 col-xs-2"
+        ng-click="setSortField('translation','name', null)">Name<span
+          ng-bind="getSortIndicator('translation','name',null)"></span></th>
+      <th class="col-md-8 col-xs-8"></th>
+
+    </thead>
+    <tbody>
+      <tr ng-repeat="translation in translations">
+        <td><span ng-show="translation.isExpanded">
+            <a ng-click="setTranslation(translation)">
+              <i title="Hide details" class="material-icons md-24">remove</i>
+            </a>
+          </span> <span ng-show="!translation.isExpanded">
+            <a
+              ng-click="setTranslation(translation); getCurrentTranslationReleaseInfo(translation)">
+              <i title="Show details" class="material-icons md-24">add</i>
+            </a>
+          </span></td>
+        <td>{{translation.terminologyId}}</td>
+        <td>{{translation.name}}<span
+            ng-show="translation.isExpanded">
+            <br>{{translation.description}}
+          </span></td>
+        <td><span ng-show="!translation.isExpanded">{{translation.type}}
+            / {{translation.description}}</span> <!-- Translation Details --> <accordion
+            ng-show="translation.isExpanded "> <accordion-group
+            heading="Translation Details" is-open="false"> <accordion-heading>
+          <span tooltip-placement="right" tooltip="Translation Metadata Details">
+            {{translation.name}} Details </span> </accordion-heading>
+          <div class="col-md-12 col-xs-12">
+
+            <table class="table">
+              <thead class="table-select-row">
+                <th class="col-md-4 col-xs-4"></th>
+                <th class="col-md-8 col-xs-8"></th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Module Id</td>
+                  <td>{{translation.moduleId}}</td>
+                </tr>
+                <tr>
+                  <td>Effective Time</td>
+                  <td>{{toShortDate(translation.effectiveTime)}}</td>
+                </tr>
+                <tr>
+                  <td>Terminology</td>
+                  <td>{{translation.terminology}}</td>
+                </tr>
+                <tr>
+                  <td>Version</td>
+                  <td>{{translation.version}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+          </div>
+          </accordion-group> </accordion> <!--  end Translation Details --> <!-- Translation Release Info -->
+          <accordion
+            ng-show="translation.isExpanded && translation.releaseInfo.name != null">
+          <accordion-group heading="Translation Release Info" is-open="false">
+          <accordion-heading> <span
+            tooltip-placement="right" tooltip="Translation Release Info">
+            {{translation.name}} Release Info </span> </accordion-heading>
+          <div class="col-md-12 col-xs-12">
+
+            <table class="table">
+              <thead class="table-select-row">
+                <th class="col-md-4 col-xs-4"></th>
+                <th class="col-md-8 col-xs-8"></th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Name</td>
+                  <td>{{translation.releaseInfo.name}}</td>
+                </tr>
+                <tr>
+                  <td>Description</td>
+                  <td>{{translation.releaseInfo.description}}</td>
+                </tr>
+                <tr>
+                  <td>Last Modified</td>
+                  <td>{{toShortDate(translation.releaseInfo.lastModified)}}</td>
+                </tr>
+                <tr>
+                  <td>Release Begin Date</td>
+                  <td>{{toShortDate(translation.releaseInfo.releaseBeginDate)}}</td>
+                </tr>
+                <tr>
+                  <td>Release Finish Date</td>
+                  <td>{{toShortDate(translation.releaseInfo.releaseFinishDate)}}</td>
+                </tr>
+                <tr>
+                  <td>Terminology</td>
+                  <td>{{translation.releaseInfo.terminology}}</td>
+                </tr>
+                <tr>
+                  <td>Version</td>
+                  <td>{{translation.releaseInfo.version}}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <table class="table">
+              <thead class="table-select-row">
+                <th class="col-md-4 col-xs-4"
+                  ng-click="setSortField('concept','conceptId', translation.releaseInfo)">Artifact
+                  Name<span ng-bind="getSortIndicator('concept','conceptId')"></span>
+                </th>
+                <th class="col-md-4 col-xs-4"
+                  ng-click="setSortField('concept','conceptName', translation.releaseInfo)">Timestamp<span
+                    ng-bind="getSortIndicator('concept','conceptName')"></span>
+                </th>
+                <th class="col-md-1 col-xs-1"></th>
+              </thead>
+              <tbody>
+                <tr ng-repeat="artifact in translation.releaseInfo.artifacts">
+                  <td>{{artifact.name}}</td>
+                  <td>{{toShortDate(artifact.timestamp)}}</td>
+                  <td><span>
+                      <a ng-click="exportReleaseArtifact(artifact)">
+                        <i title="Export Artifact" class="material-icons md-24">file_download</i>
+                      </a>
+                    </span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          </accordion-group> </accordion> <!--  end Translation Release Info --> <!-- Translation Concepts -->
+          <accordion
+            ng-show="translation.isExpanded && translation.type != 'EXTERNAL'">
+          <accordion-group heading="Translation Concepts" is-open="false">
+          <accordion-heading> <span
+            tooltip-placement="right" tooltip="List of the translation concepts"
+            ng-click="getConcepts(translation)"> Translation Concepts </span> </accordion-heading>
+          <div class="col-md-12 col-xs-12">
+
+
+            <span style="display: block;">
+              <pagination items-per-page="pageSize" max-size="5"
+                boundary-links="true" class="pagination-sm"
+                previous-text="&lsaquo;" next-text="&rsaquo;"
+                first-text="&laquo;" last-text="&raquo;"
+                ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
+                total-items="translation.concepts.totalCount"
+                ng-model="paging['concept'].page"
+                ng-change="getConcepts(translation)"></pagination>
+
+              <input class="input-filter" placeholder="Enter filter text"
+                ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
+                type="text" ng-model="paging['concept'].filter"
+                ng-model-options="{ debounce: 300 }"
+                ng-change="getConcepts(translation)">
+
+              <button class="btn btn-xs btn-warning"
+                ng-show="paging['concept'].filter"
+                ng-click="paging['concept'].filter = ''; getConcepts(translation)"
+                title="Click to clear filter text">Clear</button>
+            </span>
+
+            <table class="table">
+              <thead class="table-select-row">
+                <th class="col-md-4 col-xs-4"
+                  ng-click="setSortField('concept','terminologyId', translation)">Concept
+                  Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
+                </th>
+                <th class="col-md-4 col-xs-4"
+                  ng-click="setSortField('concept','name', translation)">Name<span
+                    ng-bind="getSortIndicator('concept','name')"></span>
+                </th>
+              </thead>
+              <tbody>
+                <tr ng-repeat="concept in translation.concepts">
+                  <td>{{concept.terminologyId}}</td>
+                  <td>{{concept.name}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          </accordion-group> </accordion> <!--  end Translation Concepts -->
+      </tr>
+    </tbody>
+  </table>
+</div>
+

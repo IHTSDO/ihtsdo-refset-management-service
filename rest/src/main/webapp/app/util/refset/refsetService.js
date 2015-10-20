@@ -4,7 +4,8 @@ tsApp.service('refsetService', [
   '$q',
   'gpService',
   'utilService',
-  function($http, $q, gpService, utilService) {
+  'projectService',
+  function($http, $q, gpService, utilService, projectService) {
     console.debug("configure refsetService");
 
     // get refset revision
@@ -37,7 +38,7 @@ tsApp.service('refsetService', [
 
       // find refsets
       gpService.increment()
-      $http.post(refsetUrl + refsetId + "/" + date + "/" + 'members' , pfs)
+      $http.post(refsetUrl + refsetId + "/" + date + "/" + 'members', pfs)
         .then(
         // success
         function(response) {
@@ -61,20 +62,21 @@ tsApp.service('refsetService', [
 
       // find members
       gpService.increment()
-      $http.post(refsetUrl + "members" + "?query=" + query + "&refsetId=" + refsetId, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug("  members = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        refsetUrl + "members" + "?query=" + query + "&refsetId=" + refsetId,
+        pfs).then(
+      // success
+      function(response) {
+        console.debug("  members = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -85,23 +87,24 @@ tsApp.service('refsetService', [
 
       // find inclusions
       gpService.increment()
-      $http.post(refsetUrl + "inclusions" + "?query=" + query + "&refsetId=" + refsetId, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug("  inclusions = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        refsetUrl + "inclusions" + "?query=" + query + "&refsetId=" + refsetId,
+        pfs).then(
+      // success
+      function(response) {
+        console.debug("  inclusions = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
-    
+
     // find exclusions for refset
     this.findRefsetExclusionsForQuery = function(refsetId, query, pfs) {
       console.debug("findRefsetExclusionsForQuery");
@@ -109,22 +112,23 @@ tsApp.service('refsetService', [
 
       // find exclusions
       gpService.increment()
-      $http.post(refsetUrl + "exclusions" + "?query=" + query + "&refsetId=" + refsetId, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug("  exclusions = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        refsetUrl + "exclusions" + "?query=" + query + "&refsetId=" + refsetId,
+        pfs).then(
+      // success
+      function(response) {
+        console.debug("  exclusions = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
-    }    
+    }
 
     // get refset for id
     this.getRefset = function(refsetId) {
@@ -266,5 +270,8 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     }
+
+    // Initialize user role - only when refset service loads
+    projectService.getUserHasAnyRole();
 
   } ]);

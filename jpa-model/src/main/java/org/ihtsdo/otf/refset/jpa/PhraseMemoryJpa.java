@@ -36,19 +36,30 @@ public class PhraseMemoryJpa implements PhraseMemory {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
+  /** The name. */
   @Column(nullable = false)
   private String name;
 
+  /** The entries. */
   @OneToMany(mappedBy = "phraseMemory", targetEntity = MemoryEntryJpa.class)
   private List<MemoryEntry> entries;
 
-  @ManyToOne(targetEntity = TranslationJpa.class, optional=false)
+  /** The translation. */
+  @ManyToOne(targetEntity = TranslationJpa.class, optional = false)
   private Translation translation;
 
+  /**
+   * Instantiates an empty {@link PhraseMemoryJpa}.
+   */
   public PhraseMemoryJpa() {
     // do nothing
   }
 
+  /**
+   * Instantiates a {@link PhraseMemoryJpa} from the specified parameters.
+   *
+   * @param phraseMemory the phrase memory
+   */
   public PhraseMemoryJpa(PhraseMemory phraseMemory) {
     super();
     this.name = phraseMemory.getName();
@@ -56,32 +67,38 @@ public class PhraseMemoryJpa implements PhraseMemory {
     this.translation = phraseMemory.getTranslation();
   }
 
+  /* see superclass */
   @Override
   public String getName() {
     return name;
   }
 
+  /* see superclass */
   @Override
   public void setName(String name) {
     this.name = name;
   }
 
+  /* see superclass */
   @Override
   public Long getId() {
     return id;
   }
 
+  /* see superclass */
   @Override
   public void setId(Long id) {
     this.id = id;
   }
 
+  /* see superclass */
   @Override
   @XmlTransient
   public List<MemoryEntry> getEntries() {
     return entries;
   }
 
+  /* see superclass */
   @Override
   public void setEntries(List<MemoryEntry> entries) {
     this.entries = entries;
@@ -123,6 +140,7 @@ public class PhraseMemoryJpa implements PhraseMemory {
     translation.setId(translationId);
   }
 
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -136,6 +154,7 @@ public class PhraseMemoryJpa implements PhraseMemory {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)

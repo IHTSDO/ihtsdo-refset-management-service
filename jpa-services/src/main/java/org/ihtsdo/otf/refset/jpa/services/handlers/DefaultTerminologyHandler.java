@@ -75,6 +75,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     handler.url = this.url;
     handler.branch = this.branch;
     handler.authHeader = this.authHeader;
+    handler.assignNames = this.assignNames;
     return handler;
   }
 
@@ -172,6 +173,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  resolve expression - " + terminology + ", " + version + ", " + expr
+            + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
 
@@ -193,7 +197,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     final int initialMaxLimit = 50;
 
     WebTarget target =
-        client.target(url + "/" + branch + "/concepts?escg="
+        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "&offset=" + localPfs.getStartIndex());
@@ -256,12 +260,12 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     }
 
     // If the total is over the initial max limit and pfs max results is too.
-    if (total > initialMaxLimit && pfs.getMaxResults() > initialMaxLimit) {
+    if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
       target =
-          client.target(url + "/" + branch + "/concepts?escg="
+          client.target(url + "/" + branch + "/" + version + "/concepts?escg="
               + URLEncoder.encode(expr, "UTF-8") + "&limit="
-              + (pfs.getMaxResults() - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + pfs.getStartIndex()));
+              + (total - initialMaxLimit) + "&offset="
+              + (initialMaxLimit + localPfs.getStartIndex()));
       response =
           target.request(accept).header("Authorization", authHeader).get();
       resultString = response.readEntity(String.class);
