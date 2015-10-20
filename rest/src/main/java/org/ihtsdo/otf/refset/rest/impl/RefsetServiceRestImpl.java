@@ -503,7 +503,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/memeber/add")
+  @Path("/member/add")
   @ApiOperation(value = "Add new refset member", notes = "Add a new refset member", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetMember(
     @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa member,
@@ -625,7 +625,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(inclusion.getRefsetId());
       if (inclusion.getMemberType() != Refset.MemberType.INCLUSION) {
-        throw new Exception("Refset memeber type is not INCLUSION: "
+        throw new Exception("Refset member type is not INCLUSION: "
             + inclusion);
       }
 
@@ -704,7 +704,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(exclusion.getRefsetId());
       if (exclusion.getMemberType() != Refset.MemberType.EXCLUSION) {
-        throw new Exception("Refset memeber type is not EXCLUSION: "
+        throw new Exception("Refset member type is not EXCLUSION: "
             + exclusion);
       }
 

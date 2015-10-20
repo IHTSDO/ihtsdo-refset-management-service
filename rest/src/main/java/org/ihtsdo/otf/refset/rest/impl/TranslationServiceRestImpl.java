@@ -27,6 +27,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
@@ -37,6 +38,7 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -909,25 +911,132 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public void copySpellingDictionary(Long fromTranslationId,
-    Long toTranslationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @PUT
+  @Path("/spelling/copy/{fromTranslationId}/{toTranslationId}")
+  @ApiOperation(value = "Copy spelling dictionary from one translation to another", notes = "Copy spelling dictionary from one translation to another")
+  public void copySpellingDictionary(
+    @ApiParam(value = "from translation id, e.g. 3", required = true) @PathParam("fromTranslationId") Long fromTranslationId,
+    @ApiParam(value = "to translation id, e.g. 3", required = true) @PathParam("toTranslationId") Long toTranslationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Translation): /spelling/copy/"
+            + fromTranslationId + " " + toTranslationId);
 
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "copy spelling dictionary",
+          UserRole.VIEWER);
+
+      Translation fromTranslation =
+          translationService.getTranslation(fromTranslationId);
+      if (fromTranslation.getSpellingDictionary() == null) {
+        throw new Exception(
+            "The from translation must have an associated spelling dictionary: "
+                + fromTranslationId);
+      }
+      Translation toTranslation =
+          translationService.getTranslation(toTranslationId);
+      if (toTranslation == null) {
+        throw new Exception("The to translation is not found: "
+            + toTranslationId);
+      }
+      List<String> fromEntries =
+          fromTranslation.getSpellingDictionary().getEntries();
+      if (fromEntries == null || fromEntries.isEmpty()) {
+        throw new Exception("The from spelling dictionary has empty entries: "
+            + fromTranslation.getSpellingDictionary().getId());
+      }
+      // Create new spelling dictionary
+      SpellingDictionary toSpellingDictionary = new SpellingDictionaryJpa();
+      List<String> toEntries = new ArrayList<String>();
+      toEntries.addAll(fromEntries);
+      toSpellingDictionary.setEntries(toEntries);
+      toSpellingDictionary.setTranslation(toTranslation);
+      toTranslation.setSpellingDictionary(toSpellingDictionary);
+      // Create service and configure transaction scope
+      translationService.updateTranslation(toTranslation);
+    } catch (Exception e) {
+      handleException(e, "trying to add a translation");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
   @Override
-  public void addSpellingDictionaryEntry(Long translationId, String entry,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @PUT
+  @Path("/spelling/add/{translationId}/{entry}")
+  @ApiOperation(value = "Add new entry to the spelling dictionary", notes = "Add new entry to the spelling dictionary")
+  public void addSpellingDictionaryEntry(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Translation): /spelling/add/" + translationId
+            + " " + entry);
 
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      authorizeApp(securityService, authToken, "add new entry to the spelling dictionary",
+          UserRole.VIEWER);
+
+      Translation translation =
+          translationService.getTranslation(translationId);
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        spelling = new SpellingDictionaryJpa();
+        spelling.setTranslation(translation);
+        translation.setSpellingDictionary(spelling);
+      }
+      spelling.addEntry(entry);
+   // Create service and configure transaction scope
+      translationService.updateTranslation(translation);
+    } catch (Exception e) {
+      handleException(e, "trying to add a spelling entry");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
   @Override
-  public void removeSpellingDictionaryEntry(Long translationId, String entry,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @DELETE
+  @Path("/spelling/remove/{translationId}/{entry}")
+  @ApiOperation(value = "Remove spelling dictionary entry", notes = "Removes the the spelling dictionary entry for this translation")
+  public void removeSpellingDictionaryEntry(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): /spelling/remove/" + translationId
+            + " " + entry);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+      authorizeApp(securityService, authToken,
+          "remove entry to the spelling dictionary", UserRole.VIEWER);
+      spelling.removeEntry(entry);
+      // Create service and configure transaction scope
+      translationService.updateTranslation(translation);
+    } catch (Exception e) {
+      handleException(e, "trying to remove a spelling dictionary entry");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
