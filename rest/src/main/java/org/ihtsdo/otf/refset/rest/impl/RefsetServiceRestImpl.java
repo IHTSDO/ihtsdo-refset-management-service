@@ -625,7 +625,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(inclusion.getRefsetId());
       if (inclusion.getMemberType() != Refset.MemberType.INCLUSION) {
-        throw new Exception("Refset memeber type is not INCLUSION: "
+        throw new Exception("Refset member type is not INCLUSION: "
             + inclusion);
       }
 
