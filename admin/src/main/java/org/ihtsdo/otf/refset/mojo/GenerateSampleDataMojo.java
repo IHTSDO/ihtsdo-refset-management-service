@@ -203,7 +203,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
        *     - AUTHOR: author1, author2
        *  - Project 2
        *     - ADMIN: admin2
-       *     - REVIWER: reviewer2, reviewer3
+       *     - REVIEWER: reviewer2, reviewer3
        *     - AUTHOR: author3
        *  - Project 3
        *     - ADMIN: admin1, admin3
