@@ -7,6 +7,7 @@
 package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -136,7 +137,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition001");
 
@@ -169,7 +170,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition002");
 
@@ -201,7 +202,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition003");
 
@@ -269,13 +270,12 @@ public class RedefinitionTest {
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
     ConceptRefsetMember memberToExclude = memberList.getObjects().get(0);
     assertEquals(7, memberList.getObjects().size());
-
-    memberToExclude.setMemberType(Refset.MemberType.EXCLUSION);
+ 
     refsetService.addRefsetExclusion(refset1.getId(),
-        (ConceptRefsetMemberJpa) memberToExclude, adminAuthToken);
+        memberToExclude.getConceptId(), adminAuthToken);
     memberList =
-        refsetService.findRefsetMembersForQuery(refset1.getId(), null,
-            new PfsParameterJpa(), adminAuthToken);
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
     assertEquals(6, memberList.getObjects().size());
 
     // add exclusion (something that definition doesn't include)
@@ -286,10 +286,19 @@ public class RedefinitionTest {
     bogusExclusion.setEffectiveTime(new Date());
     bogusExclusion.setMemberType(Refset.MemberType.MEMBER);
 
-    refsetService.addRefsetExclusion(refset1.getId(),
-        (ConceptRefsetMemberJpa) bogusExclusion, adminAuthToken);
+    try {
+      refsetService.addRefsetExclusion(refset1.getId(),
+          bogusExclusion.getConceptId(), adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
     refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
-    assertEquals(5, refset1.getMembers().size());
+    assertEquals(
+        6,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:MEMBER",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);

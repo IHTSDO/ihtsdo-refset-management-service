@@ -474,23 +474,20 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
+    String conceptId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset exclusion " + " " + refsetId + ", "
-            + exclusion);
+            + conceptId);
     validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/exclusion/add/"
-            + refsetId);
-    String exclusionString =
-        ConfigUtility.getStringForGraph(exclusion == null
-            ? new ConceptRefsetMemberJpa() : exclusion);
+            + refsetId + "?conceptId=" + conceptId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .put(Entity.xml(exclusionString));
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {

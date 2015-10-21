@@ -24,7 +24,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
  * Represents a refsets available via a REST service.
  */
 public interface RefsetServiceRest {
-  
+
   /**
    * Returns the refset.
    *
@@ -85,7 +85,8 @@ public interface RefsetServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeRefset(Long refsetId, boolean cascade, String authToken) throws Exception;
+  public void removeRefset(Long refsetId, boolean cascade, String authToken)
+    throws Exception;
 
   /**
    * Import refset definition.
@@ -103,7 +104,7 @@ public interface RefsetServiceRest {
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Export refset definition. 
+   * Export refset definition.
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
@@ -176,13 +177,13 @@ public interface RefsetServiceRest {
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
-   * @param exclusion the exclusion
+   * @param conceptId the concept id
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception;
+    String conceptId, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -300,7 +301,8 @@ public interface RefsetServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset finishMigration(Long refsetId, String authToken) throws Exception;
+  public Refset finishMigration(Long refsetId, String authToken)
+    throws Exception;
 
   /**
    * Cancel migration.
@@ -387,7 +389,8 @@ public interface RefsetServiceRest {
    * @param authToken TODO
    * @throws Exception the exception
    */
-  public void releaseReportToken(String reportToken, String authToken) throws Exception;
+  public void releaseReportToken(String reportToken, String authToken)
+    throws Exception;
 
   /**
    * Extrapolate definition.
@@ -408,8 +411,8 @@ public interface RefsetServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public Refset resumeRedefinition(Long refsetId, 
-    String authToken) throws Exception;
+  public Refset resumeRedefinition(Long refsetId, String authToken)
+    throws Exception;
 
   /**
    * Resume migration.
@@ -419,7 +422,7 @@ public interface RefsetServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset resumeMigration(Long refsetId, String authToken) throws Exception;
-
+  public Refset resumeMigration(Long refsetId, String authToken)
+    throws Exception;
 
 }

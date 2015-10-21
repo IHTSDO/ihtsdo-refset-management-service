@@ -652,45 +652,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @GET
   @Path("/exclusion/add/{refsetId}")
   @ApiOperation(value = "Add new refset exclusion", notes = "Add a new refset exclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetExclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa exclusion,
+    @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (exclusion): /exclusion/add " + exclusion);
+        "RESTful call PUT (exclusion): /exclusion/add " + conceptId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "Add new refset exclusion",
           UserRole.VIEWER);
 
-      Refset refset = refsetService.getRefset(exclusion.getRefsetId());
-      if (exclusion.getMemberType() != Refset.MemberType.EXCLUSION) {
-        throw new Exception("Refset member type is not EXCLUSION: " + exclusion);
-      }
+      Refset refset = refsetService.getRefset(refsetId);
 
-      boolean found = false;
+      ConceptRefsetMember member = null;
       for (ConceptRefsetMember c : refset.getMembers()) {
-        if (exclusion.getConceptId().equals(c.getConceptId())
+        if (conceptId.equals(c.getConceptId())
             && c.getMemberType() == Refset.MemberType.MEMBER) {
-          found = true;
+          member = c;
           break;
         }
       }
 
-      if (!found) {
+      if (member == null) {
         throw new Exception(
             "Exclusion is redundant as the refset does not contain a matching member");
       }
-
-      exclusion.setRefset(refset);
-      return refsetService.addMember(exclusion);
-
+      member.setMemberType(Refset.MemberType.EXCLUSION);
+      refsetService.updateMember(member);
+      return member;
     } catch (Exception e) {
       handleException(e, "trying to add new refset exclusion ");
       return null;
@@ -1278,9 +1274,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           refsetService.removeMember(stagedMember.getId());
         } else if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_INCLUSION) {
           refsetService.removeMember(stagedMember.getId());
-        } else if (!originMembers.contains(stagedMember)) {
+        }
+        // New member, rewire to origin
+        else if (!originMembers.contains(stagedMember)) {
           stagedMember.setRefset(refset);
           refsetService.updateMember(stagedMember);
+        }
+        // Member matches one in origin - remove it
+        else {
+          refsetService.removeMember(stagedMember.getId());
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
@@ -1293,8 +1295,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
+      // Remove the staged refset change
       refsetService.removeStagedRefsetChange(change.getId());
 
+      // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
