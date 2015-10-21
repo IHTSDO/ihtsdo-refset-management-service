@@ -34,14 +34,7 @@ public class ReleaseClientRest extends RootClientRest implements
 
 
   @Override
-  public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public ValidationResult performRefsetRelease(Long refsetId,
+  public ValidationResult validateRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -57,13 +50,6 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public ValidationResult beginTranslationRelease(Long translationId,
-    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
@@ -152,5 +138,22 @@ public class ReleaseClientRest extends RootClientRest implements
     // TODO Auto-generated method stub
     return null;
   }
+
+
+  @Override
+  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+  @Override
+  public ReleaseInfo beginTranslationRelease(Long translationId,
+    String effectiveTime, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

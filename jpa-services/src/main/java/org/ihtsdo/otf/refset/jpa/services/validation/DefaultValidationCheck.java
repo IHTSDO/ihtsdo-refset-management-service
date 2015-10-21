@@ -78,7 +78,11 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && member.getRefset().getType() != Refset.Type.INTENSIONAL) {
       result.addError("Exclusion member attached to non-intensional refset.");
     }
+
+    // TODO: check that the concept id of the member is active
+    // may want to pass the terminology handler to these methods
     return result;
   }
+
 
 }

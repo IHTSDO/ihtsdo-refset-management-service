@@ -88,7 +88,7 @@ public interface ReleaseServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult performRefsetRelease(Long refsetId,
+  public ValidationResult validateRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
