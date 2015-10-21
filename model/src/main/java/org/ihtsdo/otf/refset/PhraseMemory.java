@@ -6,14 +6,13 @@ package org.ihtsdo.otf.refset;
 import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.HasId;
-import org.ihtsdo.otf.refset.helpers.HasName;
 
 /**
  * Represents a memory of reusable translations for certain phrases. This
  * assumes it is always from the language of the international edition to a
  * single other language.
  */
-public interface PhraseMemory extends HasName, HasId {
+public interface PhraseMemory extends HasId {
 
   /**
    * Returns the entries.
