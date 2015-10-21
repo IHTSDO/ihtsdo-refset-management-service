@@ -71,11 +71,12 @@ public interface ReleaseServiceRest {
    * Begin refset release.
    *
    * @param refsetId the refset id
+   * @param effectiveTime the effective time of the release
    * @param authToken the auth token
-   * @return the validation result
+   * @return the release info
    * @throws Exception the exception
    */
-  public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
+  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime, String authToken)
     throws Exception;
 
   /**
@@ -128,11 +129,12 @@ public interface ReleaseServiceRest {
    * Begin translation release.
    *
    * @param translationId the translation id
+   * @param effectiveTime the effective time of the release
    * @param authToken the auth token
-   * @return the validation result
+   * @return the release info
    * @throws Exception the exception
    */
-  public ValidationResult beginTranslationRelease(Long translationId,
+  public ReleaseInfo beginTranslationRelease(Long translationId, String effectiveTime,
     String authToken) throws Exception;
 
   /**

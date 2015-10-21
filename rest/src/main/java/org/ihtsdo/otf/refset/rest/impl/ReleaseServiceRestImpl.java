@@ -17,20 +17,29 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.algo.BeginRefsetReleaseAlgorthm;
+import org.ihtsdo.otf.refset.jpa.algo.BeginTranslationReleaseAlgorthm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -127,13 +136,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  @GET
   @Override
-  public ValidationResult beginRefsetRelease(Long refsetId, String authToken)
+  @Path("/refsetrelease/begin")
+  @ApiOperation(value = "Begin refset release", notes = "Begins the release process by validating the refset for release and creating the refset release info.", response = ReleaseInfoJpa.class)
+  public ReleaseInfo beginRefsetRelease(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId, 
+    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO: add effectiveTime as a parameter to this method
-    //    String effectiveTime - format must be: YYYYMMDD
-    //    Use ConfigUtility.DATE_FORMAT to convert to Date
-    //       
     // check preconditions
     // - refset exists
     // - effectiveTime is valid format
@@ -141,6 +152,47 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // Create a ReleaseInfo
     // Add the release info
     // Return ReleaseInfo
+    
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /refsetrelease/begin " + refsetId + ", "
+            + effectiveTime);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "begin refset release",
+              UserRole.REVIEWER);
+
+      // check date format
+      if (!effectiveTime.matches("([0-9]{8})"))
+        throw new Exception("date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+      // check refset release has not begun
+      ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForRefset(refsetId);
+      if( releaseInfo != null && releaseInfo.isPublished())
+        throw new Exception("refset release is already in progress " + refsetId);
+      algo.setRefset(refset);
+      algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
+      algo.setUserName(userName);
+      algo.compute();
+      return algo.getReleaseInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to begin release of refset");
+    } finally {
+      refsetService.close();
+      releaseService.close();
+      securityService.close();
+      algo.close();
+    }
     return null;
   }
 
@@ -201,12 +253,59 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   // preconditions: releaseInfo is still planned
   // Removes all release related stuff
 
+  @GET
   @Override
-  public ValidationResult beginTranslationRelease(Long translationId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/translationrelease/begin")
+  @ApiOperation(value = "Begin translation release", notes = "Begins the release process by validating the translation for release and creating the translation release info.", response = ReleaseInfoJpa.class)
+  public ReleaseInfo beginTranslationRelease(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId, 
+    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /translationrelease/begin " + translationId + ", "
+            + effectiveTime);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    BeginTranslationReleaseAlgorthm algo = new BeginTranslationReleaseAlgorthm();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "begin translation release",
+              UserRole.REVIEWER);
+
+      // check date format
+      if (!effectiveTime.matches("([0-9]{8})"))
+        throw new Exception("date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+      // check translation release has not begun
+      ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(translationId);
+      if( releaseInfo != null && releaseInfo.isPublished()) 
+        throw new Exception("translation release is already in progress " + translationId);
+      algo.setTranslation(translation);
+      algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
+      algo.setUserName(userName);
+      algo.compute();
+      return algo.getReleaseInfo();
+    } catch (Exception e) {
+      handleException(e, "trying to begin release of translation");
+    } finally {
+      translationService.close();
+      releaseService.close();
+      securityService.close();
+      algo.close();
+    }
     return null;
   }
+
 
   @Override
   public ValidationResult performTranslationRelease(Long translationId,

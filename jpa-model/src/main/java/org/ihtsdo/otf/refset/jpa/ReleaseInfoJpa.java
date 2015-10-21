@@ -499,4 +499,12 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         + ", translationId=" + translation + ", properties=" + properties + "]";
   }
 
+  public Date getEffectiveTime() {
+    return effectiveTime;
+  }
+
+  public void setEffectiveTime(Date effectiveTime) {
+    this.effectiveTime = effectiveTime;
+  }
+
 }
