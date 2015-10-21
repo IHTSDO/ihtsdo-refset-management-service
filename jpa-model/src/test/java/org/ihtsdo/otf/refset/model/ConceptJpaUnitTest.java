@@ -85,7 +85,6 @@ public class ConceptJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    tester.include("version");
     tester.include("definitionStatusId");
 
     tester.proxy(Translation.class, 1, t1);

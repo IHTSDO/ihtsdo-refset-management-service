@@ -86,7 +86,7 @@ public class LanguageRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    tester.include("version");
+    //tester.include("version");
     tester.include("refsetId");
     tester.include("descriptionId");
     // needed for generic refset class
