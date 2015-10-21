@@ -232,9 +232,9 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     for (Description description : descriptions.values()) {
 
       // assign an initial preferred name
-      if (description.getConcept().getName() == null) {
-        description.getConcept().setName(description.getTerm());
-      }
+      // if (description.getConcept().getName() == null) {
+      // description.getConcept().setName(description.getTerm());
+      // }
 
       // Connect language and description
       if (descLangMap.containsKey(description.getTerminologyId())) {
@@ -246,11 +246,11 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         // If a description is a synonym (e.g. typeId=)
         // and language is prefered (e.g. acceptabilityId=)
         // use as concept preferred name
-        if (description.getTypeId().equals("900000000000013009")
-            && descLangMap.get(description.getTerminologyId())
-                .getAcceptabilityId().equals("900000000000548007")) {
-          description.getConcept().setName(description.getTerm());
-        }
+        // if (description.getTypeId().equals("900000000000013009")
+        // && descLangMap.get(description.getTerminologyId())
+        // .getAcceptabilityId().equals("900000000000548007")) {
+        // description.getConcept().setName(description.getTerm());
+        // }
 
         descLangMap.remove(description.getTerminologyId());
       }

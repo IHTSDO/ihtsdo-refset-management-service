@@ -281,4 +281,5 @@ tsApp.service('projectService', [
       });
       return deferred.promise;
     }
+
   } ]);

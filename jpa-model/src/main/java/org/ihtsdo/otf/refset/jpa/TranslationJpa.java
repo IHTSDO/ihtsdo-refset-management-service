@@ -16,6 +16,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -106,6 +107,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @OneToMany(mappedBy = "translation", targetEntity = ConceptJpa.class)
   // @IndexedEmbedded - n/a
   private List<Concept> concepts = null;
+  
+  /** The Spelling Dictionary. */
+  @OneToOne(mappedBy = "translation", targetEntity = SpellingDictionaryJpa.class)
+  private SpellingDictionary spellingDictionary = null;
 
   /**
    * Instantiates an empty {@link TranslationJpa}.
@@ -459,14 +464,12 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @XmlTransient
   @Override
   public SpellingDictionary getSpellingDictionary() {
-    // TODO Auto-generated method stub
-    return null;
+    return spellingDictionary;
   }
 
   @Override
   public void setSpellingDictionary(SpellingDictionary dictionary) {
-    // TODO Auto-generated method stub
-
+    this.spellingDictionary = dictionary;
   }
 
   @XmlTransient

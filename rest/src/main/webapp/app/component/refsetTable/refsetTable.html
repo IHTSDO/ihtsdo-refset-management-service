@@ -1,0 +1,198 @@
+
+<div class="row">
+
+  <div class="col-md-6 col-xs-12">
+
+    <span style="display: block;">
+      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;"
+        ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
+        total-items="refsets.totalCount" ng-model="paging['refset'].page"
+        ng-change="getRefsets()"></pagination>
+
+      <input class="input-filter" placeholder="Enter filter text"
+        ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
+        type="text" ng-model="paging['refset'].filter"
+        ng-model-options="{ debounce: 300 }" ng-change="getRefsets()">
+
+      <button class="btn btn-xs btn-warning" ng-show="paging['refset'].filter"
+        ng-click="paging['refset'].filter = ''; getRefsets()"
+        title="Click to clear filter text">Clear</button>
+    </span>
+
+    <!-- Basic Refset info -->
+    <span ng-show="refsets.totalCount == 0" style="display: block;"
+      class="alert alert-warning">No {{value}} refsets available.</span>
+    <table ng-show="refsets.totalCount > 0" class="table">
+      <thead>
+        <th class="col-md-2 col-xs-2"
+          ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
+            ng-bind="getSortIndicator('refset','terminologyId')"></span>
+        </th>
+        <th class="col-md-5 col-xs-5"
+          ng-click="setSortField('refset','name', null)">Name<span
+            ng-bind="getSortIndicator('refset','name',null)"></span></th>
+        <th class="col-md-3 col-xs-3"
+          ng-click="setSortField('refset','organization', null)">Organization<span
+            ng-bind="getSortIndicator('refset','organization',null)"></span></th>
+        <th class="col-md-1 col-xs-1"
+          ng-click="setSortField('refset','type', null)">Type<span
+            ng-bind="getSortIndicator('refset','type',null)"></span></th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);" class="table-select-row">
+          <td style="word-break: break-word;">{{refset.terminologyId}}</td>
+          <td>{{refset.name}}</td>
+          <td>{{refset.organization}}</td>
+          <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
+              style="text-decoration: none">
+              <i tooltip="Reference to an external refset stored elsewhere."
+                class="material-icons md-18">forward</i>
+            </a> <a ng-show="refset.type == 'EXTENSIONAL'" ng-click=""
+              style="text-decoration: none">
+              <i ng-show="refset.type == 'EXTENSIONAL'"
+                tooltip="Extensional refset, defined as an explicit list of members."
+                class="material-icons md-18">list</i>
+            </a> <a ng-show="refset.type == 'INTENSIONAL'" ng-click=""
+              style="text-decoration: none">
+              <i ng-show="refset.type == 'INTENSIONAL'"
+                tooltip="Intenional refset, defined as a definition with includes/excludes."
+                class="material-icons md-18">transform</i>
+            </a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+  <span ng-show="!refset" class="alert alert-warning">Select a refset to
+    see details</span>
+
+  <!-- Details, Releases, Members -->
+  <div ng-show="refset" class="col-md-6 col-xs-12">
+    <div class="col-md-12 col-xs-12">
+
+      <!-- Refset Details -->
+      <h4>{{refset.name}}</h4>
+      <b>Description: </b>{{refset.description}}
+      <table class="table">
+        <thead>
+          <th>&nbsp;</th>
+          <th>&nbsp;</th>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Module Id</td>
+            <td>{{refset.moduleId}}</td>
+          </tr>
+          <tr>
+            <td>Effective Time</td>
+            <td>{{toShortDate(refset.effectiveTime)}}</td>
+          </tr>
+          <tr>
+            <td>Terminology</td>
+            <td>{{refset.terminology}} {{refset.version}}</td>
+          </tr>
+          <tr ng-show="refset.type == 'INTENSIONAL'">
+            <td>Definition</td>
+            <td>{{refset.definition}}</td>
+          </tr>
+          <tr ng-show="refset.type == 'EXTERNAL'">
+            <td>External Url</td>
+            <td>{{refset.externalUrl}}</td>
+          </tr>
+          <tr ng-show="refset.releaseInfo">
+            <td>RELEASED</td>
+            <td>{{refset.releaseInfo.name}}
+          </tr>
+          <tr ng-show="!refset.releaseInfo">
+            <td>Not yet released</td>
+            <td>&nbsp;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- release info -->
+    <div class="col-md-12 col-xs-12">
+      <span ng-show="refset.releaseInfo && !refset.releaseInfo.artifacts"
+        class="alert alert-warning">Release has no associated artifacts</span>
+      <div class="col-md-12 col-xs-12">
+        <table ng-show="refset.releaseInfo && refset.releaseInfo.artifacts"
+          class="table">
+          <thead>
+            <th class="col-md-6 col-xs-6">Release File</th>
+            <th class="col-md-6 col-xs-6">Timestamp</th>
+            <th style="width: 1%; word-wrap: nowrap"></th>
+          </thead>
+          <tbody>
+            <tr
+              ng-repeat="artifact in refset.releaseInfo.artifacts | orderBy:'artifact.name'">
+              <td>{{artifact.name}}</td>
+              <td>{{toShortDate(artifact.timestamp)}}</td>
+              <td><span>
+                  <a ng-click="exportReleaseArtifact(artifact)">
+                    <i title="Export {{artifact.name}}"
+                      class="material-icons md-18">file_download</i>
+                  </a>
+                </span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col-md-12 col-xs-12">
+      <h4>Refset Members</h4>
+      <span ng-show="!refset.members" class="alert alert-warning">Refset has no
+        members</span>
+
+      <span ng-show="refset.members">
+        <span style="display: block;">
+          <pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="refset.members.totalCount > pageSize || paging['member'].filter"
+            total-items="refset.members.totalCount"
+            ng-model="paging['member'].page" ng-change="getMembers(refset)"></pagination>
+
+          <input class="input-filter" placeholder="Enter filter text"
+            ng-show="refset.members.totalCount > pageSize || paging['member'].filter"
+            type="text" ng-model="paging['member'].filter"
+            ng-model-options="{ debounce: 300 }" ng-change="getMembers(refset)">
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="paging['member'].filter"
+            ng-click="paging['member'].filter = ''; getMembers(refset)"
+            title="Click to clear filter text">Clear</button>
+        </span>
+
+
+        <table class="table">
+          <thead>
+            <th class="col-md-4 col-xs-4"
+              ng-click="setSortField('member','conceptId', refset)">Concept
+              Id<span ng-bind="getSortIndicator('member','conceptId')"></span>
+            </th>
+            <th class="col-md-4 col-xs-4"
+              ng-click="setSortField('member','conceptName', refset)">Name<span
+                ng-bind="getSortIndicator('member','conceptName')"></span>
+            </th>
+            <th class="col-md-4 col-xs-4"
+              ng-click="setSortField('member','memberType', refset)">Type<span
+                ng-bind="getSortIndicator('member','memberType')"></span>
+            </th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="member in refset.members">
+              <td>{{member.conceptId}}</td>
+              <td>{{member.conceptName}}</td>
+              <td>{{member.memberType}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </span>
+    </div>
+  </div>
+</div>
