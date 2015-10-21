@@ -173,19 +173,6 @@ public interface RefsetServiceRest {
     ConceptRefsetMemberJpa inclusion, String authToken) throws Exception;
 
   /**
-   * Find refset inclusions for query.
-   *
-   * @param refsetId the refset id
-   * @param query the query
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept refset member list
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
-
-  /**
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
@@ -196,19 +183,6 @@ public interface RefsetServiceRest {
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
     ConceptRefsetMemberJpa exclusion, String authToken) throws Exception;
-
-  /**
-   * Find refset exclusions for query.
-   *
-   * @param refsetId the refset id
-   * @param query the query
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept refset member list
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.

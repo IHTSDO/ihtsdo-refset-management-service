@@ -36,7 +36,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected boolean listenersEnabled = true;
 
   /** The last modified flag. */
-  protected boolean lastModifiedFlag = false;
+  protected boolean lastModifiedFlag = true;
 
   /** The config properties. */
   protected static Properties config = null;
