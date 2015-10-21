@@ -52,6 +52,8 @@
 <script src="app/page/directory/directoryController.js"></script>
 <script src="app/page/refset/refsetController.js"></script>
 <script src="app/page/translation/translationController.js"></script>
+<script src="app/component/refsetTable/refsetDirective.js"></script>
+<script src="app/component/translationTable/translationDirective.js"></script>
 
 </head>
 <body>
@@ -78,10 +80,8 @@
     <div ng-include src="'app/page/general/error.html'"></div>
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
       <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"
-        ng-show="isAdmin() || isTabShowing(tab)"><a
-          ng-show="tab.label == 'Directory' || userHasAnyRole()"
-          href="{{tab.link}}" ng-click="setSelectedTab(tab)"> {{tab.label}}
-        </a></li>
+        ng-show="isAdmin() || isTabShowing(tab)"><a href="{{tab.link}}"
+          ng-click="setSelectedTab(tab)"> {{tab.label}} </a></li>
     </ul>
     <!-- Body -->
     <div ng-view=""></div>

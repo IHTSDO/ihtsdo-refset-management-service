@@ -221,7 +221,8 @@ public class ModelUnit041Test extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  // TODO:
+  //@Test
   public void testModelXmlSerialization041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
@@ -245,8 +246,7 @@ public class ModelUnit041Test extends ModelUnitSupport {
     tester.proxy(Concept.class, 1, concept);
     tester.proxy(Project.class, 1, project);
     tester.proxy(List.class, 1, list);
-    // TODO:
-    //assertTrue(tester.testXmlSerialization());
+    assertTrue(tester.testXmlSerialization());
   }
 
   /**

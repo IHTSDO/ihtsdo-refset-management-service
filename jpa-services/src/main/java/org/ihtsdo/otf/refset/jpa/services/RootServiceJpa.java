@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,6 +239,76 @@ public abstract class RootServiceJpa implements RootService {
       query.setMaxResults(pfs.getMaxResults());
     }
     return query;
+  }
+
+
+  /**
+   * Apply pfs to List.
+   *
+   * @param <T> the
+   * @param list the list
+   * @param clazz the clazz
+   * @param pfs the pfs
+   * @return the javax.persistence. query
+   * @throws Exception the exception
+   */
+  @Override
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    PfsParameter pfs) throws Exception {
+
+    // Skip empty pfs
+    if (pfs == null) {
+      return list;
+    }
+    //TODO: handle obsolete logic
+    //TODO: handle filtering as well.
+    List<T> result = list;
+
+    // Handle sorting
+
+    // apply paging, and sorting if appropriate
+    if (pfs != null
+        && (pfs.getSortField() != null && !pfs.getSortField().isEmpty())) {
+
+      // check that specified sort field exists on Concept and is
+      // a string
+      final Method sortMethod =
+          clazz.getMethod("get" + ConfigUtility.capitalize(pfs.getSortField()),
+              new Class<?>[] {});
+
+      if (!sortMethod.getReturnType().equals(String.class)) {
+        throw new Exception("Referenced sort field is not of type String");
+      }
+
+      // allow the method to be accessed
+      sortMethod.setAccessible(true);
+
+      // sort the list
+      Collections.sort(result, new Comparator<T>() {
+        @Override
+        public int compare(T t1, T t2) {
+          // if an exception is returned, simply pass equality
+          try {
+            final String s1 = (String) sortMethod.invoke(t1, new Object[] {});
+            final String s2 = (String) sortMethod.invoke(t2, new Object[] {});
+            return s1.compareTo(s2);
+          } catch (Exception e) {
+            return 0;
+          }
+        }
+      });
+    }
+
+    // get the start and end indexes based on paging parameters
+    int startIndex = 0;
+    int toIndex = result.size();
+    if (pfs != null) {
+      startIndex = pfs.getStartIndex();
+      toIndex = Math.min(result.size(), startIndex + pfs.getMaxResults());
+      result = result.subList(startIndex, toIndex);
+    }
+
+    return result;
   }
 
   /**

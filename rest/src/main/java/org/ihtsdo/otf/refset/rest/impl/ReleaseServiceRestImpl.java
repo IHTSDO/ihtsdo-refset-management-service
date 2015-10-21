@@ -226,26 +226,49 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // check preconditions
     // - refset exists
     // - current release info is planned and not published
-    // - there is a release artifact with the expected name
-    // Remove any old preview (how do we know there's already a preview?)
-    // Stage this refset (add a RefsetServiceJpa.copyRefset method)
-    // - see RefsetServiceJpa.stageRefset
-    // - workflowService.performWorflowAction
-    // Copy the release info and add new one (including copies of release artifacts)
+    // - refset is unstaged
     //
-    // generate a release artifact based on ioHandlerId
+    // Actions
+    // Stage this refset (e.g. refsetService.stageRefset) with a staging type of PREVIEW
+    // Copy the release info from origin refset and add a new one attached to this refset
+    // - also copy any release artifacts over
+    // Generate a "snapshot" release artifact based on ioHandlerId 
     // - refsetService.getExportHandler(ioHandlerId)
     // - handler.exportMembers(refset,members) -> inputstream
     // - convert input stream into a byteArrayStream
     // - create ReleaseArtifactJpa and set data to ...
-    // - set release.xxx (XXX exportHandler.getFileTypeFilter)
+    // - Set the release artifact name to handler.getFileName(refset.getNamespace,"Snapshot",
+    //             ConfigUtility.DATE_FORMAT.format(releaseInfo.getEffectiveTime())
+    // Generate a "delta" release artifact if there is a previous release info
+    // - releaseService.getPreviousReleaseInfo
+    // - compare the corresponding member lists.
+    // - create a member list where old-not-new are inactive with the current effective time
+    // - generate like with snapshot, but pass "Delta" to the export method and this specially
+    //   tailored list of members
+    // Using calculation above - set the effectiveTime of of any new-not-old members to the
+    //  effective time of the current release and save those changes
+    // Set the workflow status of the refset to "PREVIEW"
+    // set the lastModifiedBy (to the user who called this method)
+    // save the refset changes.
+    //
     return null;
   }
 
   @Override
   public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    // check preconditions
+    // Refset must be staged and with a workflow status of "PREVIEW"
+    //
+    // releaseService.setTransactionPerOperation(false)
+    // releaseService.beginTransaction();
+    //
+    // Get the stagedRefsetChange for the refset id
+    // Get the origin refset and change the staging type to null, set lastModifiedBy and save it.
+    // Remove the StagedRefsetChange object
+    // Get the staged refset and change the workflowStatus to PUBLISHED, set lastModifiedBy and save it.
+    //
+    // releaseService.commit()
     return null;
   }
   

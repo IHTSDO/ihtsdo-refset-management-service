@@ -226,6 +226,32 @@
       </build>
     </profile>
 
+    <profile>
+      <id>Sample2</id>
+      <build>
+        <plugins>
+          <!-- Generate sample data -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>sample</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>sample-data2</goal>
+                </goals>
+                <configuration>
+                  <mode>${mode}</mode>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Database QA, specify -Drun.config.umls=... -->
     <profile>
       <id>Database</id>

@@ -37,12 +37,19 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   public String getFileTypeFilter() {
     return ".txt";
   }
+
+  @Override
+  public String getFileName(String namespace, String type, String version) {
+    return "der2_Refset_Simple" + type + "_" + namespace + "_" + version
+        + getFileTypeFilter();
+  }
+
   /* see superclass */
   @Override
   public String getMimeType() {
     return "text/plain";
   }
-  
+
   /* see superclass */
   @Override
   public String getName() {

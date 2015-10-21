@@ -3,6 +3,10 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.util.List;
+
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
+
 /**
  * Generically represents a service.
  */
@@ -80,4 +84,17 @@ public interface RootService {
    * @throws Exception the exception
    */
   public void refreshCaches() throws Exception;
+
+  /**
+   * Apply pfs to list.
+   * @param <T>
+   *
+   * @param list the list
+   * @param clazz the clazz
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
+    PfsParameter pfs) throws Exception;
 }

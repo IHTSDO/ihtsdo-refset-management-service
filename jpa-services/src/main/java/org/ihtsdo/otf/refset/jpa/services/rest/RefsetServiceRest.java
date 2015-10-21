@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -24,7 +25,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
  * Represents a refsets available via a REST service.
  */
 public interface RefsetServiceRest {
-
+  
   /**
    * Returns the refset.
    *
@@ -94,14 +95,15 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
+   * @return the string definition
    * @throws Exception the exception
    */
-  public void importDefinition(
+  public String importDefinition(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
-   * Export refset definition. // TODO: needs String IoHandlerInfoId
+   * Export refset definition. 
    *
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
@@ -171,16 +173,6 @@ public interface RefsetServiceRest {
     ConceptRefsetMemberJpa inclusion, String authToken) throws Exception;
 
   /**
-   * Removes the refset inclusion.
-   *
-   * @param inclusionId the inclusion id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void removeRefsetInclusion(Long inclusionId, String authToken)
-    throws Exception;
-
-  /**
    * Find refset inclusions for query.
    *
    * @param refsetId the refset id
@@ -204,16 +196,6 @@ public interface RefsetServiceRest {
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
     ConceptRefsetMemberJpa exclusion, String authToken) throws Exception;
-
-  /**
-   * Removes the refset exclusion.
-   *
-   * @param exclusionId the exclusion id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void removeRefsetExclusion(Long exclusionId, String authToken)
-    throws Exception;
 
   /**
    * Find refset exclusions for query.
@@ -411,7 +393,7 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, PfsParameter pfs, String authToken) throws Exception;
 
   /**
    * Returns the diff report.
@@ -428,9 +410,10 @@ public interface RefsetServiceRest {
    * Release report token.
    *
    * @param reportToken the report token
+   * @param authToken TODO
    * @throws Exception the exception
    */
-  public void releaseReportToken(String reportToken) throws Exception;
+  public void releaseReportToken(String reportToken, String authToken) throws Exception;
 
   /**
    * Extrapolate definition.
@@ -447,24 +430,21 @@ public interface RefsetServiceRest {
    * Resume redefinition.
    *
    * @param refsetId the refset id
-   * @param newDefinition the new definition
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
-  public Refset resumeRedefinition(Long refsetId, String newDefinition,
+  public Refset resumeRedefinition(Long refsetId, 
     String authToken) throws Exception;
 
   /**
    * Resume migration.
    *
    * @param refsetId the refset id
-   * @param newTerminology the new terminology
-   * @param newVersion the new version
    * @param authToken the auth token
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset resumeMigration(Long refsetId, String newTerminology,
-    String newVersion, String authToken) throws Exception;
+  public Refset resumeMigration(Long refsetId, String authToken) throws Exception;
+
 }

@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
@@ -16,7 +15,6 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
-import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,9 +32,9 @@ public class ModelUnit047Test extends ModelUnitSupport {
 
   /** The test fixture r1. */
   private PhraseMemory r1;
+
   /** The test fixture r2. */
   private PhraseMemory r2;
-
 
   /**
    * Setup class.
@@ -48,7 +46,8 @@ public class ModelUnit047Test extends ModelUnitSupport {
 
   /**
    * Setup.
-   * @throws Exception
+   *
+   * @throws Exception the exception
    */
   @Before
   public void setup() throws Exception {

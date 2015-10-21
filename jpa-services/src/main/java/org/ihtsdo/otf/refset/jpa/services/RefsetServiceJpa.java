@@ -318,6 +318,40 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
       }
     }
   }
+  
+  /* see superclass */
+  @Override
+  public void updateMember(ConceptRefsetMember member) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - update member " + member);
+
+    // Id assignment should not change
+    final IdentifierAssignmentHandler idHandler =
+        getIdentifierAssignmentHandler(member.getTerminology());
+    if (assignIdentifiersFlag) {
+      if (!idHandler.allowIdChangeOnUpdate()) {
+        ConceptRefsetMember member2 =
+            getMember(member.getId());
+        if (!idHandler.getTerminologyId(member).equals(
+            idHandler.getTerminologyId(member2))) {
+          throw new Exception(
+              "Update cannot be used to change object identity.");
+        }
+      } else {
+        // set member id on update
+        member.setTerminologyId(idHandler.getTerminologyId(member));
+      }
+    }
+    // update component
+    this.updateHasLastModified(member);
+
+    // Inform listeners
+    if (listenersEnabled) {
+      for (WorkflowListener listener : workflowListeners) {
+        listener.memberChanged(member, WorkflowListener.Action.UPDATE);
+      }
+    }
+  }
 
   /* see superclass */
   @Override
@@ -371,6 +405,13 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   }
 
   /* see superclass */
+  @Override
+  public ConceptRefsetMember getMember(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - get member " + id);
+    return getHasLastModified(id, ConceptRefsetMemberJpa.class);
+  }
+  
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
@@ -418,6 +459,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
   @Override
   public void removeStagedRefsetChange(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - remove staged refset change " + id);
+    
     try {
       // Get transaction and object
       tx = manager.getTransaction();
@@ -457,7 +501,10 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
             + "originRefset.id = :refsetId");
     try {
       query.setParameter("refsetId", refsetId);
-      return (StagedRefsetChange) query.getSingleResult();
+      StagedRefsetChange change = (StagedRefsetChange) query.getSingleResult();
+      handleRefsetLazyInitialization(change.getOriginRefset());
+      handleRefsetLazyInitialization(change.getStagedRefset());
+      return change;
     } catch (NoResultException e) {
       return null;
     }
@@ -512,8 +559,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();
     }
-    refset.getInclusions().size();
-    refset.getExclusions().size();
     refset.getEnabledFeedbackEvents().size();
   }
 
@@ -603,7 +648,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
   @Override
   public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception {
-                
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - stage refset " + refset.getId());
+    
     // Clone the refset and call set it provisional
     Refset refsetCopy = new RefsetJpa(refset);
     // only exist for staging purposes
@@ -631,16 +678,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
         addMember(member);
       }
     }
-    for (ConceptRefsetMember member : refsetCopy.getInclusions()) {
-      member.setId(null);
-      member.setRefset(refsetCopy);
-      addMember(member);
-    }
-    for (ConceptRefsetMember member : refsetCopy.getExclusions()) {
-      member.setId(null);
-      member.setRefset(refsetCopy);
-      addMember(member);
-    }
         
     // set staging parameters on the original refset    
     refset.setStaged(true);
@@ -655,5 +692,17 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
    
     return refsetCopy;
+  }
+  
+  @Override
+  public void removeStagedRefset(Refset stagedRefset) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - remove staged refset " + stagedRefset.getId());
+    for (ConceptRefsetMember member : stagedRefset.getMembers()) {
+      removeMember(member.getId());
+    }  
+
+    removeRefset(stagedRefset.getId());
+    
   }
 }

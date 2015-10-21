@@ -5,7 +5,6 @@ var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree' ])
 
     // Set recursive digest limit higher to handle very deep trees.
     // $rootScopeProvider.digestTtl(15);
-
   });
 
 // Declare top level URL vars
@@ -26,8 +25,10 @@ tsApp.run(function($rootScope, $http, $window) {
 tsApp.config([
   '$routeProvider',
   '$locationProvider',
-  function($routeProvider, $locationProvider) {
+  '$logProvider',
+  function($routeProvider, $locationProvider, $logProvider) {
     console.debug('configure $routeProvider');
+    $logProvider.debugEnabled(true);
 
     // Set reloadOnSearch so that $location.hash() calls do not reload the
     // controller
@@ -150,8 +151,6 @@ tsApp.controller('TabCtrl', [
         || $scope.userProjectsInfo.anyrole;
     }
 
-    // Initialize anyrole setting
-    projectService.getUserHasAnyRole();
   } ]);
 
 // Header controller

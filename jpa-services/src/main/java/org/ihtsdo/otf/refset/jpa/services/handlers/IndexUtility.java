@@ -55,7 +55,6 @@ public class IndexUtility {
   /** The field names map. */
   private static Map<Class<?>, Set<String>> allFieldNames = new HashMap<>();
 
-  
   // Initialize the field names maps
   static {
     try {
@@ -384,6 +383,7 @@ public class IndexUtility {
         new MultiFieldQueryParser(IndexUtility.getIndexedFieldNames(
             fieldNamesKey, true).toArray(new String[] {}),
             searchFactory.getAnalyzer(clazz));
+    System.out.println("  query = " + pfsQuery);
     luceneQuery = queryParser.parse(pfsQuery.toString());
 
     // Validate query terms

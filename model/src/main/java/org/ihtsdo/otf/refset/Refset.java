@@ -81,7 +81,10 @@ public interface Refset extends Component, Searchable {
     /** The definition. */
     DEFINITION,
     /** The migration. */
-    MIGRATION;
+    MIGRATION,
+
+    /** The preview. */
+    PREVIEW;
   }
 
   /**
@@ -211,9 +214,9 @@ public interface Refset extends Component, Searchable {
   public void setExternalUrl(String url);
 
   /**
-   * // TODO: make this an object Returns the refset descriptor refset id.
+   * Returns the refset descriptor.
    *
-   * @return the refset descriptor refset id
+   * @return the refset descriptor
    */
   public RefsetDescriptorRefsetMember getRefsetDescriptor();
 
@@ -308,61 +311,6 @@ public interface Refset extends Component, Searchable {
    */
   public void setForTranslation(boolean forTranslation);
 
-  /**
-   * Returns the manual inclusions.
-   *
-   * @return the manual inclusions
-   */
-  public List<ConceptRefsetMember> getInclusions();
-
-  /**
-   * Sets the manual inclusions.
-   *
-   * @param inclusions the inclusions
-   */
-  public void setInclusions(List<ConceptRefsetMember> inclusions);
-
-  /**
-   * Adds the manual inclusion.
-   *
-   * @param member the member
-   */
-  public void addInclusion(ConceptRefsetMember member);
-
-  /**
-   * Removes the manual inclusion.
-   *
-   * @param member the member
-   */
-  public void removeInclusion(ConceptRefsetMember member);
-
-  /**
-   * Returns the manual exclusions.
-   *
-   * @return the manual exclusions
-   */
-  public List<ConceptRefsetMember> getExclusions();
-
-  /**
-   * Sets the manual exclusions.
-   *
-   * @param exclusions the exclusions
-   */
-  public void setExclusions(List<ConceptRefsetMember> exclusions);
-
-  /**
-   * Adds the manual exclusion.
-   *
-   * @param member the member
-   */
-  public void addExclusion(ConceptRefsetMember member);
-
-  /**
-   * Removes the manual exclusion.
-   *
-   * @param member the member
-   */
-  public void removeExclusion(ConceptRefsetMember member);
 
   /**
    * Returns the refset members.

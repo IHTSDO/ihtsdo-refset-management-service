@@ -141,7 +141,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/export/members"
+        client.target(config.getProperty("base.url") + "/translation/export/members"
             + "?translationId=" + translationId + "&handlerId="
             + ioHandlerInfoId);
     Response response =
@@ -375,7 +375,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/import/begin"
+        client.target(config.getProperty("base.url") + "/translation/import/begin"
             + "?translationId=" + translationId + "&handlerId="
             + ioHandlerInfoId);
 
@@ -406,7 +406,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/import/resume"
+        client.target(config.getProperty("base.url") + "/translation/import/resume"
             + "?translationId=" + translationId + "&handlerId="
             + ioHandlerInfoId);
 
@@ -448,7 +448,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient(clientConfig);
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/import/finish"
+        client.target(config.getProperty("base.url") + "/translation/import/finish"
             + "?translationId=" + translationId + "&handlerId="
             + ioHandlerInfoId);
 
@@ -476,7 +476,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/import/cancel"
+        client.target(config.getProperty("base.url") + "/translation/import/cancel"
             + "?translationId=" + translationId);
 
     Response response =
