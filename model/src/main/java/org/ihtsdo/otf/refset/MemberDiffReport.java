@@ -68,18 +68,5 @@ public interface MemberDiffReport {
    */
   public void setNewNotOld(List<ConceptRefsetMember> newNotOld);
 
-  /**
-   * Returns the active now inactive.
-   *
-   * @return the active now inactive
-   */
-  public List<ConceptRefsetMember> getActiveNowInactive();
-
-  /**
-   * Sets the active not inactive.
-   *
-   * @param activeNowInactive the active not inactive
-   */
-  public void setActiveNowInactive(List<ConceptRefsetMember> activeNowInactive);
 
 }

@@ -193,8 +193,15 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public void removeRefset(Long id) throws Exception {
+  public void removeRefset(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - remove refset " + id);
+    if (cascade) {
+      Refset refset = getRefset(id);
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        removeMember(member.getId());
+      }
+    }
+    
     // Remove the component
     Refset refset = removeHasLastModified(id, RefsetJpa.class);
 
@@ -403,6 +410,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     removeHasLastModified(id, ConceptRefsetMemberJpa.class);
     // Do not inform listeners
   }
+
 
   /* see superclass */
   @Override
@@ -694,7 +702,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return refsetCopy;
   }
   
-  @Override
+/*  @Override
   public void removeStagedRefset(Refset stagedRefset) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - remove staged refset " + stagedRefset.getId());
@@ -704,5 +712,5 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     removeRefset(stagedRefset.getId());
     
-  }
+  }*/
 }

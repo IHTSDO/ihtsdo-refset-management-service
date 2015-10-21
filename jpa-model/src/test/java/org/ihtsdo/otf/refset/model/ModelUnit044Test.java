@@ -107,7 +107,6 @@ public class ModelUnit044Test extends ModelUnitSupport {
     tester.include("newRefset");
     tester.include("oldNotNew");
     tester.include("newNotOld");
-    tester.include("activeNowInactive");
 
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -156,7 +155,6 @@ public class ModelUnit044Test extends ModelUnitSupport {
     report.setNewRefset(r1);
     report.setOldNotNew(l1);
     report.setNewNotOld(l1);
-    report.setActiveNowInactive(l1);
     tester.proxy(MemberDiffReport.class, 1, report);
     tester.proxy(Refset.class, 1, r1);
     assertTrue(tester.testXmlSerialization());
@@ -178,7 +176,6 @@ public class ModelUnit044Test extends ModelUnitSupport {
     report.setNewRefset(r1);
     report.setOldNotNew(l1);
     report.setNewNotOld(l1);
-    report.setActiveNowInactive(l1);
 
     String xml = ConfigUtility.getStringForGraph(report);
     assertTrue(xml.contains("<oldRefsetId>"));

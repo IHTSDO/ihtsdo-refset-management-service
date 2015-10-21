@@ -569,8 +569,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
     result =
-        prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
-    result =
         prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
         prime
@@ -635,8 +633,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     } else if (!enabledFeedbackEvents.equals(other.enabledFeedbackEvents))
       return false;
     if (type != other.type)
-      return false;
-    if (stagingType != other.stagingType)
       return false;
     if (organization == null) {
       if (other.organization != null)

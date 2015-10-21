@@ -14,7 +14,6 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -82,10 +81,11 @@ public interface RefsetServiceRest {
    * Removes the refset.
    *
    * @param refsetId the refset id
+   * @param cascade the cascade
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeRefset(Long refsetId, String authToken) throws Exception;
+  public void removeRefset(Long refsetId, boolean cascade, String authToken) throws Exception;
 
   /**
    * Import refset definition.
@@ -393,7 +393,7 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameter pfs, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Returns the diff report.
@@ -446,5 +446,6 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public Refset resumeMigration(Long refsetId, String authToken) throws Exception;
+
 
 }

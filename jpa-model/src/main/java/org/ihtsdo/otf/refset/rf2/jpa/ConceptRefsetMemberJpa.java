@@ -164,8 +164,14 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
     result =
         prime * result + ((memberType == null) ? 0 : memberType.hashCode());
-    result = prime * result + ((refset == null) ? 0 : refset.hashCode());
+    result =
+        prime
+            * result
+            + ((refset == null || refset.getTerminologyId() == null) ? 0
+                : refset.getTerminologyId().hashCode());
     return result;
+    
+
   }
 
   /* see superclass */
@@ -196,7 +202,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     if (refset == null) {
       if (other.refset != null)
         return false;
-    } else if (!refset.equals(other.refset))
+    } else if (refset.getTerminologyId() == null) {
+      if (other.refset != null && other.refset.getTerminologyId() != null)
+        return false;
+    } else if (!refset.getTerminologyId().equals(
+        other.refset.getTerminologyId()))
       return false;
     return true;
   }

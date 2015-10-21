@@ -256,12 +256,13 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     }
 
     // If the total is over the initial max limit and pfs max results is too.
-    if (total > initialMaxLimit && pfs.getMaxResults() > initialMaxLimit) {
+    if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
+      // TODO: had to revise this to not get remainder in second batch, because 114 caused an out of memory error
       target =
           client.target(url + "/" + branch + "/concepts?escg="
               + URLEncoder.encode(expr, "UTF-8") + "&limit="
-              + (pfs.getMaxResults() - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + pfs.getStartIndex()));
+              + Math.min(initialMaxLimit, (localPfs.getMaxResults() - initialMaxLimit)) + "&offset="
+              + (initialMaxLimit + localPfs.getStartIndex()));
       response =
           target.request(accept).header("Authorization", authHeader).get();
       resultString = response.readEntity(String.class);
