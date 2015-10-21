@@ -40,7 +40,7 @@ public interface ReleaseServiceRest {
    * @return the current refset release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentRefsetRelease(Long refsetId, String authToken)
+  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -64,7 +64,7 @@ public interface ReleaseServiceRest {
    * @return the current translation release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationtId,
     String authToken) throws Exception;
 
   /**

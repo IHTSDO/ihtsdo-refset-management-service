@@ -123,7 +123,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfoList releaseInfoList =
-          releaseService.getReleaseHistoryForTranslation(translationId);
+          releaseService.findTranslationReleasesForQuery(translationId, query,
+              pfs);
 
       return releaseInfoList;
     } catch (Exception e) {
@@ -141,8 +142,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Path("/refsetrelease/begin")
   @ApiOperation(value = "Begin refset release", notes = "Begins the release process by validating the refset for release and creating the refset release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo beginRefsetRelease(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId, 
-    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime, 
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     // check preconditions
@@ -152,7 +153,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // Create a ReleaseInfo
     // Add the release info
     // Return ReleaseInfo
-    
+
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refsetrelease/begin " + refsetId + ", "
             + effectiveTime);
@@ -175,10 +176,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+        throw new Exception("date provided is not in 'YYYYMMDD' format:"
+            + effectiveTime);
       // check refset release has not begun
-      ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForRefset(refsetId);
-      if( releaseInfo != null && releaseInfo.isPublished())
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForRefset(
+              refset.getTerminologyId(), refset.getProject().getId());
+      if (releaseInfo != null && releaseInfo.isPublished())
         throw new Exception("refset release is already in progress " + refsetId);
       algo.setRefset(refset);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
@@ -200,18 +204,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   public ValidationResult validateRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception {
     // check preconditions
-    //  - refset exists
-    //  - current release info is  planned and not published release info for this refset
-    //  - refset workflowStatus = READY_FOR_PUBLICATION
+    // - refset exists
+    // - current release info is planned and not published release info for this
+    // refset
+    // - refset workflowStatus = READY_FOR_PUBLICATION
     // validate refset
-    //   ValidationResult result = new ValidationResultJpa();
-    //   ValidationServiceJpa validationService = ...
-    //   result = validationService.validateRefset(refset);
+    // ValidationResult result = new ValidationResultJpa();
+    // ValidationServiceJpa validationService = ...
+    // result = validationService.validateRefset(refset);
     // validate all members of refset
-    //   for (ConceptRefsetMember member : refset.getMembers()) {
-    //      ValidationResult result2 =  validationService.validateMember(member);
-    //      result.merge(result2);
-    //   }
+    // for (ConceptRefsetMember member : refset.getMembers()) {
+    // ValidationResult result2 = validationService.validateMember(member);
+    // result.merge(result2);
+    // }
     // return validation result
     return null;
   }
@@ -228,33 +233,41 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // releaseService.beginTransaction();
     //
     // Actions
-    // Stage this refset (e.g. refsetService.stageRefset) with a staging type of PREVIEW
-    // Copy the release info from origin refset and add a new one attached to this refset
+    // Stage this refset (e.g. refsetService.stageRefset) with a staging type of
+    // PREVIEW
+    // Copy the release info from origin refset and add a new one attached to
+    // this refset
     // - also copy any release artifacts over
     // - null ids
-    // Generate a "snapshot" release artifact based on ioHandlerId (e.g. DEFAULT) 
+    // Generate a "snapshot" release artifact based on ioHandlerId (e.g.
+    // DEFAULT)
     // - refsetService.getExportHandler(ioHandlerId)
     // - handler.exportMembers(refset,members) -> inputstream
     // - convert input stream into a byteArrayStream
     // - create ReleaseArtifactJpa and set data to ...
-    // - Set the release artifact name to handler.getFileName(refset.getProject().getNamespace()
-    //             ,"Snapshot", ConfigUtility.DATE_FORMAT.format(releaseInfo.getName())
+    // - Set the release artifact name to
+    // handler.getFileName(refset.getProject().getNamespace()
+    // ,"Snapshot", ConfigUtility.DATE_FORMAT.format(releaseInfo.getName())
     // Generate a "delta" release artifact if there is a previous release info
     // - releaseService.getCurrentReleaseInfo
-    //   - if null, continue (i.e. skip this part)
+    // - if null, continue (i.e. skip this part)
     // - compare the corresponding member lists.
-    // - create a member list where old-not-new are inactive with the effectiveTime of releaseInfo.getEffectiveTime()
-    // - create a members list where new-not-old (use current effective time and "active=true")
-    // - generate like with snapshot, but pass "Delta" to the export method and this specially
-    //   tailored list of members
-    // Using calculation above - set the effectiveTime of of any new-not-old members to the
-    //  effective time of the current release and save those changes
-    //   - these are the members connected to the staged refset.
-    //   - presumably, these members will all have a "null" effective time
+    // - create a member list where old-not-new are inactive with the
+    // effectiveTime of releaseInfo.getEffectiveTime()
+    // - create a members list where new-not-old (use current effective time and
+    // "active=true")
+    // - generate like with snapshot, but pass "Delta" to the export method and
+    // this specially
+    // tailored list of members
+    // Using calculation above - set the effectiveTime of of any new-not-old
+    // members to the
+    // effective time of the current release and save those changes
+    // - these are the members connected to the staged refset.
+    // - presumably, these members will all have a "null" effective time
     // Set the workflow status of the staged refset to "PREVIEW"
     // set the lastModifiedBy (to the user who called this method)
     // save the staged refset changes.
-    // 
+    //
     // releaseService.commit()
     // return staged refset (change return type)
     return null;
@@ -266,32 +279,35 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // check preconditions
     // refset exists...
     // Refset must be staged and with a workflow status of "PREVIEW"
-    //  - get the staged refset change for the refset passed in
-    //  - get the staged refset from that and verify the workflowSTatus
+    // - get the staged refset change for the refset passed in
+    // - get the staged refset from that and verify the workflowSTatus
     //
     // releaseService.setTransactionPerOperation(false)
     // releaseService.beginTransaction();
     //
     // Get the stagedRefsetChange for the refset id
-    // Get the origin refset and change the staging type to null, set lastModifiedBy and save it.
+    // Get the origin refset and change the staging type to null, set
+    // lastModifiedBy and save it.
     // remove the release info connected to the origin refset
     // Remove the StagedRefsetChange object
-    // Get the staged refset and setWorkflowStatus to PUBLISHED, set lastModifiedBy and save it.
-    // get the releaseInfo attached to the staged refset and setPublished(true), setPlanned(false)
+    // Get the staged refset and setWorkflowStatus to PUBLISHED, set
+    // lastModifiedBy and save it.
+    // get the releaseInfo attached to the staged refset and setPublished(true),
+    // setPlanned(false)
     // set the lastModifiedBy and save it.
     //
     // releaseService.commit()
     return null;
   }
-  
-  //TODO: add 
+
+  // TODO: add
   // public void cancelRefsetRelease(Long refsetId, ...)
   // preconditions: releaseInfo is still planned
   // releaseService.setTransactionPerOperation(false)
   // releaseService.beginTransaction();
   // Removes all release related stuff
-  //  - the releaseInfo connected to the origin refset
-  //  - staged refset and it's release info (and the StagedRefsetChange)
+  // - the releaseInfo connected to the origin refset
+  // - staged refset and it's release info (and the StagedRefsetChange)
   // releaseService.commit();
 
   @GET
@@ -299,38 +315,44 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Path("/translationrelease/begin")
   @ApiOperation(value = "Begin translation release", notes = "Begins the release process by validating the translation for release and creating the translation release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo beginTranslationRelease(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId, 
-    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime, 
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    
+
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translationrelease/begin " + translationId + ", "
-            + effectiveTime);
+        "RESTful call POST (Translation): /translationrelease/begin "
+            + translationId + ", " + effectiveTime);
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
-    BeginTranslationReleaseAlgorthm algo = new BeginTranslationReleaseAlgorthm();
+    BeginTranslationReleaseAlgorthm algo =
+        new BeginTranslationReleaseAlgorthm();
     try {
       // Load translation
-      Translation translation = translationService.getTranslation(translationId);
+      Translation translation =
+          translationService.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
 
       // Authorize the call
       String userName =
-          authorizeProject(translationService, translation.getProject().getId(),
-              securityService, authToken, "begin translation release",
-              UserRole.REVIEWER);
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "begin translation release", UserRole.REVIEWER);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:" + effectiveTime);
+        throw new Exception("date provided is not in 'YYYYMMDD' format:"
+            + effectiveTime);
       // check translation release has not begun
-      ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(translationId);
-      if( releaseInfo != null && releaseInfo.isPublished()) 
-        throw new Exception("translation release is already in progress " + translationId);
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForTranslation(
+              translation.getTerminologyId(), translation.getProject().getId());
+      if (releaseInfo != null && releaseInfo.isPublished())
+        throw new Exception("translation release is already in progress "
+            + translationId);
       algo.setTranslation(translation);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
       algo.setUserName(userName);
@@ -346,7 +368,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-
 
   @Override
   public ValidationResult performTranslationRelease(Long translationId,
@@ -368,9 +389,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // TODO Auto-generated method stub
     return null;
   }
-  
-  //TODO: add cancelRefsetRelease
 
+  // TODO: add cancelRefsetRelease
 
   @Override
   public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
@@ -390,7 +410,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/refset/info")
   @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentRefsetRelease(
+  public ReleaseInfo getCurrentReleaseInfoForRefset(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -403,10 +423,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
 
     ReleaseService releaseService = new ReleaseServiceJpa();
+    RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "get current refset release info", UserRole.VIEWER);
-      return releaseService.getCurrentReleaseInfoForRefset(refsetId);
+      Refset refset = refsetService.getRefset(refsetId);
+      return releaseService.getCurrentReleaseInfoForRefset(
+          refset.getTerminologyId(), refset.getProject().getId());
     } catch (Exception e) {
       handleException(e, "trying to get current refset release info");
     } finally {
@@ -419,7 +442,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/translation/info")
   @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentTranslationRelease(
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -432,10 +455,14 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
 
     ReleaseService releaseService = new ReleaseServiceJpa();
+    TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "get current translation release info", UserRole.VIEWER);
-      return releaseService.getCurrentReleaseInfoForTranslation(translationId);
+      Translation translation =
+          translationService.getTranslation(translationId);
+      return releaseService.getCurrentReleaseInfoForTranslation(
+          translation.getTerminologyId(), translation.getProject().getId());
     } catch (Exception e) {
       handleException(e, "trying to get current translation release info");
     } finally {
