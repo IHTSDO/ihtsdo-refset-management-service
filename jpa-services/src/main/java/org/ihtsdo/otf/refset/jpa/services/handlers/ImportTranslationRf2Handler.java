@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,6 @@ import java.util.zip.ZipInputStream;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -126,9 +124,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             final Description description = new DescriptionJpa();
             setCommonFields(description, translation.getRefset());
             description.setTerminologyId(fields[0]);
-            description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                .parse(fields[1]));
-            description.setLastModified(description.getEffectiveTime());
             description.setLanguageCode(fields[5].intern());
             description.setTypeId(fields[6].intern());
             description.setTerm(fields[7]);
@@ -195,8 +190,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             setCommonFields(member, translation.getRefset());
             member.setTerminologyId(fields[0]);
-            member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-            member.setLastModified(member.getEffectiveTime());
 
             // Set from the translation refset
             member.setRefsetId(translation.getRefset().getTerminologyId());
@@ -295,11 +288,10 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
   @SuppressWarnings("static-method")
   private void setCommonFields(Component c, Refset refset) {
     c.setActive(true);
-    c.setEffectiveTime(new Date());
+    c.setEffectiveTime(null);
     c.setId(null);
-    c.setLastModified(new Date());
     c.setPublishable(true);
-    c.setPublished(true);
+    c.setPublished(false);
     c.setModuleId(refset.getModuleId());
     c.setTerminology(refset.getTerminology());
     c.setVersion(refset.getVersion());

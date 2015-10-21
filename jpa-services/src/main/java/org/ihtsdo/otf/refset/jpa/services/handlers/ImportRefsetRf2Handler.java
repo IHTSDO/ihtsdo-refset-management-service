@@ -7,13 +7,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -89,19 +87,15 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       // skip header
       if (!fields[0].equals("id")) { // header
 
+        // Skip inactive entries
+        if (fields[2].equals("0")) {
+          continue;
+        }
+        
         // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         setCommonFields(member, refset);
-        // Universal Refset attributes
-        member.setTerminologyId(fields[0]);
-        member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-        member.setLastModified(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-        member.setActive(fields[2].equals("1"));
-
-        // use refset module id
         member.setRefset(refset);
-
-        // SimpleRefsetMember unique attributes
         member.setConceptId(fields[5]);
 
         // Add member
@@ -163,11 +157,9 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   @SuppressWarnings("static-method")
   private void setCommonFields(Component c, Refset refset) {
     c.setActive(true);
-    c.setEffectiveTime(new Date());
     c.setId(null);
-    c.setLastModified(new Date());
     c.setPublishable(true);
-    c.setPublished(true);
+    c.setPublished(false);
     c.setModuleId(refset.getModuleId());
     c.setTerminology(refset.getTerminology());
     c.setVersion(refset.getVersion());
