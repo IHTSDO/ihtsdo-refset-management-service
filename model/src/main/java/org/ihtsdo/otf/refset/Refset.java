@@ -44,7 +44,11 @@ public interface Refset extends Component, Searchable {
     /** The exclusion members. */
     EXCLUSION,
     /** The plain. */
-    MEMBER;
+    MEMBER,   
+    /**  The inactive member. */
+    INACTIVE_MEMBER,    
+    /**  The inactive inclusion. */
+    INACTIVE_INCLUSION;
   }
 
   /**

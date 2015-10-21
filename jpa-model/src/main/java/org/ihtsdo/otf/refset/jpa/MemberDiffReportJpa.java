@@ -33,11 +33,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   /** The new not old. */
   private List<ConceptRefsetMember> newNotOld = new ArrayList<>();
 
-  /** The active now inactive. */
-  private List<ConceptRefsetMember> activeNowInactive = new ArrayList<>();
-
   // TODO: inclusionsNowInactive
-  // TODO: exclusionsNowInactive
   
   /**
    * Instantiates an empty {@link MemberDiffReportJpa}.
@@ -60,9 +56,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     for (ConceptRefsetMember concept : report.getNewNotOld()) {
       getNewNotOld().add(concept);
     }
-    for (ConceptRefsetMember concept : report.getActiveNowInactive()) {
-      getActiveNowInactive().add(concept);
-    }
+
   }
 
   /* see superclass */
@@ -170,30 +164,13 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     this.newNotOld = newNotOld;
   }
 
-  /* see superclass */
-  @XmlElement(type = ConceptRefsetMemberJpa.class)
-  @Override
-  public List<ConceptRefsetMember> getActiveNowInactive() {
-    if (activeNowInactive == null) {
-      activeNowInactive = new ArrayList<>();
-    }
-    return activeNowInactive;
-  }
-
-  /* see superclass */
-  @Override
-  public void setActiveNowInactive(List<ConceptRefsetMember> activeNowInactive) {
-    this.activeNowInactive = activeNowInactive;
-  }
 
   /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result =
-        prime * result
-            + ((activeNowInactive == null) ? 0 : activeNowInactive.hashCode());
+
     result = prime * result + ((newNotOld == null) ? 0 : newNotOld.hashCode());
     result = prime * result + ((newRefset == null) ? 0 : newRefset.hashCode());
     result = prime * result + ((oldNotNew == null) ? 0 : oldNotNew.hashCode());
@@ -211,11 +188,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     if (getClass() != obj.getClass())
       return false;
     MemberDiffReportJpa other = (MemberDiffReportJpa) obj;
-    if (activeNowInactive == null) {
-      if (other.activeNowInactive != null)
-        return false;
-    } else if (!activeNowInactive.equals(other.activeNowInactive))
-      return false;
+
     if (newNotOld == null) {
       if (other.newNotOld != null)
         return false;
@@ -244,7 +217,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public String toString() {
     return "MemberDiffReportJpa [oldRefset=" + oldRefset + ", newRefset="
         + newRefset + ", oldNotNew=" + oldNotNew + ", newNotOld=" + newNotOld
-        + ", activeNowInactive=" + activeNowInactive + "]";
+         + "]";
   }
 
 }
