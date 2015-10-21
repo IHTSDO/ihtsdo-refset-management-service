@@ -3,9 +3,9 @@
 <h3>
   {{component.object.terminologyId}} {{component.object.name}}
   <span class="label label-warning"
-    ng-show="metadata.terminology.metathesaurus && component.object.suppressible == true"
+    ng-show="metadata.terminology.metathesaurus && component.object.suppressible"
     tooltip="Suppressible">S</span>
-  <span class="label label-default" ng-show="component.object.obsolete == true"
+  <span class="label label-default" ng-show="component.object.obsoletetrue"
     tooltip="Obsolete">O</span>
   <span
     ng-show="metadata.terminology.descriptionLogicTerminology && !component.object.fullyDefined"
@@ -19,10 +19,10 @@
 
 <button ng-show="!metadata.terminology.descriptionLogicTerminology"
   ng-click="toggleSuppressible()" class="btn btn-xs btn-primary">
-  <span ng-show="showSuppressible == true">Hide Suppressible</span>
-  <span ng-show="showSuppressible != true">Show Suppressible</span>
+  <span ng-show="showSuppressible">Hide Suppressible</span>
+  <span ng-show="!showSuppressible">Show Suppressible</span>
 </button>
 <button ng-click="toggleObsolete()" class="btn btn-xs btn-primary">
-  <span ng-show="showObsolete == true">Hide Obsolete</span>
-  <span ng-show="showObsolete != true">Show Obsolete</span>
+  <span ng-show="showObsolete">Hide Obsolete</span>
+  <span ng-show="!showObsolete">Show Obsolete</span>
 </button>

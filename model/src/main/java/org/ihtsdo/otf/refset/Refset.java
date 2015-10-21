@@ -186,20 +186,6 @@ public interface Refset extends Component, Searchable {
   public void setDefinition(String definition);
 
   /**
-   * Returns the definition uuid.
-   *
-   * @return the definition uuid
-   */
-  public String getDefinitionUuid();
-
-  /**
-   * Sets the definition uuid.
-   *
-   * @param uuid the definition uuid
-   */
-  public void setDefinitionUuid(String uuid);
-
-  /**
    * Returns the external url.
    *
    * @return the external url
@@ -311,7 +297,6 @@ public interface Refset extends Component, Searchable {
    */
   public void setForTranslation(boolean forTranslation);
 
-
   /**
    * Returns the refset members.
    *
@@ -375,17 +360,4 @@ public interface Refset extends Component, Searchable {
    */
   public Map<User, UserRole> getUserRoleMap();
 
-  /**
-   * Returns the organization.
-   *
-   * @return the organization
-   */
-  public String getOrganization();
-
-  /**
-   * Sets the organization.
-   *
-   * @param organization the organization
-   */
-  public void setOrganization(String organization);
 }

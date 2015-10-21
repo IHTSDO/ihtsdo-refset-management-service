@@ -265,7 +265,6 @@ public class RedefinitionTest {
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    refset.setOrganization("ABC Organization");
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");

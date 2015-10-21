@@ -7,6 +7,7 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -19,6 +20,15 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
  */
 public interface ProjectServiceRest {
 
+  /**
+   * Returns the icon config.
+   *
+   * @param authToken the auth token
+   * @return the icon config
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getIconConfig(String authToken) throws Exception;
+  
   /**
    * Returns the project roles.
    *

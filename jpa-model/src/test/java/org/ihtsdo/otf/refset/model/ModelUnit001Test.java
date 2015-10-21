@@ -72,6 +72,7 @@ public class ModelUnit001Test extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
     tester.include("namespace");
+    tester.include("organization");
     tester.include("description");
     tester.include("terminology");
     tester.include("version");
@@ -141,11 +142,13 @@ public class ModelUnit001Test extends ModelUnitSupport {
     tester.include("description");
     tester.include("userRoleMap");
     tester.include("userAnyRole");
+    tester.include("organization");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
     tester.include("namespace");
+    tester.include("organizationSort");
     tester.include("id");
     tester.include("lastModified");
     tester.include("lastModifiedBy");

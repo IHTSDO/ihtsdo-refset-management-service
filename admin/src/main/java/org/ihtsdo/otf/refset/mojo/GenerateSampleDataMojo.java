@@ -536,6 +536,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
     project.setNamespace("1000179");
+    project.setOrganization("IHTSDO");
     return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
         auth.getAuthToken());
   }
@@ -634,7 +635,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    refset.setOrganization("ABC Organization");
 
     if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");

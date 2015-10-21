@@ -125,7 +125,6 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("terminologyId");
     tester.include("version");
     tester.include("definition");
-    tester.include("definitionUuid");
     tester.include("description");
     tester.include("externalUrl");
     tester.include("forTranslation");
@@ -136,7 +135,6 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("type");
     tester.include("feedbackEmail");
     tester.include("enabledFeedbackEvents");
-    tester.include("organization");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -256,12 +254,12 @@ public class ModelUnit036Test extends ModelUnitSupport {
     tester.include("type");
     tester.include("externalUrl");
     tester.include("workflowStatus");
+    tester.include("organizationSort");
     tester.include("nameSort");
     tester.include("descriptionSort");
     tester.include("definitionSort");
     tester.include("public");
     tester.include("provisional");
-    tester.include("organizationSort");
 
     tester.include("type");
     tester.include("workflowStatus");

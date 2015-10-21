@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status.Family;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -396,16 +397,44 @@ public class ProjectClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public StringList getTerminologyEditions(String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
+  /* see superclass */
   @Override
   public TerminologyList getTerminologyVersions(String terminology,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  public KeyValuePairList getIconConfig(String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - get icon config");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/icons");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    KeyValuePairList list =
+        (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+            KeyValuePairList.class);
+    return list;
   }
 }

@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.List;
+import java.util.Properties;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -22,6 +23,9 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -564,6 +568,39 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     } catch (Exception e) {
       handleException(e, "trying to get versions");
+    } finally {
+      securityService.close();
+    }
+    return null;
+  }
+
+  @Override
+  @GET
+  @Path("/icons")
+  @ApiOperation(value = "Get icon map", notes = "Returns the mapping from namespace or module ID to icon key.", response = KeyValuePairList.class)
+  public KeyValuePairList getIconConfig(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful POST call (Project): /icons");
+
+    try {
+      authorizeApp(securityService, authToken, "get icon info", UserRole.VIEWER);
+
+      final Properties p = ConfigUtility.getConfigProperties();
+      final KeyValuePairList list = new KeyValuePairList();
+      for (Object prop : p.keySet()) {
+        if (prop.toString().startsWith("icons.")) {
+          final KeyValuePair pair = new KeyValuePair();
+          pair.setKey(pair.toString().substring(5));
+          pair.setValue(p.getProperty(prop.toString()));
+          list.addKeyValuePair(pair);
+        }
+      }
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get icon info");
     } finally {
       securityService.close();
     }

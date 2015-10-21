@@ -557,6 +557,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     project.setTerminology("SNOMEDCT");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
+    project.setOrganization("IHTSDO");
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
     project.setNamespace("1000179");
@@ -664,8 +665,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    refset.setOrganization("ABC Organization");
-
     if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");
     } else if (type == Refset.Type.EXTERNAL) {
