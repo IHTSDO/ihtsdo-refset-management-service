@@ -4,12 +4,18 @@
 package org.ihtsdo.otf.refset.jpa.algo;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -38,7 +44,18 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   /** The result. */
   private ValidationResult result = new ValidationResultJpa();
 
-  // TODO will need other information from calling environment
+  /** The release info. */
+  private ReleaseInfo  releaseInfo = null;
+  
+  /** The translation. */
+  private Translation translation;
+
+  /** The effective time. */
+  private Date effectiveTime;
+  
+  /** The user name. */
+  private String userName;
+
   
   /**
    * Instantiates an empty {@link BeginTranslationReleaseAlgorthm}.
@@ -51,7 +68,19 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   /* see superclass */
   @Override
   public void compute() throws Exception {
-    // TODO: needs implementation
+    releaseInfo = new ReleaseInfoJpa();
+    String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
+    releaseInfo.setName(name);
+    releaseInfo.setTranslation(translation);
+    releaseInfo.setDescription("Description of release info " + name);
+    releaseInfo.setEffectiveTime(effectiveTime);
+    releaseInfo.setLastModified(new Date());
+    releaseInfo.setLastModifiedBy(userName);
+    releaseInfo.setReleaseBeginDate(new Date());
+    releaseInfo.setTerminology(translation.getTerminology());
+    releaseInfo.setVersion(translation.getVersion());
+    releaseInfo.setPlanned(true);
+    releaseInfo = new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
   }
 
   /* see superclass */
@@ -114,4 +143,31 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   public void setResult(ValidationResult result) {
     this.result = result;
   }
+
+  /**
+   * Sets the effective time.
+   *
+   * @param effectiveTime the new effective time
+   */
+  public void setEffectiveTime(Date effectiveTime) {
+    this.effectiveTime = effectiveTime;
+  }
+
+  /**
+   * Sets the user name.
+   *
+   * @param userName the new user name
+   */
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
+
+  public ReleaseInfo getReleaseInfo() {
+    return releaseInfo;
+  }
+
+  public void setTranslation(Translation translation) {
+    this.translation = translation;
+  }
+
 }

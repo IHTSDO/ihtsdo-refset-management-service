@@ -180,6 +180,20 @@ public interface ReleaseInfo {
   public void setRefset(Refset refset);
 
   /**
+   * Returns the effective time .
+   *
+   * @return the effective time
+   */
+  public Date getEffectiveTime();
+
+  /**
+   * Sets the effective time.
+   *
+   * @param effectiveTime the effective time
+   */
+  public void setEffectiveTime(Date effectiveTime);
+
+  /**
    * Returns the translation id.
    *
    * @return the translation
