@@ -401,7 +401,7 @@ public class RefsetClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Refset Client - find refset members for query " + refsetId + ", " + query);
     validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(query, "query");
+    //validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =

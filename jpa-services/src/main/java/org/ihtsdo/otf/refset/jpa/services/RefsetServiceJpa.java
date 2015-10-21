@@ -116,7 +116,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   @Override
   public Refset getRefset(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
-    return getHasLastModified(id, RefsetJpa.class);
+    Refset refset = getHasLastModified(id, RefsetJpa.class);
+    handleRefsetLazyInitialization(refset);
+    return refset;
   }
 
   /* see superclass */
