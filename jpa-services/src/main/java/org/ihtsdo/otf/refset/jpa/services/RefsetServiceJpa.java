@@ -546,7 +546,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
         // execute query
         .getResultList();
 
-    // get the most recent of the revisions that preceed the date parameter
+    // get the most recent of the revisions that precede the date parameter
     Refset refset = revisions.get(0);
     handleRefsetLazyInitialization(refset);
     return refset;

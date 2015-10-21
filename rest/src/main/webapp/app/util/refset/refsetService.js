@@ -561,9 +561,7 @@ tsApp.service('refsetService', [
 
       // redefinition cancel
       gpService.increment()
-      // TODO: This should be a GET, correct this when RefsetServiceRestImpl is
-      // corrected
-      $http.post(
+      $http.get(
         refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2="
           + refsetId2).then(
       // success
@@ -617,8 +615,7 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      //TODO: This should be a GET instead of POST. Fix this when RefsetServiceRestImpl is corrected.
-      $http.post(refsetUrl + "diff/members" + "?reportToken=" + reportToken)
+      $http.get(refsetUrl + "diff/members" + "?reportToken=" + reportToken)
         .then(
         // success
         function(response) {
@@ -643,7 +640,7 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      //TODO: This should be a GET instead of POST. Fix this when RefsetServiceRestImpl is corrected.
+      //TODO: This should be a DELETE instead of POST. Fix this when RefsetServiceRestImpl is corrected.
       $http.post(refsetUrl + "release/report" + "?reportToken=" + reportToken)
         .then(
         // success
