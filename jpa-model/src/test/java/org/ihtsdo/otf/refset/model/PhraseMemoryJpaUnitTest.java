@@ -77,7 +77,6 @@ public class PhraseMemoryJpaUnitTest extends ModelUnitSupport {
   public void testModelEqualsHashcode030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("name");
     tester.include("translation");
 
     // Set up objects
@@ -134,7 +133,6 @@ public class PhraseMemoryJpaUnitTest extends ModelUnitSupport {
   public void testModelNotNullField030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
-    tester.include("name");
 
     assertTrue(tester.testNotNullFields());
   }

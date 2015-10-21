@@ -19,31 +19,37 @@ public interface ValidationService extends RootService {
    *
    * @param concept the concept
    * @return the validation result
+   * @throws Exception the exception
    */
-  public ValidationResult validateConcept(Concept concept);
+  public ValidationResult validateConcept(Concept concept) throws Exception;
 
   /**
    * Validate translation.
    *
    * @param translation the translation
    * @return the validation result
+   * @throws Exception the exception
    */
-  public ValidationResult validateTranslation(Translation translation);
+  public ValidationResult validateTranslation(Translation translation)
+    throws Exception;
 
   /**
    * Validate member.
    *
    * @param member the member
    * @return the validation result
+   * @throws Exception the exception
    */
-  public ValidationResult validateMember(ConceptRefsetMember member);
+  public ValidationResult validateMember(ConceptRefsetMember member)
+    throws Exception;
 
   /**
    * Validate refset.
    *
    * @param refset the refset
    * @return the validation result
+   * @throws Exception the exception
    */
-  public ValidationResult validateRefset(Refset refset);
+  public ValidationResult validateRefset(Refset refset) throws Exception;
 
 }
