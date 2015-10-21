@@ -630,11 +630,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Refset member type is not INCLUSION: " + inclusion);
       }
 
-      for (ConceptRefsetMember c : refset.getMembers()) {
-        if (inclusion.getConceptId().equals(c.getConceptId())
-            && c.getMemberType() == Refset.MemberType.MEMBER) {
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        if (inclusion.getConceptId().equals(member.getConceptId())) {
           throw new Exception(
-              "Inclusion is redundant as the refset has a matching member");
+              "Inclusion is redundant as the refset has a matching member "
+                  + member.getMemberType());
         }
       }
       inclusion.setRefset(refset);
@@ -674,9 +674,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ConceptRefsetMember member = null;
       for (ConceptRefsetMember c : refset.getMembers()) {
         if (conceptId.equals(c.getConceptId())
-            && c.getMemberType() == Refset.MemberType.MEMBER) {
+            && (c.getMemberType() == Refset.MemberType.MEMBER)) {
           member = c;
           break;
+        } else if (conceptId.equals(c.getConceptId())
+            && (c.getMemberType() == Refset.MemberType.INACTIVE_MEMBER)) {
+          // An INACTIVE_MEMBER normally shouldn't exist in an intensional
+          // refset. And this can ONLY be added for an intensional refset
+          throw new Exception("This should never happen.");
         }
       }
 
