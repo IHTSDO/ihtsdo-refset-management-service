@@ -209,8 +209,9 @@ public class ModelUnit002Test extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("refsetId");
     tester.include("translationId");
-
-
+    tester.include("refsetTerminologyId");
+    tester.include("translationTerminologyId");
+    tester.include("projectId");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

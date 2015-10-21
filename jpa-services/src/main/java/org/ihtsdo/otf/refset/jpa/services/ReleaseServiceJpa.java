@@ -3,10 +3,10 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-
-import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
@@ -35,23 +35,65 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId)
-    throws Exception {
+  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+    Long projectId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Release Service - get current release info for refset" + refsetId);
+        "Release Service - get current release info for refset" + terminologyId
+            + ", " + projectId);
+
+    // Get all release info for this terminologyId and projectId
     List<ReleaseInfo> results =
-        findRefsetReleasesForQuery(refsetId, "", null).getObjects();
-    // get max release that is published and not planned
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getRefset().getId().equals(refsetId)) {
-        return results.get(i);
+        findRefsetReleasesForQuery(
+            null,
+            "refsetTerminologyId:" + terminologyId + " AND projectId:"
+                + projectId, null).getObjects();
+
+    // Reverse sort releases by date
+    Collections.sort(results, new Comparator<ReleaseInfo>() {
+      @Override
+      public int compare(ReleaseInfo o1, ReleaseInfo o2) {
+        return o2.getEffectiveTime().compareTo(o1.getEffectiveTime());
+      }
+    });
+    // Find the max one that is published and not planned
+    for (ReleaseInfo info : results) {
+      if (info.isPublished() && !info.isPlanned()) {
+        return info;
       }
     }
     return null;
   }
 
+  /* see superclass */
+  @Override
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
+    Long projectId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - get current release info for translation"
+            + terminologyId + ", " + projectId);
 
+    // Get all release info for this terminologyId and projectId
+    List<ReleaseInfo> results =
+        findTranslationReleasesForQuery(
+            null,
+            "translationTerminologyId:" + terminologyId + " AND projectId:"
+                + projectId, null).getObjects();
+
+    // Reverse sort releases by date
+    Collections.sort(results, new Comparator<ReleaseInfo>() {
+      @Override
+      public int compare(ReleaseInfo o1, ReleaseInfo o2) {
+        return o2.getEffectiveTime().compareTo(o1.getEffectiveTime());
+      }
+    });
+    // Find the max one that is published and not planned
+    for (ReleaseInfo info : results) {
+      if (info.isPublished() && !info.isPlanned()) {
+        return info;
+      }
+    }
+    return null;
+  }
 
   /* see superclass */
   @Override
@@ -79,10 +121,11 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
 
     return releaseInfo;
   }
-  
+
   /* see superclass */
   @Override
-  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact) throws Exception {
+  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - add release info " + releaseArtifact.getName());
     if (lastModifiedFlag) {
@@ -165,59 +208,14 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     }
   }
 
-  /* see superclass */
-  @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get current release info for translation"
-            + translationId);
-    List<ReleaseInfo> results =
-        getReleaseHistoryForTranslation(translationId).getObjects();
-    // get max release that is published and not planned
-    for (int i = results.size() - 1; i >= 0; i--) {
-      if (results.get(i).isPublished() && !results.get(i).isPlanned()
-          && results.get(i).getTranslation().getId().equals(translationId)) {
-        return results.get(i);
-      }
-    }
-    return null;
-  }
-
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public ReleaseInfoList getReleaseHistoryForTranslation(Long translationId)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - get translation history " + translationId);
-    javax.persistence.Query query =
-        manager.createQuery("select a from ReleaseInfoJpa a, "
-            + " TranslationJpa b where b.id = :translationId and "
-            + "a.translation = b order by a.effectiveTime");
-    /*
-     * Try to retrieve the single expected result If zero or more than one
-     * result are returned, log error and set result to null
-     */
-    try {
-      query.setParameter("translationId", translationId);
-      List<ReleaseInfo> releaseInfos = query.getResultList();
-      ReleaseInfoList releaseInfoList = new ReleaseInfoListJpa();
-      releaseInfoList.setObjects(releaseInfos);
-      return releaseInfoList;
-    } catch (NoResultException e) {
-      return null;
-    }
-  }
-
   @SuppressWarnings("unchecked")
   @Override
   public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Release Service - find refset release infos " + "/" + query + " refsetId " + refsetId);
-    
+        "Release Service - find refset release infos " + "/" + query
+            + " refsetId " + refsetId);
+
     StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
@@ -227,11 +225,39 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     } else {
       sb.append("refsetId:" + refsetId);
     }
-    
+
     int[] totalCt = new int[1];
     List<ReleaseInfo> list =
-        (List<ReleaseInfo>) getQueryResults(sb.toString(), ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs,
-            totalCt);
+        (List<ReleaseInfo>) getQueryResults(sb.toString(),
+            ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+    ReleaseInfoList result = new ReleaseInfoListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
+    String query, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Release Service - find translation release infos " + "/" + query
+            + " translationId " + translationId);
+
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (translationId == null) {
+      sb.append("translationId:[* TO *]");
+    } else {
+      sb.append("translationId:" + translationId);
+    }
+
+    int[] totalCt = new int[1];
+    List<ReleaseInfo> list =
+        (List<ReleaseInfo>) getQueryResults(sb.toString(),
+            ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
     ReleaseInfoList result = new ReleaseInfoListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
@@ -240,7 +266,8 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
 
   @Override
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug("ReleaseArtifact Service - get artifact " + id);
+    Logger.getLogger(getClass()).debug(
+        "ReleaseArtifact Service - get artifact " + id);
     ReleaseArtifact artifact = getHasLastModified(id, ReleaseArtifactJpa.class);
     return artifact;
   }

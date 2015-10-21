@@ -284,7 +284,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /**
-   * Returns the refset id.
+   * Returns the refset id. For JAXB and indexing.
    *
    * @return the refset id
    */
@@ -296,7 +296,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   }
 
   /**
-   * Sets the refset id.
+   * Sets the refset id. For JAXB and indexing.
    *
    * @param refsetId the refset id
    */
@@ -306,6 +306,49 @@ public class ReleaseInfoJpa implements ReleaseInfo {
       refset = new RefsetJpa();
     }
     refset.setId(refsetId);
+  }
+
+  /**
+   * Returns the refset terminology id. For JAXB and indexing. This is needed in
+   * order to compute the "current" release for a refset within a project.
+   * @return the refset terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetTerminologyId() {
+    return (refset != null) ? refset.getTerminologyId() : "";
+  }
+
+  /**
+   * Returns the translation terminology id. For JAXB and indexing. This is
+   * needed in order to compute the "current" release for a translation within a
+   * project.
+   * @return the translation terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTranslationTerminologyId() {
+    return (translation != null) ? translation.getTerminologyId() : "";
+  }
+
+  /**
+   * Returns the project id. For indexing. This is needed in order to compute
+   * the "current" release for a translation/refset within a project.
+   * @return the project id
+   */
+  @XmlTransient
+  @FieldBridge(impl = LongBridge.class)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public Long getProjectId() {
+    // ASSUMPTION: refset and translation won't have different project ids
+    if (refset != null && refset.getProject() != null) {
+      return refset.getProject().getId();
+    }
+    if (translation != null && translation.getProject() != null) {
+      return translation.getProject().getId();
+    }
+    return 0L;
+
   }
 
   /* see superclass */
@@ -399,7 +442,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   public void setArtifacts(List<ReleaseArtifact> artifacts) {
     this.artifacts = artifacts;
   }
-  
+
   /* see superclass */
   @Override
   public void addArtifact(ReleaseArtifact artifact) {
@@ -407,6 +450,18 @@ public class ReleaseInfoJpa implements ReleaseInfo {
       artifacts = new ArrayList<>();
     }
     artifacts.add(artifact);
+  }
+
+  /* see superclass */
+  @Override
+  public Date getEffectiveTime() {
+    return effectiveTime;
+  }
+
+  /* see superclass */
+  @Override
+  public void setEffectiveTime(Date effectiveTime) {
+    this.effectiveTime = effectiveTime;
   }
 
   /* see superclass */
@@ -497,14 +552,6 @@ public class ReleaseInfoJpa implements ReleaseInfo {
         + ", version=" + version + ", lastModifiedBy=" + lastModifiedBy
         + ", lastModified=" + lastModified + ", refsetId=" + refset
         + ", translationId=" + translation + ", properties=" + properties + "]";
-  }
-
-  public Date getEffectiveTime() {
-    return effectiveTime;
-  }
-
-  public void setEffectiveTime(Date effectiveTime) {
-    this.effectiveTime = effectiveTime;
   }
 
 }
