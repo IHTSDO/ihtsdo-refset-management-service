@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -98,7 +98,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private Project project;
 
   /** The description types. */
-  @ManyToMany(targetEntity = DescriptionTypeRefsetMemberJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, targetEntity = DescriptionTypeRefsetMemberJpa.class)
   // @IndexedEmbedded - n/a
   @CollectionTable(name = "translation_description_types", joinColumns = @JoinColumn(name = "translation_id"))
   private List<DescriptionTypeRefsetMember> descriptionTypes = null;
@@ -107,10 +107,14 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @OneToMany(mappedBy = "translation", targetEntity = ConceptJpa.class)
   // @IndexedEmbedded - n/a
   private List<Concept> concepts = null;
-  
+
   /** The Spelling Dictionary. */
-  @OneToOne(mappedBy = "translation", targetEntity = SpellingDictionaryJpa.class)
+  @OneToOne(mappedBy = "translation", targetEntity = SpellingDictionaryJpa.class, optional = false)
   private SpellingDictionary spellingDictionary = null;
+
+  /** The phrase memory. */
+  @OneToOne(mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
+  private PhraseMemory phraseMemory = null;
 
   /**
    * Instantiates an empty {@link TranslationJpa}.
@@ -144,8 +148,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /* see superclass */
   @Override
   @Fields({
-    @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(name = "nameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO),
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   public String getName() {
     return name;
@@ -297,7 +301,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  @XmlElement(type = DescriptionTypeRefsetMemberJpa.class, name = "types")
+  @XmlElement(type = DescriptionTypeRefsetMemberJpa.class)
   @Override
   public List<DescriptionTypeRefsetMember> getDescriptionTypes() {
     if (descriptionTypes == null) {
@@ -461,28 +465,30 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + ", descriptionTypes=" + descriptionTypes + "]";
   }
 
+  /* see superclass */
   @XmlTransient
   @Override
   public SpellingDictionary getSpellingDictionary() {
     return spellingDictionary;
   }
 
+  /* see superclass */
   @Override
   public void setSpellingDictionary(SpellingDictionary dictionary) {
     this.spellingDictionary = dictionary;
   }
 
+  /* see superclass */
   @XmlTransient
   @Override
-  public Map<String, PhraseMemory> getPhraseMemoryMap() {
-    // TODO Auto-generated method stub
-    return null;
+  public PhraseMemory getPhraseMemory() {
+    return phraseMemory;
   }
 
+  /* see superclass */
   @Override
-  public void setPhraseMemoryMap(Map<String, PhraseMemory> phraseMemoryMap) {
-    // TODO Auto-generated method stub
-
+  public void setPhraseMemory(PhraseMemory phraseMemory) {
+    this.phraseMemory = phraseMemory;
   }
 
 }

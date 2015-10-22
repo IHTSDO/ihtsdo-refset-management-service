@@ -4,9 +4,11 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -17,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
@@ -472,17 +476,104 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  public void removeReleaseArtifact(Long artifactId, String authToken)
+  @DELETE
+  @Path("/remove/artifact/{artifactId}")
+  @ApiOperation(value = "Remove release artifact", notes = "Removes the release artifact with the specified id")
+  public void removeReleaseArtifact(
+    @ApiParam(value = "Release artifact id, e.g. 3", required = true) @PathParam("artifactId") Long artifactId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Release): /remove/artifact/" + artifactId);
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      ReleaseArtifact artifact = releaseService.getReleaseArtifact(artifactId);
+
+      if (artifact == null) {
+        throw new Exception("Artifact does not exist");
+      }
+
+      Project project = null;
+      if (artifact.getReleaseInfo().getRefset() != null) {
+        project = artifact.getReleaseInfo().getRefset().getProject();
+      } else {
+        project = artifact.getReleaseInfo().getTranslation().getProject();
+
+      }
+      authorizeProject(releaseService, project.getId(), securityService,
+          authToken, "remove release artifact", UserRole.REVIEWER);
+
+      // remove artifact
+      releaseService.removeReleaseArtifact(artifactId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a release artifact");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
 
   }
 
+  @GET
   @Override
-  public void uploadReleaseArtifact(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long releaseInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/import/artifact")
+  @ApiOperation(value = "Import release artifact", notes = "Imports a release artifact from the input stream")
+  public ReleaseArtifact importReleaseArtifact(
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Release info id, e.g. 3", required = true) @QueryParam("releaseInfoId") Long releaseInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Release): /import/artifact");
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      // Load refset
+      ReleaseInfo info = releaseService.getReleaseInfo(releaseInfoId);
+      if (info == null) {
+        throw new Exception("Invalid release info id " + info);
+      }
+
+      Project project = null;
+      if (info.getRefset() != null) {
+        project = info.getRefset().getProject();
+      } else {
+        project = info.getTranslation().getProject();
+
+      }
+      // Authorize the call
+      String userName =
+          authorizeProject(releaseService, project.getId(), securityService,
+              authToken, "import release artifact", UserRole.REVIEWER);
+
+      // Create an populate
+      ReleaseArtifact artifact = new ReleaseArtifactJpa();
+      artifact.setLastModifiedBy(userName);
+      artifact.setName(contentDispositionHeader.getFileName());
+      artifact.setReleaseInfo(info);
+      artifact.setTimestamp(contentDispositionHeader.getModificationDate());
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      int nRead;
+      byte[] data = new byte[16384];
+      while ((nRead = in.read(data, 0, data.length)) != -1) {
+        buffer.write(data, 0, nRead);
+      }
+      buffer.flush();
+      artifact.setData(buffer.toByteArray());
+
+      // Add the release artifact
+      return releaseService.addReleaseArtifact(artifact);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import refset members");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+    return null;
 
   }
 

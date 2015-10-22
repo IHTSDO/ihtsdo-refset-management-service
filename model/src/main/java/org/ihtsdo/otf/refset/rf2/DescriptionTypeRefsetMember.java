@@ -3,24 +3,39 @@
  */
 package org.ihtsdo.otf.refset.rf2;
 
+
 /**
  * Represents a description type reference set member.
  */
 public interface DescriptionTypeRefsetMember extends RefsetMember {
 
   /**
-   * Returns the concept id.
+   * Returns the name. For example "Synonym"
    *
-   * @return the concept id
+   * @return the name
    */
-  public String getConceptId();
+  public String getName();
 
   /**
-   * Sets the concept id.
+   * Sets the name
    *
-   * @param conceptId the concept id
+   * @param name the name
    */
-  public void setConceptId(String conceptId);
+  public void setName(String name);
+
+  /**
+   * Returns the type. For example 900000000000013009.
+   *
+   * @return the type
+   */
+  public String getType();
+
+  /**
+   * Sets the type.
+   *
+   * @param type the type
+   */
+  public void setType(String type);
 
   /**
    * Returns the description format.
@@ -49,4 +64,5 @@ public interface DescriptionTypeRefsetMember extends RefsetMember {
    * @param descriptionLength the description length
    */
   public void setDescriptionLength(int descriptionLength);
+
 }

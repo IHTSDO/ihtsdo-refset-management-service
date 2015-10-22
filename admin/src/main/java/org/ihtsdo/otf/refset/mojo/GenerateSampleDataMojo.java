@@ -625,7 +625,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
-    refset.setModuleId("900000000000445007");
+    refset.setModuleId("731000124108");
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
@@ -708,7 +708,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());
     translation.setLanguage("es");
-    translation.setModuleId("900000000000445007");
+    translation.setModuleId("731000124108");
     translation.setProject(project);
     translation.setPublic(true);
     translation.setPublishable(true);

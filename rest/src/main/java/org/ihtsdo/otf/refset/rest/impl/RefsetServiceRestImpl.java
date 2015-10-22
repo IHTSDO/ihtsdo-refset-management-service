@@ -852,7 +852,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             member.setActive(concept.isActive());
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
-            member.setConceptName("TBD");
+            if (refsetService.getTerminologyHandler().assignNames()) {
+              member.setConceptName(refsetService
+                  .getTerminologyHandler()
+                  .getConcept(member.getConceptId(), refset.getTerminology(),
+                      refset.getVersion()).getName());
+            } else {
+              member.setConceptName("TBD");
+            }
             member.setLastModified(startDate);
             member.setLastModifiedBy(userName);
           }
@@ -1174,7 +1181,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setActive(concept.isActive());
           member.setPublished(concept.isPublished());
           member.setConceptId(concept.getTerminologyId());
-          member.setConceptName("TBD");
+          if (refsetService.getTerminologyHandler().assignNames()) {
+            member.setConceptName(refsetService
+                .getTerminologyHandler()
+                .getConcept(member.getConceptId(), refset.getTerminology(),
+                    refset.getVersion()).getName());
+          } else {
+            member.setConceptName("TBD");
+          }
           member.setLastModified(startDate);
           member.setLastModifiedBy(userName);
         }

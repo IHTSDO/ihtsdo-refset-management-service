@@ -34,8 +34,8 @@
           ng-click="setSortField('refset','name', null)">Name<span
             ng-bind="getSortIndicator('refset','name',null)"></span></th>
         <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('refset','namespace', null)">Namespace<span
-            ng-bind="getSortIndicator('refset','namespace',null)"></span></th>
+          ng-click="setSortField('refset','moduleId', null)">Module<span
+            ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
         <th class="col-md-1 col-xs-1"
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
@@ -45,8 +45,11 @@
           class="table-select-row">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
           <td>{{refset.name}}</td>
-          <td>{{refset.namespace}} {{iconConfig[refset.namespace]}}
-            {{refset.organization}}</td>
+          <td>{{refset.moduleId}}<!-- Mobile friendly line-break --> <br
+            class="visible-xs-inline" /> <img title="Flag icon"
+            src="{{iconConfig[refset.moduleId]}}" /> <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{refset.organization}}
+          </td>
           <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
               style="text-decoration: none">
               <i tooltip="Reference to an external refset stored elsewhere."
@@ -85,8 +88,17 @@
         </thead>
         <tbody>
           <tr>
+            <td>Refset Id</td>
+            <td>{{refset.terminologyId}}</td>
+          </tr>
+          <tr>
             <td>Module Id</td>
-            <td>{{refset.moduleId}}</td>
+            <td>{{refset.moduleId}} <img title="Flag icon"
+              src="{{iconConfig[refset.moduleId]}}" /></td>
+          </tr>
+          <tr>
+            <td>Organization</td>
+            <td>{{refset.organization}}</td>
           </tr>
           <tr>
             <td>Effective Time</td>

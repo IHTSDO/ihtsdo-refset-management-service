@@ -35,7 +35,7 @@ public class KeyValuePairList {
    */
   public KeyValuePairList(KeyValuePairList list) {
     name = list.getName();
-    keyValuePairList = list.getKeyValuePairList();
+    keyValuePairList = list.getKeyValuePairs();
   }
 
   /**
@@ -43,8 +43,8 @@ public class KeyValuePairList {
    * 
    * @return the key value pair list
    */
-  @XmlElement(name = "keyValuePairs")
-  public List<KeyValuePair> getKeyValuePairList() {
+  @XmlElement
+  public List<KeyValuePair> getKeyValuePairs() {
     return keyValuePairList;
   }
 
@@ -53,7 +53,7 @@ public class KeyValuePairList {
    * 
    * @param keyValuePairList the key value pair list
    */
-  public void setKeyValuePairList(List<KeyValuePair> keyValuePairList) {
+  public void setKeyValuePairs(List<KeyValuePair> keyValuePairList) {
     this.keyValuePairList = keyValuePairList;
   }
 
@@ -91,7 +91,7 @@ public class KeyValuePairList {
    * @return true, if successful
    */
   public boolean contains(KeyValuePair pair) {
-    return this.getKeyValuePairList().contains(pair);
+    return this.getKeyValuePairs().contains(pair);
   }
 
   /**
@@ -101,7 +101,7 @@ public class KeyValuePairList {
    * @return true, if successful
    */
   public boolean contains(KeyValuePairList pairList) {
-    return this.getKeyValuePairList().containsAll(pairList.getKeyValuePairList());
+    return this.getKeyValuePairs().containsAll(pairList.getKeyValuePairs());
   }
 
   /* see superclass */
