@@ -223,10 +223,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       }
 
       // Remove spelling dictionary
-      // TODO
+      removeSpellingDictionary(translation.getSpellingDictionary());
 
-      // Remove phrase memory
-      // TODO
+      // remove memory entry
+      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        removeMemoryEntry(entry);
+      }
+
+      // remove phrase memory
+      removePhraseMemory(translation.getPhraseMemory());
 
       // Remove description types - CASCADE
 
