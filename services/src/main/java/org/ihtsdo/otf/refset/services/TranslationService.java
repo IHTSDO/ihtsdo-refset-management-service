@@ -420,6 +420,6 @@ public interface TranslationService extends RefsetService {
    * @return list of translations
    * @throws Exception the Exception
    */
-  public TranslationList getTranslations();
+  public TranslationList getTranslations() throws Exception;
 
 }

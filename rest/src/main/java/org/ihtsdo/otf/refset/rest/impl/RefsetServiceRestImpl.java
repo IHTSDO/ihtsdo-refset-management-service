@@ -608,36 +608,53 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @GET
   @Path("/inclusion/add/{refsetId}")
   @ApiOperation(value = "Add new refset inclusion", notes = "Add a new refset inclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetInclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa inclusion,
+    @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (inclusion): /inclusion/add " + inclusion);
+        "RESTful call PUT (inclusion): /inclusion/add " + conceptId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "Add new refset inclusion",
-          UserRole.VIEWER);
+      String userName =
+          authorizeApp(securityService, authToken, "Add new refset inclusion",
+              UserRole.VIEWER);
 
-      Refset refset = refsetService.getRefset(inclusion.getRefsetId());
-      if (inclusion.getMemberType() != Refset.MemberType.INCLUSION) {
-        throw new Exception("Refset member type is not INCLUSION: " + inclusion);
-      }
+      Refset refset = refsetService.getRefset(refsetId);
 
       for (ConceptRefsetMember member : refset.getMembers()) {
-        if (inclusion.getConceptId().equals(member.getConceptId())) {
+        if (conceptId.equals(member.getConceptId())) {
           throw new Exception(
               "Inclusion is redundant as the refset has a matching member "
                   + member.getMemberType());
         }
       }
+
+      ConceptRefsetMember inclusion = new ConceptRefsetMemberJpa();
+      inclusion.setActive(true);
+      inclusion.setConceptId(conceptId);
+      if (refsetService.getTerminologyHandler().assignNames()) {
+        inclusion
+            .setConceptName(refsetService
+                .getTerminologyHandler()
+                .getConcept(conceptId, refset.getTerminology(),
+                    refset.getVersion()).getName());
+      } else {
+        inclusion.setConceptName("TBD");
+      }
+      inclusion.setEffectiveTime(null);
+      inclusion.setLastModifiedBy(userName);
+      inclusion.setPublishable(true);
+      inclusion.setPublished(false);
       inclusion.setRefset(refset);
+      inclusion.setTerminology(refset.getTerminology());
+      inclusion.setVersion(refset.getVersion());
       return refsetService.addMember(inclusion);
 
     } catch (Exception e) {

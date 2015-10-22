@@ -348,6 +348,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
        *  - Project 2
        *     - Refset 16: extensional (imported)
        *     - Refset *: external
+       *     - Translation Refset es: extensional (imported)
+       *     - Translation Refset sv: extensional (imported)
        *  - Project 3
        *     - Refset 17: extensional (imported)
        *     - Refest *: intensional - for testing redefinition
@@ -440,9 +442,29 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
               "32570231000036109", reviewer2);
       // Set the external URL
       refset
-          .setExternalUrl("http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");     
+          .setExternalUrl("http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer2.getAuthToken());
+
+      // Spanish translation - new refsetid for scope refset
+      refset =
+          makeTranslationRefset("Spanish Translation scope reference set", 2,
+              "INT", project2, "", "450829007", reviewer2);
+
+      // Make spanish translation
+      makeTranslation(
+          "conjunto de referencias de lenguaje castellano para América Latina",
+          "450828004", refset, project2, 2, reviewer2);
+
+      // Swedish translation - new refsetid for scope refset
+      refset =
+          makeTranslationRefset("Swedish Translation scope reference set", 3,
+              "INT", project2, "", "45991000052106", reviewer2);
+
+      // Make Swedish translation
+      makeTranslation(
+          "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
+          "46011000052107", refset, project2, 3, reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -464,6 +486,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // START: <<58427002 | Antibiotic measurement (procedure) |
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
           reviewer3);
+
+      // Add an inclusion for
+      // "105058003 | Amdinocillin measurement (procedure) |"
+      new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
+          "105058003", reviewer2.getAuthToken());
+
+      // Add an exclusion for
+      // "313948006 | Serum ampicillin measurement (procedure) |"
+      new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
+          "313948006", reviewer2.getAuthToken());
 
       // NEXT: 105070004 | Ampicillin measurement (procedure) |
 
@@ -731,18 +763,91 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   }
 
   /**
+   * Make translation refset.
+   *
+   * @param name the name
+   * @param num the num
+   * @param edition the edition
+   * @param project the project
+   * @param refsetId the refset id
+   * @param moduleId the module id
+   * @param auth the auth
+   * @return the refset jpa
+   * @throws Exception the exception
+   */
+  private RefsetJpa makeTranslationRefset(String name, int num, String edition,
+    Project project, String refsetId, String moduleId, User auth)
+    throws Exception {
+    ++refsetCt;
+    final RefsetJpa refset = new RefsetJpa();
+    refset.setActive(true);
+    refset.setType(Refset.Type.EXTENSIONAL);
+    refset.setName(name);
+    refset.setDescription("Description of refset " + name);
+    refset.setDefinition(null);
+    refset.setExternalUrl(null);
+    refset.setFeedbackEmail("***REMOVED***");
+    refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
+    refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
+    refset.setForTranslation(false);
+    refset.setLastModified(new Date());
+    refset.setModuleId(moduleId);
+    refset.setProject(project);
+    refset.setPublishable(true);
+    refset.setPublished(true);
+    refset.setTerminology("SNOMEDCT");
+    refset.setTerminologyId(refsetId);
+    // This is an opportunity to use "branch"
+    refset.setVersion("2015-01-31");
+    refset.setWorkflowPath("DEFAULT");
+    refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    RefsetServiceRest refsetService = new RefsetServiceRestImpl();
+    ValidationServiceRest validation = new ValidationServiceRestImpl();
+    // Validate refset
+    ValidationResult result =
+        validation.validateRefset(refset, auth.getAuthToken());
+    if (!result.isValid()) {
+      Logger.getLogger(getClass()).error(result.toString());
+      throw new Exception("Refset does not pass validation.");
+    }
+    // Add refset
+
+    refsetService.addRefset(refset, auth.getAuthToken());
+    refsetService = new RefsetServiceRestImpl();
+
+    // Import members (from file)
+    ValidationResult vr =
+        refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+            auth.getAuthToken());
+    if (!vr.isValid()) {
+      throw new Exception("import staging is invalid - " + vr);
+    }
+    refsetService = new RefsetServiceRestImpl();
+    InputStream in =
+        new FileInputStream(new File(
+            "../config/src/main/resources/data/translation" + num + ""
+                + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt"));
+    refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+        auth.getAuthToken());
+    in.close();
+
+    return refset;
+  }
+
+  /**
    * Make translation.
    *
    * @param name the name
+   * @param terminologyId the terminology id
    * @param refset the refset
    * @param project the project
+   * @param num the num
    * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception
    */
-  @SuppressWarnings("unused")
-  private TranslationJpa makeTranslation(String name, Refset refset,
-    Project project, User auth) throws Exception {
+  private TranslationJpa makeTranslation(String name, String terminologyId,
+    Refset refset, Project project, int num, User auth) throws Exception {
     ++translationCt;
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
@@ -758,7 +863,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setPublishable(true);
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
-    translation.setTerminologyId(refset.getTerminologyId());
+    translation.setTerminologyId(terminologyId);
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
