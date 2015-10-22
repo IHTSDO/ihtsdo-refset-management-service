@@ -17,7 +17,6 @@ import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
@@ -32,9 +31,10 @@ public interface TranslationService extends RefsetService {
    * Removes the translation.
    *
    * @param id the id
+   * @param cascade the cascade
    * @throws Exception the exception
    */
-  public void removeTranslation(Long id) throws Exception;
+  public void removeTranslation(Long id, boolean cascade) throws Exception;
 
   /**
    * Update translation.
@@ -73,56 +73,6 @@ public interface TranslationService extends RefsetService {
    * @throws Exception the exception
    */
   public Translation getTranslation(Long id) throws Exception;
-
-  /**
-   * Update description type ref set member.
-   *
-   * @param descriptionTypeRefsetMember the description type ref set member
-   * @throws Exception the exception
-   */
-  public void updateDescriptionTypeRefsetMember(
-    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
-
-  /**
-   * Adds the description type ref set member.
-   *
-   * @param descriptionTypeRefsetMember the description type ref set member
-   * @return the description type ref set member
-   * @throws Exception the exception
-   */
-  public DescriptionTypeRefsetMember addDescriptionTypeRefsetMember(
-    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception;
-
-  /**
-   * Returns the description type ref set member.
-   *
-   * @param terminologyId the terminology id
-   * @param terminology the terminology
-   * @param version the version
-   * @return the description type ref set member
-   * @throws Exception the exception
-   */
-  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(
-    String terminologyId, String terminology, String version)
-    throws Exception;
-
-  /**
-   * Returns the description type ref set member.
-   *
-   * @param id the id
-   * @return the description type ref set member
-   * @throws Exception the exception
-   */
-  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(Long id)
-    throws Exception;
-
-  /**
-   * Removes the description type ref set member.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeDescriptionTypeRefsetMember(Long id) throws Exception;
 
   /**
    * Find translations for query.
@@ -357,7 +307,6 @@ public interface TranslationService extends RefsetService {
   public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
     String terminology, String version) throws Exception;
 
-
   /**
    * Adds the staged change.
    *
@@ -365,8 +314,8 @@ public interface TranslationService extends RefsetService {
    * @return the staged translation change
    * @throws Exception the exception
    */
-  public StagedTranslationChange addStagedTranslationChange(StagedTranslationChange change)
-    throws Exception;
+  public StagedTranslationChange addStagedTranslationChange(
+    StagedTranslationChange change) throws Exception;
 
   /**
    * Removes the staged change.
@@ -383,7 +332,8 @@ public interface TranslationService extends RefsetService {
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedTranslationChange getStagedTranslationChange(Long id) throws Exception;
+  public StagedTranslationChange getStagedTranslationChange(Long id)
+    throws Exception;
 
   /**
    * Adds the spelling dictionary.

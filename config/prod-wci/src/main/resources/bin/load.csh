@@ -5,9 +5,9 @@
 # distribution.
 
 # Configure 
-set REFSET_CODE=~/code
-set REFSET_CONFIG=~/config/config.properties
-set REFSET_DATA=~/data
+set REFSET_CODE=~/refset/code
+set REFSET_CONFIG=~/refset/config/config.properties
+set REFSET_DATA=~/refset/data
 set SERVER=false
 echo "------------------------------------------------"
 echo "Starting ...`/bin/date`"
@@ -19,14 +19,13 @@ echo "SERVER = $SERVER"
 
 echo "    Generate sample data ...`/bin/date`"
 cd $REFSET_CODE/admin
-mvn install -PSample -Drefset.config=$REFSET_CONFIG -Dmode=create >&! mvn.log
+mvn install -PSample2 -Drefset.config=$REFSET_CONFIG -Dmode=create >&! mvn.log
 if ($status != 0) then
     echo "ERROR running generating sample data"
     cat mvn.log
     exit 1
 endif
-
-# TODO:
+:
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"

@@ -23,11 +23,13 @@ tsApp
         }
 
         this.getIconConfig = function() {
+          console.debug("get icon config", iconConfig);
           return iconConfig;
         }
 
         // get icon config info
         this.prepareIconConfig = function() {
+          console.debug("prepareIconConfig");
           var deferred = $q.defer();
 
           // Get projects
@@ -37,7 +39,7 @@ tsApp
             .then(
               // success
               function(response) {
-                console.debug("get icons", response.data);
+                console.debug("  icons = ", response.data);
                 // Set the map of key=>value
                 for (var i = 0; i < response.data.keyValuePairs.length; i++) {
                   iconConfig[response.data.keyValuePairs[i].key] = response.data.keyValuePairs[i].value;
@@ -53,7 +55,7 @@ tsApp
               });
           return deferred.promise;
         }
-        
+
         // get all projects
         this.getProjects = function() {
           var deferred = $q.defer();
@@ -320,6 +322,4 @@ tsApp
           return deferred.promise;
         }
 
-        // initialize
-        this.prepareIconConfig();
       } ]);

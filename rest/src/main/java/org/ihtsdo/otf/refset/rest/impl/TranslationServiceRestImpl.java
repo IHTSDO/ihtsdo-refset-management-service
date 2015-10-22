@@ -384,7 +384,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // TODO: rm phrase memory
 
       // Create service and configure transaction scope
-      translationService.removeTranslation(translationId);
+      translationService.removeTranslation(translationId, false);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");

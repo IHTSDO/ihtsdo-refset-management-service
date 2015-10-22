@@ -86,9 +86,10 @@ public class DescriptionTypeRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    tester.include("version");
+    // tester.include("version");
     tester.include("refsetId");
-    tester.include("conceptId");
+    tester.include("name");
+    tester.include("type");
     tester.include("descriptionFormat");
     tester.include("descriptionLength");
 
@@ -163,7 +164,8 @@ public class DescriptionTypeRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("version");
 
     tester.include("refsetId");
-    tester.include("conceptId");
+    tester.include("name");
+    tester.include("type");
     tester.include("descriptionFormat");
     tester.include("descriptionLength");
 

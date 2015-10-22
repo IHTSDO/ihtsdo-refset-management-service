@@ -145,7 +145,7 @@ tsApp.directive('refsetTable',
               $scope.getCurrentRefsetReleaseInfo(refset);
               $scope.getMembers(refset);
             };
-            
+
             // Initialize
             $scope.getRefsets();
           } ]

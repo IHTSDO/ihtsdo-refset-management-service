@@ -34,15 +34,19 @@
           ng-click="setSortField('translation','name', null)">Name<span
             ng-bind="getSortIndicator('translation','name',null)"></span></th>
         <th class="col-md-6 col-xs-6"
-          ng-click="setSortField('translation','description', null)">Description<span
-            ng-bind="getSortIndicator('translation','description',null)"></span></th>
+          ng-click="setSortField('translation','module', null)">Module<span
+            ng-bind="getSortIndicator('translation','module',null)"></span></th>
       </thead>
       <tbody>
         <tr ng-repeat="translation in translations"
           ng-click="setTranslation(translation);" class="table-select-row">
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
           <td>{{translation.name}}</td>
-          <td>{{translation.description}}</td>
+          <td>{{translation.moduleId}}<!-- Mobile friendly line-break --> <br
+            class="visible-xs-inline" /> <img title="Flag icon"
+            src="{{iconConfig[translation.moduleId]}}" /> <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{translation.organization}}
+          </td>
         </tr>
       </tbody>
     </table>
@@ -66,6 +70,10 @@
           <th class="col-md-8 col-xs-8"></th>
         </thead>
         <tbody>
+          <tr>
+            <td>Refset Id</td>
+            <td>{{translation.refsetId}}</td>
+          </tr>
           <tr>
             <td>Module Id</td>
             <td>{{translation.moduleId}}</td>
@@ -169,10 +177,9 @@
           <tbody>
             <tr ng-repeat="concept in translation.concepts">
               <td>{{concept.terminologyId}}</td>
-              <td>{{concept.name}} <br/> <span
+              <td>{{concept.name}} <br /> <span
                   ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
-                  &bull;&nbsp;{{desc.term}}
-                </span>
+                  &bull;&nbsp;{{desc.term}} </span>
               </td>
             </tr>
           </tbody>

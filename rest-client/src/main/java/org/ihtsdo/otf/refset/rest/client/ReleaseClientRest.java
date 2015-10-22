@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -31,7 +32,6 @@ public class ReleaseClientRest extends RootClientRest implements
   public ReleaseClientRest(Properties config) {
     this.config = config;
   }
-
 
   @Override
   public ValidationResult validateRefsetRelease(Long refsetId,
@@ -97,8 +97,8 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId, String authToken)
-    throws Exception {
+  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
@@ -121,15 +121,15 @@ public class ReleaseClientRest extends RootClientRest implements
   public void removeReleaseArtifact(Long artifactId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    
+
   }
 
   @Override
-  public void uploadReleaseArtifact(
+  public ReleaseArtifact importReleaseArtifact(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long releaseInfoId, String authToken) throws Exception {
     // TODO Auto-generated method stub
-    
+    return null;
   }
 
   @Override
@@ -139,7 +139,6 @@ public class ReleaseClientRest extends RootClientRest implements
     return null;
   }
 
-
   @Override
   public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
     String authToken) throws Exception {
@@ -147,13 +146,11 @@ public class ReleaseClientRest extends RootClientRest implements
     return null;
   }
 
-
   @Override
   public ReleaseInfo beginTranslationRelease(Long translationId,
     String effectiveTime, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
-
 
 }

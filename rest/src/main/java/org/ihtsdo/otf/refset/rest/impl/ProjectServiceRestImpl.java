@@ -592,7 +592,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       for (Object prop : p.keySet()) {
         if (prop.toString().startsWith("icons.")) {
           final KeyValuePair pair = new KeyValuePair();
-          pair.setKey(pair.toString().substring(5));
+          pair.setKey(prop.toString().substring(6));
           pair.setValue(p.getProperty(prop.toString()));
           list.addKeyValuePair(pair);
         }

@@ -84,7 +84,7 @@ public class RelationshipJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    tester.include("version");
+    //tester.include("version");
     tester.include("characteristicTypeId");
     tester.include("destinationConcept");
     tester.include("modifierId");

@@ -49,11 +49,13 @@ public class DescriptionTypeRefsetMemberListUnitTest extends
     o1 = new DescriptionTypeRefsetMemberJpa();
     o1.setId(1L);
     o1.setTerminologyId("1");
-    o1.setConceptId("1");
+    o1.setName("1");
+    o1.setType("1");
     o2 = new DescriptionTypeRefsetMemberJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
-    o2.setConceptId("2");
+    o2.setName("2");
+    o2.setType("2");
   }
 
   /**

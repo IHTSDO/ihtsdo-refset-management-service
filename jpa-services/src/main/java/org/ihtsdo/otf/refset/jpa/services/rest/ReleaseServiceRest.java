@@ -9,6 +9,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 import java.io.InputStream;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -200,9 +201,10 @@ public interface ReleaseServiceRest {
    * @param in the in
    * @param releaseInfoId the release info id
    * @param authToken the auth token
+   * @return the release artifact
    * @throws Exception the exception
    */
-  public void uploadReleaseArtifact(
+  public ReleaseArtifact importReleaseArtifact(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long releaseInfoId, String authToken) throws Exception;
 

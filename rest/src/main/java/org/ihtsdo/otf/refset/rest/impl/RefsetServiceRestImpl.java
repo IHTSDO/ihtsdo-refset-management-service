@@ -30,10 +30,10 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.MemberType;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.Refset.MemberType;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -80,11 +80,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /** The security service. */
   private SecurityService securityService;
 
-  /**  The members in common map. */
+  /** The members in common map. */
   private static Map<String, List<ConceptRefsetMember>> membersInCommonMap =
       new HashMap<>();
 
-  /**  The member diff report map. */
+  /** The member diff report map. */
   private static Map<String, MemberDiffReport> memberDiffReportMap =
       new HashMap<>();
 
@@ -627,20 +627,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(inclusion.getRefsetId());
       if (inclusion.getMemberType() != Refset.MemberType.INCLUSION) {
-        throw new Exception("Refset member type is not INCLUSION: "
-            + inclusion);
+        throw new Exception("Refset member type is not INCLUSION: " + inclusion);
       }
 
-      for(ConceptRefsetMember c : refset.getMembers()) {
-        if (inclusion.getConceptId().equals(c.getConceptId()) &&
-            c.getMemberType() == Refset.MemberType.MEMBER) {
-          throw new Exception("Inclusion is redundant as the refset has a matching member");
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        if (inclusion.getConceptId().equals(member.getConceptId())) {
+          throw new Exception(
+              "Inclusion is redundant as the refset has a matching member "
+                  + member.getMemberType());
         }
       }
-      ConceptRefsetMember newMember = refsetService.addMember(inclusion);
-      refset.addMember(newMember);
-      refsetService.updateRefset(refset);
-      return newMember;
+      inclusion.setRefset(refset);
+      return refsetService.addMember(inclusion);
 
     } catch (Exception e) {
       handleException(e, "trying to add new refset inclusion ");
@@ -652,117 +650,50 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
-  @Override
-  @POST
-  @Path("/inclusions")
-  @ApiOperation(value = "Finds refset inclusions", notes = "Finds refset inclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
-  public ConceptRefsetMemberList findRefsetInclusionsForQuery(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Refset): find refset inclusions for query, refsetId:"
-            + refsetId + " query:" + query + " " + pfs);
-
-    RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authorizeApp(securityService, authToken, "find refset inclusions",
-          UserRole.VIEWER);
-
-      return refsetService.findMembersForRefset(refsetId,
-          (query != null && !query.equals("")) ? query
-              + " AND memberType:INCLUSION" : "memberType:INCLUSION", pfs);
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve refset inclusions ");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
-
   /* see superclass */
   @Override
-  @PUT
+  @GET
   @Path("/exclusion/add/{refsetId}")
   @ApiOperation(value = "Add new refset exclusion", notes = "Add a new refset exclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetExclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa exclusion,
+    @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (exclusion): /exclusion/add " + exclusion);
+        "RESTful call PUT (exclusion): /exclusion/add " + conceptId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "Add new refset exclusion",
           UserRole.VIEWER);
 
-      Refset refset = refsetService.getRefset(exclusion.getRefsetId());
-      if (exclusion.getMemberType() != Refset.MemberType.EXCLUSION) {
-        throw new Exception("Refset member type is not EXCLUSION: "
-            + exclusion);
-      }
+      Refset refset = refsetService.getRefset(refsetId);
 
-      boolean found = false;
-      for(ConceptRefsetMember c : refset.getMembers()) {
-        if (exclusion.getConceptId().equals(c.getConceptId()) &&
-            c.getMemberType() == Refset.MemberType.MEMBER) {
-          found = true;
+      ConceptRefsetMember member = null;
+      for (ConceptRefsetMember c : refset.getMembers()) {
+        if (conceptId.equals(c.getConceptId())
+            && (c.getMemberType() == Refset.MemberType.MEMBER)) {
+          member = c;
           break;
+        } else if (conceptId.equals(c.getConceptId())
+            && (c.getMemberType() == Refset.MemberType.INACTIVE_MEMBER)) {
+          // An INACTIVE_MEMBER normally shouldn't exist in an intensional
+          // refset. And this can ONLY be added for an intensional refset
+          throw new Exception("This should never happen.");
         }
       }
-      
-      if (!found) {
-        throw new Exception("Exclusion is redundant as the refset does not contain a matching member");
-      }
-      
-      ConceptRefsetMember newMember = refsetService.addMember(exclusion);
-      refset.addMember(newMember);
-      refsetService.updateRefset(refset);
-      return newMember;
 
+      if (member == null) {
+        throw new Exception(
+            "Exclusion is redundant as the refset does not contain a matching member");
+      }
+      member.setMemberType(Refset.MemberType.EXCLUSION);
+      refsetService.updateMember(member);
+      return member;
     } catch (Exception e) {
       handleException(e, "trying to add new refset exclusion ");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
-
-  @Override
-  @POST
-  @Path("/exclusions")
-  @ApiOperation(value = "Finds refset exclusions", notes = "Finds refset exclusions based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
-  public ConceptRefsetMemberList findRefsetExclusionsForQuery(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Refset): find refset exclusions for query, refsetId:"
-            + refsetId + " query:" + query + " " + pfs);
-
-    RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authorizeApp(securityService, authToken, "find refset exclusions",
-          UserRole.VIEWER);
-
-      return refsetService.findMembersForRefset(refsetId,
-          (query != null && !query.equals("")) ? query
-              + " AND memberType:EXCLUSION" : "memberType:EXCLUSION", pfs);
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve refset exclusions ");
       return null;
     } finally {
       refsetService.close();
@@ -887,11 +818,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // Compute the expression
         // add members from expression results
         ConceptList conceptList =
-            refsetService.getTerminologyHandler()
-                .resolveExpression(refsetCopy.getDefinition(), refsetCopy.getTerminology(),
-                    refsetCopy.getVersion(), null);
+            refsetService.getTerminologyHandler().resolveExpression(
+                refsetCopy.getDefinition(), refsetCopy.getTerminology(),
+                refsetCopy.getVersion(), null);
         Date startDate = new Date();
-        
+
         // collect exclusions concept ids from origin refset
         Set<String> exclusionConceptIds = new HashSet<>();
         for (ConceptRefsetMember member : refset.getMembers()) {
@@ -906,7 +837,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
         // create members to add
         for (Concept concept : conceptList.getObjects()) {
-          ConceptRefsetMember originMember = conceptIdMap.get(concept.getTerminologyId());
+          ConceptRefsetMember originMember =
+              conceptIdMap.get(concept.getTerminologyId());
           ConceptRefsetMember member = null;
           if (originMember != null) {
             member = new ConceptRefsetMemberJpa(originMember);
@@ -917,11 +849,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             member.setActive(concept.isActive());
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
-            member.setConceptName("TBD");
+            if (refsetService.getTerminologyHandler().assignNames()) {
+              member.setConceptName(refsetService
+                  .getTerminologyHandler()
+                  .getConcept(member.getConceptId(), refset.getTerminology(),
+                      refset.getVersion()).getName());
+            } else {
+              member.setConceptName("TBD");
+            }
             member.setLastModified(startDate);
-            member.setLastModifiedBy(userName); 
+            member.setLastModifiedBy(userName);
           }
-          
+
           if (exclusionConceptIds.contains(member.getConceptId())) {
             member.setMemberType(MemberType.EXCLUSION);
           } else {
@@ -933,9 +872,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setVersion(refsetCopy.getVersion());
           member.setId(null);
           refsetCopy.addMember(member);
-          refsetService.addMember(member);   
+          refsetService.addMember(member);
         }
-        // add inclusions to the refsetCopy if they are not already in the member list
+        // add inclusions to the refsetCopy if they are not already in the
+        // member list
         for (ConceptRefsetMember member : refset.getMembers()) {
           if (member.getMemberType() == Refset.MemberType.INCLUSION) {
             boolean found = false;
@@ -948,8 +888,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             if (!found) {
               member.setId(null);
               member.setRefset(refsetCopy);
-              if (!refsetService.getTerminologyHandler().getConcept(member.getConceptId(), 
-                  refsetCopy.getTerminology(), refsetCopy.getVersion()).isActive()) {
+              if (!refsetService
+                  .getTerminologyHandler()
+                  .getConcept(member.getConceptId(),
+                      refsetCopy.getTerminology(), refsetCopy.getVersion())
+                  .isActive()) {
                 member.setMemberType(Refset.MemberType.INACTIVE_INCLUSION);
               } else {
                 member.setMemberType(Refset.MemberType.INCLUSION);
@@ -958,23 +901,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             }
           }
         }
-      }       
-      else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+      } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
-          if (!refsetService.getTerminologyHandler().getConcept(member.getConceptId(), 
-              refsetCopy.getTerminology(), refsetCopy.getVersion()).isActive()) {
+          if (!refsetService
+              .getTerminologyHandler()
+              .getConcept(member.getConceptId(), refsetCopy.getTerminology(),
+                  refsetCopy.getVersion()).isActive()) {
             member.setMemberType(Refset.MemberType.INACTIVE_MEMBER);
             refsetService.updateMember(member);
           }
         }
-      }
-      else {
+      } else {
         throw new Exception("Refset type must be extensional or intensional.");
       }
-      
-        refsetService.updateRefset(refsetCopy);
-        refsetService.commit();
-        return refsetCopy;
+
+      refsetService.updateRefset(refsetCopy);
+      refsetService.commit();
+      return refsetCopy;
 
       // TODO: this solution involved adding a "provisional" flag to refset,
       // in general, in other places where "findRefsetsForQuery" is being called
@@ -1058,8 +1001,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
-      
-      
+
       // copy definition from staged to origin refset
       refset.setDefinition(stagedRefset.getDefinition());
 
@@ -1067,7 +1009,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
-      refsetService.updateRefset(refset);      
+      refsetService.updateRefset(refset);
       refsetService.commit();
       refsetService.beginTransaction();
       refsetService.removeRefset(stagedRefset.getId(), true);
@@ -1075,7 +1017,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       return refset;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to finish refset migration");
     } finally {
@@ -1197,7 +1139,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               .resolveExpression(newDefinition, refset.getTerminology(),
                   refset.getVersion(), null);
       Date startDate = new Date();
-      
+
       // collect exclusions concept ids from origin refset
       Set<String> exclusionConceptIds = new HashSet<>();
       for (ConceptRefsetMember member : refset.getMembers()) {
@@ -1213,7 +1155,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       // create members to add
       for (Concept concept : conceptList.getObjects()) {
-        ConceptRefsetMember originMember = conceptIdMap.get(concept.getTerminologyId());
+        ConceptRefsetMember originMember =
+            conceptIdMap.get(concept.getTerminologyId());
         ConceptRefsetMember member = null;
         if (originMember != null) {
           member = new ConceptRefsetMemberJpa(originMember);
@@ -1224,11 +1167,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setActive(concept.isActive());
           member.setPublished(concept.isPublished());
           member.setConceptId(concept.getTerminologyId());
-          member.setConceptName("TBD");
+          if (refsetService.getTerminologyHandler().assignNames()) {
+            member.setConceptName(refsetService
+                .getTerminologyHandler()
+                .getConcept(member.getConceptId(), refset.getTerminology(),
+                    refset.getVersion()).getName());
+          } else {
+            member.setConceptName("TBD");
+          }
           member.setLastModified(startDate);
-          member.setLastModifiedBy(userName); 
+          member.setLastModifiedBy(userName);
         }
-        
+
         if (exclusionConceptIds.contains(member.getConceptId())) {
           member.setMemberType(MemberType.EXCLUSION);
         } else {
@@ -1240,10 +1190,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setVersion(refsetCopy.getVersion());
         member.setId(null);
         refsetCopy.addMember(member);
-        refsetService.addMember(member);   
+        refsetService.addMember(member);
       }
 
-      // add inclusions to the refsetCopy if they are not already in the member list
+      // add inclusions to the refsetCopy if they are not already in the member
+      // list
       for (ConceptRefsetMember member : refset.getMembers()) {
         if (member.getMemberType() == Refset.MemberType.INCLUSION) {
           boolean found = false;
@@ -1310,56 +1261,64 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset is not staged for redefinition, cannot finish.");
       }
 
-      // get the staged change tracking object
-      StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
-
       // turn transaction per operation off
       // create a transaction
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
 
-      // remove from origin refsets members that aren't in staged
-      // convert to sets for efficiency
+      // get the staged change tracking object
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+
+      // Get origin and staged members
       Refset stagedRefset = change.getStagedRefset();
       Refset originRefset = change.getOriginRefset();
       Set<ConceptRefsetMember> originMembers =
           new HashSet<>(originRefset.getMembers());
       Set<ConceptRefsetMember> stagedMembers =
           new HashSet<>(stagedRefset.getMembers());
+
+      // Remove origin-not-staged members
       for (ConceptRefsetMember originMember : originMembers) {
         if (!stagedMembers.contains(originMember)) {
           refsetService.removeMember(originMember.getId());
         }
       }
 
-      // rewire members from staged that are not in origin, to origin
+      // rewire staged-not-origin members (remove inactive entries)
+      // TODO: reconsider whether to keep or remove inactive members
+      // if keeping, convert them back to "MEMBER" or "INCLUSION"
       for (ConceptRefsetMember stagedMember : stagedMembers) {
         if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_MEMBER) {
           refsetService.removeMember(stagedMember.getId());
         } else if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_INCLUSION) {
           refsetService.removeMember(stagedMember.getId());
-        } else if (!originMembers.contains(stagedMember)) {
-          // member knows which refset it is a part of, not inverse
+        }
+        // New member, rewire to origin
+        else if (!originMembers.contains(stagedMember)) {
           stagedMember.setRefset(refset);
           refsetService.updateMember(stagedMember);
-          //refset.addMember(stagedMember); // TODO try to attach so refset will know its members for removal
+        }
+        // Member matches one in origin - remove it
+        else {
+          refsetService.removeMember(stagedMember.getId());
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
-      
-      
+
       // copy definition from staged to origin refset
       refset.setDefinition(stagedRefset.getDefinition());
 
       // Remove the staged refset change and set staging type back to null
-      refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      refsetService.commit();
-      refsetService.beginTransaction();
-      refsetService.removeRefset(stagedRefset.getId(), true);
+
+      // Remove the staged refset change
+      refsetService.removeStagedRefsetChange(change.getId());
+
+      // remove the refset
+      refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
 
@@ -1448,16 +1407,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset1 = refsetService.getRefset(refsetId1);
       Refset refset2 = refsetService.getRefset(refsetId2);
-      String reportToken = UUID.randomUUID().toString(); 
+      String reportToken = UUID.randomUUID().toString();
 
       // creates a "members in common" list (where reportToken is the key)
       List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-      // TODO: members in common not getting populated because terminologyIds are different
+      // TODO: members in common not getting populated because terminologyIds
+      // are different
       System.out.println("refset1= " + refset1.getMembers());
       System.out.println("refset2= " + refset2.getMembers());
       for (ConceptRefsetMember member1 : refset1.getMembers()) {
-        if (member1.getMemberType() == Refset.MemberType.MEMBER &&
-            refset2.getMembers().contains(member1)) {
+        if (member1.getMemberType() == Refset.MemberType.MEMBER
+            && refset2.getMembers().contains(member1)) {
           membersInCommon.add(member1);
         }
       }
@@ -1493,13 +1453,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
-    
 
   @Override
   @POST
   @Produces({
-    MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/common/members")
   @ApiOperation(value = "Finds members in common", notes = "Finds members in common given a reportToken based on pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
@@ -1528,7 +1486,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       list.setTotalCount(commonMembersList.size());
       list.setObjects(refsetService.applyPfsToList(commonMembersList,
-              ConceptRefsetMember.class, pfs));
+          ConceptRefsetMember.class, pfs));
       return list;
 
     } catch (Exception e) {
@@ -2000,6 +1958,5 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-
 
 }
