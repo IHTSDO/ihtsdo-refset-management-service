@@ -431,7 +431,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @param object the object
    * @throws Exception the exception
    */
-  protected <T extends HasLastModified> void updateObject(T object)
+  protected <T extends Object> void updateObject(T object)
     throws Exception {
     try {
       // update

@@ -5,6 +5,9 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 
+import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -381,5 +384,92 @@ public interface TranslationService extends RefsetService {
    * @throws Exception the exception
    */
   public StagedTranslationChange getStagedTranslationChange(Long id) throws Exception;
+
+  /**
+   * Adds the spelling dictionary.
+   *
+   * @param dictionary the spelling dictionary
+   * @return the spelling dictionary
+   * @throws Exception the Exception
+   */
+  public SpellingDictionary addSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception;
+
+  /**
+   * Update the spelling dictionary.
+   *
+   * @param dictionary the spelling dictionary
+   * @throws Exception the Exception
+   */
+  public void updateSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception;
+
+  /**
+   * Remove the spelling dictionary.
+   *
+   * @param dictionary the spelling dictionary
+   * @throws Exception the Exception
+   */
+  public void removeSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception;
+
+  /**
+   * Adds the memory entry.
+   *
+   * @param memoryEntry the memory entry
+   * @return the memory entry
+   * @throws Exception the Exception
+   */
+  public MemoryEntry addMemoryEntry(MemoryEntry memoryEntry) throws Exception;
+
+  /**
+   * Update the memory entry.
+   *
+   * @param memoryEntry the memory entry
+   * @throws Exception the Exception
+   */
+  public void updateMemoryEntry(MemoryEntry memoryEntry) throws Exception;
+
+  /**
+   * Remove the memory entry.
+   *
+   * @param memoryEntry the memory entry
+   * @throws Exception the Exception
+   */
+  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception;
+
+  /**
+   * Adds the phrase memory.
+   *
+   * @param phraseMemory the phrase memory
+   * @return the phrase memory
+   * @throws Exception the Exception
+   */
+  public PhraseMemory addPhraseMemory(PhraseMemory phraseMemory)
+    throws Exception;
+
+  /**
+   * Update the phrase memory.
+   *
+   * @param phraseMemory the phrase memory
+   * @throws Exception the Exception
+   */
+  public void updatePhraseMemory(PhraseMemory phraseMemory) throws Exception;
+
+  /**
+   * Remove the phrase memory.
+   *
+   * @param phraseMemory the phrase memory
+   * @throws Exception the Exception
+   */
+  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception;
+
+  /**
+   * Get a list of translations
+   *
+   * @return list of translations
+   * @throws Exception the Exception
+   */
+  public TranslationList getTranslations();
 
 }

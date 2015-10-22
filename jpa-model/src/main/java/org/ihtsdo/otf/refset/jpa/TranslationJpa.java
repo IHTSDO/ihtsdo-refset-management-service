@@ -109,7 +109,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private List<Concept> concepts = null;
   
   /** The Spelling Dictionary. */
-  @OneToOne(targetEntity = SpellingDictionaryJpa.class, optional = true)
+  @OneToOne(mappedBy = "translation", targetEntity = SpellingDictionaryJpa.class, optional = false)
   private SpellingDictionary spellingDictionary = null;
 
   /**

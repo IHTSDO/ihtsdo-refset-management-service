@@ -16,6 +16,9 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -405,7 +408,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         // search by id
         .add(AuditEntity.id().eq(translationId))
 
-        // must preceed parameter date
+        // must precede parameter date
         .add(AuditEntity.revisionProperty("timestamp").le(date))
 
         // order by descending timestamp
@@ -783,6 +786,107 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     try {
       query.setParameter("translationId", translationId);
       return (StagedTranslationChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
+  
+  @Override
+  public SpellingDictionary addSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add spelling dictionary " + dictionary);
+
+    // Add spelling dictionary
+    SpellingDictionary newDictionary = addObject(dictionary);
+    return newDictionary;
+  }
+
+  @Override
+  public void updateSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update spelling dictionary " + dictionary);
+
+    updateObject(dictionary);
+  }
+
+  @Override
+  public void removeSpellingDictionary(SpellingDictionary dictionary)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove spelling dictionary " + dictionary);
+
+    removeObject(dictionary, SpellingDictionary.class);
+  }
+
+  @Override
+  public MemoryEntry addMemoryEntry(MemoryEntry memoryEntry) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add memory entry " + memoryEntry);
+
+    // Add memory entry
+    MemoryEntry newMemoryEntry = addObject(memoryEntry);
+    return newMemoryEntry;
+  }
+
+  @Override
+  public void updateMemoryEntry(MemoryEntry memoryEntry) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update memory entry " + memoryEntry);
+
+    updateObject(memoryEntry);
+  }
+
+  @Override
+  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove memory entry " + memoryEntry);
+
+    removeObject(memoryEntry, MemoryEntry.class);
+  }
+
+  @Override
+  public PhraseMemory addPhraseMemory(PhraseMemory phraseMemory)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - add phrase memory " + phraseMemory);
+
+    // Add phrase memory
+    PhraseMemory newPhraseMemory = addObject(phraseMemory);
+    return newPhraseMemory;
+  }
+
+  @Override
+  public void updatePhraseMemory(PhraseMemory phraseMemory) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - update phrase memory " + phraseMemory);
+
+    updateObject(phraseMemory);
+  }
+
+  @Override
+  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - remove phrase memory " + phraseMemory);
+
+    removeObject(phraseMemory, PhraseMemory.class);
+  }
+  
+  /* see superclass */
+  @Override
+  @SuppressWarnings("unchecked")
+  public TranslationList getTranslations() {
+    Logger.getLogger(getClass()).debug("Translation Service - get translations");
+    javax.persistence.Query query =
+        manager.createQuery("select a from TranslationJpa a");
+    try {
+      List<Translation> translations = query.getResultList();
+      TranslationList translationList = new TranslationListJpa();
+      translationList.setObjects(translations);
+      //TODO: handle lazy initialization
+
+      return translationList;
     } catch (NoResultException e) {
       return null;
     }
