@@ -438,7 +438,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       RefsetJpa refset =
           makeRefset("Adverse reaction agent reference set", null, 0,
-              "AU1000036", Refset.Type.EXTERNAL, project2, "32568021000036109",
+              "AU1000036", Refset.Type.EXTERNAL, project2, "142321000036106",
               "32570231000036109", reviewer2);
       // Set the external URL
       refset

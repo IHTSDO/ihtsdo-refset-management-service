@@ -650,6 +650,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       inclusion.setEffectiveTime(null);
       inclusion.setLastModifiedBy(userName);
+      inclusion.setMemberType(Refset.MemberType.INCLUSION);
+      inclusion.setModuleId(refset.getModuleId());
       inclusion.setPublishable(true);
       inclusion.setPublished(false);
       inclusion.setRefset(refset);
