@@ -347,8 +347,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
        *     - Refset 15: extensional (imported)
        *  - Project 2
        *     - Refset 16: extensional (imported)
+       *     - Refset *: external
        *  - Project 3
        *     - Refset 17: extensional (imported)
+       *     - Refest *: intensional - for testing redefinition
+       *     - Refest *: intensional - for testing redefinition
+       *     - Refest *: intensional - for testing redefinition
+       *     - Refest *: intensional - for testing migration
+       *     - Refest *: intensional - for testing migration
+       *     - Refest *: intensional - for testing migration
        * </pre>
        */
 
@@ -427,6 +434,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "AU1000036", Refset.Type.INTENSIONAL, project2, "32568021000036109",
           "32570231000036109", reviewer2);
 
+      RefsetJpa refset =
+          makeRefset("Adverse reaction agent reference set", null, 0,
+              "AU1000036", Refset.Type.EXTERNAL, project2, "32568021000036109",
+              "32570231000036109", reviewer2);
+      // Set the external URL
+      refset
+          .setExternalUrl("http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");     
+      new RefsetServiceRestImpl()
+          .updateRefset(refset, reviewer2.getAuthToken());
+
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
@@ -437,7 +454,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Create intensional refsets to test definition changes
       Logger.getLogger(getClass()).info(
           "  intensional refsets with definition changes");
-      RefsetJpa refset =
+      refset =
           makeRefset("Antibiotic measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "",
               "731000124108", reviewer3);
