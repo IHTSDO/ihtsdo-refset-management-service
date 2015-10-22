@@ -422,4 +422,13 @@ public interface TranslationService extends RefsetService {
    */
   public TranslationList getTranslations();
 
+  /**
+   * Get a memory entry by id
+   *
+   * @param id the memory entry id
+   * @return memory entry
+   * @throws Exception the Exception
+   */
+  MemoryEntry getMemoryEntry(Long id) throws Exception;
+
 }

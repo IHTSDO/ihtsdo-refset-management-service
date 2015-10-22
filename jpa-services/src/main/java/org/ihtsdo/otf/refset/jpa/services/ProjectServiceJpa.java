@@ -538,6 +538,23 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       throw e;
     }
   }
+  
+  /**
+   * Returns the checks for object.
+   *
+   * @param <T> the
+   * @param id the id
+   * @param clazz the clazz
+   * @return the checks for object
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T getObject(Long id, Class<T> clazz)
+    throws Exception {
+    // Get transaction and object
+    tx = manager.getTransaction();
+    T component = manager.find(clazz, id);
+    return component;
+  }
 
   /**
    * Returns the checks for last modified.
