@@ -375,13 +375,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getSpellingDictionary());
 
       // remove memory entry
-      // TODO: Figure out the key
-      for (MemoryEntry entry : translation.getPhraseMemoryMap().get("key")
-          .getEntries()) {
+      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
         translationService.removeMemoryEntry(entry);
       }
 
-      // TODO: rm phrase memory
+      // remove phrase memory
+      translationService.removePhraseMemory(translation.getPhraseMemory());
 
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId, false);
@@ -1136,10 +1135,36 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public TranslationList findTranslationsWithPhraseMemory(String authToken)
+  @GET
+  @Path("/translations/phrasememory")
+  @ApiOperation(value = "Get translations with phrase memory", notes = "Get translations with phrase memory")
+  public TranslationList findTranslationsWithPhraseMemory(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /translations/phrasememory");
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get translations with spelling dictionary", UserRole.VIEWER);
+
+      TranslationList allTranslations = translationService.getTranslations();
+      TranslationList translationsWithPhraseMemory = new TranslationListJpa();
+      for (Translation translation : allTranslations.getObjects()) {
+        if (!translation.getPhraseMemory().getEntries().isEmpty()) {
+          translationsWithPhraseMemory.addObject(translation);
+        }
+      }
+
+      return translationsWithPhraseMemory;
+    } catch (Exception e) {
+      handleException(e, "trying to find translations with phrase memory");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
