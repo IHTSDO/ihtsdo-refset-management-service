@@ -31,6 +31,13 @@ public interface ExportTranslationHandler extends Configurable {
   public String getFileTypeFilter();
 
   /**
+   * Returns the file name.
+   *
+   * @return the file name
+   */
+  public String getFileName();
+  
+  /**
    * Returns the mime type.
    *
    * @return the mime type

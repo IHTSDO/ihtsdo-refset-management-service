@@ -10,7 +10,6 @@ import java.util.Set;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -44,7 +43,11 @@ public interface Refset extends Component, Searchable {
     /** The exclusion members. */
     EXCLUSION,
     /** The plain. */
-    MEMBER;
+    MEMBER,
+    /** The inactive member. */
+    INACTIVE_MEMBER,
+    /** The inactive inclusion. */
+    INACTIVE_INCLUSION;
   }
 
   /**
@@ -186,20 +189,6 @@ public interface Refset extends Component, Searchable {
   public void setDefinition(String definition);
 
   /**
-   * Returns the definition uuid.
-   *
-   * @return the definition uuid
-   */
-  public String getDefinitionUuid();
-
-  /**
-   * Sets the definition uuid.
-   *
-   * @param uuid the definition uuid
-   */
-  public void setDefinitionUuid(String uuid);
-
-  /**
    * Returns the external url.
    *
    * @return the external url
@@ -214,18 +203,18 @@ public interface Refset extends Component, Searchable {
   public void setExternalUrl(String url);
 
   /**
-   * Returns the refset descriptor.
+   * Returns the refset descriptor uuid.
    *
-   * @return the refset descriptor
+   * @return the refset descriptor uuid
    */
-  public RefsetDescriptorRefsetMember getRefsetDescriptor();
+  public String getRefsetDescriptorUuid();
 
   /**
-   * Sets the refset descriptor refset id.
+   * Sets the refset descriptor uuid.
    *
-   * @param refsetDescriptor the refset descriptor refset id
+   * @param refsetDescriptorUuid the refset descriptor uuid
    */
-  public void setRefsetDescriptor(RefsetDescriptorRefsetMember refsetDescriptor);
+  public void setRefsetDescriptorUuid(String refsetDescriptorUuid);
 
   /**
    * Returns the workflow status.
@@ -311,7 +300,6 @@ public interface Refset extends Component, Searchable {
    */
   public void setForTranslation(boolean forTranslation);
 
-
   /**
    * Returns the refset members.
    *
@@ -375,17 +363,4 @@ public interface Refset extends Component, Searchable {
    */
   public Map<User, UserRole> getUserRoleMap();
 
-  /**
-   * Returns the organization.
-   *
-   * @return the organization
-   */
-  public String getOrganization();
-
-  /**
-   * Sets the organization.
-   *
-   * @param organization the organization
-   */
-  public void setOrganization(String organization);
 }

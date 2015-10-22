@@ -9,6 +9,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 import java.io.InputStream;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -40,7 +41,7 @@ public interface ReleaseServiceRest {
    * @return the current refset release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentRefsetRelease(Long refsetId, String authToken)
+  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -64,7 +65,7 @@ public interface ReleaseServiceRest {
    * @return the current translation release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentTranslationRelease(Long translationtId,
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationtId,
     String authToken) throws Exception;
 
   /**
@@ -88,7 +89,7 @@ public interface ReleaseServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult performRefsetRelease(Long refsetId,
+  public ValidationResult validateRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -200,9 +201,10 @@ public interface ReleaseServiceRest {
    * @param in the in
    * @param releaseInfoId the release info id
    * @param authToken the auth token
+   * @return the release artifact
    * @throws Exception the exception
    */
-  public void uploadReleaseArtifact(
+  public ReleaseArtifact importReleaseArtifact(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long releaseInfoId, String authToken) throws Exception;
 

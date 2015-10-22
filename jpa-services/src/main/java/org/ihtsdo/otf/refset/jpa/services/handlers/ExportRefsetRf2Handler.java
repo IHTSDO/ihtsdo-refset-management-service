@@ -7,6 +7,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
@@ -111,7 +112,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("definition").append("\t");
     sb.append("\r\n");
 
-    sb.append(refset.getDefinitionUuid()).append("\t");
+    sb.append(UUID.randomUUID().toString()).append("\t");
     sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
         .append("\t");
     sb.append(1).append("\t");

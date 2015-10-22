@@ -3,9 +3,10 @@
 tsApp.directive('refsetTable',
   [
     'utilService',
+    'projectService',
     'refsetService',
     'releaseService',
-    function(utilService, refsetService, releaseService) {
+    function(utilService, projectService, refsetService, releaseService) {
       console.debug('configure refsetTable directive');
       return {
         restrict : 'A',
@@ -17,6 +18,7 @@ tsApp.directive('refsetTable',
           '$scope',
           function($scope) {
             // Variable
+            $scope.iconConfig = projectService.getIconConfig();
             $scope.refset = null;
             $scope.refsets = null;
             $scope.pageSize = 10;

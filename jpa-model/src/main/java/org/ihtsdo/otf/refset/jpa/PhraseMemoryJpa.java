@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa;
 
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -36,10 +35,6 @@ public class PhraseMemoryJpa implements PhraseMemory {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
-  /** The name. */
-  @Column(nullable = false)
-  private String name;
-
   /** The entries. */
   @OneToMany(mappedBy = "phraseMemory", targetEntity = MemoryEntryJpa.class)
   private List<MemoryEntry> entries;
@@ -62,21 +57,8 @@ public class PhraseMemoryJpa implements PhraseMemory {
    */
   public PhraseMemoryJpa(PhraseMemory phraseMemory) {
     super();
-    this.name = phraseMemory.getName();
     this.entries = phraseMemory.getEntries();
     this.translation = phraseMemory.getTranslation();
-  }
-
-  /* see superclass */
-  @Override
-  public String getName() {
-    return name;
-  }
-
-  /* see superclass */
-  @Override
-  public void setName(String name) {
-    this.name = name;
   }
 
   /* see superclass */
@@ -145,7 +127,6 @@ public class PhraseMemoryJpa implements PhraseMemory {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
         prime
             * result
@@ -164,11 +145,6 @@ public class PhraseMemoryJpa implements PhraseMemory {
     if (!(obj instanceof PhraseMemoryJpa))
       return false;
     PhraseMemoryJpa other = (PhraseMemoryJpa) obj;
-    if (name == null) {
-      if (other.name != null)
-        return false;
-    } else if (!name.equals(other.name))
-      return false;
     if (translation == null) {
       if (other.translation != null)
         return false;

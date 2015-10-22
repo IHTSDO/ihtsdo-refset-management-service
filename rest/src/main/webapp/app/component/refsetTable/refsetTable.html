@@ -34,17 +34,22 @@
           ng-click="setSortField('refset','name', null)">Name<span
             ng-bind="getSortIndicator('refset','name',null)"></span></th>
         <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('refset','organization', null)">Organization<span
-            ng-bind="getSortIndicator('refset','organization',null)"></span></th>
+          ng-click="setSortField('refset','moduleId', null)">Module<span
+            ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
         <th class="col-md-1 col-xs-1"
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
       </thead>
       <tbody>
-        <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);" class="table-select-row">
+        <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
+          class="table-select-row">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
           <td>{{refset.name}}</td>
-          <td>{{refset.organization}}</td>
+          <td>{{refset.moduleId}}<!-- Mobile friendly line-break --> <br
+            class="visible-xs-inline" /> <img title="Flag icon"
+            src="{{iconConfig[refset.moduleId]}}" /> <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{refset.organization}}
+          </td>
           <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
               style="text-decoration: none">
               <i tooltip="Reference to an external refset stored elsewhere."
@@ -83,8 +88,17 @@
         </thead>
         <tbody>
           <tr>
+            <td>Refset Id</td>
+            <td>{{refset.terminologyId}}</td>
+          </tr>
+          <tr>
             <td>Module Id</td>
-            <td>{{refset.moduleId}}</td>
+            <td>{{refset.moduleId}} <img title="Flag icon"
+              src="{{iconConfig[refset.moduleId]}}" /></td>
+          </tr>
+          <tr>
+            <td>Organization</td>
+            <td>{{refset.organization}}</td>
           </tr>
           <tr>
             <td>Effective Time</td>
@@ -145,8 +159,8 @@
 
     <div class="col-md-12 col-xs-12">
       <h4>Refset Members</h4>
-      <span ng-show="!refset.members" class="alert alert-warning">Refset has no
-        members</span>
+      <span ng-show="!refset.members" class="alert alert-warning">Refset
+        has no members</span>
 
       <span ng-show="refset.members">
         <span style="display: block;">

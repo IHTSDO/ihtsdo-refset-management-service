@@ -69,7 +69,6 @@ public interface Project extends Searchable {
    */
   public void removeRefset(Refset refset);
 
-
   /**
    * Returns the namespace.
    *
@@ -84,4 +83,17 @@ public interface Project extends Searchable {
    */
   public void setNamespace(String namepace);
 
+  /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  public String getOrganization();
+
+  /**
+   * Sets the organization.
+   *
+   * @param organization the organization
+   */
+  public void setOrganization(String organization);
 }

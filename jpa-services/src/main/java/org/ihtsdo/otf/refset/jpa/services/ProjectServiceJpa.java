@@ -36,7 +36,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   protected boolean listenersEnabled = true;
 
   /** The last modified flag. */
-  protected boolean lastModifiedFlag = false;
+  protected boolean lastModifiedFlag = true;
 
   /** The config properties. */
   protected static Properties config = null;
@@ -371,22 +371,34 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    */
   protected <T extends HasLastModified> T addHasLastModified(T hasLastModified)
     throws Exception {
-    try {
-      // Set last modified date
-      if (lastModifiedFlag) {
-        hasLastModified.setLastModified(new Date());
-      }
+    // Set last modified date
+    if (lastModifiedFlag) {
+      hasLastModified.setLastModified(new Date());
+    }
+    return addObject(hasLastModified);
 
+  }
+
+  /**
+   * Adds the object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @return the t
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T addObject(T object) throws Exception {
+    try {
       // add
       if (getTransactionPerOperation()) {
         tx = manager.getTransaction();
         tx.begin();
-        manager.persist(hasLastModified);
+        manager.persist(object);
         tx.commit();
       } else {
-        manager.persist(hasLastModified);
+        manager.persist(object);
       }
-      return hasLastModified;
+      return object;
     } catch (Exception e) {
       if (tx.isActive()) {
         tx.rollback();
@@ -404,20 +416,32 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    */
   protected <T extends HasLastModified> void updateHasLastModified(
     T hasLastModified) throws Exception {
-    try {
-      // Set modification date
-      if (lastModifiedFlag) {
-        hasLastModified.setLastModified(new Date());
-      }
+    // Set modification date
+    if (lastModifiedFlag) {
+      hasLastModified.setLastModified(new Date());
+    }
+    updateObject(hasLastModified);
 
+  }
+
+  /**
+   * Update object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @throws Exception the exception
+   */
+  protected <T extends Object> void updateObject(T object)
+    throws Exception {
+    try {
       // update
       if (getTransactionPerOperation()) {
         tx = manager.getTransaction();
         tx.begin();
-        manager.merge(hasLastModified);
+        manager.merge(object);
         tx.commit();
       } else {
-        manager.merge(hasLastModified);
+        manager.merge(object);
       }
     } catch (Exception e) {
       if (tx.isActive()) {
@@ -467,6 +491,46 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
         }
       }
       return hasLastModified;
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+  }
+
+  /**
+   * Removes the object.
+   *
+   * @param <T> the
+   * @param object the object
+   * @param clazz the clazz
+   * @return the t
+   * @throws Exception the exception
+   */
+  protected <T extends Object> T removeObject(T object, Class<T> clazz)
+    throws Exception {
+    try {
+      // Get transaction and object
+      tx = manager.getTransaction();
+      // Remove
+      if (getTransactionPerOperation()) {
+        // remove refset member
+        tx.begin();
+        if (manager.contains(object)) {
+          manager.remove(object);
+        } else {
+          manager.remove(manager.merge(object));
+        }
+        tx.commit();
+      } else {
+        if (manager.contains(object)) {
+          manager.remove(object);
+        } else {
+          manager.remove(manager.merge(object));
+        }
+      }
+      return object;
     } catch (Exception e) {
       if (tx.isActive()) {
         tx.rollback();

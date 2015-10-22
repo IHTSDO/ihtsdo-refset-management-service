@@ -64,9 +64,10 @@ public interface RefsetService extends ProjectService {
    * Removes the refset.
    *
    * @param id the id
+   * @param cascade 
    * @throws Exception the exception
    */
-  public void removeRefset(Long id) throws Exception;
+  public void removeRefset(Long id, boolean cascade) throws Exception;
 
   /**
    * Removes the refset descriptor ref set member.
@@ -281,13 +282,5 @@ public interface RefsetService extends ProjectService {
    * @throws Exception the exception
    */
   public ConceptRefsetMember getMember(Long id) throws Exception;
-
-  /**
-   * Removes the staged refset.
-   *
-   * @param stagedRefset the staged refset
-   * @throws Exception the exception
-   */
-  public void removeStagedRefset(Refset stagedRefset) throws Exception;
 
 }

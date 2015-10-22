@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -18,7 +19,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -43,10 +43,8 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -83,17 +81,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private boolean provisional;
 
   /** The staging type. */
-  //@Enumerated(EnumType.STRING)
+  // @Enumerated(EnumType.STRING)
   @Column(nullable = true)
   private StagingType stagingType;
 
   /** The definition. */
   @Column(nullable = true, length = 4000)
   private String definition;
-
-  /** The definition uuid. */
-  @Column(nullable = true)
-  private String definitionUuid;
 
   /** The external url. */
   @Column(nullable = true, length = 1000)
@@ -120,14 +114,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private String workflowPath;
 
-  /** The organization. */
-  @Column(nullable = true)
-  private String organization;
-
-  /** The refset descriptors. */
-  @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
-  // @IndexedEmbedded - n/a
-  private RefsetDescriptorRefsetMember refsetDescriptor = null;
+  /**
+   * The refset descriptors.
+   * 
+   * <pre>
+   * id effectiveTime active moduleId refsetId referencedComponentId attributeDescription attributeType attributeOrder
+   * 9593e365-0182-5d93-be5b-73c1d5f5bc97 20150901 1 731000124108 900000000000456007 442311000124105 900000000000461009 900000000000461009 0
+   * </pre>
+   * 
+   * The UUID is all we need to remember. The ohter fields are all static or
+   * easily computed
+   **/
+  @Column(nullable = false)
+  private String refsetDescriptorUuid = UUID.randomUUID().toString();
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
@@ -140,7 +139,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private List<Translation> translations = new ArrayList<>();
 
   /** The refset members. */
-  @OneToMany(mappedBy="refset", targetEntity = ConceptRefsetMemberJpa.class)
+  @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
   @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
   private List<ConceptRefsetMember> members = null;
 
@@ -171,15 +170,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     stagingType = refset.getStagingType();
     type = refset.getType();
     definition = refset.getDefinition();
-    definitionUuid = refset.getDefinitionUuid();
     externalUrl = refset.getExternalUrl();
-    refsetDescriptor = refset.getRefsetDescriptor();
+    refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
-    organization = refset.getOrganization();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (Translation translation : refset.getTranslations()) {
       addTranslation(new TranslationJpa(translation));
@@ -314,16 +311,15 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @XmlElement(type = RefsetDescriptorRefsetMemberJpa.class)
   @Override
-  public RefsetDescriptorRefsetMember getRefsetDescriptor() {
-    return refsetDescriptor;
+  public String getRefsetDescriptorUuid() {
+    return refsetDescriptorUuid;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetDescriptor(RefsetDescriptorRefsetMember refsetDescriptor) {
-    this.refsetDescriptor = refsetDescriptor;
+  public void setRefsetDescriptorUuid(String refsetDescriptorUuid) {
+    this.refsetDescriptorUuid = refsetDescriptorUuid;
   }
 
   /* see superclass */
@@ -411,18 +407,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
-  public String getDefinitionUuid() {
-    return definitionUuid;
-  }
-
-  /* see superclass */
-  @Override
-  public void setDefinitionUuid(String uuid) {
-    this.definitionUuid = uuid;
-  }
-
-  /* see superclass */
-  @Override
   public Set<FeedbackEvent> getEnabledFeedbackEvents() {
     if (enabledFeedbackEvents == null) {
       enabledFeedbackEvents = new HashSet<>();
@@ -473,6 +457,32 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     project.setId(projectId);
   }
 
+  /**
+   * Returns the organization. For JAXB.
+   *
+   * @return the organization
+   */
+  @XmlElement
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  public String getOrganization() {
+    return (project != null) ? project.getOrganization() : "";
+  }
+
+  /**
+   * Sets the project id. For JAXB.
+   *
+   * @param organization the organization
+   */
+  @SuppressWarnings("unused")
+  private void setOrganization(String organization) {
+    if (project == null) {
+      project = new ProjectJpa();
+    }
+    project.setOrganization(organization);
+  }
 
   /* see superclass */
   @XmlTransient
@@ -521,30 +531,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public Map<User, UserRole> getUserRoleMap() {
     return getProject().getUserRoleMap();
   }
-  
-  /**
-   * Returns the organization.
-   *
-   * @return the organization
-   */
-  @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  })
-  @Override
-  public String getOrganization() {
-    return organization;
-  }
-
-  /**
-   * Sets the organization.
-   *
-   * @param organization the organization
-   */
-  @Override
-  public void setOrganization(String organization) {
-    this.organization = organization;
-  }
 
   /* see superclass */
   @Override
@@ -553,9 +539,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     int result = super.hashCode();
     result =
         prime * result + ((definition == null) ? 0 : definition.hashCode());
-    result =
-        prime * result
-            + ((definitionUuid == null) ? 0 : definitionUuid.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
@@ -568,10 +551,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
-    result =
-        prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
-    result =
-        prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
         prime
             * result
@@ -594,11 +573,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (other.definition != null)
         return false;
     } else if (!definition.equals(other.definition))
-      return false;
-    if (definitionUuid == null) {
-      if (other.definitionUuid != null)
-        return false;
-    } else if (!definitionUuid.equals(other.definitionUuid))
       return false;
     if (description == null) {
       if (other.description != null)
@@ -636,13 +610,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (type != other.type)
       return false;
-    if (stagingType != other.stagingType)
-      return false;
-    if (organization == null) {
-      if (other.organization != null)
-        return false;
-    } else if (!organization.equals(other.organization))
-      return false;
     return true;
   }
 
@@ -651,14 +618,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definition=" + definition + ", definitionUuid="
-        + definitionUuid + ", externalUrl=" + externalUrl + ", forTranslation="
-        + forTranslation + ", workflowStatus=" + workflowStatus
-        + ", workflowPath=" + workflowPath + ", refsetDescriptor="
-        + refsetDescriptor + ", project=" + project + ", organization=" + organization
-        + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + type + ", definition=" + definition + ", externalUrl=" + externalUrl
+        + ", forTranslation=" + forTranslation + ", workflowStatus="
+        + workflowStatus + ", workflowPath=" + workflowPath
+        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
+        + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
-
-
 
 }

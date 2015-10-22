@@ -166,4 +166,10 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
     // n/a
   }
 
+  @Override
+  public String getFileName() {
+    // TODO: implement this
+    return null;
+  }
+
 }

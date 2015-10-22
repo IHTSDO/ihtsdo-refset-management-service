@@ -45,18 +45,17 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   private ValidationResult result = new ValidationResultJpa();
 
   /** The release info. */
-  private ReleaseInfo  releaseInfo = null;
-  
+  private ReleaseInfo releaseInfo = null;
+
   /** The translation. */
   private Translation translation;
 
   /** The effective time. */
   private Date effectiveTime;
-  
+
   /** The user name. */
   private String userName;
 
-  
   /**
    * Instantiates an empty {@link BeginTranslationReleaseAlgorthm}.
    * @throws Exception if anything goes wrong
@@ -163,10 +162,20 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
     this.userName = userName;
   }
 
+  /**
+   * Returns the release info.
+   *
+   * @return the release info
+   */
   public ReleaseInfo getReleaseInfo() {
     return releaseInfo;
   }
 
+  /**
+   * Sets the translation.
+   *
+   * @param translation the translation
+   */
   public void setTranslation(Translation translation) {
     this.translation = translation;
   }

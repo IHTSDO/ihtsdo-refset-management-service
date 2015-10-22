@@ -85,6 +85,10 @@ public class ProjectJpa implements Project {
   @Column(nullable = true)
   private String namespace;
 
+  /** The organization. */
+  @Column(nullable = true)
+  private String organization;
+
   /** The description. */
   @Column(nullable = false)
   private String description;
@@ -130,6 +134,7 @@ public class ProjectJpa implements Project {
     lastModifiedBy = project.getLastModifiedBy();
     name = project.getName();
     namespace = project.getNamespace();
+    organization = project.getOrganization();
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
@@ -268,6 +273,22 @@ public class ProjectJpa implements Project {
     this.description = description;
   }
 
+  /* see superclass */
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "organizationSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
+  @Override
+  public String getOrganization() {
+    return organization;
+  }
+
+  /* see superclass */
+  @Override
+  public void setOrganization(String organization) {
+    this.organization = organization;
+  }
+
   @Override
   public String toString() {
     return "ProjectJpa [name=" + name + ", namespace=" + namespace
@@ -284,6 +305,8 @@ public class ProjectJpa implements Project {
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+    result =
+        prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
@@ -305,8 +328,8 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @XmlJavaTypeAdapter(UserRoleMapAdapter.class)
   @Fields({
-    @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(bridge = @FieldBridge(impl = UserRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "userAnyRole", bridge = @FieldBridge(impl = UserMapUserNameBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   @Override
   public Map<User, UserRole> getUserRoleMap() {
@@ -346,6 +369,11 @@ public class ProjectJpa implements Project {
       if (other.namespace != null)
         return false;
     } else if (!namespace.equals(other.namespace))
+      return false;
+    if (organization == null) {
+      if (other.organization != null)
+        return false;
+    } else if (!organization.equals(other.organization))
       return false;
     if (terminology == null) {
       if (other.terminology != null)

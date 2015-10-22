@@ -302,7 +302,7 @@ public abstract class RootServiceJpa implements RootService {
     // get the start and end indexes based on paging parameters
     int startIndex = 0;
     int toIndex = result.size();
-    if (pfs != null) {
+    if (pfs != null && pfs.getStartIndex() != -1) {
       startIndex = pfs.getStartIndex();
       toIndex = Math.min(result.size(), startIndex + pfs.getMaxResults());
       result = result.subList(startIndex, toIndex);

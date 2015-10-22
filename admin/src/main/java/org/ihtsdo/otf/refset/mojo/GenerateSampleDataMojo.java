@@ -203,7 +203,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
        *     - AUTHOR: author1, author2
        *  - Project 2
        *     - ADMIN: admin2
-       *     - REVIWER: reviewer2, reviewer3
+       *     - REVIEWER: reviewer2, reviewer3
        *     - AUTHOR: author3
        *  - Project 3
        *     - ADMIN: admin1, admin3
@@ -536,6 +536,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
     project.setNamespace("1000179");
+    project.setOrganization("IHTSDO");
     return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
         auth.getAuthToken());
   }
@@ -624,7 +625,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
-    refset.setModuleId("900000000000445007");
+    refset.setModuleId("731000124108");
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
@@ -634,7 +635,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    refset.setOrganization("ABC Organization");
 
     if (type == Refset.Type.INTENSIONAL) {
       refset.setDefinition("needs definition");
@@ -708,7 +708,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setEffectiveTime(new Date());
     translation.setLastModified(new Date());
     translation.setLanguage("es");
-    translation.setModuleId("900000000000445007");
+    translation.setModuleId("731000124108");
     translation.setProject(project);
     translation.setPublic(true);
     translation.setPublishable(true);

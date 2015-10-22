@@ -17,6 +17,7 @@ tsApp.directive('translationTable', [
         function($scope) {
 
           // Model variables
+          $scope.iconConfig = projectService.getIconConfig();
           $scope.translation = null;
           $scope.translations = null;
           $scope.pageSize = 10;

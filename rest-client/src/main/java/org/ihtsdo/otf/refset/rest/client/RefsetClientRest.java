@@ -27,8 +27,8 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
@@ -130,7 +130,8 @@ public class RefsetClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/refsets/" + projectId);
+        client.target(config.getProperty("base.url") + "/refset/refsets/"
+            + projectId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -194,7 +195,7 @@ public class RefsetClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).put(Entity.xml(refsetString));
-    
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -232,14 +233,15 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void removeRefset(Long refsetId, String authToken) throws Exception {
+  public void removeRefset(Long refsetId, boolean cascade, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Client - remove refset " + refsetId);
+        "Rest Client - remove refset " + refsetId);
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/remove/"
-            + refsetId);
+            + refsetId + "?cascade=" + cascade);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -261,26 +263,25 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
-
     StreamDataBodyPart fileDataBodyPart =
         new StreamDataBodyPart("file", in, "filename.dat",
             MediaType.APPLICATION_OCTET_STREAM_TYPE);
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.bodyPart(fileDataBodyPart);
-    
+
     ClientConfig clientConfig = new ClientConfig();
     clientConfig.register(MultiPartFeature.class);
     Client client = ClientBuilder.newClient(clientConfig);
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/import/definition"
-            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+        client.target(config.getProperty("base.url")
+            + "/refset/import/definition" + "?refsetId=" + refsetId
+            + "&handlerId=" + ioHandlerInfoId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
             .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
-
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -301,8 +302,9 @@ public class RefsetClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/export/definition"
-            + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
+        client.target(config.getProperty("base.url")
+            + "/refset/export/definition" + "?refsetId=" + refsetId
+            + "&handlerId=" + ioHandlerInfoId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -376,11 +378,11 @@ public class RefsetClientRest extends RootClientRest implements
   public void removeRefsetMember(Long memberId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Client - remove refset member " + memberId);
+        "Rest Client - remove refset member" + memberId);
     validateNotEmpty(memberId, "memberId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/member/remove/"
+        client.target(config.getProperty("base.url") + "/member/remove/"
             + memberId);
 
     Response response =
@@ -392,6 +394,7 @@ public class RefsetClientRest extends RootClientRest implements
     } else {
       throw new Exception("Unexpected status - " + response.getStatus());
     }
+
   }
 
   /* see superclass */
@@ -399,9 +402,10 @@ public class RefsetClientRest extends RootClientRest implements
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Client - find refset members for query " + refsetId + ", " + query);
+        "Refset Client - find refset members for query " + refsetId + ", "
+            + query);
     validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(query, "query");
+    // validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
@@ -466,63 +470,24 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findRefsetInclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - find refset inclusions for query " + refsetId + ", "
-            + query);
-    validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(query, "query");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/inclusions"
-            + "?refsetId="
-            + refsetId
-            + "&query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
-        resultString, ConceptRefsetMemberListJpa.class);
-  }
 
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    ConceptRefsetMemberJpa exclusion, String authToken) throws Exception {
+    String conceptId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset exclusion " + " " + refsetId + ", "
-            + exclusion);
+            + conceptId);
     validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/exclusion/add/"
-            + refsetId);
-    String exclusionString =
-        ConfigUtility.getStringForGraph(exclusion == null
-            ? new ConceptRefsetMemberJpa() : exclusion);
+            + refsetId + "?conceptId=" + conceptId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .put(Entity.xml(exclusionString));
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -534,44 +499,6 @@ public class RefsetClientRest extends RootClientRest implements
     // converting to object
     return (ConceptRefsetMemberJpa) ConfigUtility.getGraphForString(
         resultString, ConceptRefsetMemberJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findRefsetExclusionsForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - find refset exclusions for query " + refsetId + ", "
-            + query);
-    validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(query, "query");
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/exclusions"
-            + "?refsetId="
-            + refsetId
-            + "&query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
-        resultString, ConceptRefsetMemberListJpa.class);
   }
 
   /* see superclass */
@@ -671,17 +598,23 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public Refset beginMigration(Long refsetId, String newTerminology,
     String newVersion, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - begin refset migration");
+    Logger.getLogger(getClass())
+        .debug("Refset Client - begin refset migration");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(newTerminology, "newTerminology");
     validateNotEmpty(newVersion, "newVersion");
 
     Client client = ClientBuilder.newClient();
+    String encodedTerminology =
+        URLEncoder.encode(newTerminology, "UTF-8").replaceAll("\\+", "%20");
+    String encodedVersion =
+        URLEncoder.encode(newVersion, "UTF-8").replaceAll("\\+", "%20");
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/migration/begin"
-            + "?refsetId=" + refsetId + "&newTerminology=" + newTerminology
-            + "&newVersion=" + newVersion);
+        client.target(config.getProperty("base.url")
+            + "/refset/migration/begin" + "?refsetId=" + refsetId
+            + "&newTerminology=" + encodedTerminology + "&newVersion="
+            + encodedVersion);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -708,8 +641,8 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/migration/finish"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/migration/finish" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -724,20 +657,21 @@ public class RefsetClientRest extends RootClientRest implements
     // converting to object
     return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
         RefsetJpa.class);
-  
+
   }
 
   /* see superclass */
   @Override
   public void cancelMigration(Long refsetId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - cancel reset migration");
+    Logger.getLogger(getClass())
+        .debug("Refset Client - cancel reset migration");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/migration/cancel"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/migration/cancel" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -755,16 +689,19 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public Refset beginRedefinition(Long refsetId, String newDefinition,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - begin refset redefinition");
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - begin refset redefinition");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(newDefinition, "newDefinition");
 
     Client client = ClientBuilder.newClient();
-    String encodedDefinition = URLEncoder.encode(newDefinition, "UTF-8").replaceAll("\\+", "%20");
+    String encodedDefinition =
+        URLEncoder.encode(newDefinition, "UTF-8").replaceAll("\\+", "%20");
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/redefinition/begin"
-            + "?refsetId=" + refsetId + "&newDefinition=" + encodedDefinition);
+        client.target(config.getProperty("base.url")
+            + "/refset/redefinition/begin" + "?refsetId=" + refsetId
+            + "&newDefinition=" + encodedDefinition);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -791,8 +728,8 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/redefinition/finish"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/redefinition/finish" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -813,14 +750,15 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public void cancelRedefinition(Long refsetId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - cancel refset redefinition");
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - cancel refset redefinition");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/redefinition/cancel"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/redefinition/cancel" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -838,26 +776,47 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public String compareRefsets(Long refsetId1, Long refsetId2, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Refset Client - compare refsets");
+    validateNotEmpty(refsetId1, "refsetId1");
+    validateNotEmpty(refsetId2, "refsetId2");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/compare"
+            + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return resultString;
+
   }
 
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameter pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - find members in common " + reportToken + ", " + query);
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
     validateNotEmpty(reportToken, "reportToken");
-    validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/refset/common/members?reportToken="
-            + reportToken
-            + "&query="
+            + "/refset/common/members"
+            + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20")
+            + "&reportToken="
+            + URLEncoder
+                .encode(reportToken == null ? "" : reportToken, "UTF-8")
                 .replaceAll("\\+", "%20"));
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -874,22 +833,45 @@ public class RefsetClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
-        resultString, ConceptRefsetMemberListJpa.class);
+    ConceptRefsetMemberList list =
+        (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
+            resultString, ConceptRefsetMemberListJpa.class);
+    return list;
   }
-
 
   /* see superclass */
   @Override
   public MemberDiffReport getDiffReport(String reportToken, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Refset Client - get diff report");
+    validateNotEmpty(reportToken, "reportToken");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/diff/members"
+            + "?reportToken=" + reportToken);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (MemberDiffReportJpa) ConfigUtility.getGraphForString(resultString,
+        MemberDiffReportJpa.class);
+
   }
 
   /* see superclass */
   @Override
-  public void releaseReportToken(String reportToken, String authToken) throws Exception {
+  public void releaseReportToken(String reportToken, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
 
   }
@@ -1043,16 +1025,17 @@ public class RefsetClientRest extends RootClientRest implements
 
   @Override
   // TODO: remove newDefinition parameter and on migration
-  public Refset resumeRedefinition(Long refsetId, 
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - resume refset redefinition");
+  public Refset resumeRedefinition(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - resume refset redefinition");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/redefinition/resume"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/redefinition/resume" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1070,15 +1053,17 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public Refset resumeMigration(Long refsetId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - resume refset migration");
+  public Refset resumeMigration(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - resume refset migration");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/migration/resume"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/migration/resume" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

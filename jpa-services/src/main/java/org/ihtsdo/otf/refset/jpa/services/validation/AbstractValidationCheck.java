@@ -11,6 +11,8 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ValidationCheck;
 
 /**
@@ -30,7 +32,7 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Concept concept) {
+  public ValidationResult validate(Concept concept, TranslationService service) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -38,7 +40,8 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(ConceptRefsetMember members) {
+  public ValidationResult validate(ConceptRefsetMember members,
+    RefsetService service) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -46,7 +49,8 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Translation translation) {
+  public ValidationResult validate(Translation translation,
+    TranslationService service) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -54,7 +58,7 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Refset refset) {
+  public ValidationResult validate(Refset refset, RefsetService service) {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;

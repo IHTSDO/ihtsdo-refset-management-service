@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.RefsetService;
 
 /**
  * Default checks that apply to all refsets/translations.
@@ -29,7 +30,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Refset refset) {
+  public ValidationResult validate(Refset refset, RefsetService service) {
     Logger.getLogger(getClass()).debug("  Validate refset - " + refset);
     ValidationResult result = new ValidationResultJpa();
 
@@ -68,7 +69,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(ConceptRefsetMember member) {
+  public ValidationResult validate(ConceptRefsetMember member,
+    RefsetService service) {
     ValidationResult result = new ValidationResultJpa();
     if (member.getMemberType() == Refset.MemberType.INCLUSION
         && member.getRefset().getType() != Refset.Type.INTENSIONAL) {
@@ -78,6 +80,20 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
         && member.getRefset().getType() != Refset.Type.INTENSIONAL) {
       result.addError("Exclusion member attached to non-intensional refset.");
     }
+
+    // Exclusions should be !publishable, others should be
+    if (member.getMemberType() == Refset.MemberType.EXCLUSION
+        && member.isPublishable()) {
+      result.addError("Exclusion members are not publishable");
+    }
+
+    if (member.getMemberType() != Refset.MemberType.EXCLUSION
+        && !member.isPublishable()) {
+      result.addError("Non-exclusion members should be publishable");
+    }
+
+    // TODO: check that the concept id of the member is active
+    // may want to pass the terminology handler to these methods
     return result;
   }
 
