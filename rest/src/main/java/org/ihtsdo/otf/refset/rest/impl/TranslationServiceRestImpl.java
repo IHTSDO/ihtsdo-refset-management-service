@@ -358,7 +358,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "removerefset", UserRole.REVIEWER);
 
       // Create service and configure transaction scope
-      translationService.removeTranslation(translationId);
+      translationService.removeTranslation(translationId, false);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");
@@ -752,9 +752,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         conceptIds.add(concept.getTerminologyId());
       }
-      
+
       // TODO: add standard description type refset members - from term server.
-      
+
       Logger.getLogger(getClass()).info(
           "  translation import count = " + objectCt);
       Logger.getLogger(getClass()).info("  total = " + conceptIds.size());
@@ -920,8 +920,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /spelling/copy/"
-            + fromTranslationId + " " + toTranslationId);
+        "RESTful call PUT (Translation): /spelling/copy/" + fromTranslationId
+            + " " + toTranslationId);
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -975,14 +975,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /spelling/add/" + translationId
-            + " " + entry);
+        "RESTful call PUT (Translation): /spelling/add/" + translationId + " "
+            + entry);
 
     TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      authorizeApp(securityService, authToken, "add new entry to the spelling dictionary",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken,
+          "add new entry to the spelling dictionary", UserRole.VIEWER);
 
       Translation translation =
           translationService.getTranslation(translationId);
@@ -993,7 +993,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translation.setSpellingDictionary(spelling);
       }
       spelling.addEntry(entry);
-   // Create service and configure transaction scope
+      // Create service and configure transaction scope
       translationService.updateTranslation(translation);
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");

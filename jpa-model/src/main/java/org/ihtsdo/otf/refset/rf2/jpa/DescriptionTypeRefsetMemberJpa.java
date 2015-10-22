@@ -21,9 +21,13 @@ import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
     implements DescriptionTypeRefsetMember {
 
-  /** The concept id. */
+  /** The type. */
   @Column(nullable = false)
-  private String conceptId;
+  private String type;
+
+  /** The name. */
+  @Column(nullable = false)
+  private String name;
 
   /** The description format. */
   @Column(nullable = false)
@@ -48,7 +52,8 @@ public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
    */
   public DescriptionTypeRefsetMemberJpa(DescriptionTypeRefsetMember member) {
     super(member);
-    conceptId = member.getConceptId();
+    type = member.getType();
+    name = member.getName();
     descriptionFormat = member.getDescriptionFormat();
     descriptionLength = member.getDescriptionLength();
   }
@@ -79,14 +84,26 @@ public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
 
   /* see superclass */
   @Override
-  public String getConceptId() {
-    return conceptId;
+  public String getName() {
+    return name;
   }
 
   /* see superclass */
   @Override
-  public void setConceptId(String conceptId) {
-    this.conceptId = conceptId;
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /* see superclass */
+  @Override
+  public String getType() {
+    return type;
+  }
+
+  /* see superclass */
+  @Override
+  public void setType(String type) {
+    this.type = type;
   }
 
   /* see superclass */
@@ -94,7 +111,8 @@ public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
-    result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((type == null) ? 0 : type.hashCode());
     result =
         prime * result
             + ((descriptionFormat == null) ? 0 : descriptionFormat.hashCode());
@@ -112,10 +130,15 @@ public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
     if (getClass() != obj.getClass())
       return false;
     DescriptionTypeRefsetMemberJpa other = (DescriptionTypeRefsetMemberJpa) obj;
-    if (conceptId == null) {
-      if (other.conceptId != null)
+    if (name == null) {
+      if (other.name != null)
         return false;
-    } else if (!conceptId.equals(other.conceptId))
+    } else if (!name.equals(other.name))
+      return false;
+    if (type == null) {
+      if (other.type != null)
+        return false;
+    } else if (!type.equals(other.type))
       return false;
     if (descriptionFormat == null) {
       if (other.descriptionFormat != null)
@@ -130,7 +153,7 @@ public class DescriptionTypeRefsetMemberJpa extends AbstractRefsetMemberJpa
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionTypeRefsetMemberJpa [conceptId=" + conceptId
+    return "DescriptionTypeRefsetMemberJpa [type=" + type + ", name=" + name
         + ", descriptionFormat=" + descriptionFormat + ", descriptionLength="
         + descriptionLength + "]";
   }

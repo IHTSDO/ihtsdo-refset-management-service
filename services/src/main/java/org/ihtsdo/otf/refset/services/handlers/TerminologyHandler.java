@@ -8,6 +8,7 @@ import java.util.List;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -114,6 +115,17 @@ public interface TerminologyHandler extends Configurable {
    */
   public boolean assignNames();
 
+  /**
+   * Returns the standard description types.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the standard description types
+   * @throws Exception the exception
+   */
+  public DescriptionTypeRefsetMemberList getStandardDescriptionTypes(
+    String terminology, String version) throws Exception;
+
   // TODO: other methods (if using term server storage)
   /**
    * <pre>
@@ -125,7 +137,9 @@ public interface TerminologyHandler extends Configurable {
    *  - add/update/remove concept (get/find already defined)
    *  - add/update/remove description (get alread implemented)
    *  - add/update/remove language refset member
-   * </pre>.
+   * </pre>
+   * 
+   * .
    *
    * @return true, if successful
    */

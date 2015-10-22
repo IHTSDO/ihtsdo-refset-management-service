@@ -1,0 +1,22 @@
+<div class="modal-header">
+  <h4>Edit User</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <div>
+      Username:<br> <input ng-model="user.userName"><br>
+      Name:<br> <input ng-model="user.name"><br> 
+      Role:<br> <select ng-model="user.applicationRole" 
+        ng-options="item for item in applicationRoles"></select><br>
+      Email:<br> <input ng-model="user.email"><br>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="submitEditUser(user); 
+    ">Save</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

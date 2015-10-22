@@ -37,7 +37,6 @@ import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -143,6 +142,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translation.setTerminologyId(id);
     }
 
+    // These will get added by CASCADE
+    if (translation.getDescriptionTypes().size() == 0) {
+      for (DescriptionTypeRefsetMember member : getTerminologyHandler()
+          .getStandardDescriptionTypes(translation.getTerminology(),
+              translation.getVersion()).getObjects()) {
+        member.setLastModifiedBy(translation.getLastModifiedBy());
+        translation.addDescriptionType(member);
+      }
+    }
     // Add component
     Translation newTranslation = addHasLastModified(translation);
 
@@ -192,10 +200,34 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /* see superclass */
   @Override
-  public void removeTranslation(Long id) throws Exception {
+  public void removeTranslation(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove translation " + id);
     // Remove the component
+
+    if (cascade) {
+      Translation translation = getTranslation(id);
+
+      // Remove concepts/ descriptions/language refset members
+      for (Concept c : translation.getConcepts()) {
+        for (Description d : c.getDescriptions()) {
+          for (LanguageRefsetMember member : d.getLanguageRefsetMembers()) {
+            removeLanguageRefsetMember(member.getId());
+          }
+          removeDescription(d.getId());
+        }
+        removeConcept(c.getId());
+      }
+
+      // Remove spelling dictionary
+      // TODO
+
+      // Remove phrase memory
+      // TODO
+
+      // Remove description types - CASCADE
+
+    }
     Translation translation = removeHasLastModified(id, TranslationJpa.class);
 
     if (listenersEnabled) {
@@ -225,117 +257,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
-  }
-
-  /* see superclass */
-  @Override
-  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(Long id)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - get descriptionTypeRefsetMember " + id);
-    return getHasLastModified(id, DescriptionTypeRefsetMemberJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public DescriptionTypeRefsetMember getDescriptionTypeRefsetMember(
-    String terminologyId, String terminology, String version) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - get descriptionTypeRefsetMember "
-            + terminologyId + "/" + terminology + "/" + version);
-    return getHasLastModified(terminologyId, terminology, version,
-        DescriptionTypeRefsetMemberJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public DescriptionTypeRefsetMember addDescriptionTypeRefsetMember(
-    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - add descriptionTypeRefsetMember "
-            + descriptionTypeRefsetMember);
-    // Assign id
-    IdentifierAssignmentHandler idHandler = null;
-    if (assignIdentifiersFlag) {
-      idHandler =
-          getIdentifierAssignmentHandler(descriptionTypeRefsetMember
-              .getTerminology());
-      if (idHandler == null) {
-        throw new Exception("Unable to find id handler for "
-            + descriptionTypeRefsetMember.getTerminology());
-      }
-      String id = idHandler.getTerminologyId(descriptionTypeRefsetMember);
-      descriptionTypeRefsetMember.setTerminologyId(id);
-    }
-
-    // Add component
-    DescriptionTypeRefsetMember newDescriptionTypeRefsetMember =
-        addHasLastModified(descriptionTypeRefsetMember);
-
-    // Inform listeners
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.descriptionTypeRefsetMemberChanged(
-            newDescriptionTypeRefsetMember, WorkflowListener.Action.ADD);
-      }
-    }
-    return newDescriptionTypeRefsetMember;
-  }
-
-  /* see superclass */
-  @Override
-  public void updateDescriptionTypeRefsetMember(
-    DescriptionTypeRefsetMember descriptionTypeRefsetMember) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - update descriptionTypeRefsetMember "
-            + descriptionTypeRefsetMember);
-
-    // Id assignment should not change
-    final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(descriptionTypeRefsetMember
-            .getTerminology());
-    if (assignIdentifiersFlag) {
-      if (!idHandler.allowIdChangeOnUpdate()) {
-        DescriptionTypeRefsetMember descriptionTypeRefsetMember2 =
-            getDescriptionTypeRefsetMember(descriptionTypeRefsetMember.getId());
-        if (!idHandler.getTerminologyId(descriptionTypeRefsetMember).equals(
-            idHandler.getTerminologyId(descriptionTypeRefsetMember2))) {
-          throw new Exception(
-              "Update cannot be used to change object identity.");
-        }
-      } else {
-        // set descriptionTypeRefsetMember id on update
-        descriptionTypeRefsetMember.setTerminologyId(idHandler
-            .getTerminologyId(descriptionTypeRefsetMember));
-      }
-    }
-    // update component
-    this.updateHasLastModified(descriptionTypeRefsetMember);
-
-    // Inform listeners
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.descriptionTypeRefsetMemberChanged(
-            descriptionTypeRefsetMember, WorkflowListener.Action.UPDATE);
-      }
-    }
-  }
-
-  /* see superclass */
-  @Override
-  public void removeDescriptionTypeRefsetMember(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - remove descriptionTypeRefsetMember " + id);
-    // Remove the component
-    DescriptionTypeRefsetMember descriptionTypeRefsetMember =
-        removeHasLastModified(id, DescriptionTypeRefsetMemberJpa.class);
-
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.descriptionTypeRefsetMemberChanged(
-            descriptionTypeRefsetMember, WorkflowListener.Action.REMOVE);
-      }
-    }
   }
 
   /* see superclass */

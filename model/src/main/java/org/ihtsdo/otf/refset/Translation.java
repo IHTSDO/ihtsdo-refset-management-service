@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
-import java.util.Map;
 
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -228,17 +227,17 @@ public interface Translation extends Component, Searchable {
   public void setSpellingDictionary(SpellingDictionary dictionary);
 
   /**
-   * Returns the phrase memory map.
+   * Returns the phrase memory.
    *
-   * @return the phrase memory map
+   * @return the phrase memory
    */
-  public Map<String, PhraseMemory> getPhraseMemoryMap();
+  public PhraseMemory getPhraseMemory();
 
   /**
-   * Sets the phrase memory map.
+   * Sets the phrase memory.
    *
-   * @param phraseMemoryMap the phrase memory map
+   * @param phraseMemory the phrase memory
    */
-  public void setPhraseMemoryMap(Map<String, PhraseMemory> phraseMemoryMap);
+  public void setPhraseMemory(PhraseMemory phraseMemory);
 
 }

@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.services;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -97,115 +96,65 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
 
   /* see superclass */
   @Override
+  public ReleaseInfo getReleaseInfo(Long releaseInfoId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - get release info " + releaseInfoId);
+    ReleaseInfo info = manager.find(ReleaseInfoJpa.class, releaseInfoId);
+    // lazy init
+    info.getProperties().size();
+    info.getArtifacts().size();
+    return info;
+  }
+
+  /* see superclass */
+  @Override
   public ReleaseInfo addReleaseInfo(ReleaseInfo releaseInfo) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - add release info " + releaseInfo.getName());
-    if (lastModifiedFlag) {
-      releaseInfo.setLastModified(new Date());
-    }
-    try {
-      if (getTransactionPerOperation()) {
-        tx = manager.getTransaction();
-        tx.begin();
-        manager.persist(releaseInfo);
-        tx.commit();
-      } else {
-        manager.persist(releaseInfo);
-      }
-    } catch (Exception e) {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      throw e;
-    }
-
-    return releaseInfo;
+    return this.addHasLastModified(releaseInfo);
+    // TODO: consider whether these add/remove methods should have workflow
+    // listener hooks
   }
 
   /* see superclass */
   @Override
-  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
+  public ReleaseArtifact addReleaseArtifact(ReleaseArtifact artifact)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Release Service - add release info " + releaseArtifact.getName());
-    if (lastModifiedFlag) {
-      releaseArtifact.setLastModified(new Date());
-    }
-    try {
-      if (getTransactionPerOperation()) {
-        tx = manager.getTransaction();
-        tx.begin();
-        manager.persist(releaseArtifact);
-        tx.commit();
-      } else {
-        manager.persist(releaseArtifact);
-      }
-    } catch (Exception e) {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      throw e;
-    }
-
-    return releaseArtifact;
+        "Release Service - add release info " + artifact.getName());
+    return addHasLastModified(artifact);
   }
 
   /* see superclass */
   @Override
-  public void removeReleaseInfo(Long id) {
+  public void updateReleaseArtifact(ReleaseArtifact artifact) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - add release info " + artifact.getName());
+    updateHasLastModified(artifact);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeReleaseArtifact(Long artifactId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - remove release artifact " + artifactId);
+    removeHasLastModified(artifactId, ReleaseArtifactJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeReleaseInfo(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release  Service - remove release info " + id);
-    tx = manager.getTransaction();
-    // retrieve this release info
-    ReleaseInfo releaseInfo = manager.find(ReleaseInfoJpa.class, id);
-    try {
-      if (getTransactionPerOperation()) {
-        // remove description
-        tx.begin();
-        if (manager.contains(releaseInfo)) {
-          manager.remove(releaseInfo);
-        } else {
-          manager.remove(manager.merge(releaseInfo));
-        }
-        tx.commit();
-      } else {
-        if (manager.contains(releaseInfo)) {
-          manager.remove(releaseInfo);
-        } else {
-          manager.remove(manager.merge(releaseInfo));
-        }
-      }
-    } catch (Exception e) {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      throw e;
-    }
+    removeHasLastModified(id, ReleaseInfoJpa.class);
   }
 
   /* see superclass */
   @Override
-  public void updateReleaseInfo(ReleaseInfo releaseInfo) {
+  public void updateReleaseInfo(ReleaseInfo releaseInfo) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - update release info " + releaseInfo.getName());
-    if (lastModifiedFlag) {
-      releaseInfo.setLastModified(new Date());
-    }
-    try {
-      if (getTransactionPerOperation()) {
-        tx = manager.getTransaction();
-        tx.begin();
-        manager.merge(releaseInfo);
-        tx.commit();
-      } else {
-        manager.merge(releaseInfo);
-      }
-    } catch (Exception e) {
-      if (tx.isActive()) {
-        tx.rollback();
-      }
-      throw e;
-    }
+    updateHasLastModified(releaseInfo);
   }
 
   @SuppressWarnings("unchecked")

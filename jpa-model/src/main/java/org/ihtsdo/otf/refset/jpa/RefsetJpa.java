@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
@@ -18,7 +19,6 @@ import javax.persistence.Enumerated;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -43,10 +43,8 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -116,10 +114,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private String workflowPath;
 
-  /** The refset descriptors. */
-  @OneToOne(targetEntity = RefsetDescriptorRefsetMemberJpa.class)
-  // @IndexedEmbedded - n/a
-  private RefsetDescriptorRefsetMember refsetDescriptor = null;
+  /**
+   * The refset descriptors.
+   * 
+   * <pre>
+   * id effectiveTime active moduleId refsetId referencedComponentId attributeDescription attributeType attributeOrder
+   * 9593e365-0182-5d93-be5b-73c1d5f5bc97 20150901 1 731000124108 900000000000456007 442311000124105 900000000000461009 900000000000461009 0
+   * </pre>
+   * 
+   * The UUID is all we need to remember. The ohter fields are all static or
+   * easily computed
+   **/
+  @Column(nullable = false)
+  private String refsetDescriptorUuid = UUID.randomUUID().toString();
 
   /** The project. */
   @ManyToOne(targetEntity = ProjectJpa.class, optional = false)
@@ -164,7 +171,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     type = refset.getType();
     definition = refset.getDefinition();
     externalUrl = refset.getExternalUrl();
-    refsetDescriptor = refset.getRefsetDescriptor();
+    refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
@@ -304,16 +311,15 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
-  @XmlElement(type = RefsetDescriptorRefsetMemberJpa.class)
   @Override
-  public RefsetDescriptorRefsetMember getRefsetDescriptor() {
-    return refsetDescriptor;
+  public String getRefsetDescriptorUuid() {
+    return refsetDescriptorUuid;
   }
 
   /* see superclass */
   @Override
-  public void setRefsetDescriptor(RefsetDescriptorRefsetMember refsetDescriptor) {
-    this.refsetDescriptor = refsetDescriptor;
+  public void setRefsetDescriptorUuid(String refsetDescriptorUuid) {
+    this.refsetDescriptorUuid = refsetDescriptorUuid;
   }
 
   /* see superclass */
@@ -615,8 +621,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + type + ", definition=" + definition + ", externalUrl=" + externalUrl
         + ", forTranslation=" + forTranslation + ", workflowStatus="
         + workflowStatus + ", workflowPath=" + workflowPath
-        + ", refsetDescriptor=" + refsetDescriptor + ", project=" + project
-        + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
+        + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }
 
 }

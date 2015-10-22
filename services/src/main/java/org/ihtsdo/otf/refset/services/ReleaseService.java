@@ -14,6 +14,15 @@ import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 public interface ReleaseService extends ProjectService {
 
   /**
+   * Returns the release info.
+   *
+   * @param releaseInfoId the release info id
+   * @return the release info
+   * @throws Exception the exception
+   */
+  public ReleaseInfo getReleaseInfo(Long releaseInfoId) throws Exception;
+
+  /**
    * Adds the release info.
    *
    * @param releaseInfo the release info
@@ -26,15 +35,17 @@ public interface ReleaseService extends ProjectService {
    * Removes the release info.
    *
    * @param id the id
+   * @throws Exception the exception
    */
-  public void removeReleaseInfo(Long id);
+  public void removeReleaseInfo(Long id) throws Exception;
 
   /**
    * Update release info.
    *
    * @param releaseInfo the release info
+   * @throws Exception
    */
-  public void updateReleaseInfo(ReleaseInfo releaseInfo);
+  public void updateReleaseInfo(ReleaseInfo releaseInfo) throws Exception;
 
   /**
    * Returns the current release info for refset.
@@ -91,6 +102,23 @@ public interface ReleaseService extends ProjectService {
    */
   public ReleaseArtifact addReleaseArtifact(ReleaseArtifact releaseArtifact)
     throws Exception;
+
+  /**
+   * Update release artifact.
+   *
+   * @param releaseArtifact the release artifact
+   * @throws Exception the exception
+   */
+  public void updateReleaseArtifact(ReleaseArtifact releaseArtifact)
+    throws Exception;
+
+  /**
+   * Removes the release artifact.
+   *
+   * @param artifactId the artifact id
+   * @throws Exception the exception
+   */
+  public void removeReleaseArtifact(Long artifactId) throws Exception;
 
   /**
    * Returns the release artifact.

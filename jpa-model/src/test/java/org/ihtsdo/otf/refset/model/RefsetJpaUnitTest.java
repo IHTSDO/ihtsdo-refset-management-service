@@ -217,6 +217,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("forTranslation");
     tester.include("workflowStatus");
     tester.include("workflowPath");
+    tester.include("refsetDescriptorUuid");
 
     assertTrue(tester.testNotNullFields());
   }
