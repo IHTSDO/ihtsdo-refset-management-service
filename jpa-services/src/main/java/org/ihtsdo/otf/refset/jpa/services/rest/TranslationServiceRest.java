@@ -325,7 +325,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
+  public void removePhraseMemoryEntry(Long translationId, Long entryId,
     String authToken) throws Exception;
 
   /**

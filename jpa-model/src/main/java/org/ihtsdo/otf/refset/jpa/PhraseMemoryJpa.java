@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -77,6 +78,9 @@ public class PhraseMemoryJpa implements PhraseMemory {
   @Override
   @XmlTransient
   public List<MemoryEntry> getEntries() {
+    if (this.entries == null) {
+      this.entries = new ArrayList<MemoryEntry>();
+    }
     return entries;
   }
 
