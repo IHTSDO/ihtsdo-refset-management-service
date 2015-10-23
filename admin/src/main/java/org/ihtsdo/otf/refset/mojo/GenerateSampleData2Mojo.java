@@ -487,16 +487,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
           reviewer3);
 
-      // Add an inclusion for
-      // "105058003 | Amdinocillin measurement (procedure) |"
-      new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
-          "105058003", reviewer2.getAuthToken());
-
-      // Add an exclusion for
-      // "313948006 | Serum ampicillin measurement (procedure) |"
-      new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
-          "313948006", reviewer2.getAuthToken());
-
       // NEXT: 105070004 | Ampicillin measurement (procedure) |
 
       refset =
@@ -512,6 +502,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // NEXT: <<58427002 | Antibiotic measurement (procedure) |
 
+      // Add an inclusion for
+      // "105058003 | Amdinocillin measurement (procedure) |"
+      new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
+          "105058003", reviewer2.getAuthToken());
+
+      // Add an exclusion for
+      // "313948006 | Serum ampicillin measurement (procedure) |"
+      new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
+          "313948006", reviewer2.getAuthToken());      
+      
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "",

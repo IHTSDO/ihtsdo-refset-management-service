@@ -593,9 +593,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset members",
           UserRole.VIEWER);
 
-      return refsetService.findMembersForRefset(refsetId,
-          (query != null && !query.equals("")) ? query
-              + " AND memberType:MEMBER" : "memberType:MEMBER", pfs);
+      return refsetService.findMembersForRefset(refsetId, query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset members ");
       return null;
