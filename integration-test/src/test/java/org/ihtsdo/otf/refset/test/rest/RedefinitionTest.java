@@ -137,7 +137,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testRedefinition001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition001");
 
@@ -170,7 +170,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testRedefinition002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition002");
 
@@ -202,7 +202,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testRedefinition003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition003");
 
@@ -247,7 +247,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testRedefinition004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition004");
 
@@ -278,7 +278,7 @@ public class RedefinitionTest {
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
     assertEquals(6, memberList.getObjects().size());
 
-    // add exclusion (something that definition doesn't include)
+    // add exclusion (something that definition doesn't include) - expect exception
     ConceptRefsetMember bogusExclusion = new ConceptRefsetMemberJpa();
     bogusExclusion.setActive(true);
     bogusExclusion.setConceptId("9999999");
@@ -299,7 +299,146 @@ public class RedefinitionTest {
         refsetService
             .findRefsetMembersForQuery(refset1.getId(), "memberType:MEMBER",
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    
+    // Add exclusion matching an existing exclusion - expect exception
+    ConceptRefsetMemberList exclusions = refsetService.findRefsetMembersForQuery(refset1.getId(), "memberType:EXCLUSION",
+                new PfsParameterJpa(), adminAuthToken);
+    try {
+      refsetService.addRefsetExclusion(refset1.getId(),
+          exclusions.getObjects().get(0).getConceptId(), adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
+    refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
+    assertEquals(
+        6,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:MEMBER",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
+    
+    // Add inclusion (something that definition includes) - expect exception
+    memberList =
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    ConceptRefsetMember memberToInclude = memberList.getObjects().get(0);
+    memberToInclude.setMemberType(Refset.MemberType.INCLUSION);
+    assertEquals(6, memberList.getObjects().size());
+    
+    try {
+      refsetService.addRefsetInclusion(refset1.getId(),
+          (ConceptRefsetMemberJpa) memberToInclude, adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
+    memberList =
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(6, memberList.getObjects().size());    
+    
+    // create other intentional refset for getting inclusion testing concepts 
+    Refset testingRefset =
+        makeRefset("testingRefset", "needs definition", Refset.Type.INTENSIONAL,
+            project2, null, admin);
+    // Begin redefinition
+    refsetService.beginRedefinition(testingRefset.getId(),
+        "<<406472009 |  Animal protein and epidermal allergen (substance)|", adminAuthToken);
+    // Finish redefinition
+    refsetService.finishRedefinition(testingRefset.getId(), adminAuthToken);
+    
+    // Add inclusion (something that definition doesn't include)
+    ConceptRefsetMemberList testingMemberList =
+        refsetService.findRefsetMembersForQuery(testingRefset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    memberToInclude = testingMemberList.getObjects().get(0);
+    memberToInclude.setMemberType(Refset.MemberType.INCLUSION);
+    refsetService.addRefsetInclusion(refset1.getId(),
+        (ConceptRefsetMemberJpa) memberToInclude, adminAuthToken);
+    refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
+    assertEquals(
+        6,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:MEMBER",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(
+        1,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:INCLUSION",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    
+    // Add an exclusion matching an existing inclusion - expect exception
+    ConceptRefsetMember inclusion = refsetService
+        .findRefsetMembersForQuery(refset1.getId(), "memberType:INCLUSION",
+            new PfsParameterJpa(), adminAuthToken).getObjects().get(0);
+    inclusion.setMemberType(Refset.MemberType.EXCLUSION);
+    try {
+      refsetService.addRefsetExclusion(refset1.getId(),
+          inclusion.getConceptId(), adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
+    memberList =
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(6, memberList.getObjects().size());
+    
+    // Add an inclusion matching an existing inclusion - expect exception
+    inclusion.setMemberType(Refset.MemberType.INCLUSION);
+    try {
+      refsetService.addRefsetInclusion(refset1.getId(),
+          (ConceptRefsetMemberJpa)inclusion, adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
+    memberList =
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(6, memberList.getObjects().size());
+    
+    // Add an inclusion matching an existing exclusion - expect exception
+    ConceptRefsetMember exclusion = refsetService
+        .findRefsetMembersForQuery(refset1.getId(), "memberType:EXCLUSION",
+            new PfsParameterJpa(), adminAuthToken).getObjects().get(0);
+    exclusion.setMemberType(Refset.MemberType.INCLUSION);
+    try {
+      refsetService.addRefsetInclusion(refset1.getId(),
+          (ConceptRefsetMemberJpa)exclusion, adminAuthToken);
+      fail("Expected exception");
+    } catch (Exception e) {
+      // n/a
+    }
+    memberList =
+        refsetService.findRefsetMembersForQuery(refset1.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(6, memberList.getObjects().size());
+        
+    // Change definition again to a different definition that should maintain inclusion.
+    // Exclusion will be removed because it is now irrelevant.
+    // Begin redefinition
+    refsetService.beginRedefinition(refset1.getId(),
+        "<<406473004 |  Contact allergen (substance)|", adminAuthToken);
+    // Finish redefinition
+    refsetService.finishRedefinition(refset1.getId(), adminAuthToken);    
+    assertEquals(
+        402,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:MEMBER",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(
+        1,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:INCLUSION",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    assertEquals(
+        0,
+        refsetService
+            .findRefsetMembersForQuery(refset1.getId(), "memberType:EXCLUSION",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+    
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -309,7 +448,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  //@Test
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -341,7 +480,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  //@Test
   public void testMigration002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration002");
 
@@ -388,10 +527,64 @@ public class RedefinitionTest {
 
   }
 
-  // TODO; migration test 3
-  // extensional refset with 111269008
-  // add to refset file as active, will become inactive in 20150731
 
+  /**
+   * Test migration003.  Add concept 111269008 to the 
+   * der2_Refset_SimpleSnapshot_INT_20140731.txt file.
+   * This member becomes inactive in 2015-07-31, so this
+   * migration tests that it is removed from the migrated refset.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testMigration003() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration003");
+
+    Project project1 = projectService.getProject(1L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional) and import definition
+    Refset janRefset =
+        makeRefset("refset1", null,
+            Refset.Type.EXTENSIONAL, project1, null, admin);
+    
+    // Begin migration
+    Refset julyStagedRefset =
+        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+    assertEquals(
+        21,
+        refsetService
+            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+    String reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    MemberDiffReport diffReport =
+        refsetService.getDiffReport(reportToken, adminAuthToken);
+    assertEquals(1, diffReport.getOldNotNew().size());
+    assertEquals(1, diffReport.getNewNotOld().size());
+
+    ConceptRefsetMemberList commonList =
+        refsetService.findMembersInCommon(reportToken, null, null,
+            adminAuthToken);
+    assertEquals(20, commonList.getObjects().size());
+
+    // Finish migration
+    refsetService.finishMigration(janRefset.getId(), adminAuthToken);
+    assertEquals(
+        20,
+        refsetService
+            .findRefsetMembersForQuery(janRefset.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+
+    // cleanup
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+
+  }
+  
   /**
    * Teardown.
    *

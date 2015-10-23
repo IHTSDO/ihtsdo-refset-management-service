@@ -683,12 +683,32 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     addRefset(refsetCopy);
 
-    if (refsetCopy.getType().equals("EXTENSIONAL")) {
-      for (ConceptRefsetMember member : refsetCopy.getMembers()) {
-        member.setId(null);
+    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+      // for (ConceptRefsetMember member : refset.getMembers()) {
+      /*
+       * member.setId(null); member.setRefset(refsetCopy); addMember(member);
+       */
+
+      // refsetCopy.addMember(member);
+
+      // without doing the copy constructor, we get the following errors:
+      // identifier of an instance of
+      // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
+      // 6901 to null
+      for (ConceptRefsetMember originMember : refset.getMembers()) {
+        ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+        member = new ConceptRefsetMemberJpa(originMember);
+        //member.setLastModifiedBy(userName);
+
+        //member.setPublishable(true);
         member.setRefset(refsetCopy);
+        member.setTerminology(refsetCopy.getTerminology());
+        member.setVersion(refsetCopy.getVersion());
+        member.setId(null);
+        refsetCopy.addMember(member);
         addMember(member);
       }
+      // }
     }
 
     // set staging parameters on the original refset
@@ -702,7 +722,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     stagedChange.setStagedRefset(refsetCopy);
     addStagedRefsetChange(stagedChange);
 
-    return refsetCopy;
+    // return connected copy with members attached
+    return getRefset(refsetCopy.getId());
   }
 
   /*

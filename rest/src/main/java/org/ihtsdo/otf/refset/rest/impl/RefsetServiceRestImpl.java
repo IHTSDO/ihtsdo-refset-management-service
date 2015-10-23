@@ -593,7 +593,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset members",
           UserRole.VIEWER);
 
-      return refsetService.findMembersForRefset(refsetId, query, pfs);
+      return refsetService.findMembersForRefset(refsetId,
+          query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset members ");
       return null;
@@ -919,6 +920,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           }
         }
       } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
           if (!refsetService
               .getTerminologyHandler()
@@ -981,41 +983,49 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset is not staged for migration, cannot finish.");
       }
 
-      // get the staged change tracking object
-      StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
 
       // turn transaction per operation off
       // create a transaction
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
 
-      // remove from origin refsets members that aren't in staged
-      // convert to sets for efficiency
+      // get the staged change tracking object
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+
+      // Get origin and staged members
       Refset stagedRefset = change.getStagedRefset();
       Refset originRefset = change.getOriginRefset();
       Set<ConceptRefsetMember> originMembers =
           new HashSet<>(originRefset.getMembers());
       Set<ConceptRefsetMember> stagedMembers =
           new HashSet<>(stagedRefset.getMembers());
+
+      // Remove origin-not-staged members
       for (ConceptRefsetMember originMember : originMembers) {
         if (!stagedMembers.contains(originMember)) {
           refsetService.removeMember(originMember.getId());
         }
       }
 
-      // rewire members from staged that are not in origin, to origin
+      // rewire staged-not-origin members (remove inactive entries)
+      // TODO: reconsider whether to keep or remove inactive members
+      // if keeping, convert them back to "MEMBER" or "INCLUSION"
       for (ConceptRefsetMember stagedMember : stagedMembers) {
-        // TODO; in migration
         if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_MEMBER) {
           refsetService.removeMember(stagedMember.getId());
         } else if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_INCLUSION) {
           refsetService.removeMember(stagedMember.getId());
-        } else if (!originMembers.contains(stagedMember)) {
-          // member knows which refset it is a part of, not inverse
+        }
+        // New member, rewire to origin
+        else if (!originMembers.contains(stagedMember)) {
           stagedMember.setRefset(refset);
           refsetService.updateMember(stagedMember);
         }
+        // Member matches one in origin - remove it
+        else {
+          refsetService.removeMember(stagedMember.getId());
+      }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
 
@@ -1023,13 +1033,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setDefinition(stagedRefset.getDefinition());
 
       // Remove the staged refset change and set staging type back to null
-      refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      refsetService.commit();
-      refsetService.beginTransaction();
-      refsetService.removeRefset(stagedRefset.getId(), true);
+
+      // Remove the staged refset change
+      refsetService.removeStagedRefsetChange(change.getId());
+
+      // remove the refset
+      refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
 
@@ -1222,9 +1234,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             }
           }
           if (!found) {
-            member.setId(null);
-            member.setRefset(refsetCopy);
-            refsetCopy.addMember(member);
+            ConceptRefsetMember include = new ConceptRefsetMemberJpa(member);
+            include.setId(null);
+            refsetCopy.addMember(include);
+            refsetService.addMember(include);
+            /*member.setRefset(refsetCopy);
+            refsetCopy.addMember(member);*/
           }
         }
       }
