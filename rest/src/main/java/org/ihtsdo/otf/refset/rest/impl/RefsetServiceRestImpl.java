@@ -1002,7 +1002,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         } else if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_INCLUSION) {
           refsetService.removeMember(stagedMember.getId());
         }
-        // New member, rewire to origin
+        // New member, rewire to origin - this moves the content back to the origin refset
         else if (!originMembers.contains(stagedMember)) {
           stagedMember.setRefset(refset);
           refsetService.updateMember(stagedMember);

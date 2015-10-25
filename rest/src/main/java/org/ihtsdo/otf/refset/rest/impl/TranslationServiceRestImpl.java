@@ -5,9 +5,12 @@ package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -25,26 +28,33 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.SpellingDictionary;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
+import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
+import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -53,6 +63,7 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -82,6 +93,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
+  
+  /** The concepts in common map. */
+  private static Map<String, List<Concept>> conceptsInCommonMap =
+      new HashMap<>();
+
+  /** The concept diff report map. */
+  private static Map<String, ConceptDiffReport> conceptDiffReportMap =
+      new HashMap<>();
+
 
   /**
    * Instantiates an empty {@link TranslationServiceRestImpl}.
@@ -1243,65 +1263,461 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public StringList suggestTranslatio(String phrase, String authToken)
+  public StringList suggestTranslation(String phrase, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
-  /* see superclass */
+  @GET
   @Override
-  public Translation beginMigration(Long translationId, String newTerminology,
-    String newVersion, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public Translation finishMigration(Long translationId, String authToken)
+  @Path("/migration/begin")
+  @ApiOperation(value = "Begin translation migration", notes = "Begins the migration process by validating the translation for migration and marking the translation as staged.", response = TranslationJpa.class)
+  public Translation beginMigration(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
+    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /migration/begin " + translationId + ", "
+            + newTerminology + ", " + newVersion);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "begin translation migration",
+              UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.isStaged()) {
+        throw new LocalException(
+            "Begin migration is not allowed while the translation is already staged.");
+
+      }
+
+      // turn transaction per operation off
+      // create a transaction
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+      Translation translationCopy =
+          translationService.stageTranslation(translation, Translation.StagingType.MIGRATION);
+      translationCopy.setTerminology(newTerminology);
+      translationCopy.setVersion(newVersion);
+
+      // TODO Is this correct?
+      Set<Concept> conceptsToRemove = new HashSet<>();
+      for (Concept concept : translationCopy.getConcepts()) {
+        if (!translationService
+            .getTerminologyHandler()
+            .getConcept(concept.getTerminologyId(),
+                translationCopy.getTerminology(), translationCopy.getVersion())
+            .isActive()) {
+          // concept.setConceptType(Translation.ConceptType.INACTIVE_MEMBER);
+          conceptsToRemove.add(concept);
+        }
+      }
+      System.out.println("conceptsToremove " + conceptsToRemove.size());
+      for (Concept cpt : conceptsToRemove) {
+        System.out.println("concept " + cpt.getTerminologyId() + " " + cpt.getVersion());
+        translationCopy.removeConcept(cpt);
+      }
+
+      translationService.updateTranslation(translationCopy);
+      translationService.commit();
+      return translationCopy;
+
+      // TODO: this solution involved adding a "provisional" flag to translation,
+      // in general, in other places where "findTranslationsForQuery" is being called
+      // we want a queryRestriction to include " AND provisional:false".
+
+    } catch (Exception e) {
+      handleException(e, "trying to begin migration of translation");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
-  /* see superclass */
+  @GET
   @Override
-  public void cancelMigration(Long translationId, String authToken)
+  @Path("/migration/finish")
+  @ApiOperation(value = "Finish translation migration", notes = "Finishes the migration process.", response = TranslationJpa.class)
+  public Translation finishMigration(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
 
-  }
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /migration/finish " + translationId);
 
-  /* see superclass */
-  @Override
-  public String compareTranslations(Long translationId1, Long translationId2,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "finish translation migration",
+              UserRole.REVIEWER);
+
+      // verify that staged
+      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
+        throw new Exception(
+            "Translation is not staged for migration, cannot finish.");
+      }
+
+
+      // turn transaction per operation off
+      // create a transaction
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+
+      // get the staged change tracking object
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+
+      // Get origin and staged concepts
+      Translation stagedTranslation = change.getStagedTranslation();
+      Translation originTranslation = change.getOriginTranslation();
+      Set<Concept> originConcepts =
+          new HashSet<>(originTranslation.getConcepts());
+      Set<Concept> stagedConcepts =
+          new HashSet<>(stagedTranslation.getConcepts());
+
+      // Remove origin-not-staged concepts
+      for (Concept originConcept : originConcepts) {
+        if (!stagedConcepts.contains(originConcept)) {
+          translationService.removeConcept(originConcept.getId());
+        }
+      }
+
+      // rewire staged-not-origin concepts (remove inactive entries)
+      // TODO: reconsider whether to keep or remove inactive concepts
+      // if keeping, convert them back to "MEMBER" or "INCLUSION"
+      for (Concept stagedConcept : stagedConcepts) {
+       
+        // New member, rewire to origin
+        if (!originConcepts.contains(stagedConcept)) {
+          stagedConcept.setTranslation(translation);
+          translationService.updateConcept(stagedConcept);
+        }
+        // Concept matches one in origin - remove it
+        else {
+          translationService.removeConcept(stagedConcept.getId());
+        }
+      }
+      stagedTranslation.setConcepts(new ArrayList<Concept>());
+
+      
+      // Remove the staged translation change and set staging type back to null
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+      // Remove the staged translation change
+      translationService.removeStagedTranslationChange(change.getId());
+
+      // remove the translation
+      translationService.removeTranslation(stagedTranslation.getId(), false);
+
+      translationService.commit();
+
+      return translation;
+
+    } catch (Exception e) {
+      handleException(e, "trying to finish translation migration");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
-  /* see superclass */
+  @GET
   @Override
-  public ConceptList findConceptsInCommon(String conceptToken, String query,
-    PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptDiffReport getDiffReport(String reportToken, String authToken)
+  @Path("/migration/cancel")
+  @ApiOperation(value = "Cancel translation migration", notes = "Cancels the migration process by removing the marking as staged.")
+  public void cancelMigration(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /migration/cancel " + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "cancel translation migration",
+              UserRole.REVIEWER);
+
+      // Translation must be staged as MIGRATION
+      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
+        throw new LocalException("Translation is not staged for migration.");
+      }
+
+      // turn transaction per operation off
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+
+      // Remove the staged translation change and set staging type back to null
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+      translationService.removeStagedTranslationChange(change.getId());
+
+      translationService.removeTranslation(change.getStagedTranslation().getId(), true);
+      translation.setStagingType(null);
+      translation.setStaged(false);
+      translation.setProvisional(false); 
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+      translationService.commit();
+
+    } catch (Exception e) {
+      handleException(e, "trying to cancel migration of translation");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  @GET
+  @Override
+  @Path("/migration/resume")
+  @ApiOperation(value = "Resume translation migration", notes = "Resumes the migration process by re-validating the translation.", response = TranslationJpa.class)
+  public Translation resumeMigration(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /migration/resume " + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "resume translation migration",
+          UserRole.REVIEWER);
+
+      // Check staging flag
+      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
+        throw new LocalException("Translation is not staged for migration.");
+
+      }
+
+      // recovering the previously saved state of the staged translation
+      return translationService.getStagedTranslationChange(translationId).getStagedTranslation();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume translation migration");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
+  @Override
+  @GET
+  @Path("/compare")
+  @ApiOperation(value = "Compares two translations", notes = "Compares two translations and returns a reportToken key to the comparison report data.", response = String.class)
+  public String compareTranslations(
+    @ApiParam(value = "Translation id 1, e.g. 3", required = true) @QueryParam("translationId1") Long translationId1,
+    @ApiParam(value = "Translation id 2, e.g. 4", required = true) @QueryParam("translationId2") Long translationId2,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): compare");
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "compare translations",
+          UserRole.VIEWER);
+
+      Translation translation1 = translationService.getTranslation(translationId1);
+      Translation translation2 = translationService.getTranslation(translationId2);
+      String reportToken = UUID.randomUUID().toString();
+
+      // creates a "concepts in common" list (where reportToken is the key)
+      List<Concept> conceptsInCommon = new ArrayList<>();
+      // TODO: concepts in common not getting populated because terminologyIds
+      // are different
+      System.out.println("translation1= " + translation1.getConcepts());
+      System.out.println("translation2= " + translation2.getConcepts());
+      for (Concept concept1 : translation1.getConcepts()) {
+        if (translation2.getConcepts().contains(concept1)) {
+          conceptsInCommon.add(concept1);
+        }
+      }
+      conceptsInCommonMap.put(reportToken, conceptsInCommon);
+
+      // creates a "diff report"
+      ConceptDiffReport diffReport = new ConceptDiffReportJpa();
+      List<Concept> oldNotNew = new ArrayList<>();
+      List<Concept> newNotOld = new ArrayList<>();
+
+      for (Concept concept1 : translation1.getConcepts()) {
+        if (!translation2.getConcepts().contains(concept1)) {
+          oldNotNew.add(concept1);
+        }
+      }
+      for (Concept concept2 : translation2.getConcepts()) {
+        if (!translation1.getConcepts().contains(concept2)) {
+          newNotOld.add(concept2);
+        }
+      }
+      diffReport.setOldNotNew(oldNotNew);
+      diffReport.setNewNotOld(newNotOld);
+
+      conceptDiffReportMap.put(reportToken, diffReport);
+
+      return reportToken;
+
+    } catch (Exception e) {
+      handleException(e, "trying to compare translations");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
-  /* see superclass */
   @Override
-  public void releaseReportToken(String reportToken) throws Exception {
-    // TODO Auto-generated method stub
+  @POST
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Path("/common/concepts")
+  @ApiOperation(value = "Finds concepts in common", notes = "Finds concepts in common given a reportToken based on pfs parameter and query", response = ConceptListJpa.class)
+  public ConceptList findConceptsInCommon(
+    @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
 
+    Logger.getLogger(getClass()).info("RESTful call (Translation): common/concepts");
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find concepts in common",
+          UserRole.VIEWER);
+
+      List<Concept> commonConceptsList =
+          conceptsInCommonMap.get(reportToken);
+
+      // if the value is null, throw an exception
+      if (commonConceptsList == null) {
+        throw new LocalException("No concepts in common map was found.");
+      }
+
+      ConceptList list = new ConceptListJpa();
+      list.setTotalCount(commonConceptsList.size());
+      list.setObjects(translationService.applyPfsToList(commonConceptsList,
+          Concept.class, pfs));
+      for (Concept concept : list.getObjects()){
+        // handle all lazy initializations
+        // com.sun.jdi.InvocationException occurred invoking method.  error from calling concept.getDescriptions()
+        // org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role: org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa.descriptions, could not initialize proxy - no Session
+        concept.getDescriptions().size();
+      }
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find concepts in common");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @Override
+  @GET
+  @Path("/diff/concepts")
+  @ApiOperation(value = "Returns diff report", notes = "Returns a diff report indicating differences between two translations.", response = ConceptDiffReportJpa.class)
+  public ConceptDiffReport getDiffReport(
+    @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call (Translation): diff/concepts");
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "returns diff report",
+          UserRole.VIEWER);
+
+      ConceptDiffReport conceptDiffReport = conceptDiffReportMap.get(reportToken);
+
+      // if the value is null, throw an exception
+      if (conceptDiffReport == null) {
+        throw new LocalException("No concept diff report was found.");
+      }
+
+      return conceptDiffReport;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find concept diff report");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @Override
+  @POST
+  @Path("/release/report")
+  @ApiOperation(value = "Releases a report and token", notes = "Deletes a report.")
+  public void releaseReportToken(
+    @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): release/report");
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "releases a report",
+          UserRole.VIEWER);
+
+      conceptsInCommonMap.remove(reportToken);
+      conceptDiffReportMap.remove(reportToken);
+    } catch (Exception e) {
+      handleException(e, "trying to release a report");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
 }

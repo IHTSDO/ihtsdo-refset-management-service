@@ -1024,7 +1024,6 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  // TODO: remove newDefinition parameter and on migration
   public Refset resumeRedefinition(Long refsetId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(

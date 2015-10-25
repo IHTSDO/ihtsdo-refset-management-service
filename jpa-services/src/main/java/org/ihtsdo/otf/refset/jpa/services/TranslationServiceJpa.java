@@ -19,6 +19,7 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.SpellingDictionary;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -40,6 +41,7 @@ import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -226,8 +228,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       removeSpellingDictionary(translation.getSpellingDictionary());
 
       // remove memory entry
-      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-        removeMemoryEntry(entry);
+      if (translation.getPhraseMemory() != null) {
+        for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+          removeMemoryEntry(entry);
+        }
       }
 
       // remove phrase memory
@@ -711,7 +715,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             + "originTranslation.id = :translationId");
     try {
       query.setParameter("translationId", translationId);
-      return (StagedTranslationChange) query.getSingleResult();
+      StagedTranslationChange change = (StagedTranslationChange) query.getSingleResult();
+      handleTranslationLazyInitialization(change.getOriginTranslation());
+      handleTranslationLazyInitialization(change.getStagedTranslation());
+      return change;
     } catch (NoResultException e) {
       return null;
     }
@@ -743,7 +750,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove spelling dictionary " + dictionary);
 
-    removeObject(dictionary, SpellingDictionary.class);
+    if (dictionary != null) {
+      removeObject(dictionary, SpellingDictionary.class);
+    }
   }
 
   @Override
@@ -769,7 +778,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove memory entry " + memoryEntry);
 
-    removeObject(memoryEntry, MemoryEntry.class);
+    if (memoryEntry != null) {
+      removeObject(memoryEntry, MemoryEntry.class);
+    }
   }
 
   @Override
@@ -795,8 +806,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove phrase memory " + phraseMemory);
-
-    removeObject(phraseMemory, PhraseMemory.class);
+    if (phraseMemory != null) {
+      removeObject(phraseMemory, PhraseMemory.class);
+    }
   }
   
   /* see superclass */
@@ -818,4 +830,69 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  @Override
+  public Translation stageTranslation(Translation translation, Translation.StagingType stagingType)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - stage translation " + translation.getId());
+
+    // Clone the translation and call set it provisional
+    Translation translationCopy = new TranslationJpa(translation);
+    // only exist for staging purposes
+    // will become real if a finish operation is completed
+    // used to prevent retrieving with index
+    translationCopy.setProvisional(true);
+
+    // null its id and all of its components ids
+    // then call addXXX on each component
+    translationCopy.setId(null);
+    translationCopy.setDescriptionTypes(null);
+    /*for (DescriptionTypeRefsetMember type : translationCopy.getDescriptionTypes()) {
+      type.setId(null);
+      translationCopy.addDescriptionType(type);
+      //addDescriptionType(type);
+    }*/
+
+    addTranslation(translationCopy);
+
+   
+      // without doing the copy constructor, we get the following errors:
+      // identifier of an instance of
+      // org.ihtsdo.otf.translation.rf2.jpa.ConceptTranslationMemberJpa was altered from
+      // 6901 to null
+      for (Concept originConcept : translation.getConcepts()) {
+        Concept concept = new ConceptJpa(originConcept, false);
+        //member.setLastModifiedBy(userName);
+
+        //member.setPublishable(true);
+        concept.setTranslation(translationCopy);
+        concept.setTerminology(translationCopy.getTerminology());
+        concept.setVersion(translationCopy.getVersion());
+        concept.setId(null);
+        translationCopy.addConcept(concept);
+        addConcept(concept);
+      }
+
+      for (DescriptionTypeRefsetMember originType : translation.getDescriptionTypes()) {
+        DescriptionTypeRefsetMember type = new DescriptionTypeRefsetMemberJpa(originType);
+        type.setTerminology(translationCopy.getTerminology());
+        type.setVersion(translationCopy.getVersion());
+        type.setId(null);
+        translationCopy.addDescriptionType(type);
+        //addDescriptionType(type);
+      }
+    // set staging parameters on the original translation
+    translation.setStaged(true);
+    translation.setStagingType(stagingType);
+    updateTranslation(translation);
+
+    StagedTranslationChange stagedChange = new StagedTranslationChangeJpa();
+    stagedChange.setType(stagingType);
+    stagedChange.setOriginTranslation(translation);
+    stagedChange.setStagedTranslation(translationCopy);
+    addStagedTranslationChange(stagedChange);
+
+    // return connected copy with members attached
+    return getTranslation(translationCopy.getId());
+  }
 }
