@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
+import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -809,6 +810,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     if (phraseMemory != null) {
       removeObject(phraseMemory, PhraseMemory.class);
     }
+  }
+  
+  @Override
+  public MemoryEntry getMemoryEntry(Long id) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get Memory Entry " + id);
+
+    return getObject(id,MemoryEntryJpa.class);
   }
   
   /* see superclass */

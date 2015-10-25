@@ -47,6 +47,7 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
+import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
@@ -153,7 +154,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/{translationId}/{date}/concepts")
-  @ApiOperation(value = "Finds concepts for translation revision", notes = "Finds concepts for translation with the given date based on pfs parameter and query", response = TranslationListJpa.class)
+  @ApiOperation(value = "Finds concepts for translation revision", notes = "Finds concepts for translation with the given date based on pfs parameter and query", response = ConceptListJpa.class)
   public ConceptList findTranslationRevisionConceptsForQuery(
     @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
@@ -960,7 +961,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translations/spellingdictionary")
-  @ApiOperation(value = "Get translations with spelling dictionary", notes = "Get translations with spelling dictionary")
+  @ApiOperation(value = "Get translations with spelling dictionary", notes = "Get translations with spelling dictionary", response = TranslationListJpa.class)
   public TranslationList getTranslationsWithSpellingDictionary(
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -993,7 +994,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @GET
   @Path("/spelling/copy/{fromTranslationId}/{toTranslationId}")
   @ApiOperation(value = "Copy spelling dictionary from one translation to another", notes = "Copy spelling dictionary from one translation to another")
   public void copySpellingDictionary(
@@ -1002,7 +1003,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /spelling/copy/" + fromTranslationId
+        "RESTful call GET (Translation): /spelling/copy/" + fromTranslationId
             + " " + toTranslationId);
 
     TranslationService translationService = new TranslationServiceJpa();
@@ -1025,19 +1026,19 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       List<String> fromEntries =
           fromTranslation.getSpellingDictionary().getEntries();
-      if (fromEntries == null || fromEntries.isEmpty()) {
-        throw new Exception("The from spelling dictionary has empty entries: "
+      if (fromEntries == null) {
+        throw new Exception("The from spelling dictionary entries is null: "
             + fromTranslation.getSpellingDictionary().getId());
       }
-      // Create new spelling dictionary
-      SpellingDictionary toSpellingDictionary = new SpellingDictionaryJpa();
-      List<String> toEntries = new ArrayList<String>();
+      // Get to spelling dictionary
+      SpellingDictionary toSpellingDictionary =
+          toTranslation.getSpellingDictionary();
+      List<String> toEntries = toSpellingDictionary.getEntries();
       toEntries.addAll(fromEntries);
       toSpellingDictionary.setEntries(toEntries);
-      toSpellingDictionary.setTranslation(toTranslation);
 
       // Create service and configure transaction scope
-      translationService.addSpellingDictionary(toSpellingDictionary);
+      translationService.updateSpellingDictionary(toSpellingDictionary);
     } catch (Exception e) {
       handleException(e, "trying to add a translation");
     } finally {
@@ -1049,7 +1050,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/spelling/add/{translationId}/{entry}")
+  @Path("/{translationId}/spelling/add/{entry}")
   @ApiOperation(value = "Add new entry to the spelling dictionary", notes = "Add new entry to the spelling dictionary")
   public void addSpellingDictionaryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
@@ -1072,6 +1073,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       spelling.addEntry(entry);
       // Create service and configure transaction scope
       translationService.updateSpellingDictionary(spelling);
+      // TODO: May need to reindex
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");
     } finally {
@@ -1108,6 +1110,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       spelling.removeEntry(entry);
       // Create service and configure transaction scope
       translationService.updateSpellingDictionary(spelling);
+      // TODO: May need to reindex
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1157,7 +1160,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translations/phrasememory")
-  @ApiOperation(value = "Get translations with phrase memory", notes = "Get translations with phrase memory")
+  @ApiOperation(value = "Get translations with phrase memory", notes = "Get translations with phrase memory", response = TranslationListJpa.class)
   public TranslationList findTranslationsWithPhraseMemory(
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -1189,34 +1192,161 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  public void copyPhraseMemory(Long fromTranslationId, Long toTranslationId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  /* see superclass */
-  @Override
-  public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    MemoryEntry entry, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-
-  }
-
-  /* see superclass */
-  @Override
-  public void clearPhraseMemory(Long translationId, String authToken)
+  @GET
+  @Path("/phrasememory/copy/{fromTranslationId}/{toTranslationId}")
+  @ApiOperation(value = "Copy phrase memory from one translation to another", notes = "Copy phrase memory from one translation to another")
+  public void copyPhraseMemory(
+    @ApiParam(value = "from translation id, e.g. 3", required = true) @PathParam("fromTranslationId") Long fromTranslationId,
+    @ApiParam(value = "to translation id, e.g. 3", required = true) @PathParam("toTranslationId") Long toTranslationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /phrasememory/copy/"
+            + fromTranslationId + " " + toTranslationId);
 
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "copy phrase memory",
+          UserRole.VIEWER);
+
+      Translation fromTranslation =
+          translationService.getTranslation(fromTranslationId);
+      if (fromTranslation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The from translation must have an associated phrase memory: "
+                + fromTranslationId);
+      }
+      Translation toTranslation =
+          translationService.getTranslation(toTranslationId);
+      if (toTranslation == null) {
+        throw new Exception("The to translation is not found: "
+            + toTranslationId);
+      }
+      List<MemoryEntry> fromEntries =
+          fromTranslation.getPhraseMemory().getEntries();
+      if (fromEntries == null) {
+        throw new Exception("The from phrase memory entries is null"
+            + fromTranslation.getPhraseMemory().getId());
+      }
+      // Get Phrase Memory
+      PhraseMemory toPhraseMemory = toTranslation.getPhraseMemory();
+      List<MemoryEntry> toEntries = toPhraseMemory.getEntries();
+      for (MemoryEntry entry : fromEntries) {
+        MemoryEntry newEntry = new MemoryEntryJpa();
+        newEntry.setFrequency(entry.getFrequency());
+        newEntry.setName(entry.getName());
+        newEntry.setPhraseMemory(toPhraseMemory);
+        toEntries.add(translationService.addMemoryEntry(newEntry));
+      }
+      toPhraseMemory.setEntries(toEntries);
+
+      // Create service and configure transaction scope
+      translationService.updatePhraseMemory(toPhraseMemory);
+    } catch (Exception e) {
+      handleException(e, "trying to add a translation");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/{translationId}/phrasememory/add/{entry}")
+  @ApiOperation(value = "Add new entry to phrase memory", notes = "Add new entry to the phrase memory", response = MemoryEntryJpa.class)
+  public MemoryEntry addPhraseMemoryEntry(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") MemoryEntry entry,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Translation): /phrasememory/add/" + translationId
+            + " " + entry);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      authorizeApp(securityService, authToken,
+          "add new entry to the phrase memory", UserRole.VIEWER);
+
+      Translation translation =
+          translationService.getTranslation(translationId);
+      entry.setPhraseMemory(translation.getPhraseMemory());
+      // Create service and configure transaction scope
+      return translationService.addMemoryEntry(entry);
+    } catch (Exception e) {
+      handleException(e, "trying to add a memory entry");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/{translationId}/phrasememory/remove/{entryId}")
+  @ApiOperation(value = "Remove phrase memory entry", notes = "Removes the phrase memory entry for this translation")
+  public void removePhraseMemoryEntry(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry id, e.g. 3", required = true) @PathParam("entryId") Long entryId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): /phrasememory/remove/"
+            + translationId + " " + entryId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "remove entry to the phrase memory", UserRole.VIEWER);
+      MemoryEntry entry = translationService.getMemoryEntry(entryId);
+      // Create service and configure transaction scope
+      translationService.removeMemoryEntry(entry);
+    } catch (Exception e) {
+      handleException(e, "trying to remove a phrase memory entry");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/{translationId}/phraseMemory/clear")
+  @ApiOperation(value = "Clear phrase memory entries", notes = "Removes all phrase memory entries for this translation")
+  public void clearPhraseMemory(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): /phraseMemory/clear/"
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      PhraseMemory phraseMemory = translation.getPhraseMemory();
+      if (phraseMemory == null) {
+        throw new Exception(
+            "translation must have an associated phrase memory.");
+      }
+      authorizeApp(securityService, authToken,
+          "remove all entries to the phrase memory", UserRole.VIEWER);
+      for (MemoryEntry memoryEntry : phraseMemory.getEntries()) {
+        translationService.removeMemoryEntry(memoryEntry);
+      }
+    } catch (Exception e) {
+      handleException(e, "trying to remove all phrase memory entries");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
