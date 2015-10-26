@@ -4,7 +4,8 @@ tsApp.directive('translationTable', [
   'utilService',
   'translationService',
   'releaseService',
-  function(utilService, translationService, releaseService) {
+  'projectService',
+  function(utilService, translationService, releaseService, projectService) {
     console.debug('configure translationTable directive');
     return {
       restrict : 'A',
