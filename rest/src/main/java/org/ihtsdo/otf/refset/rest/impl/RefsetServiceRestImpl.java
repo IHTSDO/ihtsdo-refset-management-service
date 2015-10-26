@@ -855,8 +855,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             if (refsetService.getTerminologyHandler().assignNames()) {
               member.setConceptName(refsetService
                   .getTerminologyHandler()
-                  .getConcept(member.getConceptId(), refset.getTerminology(),
-                      refset.getVersion()).getName());
+                  .getConcept(member.getConceptId(), refsetCopy.getTerminology(),
+                      refsetCopy.getVersion()).getName());
             } else {
               member.setConceptName("TBD");
             }
