@@ -514,7 +514,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/translationrelease/begin")
-  @ApiOperation(value = "Begin translation release", notes = "Begins the release process by validating the translation for release and creating the translation release info.", response = TranslationJpa.class)
+  @ApiOperation(value = "Begin translation release", notes = "Begins the release process by validating the translation for release and creating the translation release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo beginTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
@@ -572,7 +572,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/translationrelease/begin")
+  @Path("/translationrelease/validate")
   @ApiOperation(value = "Validate translation release", notes = "Validates the release process by validating the translation and concepts for release.", response = ValidationResultJpa.class)
   public ValidationResult validateTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
