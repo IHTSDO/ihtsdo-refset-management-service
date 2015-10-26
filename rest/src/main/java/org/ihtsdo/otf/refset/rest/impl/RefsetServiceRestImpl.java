@@ -617,7 +617,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (inclusion): /inclusion/add " + conceptId);
+        "RESTful call GET (inclusion): /inclusion/add " + conceptId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -680,7 +680,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (exclusion): /exclusion/add " + conceptId);
+        "RESTful call GET (exclusion): /exclusion/add " + conceptId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {

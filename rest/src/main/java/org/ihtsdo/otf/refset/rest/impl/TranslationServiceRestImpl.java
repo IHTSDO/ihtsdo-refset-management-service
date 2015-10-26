@@ -1253,11 +1253,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/{translationId}/phrasememory/add/{entry}")
+  @Path("/{translationId}/phrasememory/add")
   @ApiOperation(value = "Add new entry to phrase memory", notes = "Add new entry to the phrase memory", response = MemoryEntryJpa.class)
   public MemoryEntry addPhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") MemoryEntry entry,
+    @ApiParam(value = "entry, e.g. word", required = true) MemoryEntry entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1445,6 +1445,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationCopy.setVersion(newVersion);
 
       // TODO Is this correct?
+      // How will the potential new concepts that could be translated be identified to the user?
       Set<Concept> conceptsToRemove = new HashSet<>();
       for (Concept concept : translationCopy.getConcepts()) {
         if (!translationService
