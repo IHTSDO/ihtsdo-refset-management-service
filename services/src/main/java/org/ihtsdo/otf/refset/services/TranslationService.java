@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.Refset.StagingType;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -430,5 +431,8 @@ public interface TranslationService extends RefsetService {
    * @throws Exception the Exception
    */
   MemoryEntry getMemoryEntry(Long id) throws Exception;
+
+  public Translation stageTranslation(Translation translation,
+    StagingType preview);
 
 }
