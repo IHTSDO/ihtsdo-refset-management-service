@@ -23,7 +23,7 @@ tsApp.directive('refsetTable',
             $scope.refsets = null;
             $scope.pageSize = 10;
             $scope.memberTypes = [ "Member", "Exclusion", "Inclusion",
-              "Inactive member", "Inactive Iniclusion" ];
+              "Inactive Member", "Inactive Inclusion" ];
 
             $scope.paging = {};
             $scope.paging["refset"] = {
