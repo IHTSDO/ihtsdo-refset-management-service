@@ -161,6 +161,11 @@
       <artifactId>jsr311-api</artifactId>
     </dependency>
 
+	<dependency>
+		<groupId>com.google.guava</groupId>
+		<artifactId>guava</artifactId>
+	</dependency>
+
   </dependencies>
 
   <!-- Always build, use dev configuration by default -->

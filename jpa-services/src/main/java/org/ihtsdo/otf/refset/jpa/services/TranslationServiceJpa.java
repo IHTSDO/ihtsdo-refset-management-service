@@ -19,7 +19,6 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.SpellingDictionary;
-import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -839,7 +838,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
-  @Override
   public Translation stageTranslation(Translation translation, Translation.StagingType stagingType)
     throws Exception {
     Logger.getLogger(getClass()).debug(

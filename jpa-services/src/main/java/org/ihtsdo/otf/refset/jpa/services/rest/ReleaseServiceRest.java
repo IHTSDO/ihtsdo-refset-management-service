@@ -9,8 +9,10 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 import java.io.InputStream;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -98,10 +100,10 @@ public interface ReleaseServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerId the io handler id
    * @param authToken the auth token
-   * @return the validation result
+   * @return the refset
    * @throws Exception the exception
    */
-  public ValidationResult previewRefsetRelease(Long refsetId,
+  public Refset previewRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -120,10 +122,9 @@ public interface ReleaseServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
+  public void cancelRefsetRelease(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -147,7 +148,7 @@ public interface ReleaseServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult performTranslationRelease(Long translationId,
+  public ValidationResult validateTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -156,10 +157,10 @@ public interface ReleaseServiceRest {
    * @param translationId the translation id
    * @param ioHandlerId the io handler id
    * @param authToken the auth token
-   * @return the validation result
+   * @return the translation translation
    * @throws Exception the exception
    */
-  public ValidationResult previewTranslationRelease(Long translationId,
+  public Translation previewTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -178,10 +179,9 @@ public interface ReleaseServiceRest {
    *
    * @param translationId the translation id
    * @param authToken the auth token
-   * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult cancelTranslationRelease(Long translationId,
+  public void cancelTranslationRelease(Long translationId,
     String authToken) throws Exception;
 
   /**

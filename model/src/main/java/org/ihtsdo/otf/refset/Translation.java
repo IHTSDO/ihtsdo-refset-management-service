@@ -27,7 +27,8 @@ public interface Translation extends Component, Searchable {
     /** The import. */
     IMPORT,
     /** The migration. */
-    MIGRATION;
+    MIGRATION,
+    PREVIEW;
   }
 
   /**
