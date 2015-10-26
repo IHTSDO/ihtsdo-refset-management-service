@@ -181,6 +181,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("isPublic");
     tester.include("workflowStatus");
     tester.include("workflowPath");
+    tester.include("provisional");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -218,6 +219,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("workflowStatus");
     tester.include("nameSort");
     tester.include("descriptionSort");
+    tester.include("provisional");
     
 
     assertTrue(tester.testNotAnalyzedIndexedFields());

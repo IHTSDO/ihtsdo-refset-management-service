@@ -142,3 +142,11 @@ a:hover {
 .panel-title {
     font-size: 12px;
 }
+
+.strike {
+	text-decoration: line-through;
+}
+
+.blue {
+	font-color: blue;
+}

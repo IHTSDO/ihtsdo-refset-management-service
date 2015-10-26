@@ -22,6 +22,8 @@ tsApp.directive('refsetTable',
             $scope.refset = null;
             $scope.refsets = null;
             $scope.pageSize = 10;
+            $scope.memberTypes = [ "Member", "Exclusion", "Inclusion",
+              "Inactive member", "Inactive Iniclusion" ];
 
             $scope.paging = {};
             $scope.paging["refset"] = {
@@ -33,6 +35,7 @@ tsApp.directive('refsetTable',
             $scope.paging["member"] = {
               page : 1,
               filter : "",
+              typeFilter : "",
               sortField : 'lastModified',
               ascending : null
             }
@@ -70,8 +73,13 @@ tsApp.directive('refsetTable',
                 sortField : $scope.paging["member"].sortField,
                 ascending : $scope.paging["member"].ascending == null ? true
                   : $scope.paging["member"].ascending,
-                queryRestriction : null
+                queryRestriction : ""
               };
+              if ($scope.paging["member"].typeFilter) {
+                var value = $scope.paging["member"].typeFilter;
+                value = value.replace(" ", "_").toUpperCase();
+                pfs.queryRestriction += "memberType:" + value;
+              }
 
               refsetService.findRefsetMembersForQuery(refset.id,
                 $scope.paging["member"].filter, pfs).then(function(data) {
@@ -146,6 +154,21 @@ tsApp.directive('refsetTable',
               $scope.getMembers(refset);
             };
 
+            $scope.isDisabled = function(member) {
+              return member.memberType == 'INACTIVE_MEMBER'
+                || member.memberType == 'INACTIVE_INCLUSION'
+                || member.memberType == 'EXCLUSION';
+            }
+
+            $scope.getMemberStyle = function(member) {
+              if (member.memberType == 'EXCLUSION') {
+                return "strike";
+              } else if(member.memberType =='INCLUSION') {
+                return "blue";
+              } else {
+                return "";
+              }
+            }
             // Initialize
             $scope.getRefsets();
           } ]

@@ -79,6 +79,7 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
     releaseInfo.setTerminology(translation.getTerminology());
     releaseInfo.setVersion(translation.getVersion());
     releaseInfo.setPlanned(true);
+    releaseInfo.setPublished(false);
     releaseInfo = new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
   }
 

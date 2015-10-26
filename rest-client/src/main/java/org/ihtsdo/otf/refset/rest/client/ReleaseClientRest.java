@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -41,7 +43,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult previewRefsetRelease(Long refsetId,
+  public Refset previewRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -55,14 +57,14 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult performTranslationRelease(Long translationId,
+  public ValidationResult validateTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public ValidationResult previewTranslationRelease(Long translationId,
+  public Translation previewTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -76,17 +78,15 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
+  public void cancelRefsetRelease(Long refsetId, String authToken)
     throws Exception {
     // TODO Auto-generated method stub
-    return null;
   }
 
   @Override
-  public ValidationResult cancelTranslationRelease(Long translationId,
+  public void cancelTranslationRelease(Long translationId,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
-    return null;
   }
 
   @Override

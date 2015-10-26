@@ -53,8 +53,9 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 @Entity
 @Table(name = "translations", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "name", "description"
+    "terminologyId", "name", "description", "project_id", "provisional"
 }))
+
 @Audited
 @Indexed
 @XmlRootElement(name = "translation")
@@ -88,6 +89,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
+  
+  /** The provisional flag. */
+  @Column(nullable = false)
+  private boolean provisional;
 
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
@@ -133,6 +138,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     name = translation.getName();
     description = translation.getDescription();
     isPublic = translation.isPublic();
+    provisional = translation.isProvisional();
     stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
@@ -188,7 +194,20 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
+  
+  /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public boolean isProvisional() {
+    return provisional;
+  }
 
+  /* see superclass */
+  @Override
+  public void setProvisional(boolean provisional) {
+    this.provisional = provisional;
+  } 
+  
   /* see superclass */
   @Override
   public boolean isStaged() {

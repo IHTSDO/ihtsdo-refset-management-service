@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -22,15 +23,22 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.StagingType;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.algo.BeginRefsetReleaseAlgorthm;
 import org.ihtsdo.otf.refset.jpa.algo.BeginTranslationReleaseAlgorthm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -39,12 +47,21 @@ import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.ValidationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.common.io.ByteStreams;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -165,6 +182,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
     BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+
     try {
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
@@ -192,6 +212,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
       algo.setUserName(userName);
       algo.compute();
+      releaseService.commit();
       return algo.getReleaseInfo();
     } catch (Exception e) {
       handleException(e, "trying to begin release of refset");
@@ -204,9 +225,14 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public ValidationResult validateRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception {
+  @Path("/refsetrelease/validate")
+  @ApiOperation(value = "Validate refset release", notes = "Validates the release process by validating the refset and members for release.", response = ValidationResultJpa.class)
+  public ValidationResult validateRefsetRelease(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     // check preconditions
     // - refset exists
     // - current release info is planned and not published release info for this
@@ -222,12 +248,56 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // result.merge(result2);
     // }
     // return validation result
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /refsetrelease/validate " + refsetId );
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "validate refset release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForRefset(
+              refset.getTerminologyId(), refset.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned() || releaseInfo.isPublished())
+        throw new Exception("refset release is not ready to validate " + refsetId);
+      if(!WorkflowStatus.READY_FOR_PUBLICATION.equals(refset.getWorkflowStatus()))
+        throw new Exception("refset workflowstatus is not " + WorkflowStatus.READY_FOR_PUBLICATION + " for "+ refsetId);
+      ValidationServiceJpa validationService = new ValidationServiceJpa();
+      ValidationResult result = validationService.validateRefset(refset);
+      if(result.isValid()) {
+        for(ConceptRefsetMember member: refset.getMembers()) {
+          result.merge(validationService.validateMember(member));
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      handleException(e, "trying to validate release of refset");
+    } finally {
+      refsetService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
-
+  
+  @GET
   @Override
-  public ValidationResult previewRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception {
+  @Path("/refsetrelease/preview")
+  @ApiOperation(value = "Preview refset release", notes = "Previews the release process by creating the staging release for refset.", response = RefsetJpa.class)
+  public Refset previewRefsetRelease(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     // check preconditions
     // - refset exists
     // - current release info is planned and not published
@@ -274,6 +344,80 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     //
     // releaseService.commit()
     // return staged refset (change return type)
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /refsetrelease/preview " + refsetId );
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "preview refset release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForRefset(
+              refset.getTerminologyId(), refset.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned() || releaseInfo.isPublished())
+        throw new Exception("refset release is not ready to validate " + refsetId);
+      if(refset.isStaged())
+        throw new Exception("refset workflowstatus is staged for " + refsetId);
+      Refset stageRefset = refsetService.stageRefset(refset, StagingType.PREVIEW);
+      ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
+      stageReleaseInfo.setId(null);
+      stageReleaseInfo.setArtifacts(releaseInfo.getArtifacts());
+      stageReleaseInfo.setRefset(stageRefset);
+      ExportRefsetHandler handler = refsetService.getExportRefsetHandler(ioHandlerId);
+      InputStream inputStream = handler.exportMembers(refset, refset.getMembers());
+      ReleaseArtifactJpa releaseArtifact = new  ReleaseArtifactJpa();
+      releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
+      releaseArtifact.setName(handler.getFileName(refset.getProject().getNamespace()
+     ,"Snapshot",releaseInfo.getName()));
+      stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      if( releaseInfo != null) {
+        Set<ConceptRefsetMember> delta = Sets.newHashSet(releaseInfo.getRefset().getMembers());
+        delta.removeAll(stageRefset.getMembers());
+        for(ConceptRefsetMember member : delta) {
+          member.setActive(false);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+        }
+        Set<ConceptRefsetMember> newMembers = Sets.newHashSet(stageRefset.getMembers());
+        newMembers.removeAll(releaseInfo.getRefset().getMembers());
+        for(ConceptRefsetMember member : newMembers) {
+          member.setActive(true);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+        }
+        delta.addAll(newMembers);
+        inputStream = handler.exportMembers(stageRefset, Lists.newArrayList(delta));
+        releaseArtifact = new  ReleaseArtifactJpa();
+        releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
+        releaseArtifact.setName(handler.getFileName(refset.getProject().getNamespace()
+       ,"Delta",releaseInfo.getName()));
+        stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      }
+      stageRefset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      stageRefset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+      refsetService.addRefset(stageRefset);
+      releaseService.addReleaseInfo(stageReleaseInfo);
+      releaseService.commit();
+      return stageRefset;
+    } catch (Exception e) {
+      handleException(e, "trying to preview release of refset");
+    } finally {
+      refsetService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
 
@@ -304,8 +448,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  // TODO: add
-  // public void cancelRefsetRelease(Long refsetId, ...)
   // preconditions: releaseInfo is still planned
   // releaseService.setTransactionPerOperation(false)
   // releaseService.beginTransaction();
@@ -313,6 +455,61 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   // - the releaseInfo connected to the origin refset
   // - staged refset and it's release info (and the StagedRefsetChange)
   // releaseService.commit();
+
+
+  @GET
+  @Override
+  @Path("/refsetrelease/cancel")
+  @ApiOperation(value = "Cancel refset release", notes = "Cancel the release process by removing the staging release info refset.")
+  public void cancelRefsetRelease(    
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /refsetrelease/cancel " + refsetId );
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+  
+      if (refset.getStagingType() != Refset.StagingType.PREVIEW) {
+        throw new LocalException("Refset is not staged for preview.");
+
+      }
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "cancel refset release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForRefset(
+              refset.getTerminologyId(), refset.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned())
+        throw new Exception("refset release is not planned to cancel " + refsetId);
+      releaseService.removeReleaseInfo(releaseInfo.getId());
+      StagedRefsetChange change =
+          refsetService.getStagedRefsetChange(refset.getId());
+      refsetService.removeStagedRefsetChange(change.getId());
+      refset.setStagingType(null);
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+
+      releaseService.commit();
+    } catch (Exception e) {
+      handleException(e, "trying to cancel release of refset");
+    } finally {
+      refsetService.close();
+      releaseService.close();
+      securityService.close();
+    }
+  }
 
   @GET
   @Override
@@ -373,17 +570,136 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public ValidationResult performTranslationRelease(Long translationId,
-    String ioHandlerId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/translationrelease/validate")
+  @ApiOperation(value = "Validate translation release", notes = "Validates the release process by validating the translation and concepts for release.", response = ValidationResultJpa.class)
+  public ValidationResult validateTranslationRelease(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /translationrelease/validate " + translationId );
+
+    TranslationService translationService = new TranslationServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "validate translation release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForTranslation(
+              translation.getTerminologyId(), translation.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned() || releaseInfo.isPublished())
+        throw new Exception("translation release is not ready to validate " + translationId);
+      if(!WorkflowStatus.READY_FOR_PUBLICATION.equals(translation.getWorkflowStatus()))
+        throw new Exception("translation workflowstatus is not " + WorkflowStatus.READY_FOR_PUBLICATION + " for "+ translationId);
+      ValidationServiceJpa validationService = new ValidationServiceJpa();
+      ValidationResult result = validationService.validateTranslation(translation);
+      if(result.isValid()) {
+        for(Concept member: translation.getConcepts()) {
+          result.merge(validationService.validateConcept(member));
+        }
+      }
+      return result;
+    } catch (Exception e) {
+      handleException(e, "trying to validate release of translation");
+    } finally {
+      translationService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
 
+  @GET
   @Override
-  public ValidationResult previewTranslationRelease(Long translationId,
-    String ioHandlerId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  @Path("/translationrelease/preview")
+  @ApiOperation(value = "Preview translation release", notes = "Previews the release process by creating the staging release for translation.", response = TranslationJpa.class)
+  public Translation previewTranslationRelease(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /translationrelease/preview " + translationId );
+
+    TranslationService translationService = new TranslationServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "preview translation release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForTranslation(
+              translation.getTerminologyId(), translation.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned() || releaseInfo.isPublished())
+        throw new Exception("translation release is not ready to validate " + translationId);
+      if(translation.isStaged())
+        throw new Exception("translation workflowstatus is staged for " + translationId);
+      Translation stageTranslation = translationService.stageTranslation(translation, Translation.StagingType.PREVIEW);
+      ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
+      stageReleaseInfo.setId(null);
+      stageReleaseInfo.setArtifacts(releaseInfo.getArtifacts());
+      stageReleaseInfo.setTranslation(stageTranslation);
+      ExportTranslationHandler handler = translationService.getExportTranslationHandler(ioHandlerId);
+      InputStream inputStream = handler.exportConcepts(translation, translation.getConcepts());
+      ReleaseArtifactJpa releaseArtifact = new  ReleaseArtifactJpa();
+      releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
+      releaseArtifact.setName(handler.getFileName());
+      stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      if( releaseInfo != null) {
+        Set<Concept> delta = Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
+        delta.removeAll(stageTranslation.getConcepts());
+        for(Concept member : delta) {
+          member.setActive(false);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+        }
+        Set<Concept> newMembers = Sets.newHashSet(stageTranslation.getConcepts());
+        newMembers.removeAll(releaseInfo.getRefset().getMembers());
+        for(Concept member : newMembers) {
+          member.setActive(true);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+        }
+        delta.addAll(newMembers);
+        inputStream = handler.exportConcepts(stageTranslation, Lists.newArrayList(delta));
+        releaseArtifact = new  ReleaseArtifactJpa();
+        releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
+        releaseArtifact.setName(handler.getFileName());
+        stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      }
+      stageTranslation.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      stageTranslation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+      translationService.addTranslation(stageTranslation);
+      releaseService.addReleaseInfo(stageReleaseInfo);
+      releaseService.commit();
+      return stageTranslation;
+    } catch (Exception e) {
+      handleException(e, "trying to preview release of ");
+    } finally {
+      translationService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
 
@@ -394,20 +710,58 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  // TODO: add cancelRefsetRelease
-
+  @GET
   @Override
-  public ValidationResult cancelRefsetRelease(Long refsetId, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
+  @Path("/translationrelease/cancel")
+  @ApiOperation(value = "Cancel translation release", notes = "Cancel the release process by removing the staging release info translation.")
+  public void cancelTranslationRelease(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /translationrelease/cancel " + translationId );
 
-  @Override
-  public ValidationResult cancelTranslationRelease(Long translationId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    TranslationService translationService = new TranslationServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+  
+      if (translation.getStagingType() != Translation.StagingType.PREVIEW) {
+        throw new LocalException("Refset is not staged for preview.");
+
+      }
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "cancel translation release",
+              UserRole.REVIEWER);
+
+      ReleaseInfo releaseInfo =
+          releaseService.getCurrentReleaseInfoForRefset(
+              translation.getTerminologyId(), translation.getProject().getId());
+      if (releaseInfo == null || !releaseInfo.isPlanned())
+        throw new Exception("translation release is not planned to cancel " + translationId);
+      releaseService.removeReleaseInfo(releaseInfo.getId());
+      StagedTranslationChange change =
+          translationService.getStagedTranslationChange(translation.getId());
+      translationService.removeStagedTranslationChange(change.getId());
+      translation.setStagingType(null);
+      translation.setLastModifiedBy(userName);
+      translationService.updateTranslation(translation);
+
+      releaseService.commit();
+    } catch (Exception e) {
+      handleException(e, "trying to cancel release of translation");
+    } finally {
+      translationService.close();
+      releaseService.close();
+      securityService.close();
+    }
   }
 
   @Override

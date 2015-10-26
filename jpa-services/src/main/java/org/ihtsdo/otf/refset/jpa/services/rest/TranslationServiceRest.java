@@ -325,7 +325,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeSpellingDictionaryEntry(Long translationId, Long entryId,
+  public void removePhraseMemoryEntry(Long translationId, Long entryId,
     String authToken) throws Exception;
 
   /**
@@ -405,7 +405,7 @@ public interface TranslationServiceRest {
    * @return the string list
    * @throws Exception the exception
    */
-  public StringList suggestTranslatio(String phrase, String authToken)
+  public StringList suggestTranslation(String phrase, String authToken)
     throws Exception;
 
   /**
@@ -479,11 +479,24 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
+   * Resume migration.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return the translation
+   * @throws Exception the exception
+   */
+  public Translation resumeMigration(Long translationId, String authToken)
+    throws Exception;
+
+  /**
    * Release report token.
    *
    * @param reportToken the report token
+   * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void releaseReportToken(String reportToken) throws Exception;
+  public void releaseReportToken(String reportToken, String authToken)
+    throws Exception;
 
 }
