@@ -7,10 +7,10 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Refset.StagingType;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.Translation.StagingType;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -421,7 +421,7 @@ public interface TranslationService extends RefsetService {
    * @return list of translations
    * @throws Exception the Exception
    */
-  public TranslationList getTranslations();
+  public TranslationList getTranslations() throws Exception;
 
   /**
    * Get a memory entry by id
@@ -432,7 +432,15 @@ public interface TranslationService extends RefsetService {
    */
   MemoryEntry getMemoryEntry(Long id) throws Exception;
 
-  public Translation stageTranslation(Translation translation,
-    StagingType preview);
+  /**
+   * Stage translation.
+   *
+   * @param translation the translation
+   * @param stagingType the staging type
+   * @return the translation
+   * @throws Exception the exception
+   */
+  public Translation stageTranslation(Translation translation, StagingType stagingType)
+    throws Exception;
 
 }

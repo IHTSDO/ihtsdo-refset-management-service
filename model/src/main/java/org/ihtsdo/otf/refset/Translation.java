@@ -241,4 +241,18 @@ public interface Translation extends Component, Searchable {
    */
   public void setPhraseMemory(PhraseMemory phraseMemory);
 
+  /**
+   * Indicates whether or not provisional is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isProvisional();
+
+  /**
+   * Sets the provisional.
+   *
+   * @param provisional the provisional
+   */
+  public void setProvisional(boolean provisional);
+
 }

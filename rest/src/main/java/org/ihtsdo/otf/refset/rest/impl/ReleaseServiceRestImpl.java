@@ -655,7 +655,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("translation release is not ready to validate " + translationId);
       if(translation.isStaged())
         throw new Exception("translation workflowstatus is staged for " + translationId);
-      Translation stageTranslation = translationService.stageTranslation(translation, StagingType.PREVIEW);
+      Translation stageTranslation = translationService.stageTranslation(translation, Translation.StagingType.PREVIEW);
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
       stageReleaseInfo.setArtifacts(releaseInfo.getArtifacts());

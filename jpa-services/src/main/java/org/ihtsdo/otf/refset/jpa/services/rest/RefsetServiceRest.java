@@ -165,13 +165,13 @@ public interface RefsetServiceRest {
    * Adds the refset inclusion.
    *
    * @param refsetId the refset id
-   * @param inclusion the inclusion
+   * @param conceptId the concept id
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    ConceptRefsetMemberJpa inclusion, String authToken) throws Exception;
+    String conceptId, String authToken) throws Exception;
 
   /**
    * Adds the refset exclusion.
