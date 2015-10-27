@@ -196,7 +196,7 @@
                 ng-bind="getSortIndicator('member','conceptName')"></span>
             </th>
             <th class="col-md-4 col-xs-4"><select
-              title="Filter by member type" style="width: 50px;"
+              title="Filter by member type" style="width: 100px;"
               ng-model="paging['member'].typeFilter"
               ng-options="item for item in memberTypes"
               ng-change="getMembers(refset)">
