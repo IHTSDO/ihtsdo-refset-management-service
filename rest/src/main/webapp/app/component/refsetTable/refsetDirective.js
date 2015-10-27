@@ -161,14 +161,12 @@ tsApp.directive('refsetTable',
             }
 
             $scope.getMemberStyle = function(member) {
-              if (member.memberType == 'EXCLUSION') {
-                return "strike";
-              } else if(member.memberType =='INCLUSION') {
-                return "blue";
-              } else {
+              if (member.memberType == 'MEMBER') {
                 return "";
               }
+              return member.memberType.replace('_', ' ').toLowerCase();
             }
+            
             // Initialize
             $scope.getRefsets();
           } ]
