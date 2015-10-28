@@ -140,13 +140,19 @@ a:hover {
 }
 
 .panel-title {
-    font-size: 12px;
+	font-size: 12px;
 }
 
-.strike {
+/* Styles for member list */
+
+.exclusion {
 	text-decoration: line-through;
 }
 
-.blue {
+.inclusion {
 	font-color: blue;
+}
+
+.inactive {
+	opacity: 0.5;
 }
