@@ -64,13 +64,14 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
       throw new Exception("Refset did not pass the add refset members test.");
     }
 
-    // Remove 2 members
+    // Remove 3 members
     refsetService.removeRefsetMember(member5.getId(), adminAuthToken);
     refsetService.removeRefsetMember(member4.getId(), adminAuthToken);
-
+    refsetService.removeRefsetMember(member3.getId(), adminAuthToken);
+    
     if (refsetService
         .findRefsetMembersForQuery(newRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects().size() != 3) {
+            new PfsParameterJpa(), adminAuthToken).getObjects().size() != 2) {
       throw new Exception("Refset did not pass the remove refset members test.");
     }
 

@@ -138,7 +138,7 @@ public class RefsetTest {
   }
 
   /**
-   * Make refset.
+   * Make basic refset.
    *
    * @param name the name
    * @param definition the definition
