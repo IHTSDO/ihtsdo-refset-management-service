@@ -76,13 +76,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 public class GenerateSampleData2Mojo extends AbstractMojo {
 
-  /** The refset counter. */
-  @SuppressWarnings("unused")
-  private int refsetCt = 0;
-
-  /** The translation ct. */
-  private int translationCt = 0;
-
   /**
    * Mode - for recreating db.
    *
@@ -454,7 +447,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make spanish translation
       makeTranslation(
           "conjunto de referencias de lenguaje castellano para América Latina",
-          "450828004", refset, project2, 2, reviewer2);
+          "450828004", refset, project2, 2, "INT", reviewer2);
 
       // Swedish translation - new refsetid for scope refset
       refset =
@@ -464,7 +457,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make Swedish translation
       makeTranslation(
           "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, reviewer2);
+          "46011000052107", refset, project2, 3, "INT", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -510,8 +503,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Add an exclusion for
       // "313948006 | Serum ampicillin measurement (procedure) |"
       new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
-          "313948006", reviewer2.getAuthToken());      
-      
+          "313948006", reviewer2.getAuthToken());
+
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "",
@@ -629,7 +622,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-      "static-method", "unused"
+    "static-method"
   })
   private ReleaseInfo makeReleaseInfo(String name, Object object)
     throws Exception {
@@ -640,13 +633,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       releaseInfo.setRefset((Refset) object);
     else if (object instanceof Translation)
       releaseInfo.setTranslation((Translation) object);
+    releaseInfo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(name));
     releaseInfo.setLastModified(new Date());
     releaseInfo.setLastModifiedBy("loader");
     releaseInfo.setPublished(true);
     releaseInfo.setReleaseBeginDate(new Date());
     releaseInfo.setReleaseFinishDate(new Date());
     releaseInfo.setTerminology("SNOMEDCT");
-    releaseInfo.setVersion("latest");
+    releaseInfo.setVersion("2015-01-31");
     releaseInfo.setPlanned(false);
     return new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
   }
@@ -661,7 +655,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   @SuppressWarnings({
-      "static-method", "unused"
+    "static-method"
   })
   private ReleaseArtifact makeReleaseArtifact(String name,
     ReleaseInfo releaseInfo, String pathToFile) throws Exception {
@@ -698,7 +692,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   private RefsetJpa makeRefset(String name, String definition, int num,
     String edition, Refset.Type type, Project project, String refsetId,
     String moduleId, User auth) throws Exception {
-    ++refsetCt;
     final RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -759,6 +752,19 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           auth.getAuthToken());
       in.close();
     }
+
+    // fake some refset release info
+    ReleaseInfo refsetReleaseInfo = makeReleaseInfo("20150731", refset);
+    if (type == Refset.Type.EXTENSIONAL) {
+      makeReleaseArtifact("der2_Refset_SimpleSnapshot_" + edition
+          + "_20150131.txt", refsetReleaseInfo,
+          "../config/src/main/resources/data/refset" + num
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+      makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition
+          + "_20150131.txt", refsetReleaseInfo,
+          "../config/src/main/resources/data/refset" + num
+              + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+    }
     return refset;
   }
 
@@ -778,7 +784,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   private RefsetJpa makeTranslationRefset(String name, int num, String edition,
     Project project, String refsetId, String moduleId, User auth)
     throws Exception {
-    ++refsetCt;
     final RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(Refset.Type.EXTENSIONAL);
@@ -831,6 +836,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
         auth.getAuthToken());
     in.close();
 
+    // refset release info
+    ReleaseInfo info = makeReleaseInfo("20150731", refset);
+    makeReleaseArtifact("der2_Refset_SimpleSnapshot_" + edition
+        + "_20150131.txt", info,
+        "../config/src/main/resources/data/translation" + num
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+    makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
+        info, "../config/src/main/resources/data/translation" + num
+            + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
     return refset;
   }
 
@@ -847,8 +861,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private TranslationJpa makeTranslation(String name, String terminologyId,
-    Refset refset, Project project, int num, User auth) throws Exception {
-    ++translationCt;
+    Refset refset, Project project, int num, String edition, User auth)
+    throws Exception {
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
     translation.setDescription("Description of translation "
@@ -884,35 +898,33 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
-    if (translationCt % 2 == 0) {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
-      if (!vr.isValid()) {
-        throw new Exception("translation staging is not valid - " + vr);
-      }
-      translationService = new TranslationServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/translation2/translation.zip"));
-      translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
-      in.close();
-    } else {
-      ValidationResult vr =
-          translationService.beginImportConcepts(translation.getId(),
-              "DEFAULT", auth.getAuthToken());
-      if (!vr.isValid()) {
-        throw new Exception("translation staging is not valid - " + vr);
-      }
-      translationService = new TranslationServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File(
-              "../config/src/main/resources/data/translation2/translation.zip"));
-      translationService.finishImportConcepts(null, in, translation.getId(),
-          "DEFAULT", auth.getAuthToken());
-      in.close();
+    ValidationResult vr =
+        translationService.beginImportConcepts(translation.getId(), "DEFAULT",
+            auth.getAuthToken());
+    if (!vr.isValid()) {
+      throw new Exception("translation staging is not valid - " + vr);
     }
+    translationService = new TranslationServiceRestImpl();
+    InputStream in =
+        new FileInputStream(new File(
+            "../config/src/main/resources/data/translation" + num
+                + "/translation.zip"));
+    translationService.finishImportConcepts(null, in, translation.getId(),
+        "DEFAULT", auth.getAuthToken());
+    in.close();
+
+    // refset release info
+    ReleaseInfo info = makeReleaseInfo("20150731", translation);
+    makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
+        "../config/src/main/resources/data/translation" + num
+            + "/translation.zip");
+    makeReleaseArtifact("sct2_Description_" + edition + "_20150131.txt", info,
+        "../config/src/main/resources/data/translation" + num
+            + "/sct2_Description_" + edition + "_20150131.txt");
+    makeReleaseArtifact("der2_cRefset_LanguageSnapshot_" + edition
+        + "_20150131.txt", info,
+        "../config/src/main/resources/data/translation" + num
+            + "/der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt");
 
     return translation;
   }
