@@ -1,17 +1,7 @@
 // Refset controller
-tsApp.controller('RefsetCtrl', [
-  '$scope',
-  '$http',
-  '$modal',
-  '$location',
-  '$anchorScroll',
-  'gpService',
-  'utilService',
-  'tabService',
-  'securityService',
-  'refsetService',
-  function($scope, $http, $modal, $location, $anchorScroll, gpService,
-    utilService, tabService, securityService, refsetService) {
+tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService',
+                                 'securityService',
+  function($scope, $http, tabService, projectService, securityService) {
     console.debug('configure RefsetCtrl');
 
     // Handle resetting tabs on "back" button
@@ -19,10 +9,40 @@ tsApp.controller('RefsetCtrl', [
       tabService.setSelectedTabByLabel('Refset');
     }
     
-    // eventually need to make some kind of call so that a failed call can redirect 
-    // to login page
+    // Initialize
+    projectService.prepareIconConfig();
 
-    // TODO
+    $scope.user = securityService.getUser();
+
+    projectService.getUserHasAnyRole(); // TODO: is this needed?
+    $scope.selectedProject = null;
+    
+    // get all projects where user has a role
+    $scope.retrieveCandidateProjects = function() {
+
+      var pfs = {
+        startIndex : 0,
+        maxResults : 100,
+        sortField : 'name',
+        queryRestriction : 'userAnyRole:' + $scope.user.userName
+      };
+      // clear queryRestriction for application admins
+      if ($scope.user.applicationRole == 'ADMIN') {
+        pfs.queryRestriction = null;
+      }
+
+      projectService.findProjectsAsList("", pfs).then(function(data) {
+        $scope.candidateProjects = data.projects;
+        $scope.candidateProjects.totalCount = data.totalCount;
+        $scope.selectedProject = $scope.candidateProjects[0];
+
+      })
+
+    };
+    
+    $scope.retrieveCandidateProjects();
+    
   }
 
 ]);
+

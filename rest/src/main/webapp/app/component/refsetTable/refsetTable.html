@@ -19,7 +19,16 @@
       <button class="btn btn-xs btn-warning" ng-show="paging['refset'].filter"
         ng-click="paging['refset'].filter = ''; getRefsets()"
         title="Click to clear filter text">Clear</button>
+
+      <h4 ng-show="value == 'AVAILABLE'">
+        <div style="float: right;">
+          <a title="Create new refset" ng-click="openNewRefsetModal(lrefset)">
+            <i title="Create new refset" class="material-icons md-24">add</i>
+          </a>
+        </div>
+      </h4>
     </span>
+
 
     <!-- Basic Refset info -->
     <span ng-show="refsets.totalCount == 0" style="display: block;"
@@ -37,6 +46,10 @@
           ng-click="setSortField('refset','moduleId', null)">Module<span
             ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
         <th class="col-md-1 col-xs-1"
+          ng-click="setSortField('refset','type', null)">Type<span
+            ng-bind="getSortIndicator('refset','type',null)"></span></th>
+        <th class="col-md-1 col-xs-1"
+          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED'"
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
       </thead>
@@ -66,6 +79,18 @@
                 tooltip="Intenional refset, defined as a definition with includes/excludes."
                 class="material-icons md-18">functions</i>
             </a></td>
+            <td class="nobreak"
+               ng-show="value == 'AVAILABLE' || value == 'ASSIGNED'"><a title="Edit"
+                ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
+                <i title="Edit" class="material-icons md-18">edit</i>
+              </a>&nbsp;<a title="Remove"
+                ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
+                <i title="Delete" class="material-icons md-18">delete</i>
+              </a>&nbsp;<a title="Assign"
+                ng-click="performWorkflowAction(refset, 'ASSIGN'); $event.stopPropagation()">
+                <i title="Claim" class="material-icons md-18">assignment</i>
+              </a></td>
+
         </tr>
       </tbody>
     </table>

@@ -15,6 +15,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -424,5 +425,14 @@ public interface RefsetServiceRest {
    */
   public Refset resumeMigration(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Returns the refset types.
+   *
+   * @param authToken the auth token
+   * @return the refset types
+   * @throws Exception the exception
+   */
+  public StringList getRefsetTypes(String authToken) throws Exception;
 
 }

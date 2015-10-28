@@ -34,7 +34,7 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
-      // Find available editing work
+      // Find available translation editing work
       this.findAvailableEditingWork = function(projectId, translationId,
         userName, pfs) {
         console.debug("findAvailableEditingWork");
@@ -61,7 +61,7 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
-      // Find assigned editing work
+      // Find assigned translation editing work
       this.findAssignedEditingWork = function(projectId, translationId,
         userName, pfs) {
         console.debug("findAssignedEditingWork");
@@ -88,7 +88,7 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
-      // Find available review work
+      // Find available translation review work
       this.findAvailableReviewWork = function(projectId, translationId,
         userName, pfs) {
         console.debug("findAvailableReviewWork");
@@ -115,7 +115,7 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
-      // Find assigned review work
+      // Find assigned translation review work
       this.findAssignedReviewWork = function(projectId, translationId,
         userName, pfs) {
         console.debug("findAssignedReviewWork");

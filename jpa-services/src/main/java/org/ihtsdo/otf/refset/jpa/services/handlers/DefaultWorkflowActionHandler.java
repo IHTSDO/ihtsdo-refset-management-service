@@ -690,13 +690,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // NEW Refsets for this project that do not yet have tracking records
     String queryStr =
-        "select a RefsetJpa a where workflowStatus = 'NEW' "
+        "select a from RefsetJpa a where workflowStatus = 'NEW' "
             + "and a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa)";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
-            "select count(*) RefsetJpa a where a.project.id = :projectId "
+            "select count(*) from RefsetJpa a where a.project.id = :projectId "
                 + "and a not in (select refset from TrackingRecordJpa)");
 
     ctQuery.setParameter("projectId", projectId);
@@ -722,14 +722,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Refsets for this project that do not yet have tracking records
     String queryStr =
-        "select a RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
+        "select a from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
             + "b.refset = a and a.workflowStatus = :editingDone";
 
     Query ctQuery =
         rootService
             .getEntityManager()
             .createQuery(
-                "select count(*) RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
+                "select count(*) from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
                     + "b.refset = a and a.workflowStatus = :editingDone");
 
     ctQuery.setParameter("projectId", projectId);

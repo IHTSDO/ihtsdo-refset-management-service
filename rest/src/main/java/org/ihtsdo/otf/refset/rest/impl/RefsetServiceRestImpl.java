@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
@@ -1991,4 +1992,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/types")
+  @ApiOperation(value = "Get refset types", notes = "Returns list of valid refset types", response = StringList.class)
+  public StringList getRefsetTypes(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Refset): /types");
+
+    try {
+      authorizeApp(securityService, authToken, "get types", UserRole.VIEWER);
+      StringList list = new StringList();
+      list.setTotalCount(3);
+      list.getObjects().add(Refset.Type.EXTENSIONAL.toString());
+      list.getObjects().add(Refset.Type.INTENSIONAL.toString());
+      list.getObjects().add(Refset.Type.EXTERNAL.toString());
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to get refset types");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
 }

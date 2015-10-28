@@ -172,7 +172,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // and not for review
       String query =
           "authorUserNames:" + user.getId() + " AND translationId:"
-              + translationId + " AND forEditing:true AND forReview:false";
+              + translationId + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
@@ -385,16 +385,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       User user = securityService.getUser(userName);
       // Find tracking records for this author that has any refset id
-      // and is marked as forEditing but not forReview
+      // and is marked as forAuthoring but not forReview
       String query =
-          "authorUserNames:" + user.getId() + " AND refsetId:[* TO *]"
-              + " AND forEditing:true AND forReview:false";
+          "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+              + " AND forAuthoring:true AND forReview:false";
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       RefsetList list = new RefsetListJpa();
       list.setTotalCount(records.getTotalCount());
       for (TrackingRecord record : records.getObjects()) {
-        list.getObjects().add(record.getRefset());
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
       }
       return list;
 
@@ -419,7 +424,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /translation/available/review "
+        "RESTful POST call (Workflow): /refset/available/review "
             + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
@@ -468,20 +473,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /translation/assigned/review "
+        "RESTful POST call (Workflow): /refset/assigned/review "
             + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find assigned review work", UserRole.REVIEWER);
+          "trying to find refset assigned review work", UserRole.REVIEWER);
 
       User user = securityService.getUser(userName);
-      // Find tracking records for this author that has any refset id
-      // and is marked as forEditing but not forReview
+
+      // Find refset tracking records "for review" for this user
       String query =
           "reviewerUserNames:" + user.getId() + " AND refsetId:[* TO *]"
-              + " AND forReview:false";
+              + " AND forReview:true";
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       RefsetList list = new RefsetListJpa();

@@ -6,12 +6,17 @@ tsApp.directive('refsetTable',
     'projectService',
     'refsetService',
     'releaseService',
-    function(utilService, projectService, refsetService, releaseService) {
+    'workflowService',
+    'securityService',
+    '$modal',
+    function(utilService, projectService, refsetService, releaseService, workflowService,
+      securityService, $modal) {
       console.debug('configure refsetTable directive');
       return {
         restrict : 'A',
         scope : {
-          value : '@'
+          value : '@',
+          project : '@'
         },
         templateUrl : 'app/component/refsetTable/refsetTable.html',
         controller : [
@@ -19,11 +24,13 @@ tsApp.directive('refsetTable',
           function($scope) {
             // Variable
             $scope.iconConfig = projectService.getIconConfig();
+            $scope.user = securityService.getUser();
             $scope.refset = null;
             $scope.refsets = null;
             $scope.pageSize = 10;
             $scope.memberTypes = [ "Member", "Exclusion", "Inclusion",
               "Inactive Member", "Inactive Inclusion" ];
+            $scope.selectedProject = null;
 
             $scope.paging = {};
             $scope.paging["refset"] = {
@@ -40,6 +47,20 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
+
+            // get all projects where user has a role
+            $scope.getProject = function(projectId) {
+              projectService.getProject(projectId).then(function(data) {
+                $scope.selectedProject = data;
+                if ($scope.value == 'AVAILABLE') {
+                  $scope.findAvailableEditingRefsets();
+                }
+                if ($scope.value == 'ASSIGNED') {
+                  $scope.findAssignedEditingRefsets();
+                }
+              })
+            };
+            
             // get refsets
             $scope.getRefsets = function() {
 
@@ -57,9 +78,37 @@ tsApp.directive('refsetTable',
                 pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
-                for (var i = 0; i < $scope.refsets.length; i++) {
+                /*for (var i = 0; i < $scope.refsets.length; i++) {
                   $scope.refsets[i].isExpanded = false;
-                }
+                }*/
+              })
+            };
+            
+            $scope.findAvailableEditingRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAvailableEditingRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+            
+            $scope.findAssignedEditingRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAssignedEditingRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
               })
             };
 
@@ -169,8 +218,197 @@ tsApp.directive('refsetTable',
                 return "";
               }
             }
+            
+            $scope.performWorkflowAction = function(action) {
+
+              workflowService.performWorkflowAction($scope.selectedProject.id, $scope.selectedRefset.id,
+                $scope.user.userName, action).then(function(data) {
+                $scope.trackingRecord = data.trackingRecord;
+              })
+            };
+            
+            // get refset types
+            $scope.getRefsetTypes = function() {
+              console.debug("getRefsetTypes");
+              refsetService.getRefsetTypes().then(function(data) {
+                $scope.refsetTypes = data.strings;
+              })
+            };
+            
+            // remove a refset
+            $scope.remove = function(type, object, objArray) {
+              if (!confirm("Are you sure you want to remove the " + type + " ("
+                + object.name + ")?")) {
+                return;
+              }
+              if (type == 'refset') {
+                if (object.userRoleMap != null && object.userRoleMap != undefined
+                  && Object.keys(object.userRoleMap).length > 0) {
+                  window
+                    .alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
+                  return;
+                }
+                refsetService.removeRefset(object.id).then(function() {
+                  $scope.getRefsets();
+                });
+              }
+            };
+            
+            $scope.performWorkflowAction = function(refset, action) {
+              
+              workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                $scope.user.userName, action).then(function(data) {
+                $scope.trackingRecord = data.trackingRecord;
+              })
+            };
+            
+            
             // Initialize
-            $scope.getRefsets();
+            if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
+              $scope.getRefsets();
+            }
+            if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED') {
+              $scope.getProject($scope.project);
+              $scope.getRefsetTypes();
+            }
+            
+
+            
+            
+            //
+            // Modals
+            //
+
+            // modal for creating a new refset 
+            $scope.openNewRefsetModal = function(lrefset) {
+
+              console.debug("openNewRefsetModal ", lrefset);
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/newRefset.html',
+                controller : NewRefsetModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  refsets : function() {
+                    return $scope.refsets;
+                  },
+                  refsetTypes : function() {
+                    return $scope.refsetTypes;
+                  },
+                  project : function() {
+                    return $scope.selectedProject;
+                  }
+                }
+              });
+
+              modalInstance.result.then(
+              // Success
+              function() {
+                $scope.findAvailableEditingRefsets();
+              });
+            };
+
+            var NewRefsetModalCtrl = function($scope, $modalInstance, refset,
+              refsets, refsetTypes, project) {
+
+              console.debug("Entered new refset modal control", refsetTypes);
+
+              $scope.refset = refset;
+              $scope.refsetTypes = refsetTypes;
+
+              $scope.submitNewRefset = function(refset) {
+                console.debug("Submitting new refset", refset);
+
+                if (refset == null || refset.name == null
+                  || refset.name == undefined || refset.description == null
+                  || refset.description == undefined) {
+                  window.alert("The name and description fields cannot be blank. ");
+                  return;
+                }
+
+                refset.projectId = project.id;
+                refset.workflowPath = 'DEFAULT';
+                refsetService.addRefset(refset).then(function(data) {
+                  refsets.push(data);
+                  $modalInstance.close();
+                }, function(data) {
+                  $modalInstance.close();
+                })
+
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+
+
+
+            // modal for editing a refset 
+            // this
+            $scope.openEditRefsetModal = function(lrefset) {
+
+              console.debug("openEditRefsetModal ");
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/editRefset.html',
+                controller : EditRefsetModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  refsetTypes : function() {
+                    return $scope.refsetTypes;
+                  },
+                  project : function() {
+                    return $scope.selectedProject;
+                  }
+                }
+              });
+
+              modalInstance.result.then(
+              // Success
+              function() {
+                $scope.getRefsets();
+              });
+            };
+
+            var EditRefsetModalCtrl = function($scope, $modalInstance, refset, refsetTypes, project) {
+
+              console.debug("Entered edit refset modal control");
+
+              $scope.refset = refset;
+              $scope.refsetTypes = refsetTypes;
+
+              $scope.submitEditRefset = function(refset) {
+                console.debug("Submitting edit refset", refset);
+
+                if (refset == null || refset.name == null
+                  || refset.name == undefined || refset.description == null
+                  || refset.description == undefined) {
+                  window
+                    .alert("The name, description, and terminology fields cannot be blank. ");
+                  return;
+                }
+
+                refsetService.updateRefset(refset).then(function(data) {
+                  $modalInstance.close();
+                }, function(data) {
+                  $modalInstance.close();
+                })
+
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+
+            
           } ]
       }
     } ]);

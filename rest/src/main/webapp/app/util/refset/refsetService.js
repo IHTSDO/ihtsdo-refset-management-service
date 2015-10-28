@@ -801,7 +801,28 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // get refset types
+    this.getRefsetTypes = function() {
+      console.debug("getRefsetTypes");
+      var deferred = $q.defer();
+
+      // Get refset types
+      gpService.increment()
+      $http.get(refsetUrl + 'types').then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    }
+    
     // Initialize user role - only when refset service loads
-    projectService.getUserHasAnyRole();
+    //projectService.getUserHasAnyRole();
 
   } ]);
