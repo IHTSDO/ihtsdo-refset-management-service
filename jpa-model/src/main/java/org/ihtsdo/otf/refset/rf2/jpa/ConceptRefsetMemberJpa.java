@@ -120,7 +120,6 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
    *
    * @param refsetId the refset id
    */
-  @SuppressWarnings("unused")
   public void setRefsetId(Long refsetId) {
     if (refset == null) {
       refset = new RefsetJpa();
@@ -216,7 +215,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   public String toString() {
     return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
         + conceptId + ", conceptName=" + conceptName + ", type=" + memberType
-        + "]";
+        + "] " + super.toString();
   }
 
 }
