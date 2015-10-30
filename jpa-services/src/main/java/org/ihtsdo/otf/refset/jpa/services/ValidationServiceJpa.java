@@ -99,6 +99,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(member, service));
     }
+    service.close();
     return result;
   }
 
@@ -111,6 +112,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(refset, service));
     }
+    service.close();
     return result;
   }
 
