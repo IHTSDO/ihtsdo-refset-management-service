@@ -28,6 +28,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -1074,6 +1075,12 @@ public class RefsetClientRest extends RootClientRest implements
     // converting to object
     return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
         RefsetJpa.class);
+  }
+
+  @Override
+  public StringList getRefsetTypes(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

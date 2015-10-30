@@ -31,6 +31,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -242,6 +243,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the translation id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return translation == null ? 0L : translation.getId();
@@ -278,6 +280,7 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the refset id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getRefsetId() {
     return refset == null ? 0L : refset.getId();
@@ -333,6 +336,7 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isForReview() {
     return forReview;
   }
@@ -344,6 +348,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public boolean isForAuthoring() {
     return forAuthoring;

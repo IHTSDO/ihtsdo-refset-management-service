@@ -107,6 +107,7 @@ tsApp.controller('TabCtrl', [
 
     // Setup tabs
     $scope.tabs = tabService.tabs;
+
     $scope.userProjectsInfo = projectService.getUserProjectsInfo();
 
     // Set selected tab (change the view)
@@ -116,7 +117,7 @@ tsApp.controller('TabCtrl', [
 
     // sets the selected tab by label
     // to be called by controllers when their
-    // respective tab is select3ed
+    // respective tab is selected
     this.setSelectedTabByLabel = function(label) {
       for (var i = 0; i < this.tabs.length; i++) {
         if (this.tabs[i].label === label) {
@@ -147,8 +148,13 @@ tsApp.controller('TabCtrl', [
 
     // for ng-show
     $scope.isTabShowing = function(tab) {
-      return $scope.isAdmin() || tab.label == 'Directory'
-        || $scope.userProjectsInfo.anyrole;
+      return true;
+      // TODO: need to figure out how to get active tabs to redraw after 
+      //projectService.getUserHasAnyRole() returns and is available or not to display 
+      // in the first place until anyrole is available
+        /*return $scope.isAdmin() || tab.label == 'Directory'
+          || $scope.userProjectsInfo.anyrole;*/
+      
     }
 
   } ]);

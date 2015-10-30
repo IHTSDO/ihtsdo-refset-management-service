@@ -77,6 +77,26 @@ tsApp
           return deferred.promise;
         }
 
+        // get project
+        this.getProject = function(projectId) {
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment()
+          $http.get(projectUrl + projectId).then(
+          // success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }
         // add project
         this.addProject = function(project) {
           console.debug("addProject");
@@ -283,6 +303,7 @@ tsApp
 
         // get project roles
         this.getProjectRoles = function() {
+          console.debug("getProjectRoles");
           var deferred = $q.defer();
 
           // Get project roles
@@ -303,6 +324,7 @@ tsApp
 
         // does user have any role on any project
         this.getUserHasAnyRole = function() {
+          console.debug("getUserHasAnyRole");
           var deferred = $q.defer();
 
           // Get project roles
@@ -311,6 +333,7 @@ tsApp
           // success
           function(response) {
             userProjectsInfo.anyRole = response.data;
+            console.debug("getUserHasAnyRole", userProjectsInfo.anyRole);
             gpService.decrement();
             deferred.resolve(response.data);
           },
@@ -322,4 +345,35 @@ tsApp
           return deferred.promise;
         }
 
+
+        this.findConceptsForQuery = function(queryStr, terminology, version, pfs) {
+
+          var query = (queryStr == null) ? "" : queryStr;
+          console.debug("findConceptsForQuery", query, pfs);
+          // Setup deferred
+          var deferred = $q.defer();
+
+          // Make POST call
+          gpService.increment();
+          $http.post(projectUrl + "concepts" + "?query=" + query + "&terminology=" + 
+            terminology + "&version=" + version, pfs)
+          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
+          // pfs)
+          .then(
+          // success
+          function(response) {
+            console.debug("  output = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+
+          return deferred.promise;
+        };          
+          
       } ]);

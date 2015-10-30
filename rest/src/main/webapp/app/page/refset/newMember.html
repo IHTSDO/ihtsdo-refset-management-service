@@ -1,0 +1,34 @@
+<div class="modal-header">
+  <h4>Add Refset Member</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <span></span>
+    <br> <input ng-model="search">
+    <button class="btn btn-primary" ng-click="getSearchResults(search); 
+    ">Search</button>
+    </span>
+  </div>
+  <table ng-show="searchResults" class="table">
+    <thead>
+      <th class="col-md-3 col-xs-3">Concept id</th>
+      <th class="col-md-9 col-xs-9">Concept name</th>
+    </thead>
+    <tbody>
+      <tr ng-repeat="concept in searchResults"
+        ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}"
+        ng-click="selectConcept(concept);">
+        <td>{{concept.terminologyId}}</td>
+        <td>{{concept.name}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="submitNewMember(selectedConcept); 
+    ">Add Member</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

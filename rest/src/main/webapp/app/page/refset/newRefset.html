@@ -1,0 +1,34 @@
+<div class="modal-header">
+  <h4>Create New Refset</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <div>
+      Refset id:<br> <input ng-model="refset.terminologyId"><br>
+      Refset name:<br> <input ng-model="refset.name"><br> 
+      Description:<br> <input ng-model="refset.description"><br>
+      Module id:<br> <input ng-model="refset.moduleId"><br>
+      Organization:<br> <input ng-model="refset.organization"><br>
+      Email contact:<br> <input ng-model="refset.feedbackEmail"><br>
+        Terminology:<br> <input ng-model="refset.terminology"><br>
+      Version:<br> <input ng-model="refset.version"><br>  
+      Type:<br> <select ng-model="refset.type" 
+        ng-options="item for item in refsetTypes"></select><br>
+    </div>
+    <div ng-show="refset.type == 'EXTERNAL'">
+      External url:<br> <input ng-model="refset.externalUrl"><br>
+    </div>
+    <div ng-show="refset.type == 'INTENSIONAL'">
+      Definition:<br> <input ng-model="refset.definition"><br>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="submitNewRefset(refset); 
+    ">Submit
+    Refset</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

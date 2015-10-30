@@ -35,6 +35,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -439,6 +440,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    * @return the project id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getProjectId() {
     return (project != null) ? project.getId() : 0;
@@ -529,7 +531,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   })
   @Override
   public Map<User, UserRole> getUserRoleMap() {
-    return getProject().getUserRoleMap();
+    // TODO: when creating refset member project is null; only have projectId
+    if (getProject() == null)
+      return null;
+    else 
+      return getProject().getUserRoleMap();
   }
 
   /* see superclass */

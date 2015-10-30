@@ -7,6 +7,7 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -179,4 +180,18 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public TerminologyList getTerminologyVersions(String terminology, String authToken)throws Exception;
+
+  /**
+   * Find concepts for query.
+   *
+   * @param query the query
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findConceptsForQuery(String query, String terminology,
+    String version, PfsParameterJpa pfs, String authToken) throws Exception;
 }

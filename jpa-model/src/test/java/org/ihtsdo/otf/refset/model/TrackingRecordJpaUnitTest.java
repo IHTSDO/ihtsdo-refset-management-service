@@ -287,6 +287,8 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("translationid");
     tester.include("refsetId");
+    tester.include("forReview");
+    tester.include("forAuthoring");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

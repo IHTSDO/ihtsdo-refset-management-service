@@ -7,8 +7,9 @@ tsApp.controller('LoginCtrl', [
   'gpService',
   'utilService',
   'tabService',
+  'projectService',
   function($scope, $http, $location, securityService, gpService, utilService,
-    tabService) {
+    tabService, projectService) {
     console.debug('configure LoginCtrl');
 
     // Clear user info
@@ -46,6 +47,7 @@ tsApp.controller('LoginCtrl', [
         // set request header authorization and reroute
         console.debug("authToken = " + response.data.authToken);
         $http.defaults.headers.common.Authorization = response.data.authToken;
+        projectService.getUserHasAnyRole();
 
         $location.path("/directory");
         gpService.decrement();

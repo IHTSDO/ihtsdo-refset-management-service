@@ -1,10 +1,32 @@
 <!-- Controlled by ContentCtrl (in contentController.js)  -->
+
 <div class="row">
 
-  <!-- Content -->
   <div class="col-md-12 col-xs-12">
 
-  <h3>REFSET PAGE</h3>
-  </div>
+    <h4>Refsets</h4>
+    
+    <span style="display: block;">    
+    <h5>Choose Project: <select ng-model="selectedProject" ng-show="candidateProjects.length > 1"
+      ng-options="item.name for item in candidateProjects" ng-click="getRefsets()"></select></h5>
+    </span>
+    
 
+    <accordion> <accordion-group is-open="true">
+    <accordion-heading>
+    <h5 class="section-header">Available</h5>
+    </accordion-heading>
+    <div refset-table value="AVAILABLE" project="1"></div>
+    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
+    <h5 class="section-header">Assigned</h5>
+    </accordion-heading>
+    <div refset-table value="ASSIGNED" project="1"></div>
+    </accordion-group> </accordion>
+
+
+
+
+  </div>
 </div>
+
+
