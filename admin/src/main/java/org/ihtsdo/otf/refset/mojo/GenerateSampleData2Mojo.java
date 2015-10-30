@@ -358,46 +358,46 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       Logger.getLogger(getClass()).info("Create UK refsets");
       reviewer1 = (UserJpa) security.authenticate("reviewer1", "reviewer1");
 
-      makeRefset(
-          "Accessible information - communication support simple reference set",
-          null, 1, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999002121000000109", "999000051000000104", reviewer1);
+//      makeRefset(
+//          "Accessible information - communication support simple reference set",
+//          null, 1, "UK1000000", Refset.Type.EXTENSIONAL, project1,
+//          "999002121000000109", "999000051000000104", reviewer1);
+//
+//      makeRefset("Action context values simple reference set", null, 2,
+//          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001711000000106",
+//          "999000051000000104", reviewer1);
+//
+//      makeRefset("Breathing finding simple reference set", null, 3,
+//          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001431000000106",
+//          "999000051000000104", reviewer1);
+//
+//      makeRefset("Care planning action context values simple reference set",
+//          null, 4, "UK1000000", Refset.Type.EXTENSIONAL, project1,
+//          "999000081000000105", "999000051000000104", reviewer1);
+//
+//      makeRefset("Christian religion simple reference set", null, 5,
+//          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105",
+//          "999000051000000104", reviewer1);
+//
+//      makeRefset("Device reading body site simple reference set", null, 6,
+//          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001011000000109",
+//          "999000051000000104", reviewer1);
+//
+//      makeRefset("Emergency care investigations simple reference set", null, 7,
+//          "UK1000000", Refset.Type.EXTENSIONAL, project1, "991261000000107",
+//          "999000051000000104", reviewer1);
+//
+//      makeRefset("Emergency care mechanism of injury simple reference set",
+//          null, 8, "UK1000000", Refset.Type.EXTENSIONAL, project1,
+//          "991281000000103", "999000051000000104", reviewer1);
 
-      makeRefset("Action context values simple reference set", null, 2,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001711000000106",
-          "999000051000000104", reviewer1);
-
-      makeRefset("Breathing finding simple reference set", null, 3,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001431000000106",
-          "999000051000000104", reviewer1);
-
-      makeRefset("Care planning action context values simple reference set",
-          null, 4, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999000081000000105", "999000051000000104", reviewer1);
-
-      makeRefset("Christian religion simple reference set", null, 5,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105",
-          "999000051000000104", reviewer1);
-
-      makeRefset("Device reading body site simple reference set", null, 6,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001011000000109",
-          "999000051000000104", reviewer1);
-
-      makeRefset("Emergency care investigations simple reference set", null, 7,
-          "UK1000000", Refset.Type.EXTENSIONAL, project1, "991261000000107",
-          "999000051000000104", reviewer1);
-
-      makeRefset("Emergency care mechanism of injury simple reference set",
-          null, 8, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "991281000000103", "999000051000000104", reviewer1);
-
-      makeRefset("Financial circumstances finding simple reference set", null,
-          9, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999001521000000105", "999000051000000104", reviewer1);
-
-      makeRefset("Laterality simple reference set", null, 10, "UK1000000",
-          Refset.Type.EXTENSIONAL, project1, "999000821000000100",
-          "999000051000000104", reviewer1);
+//      makeRefset("Financial circumstances finding simple reference set", null,
+//          9, "UK1000000", Refset.Type.EXTENSIONAL, project1,
+//          "999001521000000105", "999000051000000104", reviewer1);
+//
+//      makeRefset("Laterality simple reference set", null, 10, "UK1000000",
+//          Refset.Type.EXTENSIONAL, project1, "999000821000000100",
+//          "999000051000000104", reviewer1);
 
       makeRefset("Need for interpreter findings simple reference set", null,
           11, "UK1000000", Refset.Type.EXTENSIONAL, project1,
@@ -425,7 +425,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       Logger.getLogger(getClass()).info("Create AU refsets");
       reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
 
-      makeRefset("Unexpected result indicator reference set", null, 16,
+      makeRefset("Unexpected result indicator reference set", null, 0,
           "AU1000036", Refset.Type.INTENSIONAL, project2, "32568021000036109",
           "32570231000036109", reviewer2);
 
@@ -556,14 +556,6 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
-      //
-      // Translations??
-      //
-      // create two refsets
-
-      //
-      // releases?
-      // Release info?
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -714,22 +706,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    if (type == Refset.Type.INTENSIONAL) {
-      refset.setDefinition("needs definition");
-    } else if (type == Refset.Type.EXTERNAL) {
+    if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    ValidationServiceRest validation = new ValidationServiceRestImpl();
+    //ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate refset
-    ValidationResult result =
-        validation.validateRefset(refset, auth.getAuthToken());
-    if (!result.isValid()) {
-      Logger.getLogger(getClass()).error(result.toString());
-      throw new Exception("Refset does not pass validation.");
-    }
+    // ValidationResult result =
+    // validation.validateRefset(refset, auth.getAuthToken());
+    // if (!result.isValid()) {
+    // Logger.getLogger(getClass()).error(result.toString());
+    // throw new Exception("Refset does not pass validation.");
+    // }
     // Add refset
 
     refsetService.addRefset(refset, auth.getAuthToken());

@@ -106,7 +106,6 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /refset " + refset);
-
     ValidationService validationService = new ValidationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "validate refset",
@@ -114,6 +113,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
       return validationService.validateRefset(refset);
     } catch (Exception e) {
+      e.printStackTrace();
+      System.out.println("4");
       handleException(e, "trying to validate refset");
       return null;
     } finally {

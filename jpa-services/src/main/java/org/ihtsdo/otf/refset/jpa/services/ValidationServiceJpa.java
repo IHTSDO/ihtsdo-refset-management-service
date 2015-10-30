@@ -105,6 +105,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
   /* see superclass */
   @Override
   public ValidationResult validateRefset(Refset refset) throws Exception {
+
     ValidationResult result = new ValidationResultJpa();
     RefsetService service = new RefsetServiceJpa();
     for (String key : validationHandlersMap.keySet()) {

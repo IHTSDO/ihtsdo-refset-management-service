@@ -179,13 +179,13 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   /* see superclass */
   @Override
   public UserRole getApplicationRoleForToken(String authToken) throws Exception {
-
     if (authToken == null) {
       throw new LocalException(
           "Attempt to access a service without an AuthToken, the user is likely not logged in.");
     }
     String parsedToken = authToken.replace("\"", "");
     String userName = getUsernameForToken(parsedToken);
+
     // check for null userName
     if (userName == null) {
       throw new LocalException("Unable to find user for the AuthToken");
@@ -237,7 +237,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
             .createQuery("select u from UserJpa u where userName = :userName");
     query.setParameter("userName", userName);
     try {
-      return (User) query.getSingleResult();
+      User u = (User) query.getResultList().iterator().next();
+      return u;
     } catch (NoResultException e) {
       return null;
     }
