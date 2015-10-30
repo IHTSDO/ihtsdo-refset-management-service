@@ -49,7 +49,7 @@ tsApp.directive('refsetTable',
 
 
             // get all projects where user has a role
-            $scope.getProject = function(projectId) {
+            $scope.initializeProjectAndRefsets = function(projectId) {
               projectService.getProject(projectId).then(function(data) {
                 $scope.selectedProject = data;
                 if ($scope.value == 'AVAILABLE') {
@@ -249,6 +249,13 @@ tsApp.directive('refsetTable',
                   $scope.getRefsets();
                 });
               }
+              if (type == 'member') {
+            
+                refsetService.removeRefsetMember(object.id).then(function() {
+                  //$scope.getRefsets();
+                  objArray.splice(objArray.indexOf(object));
+                });
+              }
             };
             
             $scope.performWorkflowAction = function(refset, action) {
@@ -256,6 +263,7 @@ tsApp.directive('refsetTable',
               workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                 $scope.user.userName, action).then(function(data) {
                 $scope.trackingRecord = data.trackingRecord;
+                $scope.initializeProjectAndRefsets($scope.project);
               })
             };
             
@@ -265,7 +273,7 @@ tsApp.directive('refsetTable',
               $scope.getRefsets();
             }
             if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED') {
-              $scope.getProject($scope.project);
+              $scope.initializeProjectAndRefsets($scope.project);
               $scope.getRefsetTypes();
             }
             
@@ -404,6 +412,102 @@ tsApp.directive('refsetTable',
               };
 
             };
+
+
+            // modal for creating a new refset member 
+              $scope.openNewMemberModal = function(lmember, lrefset) {
+
+                console.debug("openNewMemberModal ", lrefset);
+
+                var modalInstance = $modal.open({
+                  templateUrl : 'app/page/refset/newMember.html',
+                  controller : NewMemberModalCtrl,
+                  resolve : {
+                    member : function() {
+                      return lmember;
+                    },
+                    refset : function() {
+                      return lrefset;
+                    },
+                    memberTypes : function() {
+                      return $scope.memberTypes;
+                    },
+                    project : function() {
+                      return $scope.selectedProject;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function() {
+                  $scope.findAssignedEditingRefsets();
+                });
+              };
+
+              var NewMemberModalCtrl = function($scope, $modalInstance, member,
+                refset, memberTypes, project) {
+
+                console.debug("Entered new member modal control");
+
+                $scope.submitNewMember = function(concept) {
+                  console.debug("Submitting new member", concept);
+
+                  var member = {
+                    conceptId : concept.terminologyId,
+                    conceptName : concept.name,
+                    memberType : 'MEMBER',
+                    terminology : refset.terminology,
+                    version : refset.version,
+                    moduleId : refset.moduleId,
+                    terminologyId : concept.terminologyId,
+                    lastModifiedBy : concept.lastModifiedBy
+                  };
+
+                  member.refsetId = refset.id;
+                  
+                  refsetService.addRefsetMember(member).then(function(data) {
+                    refset.members.push(data);
+                    $modalInstance.close();
+                  }, function(data) {
+                    $modalInstance.close();
+                  })
+
+                };
+
+                $scope.getSearchResults = function(search) {
+                  console.debug("Getting search results", search);
+
+                  if (search == null || search == undefined) {
+                    window.alert("The search field cannot be blank. ");
+                    return;
+                  }
+
+                  var pfs = {
+                    startIndex : 0,
+                    maxResults : 10,
+                    sortField : null,
+                    queryRestriction : null
+                  };
+
+                  projectService.findConceptsForQuery(search,
+                    refset.terminology, refset.version, pfs).then(
+                    function(data) {
+                      $scope.searchResults = data.concepts;
+                    }, function(data) {
+                    })
+
+                };
+
+                $scope.selectConcept = function(concept) {
+                  $scope.selectedConcept = concept;
+                };
+
+                $scope.cancel = function() {
+                  $modalInstance.dismiss('cancel');
+                };
+
+              };
 
             
           } ]

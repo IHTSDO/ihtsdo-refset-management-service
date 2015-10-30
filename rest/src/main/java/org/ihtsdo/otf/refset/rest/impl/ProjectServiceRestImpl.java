@@ -23,6 +23,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
@@ -32,6 +33,7 @@ import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
@@ -607,4 +609,40 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/concepts")
+  @ApiOperation(value = "Finds concepts", notes = "Finds concepts based on pfs parameter and query", response = ConceptListJpa.class)
+  public ConceptList findConceptsForQuery(
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): find concepts for query, " + query + ", " + terminology + ", " + version + ", " + pfs);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "find concepts", UserRole.VIEWER);
+
+      ConceptList concepts =
+          projectService.getTerminologyHandler().findConceptsForQuery(query,
+              terminology, version, pfs);
+      
+      return concepts;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve projects ");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+
+  }  
+  
 }

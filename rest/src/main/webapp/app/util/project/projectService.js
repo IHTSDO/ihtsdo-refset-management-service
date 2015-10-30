@@ -345,4 +345,35 @@ tsApp
           return deferred.promise;
         }
 
+
+        this.findConceptsForQuery = function(queryStr, terminology, version, pfs) {
+
+          var query = (queryStr == null) ? "" : queryStr;
+          console.debug("findConceptsForQuery", query, pfs);
+          // Setup deferred
+          var deferred = $q.defer();
+
+          // Make POST call
+          gpService.increment();
+          $http.post(projectUrl + "concepts" + "?query=" + query + "&terminology=" + 
+            terminology + "&version=" + version, pfs)
+          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
+          // pfs)
+          .then(
+          // success
+          function(response) {
+            console.debug("  output = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+
+          return deferred.promise;
+        };          
+          
       } ]);

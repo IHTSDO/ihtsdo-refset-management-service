@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
@@ -436,5 +437,12 @@ public class ProjectClientRest extends RootClientRest implements
         (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
             KeyValuePairList.class);
     return list;
+  }
+
+  @Override
+  public ConceptList findConceptsForQuery(String query, String terminology,
+    String version, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

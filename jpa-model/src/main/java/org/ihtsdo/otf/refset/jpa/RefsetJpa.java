@@ -531,7 +531,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   })
   @Override
   public Map<User, UserRole> getUserRoleMap() {
-    return getProject().getUserRoleMap();
+    // TODO: when creating refset member project is null; only have projectId
+    if (getProject() == null)
+      return null;
+    else 
+      return getProject().getUserRoleMap();
   }
 
   /* see superclass */
