@@ -31,6 +31,7 @@ tsApp.directive('refsetTable',
             $scope.memberTypes = [ "Member", "Exclusion", "Inclusion",
               "Inactive Member", "Inactive Inclusion" ];
             $scope.selectedProject = null;
+            $scope.refsetIdToAuthorsMap = {};
 
             $scope.paging = {};
             $scope.paging["refset"] = {
@@ -55,6 +56,9 @@ tsApp.directive('refsetTable',
                 if ($scope.value == 'AVAILABLE') {
                   $scope.findAvailableEditingRefsets();
                 }
+                if ($scope.value == 'ASSIGNED_ALL') {
+                  $scope.findAllAssignedEditingRefsets();
+                }
                 if ($scope.value == 'ASSIGNED') {
                   $scope.findAssignedEditingRefsets();
                 }
@@ -78,9 +82,6 @@ tsApp.directive('refsetTable',
                 pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
-                /*for (var i = 0; i < $scope.refsets.length; i++) {
-                  $scope.refsets[i].isExpanded = false;
-                }*/
               })
             };
             
@@ -109,6 +110,27 @@ tsApp.directive('refsetTable',
               workflowService.findAssignedEditingRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+            
+            $scope.findAllAssignedEditingRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAssignedEditingRefsets($scope.selectedProject.id, '', pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+                
+                // get refset tracking records in order to get refset authors
+                for (var i = 0; i<$scope.refsets.length; i++) {
+                  workflowService.getTrackingRecordForRefset($scope.refsets[i].id).then(function(data) {
+                    $scope.refsetIdToAuthorsMap[data.refsetId] = data.authors;
+                  });
+                }
               })
             };
 
@@ -266,13 +288,17 @@ tsApp.directive('refsetTable',
                 $scope.initializeProjectAndRefsets($scope.project);
               })
             };
-            
+
+            $scope.getAuthorsForRefsetId = function(refsetId) {
+              return $scope.refsetIdToAuthorsMap[refsetId];
+            }
             
             // Initialize
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
-            if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED') {
+            if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
+              || $scope.value == 'ASSIGNED_ALL') {
               $scope.initializeProjectAndRefsets($scope.project);
               $scope.getRefsetTypes();
             }
@@ -474,7 +500,8 @@ tsApp.directive('refsetTable',
                   })
 
                 };
-
+                
+                // get search results
                 $scope.getSearchResults = function(search) {
                   console.debug("Getting search results", search);
 
@@ -496,13 +523,55 @@ tsApp.directive('refsetTable',
                       $scope.searchResults = data.concepts;
                     }, function(data) {
                     })
-
                 };
 
+                // select concept and get concept data
                 $scope.selectConcept = function(concept) {
                   $scope.selectedConcept = concept;
+                  $scope.getConceptParents(concept.terminologyId);
+                  $scope.getConceptChildren(concept.terminologyId);
+                  // TODO: add back
+                  //$scope.getConceptWithDescriptions(concept.terminologyId);
                 };
 
+                
+                // get concept parents
+                $scope.getConceptParents = function(concept) {
+                  console.debug("Getting concept parents", concept);
+
+                  projectService.getConceptParents(concept,
+                    concept.terminology, concept.version).then(
+                    function(data) {
+                      $scope.parents = data.concepts;
+                    }, function(data) {
+                    })
+                };
+                
+                // get concept children
+                $scope.getConceptChildren = function(concept) {
+                  console.debug("Getting concept children", concept);
+
+                  projectService.getConceptChildren(concept,
+                    concept.terminology, concept.version).then(
+                    function(data) {
+                      $scope.children = data.concepts;
+                    }, function(data) {
+                    })
+                };
+
+                // get concept with descriptions
+                $scope.getConceptWithDescriptions = function(concept) {
+                  console.debug("Getting concept with descriptions", concept);
+
+                  projectService.getConceptWithDescriptions(concept,
+                    concept.terminology, concept.version).then(
+                    function(data) {
+                      $scope.concept = data;
+                    }, function(data) {
+                    })
+                };
+
+                
                 $scope.cancel = function() {
                   $modalInstance.dismiss('cancel');
                 };

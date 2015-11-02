@@ -3,32 +3,77 @@
 </div>
 
 <div class="modal-body">
+
   <div>
-    <span></span>
-    <br> <input ng-model="search">
-    <button class="btn btn-primary" ng-click="getSearchResults(search); 
+    <span>
+      <input ng-model="search">
+      <button class="btn btn-primary"
+        ng-click="getSearchResults(search); 
     ">Search</button>
     </span>
   </div>
-  <table ng-show="searchResults" class="table">
-    <thead>
-      <th class="col-md-3 col-xs-3">Concept id</th>
-      <th class="col-md-9 col-xs-9">Concept name</th>
-    </thead>
-    <tbody>
-      <tr ng-repeat="concept in searchResults"
-        ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}"
-        ng-click="selectConcept(concept);">
-        <td>{{concept.terminologyId}}</td>
-        <td>{{concept.name}}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 
-<div class="modal-footer">
-  <button class="btn btn-primary"
-    ng-click="submitNewMember(selectedConcept); 
-    ">Add Member</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <div class="col-md-6 col-xs-12">
+    <table ng-show="searchResults" class="table">
+      <thead>
+        <th class="col-md-3 col-xs-3">Concept id</th>
+        <th class="col-md-9 col-xs-9">Concept name</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="concept in searchResults"
+          ng-click="selectConcept(concept)"
+          ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}">
+          <td>{{concept.terminologyId}}</td>
+          <td>{{concept.name}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col-md-6 col-xs-12">
+    <h5 ng-show="parents">Parents</h5>
+    <table ng-show="parents" class="table">
+      <thead>
+        <th class="col-md-3 col-xs-3">Concept id</th>
+        <th class="col-md-9 col-xs-9">Concept name</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="concept in parents">
+          <td>{{concept.terminologyId}}</td>
+          <td>{{concept.name}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h5 ng-show="concept">Concept: {{concept.terminologyId}}</h5>
+    <h5 ng-show="concept">Name: {{concept.name}}</h5>
+    <table ng-show="concept.descriptions.length > 0" class="table">     
+      <tbody>
+        <tr ng-repeat="description in concept.descriptions">
+          <td>{{description}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h5 ng-show="children.length > 0">Children</h5>
+    <table ng-show="children.length > 0" class="table">
+      <thead>
+        <th class="col-md-3 col-xs-3">Concept id</th>
+        <th class="col-md-9 col-xs-9">Concept name</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="concept in children">
+          <td>{{concept.terminologyId}}</td>
+          <td>{{concept.name}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>
+  <div class="modal-footer">
+    <button class="btn btn-primary"
+      ng-click="submitNewMember(selectedConcept); 
+    ">Add Member</button>
+    <button class="btn btn-warning"
+      title="Add selected concept as new refset member" ng-click="cancel()">Cancel</button>
+  </div>

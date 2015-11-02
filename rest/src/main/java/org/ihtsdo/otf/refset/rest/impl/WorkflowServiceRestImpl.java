@@ -27,14 +27,17 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -363,6 +366,44 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/record")
+  @ApiOperation(value = "Retrieves the tracking record for a refset", notes = "Retrieves the tracking record for a refset", response = TrackingRecordJpa.class)
+  public TrackingRecord getTrackingRecordForRefset(
+    @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /records" + ", " + refsetId);
+
+    // Test preconditions
+    if (refsetId == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    RefsetService refsetService = new RefsetServiceJpa();
+    Refset refset = refsetService.getRefset(refsetId);
+    
+    
+    try {
+      authorizeProject(workflowService, refset.getProject().getId(), securityService, authToken,
+          "perform workflow action on refset", UserRole.AUTHOR);
+
+      return workflowService.getTrackingRecordsForRefset(refsetId, null);
+
+    } catch (Exception e) {
+      handleException(e, "trying to get tracking records for refset");
+    } finally {
+      workflowService.close();
+      securityService.close();
+      refsetService.close();
+    }
+    return null;
+  }  
 
   /* see superclass */
   @Override
@@ -386,9 +427,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       User user = securityService.getUser(userName);
       // Find tracking records for this author that has any refset id
       // and is marked as forAuthoring but not forReview
-      String query =
-          "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+      String query = "";
+      if (userName != null && !userName.equals("")) {
+          query = "authorUserNames:" + userName + " AND refsetId:[* TO *]"
               + " AND forAuthoring:true AND forReview:false";
+      } else {
+        query = "refsetId:[* TO *]"
+            + " AND forAuthoring:true AND forReview:false";
+      }
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       RefsetList list = new RefsetListJpa();

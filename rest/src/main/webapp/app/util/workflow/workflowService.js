@@ -269,4 +269,27 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
+      
+      this.getTrackingRecordForRefset = function(refsetId) {
+        console.debug("getTrackingRecordForRefset");
+        var deferred = $q.defer();
+
+        // Finds refsets available for review by the specified user
+        gpService.increment()
+        $http.get(
+          workflowUrl + "record" + "?refsetId=" + refsetId).then(
+        // success
+        function(response) {
+          console.debug("  record = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
     } ]);

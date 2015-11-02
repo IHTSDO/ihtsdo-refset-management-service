@@ -41,6 +41,8 @@ import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
@@ -645,4 +647,104 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   }  
   
+  @Override
+  @POST
+  @Path("/concept")
+  @ApiOperation(value = "Retrieves a concept with descriptions", notes = "Retrieves a concept with descriptions", response = ConceptJpa.class)
+  public Concept getConceptWithDescriptions(
+    @ApiParam(value = "TerminologyId", required = true) @QueryParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): get concept with description, " + terminologyId + ", " + terminology + ", " + version);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "retrieve concept", UserRole.VIEWER);
+
+      Concept concept =
+          projectService.getTerminologyHandler().getConceptWithDescriptions(terminologyId,
+              terminology, version);
+      
+      return concept;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve projects ");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+
+  }  
+ 
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/parents")
+  @ApiOperation(value = "Retrieves concept's parents", notes = "Retrieves concept's parents", response = ConceptListJpa.class)
+  public ConceptList getConceptParents(
+    @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): retrieves concept's parents, " + terminologyId + ", " + terminology + ", " + version);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get concept parents", UserRole.VIEWER);
+
+      ConceptList concepts =
+          projectService.getTerminologyHandler().getConceptParents(terminologyId,
+              terminology, version);
+      
+      return concepts;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve concept parents ");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+
+  }  
+  
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/children")
+  @ApiOperation(value = "Retrieves concept's children", notes = "Retrieves concept's children", response = ConceptListJpa.class)
+  public ConceptList getConceptChildren(
+    @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): retrieves concept's children, " + terminologyId + ", " + terminology + ", " + version);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get concept children", UserRole.VIEWER);
+
+      ConceptList concepts =
+          projectService.getTerminologyHandler().getConceptChildren(terminologyId,
+              terminology, version);
+      
+      return concepts;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve concept children ");
+      return null;
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+
+  }  
 }
