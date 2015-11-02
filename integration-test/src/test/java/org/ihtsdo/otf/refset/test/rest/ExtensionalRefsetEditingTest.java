@@ -27,8 +27,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTENSIONAL)
     RefsetJpa newRefset =
-        makeRefset("refset99", "needs definition", Refset.Type.EXTENSIONAL,
-            project2, null);
+        makeRefset("refset99", null, Refset.Type.EXTENSIONAL, project2, null);
 
     // Validate refset
     ValidationResult result =
@@ -39,8 +38,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     }
 
     // Add refset
-    RefsetJpa currentRefset =
-        (RefsetJpa) refsetService.addRefset(newRefset, adminAuthToken);
+    Refset currentRefset = refsetService.addRefset(newRefset, adminAuthToken);
+    // TODO: this doesn't work, different id
     if (!currentRefset.equals(newRefset)) {
       throw new Exception("Refset does not pass equality test.");
     }
@@ -48,8 +47,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Workflow - Assign the refset
     currentRefset =
         getNewRefsetInRefsetList(workflowService.findAvailableEditingRefsets(
-            currentRefset.getProjectId(), testUser, new PfsParameterJpa(),
-            adminAuthToken), currentRefset);
+            currentRefset.getProject().getId(), testUser,
+            new PfsParameterJpa(), adminAuthToken), currentRefset);
 
     if (currentRefset == null) {
       throw new Exception(
@@ -58,14 +57,15 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // ASSIGN the refset to testUser
     TrackingRecord record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
+        workflowService
+            .performWorkflowAction(currentRefset.getProject().getId(),
+                currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
 
     // Find the assigned refset
     currentRefset =
         getNewRefsetInRefsetList(workflowService.findAssignedEditingRefsets(
-            currentRefset.getProjectId(), testUser, new PfsParameterJpa(),
-            adminAuthToken), record.getRefset());
+            currentRefset.getProject().getId(), testUser,
+            new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     if (currentRefset == null) {
       throw new Exception(
@@ -114,8 +114,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Use workflowService to SAVE the refset
     record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "SAVE", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "SAVE", adminAuthToken);
 
     // Validate the refset
     result =
@@ -131,14 +131,15 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Workflow - FINISH
     record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "FINISH", adminAuthToken);
+        workflowService
+            .performWorkflowAction(currentRefset.getProject().getId(),
+                currentRefset.getId(), testUser, "FINISH", adminAuthToken);
 
     // Find available review refset
     currentRefset =
         getNewRefsetInRefsetList(workflowService.findAvailableReviewRefsets(
-            currentRefset.getProjectId(), testUser, new PfsParameterJpa(),
-            adminAuthToken), record.getRefset());
+            currentRefset.getProject().getId(), testUser,
+            new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     if (currentRefset == null) {
       throw new Exception(
@@ -147,14 +148,15 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Assign refset for review
     record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
+        workflowService
+            .performWorkflowAction(currentRefset.getProject().getId(),
+                currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
 
     // Find assigned review refset
     currentRefset =
         getNewRefsetInRefsetList(workflowService.findAssignedReviewRefsets(
-            currentRefset.getProjectId(), testUser, new PfsParameterJpa(),
-            adminAuthToken), record.getRefset());
+            currentRefset.getProject().getId(), testUser,
+            new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     if (currentRefset == null) {
       throw new Exception(
@@ -163,8 +165,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Use workflowService to SAVE the refset
     record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "SAVE", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "SAVE", adminAuthToken);
 
     // Validate the refset
     result =
@@ -179,8 +181,9 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // FINISH - status
     record =
-        workflowService.performWorkflowAction(currentRefset.getProjectId(),
-            currentRefset.getId(), testUser, "FINISH", adminAuthToken);
+        workflowService
+            .performWorkflowAction(currentRefset.getProject().getId(),
+                currentRefset.getId(), testUser, "FINISH", adminAuthToken);
 
     WorkflowStatus status = record.getRefset().getWorkflowStatus();
 
@@ -204,8 +207,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTERNAL)
     RefsetJpa newRefset =
-        makeRefset("refset98", "needs definition", Refset.Type.EXTERNAL,
-            project2, null);
+        makeRefset("refset98", null, Refset.Type.EXTERNAL, project2, null);
 
     // Validate refset
     ValidationResult result =
@@ -221,7 +223,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     if (!currentRefset.equals(newRefset)) {
       throw new Exception("Refset does not pass equality test.");
     }
-
     // remove refset
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
 
@@ -230,10 +231,10 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     }
   }
 
-  private RefsetJpa getNewRefsetInRefsetList(RefsetList list, Refset oldRefset) {
+  private Refset getNewRefsetInRefsetList(RefsetList list, Refset oldRefset) {
     for (Refset ref : list.getObjects()) {
       if (ref.equals(oldRefset)) {
-        return (RefsetJpa) ref;
+        return ref;
       }
     }
     return null;

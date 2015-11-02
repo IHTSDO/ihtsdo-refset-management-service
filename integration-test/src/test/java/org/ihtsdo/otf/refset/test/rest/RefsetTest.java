@@ -170,7 +170,7 @@ public class RefsetTest {
     refset.setModuleId("900000000000445007");
     refset.setProject(project);
     refset.setPublishable(true);
-    refset.setPublished(true);
+    refset.setPublished(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     refset.setVersion("2015-01-31");
