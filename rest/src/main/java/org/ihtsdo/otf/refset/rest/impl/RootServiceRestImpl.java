@@ -85,9 +85,10 @@ public class RootServiceRestImpl {
     // Verify the user has the privileges of the required app role
     UserRole role = securityService.getApplicationRoleForToken(authToken);
     if (!role.hasPrivilegesOf(requiredAppRole == null ? UserRole.VIEWER
-        : requiredAppRole))
+        : requiredAppRole)) {
       throw new WebApplicationException(Response.status(401)
           .entity("User does not have permissions to " + perform + ".").build());
+    }
     return securityService.getUsernameForToken(authToken);
   }
 

@@ -77,7 +77,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecord performWorkflowAction(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "User id, e.g. 2", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. admin", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {

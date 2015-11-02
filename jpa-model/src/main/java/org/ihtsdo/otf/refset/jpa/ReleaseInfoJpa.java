@@ -47,7 +47,7 @@ import org.ihtsdo.otf.refset.Translation;
 @Entity
 @Table(name = "release_infos", uniqueConstraints = {
   @UniqueConstraint(columnNames = {
-      "name", "terminology"
+      "name", "terminology", "refset_id", "translation_id"
   })
 })
 @Audited
