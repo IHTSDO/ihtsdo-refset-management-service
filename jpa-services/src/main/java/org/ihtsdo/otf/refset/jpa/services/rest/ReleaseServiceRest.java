@@ -86,13 +86,12 @@ public interface ReleaseServiceRest {
    * Perform refset release.
    *
    * @param refsetId the refset id
-   * @param ioHandlerId the io handler id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception;
+    String authToken) throws Exception;
 
   /**
    * Perform refset preview.
@@ -143,13 +142,12 @@ public interface ReleaseServiceRest {
    * Perform translation release.
    *
    * @param translationId the translation id
-   * @param ioHandlerId the io handler id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateTranslationRelease(Long translationId,
-    String ioHandlerId, String authToken) throws Exception;
+    String authToken) throws Exception;
 
   /**
    * Perform translation preview.
