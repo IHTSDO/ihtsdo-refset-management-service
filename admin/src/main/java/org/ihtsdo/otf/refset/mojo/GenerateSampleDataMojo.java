@@ -44,6 +44,7 @@ import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.ValidationServiceRestImpl;
+import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -552,22 +553,26 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   @SuppressWarnings("static-method")
   private ReleaseInfo makeReleaseInfo(String name, Object object)
     throws Exception {
-    final ReleaseInfoJpa releaseInfo = new ReleaseInfoJpa();
-    releaseInfo.setName(name);
-    releaseInfo.setDescription("Description of release info " + name);
+    ReleaseInfoJpa info = new ReleaseInfoJpa();
+    info.setName(name);
+    info.setDescription("Description of release info " + name);
     if (object instanceof Refset)
-      releaseInfo.setRefset((Refset) object);
+      info.setRefset((Refset) object);
     else if (object instanceof Translation)
-      releaseInfo.setTranslation((Translation) object);
-    releaseInfo.setLastModified(new Date());
-    releaseInfo.setLastModifiedBy("loader");
-    releaseInfo.setPublished(true);
-    releaseInfo.setReleaseBeginDate(new Date());
-    releaseInfo.setReleaseFinishDate(new Date());
-    releaseInfo.setTerminology("SNOMEDCT");
-    releaseInfo.setVersion("latest");
-    releaseInfo.setPlanned(false);
-    return new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
+      info.setTranslation((Translation) object);
+    info.setLastModified(new Date());
+    info.setLastModifiedBy("loader");
+    info.setPublished(true);
+    info.setReleaseBeginDate(new Date());
+    info.setReleaseFinishDate(new Date());
+    info.setTerminology("SNOMEDCT");
+    info.setVersion("latest");
+    info.setPlanned(false);
+    // Need to use Jpa because rest service doesn't have "add release info"
+    ReleaseService service = new ReleaseServiceJpa();
+    info = (ReleaseInfoJpa) service.addReleaseInfo(info);
+    service.close();
+    return info;
   }
 
   /**
@@ -582,7 +587,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   @SuppressWarnings("static-method")
   private ReleaseArtifact makeReleaseArtifact(String name,
     ReleaseInfo releaseInfo, String pathToFile) throws Exception {
-    final ReleaseArtifact artifact = new ReleaseArtifactJpa();
+    ReleaseArtifact artifact = new ReleaseArtifactJpa();
     artifact.setName(name);
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy("loader");
@@ -594,7 +599,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     artifact.setData(data);
 
     releaseInfo.addArtifact(artifact);
-    return new ReleaseServiceJpa().addReleaseArtifact(artifact);
+    // Need to use Jpa because rest service doesn't have "add release info"
+    ReleaseService service = new ReleaseServiceJpa();
+    artifact = (ReleaseArtifactJpa) service.addReleaseArtifact(artifact);
+    service.close();
+    return artifact;
   }
 
   /**
