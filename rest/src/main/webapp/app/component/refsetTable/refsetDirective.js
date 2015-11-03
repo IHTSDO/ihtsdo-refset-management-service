@@ -493,6 +493,9 @@ tsApp.directive('refsetTable',
                   member.refsetId = refset.id;
                   
                   refsetService.addRefsetMember(member).then(function(data) {
+                    if (refset.members == undefined) {
+                      refset.members = [];
+                    }
                     refset.members.push(data);
                     $modalInstance.close();
                   }, function(data) {

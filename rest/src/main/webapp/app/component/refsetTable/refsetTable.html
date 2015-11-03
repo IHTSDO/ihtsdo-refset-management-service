@@ -198,7 +198,7 @@
       <span ng-show="!refset.members" class="alert alert-warning">Refset
         has no members</span>
 
-      <span ng-show="refset.members">
+      <span>
         <span style="display: block;">
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
@@ -216,14 +216,15 @@
             ng-show="paging['member'].filter"
             ng-click="paging['member'].filter = ''; getMembers(refset)"
             title="Click to clear filter text">Clear</button>
-            
-        <h4 ng-show="value == 'ASSIGNED'">
-        <div style="float: right;">
-          <a title="Create new refset member" ng-click="openNewMemberModal(lmember, refset)">
-            <i title="Create new refset member" class="material-icons md-24">add</i>
-          </a>
-        </div>
-      </h4>
+
+          <h4 ng-show="value == 'ASSIGNED'">
+            <div style="float: right;">
+              <a title="Create new refset member"
+                ng-click="openNewMemberModal(lmember, refset)">
+                <i title="Create new refset member" class="material-icons md-24">add</i>
+              </a>
+            </div>
+          </h4>
         </span>
 
 
@@ -272,11 +273,11 @@
                     tooltip="Inactive concept in current edition"
                     class="material-icons md-18">info-outline</i>
                 </a></td>
-              <td class="nobreak"
-               ng-show="value == 'ASSIGNED'"><a title="Remove"
-                ng-click="remove('member',member,refset.members); $event.stopPropagation()">
-                <i title="Remove" class="material-icons md-18">delete</i>
-              </a></td>
+              <td class="nobreak" ng-show="value == 'ASSIGNED'"><a
+                  title="Remove"
+                  ng-click="remove('member',member,refset.members); $event.stopPropagation()">
+                  <i title="Remove" class="material-icons md-18">delete</i>
+                </a></td>
             </tr>
           </tbody>
         </table>

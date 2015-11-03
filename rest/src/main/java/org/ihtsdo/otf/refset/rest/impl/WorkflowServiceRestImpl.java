@@ -424,7 +424,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "find assigned editing work", UserRole.AUTHOR);
 
-      User user = securityService.getUser(userName);
       // Find tracking records for this author that has any refset id
       // and is marked as forAuthoring but not forReview
       String query = "";
