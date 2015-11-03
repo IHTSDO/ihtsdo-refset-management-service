@@ -355,10 +355,10 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + "concepts" + "?query=" + query + "&terminology=" + 
+          $http.post(projectUrl + "concepts" + "?query=" + 
+            encodeURIComponent(utilService.cleanQuery(queryStr)) + "&terminology=" + 
             terminology + "&version=" + version, pfs)
-          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
-          // pfs)
+          
           .then(
           // success
           function(response) {
@@ -386,8 +386,6 @@ tsApp
           gpService.increment();
           $http.post(projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + 
             terminology + "&version=" + version)
-          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
-          // pfs)
           .then(
           // success
           function(response) {
@@ -415,8 +413,6 @@ tsApp
           gpService.increment();
           $http.post(projectUrl + "children" + "?terminologyId=" + terminologyId + "&terminology=" + 
             terminology + "&version=" + version)
-          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
-          // pfs)
           .then(
           // success
           function(response) {
