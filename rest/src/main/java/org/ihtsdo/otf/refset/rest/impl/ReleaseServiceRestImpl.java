@@ -160,7 +160,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/refsetrelease/begin")
+  @Path("/refset/begin")
   @ApiOperation(value = "Begin refset release", notes = "Begins the release process by validating the refset for release and creating the refset release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo beginRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -176,7 +176,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // Return ReleaseInfo
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refsetrelease/begin " + refsetId + ", "
+        "RESTful call POST (Refset): /refset/begin " + refsetId + ", "
             + effectiveTime);
 
     RefsetService refsetService = new RefsetServiceJpa();
@@ -203,9 +203,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("date provided is not in 'YYYYMMDD' format:"
             + effectiveTime);
       // check refset release has not begun
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForRefset(
-              refset.getTerminologyId(), refset.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(refsetId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo != null && releaseInfo.isPublished())
         throw new Exception("refset release is already in progress " + refsetId);
       algo.setRefset(refset);
@@ -227,13 +230,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/refsetrelease/validate")
+  @Path("/refset/validate")
   @ApiOperation(value = "Validate refset release", notes = "Validates the release process by validating the refset and members for release.", response = ValidationResultJpa.class)
   public ValidationResult validateRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     // check preconditions
     // - refset exists
     // - current release info is planned and not published release info for this
@@ -250,7 +251,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // }
     // return validation result
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refsetrelease/validate " + refsetId);
+        "RESTful call POST (Refset): /refset/validate " + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -266,9 +267,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "validate refset release",
           UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForRefset(
-              refset.getTerminologyId(), refset.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(refsetId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new Exception("refset release is not ready to validate "
@@ -298,7 +302,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/refsetrelease/preview")
+  @Path("/refset/preview")
   @ApiOperation(value = "Preview refset release", notes = "Previews the release process by creating the staging release for refset.", response = RefsetJpa.class)
   public Refset previewRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -352,7 +356,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // releaseService.commit()
     // return staged refset (change return type)
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refsetrelease/preview " + refsetId);
+        "RESTful call POST (Refset): /refset/preview " + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -371,14 +375,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "preview refset release",
               UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForRefset(
-              refset.getTerminologyId(), refset.getProject().getId());
-      if (releaseInfo == null || !releaseInfo.isPlanned()
-          || releaseInfo.isPublished())
-        throw new Exception("refset release is not ready to validate "
-            + refsetId);
-      if (refset.isStaged())
+      ReleaseInfoList releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(refsetId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      if (releaseInfo == null || !releaseInfo.isPlanned() || releaseInfo.isPublished())
+        throw new Exception("refset release is not ready to preview " + refsetId);
+      if(refset.isStaged())
         throw new Exception("refset workflowstatus is staged for " + refsetId);
       Refset stageRefset =
           refsetService.stageRefset(refset, StagingType.PREVIEW);
@@ -473,14 +478,14 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/refsetrelease/cancel")
+  @Path("/refset/cancel")
   @ApiOperation(value = "Cancel refset release", notes = "Cancel the release process by removing the staging release info refset.")
   public void cancelRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refsetrelease/cancel " + refsetId);
+        "RESTful call POST (Refset): /refset/cancel " + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -493,30 +498,37 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid refset id " + refsetId);
       }
 
-      if (refset.getStagingType() != Refset.StagingType.PREVIEW) {
-        throw new LocalException("Refset is not staged for preview.");
-
-      }
       // Authorize the call
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "cancel refset release",
               UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForRefset(
-              refset.getTerminologyId(), refset.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(refsetId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned())
         throw new Exception("refset release is not planned to cancel "
             + refsetId);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       StagedRefsetChange change =
           refsetService.getStagedRefsetChange(refset.getId());
-      refsetService.removeStagedRefsetChange(change.getId());
-      refset.setStagingType(null);
-      refset.setLastModifiedBy(userName);
-      refsetService.updateRefset(refset);
-
+      if(change != null) {
+        refsetService.removeStagedRefsetChange(change.getId());
+        refset.setStagingType(null);
+        refset.setLastModifiedBy(userName);
+        refsetService.updateRefset(refset);
+        releaseInfoList =
+            releaseService.findRefsetReleasesForQuery(change.getStagedRefset().getId(), null, null);
+        if(releaseInfoList.getCount() != 1) {
+          throw new Exception("Cannot find release info for refset " + refsetId);
+        }
+        releaseInfo = releaseInfoList.getObjects().get(0);
+        releaseService.removeReleaseInfo(releaseInfo.getId());
+      }
       releaseService.commit();
     } catch (Exception e) {
       handleException(e, "trying to cancel release of refset");
@@ -529,7 +541,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/translationrelease/begin")
+  @Path("/translation/begin")
   @ApiOperation(value = "Begin translation release", notes = "Begins the release process by validating the translation for release and creating the translation release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo beginTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
@@ -538,7 +550,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translationrelease/begin "
+        "RESTful call POST (Translation): /translation/begin "
             + translationId + ", " + effectiveTime);
 
     TranslationService translationService = new TranslationServiceJpa();
@@ -564,9 +576,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("date provided is not in 'YYYYMMDD' format:"
             + effectiveTime);
       // check translation release has not begun
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForTranslation(
-              translation.getTerminologyId(), translation.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findTranslationReleasesForQuery(translationId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for translation " + translationId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo != null && releaseInfo.isPublished())
         throw new Exception("translation release is already in progress "
             + translationId);
@@ -588,16 +603,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/translationrelease/validate")
+  @Path("/translation/validate")
   @ApiOperation(value = "Validate translation release", notes = "Validates the release process by validating the translation and concepts for release.", response = ValidationResultJpa.class)
   public ValidationResult validateTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translationrelease/validate "
-            + translationId);
+        "RESTful call POST (Translation): /translation/validate " + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -614,9 +626,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "validate translation release",
           UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForTranslation(
-              translation.getTerminologyId(), translation.getProject().getId());
+          ReleaseInfoList releaseInfoList =
+              releaseService.findTranslationReleasesForQuery(translationId, null, null);
+          if(releaseInfoList.getCount() != 1) {
+            throw new Exception("Cannot find release info for translation " + translationId);
+          }
+          ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new Exception("translation release is not ready to validate "
@@ -648,7 +663,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/translationrelease/preview")
+  @Path("/translation/preview")
   @ApiOperation(value = "Preview translation release", notes = "Previews the release process by creating the staging release for translation.", response = TranslationJpa.class)
   public Translation previewTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
@@ -656,8 +671,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translationrelease/preview "
-            + translationId);
+        "RESTful call POST (Translation): /translation/preview " + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -677,9 +691,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
               translation.getProject().getId(), securityService, authToken,
               "preview translation release", UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForTranslation(
-              translation.getTerminologyId(), translation.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findTranslationReleasesForQuery(translationId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for translation " + translationId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new Exception("translation release is not ready to validate "
@@ -712,7 +729,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         }
         Set<Concept> newMembers =
             Sets.newHashSet(stageTranslation.getConcepts());
-        newMembers.removeAll(releaseInfo.getRefset().getMembers());
+        newMembers.removeAll(releaseInfo.getTranslation().getConcepts());
         for (Concept member : newMembers) {
           member.setActive(true);
           member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
@@ -751,15 +768,14 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/translationrelease/cancel")
+  @Path("/translation/cancel")
   @ApiOperation(value = "Cancel translation release", notes = "Cancel the release process by removing the staging release info translation.")
   public void cancelTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translationrelease/cancel "
-            + translationId);
+        "RESTful call POST (Translation): /translation/cancel " + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
@@ -773,30 +789,37 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
-      if (translation.getStagingType() != Translation.StagingType.PREVIEW) {
-        throw new LocalException("Refset is not staged for preview.");
-
-      }
       // Authorize the call
       String userName =
           authorizeProject(translationService,
               translation.getProject().getId(), securityService, authToken,
               "cancel translation release", UserRole.REVIEWER);
 
-      ReleaseInfo releaseInfo =
-          releaseService.getCurrentReleaseInfoForRefset(
-              translation.getTerminologyId(), translation.getProject().getId());
+      ReleaseInfoList releaseInfoList =
+          releaseService.findTranslationReleasesForQuery(translationId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for translation " + translationId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned())
         throw new Exception("translation release is not planned to cancel "
             + translationId);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       StagedTranslationChange change =
           translationService.getStagedTranslationChange(translation.getId());
-      translationService.removeStagedTranslationChange(change.getId());
-      translation.setStagingType(null);
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-
+      if(change != null) {
+        translationService.removeStagedTranslationChange(change.getId());
+        translation.setStagingType(null);
+        translation.setLastModifiedBy(userName);
+        translationService.updateTranslation(translation);
+        releaseInfoList =
+            releaseService.findTranslationReleasesForQuery(change.getStagedTranslation().getId(), null, null);
+        if(releaseInfoList.getCount() != 1) {
+          throw new Exception("Cannot find release info for translation " + translationId);
+        }
+        releaseInfo = releaseInfoList.getObjects().get(0);
+        releaseService.removeReleaseInfo(releaseInfo.getId());
+      }
       releaseService.commit();
     } catch (Exception e) {
       handleException(e, "trying to cancel release of translation");

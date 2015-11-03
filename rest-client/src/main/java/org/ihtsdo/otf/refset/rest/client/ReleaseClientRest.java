@@ -4,15 +4,28 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
+import java.net.URLEncoder;
 import java.util.Properties;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
+
+import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
+import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
 
@@ -23,7 +36,6 @@ public class ReleaseClientRest extends RootClientRest implements
     ReleaseServiceRest {
 
   /** The config. */
-  @SuppressWarnings("unused")
   private Properties config = null;
 
   /**
@@ -37,16 +49,57 @@ public class ReleaseClientRest extends RootClientRest implements
 
   @Override
   public ValidationResult validateRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Release Client - validate refset release");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/refset/validate"
+            + "?refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
   }
 
   @Override
   public Refset previewRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - preview refset release");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(ioHandlerId, "ioHandlerId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/import/begin"
+            + "?refsetId=" + refsetId + "&ioHandlerId=" + ioHandlerId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
   }
 
   @Override
@@ -58,7 +111,7 @@ public class ReleaseClientRest extends RootClientRest implements
 
   @Override
   public ValidationResult validateTranslationRelease(Long translationId,
-    String ioHandlerId, String authToken) throws Exception {
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
@@ -80,7 +133,24 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public void cancelRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).debug("Release Client - cancel refset release");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/refset/cancel"
+            + "?refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   @Override
@@ -142,8 +212,33 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Release Client - begin refset release");
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(effectiveTime, "effectiveTime");
+
+    Client client = ClientBuilder.newClient();
+    String encodedEffectiveTime =
+        URLEncoder.encode(effectiveTime, "UTF-8").replaceAll("\\+", "%20");
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/release/refset/begin" + "?refsetId=" + refsetId
+            + "&effectiveTime=" + encodedEffectiveTime);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ReleaseInfoJpa) ConfigUtility.getGraphForString(resultString,
+        ReleaseInfoJpa.class);
   }
 
   @Override

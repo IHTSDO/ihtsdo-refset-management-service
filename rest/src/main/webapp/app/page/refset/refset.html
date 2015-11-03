@@ -8,7 +8,9 @@
     
     <span style="display: block;">    
     <h5>Choose Project: <select ng-model="selectedProject" ng-show="candidateProjects.length > 1"
-      ng-options="item.name for item in candidateProjects" ng-click="getRefsets()"></select></h5>
+      ng-options="item.name for item in candidateProjects" ng-click="getRefsets();
+      findAssignedUsersForProject()"></select><br>
+    Role:{{user.projectRoleMap[selectedProject.id]}}</h5>
     </span>
     
 
@@ -16,12 +18,25 @@
     <accordion-heading>
     <h5 class="section-header">Available</h5>
     </accordion-heading>
-    <div refset-table value="AVAILABLE" project="1"></div>
-    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
+    <div refset-table value="AVAILABLE" project=1></div>
+    </accordion-group> 
+    
+    <accordion-group is-open="false" 
+    ng-show="user.projectRoleMap[selectedProject.id] != 'ADMIN'"> <accordion-heading>
     <h5 class="section-header">Assigned</h5>
     </accordion-heading>
-    <div refset-table value="ASSIGNED" project="1"></div>
-    </accordion-group> </accordion>
+    <!-- TODO project="{{selectedProject.id}}" -->
+    <div refset-table value="ASSIGNED" project=1></div>
+    </accordion-group> 
+    
+    <accordion-group is-open="false" 
+    ng-show="user.projectRoleMap[selectedProject.id] == 'ADMIN'"> <accordion-heading>
+    <h5 class="section-header">Assigned All</h5>
+    </accordion-heading>
+    <div refset-table value="ASSIGNED_ALL" project=1></div>
+    </accordion-group> 
+    
+    </accordion>
 
 
 

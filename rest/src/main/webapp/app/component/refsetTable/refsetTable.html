@@ -49,8 +49,8 @@
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <th class="col-md-1 col-xs-1"
-          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED'"
-          ng-click="setSortField('refset','type', null)">Type<span
+          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL'"
+          ng-click="setSortField('refset','type', null)">Actions<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
       </thead>
       <tbody>
@@ -63,6 +63,8 @@
             ng-show="iconConfig[refset.moduleId]" title="Flag icon"
             src="{{iconConfig[refset.moduleId]}}" /> <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}}
+            <span ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
+              <br> {{refset.workflowStatus}}</span>
           </td>
           <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
               style="text-decoration: none">
@@ -80,7 +82,7 @@
                 class="material-icons md-18">functions</i>
             </a></td>
             <td class="nobreak"
-               ng-show="value == 'AVAILABLE' || value == 'ASSIGNED'"><a title="Edit"
+               ng-show="value == 'AVAILABLE'"><a title="Edit"
                 ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
                 <i title="Edit" class="material-icons md-18">edit</i>
               </a>&nbsp;<a title="Remove"
@@ -90,7 +92,14 @@
                 ng-click="performWorkflowAction(refset, 'ASSIGN'); $event.stopPropagation()">
                 <i title="Claim" class="material-icons md-18">assignment</i>
               </a></td>
-
+           <td ng-show="value == 'ASSIGNED_ALL'"><a title="Assigned"
+                ng-click="">
+                <i title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}}" class="material-icons md-18">assignment_ind</i>
+              </a></td>
+           <td ng-show="value == 'ASSIGNED'"><a title="Unassign"
+                ng-click="performWorkflowAction(refset, 'UNASSIGN'); $event.stopPropagation()">
+                <i title="Unassign" class="material-icons md-18">assignment_return</i>
+              </a></td>
         </tr>
       </tbody>
     </table>
@@ -189,7 +198,7 @@
       <span ng-show="!refset.members" class="alert alert-warning">Refset
         has no members</span>
 
-      <span ng-show="refset.members">
+      <span>
         <span style="display: block;">
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
@@ -207,14 +216,15 @@
             ng-show="paging['member'].filter"
             ng-click="paging['member'].filter = ''; getMembers(refset)"
             title="Click to clear filter text">Clear</button>
-            
-        <h4 ng-show="value == 'ASSIGNED'">
-        <div style="float: right;">
-          <a title="Create new refset member" ng-click="openNewMemberModal(lmember, refset)">
-            <i title="Create new refset member" class="material-icons md-24">add</i>
-          </a>
-        </div>
-      </h4>
+
+          <h4 ng-show="value == 'ASSIGNED'">
+            <div style="float: right;">
+              <a title="Create new refset member"
+                ng-click="openNewMemberModal(lmember, refset)">
+                <i title="Create new refset member" class="material-icons md-24">add</i>
+              </a>
+            </div>
+          </h4>
         </span>
 
 
@@ -235,7 +245,7 @@
               ng-change="getMembers(refset)">
                 <option value="">All</option>
             </select></th>
-            <th ng-show="value == 'ASSIGNED'">Actions</th>
+            <th ng-show="value == 'ASSIGNED' ">Actions</th>
           </thead>
           <tbody>
             <tr ng-repeat="member in refset.members"
@@ -263,11 +273,11 @@
                     tooltip="Inactive concept in current edition"
                     class="material-icons md-18">info-outline</i>
                 </a></td>
-              <td class="nobreak"
-               ng-show="value == 'ASSIGNED'"><a title="Remove"
-                ng-click="remove('member',member,refset.members); $event.stopPropagation()">
-                <i title="Remove" class="material-icons md-18">delete</i>
-              </a></td>
+              <td class="nobreak" ng-show="value == 'ASSIGNED'"><a
+                  title="Remove"
+                  ng-click="remove('member',member,refset.members); $event.stopPropagation()">
+                  <i title="Remove" class="material-icons md-18">delete</i>
+                </a></td>
             </tr>
           </tbody>
         </table>

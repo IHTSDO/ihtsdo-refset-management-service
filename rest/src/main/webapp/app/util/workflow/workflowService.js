@@ -35,9 +35,9 @@ tsApp.service('workflowService',
       }
 
       // Find available translation editing work
-      this.findAvailableEditingWork = function(projectId, translationId,
+      this.findAvailableEditingConcepts = function(projectId, translationId,
         userName, pfs) {
-        console.debug("findAvailableEditingWork");
+        console.debug("findAvailableEditingConcepts");
         var deferred = $q.defer();
 
         // Find available editing work
@@ -62,9 +62,9 @@ tsApp.service('workflowService',
       }
 
       // Find assigned translation editing work
-      this.findAssignedEditingWork = function(projectId, translationId,
+      this.findAssignedEditingConcepts = function(projectId, translationId,
         userName, pfs) {
-        console.debug("findAssignedEditingWork");
+        console.debug("findAssignedEditingConcepts");
         var deferred = $q.defer();
 
         // Find assigned editing work
@@ -89,9 +89,9 @@ tsApp.service('workflowService',
       }
 
       // Find available translation review work
-      this.findAvailableReviewWork = function(projectId, translationId,
+      this.findAvailableReviewConcepts = function(projectId, translationId,
         userName, pfs) {
-        console.debug("findAvailableReviewWork");
+        console.debug("findAvailableReviewConcepts");
         var deferred = $q.defer();
 
         // Find available review work
@@ -116,9 +116,9 @@ tsApp.service('workflowService',
       }
 
       // Find assigned translation review work
-      this.findAssignedReviewWork = function(projectId, translationId,
+      this.findAssignedReviewConcepts = function(projectId, translationId,
         userName, pfs) {
-        console.debug("findAssignedReviewWork");
+        console.debug("findAssignedReviewConcepts");
         var deferred = $q.defer();
 
         // Find assigned review work
@@ -269,4 +269,27 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
+      
+      this.getTrackingRecordForRefset = function(refsetId) {
+        console.debug("getTrackingRecordForRefset");
+        var deferred = $q.defer();
+
+        // Finds refsets available for review by the specified user
+        gpService.increment()
+        $http.get(
+          workflowUrl + "record" + "?refsetId=" + refsetId).then(
+        // success
+        function(response) {
+          console.debug("  record = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
     } ]);

@@ -126,6 +126,30 @@ public interface TerminologyHandler extends Configurable {
   public DescriptionTypeRefsetMemberList getStandardDescriptionTypes(
     String terminology, String version) throws Exception;
 
+  /**
+   * Returns the concept parents.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept parents
+   * @throws Exception the exception
+   */
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception;
+
+  /**
+   * Returns the concept children.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the concept children
+   * @throws Exception the exception
+   */
+  public ConceptList getConceptChildren(String terminologyId, String terminology,
+    String version) throws Exception;
+
   // TODO: other methods (if using term server storage)
   /**
    * <pre>

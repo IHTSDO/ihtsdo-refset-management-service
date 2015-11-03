@@ -54,7 +54,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testGetDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -76,7 +76,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testGetConcept() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -94,7 +94,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testResolveExpression() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -126,12 +126,40 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     service.close();
   }
 
+
+  @Test
+  public void testGetConceptParents() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+
+    ConceptList concepts =
+        service.getTerminologyHandler().getConceptParents("108369006",
+            "SNOMEDCT", "latest");
+    assertEquals(1, concepts.getObjects().size());
+    assertEquals("Neoplasm and/or hamartoma (morphologic abnormality)", 
+        concepts.getObjects().get(0).getName());
+    service.close();
+  }
+
+  @Test
+  public void testGetConceptChildren() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+
+    ConceptList concepts =
+        service.getTerminologyHandler().getConceptChildren("108369006",
+            "SNOMEDCT", "latest");
+    assertEquals(40, concepts.getObjects().size());
+    
+    service.close();
+  }
+  
   /**
    * Test getting concepts with descriptions from Snow Owl.
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testFindConceptsForQuery() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();

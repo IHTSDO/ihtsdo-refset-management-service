@@ -10,6 +10,7 @@ import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 
 /**
  * Represents a service for performing workflow actions.
@@ -157,5 +158,16 @@ public interface WorkflowServiceRest {
   public TrackingRecord performWorkflowAction(Long projectId,
     Long translationId, String userName, String action, ConceptJpa concept,
     String authToken) throws Exception;
+
+  /**
+   * Returns the tracking records for refset.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the tracking record for refset
+   * @throws Exception the exception
+   */
+  public TrackingRecord getTrackingRecordForRefset(Long refsetId, String authToken)
+    throws Exception;
 
 }

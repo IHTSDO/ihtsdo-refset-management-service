@@ -131,12 +131,23 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     // Get object references
     Refset refset = getRefset(refsetId);
     // Get tracking records
-    User user = getUser(userName);
-    TrackingRecordList list =
-        findTrackingRecordsForQuery("refset.id:" + refset.getId()
+    TrackingRecordList list = null;
+    if (userName != null && !userName.equals("")) {
+      User user = getUser(userName);
+      list =
+        findTrackingRecordsForQuery("refsetId:" + refset.getId()
             + " AND user.id:" + user.getId(), new PfsParameterJpa());
+    } else {
+      list =
+          findTrackingRecordsForQuery("refsetId:" + refsetId,
+              new PfsParameterJpa());
+    }
     if (list.getCount() == 1) {
-      return list.getObjects().get(0);
+      // lazy initialization
+      TrackingRecord record = list.getObjects().get(0);
+      record.getAuthors().size();
+      record.getReviewers().size();
+      return record;
     } else if (list.getCount() == 0) {
       return null;
     } else {
@@ -145,6 +156,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     }
 
   }
+  
+
 
   /* see superclass */
   @Override

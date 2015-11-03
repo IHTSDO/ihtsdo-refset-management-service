@@ -323,7 +323,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
+        client.target(url + "browser/" + branch + // TODO: add back in "/" + version + 
+            "/concepts/"
             + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader).get();
@@ -622,6 +623,135 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     return conceptList;
   }
 
+  /* see superclass */
+  @Override
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception {
+    ConceptList conceptList = new ConceptListJpa();
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    System.out.println("target: " + url + "browser/" + branch 
+        + "/concepts/" + terminologyId + "/parents");
+    WebTarget target =
+        client.target(url + "browser/" + branch //+ TODO add this back in? "/" + version
+            + "/concepts/" + terminologyId + "/parents");
+    Response response =
+        target.request("*/*").header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * [
+     *   {
+     *     "conceptId": "",
+     *     "fsn": "",
+     *     "definitionStatus": ""
+     *   }
+     * ]
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    JsonNode entry = null;
+    int index = 0;
+    while ((entry = doc.get(index++)) != null) {
+      JsonNode cpt = entry.findValue("concept");
+      Concept concept = new ConceptJpa();
+
+      // TODO: assuming active
+      concept.setActive(true);
+      concept.setTerminology(terminology);
+      concept.setVersion(version);
+      concept.setTerminologyId(entry.get("conceptId").asText());
+      // TODO: how to set effective time - no field in json
+      concept.setLastModified(concept.getEffectiveTime());
+      concept.setLastModifiedBy(terminology);
+      // TODO: moduleId is not provided
+      //concept.setModuleId(cpt.get("moduleId").asText());
+      concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
+      concept.setName(entry.get("fsn").asText());
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+
+    return conceptList;
+  }
+  
+  
+  /* see superclass */
+  @Override
+  public ConceptList getConceptChildren(String terminologyId, String terminology,
+    String version) throws Exception {
+    ConceptList conceptList = new ConceptListJpa();
+    // Make a webservice call to SnowOwl
+    Client client = ClientBuilder.newClient();
+    System.out.println("target: " + url + "browser/" + branch 
+        + "/concepts/" + terminologyId + "/children");
+    WebTarget target =
+        client.target(url + "browser/" + branch //+ TODO add this back in? "/" + version
+            + "/concepts/" + terminologyId + "/children");
+    Response response =
+        target.request("*/*").header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(resultString);
+    }
+
+    /**
+     * <pre>
+     * [
+     *   {
+     *     "conceptId": "",
+     *     "fsn": "",
+     *     "definitionStatus": ""
+     *   }
+     * ]
+     * </pre>
+     */
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    JsonNode entry = null;
+    int index = 0;
+    while ((entry = doc.get(index++)) != null) {
+      JsonNode cpt = entry.findValue("concept");
+      Concept concept = new ConceptJpa();
+
+      // TODO: assuming active
+      concept.setActive(true);
+      concept.setTerminology(terminology);
+      concept.setVersion(version);
+      concept.setTerminologyId(entry.get("conceptId").asText());
+      // TODO: how to set effective time - no field in json
+      concept.setLastModified(concept.getEffectiveTime());
+      concept.setLastModifiedBy(terminology);
+      // TODO: moduleId is not provided
+      //concept.setModuleId(cpt.get("moduleId").asText());
+      concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
+      concept.setName(entry.get("fsn").asText());
+
+      concept.setPublishable(true);
+      concept.setPublished(true);
+
+      conceptList.addObject(concept);
+    }
+
+    return conceptList;
+  }
+  
   /* see superclass */
   @Override
   public Description getDescription(String terminologyId, String terminology,

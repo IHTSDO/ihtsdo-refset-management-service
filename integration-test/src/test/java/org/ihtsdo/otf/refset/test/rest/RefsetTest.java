@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rest.client.WorkflowClientRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
@@ -50,6 +51,9 @@ public class RefsetTest {
 
   /** The project service. */
   protected static ProjectClientRest projectService;
+  
+  /** The workflow service. */
+  protected static WorkflowClientRest workflowService;
 
   /** The properties. */
   protected static Properties properties;
@@ -83,6 +87,7 @@ public class RefsetTest {
     validationService = new ValidationClientRest(properties);
     projectService = new ProjectClientRest(properties);
     refsetService = new RefsetClientRest(properties);
+    workflowService = new WorkflowClientRest(properties);
 
     // test run.config.ts has viewer user
     testUser = properties.getProperty("viewer.user");
@@ -165,13 +170,12 @@ public class RefsetTest {
     refset.setModuleId("900000000000445007");
     refset.setProject(project);
     refset.setPublishable(true);
-    refset.setPublished(true);
+    refset.setPublished(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
-    // This is an opportunity to use "branch"
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DFEAULT");
-    refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    refset.setWorkflowStatus(WorkflowStatus.NEW);
 
     if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
