@@ -288,7 +288,30 @@ tsApp.directive('refsetTable',
                 $scope.initializeProjectAndRefsets($scope.project);
               })
             };
+            
+            // get terminology Editions
+            $scope.getTerminologyEditions = function() {
+              console.debug("getTerminologyEditions");
+              projectService.getTerminologyEditions().then(function(data) {
+                $scope.terminologyEditions = data.strings;
 
+                $scope.getTerminologyVersions($scope.terminologyEditions[0]);
+              })
+            };
+            
+            // get terminology versions
+            $scope.getTerminologyVersions = function(terminology) {
+              console.debug("getTerminologyVersions");
+              projectService.getTerminologyVersions(terminology).then(function(data) {
+                $scope.terminologyVersions = {};
+                $scope.terminologyVersions[terminology] = [];
+                for (var i = 0; i < data.translations.length; i++) {
+                  $scope.terminologyVersions[terminology].push(
+                    data.translations[i].version.replace(/-/gi, ""));
+                }
+              })
+            };
+            
             $scope.getAuthorsForRefsetId = function(refsetId) {
               return $scope.refsetIdToAuthorsMap[refsetId];
             }
@@ -301,6 +324,7 @@ tsApp.directive('refsetTable',
               || $scope.value == 'ASSIGNED_ALL') {
               $scope.initializeProjectAndRefsets($scope.project);
               $scope.getRefsetTypes();
+              $scope.getTerminologyEditions();
             }
             
 
@@ -330,6 +354,12 @@ tsApp.directive('refsetTable',
                   },
                   project : function() {
                     return $scope.selectedProject;
+                  },
+                  terminologyEditions : function() {
+                    return $scope.terminologyEditions;
+                  },
+                  terminologyVersions : function() {
+                    return $scope.terminologyVersions;
                   }
                 }
               });
@@ -342,12 +372,18 @@ tsApp.directive('refsetTable',
             };
 
             var NewRefsetModalCtrl = function($scope, $modalInstance, refset,
-              refsets, refsetTypes, project) {
+              refsets, refsetTypes, project, terminologyEditions, terminologyVersions) {
 
               console.debug("Entered new refset modal control", refsetTypes);
 
               $scope.refset = refset;
               $scope.refsetTypes = refsetTypes;
+              $scope.terminologyEditions = terminologyEditions;
+              
+              $scope.terminologySelected = function(terminology) {
+                $scope.terminologyVersions = terminologyVersions[terminology].sort();
+              };
+
 
               $scope.submitNewRefset = function(refset) {
                 console.debug("Submitting new refset", refset);
@@ -396,6 +432,12 @@ tsApp.directive('refsetTable',
                   },
                   project : function() {
                     return $scope.selectedProject;
+                  },
+                  terminologyEditions : function() {
+                    return $scope.terminologyEditions;
+                  },
+                  terminologyVersions : function() {
+                    return $scope.terminologyVersions;
                   }
                 }
               });
@@ -407,12 +449,20 @@ tsApp.directive('refsetTable',
               });
             };
 
-            var EditRefsetModalCtrl = function($scope, $modalInstance, refset, refsetTypes, project) {
+            var EditRefsetModalCtrl = function($scope, $modalInstance, refset, refsetTypes,
+              project, terminologyEditions, terminologyVersions) {
 
               console.debug("Entered edit refset modal control");
 
               $scope.refset = refset;
               $scope.refsetTypes = refsetTypes;
+              $scope.terminologyEditions = terminologyEditions;
+              $scope.terminologyVersions = terminologyVersions;
+              
+              $scope.terminologySelected = function(terminology) {
+                $scope.terminologyVersions = terminologyVersions[terminology].sort();
+              };
+              
 
               $scope.submitEditRefset = function(refset) {
                 console.debug("Submitting edit refset", refset);

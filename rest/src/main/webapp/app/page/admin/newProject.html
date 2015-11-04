@@ -9,8 +9,11 @@
       Project name:<br> <input ng-model="project.name"><br> 
       Description:<br> <input ng-model="project.description"><br>
       Namespace:<br> <input ng-model="project.namespace"><br>
-      Terminology:<br> <input ng-model="project.terminology"><br>
-      Version:<br> <input ng-model="project.version"><br>
+      Terminology:<br> <select ng-model="project.terminology" 
+        ng-change="terminologySelected(project.terminology)"
+        ng-options="item for item in terminologyEditions"></select><br>
+      Version:<br> <select ng-model="project.version" 
+        ng-options="item for item in terminologyVersions"></select><br>
     </div>
   </div>
 </div>

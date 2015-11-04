@@ -11,8 +11,11 @@
       Module id:<br> <input ng-model="refset.moduleId"><br>
       Organization:<br> <input ng-model="refset.organization"><br>
       Email contact:<br> <input ng-model="refset.feedbackEmail"><br>
-        Terminology:<br> <input ng-model="refset.terminology"><br>
-      Version:<br> <input ng-model="refset.version"><br>  
+      Terminology:<br> <select ng-model="refset.terminology" 
+        ng-change="terminologySelected(refset.terminology)"
+        ng-options="item for item in terminologyEditions"></select><br>
+      Version:<br> <select ng-model="refset.version" 
+        ng-options="item for item in terminologyVersions"></select><br>
       Type:<br> <select ng-model="refset.type" 
         ng-options="item for item in refsetTypes"></select><br>
     </div>

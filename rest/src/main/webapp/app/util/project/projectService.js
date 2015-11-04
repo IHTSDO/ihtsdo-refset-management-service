@@ -456,5 +456,47 @@ tsApp
           });
 
           return deferred.promise;
-        };          
+        };   
+        
+        // get terminology editions
+        this.getTerminologyEditions = function() {
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment()
+          $http.get(projectUrl + 'terminology/all').then(
+          // success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }
+        
+        // get terminology versions
+        this.getTerminologyVersions = function(terminology) {
+          var deferred = $q.defer();
+
+          // Get projects
+          gpService.increment()
+          $http.get(projectUrl + 'terminology/' + terminology + '/all').then(
+          // success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+          return deferred.promise;
+        }
       } ]);

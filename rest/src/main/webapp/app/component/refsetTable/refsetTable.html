@@ -92,11 +92,26 @@
                 ng-click="performWorkflowAction(refset, 'ASSIGN'); $event.stopPropagation()">
                 <i title="Claim" class="material-icons md-18">assignment</i>
               </a></td>
-           <td ng-show="value == 'ASSIGNED_ALL'"><a title="Assigned"
+           <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'"><a title="Edit"
+                ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
+                <i title="Edit" class="material-icons md-18">edit</i>
+              </a>&nbsp;<a title="Remove"
+                ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
+                <i title="Delete" class="material-icons md-18">delete</i>
+              </a>&nbsp;<a title="Assigned"
                 ng-click="">
                 <i title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}}" class="material-icons md-18">assignment_ind</i>
+              </a>&nbsp;<a title="Unassign"
+                ng-click="performWorkflowAction(refset, 'UNASSIGN'); $event.stopPropagation()">
+                <i title="Unassign" class="material-icons md-18">assignment_return</i>
               </a></td>
-           <td ng-show="value == 'ASSIGNED'"><a title="Unassign"
+           <td class="nobreak" ng-show="value == 'ASSIGNED'"><a title="Edit"
+                ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
+                <i title="Edit" class="material-icons md-18">edit</i>
+              </a>&nbsp;<a title="Remove"
+                ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
+                <i title="Delete" class="material-icons md-18">delete</i>
+              </a>&nbsp;<a title="Unassign"
                 ng-click="performWorkflowAction(refset, 'UNASSIGN'); $event.stopPropagation()">
                 <i title="Unassign" class="material-icons md-18">assignment_return</i>
               </a></td>

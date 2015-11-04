@@ -203,6 +203,29 @@ tsApp
             $scope.projectRoles = data.strings;
           })
         };
+        
+        // get terminology Editions
+        $scope.getTerminologyEditions = function() {
+          console.debug("getTerminologyEditions");
+          projectService.getTerminologyEditions().then(function(data) {
+            $scope.terminologyEditions = data.strings;
+
+            $scope.getTerminologyVersions($scope.terminologyEditions[0]);
+          })
+        };
+        
+        // get terminology versions
+        $scope.getTerminologyVersions = function(terminology) {
+          console.debug("getTerminologyVersions");
+          projectService.getTerminologyVersions(terminology).then(function(data) {
+            $scope.terminologyVersions = {};
+            $scope.terminologyVersions[terminology] = [];
+            for (var i = 0; i < data.translations.length; i++) {
+              $scope.terminologyVersions[terminology].push(
+                data.translations[i].version.replace(/-/gi, ""));
+            }
+          })
+        };
 
         // Sets the selected project
         $scope.setProject = function(project) {
@@ -357,6 +380,7 @@ tsApp
         $scope.retrieveCandidateProjects();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
+        $scope.getTerminologyEditions();
 
         //
         // Modals
@@ -377,6 +401,12 @@ tsApp
               },
               projects : function() {
                 return $scope.projects;
+              },
+              terminologyEditions : function() {
+                return $scope.terminologyEditions;
+              },
+              terminologyVersions : function() {
+                return $scope.terminologyVersions;
               }
             }
           });
@@ -389,15 +419,21 @@ tsApp
         };
 
         var NewProjectModalCtrl = function($scope, $modalInstance, project,
-          projects) {
+          projects, terminologyEditions, terminologyVersions) {
 
           console.debug("Entered new project modal control");
 
           $scope.project = project;
+          $scope.terminologyEditions = terminologyEditions;
+          
+          $scope.terminologySelected = function(terminology) {
+            $scope.terminologyVersions = terminologyVersions[terminology].sort();
+          };
 
           $scope.submitNewProject = function(project) {
             console.debug("Submitting new project", project);
 
+            
             if (project == null || project.name == null
               || project.name == undefined || project.description == null
               || project.description == undefined) {
@@ -497,6 +533,12 @@ tsApp
             resolve : {
               project : function() {
                 return lproject;
+              },
+              terminologyEditions : function() {
+                return $scope.terminologyEditions;
+              },
+              terminologyVersions : function() {
+                return $scope.terminologyVersions;
               }
             }
           });
@@ -508,11 +550,15 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $modalInstance, project) {
+        var EditProjectModalCtrl = function($scope, $modalInstance, project, 
+          terminologyEditions, terminologyVersions) {
 
           console.debug("Entered edit project modal control");
+          console.debug("versions:", terminologyVersions);
 
           $scope.project = project;
+          $scope.terminologyEditions = terminologyEditions;
+          $scope.terminologyVersions = terminologyVersions[project.terminology].sort();
 
           $scope.submitEditProject = function(project) {
             console.debug("Submitting edit project", project);

@@ -569,7 +569,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
-
+      return list;
+      
     } catch (Exception e) {
       handleException(e, "trying to get versions");
     } finally {
