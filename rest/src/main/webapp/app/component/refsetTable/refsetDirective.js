@@ -161,7 +161,7 @@ tsApp.directive('refsetTable',
 
             // get current refset release info
             $scope.getCurrentRefsetReleaseInfo = function(refset) {
-              releaseService.getCurrentRefsetRelease(refset.id).then(
+              releaseService.getCurrentReleaseInfoForRefset(refset.id).then(
                 function(data) {
                   refset.releaseInfo = data;
                 })
@@ -275,7 +275,7 @@ tsApp.directive('refsetTable',
             
                 refsetService.removeRefsetMember(object.id).then(function() {
                   //$scope.getRefsets();
-                  objArray.splice(objArray.indexOf(object));
+                  objArray.splice(objArray.indexOf(object), 1);
                 });
               }
             };
@@ -479,6 +479,18 @@ tsApp.directive('refsetTable',
                 $scope.submitNewMember = function(concept) {
                   console.debug("Submitting new member", concept);
 
+                  // confirm that member is not already assigned
+                  if (refset.members != undefined) {
+                    for (var i = 0; i < refset.members.length; i++) {
+                      if (refset.members[i].terminologyId == concept.terminologyId
+                        && refset.members[i].refsetId == refset.id) {
+                        window
+                          .alert("This member has already been added to this refset.");
+                        return;
+                      }
+                    }
+                  }
+
                   var member = {
                     conceptId : concept.terminologyId,
                     conceptName : concept.name,
@@ -491,7 +503,7 @@ tsApp.directive('refsetTable',
                   };
 
                   member.refsetId = refset.id;
-                  
+
                   refsetService.addRefsetMember(member).then(function(data) {
                     if (refset.members == undefined) {
                       refset.members = [];
@@ -503,7 +515,7 @@ tsApp.directive('refsetTable',
                   })
 
                 };
-                
+
                 // get search results
                 $scope.getSearchResults = function(search) {
                   console.debug("Getting search results", search);
@@ -513,19 +525,32 @@ tsApp.directive('refsetTable',
                     return;
                   }
 
-                  var pfs = {
-                    startIndex : 0,
-                    maxResults : 10,
-                    sortField : null,
-                    queryRestriction : null
-                  };
+                  // if search term is an id, simply look up the id
+                  if (/^\d+$/.test(search)) {
 
-                  projectService.findConceptsForQuery(search,
-                    refset.terminology, refset.version, pfs).then(
-                    function(data) {
-                      $scope.searchResults = data.concepts;
-                    }, function(data) {
-                    })
+                    projectService.getConceptWithDescriptions(search,
+                      refset.terminology, refset.version, pfs).then(
+                      function(data) {
+                        $scope.searchResults = data;
+                      }, function(data) {
+                    })                    
+                  
+                  } else {
+                    var pfs = {
+                      startIndex : 0,
+                      maxResults : 10,
+                      sortField : null,
+                      queryRestriction : null
+                    };
+
+                    projectService.findConceptsForQuery(search,
+                      refset.terminology, refset.version, pfs).then(
+                      function(data) {
+                        $scope.searchResults = data.concepts;
+                      }, function(data) {
+                      })
+
+                  }
                 };
 
                 // select concept and get concept data

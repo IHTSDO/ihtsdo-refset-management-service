@@ -48,6 +48,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled implementation of {@link Refset}.
  */
@@ -58,6 +60,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @Audited
 @Indexed
 @XmlRootElement(name = "refset")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The name. */
