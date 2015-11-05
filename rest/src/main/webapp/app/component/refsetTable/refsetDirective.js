@@ -47,6 +47,13 @@ tsApp.directive('refsetTable',
               sortField : 'lastModified',
               ascending : null
             }
+            $scope.paging["children"] = {
+              page : 1,
+              filter : "",
+              typeFilter : "",
+              sortField : 'name',
+              ascending : null
+            }
 
 
             // get all projects where user has a role
@@ -510,6 +517,9 @@ tsApp.directive('refsetTable',
                     },
                     project : function() {
                       return $scope.selectedProject;
+                    },
+                    paging : function() {
+                      return $scope.paging;
                     }
                   }
                 });
@@ -522,9 +532,11 @@ tsApp.directive('refsetTable',
               };
 
               var NewMemberModalCtrl = function($scope, $modalInstance, member,
-                refset, memberTypes, project) {
+                refset, memberTypes, project, paging) {
 
                 console.debug("Entered new member modal control");
+                $scope.pageSize = 10;
+                $scope.paging = paging;
 
                 $scope.submitNewMember = function(concept) {
                   console.debug("Submitting new member", concept);
@@ -607,7 +619,7 @@ tsApp.directive('refsetTable',
                 $scope.selectConcept = function(concept) {
                   $scope.selectedConcept = concept;
                   $scope.getConceptParents(concept.terminologyId);
-                  $scope.getConceptChildren(concept.terminologyId);
+                  $scope.getConceptChildren(concept);
                   // TODO: add back
                   //$scope.getConceptWithDescriptions(concept.terminologyId);
                 };
@@ -629,10 +641,20 @@ tsApp.directive('refsetTable',
                 $scope.getConceptChildren = function(concept) {
                   console.debug("Getting concept children", concept);
 
-                  projectService.getConceptChildren(concept,
-                    concept.terminology, concept.version).then(
+                  var pfs = {
+                    startIndex : ($scope.paging["children"].page - 1)
+                      * $scope.pageSize,
+                    maxResults : $scope.pageSize,
+                    sortField : null,
+                    queryRestriction : $scope.paging["children"].filter != undefined ?
+                      $scope.paging["children"].filter : null
+                  };
+                  
+                  projectService.getConceptChildren(concept.terminologyId,
+                    concept.terminology, concept.version, pfs).then(
                     function(data) {
                       $scope.children = data.concepts;
+                      $scope.children.totalCount = data.totalCount;
                     }, function(data) {
                     })
                 };

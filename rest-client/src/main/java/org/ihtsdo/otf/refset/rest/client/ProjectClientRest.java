@@ -456,7 +456,7 @@ public class ProjectClientRest extends RootClientRest implements
 
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, String authToken) throws Exception {
+    String terminology, String version, PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

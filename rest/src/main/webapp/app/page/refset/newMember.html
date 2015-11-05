@@ -61,6 +61,27 @@
     </table>
 
     <h5 ng-show="children.length > 0">Children</h5>
+    
+    <span style="display: block;">
+      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;"
+        ng-show="children.totalCount > pageSize || paging['children'].filter"
+        total-items="children.totalCount" ng-model="paging['children'].page"
+        ng-change="getConceptChildren(selectedConcept)"></pagination>
+
+      <!-- TODO RootService.applyPfsToList doesn't do filtering yet -->
+      <!-- <input class="input-filter" placeholder="Enter filter text"
+        ng-show="children.totalCount > pageSize || paging['children'].filter"
+        type="text" ng-model="paging['children'].filter"
+        ng-model-options="{ debounce: 300 }" ng-change="getConceptChildren(selectedConcept)">
+
+      <button class="btn btn-xs btn-warning" ng-show="paging['children'].filter"
+        ng-click="paging['children'].filter = ''; getConceptChildren(selectedConcept)"
+        title="Click to clear filter text">Clear</button> -->
+    </span>
+    
+    
     <table ng-show="children.length > 0" class="table">
       <thead>
         <th class="col-md-3 col-xs-3">Concept id</th>

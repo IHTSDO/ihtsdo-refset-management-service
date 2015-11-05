@@ -39,11 +39,13 @@ import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 
 import com.wordnik.swagger.annotations.Api;
@@ -724,6 +726,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -731,20 +734,28 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Project): retrieves concept's children, " + terminologyId + ", " + terminology + ", " + version);
 
     ProjectService projectService = new ProjectServiceJpa();
+    RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get concept children", UserRole.VIEWER);
 
-      ConceptList concepts =
+      ConceptList children =
           projectService.getTerminologyHandler().getConceptChildren(terminologyId,
               terminology, version);
       
-      return concepts;
+      // apply pfs to add paging/sorting
+      ConceptList list = new ConceptListJpa();
+      list.setTotalCount(children.getObjects().size());
+      list.setObjects(refsetService.applyPfsToList(children.getObjects(),
+          Concept.class, pfs));
+      return list;
+      
     } catch (Exception e) {
       handleException(e, "trying to retrieve concept children ");
       return null;
     } finally {
       projectService.close();
       securityService.close();
+      refsetService.close();
     }
 
   }  

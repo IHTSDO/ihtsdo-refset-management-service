@@ -403,7 +403,7 @@ tsApp
           return deferred.promise;
         };          
         
-        this.getConceptChildren = function(terminologyId, terminology, version) {
+        this.getConceptChildren = function(terminologyId, terminology, version, pfs) {
 
           console.debug("getConceptChildren", terminologyId);
           // Setup deferred
@@ -412,7 +412,7 @@ tsApp
           // Make POST call
           gpService.increment();
           $http.post(projectUrl + "children" + "?terminologyId=" + terminologyId + "&terminology=" + 
-            terminology + "&version=" + version)
+            terminology + "&version=" + version, pfs)
           .then(
           // success
           function(response) {

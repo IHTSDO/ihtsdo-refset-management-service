@@ -215,12 +215,13 @@ public interface ProjectServiceRest {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept children
    * @throws Exception the exception
    */
   public ConceptList getConceptChildren(String terminologyId, String terminology,
-    String version, String authToken) throws Exception;
+    String version, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Returns the concept parents.
