@@ -355,10 +355,10 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + "concepts" + "?query=" + query + "&terminology=" + 
+          $http.post(projectUrl + "concepts" + "?query=" + 
+            encodeURIComponent(utilService.cleanQuery(queryStr)) + "&terminology=" + 
             terminology + "&version=" + version, pfs)
-          // + encodeURIComponent(utilService.cleanQuery(queryStr)),
-          // pfs)
+          
           .then(
           // success
           function(response) {
@@ -376,4 +376,85 @@ tsApp
           return deferred.promise;
         };          
           
+        this.getConceptParents = function(terminologyId, terminology, version) {
+
+          console.debug("getConceptParents", terminologyId);
+          // Setup deferred
+          var deferred = $q.defer();
+
+          // Make POST call
+          gpService.increment();
+          $http.post(projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + 
+            terminology + "&version=" + version)
+          .then(
+          // success
+          function(response) {
+            console.debug("  output = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+
+          return deferred.promise;
+        };          
+        
+        this.getConceptChildren = function(terminologyId, terminology, version) {
+
+          console.debug("getConceptChildren", terminologyId);
+          // Setup deferred
+          var deferred = $q.defer();
+
+          // Make POST call
+          gpService.increment();
+          $http.post(projectUrl + "children" + "?terminologyId=" + terminologyId + "&terminology=" + 
+            terminology + "&version=" + version)
+          .then(
+          // success
+          function(response) {
+            console.debug("  output = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+
+          return deferred.promise;
+        };          
+        
+        // get concept with descriptions
+        this.getConceptWithDescriptions = function(terminologyId, terminology, version) {
+
+          console.debug("getConceptWithDescriptions", terminologyId);
+          // Setup deferred
+          var deferred = $q.defer();
+
+          // Make POST call
+          gpService.increment();
+          $http.post(projectUrl + "concept" + "?terminologyId=" + terminologyId + "&terminology=" + 
+            terminology + "&version=" + version)
+          .then(
+          // success
+          function(response) {
+            console.debug("  output = ", response.data);
+            gpService.decrement();
+            deferred.resolve(response.data);
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          });
+
+          return deferred.promise;
+        };          
       } ]);

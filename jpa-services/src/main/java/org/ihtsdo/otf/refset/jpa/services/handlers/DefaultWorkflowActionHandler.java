@@ -331,7 +331,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     service.updateRefset(refset);
-    service.updateTrackingRecord(record);
+    // TODO: needed to comment this out, because after UNASSIGN and deleting
+    // the tracking record, this would create a new tracking record to keep the
+    // refset assigned
+    if (action != WorkflowAction.UNASSIGN) {
+      service.updateTrackingRecord(record);
+    }
     return record;
   }
 

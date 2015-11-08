@@ -28,6 +28,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 
 /**
  * A client for connecting to a project REST service.
@@ -442,6 +443,27 @@ public class ProjectClientRest extends RootClientRest implements
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public Concept getConceptWithDescriptions(String terminologyId,
+    String terminology, String version, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList getConceptChildren(String terminologyId,
+    String terminology, String version, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptList getConceptParents(String terminologyId,
+    String terminology, String version, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

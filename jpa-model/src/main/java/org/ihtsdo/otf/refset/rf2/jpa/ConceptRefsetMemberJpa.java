@@ -9,6 +9,7 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
  * Concrete implementation of {@link ConceptRefsetMember}.
  */
 @Entity
+// TODO: confirm correct unique constraints - was able to add two of the same member to a refset
 @Table(name = "concept_refset_members")
 @Audited
 @Indexed

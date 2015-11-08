@@ -15,6 +15,7 @@ import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 
 /**
  * Represents a projects available via a REST service.
@@ -194,4 +195,45 @@ public interface ProjectServiceRest {
    */
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Returns the concept with descriptions.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the concept with descriptions
+   * @throws Exception the exception
+   */
+  public Concept getConceptWithDescriptions(String terminologyId, String terminology,
+    String version, String authToken) throws Exception;
+
+  /**
+   * Returns the concept children.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the concept children
+   * @throws Exception the exception
+   */
+  public ConceptList getConceptChildren(String terminologyId, String terminology,
+    String version, String authToken) throws Exception;
+
+  /**
+   * Returns the concept parents.
+   *
+   * @param terminologyId the terminology id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the concept parents
+   * @throws Exception the exception
+   */
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version, String authToken) throws Exception;
+  
+  
 }

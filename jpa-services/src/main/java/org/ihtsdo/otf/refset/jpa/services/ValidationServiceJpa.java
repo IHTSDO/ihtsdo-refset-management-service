@@ -68,9 +68,9 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateConcept(Concept concept) throws Exception {
+  public ValidationResult validateConcept(Concept concept,
+    TranslationService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
-    TranslationService service = new TranslationServiceJpa();
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(concept, service));
     }
@@ -79,10 +79,10 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateTranslation(Translation translation)
+  public ValidationResult validateTranslation(Translation translation,
+    TranslationService service)
     throws Exception {
     ValidationResult result = new ValidationResultJpa();
-    TranslationService service = new TranslationServiceJpa();
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key)
           .validate(translation, service));
@@ -92,10 +92,9 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateMember(ConceptRefsetMember member)
-    throws Exception {
+  public ValidationResult validateMember(ConceptRefsetMember member,
+    RefsetService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
-    RefsetService service = new RefsetServiceJpa();
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(member, service));
     }
@@ -105,10 +104,9 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateRefset(Refset refset) throws Exception {
+  public ValidationResult validateRefset(Refset refset, RefsetService service) throws Exception {
 
     ValidationResult result = new ValidationResultJpa();
-    RefsetService service = new RefsetServiceJpa();
     for (String key : validationHandlersMap.keySet()) {
       result.merge(validationHandlersMap.get(key).validate(refset, service));
     }

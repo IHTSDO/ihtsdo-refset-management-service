@@ -15,6 +15,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -77,12 +78,12 @@ public class TrackingRecordJpa implements TrackingRecord {
   private boolean forReview = false;
 
   /** The authors. */
-  @OneToMany(targetEntity = UserJpa.class)
+  @ManyToMany(targetEntity = UserJpa.class)
   @CollectionTable(name = "tracking_record_authors")
   private List<User> authors = new ArrayList<>();
 
   /** The reviewers. */
-  @OneToMany(targetEntity = UserJpa.class)
+  @ManyToMany(targetEntity = UserJpa.class)
   @CollectionTable(name = "tracking_record_reviewers")
   private List<User> reviewers = new ArrayList<>();
 
