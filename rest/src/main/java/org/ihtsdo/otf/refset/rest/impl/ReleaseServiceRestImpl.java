@@ -277,10 +277,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if(!WorkflowStatus.READY_FOR_PUBLICATION.equals(refset.getWorkflowStatus()))
         throw new Exception("refset workflowstatus is not " + WorkflowStatus.READY_FOR_PUBLICATION + " for "+ refsetId);
       ValidationServiceJpa validationService = new ValidationServiceJpa();
-      ValidationResult result = validationService.validateRefset(refset);
+      ValidationResult result = validationService.validateRefset(refset, refsetService);
       if(result.isValid()) {
         for(ConceptRefsetMember member: refset.getMembers()) {
-          result.merge(validationService.validateMember(member));
+          result.merge(validationService.validateMember(member, refsetService));
         }
       }
       return result;
@@ -627,10 +627,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if(!WorkflowStatus.READY_FOR_PUBLICATION.equals(translation.getWorkflowStatus()))
         throw new Exception("translation workflowstatus is not " + WorkflowStatus.READY_FOR_PUBLICATION + " for "+ translationId);
       ValidationServiceJpa validationService = new ValidationServiceJpa();
-      ValidationResult result = validationService.validateTranslation(translation);
+      ValidationResult result = validationService.validateTranslation(translation, translationService);
       if(result.isValid()) {
         for(Concept member: translation.getConcepts()) {
-          result.merge(validationService.validateConcept(member));
+          result.merge(validationService.validateConcept(member, translationService));
         }
       }
       return result;
