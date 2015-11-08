@@ -21,10 +21,12 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.ReleaseClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
+import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
@@ -35,7 +37,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class RefsetReleaseTest {
+public class TranslationReleaseTest {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -45,6 +47,9 @@ public class RefsetReleaseTest {
 
   /** The service. */
   protected static RefsetClientRest refsetService;
+
+  /** The translation service. */
+  protected static TranslationClientRest translationService;
 
   /** The release service. */
   protected static ReleaseClientRest releaseService;
@@ -86,6 +91,7 @@ public class RefsetReleaseTest {
 
     // instantiate required services
     refsetService = new RefsetClientRest(properties);
+    translationService = new TranslationClientRest(properties);
     releaseService = new ReleaseClientRest(properties);
     securityService = new SecurityClientRest(properties);
     validationService = new ValidationClientRest(properties);
@@ -227,7 +233,67 @@ public class RefsetReleaseTest {
   }
   
   /**
-   * Test refset release including begin and cancel.
+   * Make translation.
+   *
+   * @param name the name
+   * @param refset the refset
+   * @param project the project
+   * @param auth the auth
+   * @return the translation jpa
+   * @throws Exception the exception
+   */
+  private TranslationJpa makeTranslation(String name, Refset refset,
+    Project project, User auth) throws Exception {
+    TranslationJpa translation = new TranslationJpa();
+    translation.setName(name);
+    translation.setDescription("Description of translation "
+        + translation.getName());
+    translation.setActive(true);
+    translation.setEffectiveTime(new Date());
+    translation.setLastModified(new Date());
+    translation.setLanguage("es");
+    translation.setModuleId("731000124108");
+    translation.setProject(project);
+    translation.setPublic(true);
+    translation.setPublishable(true);
+    translation.setRefset(refset);
+    translation.setTerminology(refset.getTerminology());
+    translation.setTerminologyId(refset.getTerminologyId());
+    translation.setWorkflowPath("DEFAULT");
+    translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    translation.setVersion(refset.getVersion());
+
+    
+
+    // Validate translation
+    ValidationResult result =
+        validationService.validateTranslation(translation, auth.getAuthToken());
+    if (!result.isValid()) {
+      Logger.getLogger(getClass()).error(result.toString());
+      throw new Exception("translation does not pass validation.");
+    }
+    // Add translation
+    translation = (TranslationJpa)translationService.addTranslation(translation, auth.getAuthToken());
+
+    // Import members (from file) 
+    ValidationResult vr =
+        translationService.beginImportConcepts(translation.getId(),
+            "DEFAULT", auth.getAuthToken());
+    if (!vr.isValid()) {
+      throw new Exception("translation staging is not valid - " + vr);
+    }
+    InputStream in =
+        new FileInputStream(new File(
+            "../config/src/main/resources/data/translation2/translation.zip"));
+    translationService.finishImportConcepts(null, in, translation.getId(),
+        "DEFAULT", auth.getAuthToken());
+    in.close();
+
+    return translation;
+  }
+
+  /**
+   * Test translation release including begin and cancel.
    *
    * @throws Exception the exception
    */
@@ -241,16 +307,18 @@ public class RefsetReleaseTest {
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
             admin);
+    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
     // Cancel release
-    releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), adminAuthToken);
   }
 
   /**
-   * Test refset release including begin, validate and cancel.
+   * Test translation release including begin, validate and cancel.
    *
    * @throws Exception the exception
    */
@@ -264,18 +332,20 @@ public class RefsetReleaseTest {
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
             admin);
+    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
     // Validate release
-    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
     // Cancel release
-    releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), adminAuthToken);
   }
 
   /**
-   * Test refset release including begin, validate, preview and cancel.
+   * Test translation release including begin, validate, preview and cancel.
    *
    * @throws Exception the exception
    */
@@ -289,16 +359,18 @@ public class RefsetReleaseTest {
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
             admin);
+    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
     // Validate release
-    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
     // Cancel release
-    releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), adminAuthToken);
   }
 
 }

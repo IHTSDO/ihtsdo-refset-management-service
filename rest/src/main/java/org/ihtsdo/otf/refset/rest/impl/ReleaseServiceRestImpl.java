@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Set;
 
 import javax.ws.rs.Consumes;
@@ -32,7 +33,6 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -205,12 +205,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // check refset release has not begun
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
-      if(releaseInfoList.getCount() != 1) {
-        throw new Exception("Cannot find release info for refset " + refsetId);
+      if(releaseInfoList.getCount() != 0) {
+        ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+        if (releaseInfo != null && releaseInfo.isPublished())
+          throw new Exception("refset release is already in progress " + refsetId);
       }
-      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
-      if (releaseInfo != null && releaseInfo.isPublished())
-        throw new Exception("refset release is already in progress " + refsetId);
       algo.setRefset(refset);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
       algo.setUserName(userName);
@@ -382,7 +381,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       Refset stageRefset = refsetService.stageRefset(refset, StagingType.PREVIEW);
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
-      stageReleaseInfo.setArtifacts(releaseInfo.getArtifacts());
+      stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
       stageReleaseInfo.setRefset(stageRefset);
       ExportRefsetHandler handler = refsetService.getExportRefsetHandler(ioHandlerId);
       InputStream inputStream = handler.exportMembers(refset, refset.getMembers());
@@ -390,6 +389,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
       releaseArtifact.setName(handler.getFileName(refset.getProject().getNamespace()
      ,"Snapshot",releaseInfo.getName()));
+      releaseArtifact.setTimestamp(new Date());
+      releaseArtifact.setLastModified(new Date());
+      releaseArtifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(releaseArtifact);
       if( releaseInfo != null) {
         Set<ConceptRefsetMember> delta = Sets.newHashSet(releaseInfo.getRefset().getMembers());
@@ -410,15 +412,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
         releaseArtifact.setName(handler.getFileName(refset.getProject().getNamespace()
        ,"Delta",releaseInfo.getName()));
+        releaseArtifact.setTimestamp(new Date());
+        releaseArtifact.setLastModified(new Date());
+        releaseArtifact.setLastModifiedBy(userName);
         stageReleaseInfo.getArtifacts().add(releaseArtifact);
       }
       stageRefset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      stageRefset.setLastModified(new Date());
       stageRefset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      refsetService.addRefset(stageRefset);
+      refsetService.updateRefset(stageRefset);
       releaseService.addReleaseInfo(stageReleaseInfo);
       releaseService.commit();
-      return stageRefset;
+      return refsetService.getRefset(stageRefset.getId());
     } catch (Exception e) {
       handleException(e, "trying to preview release of refset");
     } finally {
@@ -565,13 +571,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // check translation release has not begun
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, null, null);
-      if(releaseInfoList.getCount() != 1) {
-        throw new Exception("Cannot find release info for translation " + translationId);
+      if(releaseInfoList.getCount() != 0) {
+        ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+        if (releaseInfo != null && releaseInfo.isPublished())
+          throw new Exception("translation release is already in progress " + translationId);
       }
-      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
-      if (releaseInfo != null && releaseInfo.isPublished())
-        throw new Exception("translation release is already in progress "
-            + translationId);
       algo.setTranslation(translation);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
       algo.setUserName(userName);
@@ -681,13 +685,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       Translation stageTranslation = translationService.stageTranslation(translation, Translation.StagingType.PREVIEW);
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
-      stageReleaseInfo.setArtifacts(releaseInfo.getArtifacts());
+      stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
       stageReleaseInfo.setTranslation(stageTranslation);
       ExportTranslationHandler handler = translationService.getExportTranslationHandler(ioHandlerId);
       InputStream inputStream = handler.exportConcepts(translation, translation.getConcepts());
       ReleaseArtifactJpa releaseArtifact = new  ReleaseArtifactJpa();
       releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
       releaseArtifact.setName(handler.getFileName());
+      releaseArtifact.setTimestamp(new Date());
+      releaseArtifact.setLastModified(new Date());
+      releaseArtifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(releaseArtifact);
       if( releaseInfo != null) {
         Set<Concept> delta = Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
@@ -707,15 +714,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         releaseArtifact = new  ReleaseArtifactJpa();
         releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
         releaseArtifact.setName(handler.getFileName());
+        releaseArtifact.setTimestamp(new Date());
+        releaseArtifact.setLastModified(new Date());
+        releaseArtifact.setLastModifiedBy(userName);
         stageReleaseInfo.getArtifacts().add(releaseArtifact);
       }
       stageTranslation.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      stageTranslation.setLastModified(new Date());
       stageTranslation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-      translationService.addTranslation(stageTranslation);
+      translationService.updateTranslation(stageTranslation);
       releaseService.addReleaseInfo(stageReleaseInfo);
       releaseService.commit();
-      return stageTranslation;
+      return translationService.getTranslation(stageTranslation.getId());
     } catch (Exception e) {
       handleException(e, "trying to preview release of ");
     } finally {
