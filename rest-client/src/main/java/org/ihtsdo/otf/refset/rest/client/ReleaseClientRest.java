@@ -25,6 +25,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
@@ -84,7 +85,7 @@ public class ReleaseClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/import/begin"
+        client.target(config.getProperty("base.url") + "/release/refset/preview"
             + "?refsetId=" + refsetId + "&ioHandlerId=" + ioHandlerId);
 
     Response response =
@@ -112,15 +113,56 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ValidationResult validateTranslationRelease(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - validate translation release");
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/translation/validate"
+            + "?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
   }
 
   @Override
   public Translation previewTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - preview translation release");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(ioHandlerId, "ioHandlerId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/translation/preview"
+            + "?translationId=" + translationId + "&ioHandlerId=" + ioHandlerId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
+        TranslationJpa.class);
   }
 
   @Override
@@ -156,7 +198,24 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public void cancelTranslationRelease(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).debug("Release Client - cancel translation release");
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/translation/cancel"
+            + "?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   @Override
@@ -244,8 +303,33 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ReleaseInfo beginTranslationRelease(Long translationId,
     String effectiveTime, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Release Client - begin translation release");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(effectiveTime, "effectiveTime");
+
+    Client client = ClientBuilder.newClient();
+    String encodedEffectiveTime =
+        URLEncoder.encode(effectiveTime, "UTF-8").replaceAll("\\+", "%20");
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/release/translation/begin" + "?translationId=" + translationId
+            + "&effectiveTime=" + encodedEffectiveTime);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ReleaseInfoJpa) ConfigUtility.getGraphForString(resultString,
+        ReleaseInfoJpa.class);
   }
 
 }

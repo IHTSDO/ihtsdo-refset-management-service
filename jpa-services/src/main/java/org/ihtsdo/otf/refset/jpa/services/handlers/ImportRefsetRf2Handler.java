@@ -12,6 +12,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -97,6 +98,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         setCommonFields(member, refset);
         member.setRefset(refset);
         member.setConceptId(fields[5]);
+        member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
 
         // Add member
         list.add(member);

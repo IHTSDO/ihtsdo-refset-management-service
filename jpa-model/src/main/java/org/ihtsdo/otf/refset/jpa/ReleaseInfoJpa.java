@@ -119,7 +119,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   private List<ReleaseProperty> properties;
 
   /** The release properties. */
-  @OneToMany(mappedBy = "releaseInfo", targetEntity = ReleaseArtifactJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "releaseInfo", targetEntity = ReleaseArtifactJpa.class)
   private List<ReleaseArtifact> artifacts;
 
   /**
@@ -146,8 +146,10 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
-    refset = new RefsetJpa(releaseInfo.getRefset());
-    translation = new TranslationJpa(releaseInfo.getTranslation());
+    if(releaseInfo.getRefset() != null)
+      refset = new RefsetJpa(releaseInfo.getRefset());
+    if(releaseInfo.getTranslation() != null)
+      translation = new TranslationJpa(releaseInfo.getTranslation());
     properties = new ArrayList<>();
     for (ReleaseProperty property : releaseInfo.getProperties()) {
       properties.add(new ReleasePropertyJpa(property));
@@ -370,6 +372,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    * @return the translation id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;
