@@ -216,10 +216,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       // Remove concepts/ descriptions/language refset members
       for (Concept c : translation.getConcepts()) {
         for (Description d : c.getDescriptions()) {
+          removeDescription(d.getId());
           for (LanguageRefsetMember member : d.getLanguageRefsetMembers()) {
             removeLanguageRefsetMember(member.getId());
           }
-          removeDescription(d.getId());
         }
         removeConcept(c.getId());
       }

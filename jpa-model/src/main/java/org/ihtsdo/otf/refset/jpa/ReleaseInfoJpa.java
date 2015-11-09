@@ -146,7 +146,8 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
-    refset = new RefsetJpa(releaseInfo.getRefset());
+    if(releaseInfo.getRefset() != null)
+      refset = new RefsetJpa(releaseInfo.getRefset());
     if(releaseInfo.getTranslation() != null)
       translation = new TranslationJpa(releaseInfo.getTranslation());
     properties = new ArrayList<>();
@@ -371,6 +372,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
    * @return the translation id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
     return (translation != null) ? translation.getId() : 0;

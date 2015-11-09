@@ -28,34 +28,28 @@ import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
-import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.SpellingDictionary;
-import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
-import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
-import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -64,7 +58,6 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -396,15 +389,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getSpellingDictionary());
 
       // remove memory entry
-      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-        translationService.removeMemoryEntry(entry);
+      if(translation.getPhraseMemory() != null) {
+        for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+          translationService.removeMemoryEntry(entry);
+        }
+
+        // remove phrase memory
+        translationService.removePhraseMemory(translation.getPhraseMemory());
       }
 
-      // remove phrase memory
-      translationService.removePhraseMemory(translation.getPhraseMemory());
-
       // Create service and configure transaction scope
-      translationService.removeTranslation(translationId, false);
+      translationService.removeTranslation(translationId, true);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");

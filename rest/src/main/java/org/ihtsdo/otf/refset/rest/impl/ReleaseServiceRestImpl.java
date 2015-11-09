@@ -691,7 +691,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       InputStream inputStream = handler.exportConcepts(translation, translation.getConcepts());
       ReleaseArtifactJpa releaseArtifact = new  ReleaseArtifactJpa();
       releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
-      releaseArtifact.setName(handler.getFileName());
+      releaseArtifact.setName(handler.getFileName(translation.getProject().getNamespace()
+          ,"Snapshot",releaseInfo.getName()));
       releaseArtifact.setTimestamp(new Date());
       releaseArtifact.setLastModified(new Date());
       releaseArtifact.setLastModifiedBy(userName);
@@ -713,7 +714,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         inputStream = handler.exportConcepts(stageTranslation, Lists.newArrayList(delta));
         releaseArtifact = new  ReleaseArtifactJpa();
         releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
-        releaseArtifact.setName(handler.getFileName());
+        releaseArtifact.setName(handler.getFileName(translation.getProject().getNamespace()
+            ,"Snapshot",releaseInfo.getName()));
         releaseArtifact.setTimestamp(new Date());
         releaseArtifact.setLastModified(new Date());
         releaseArtifact.setLastModifiedBy(userName);

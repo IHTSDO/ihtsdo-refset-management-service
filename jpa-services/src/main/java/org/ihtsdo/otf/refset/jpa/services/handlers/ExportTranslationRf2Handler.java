@@ -167,9 +167,9 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
   }
 
   @Override
-  public String getFileName() {
-    // TODO: implement this
-    return null;
+  public String getFileName(String namespace, String type, String version) {
+    return "der2_Refset_Language" + type + "_" + namespace + "_" + version
+        + getFileTypeFilter();
   }
 
 }

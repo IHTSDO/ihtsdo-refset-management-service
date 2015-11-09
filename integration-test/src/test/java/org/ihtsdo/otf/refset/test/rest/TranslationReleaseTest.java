@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -313,8 +314,8 @@ public class TranslationReleaseTest {
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
   /**
@@ -340,8 +341,8 @@ public class TranslationReleaseTest {
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
   /**
@@ -365,12 +366,13 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
 }
