@@ -270,9 +270,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+      // TODO: changed this to only require project role AUTHOR - discuss
       final String userName =
           authorizeProject(refsetService, refset.getProjectId(),
-              securityService, authToken, "add refset", UserRole.REVIEWER);
+              securityService, authToken, "add refset", UserRole.AUTHOR);
 
       // Add refset - if the project is invalid, this will fail
       refset.setLastModifiedBy(userName);

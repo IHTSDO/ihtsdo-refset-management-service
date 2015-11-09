@@ -727,7 +727,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Refsets for this project that do not yet have tracking records
     String queryStr =
-        "select a from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
+        "select a from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId and "
             + "b.refset = a and a.workflowStatus = :editingDone";
 
     Query ctQuery =
@@ -735,14 +735,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             .getEntityManager()
             .createQuery(
                 "select count(*) from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
-                    + "b.refset = a and a.workflowStatus = :editingDone");
+                    + "and b.refset = a and a.workflowStatus = :editingDone");
 
     ctQuery.setParameter("projectId", projectId);
-    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
 
     Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
-    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     List<Refset> results = query.getResultList();
     RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);

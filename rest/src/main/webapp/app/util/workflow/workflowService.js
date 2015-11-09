@@ -243,8 +243,33 @@ tsApp.service('workflowService',
         });
         return deferred.promise;
       }
+      
+      // Finds all refsets available to the specified user
+      this.findAllAvailableRefsets = function(projectId, userName, pfs) {
+        console.debug("findAllAvailableRefsets");
+        var deferred = $q.defer();
 
-      // Finds refsets assigned for review by the specified user
+        // Finds refsets available for review by the specified user
+        gpService.increment()
+        $http.get(
+          workflowUrl + "refset/available/all" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
+
+      // Finds refsets assigned for review for the specified user
       this.findAssignedReviewRefsets = function(projectId, userName, pfs) {
         console.debug("findAssignedReviewRefsets");
         var deferred = $q.defer();
@@ -269,6 +294,30 @@ tsApp.service('workflowService',
         return deferred.promise;
       }
 
+      // Finds all refsets assigned for the specified user
+      this.findAllAssignedRefsets = function(projectId, userName, pfs) {
+        console.debug("findAllAssignedRefsets");
+        var deferred = $q.defer();
+
+        // Finds refsets assigned for review by the specified user
+        gpService.increment()
+        $http.post(
+          workflowUrl + "refset/assigned/all" + "?projectId=" + projectId
+            + "&userName=" + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  refset = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
       
       this.getTrackingRecordForRefset = function(refsetId) {
         console.debug("getTrackingRecordForRefset");

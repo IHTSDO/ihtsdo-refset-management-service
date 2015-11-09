@@ -100,6 +100,9 @@
 
 
 <div class="modal-footer">
+  Member type:<select ng-model="memberType" 
+    ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
+
   <button class="btn btn-primary" ng-disabled="selectedConcept == null || selectedConcept == 'undefined'"
     ng-click="submitNewMember(selectedConcept); 
     ">Add Member</button>

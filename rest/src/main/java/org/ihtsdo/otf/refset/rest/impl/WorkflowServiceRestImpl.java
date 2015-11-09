@@ -366,7 +366,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /* see superclass */
   @Override
   @GET
@@ -387,11 +387,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     Refset refset = refsetService.getRefset(refsetId);
-    
-    
+
     try {
-      authorizeProject(workflowService, refset.getProject().getId(), securityService, authToken,
-          "perform workflow action on refset", UserRole.AUTHOR);
+      authorizeProject(workflowService, refset.getProject().getId(),
+          securityService, authToken, "perform workflow action on refset",
+          UserRole.AUTHOR);
 
       return workflowService.getTrackingRecordsForRefset(refsetId, null);
 
@@ -403,7 +403,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
     }
     return null;
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -412,7 +412,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Find assigned editing work", notes = "Finds refsets assigned for editing by the specified user.", response = ConceptListJpa.class)
   public RefsetList findAssignedEditingRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -428,11 +428,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // and is marked as forAuthoring but not forReview
       String query = "";
       if (userName != null && !userName.equals("")) {
-          query = "authorUserNames:" + userName + " AND refsetId:[* TO *]"
-              + " AND forAuthoring:true AND forReview:false";
+        query =
+            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+                + " AND forAuthoring:true AND forReview:false";
       } else {
-        query = "refsetId:[* TO *]"
-            + " AND forAuthoring:true AND forReview:false";
+        query =
+            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
       }
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
@@ -469,8 +470,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /refset/available/review "
-            + userName);
+        "RESTful POST call (Workflow): /refset/available/review " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -513,32 +513,41 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAssignedReviewRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. 3", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /refset/assigned/review "
-            + userName);
+        "RESTful POST call (Workflow): /refset/assigned/review " + userName);
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset assigned review work", UserRole.REVIEWER);
 
-      User user = securityService.getUser(userName);
-
       // Find refset tracking records "for review" for this user
-      String query =
-          "reviewerUserNames:" + user.getId() + " AND refsetId:[* TO *]"
+      String query = "";
+      if (userName != null && !userName.equals("")) {
+        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
               + " AND forReview:true";
+      } else {
+        query =
+            "refsetId:[* TO *]" + " forReview:true";
+      }
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
+
       RefsetList list = new RefsetListJpa();
       list.setTotalCount(records.getTotalCount());
       for (TrackingRecord record : records.getObjects()) {
-        list.getObjects().add(record.getRefset());
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
       }
+
       return list;
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
@@ -549,4 +558,130 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/refset/available/all")
+  @ApiOperation(value = "Find available work", notes = "Finds refsets available.", response = RefsetListJpa.class)
+  public RefsetList findAllAvailableRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /refset/available/all " + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find available review work", UserRole.REVIEWER);
+
+      // Get object references
+      User user = securityService.getUser(userName);
+
+      // Combine results from all workflow action handlers
+      List<Refset> list = new ArrayList<>();
+
+      for (WorkflowActionHandler handler : workflowService
+          .getWorkflowHandlers()) {
+        list.addAll(handler.findAvailableEditingRefsets(projectId, user, pfs,
+            workflowService).getObjects());
+      }
+      for (WorkflowActionHandler handler : workflowService
+          .getWorkflowHandlers()) {
+        list.addAll(handler.findAvailableReviewRefsets(projectId, user, pfs,
+            workflowService).getObjects());
+      }
+
+      // Apply pfs
+      RefsetList result = new RefsetListJpa();
+      result.setTotalCount(list.size());
+      list =
+          ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
+              Refset.class, pfs);
+      result.setObjects(list);
+      return result;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find available review work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/refset/assigned/all")
+  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = RefsetListJpa.class)
+  public RefsetList findAllAssignedRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /refset/assigned/all " + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find refset assigned review work", UserRole.REVIEWER);
+
+      // Find refset tracking records "for review" for this user
+      String query = "";
+      if (userName != null && !userName.equals("")) {
+        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
+              + " AND forReview:true";
+      } else {
+        query =
+            "refsetId:[* TO *]" + " forReview:true";
+      }
+      TrackingRecordList records =
+          workflowService.findTrackingRecordsForQuery(query, pfs);
+
+      String editingQuery = "";
+      if (userName != null && !userName.equals("")) {
+        editingQuery =
+            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+                + " AND forAuthoring:true AND forReview:false";
+      } else {
+        editingQuery =
+            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
+      }
+      TrackingRecordList editingRecords =
+          workflowService.findTrackingRecordsForQuery(editingQuery, pfs);
+
+      RefsetList list = new RefsetListJpa();
+      list.setTotalCount(records.getTotalCount()
+          + editingRecords.getTotalCount());
+      for (TrackingRecord record : records.getObjects()) {
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
+      }
+      for (TrackingRecord record : editingRecords.getObjects()) {
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
+      }
+
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to find assigned review work");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
 }

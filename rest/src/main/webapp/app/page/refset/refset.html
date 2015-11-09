@@ -8,7 +8,7 @@
     
     <span style="display: block;">    
     <h5>Choose Project: <select ng-model="selectedProject" ng-show="candidateProjects.length > 1"
-      ng-options="item.name for item in candidateProjects" ng-click="getRefsets();
+      ng-options="item.name for item in candidateProjects" ng-change="setSelectedProject();
       findAssignedUsersForProject()"></select><br>
     Role:{{user.projectRoleMap[selectedProject.id]}}</h5>
     </span>

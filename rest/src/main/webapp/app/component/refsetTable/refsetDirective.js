@@ -9,14 +9,15 @@ tsApp.directive('refsetTable',
     'workflowService',
     'securityService',
     '$modal',
+    '$rootScope',
     function(utilService, projectService, refsetService, releaseService, workflowService,
-      securityService, $modal) {
+      securityService, $modal, $rootScope) {
       console.debug('configure refsetTable directive');
       return {
         restrict : 'A',
         scope : {
           value : '@',
-          project : '@'
+          role : '@'
         },
         templateUrl : 'app/component/refsetTable/refsetTable.html',
         controller : [
@@ -32,6 +33,7 @@ tsApp.directive('refsetTable',
               "Inactive Member", "Inactive Inclusion" ];
             $scope.selectedProject = null;
             $scope.refsetIdToAuthorsMap = {};
+            $scope.refsetIdToReviewersMap = {};
 
             $scope.paging = {};
             $scope.paging["refset"] = {
@@ -55,20 +57,29 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
-
+            $scope.$on('refsetTable:initialize', function (event, data) {
+              console.log('on refsetTable:initialize', data, $scope.value);  
+              $scope.initializeProjectAndRefsets(data);
+            });
+            
+            $scope.$on('refset:project', function (event, data) {
+              console.log('on refset:project', data);  
+              $scope.selectedProject = data;
+              if ($scope.selectedProject != undefined && $scope.selectedProject != null) {
+                $scope.initializeProjectAndRefsets($scope.selectedProject.id);
+                $scope.getRefsetTypes();
+                $scope.getTerminologyEditions();
+              }
+            });
+            
             // get all projects where user has a role
             $scope.initializeProjectAndRefsets = function(projectId) {
               projectService.getProject(projectId).then(function(data) {
                 $scope.selectedProject = data;
-                if ($scope.value == 'AVAILABLE') {
-                  $scope.findAvailableEditingRefsets();
-                }
-                if ($scope.value == 'ASSIGNED_ALL') {
-                  $scope.findAllAssignedEditingRefsets();
-                }
-                if ($scope.value == 'ASSIGNED') {
-                  $scope.findAssignedEditingRefsets();
-                }
+                console.debug("value: ", $scope.value);
+                $scope.findAssignedUsersForProject();
+                
+
               })
             };
             
@@ -92,6 +103,54 @@ tsApp.directive('refsetTable',
               })
             };
             
+            // get assigned users - this is the list of users that are
+            // already
+            // assigned to the selected project
+            $scope.findAssignedUsersForProject = function() {
+
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : 'userName',
+                queryRestriction : null
+              };
+              projectService.findAssignedUsersForProject($scope.selectedProject.id,
+                "", pfs).then(function(data) {
+                $scope.assignedUsers = data.users;
+                for (var i = 0; i< $scope.assignedUsers.length; i++) {
+                  if ($scope.assignedUsers[i].userName == $scope.user.userName) {
+                    $scope.user = $scope.assignedUsers[i];
+                 
+                  }
+                }
+                $scope.role = $scope.user.projectRoleMap[$scope.selectedProject.id];
+                console.debug("project role: ", $scope.role);
+                
+                if ($scope.value == 'AVAILABLE' && $scope.role == 'AUTHOR') {
+                  $scope.findAvailableEditingRefsets();
+                }
+                if ($scope.value == 'AVAILABLE' && $scope.role == 'REVIEWER') {
+                  $scope.findAvailableReviewRefsets();
+                }
+                if ($scope.value == 'AVAILABLE' && $scope.role == 'ADMIN') {
+                  $scope.findAllAvailableRefsets();
+                }
+                if ($scope.value == 'ASSIGNED_ALL' && $scope.role == 'ADMIN') {
+                  $scope.findAllAssignedRefsets();
+                }
+                if ($scope.value == 'ASSIGNED' && $scope.role == 'AUTHOR') {
+                  $scope.findAssignedEditingRefsets();
+                }
+                if ($scope.value == 'ASSIGNED' && $scope.role == 'REVIEWER') {
+                  $scope.findAssignedReviewRefsets();
+                }
+                if ($scope.value == 'ASSIGNED' && $scope.role == 'ADMIN') {
+                  $scope.findAllAssignedRefsets();
+                }
+              })
+
+            };
+            
             $scope.findAvailableEditingRefsets = function() {
               var pfs = {
                 startIndex : 0,
@@ -101,6 +160,34 @@ tsApp.directive('refsetTable',
               };
 
               workflowService.findAvailableEditingRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+                        
+            $scope.findAvailableReviewRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAvailableReviewRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+            
+            $scope.findAllAvailableRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAllAvailableRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
               })
@@ -120,7 +207,7 @@ tsApp.directive('refsetTable',
               })
             };
             
-            $scope.findAllAssignedEditingRefsets = function() {
+            $scope.findAllAssignedRefsets = function() {
               var pfs = {
                 startIndex : 0,
                 maxResults : 100,
@@ -128,7 +215,7 @@ tsApp.directive('refsetTable',
                 queryRestriction : null
               };
 
-              workflowService.findAssignedEditingRefsets($scope.selectedProject.id, '', pfs).then(function(data) {
+              workflowService.findAllAssignedRefsets($scope.selectedProject.id, '', pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
                 
@@ -136,11 +223,26 @@ tsApp.directive('refsetTable',
                 for (var i = 0; i<$scope.refsets.length; i++) {
                   workflowService.getTrackingRecordForRefset($scope.refsets[i].id).then(function(data) {
                     $scope.refsetIdToAuthorsMap[data.refsetId] = data.authors;
+                    $scope.refsetIdToReviewersMap[data.refsetId] = data.reviewers;
                   });
                 }
               })
             };
 
+            $scope.findAssignedReviewRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAssignedReviewRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+            
             // get members
             $scope.getMembers = function(refset) {
 
@@ -245,13 +347,6 @@ tsApp.directive('refsetTable',
               return member.memberType.replace('_', ' ').toLowerCase();
             }
             
-            $scope.performWorkflowAction = function(action) {
-
-              workflowService.performWorkflowAction($scope.selectedProject.id, $scope.selectedRefset.id,
-                $scope.user.userName, action).then(function(data) {
-                $scope.trackingRecord = data.trackingRecord;
-              })
-            };
             
             // get refset types
             $scope.getRefsetTypes = function() {
@@ -287,13 +382,16 @@ tsApp.directive('refsetTable',
               }
             };
             
-            $scope.performWorkflowAction = function(refset, action) {
+            $scope.performWorkflowAction = function(refset, action, userName) {
               
               workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
-                $scope.user.userName, action).then(function(data) {
-                $scope.trackingRecord = data.trackingRecord;
-                $scope.initializeProjectAndRefsets($scope.project);
-              })
+                userName, action).then(function(data) {
+                //$scope.trackingRecord = data.trackingRecord;
+                //$scope.initializeProjectAndRefsets($scope.project);
+
+                console.log("rootScope.broadcast", $scope.value);  
+                $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                 })
             };
             
             // get terminology Editions
@@ -322,17 +420,21 @@ tsApp.directive('refsetTable',
             $scope.getAuthorsForRefsetId = function(refsetId) {
               return $scope.refsetIdToAuthorsMap[refsetId];
             }
+            $scope.getReviewersForRefsetId = function(refsetId) {
+              return $scope.refsetIdToReviewersMap[refsetId];
+            }
             
             // Initialize
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
-            if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
+            // this is no longer needed because broadcast of project, causes this to occur
+            /*if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
               || $scope.value == 'ASSIGNED_ALL') {
               $scope.initializeProjectAndRefsets($scope.project);
               $scope.getRefsetTypes();
               $scope.getTerminologyEditions();
-            }
+            }*/
             
 
             
@@ -341,6 +443,74 @@ tsApp.directive('refsetTable',
             // Modals
             //
 
+            // modal for choosing a user for refset assignment
+            $scope.openChooseUserModal = function(lrefset) {
+
+              console.debug("openChooseUserModal ", lrefset);
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/chooseUser.html',
+                controller : ChooseUserModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  assignedUsers : function() {
+                    return $scope.assignedUsers;
+                  },
+                  selectedProject : function() {
+                    return $scope.selectedProject;
+                  }
+                }
+              });
+
+              modalInstance.result.then(
+              // Success
+              function() {
+              });
+            };
+
+            var ChooseUserModalCtrl = function($scope, $modalInstance, refset,
+              assignedUsers, selectedProject, $rootScope) {
+
+              console.debug("Entered choose user modal control", assignedUsers, selectedProject.id);
+
+              $scope.refset = refset;
+              $scope.selectedProject = selectedProject;
+              $scope.assignedUserNames = [];
+              
+              for (var i = 0; i < assignedUsers.length; i++) {
+                $scope.assignedUserNames.push(assignedUsers[i].userName);
+              }
+
+              $scope.submitChosenUser = function(userName) {
+                console.debug("Submitting chosen user", userName);
+
+                if (userName == null 
+                  || userName == undefined) {
+                  window.alert("The user must be selected. ");
+                  return;
+                }
+
+                $scope.selectedUserName = userName;
+
+                workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                  userName, "ASSIGN").then(function(data) {
+                  $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                    
+                  $modalInstance.close();
+                }, function(data) {
+                  $modalInstance.close();
+                })
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+            
+            
             // modal for creating a new refset 
             $scope.openNewRefsetModal = function(lrefset) {
 
@@ -527,7 +697,7 @@ tsApp.directive('refsetTable',
                 modalInstance.result.then(
                 // Success
                 function() {
-                  $scope.findAssignedEditingRefsets();
+                  //$scope.findAssignedEditingRefsets();
                 });
               };
 
@@ -537,6 +707,7 @@ tsApp.directive('refsetTable',
                 console.debug("Entered new member modal control");
                 $scope.pageSize = 10;
                 $scope.paging = paging;
+                $scope.memberType = 'MEMBER';
 
                 $scope.submitNewMember = function(concept) {
                   console.debug("Submitting new member", concept);
@@ -556,7 +727,7 @@ tsApp.directive('refsetTable',
                   var member = {
                     conceptId : concept.terminologyId,
                     conceptName : concept.name,
-                    memberType : 'MEMBER',
+                    memberType : $scope.memberType,
                     terminology : refset.terminology,
                     version : refset.version,
                     moduleId : refset.moduleId,

@@ -1,7 +1,7 @@
 // Refset controller
 tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService',
-                                 'securityService',
-  function($scope, $http, tabService, projectService, securityService) {
+                                 'securityService', '$rootScope',
+  function($scope, $http, tabService, projectService, securityService, $rootScope) {
     console.debug('configure RefsetCtrl');
 
     // Handle resetting tabs on "back" button
@@ -35,6 +35,7 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
         $scope.candidateProjects = data.projects;
         $scope.candidateProjects.totalCount = data.totalCount;
         $scope.selectedProject = $scope.candidateProjects[0];
+        $scope.setSelectedProject();
         $scope.findAssignedUsersForProject();
 
       })
@@ -43,8 +44,7 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
     
     
     // get assigned users - this is the list of users that are
-    // already
-    // assigned to the selected project
+    // already assigned to the selected project
     $scope.findAssignedUsersForProject = function() {
 
       var pfs = {
@@ -66,8 +66,10 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
 
     };
     
-    $scope.getSelectedProject = function() {
-      return selectedProject.id;
+    $scope.setSelectedProject = function() {
+      console.log("rootScope.broadcast", $scope.selectedProject);  // Will log "From" date
+      $rootScope.$broadcast('refset:project', $scope.selectedProject);
+      
     }
     
     $scope.retrieveCandidateProjects();

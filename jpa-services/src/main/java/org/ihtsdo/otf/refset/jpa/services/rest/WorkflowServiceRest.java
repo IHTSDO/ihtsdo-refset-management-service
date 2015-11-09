@@ -170,4 +170,30 @@ public interface WorkflowServiceRest {
   public TrackingRecord getTrackingRecordForRefset(Long refsetId, String authToken)
     throws Exception;
 
+  /**
+   * Find all available refsets.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAllAvailableRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Find all assigned refsets.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findAllAssignedRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
+
 }
