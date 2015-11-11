@@ -638,7 +638,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               + " AND forReview:true";
       } else {
         query =
-            "refsetId:[* TO *]" + " forReview:true";
+            "refsetId:[* TO *]" + " AND forReview:true";
       }
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);

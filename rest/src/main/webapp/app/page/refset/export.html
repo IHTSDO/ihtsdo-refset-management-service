@@ -1,0 +1,27 @@
+<div class="modal-header">
+  <h4>Export</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <div>
+      Refset id: {{refset.terminologyId}} <br>
+      Refset name:  {{refset.name}} <br> 
+      Description: {{refset.description}} <br>
+      Definition: {{refset.definition}} <br><br>
+      
+     Choose I/O handler:<select ng-model="selectedIOHandler" 
+        ng-options="item.name for item in ioHandlers"></select><br>
+     Choose content for export:<select ng-model="selectedContent" 
+        ng-options="item for item in content"></select><br>
+    </div>
+    
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="export(refset); 
+    ">Export</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

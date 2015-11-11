@@ -523,6 +523,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           UserRole.VIEWER);
 
       Refset refset = refsetService.getRefset(member.getRefsetId());
+      
       ConceptRefsetMember newMember = refsetService.addMember(member);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -631,7 +632,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       for (ConceptRefsetMember member : refset.getMembers()) {
         if (conceptId.equals(member.getConceptId())) {
-          throw new Exception(
+          throw new LocalException(
               "Inclusion is redundant as the refset has a matching member "
                   + member.getMemberType());
         }
@@ -706,7 +707,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       if (member == null) {
-        throw new Exception(
+        throw new LocalException(
             "Exclusion is redundant as the refset does not contain a matching member");
       }
       member.setMemberType(Refset.MemberType.EXCLUSION);

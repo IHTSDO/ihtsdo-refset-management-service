@@ -16,8 +16,7 @@ tsApp.directive('refsetTable',
       return {
         restrict : 'A',
         scope : {
-          value : '@',
-          role : '@'
+          value : '@'
         },
         templateUrl : 'app/component/refsetTable/refsetTable.html',
         controller : [
@@ -46,7 +45,7 @@ tsApp.directive('refsetTable',
               page : 1,
               filter : "",
               typeFilter : "",
-              sortField : 'lastModified',
+              sortField : 'memberType',
               ascending : null
             }
             $scope.paging["children"] = {
@@ -78,8 +77,6 @@ tsApp.directive('refsetTable',
                 $scope.selectedProject = data;
                 console.debug("value: ", $scope.value);
                 $scope.findAssignedUsersForProject();
-                
-
               })
             };
             
@@ -275,6 +272,14 @@ tsApp.directive('refsetTable',
                   refset.releaseInfo = data;
                 })
             };
+            
+            // begin redefinition (or first definition)
+            $scope.beginRedefinition = function(refsetId, definition) {
+              refsetService.beginRedefinition(refset.id, definition).then(
+                function(data) {
+                  console.debug("data", data);
+                })
+            };
 
             // Convert date to a string
             $scope.toDate = function(lastModified) {
@@ -382,6 +387,15 @@ tsApp.directive('refsetTable',
               }
             };
             
+            // add a refset exclusion
+            $scope.exclude = function(refset, conceptId) {
+               
+                refsetService.addRefsetExclusion(refset.id, conceptId).then(function() {
+                  $scope.getMembers(refset);
+                });
+
+            };
+            
             $scope.performWorkflowAction = function(refset, action, userName) {
               
               workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
@@ -417,6 +431,12 @@ tsApp.directive('refsetTable',
               })
             };
             
+            $scope.getIOHandlers = function() {
+              refsetService.getExportRefsetHandlers().then(function(data) {
+                $scope.ioHandlers = data.handlers;
+              });
+            }
+            
             $scope.getAuthorsForRefsetId = function(refsetId) {
               return $scope.refsetIdToAuthorsMap[refsetId];
             }
@@ -424,10 +444,15 @@ tsApp.directive('refsetTable',
               return $scope.refsetIdToReviewersMap[refsetId];
             }
             
+            $scope.exportReleaseArtifact = function(artifact) {
+              releaseService.exportReleaseArtifact(artifact);
+            }
+            
             // Initialize
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
+            $scope.getIOHandlers();
             // this is no longer needed because broadcast of project, causes this to occur
             /*if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
               || $scope.value == 'ASSIGNED_ALL') {
@@ -442,7 +467,64 @@ tsApp.directive('refsetTable',
             //
             // Modals
             //
+            // modal for exporting refset, definition and/or members
+            $scope.openExportModal = function(lrefset) {
 
+              console.debug("exportModal ", lrefset);
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/export.html',
+                controller : ExportModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  ioHandlers : function() {
+                    return $scope.ioHandlers;
+                  }
+                }
+              });
+
+            };
+
+            var ExportModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
+
+              console.debug("Entered export modal control", refset.id, ioHandlers);
+
+              $scope.refset = refset;
+              $scope.ioHandlers = ioHandlers;
+              $scope.selectedIOHandler = $scope.ioHandlers[0];
+              $scope.content = ['Full Refset', 'Refset Members'];
+              $scope.selectedContent = 'Refset Members';
+              
+              if ($scope.refset.type == 'INTENSIONAL') {
+                $scope.content.push('Definition');
+              }
+
+              $scope.export = function() {
+                console.debug("export", refset.id);
+
+                if ($scope.selectedIOHandler == null 
+                  || $scope.selectedIOHandler == undefined) {
+                  window.alert("The I/O handler must be selected. ");
+                  return;
+                }
+
+                if ($scope.selectedContent == 'Definition') {
+                  refsetService.exportDefinition(refset, $scope.selectedIOHandler.id);
+                }
+                if ($scope.selectedContent == 'Refset Members') {
+                  refsetService.exportMembers(refset, $scope.selectedIOHandler.id);
+                }
+                $modalInstance.close();
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+            
             // modal for choosing a user for refset assignment
             $scope.openChooseUserModal = function(lrefset) {
 
@@ -464,10 +546,6 @@ tsApp.directive('refsetTable',
                 }
               });
 
-              modalInstance.result.then(
-              // Success
-              function() {
-              });
             };
 
             var ChooseUserModalCtrl = function($scope, $modalInstance, refset,
@@ -544,7 +622,7 @@ tsApp.directive('refsetTable',
               modalInstance.result.then(
               // Success
               function() {
-                $scope.findAvailableEditingRefsets();
+                $scope.findAvailableEditingRefsets();               
               });
             };
 
@@ -574,9 +652,28 @@ tsApp.directive('refsetTable',
 
                 refset.projectId = project.id;
                 refset.workflowPath = 'DEFAULT';
+                // TODO replace with conversion from 20150131 format
+                refset.version = '2015-01-31';
                 refsetService.addRefset(refset).then(function(data) {
-                  refsets.push(data);
-                  $modalInstance.close();
+                  var newRefset = data;
+                  refsets.push(newRefset);
+                  
+                  if (newRefset.type == 'INTENSIONAL') {
+                    refsetService.beginRedefinition(newRefset.id, newRefset.definition)
+                    .then(function(data) {
+                      
+                      refsetService.finishRedefinition(newRefset.id)
+                      .then(function(data) {  
+
+                        $modalInstance.close();
+                      }, function(data) {
+                      })
+                                           
+                    }, function(data) {
+                    })
+                  } else {
+                    $modalInstance.close();
+                  }
                 }, function(data) {
                   $modalInstance.close();
                 })
@@ -682,9 +779,7 @@ tsApp.directive('refsetTable',
                     refset : function() {
                       return lrefset;
                     },
-                    memberTypes : function() {
-                      return $scope.memberTypes;
-                    },
+                    
                     project : function() {
                       return $scope.selectedProject;
                     },
@@ -702,27 +797,21 @@ tsApp.directive('refsetTable',
               };
 
               var NewMemberModalCtrl = function($scope, $modalInstance, member,
-                refset, memberTypes, project, paging) {
+                refset, project, paging) {
 
                 console.debug("Entered new member modal control");
                 $scope.pageSize = 10;
                 $scope.paging = paging;
-                $scope.memberType = 'MEMBER';
+                if (refset.type == 'EXTENSIONAL') {
+                  $scope.memberType = 'MEMBER';
+                }
+                if (refset.type == 'INTENSIONAL') {
+                  $scope.memberType = 'INCLUSION';
+                }
 
                 $scope.submitNewMember = function(concept) {
                   console.debug("Submitting new member", concept);
 
-                  // confirm that member is not already assigned
-                  if (refset.members != undefined) {
-                    for (var i = 0; i < refset.members.length; i++) {
-                      if (refset.members[i].terminologyId == concept.terminologyId
-                        && refset.members[i].refsetId == refset.id) {
-                        window
-                          .alert("This member has already been added to this refset.");
-                        return;
-                      }
-                    }
-                  }
 
                   var member = {
                     conceptId : concept.terminologyId,
@@ -737,6 +826,7 @@ tsApp.directive('refsetTable',
 
                   member.refsetId = refset.id;
 
+                  if (member.memberType == 'MEMBER') {
                   refsetService.addRefsetMember(member).then(function(data) {
                     if (refset.members == undefined) {
                       refset.members = [];
@@ -746,6 +836,21 @@ tsApp.directive('refsetTable',
                   }, function(data) {
                     $modalInstance.close();
                   })
+                  }
+                  
+                  if (member.memberType == 'INCLUSION') {
+                    refsetService.addRefsetInclusion(member.refsetId, member.conceptId).then(function(data) {
+                      if (refset.members == undefined) {
+                        refset.members = [];
+                      }
+                      refset.members.push(data);
+                      $modalInstance.close();
+                    }, function(data) {
+                      $modalInstance.close();
+                    })
+                  }
+                  
+
 
                 };
 

@@ -23,7 +23,7 @@
 
 
     <span ng-show="translations.totalCount == 0" style="display: block;"
-      class="alert alert-warning">No {{value}} translations available.</span>
+      class="alert alert-warning">No {{value}} translations.</span>
     <table ng-show="translations.totalCount > 0" class="table">
       <thead>
         <th class="col-md-2 col-xs-2"
@@ -53,7 +53,7 @@
   </div>
 
 
-  <span ng-show="!translation" class="alert alert-warning">Select a
+  <span ng-show="!translation && translations.length > 0" class="alert alert-warning">Select a
     translation to see details</span>
 
   <!-- Details, Releases, Concept-->

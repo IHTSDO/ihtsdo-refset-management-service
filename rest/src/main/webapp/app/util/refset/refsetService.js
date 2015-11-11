@@ -292,7 +292,7 @@ tsApp.service('refsetService', [
 
       // Add refset inclusion
       gpService.increment()
-      $http.put(
+      $http.get(
         refsetUrl + "exclusion/add/" + refsetId + "?conceptId=" + conceptId)
         .then(
         // success
@@ -500,7 +500,144 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    this.beginRedefinition = function(refsetId, definition) {
+      console.debug("beginRedefinition");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "redefinition/begin?refsetId=" + refsetId
+        + "&newDefinition=" + encodeURIComponent(definition)).then(
+      // success
+      function(response) {
+        console.debug("  refset revision = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
+    this.finishRedefinition = function(refsetId) {
+      console.debug("finishRedefinition");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "redefinition/finish?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  finish refset redefinition = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
+    this.getExportRefsetHandlers = function() {
+      console.debug("getExportRefsetHandlers");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "export/handlers").then(
+      // success
+      function(response) {
+        console.debug("  export refset handlers = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+ 
+    this.exportDefinition = function(refsetId, handlerId) {
+      var deferred = $q.defer();
+      gpService.increment()
+      $http({
+        url : refsetUrl + "export/definition?refsetId=" + refsetId + "&handlerId=" + handlerId,
+        dataType : "json",
+        method : "GET",
+        headers : {
+          "Content-Type" : "application/json"
+        },
+        responseType : 'arraybuffer'
+      }).success(function(data) {
+        var blob = new Blob([ data ], {
+          type : ""
+        });
+
+        // hack to download store a file having its URL
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = "_blank";
+        a.download = refsetId + "_definition.txt";
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+        deferred.resolve(data);
+      }).error(function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(data);
+      });
+    };
+
+    this.exportMembers = function(refset, handlerId) {
+      var deferred = $q.defer();
+      gpService.increment()
+      $http({
+        url : refsetUrl + "export/members?refsetId=" + refset.id + "&handlerId=" + handlerId,
+        dataType : "json",
+        method : "GET",
+        headers : {
+          "Content-Type" : "application/json"
+        },
+        responseType : 'arraybuffer'
+      }).success(function(data) {
+        var blob = new Blob([ data ], {
+          type : ""
+        });
+
+        // hack to download store a file having its URL
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = "_blank";
+        a.download = refset.name + "_members.txt";
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+        deferred.resolve(data);
+      }).error(function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(data);
+      });
+    };
+
     // Initialize user role - only when refset service loads
     //projectService.getUserHasAnyRole();
 
+    
+    
   } ]);

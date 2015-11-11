@@ -250,7 +250,6 @@ tsApp.service('releaseService', [
         },
         responseType : 'arraybuffer'
       }).success(function(data) {
-        // $scope.definitionMsg = "Successfully exported report";
         var blob = new Blob([ data ], {
           type : ""
         });
@@ -268,7 +267,6 @@ tsApp.service('releaseService', [
       }).error(function(response) {
         utilService.handleError(response);
         gpService.decrement();
-        //deferred.reject(response.data);
       });
     };
 

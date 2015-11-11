@@ -82,8 +82,12 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     for (ConceptRefsetMember member : members) {
       Logger.getLogger(getClass()).debug("  member = " + member);
       sb.append(member.getTerminologyId()).append("\t");
-      sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+      if (member.getEffectiveTime() != null) {
+        sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
           .append("\t");
+      } else {
+        sb.append("\t");
+      }
       sb.append(1).append("\t");
       sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
@@ -113,8 +117,12 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("\r\n");
 
     sb.append(UUID.randomUUID().toString()).append("\t");
-    sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
+    if (refset.getEffectiveTime() != null) {
+      sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
         .append("\t");
+    } else {
+      sb.append("\t");
+    }
     sb.append(1).append("\t");
     sb.append(refset.getModuleId()).append("\t");
     sb.append(refset.getTerminologyId()).append("\t");

@@ -32,7 +32,7 @@
 
     <!-- Basic Refset info -->
     <span ng-show="refsets.totalCount == 0" style="display: block;"
-      class="alert alert-warning">No {{value}} refsets available.</span>
+      class="alert alert-warning">No {{value}} refsets.</span>
     <table ng-show="refsets.totalCount > 0" class="table">
       <thead>
         <th class="col-md-2 col-xs-2"
@@ -127,7 +127,7 @@
   </div>
 
 
-  <span ng-show="!refset" class="alert alert-warning">Select a refset to
+  <span ng-show="!refset && refsets.length > 0" class="alert alert-warning">Select a refset to
     see details</span>
 
   <!-- Details, Releases, Members -->
@@ -135,7 +135,16 @@
     <div class="col-md-12 col-xs-12">
 
       <!-- Refset Details -->
-      <h4>{{refset.name}}</h4>
+      <h4>
+        <div style="float: left;">{{refset.name}}</div>
+        <div style="float: right;">
+          <a ng-click="openExportModal(refset)">
+                    <i title="Export refset & components"
+                      class="material-icons md-18">file_download</i>
+          </a>
+        </div>
+      </h4><br>
+      
       <b>Description: </b>{{refset.description}}
       <table class="table">
         <thead>
@@ -167,7 +176,7 @@
           </tr>
           <tr ng-show="refset.type == 'INTENSIONAL'">
             <td>Definition</td>
-            <td>{{refset.definition}}</td>
+            <td>{{refset.definition}}</td>            
           </tr>
           <tr ng-show="refset.type == 'EXTERNAL'">
             <td>External Url</td>
@@ -298,6 +307,10 @@
                   title="Remove"
                   ng-click="remove('member',member,refset.members); $event.stopPropagation()">
                   <i title="Remove" class="material-icons md-18">delete</i>
+                </a>&nbsp;<a
+                  title="Make exclusion" ng-show="member.memberType == 'MEMBER'"
+                  ng-click="exclude(refset, member.conceptId); $event.stopPropagation()">
+                  <i title="Make exclusion" class="material-icons md-18">remove_circle_outline</i>
                 </a></td>
             </tr>
           </tbody>
