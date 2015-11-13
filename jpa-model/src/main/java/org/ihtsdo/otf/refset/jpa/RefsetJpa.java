@@ -117,6 +117,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
+  
+  /** The namespace. */
+  @Column(nullable = true)
+  private String namespace;
 
   /**
    * The refset descriptors.
@@ -175,6 +179,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     type = refset.getType();
     definition = refset.getDefinition();
     externalUrl = refset.getExternalUrl();
+    namespace = refset.getNamespace();
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
     feedbackEmail = refset.getFeedbackEmail();
@@ -222,6 +227,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     this.description = description;
   }
 
+  /* see superclass */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getNamespace() {
+    return namespace;
+  }
+  
+  /* see superclass */
+  @Override
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+  
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -558,6 +576,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (forTranslation ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
     result =
@@ -607,6 +626,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (namespace == null) {
+      if (other.namespace != null)
+        return false;
+    } else if (!namespace.equals(other.namespace))
+      return false;
     if (project == null) {
       if (other.project != null)
         return false;
@@ -629,7 +653,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
         + type + ", definition=" + definition + ", externalUrl=" + externalUrl
         + ", forTranslation=" + forTranslation + ", workflowStatus="
-        + workflowStatus + ", workflowPath=" + workflowPath
+        + workflowStatus + ", workflowPath=" + workflowPath + ", namespace=" + namespace
         + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
         + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
   }

@@ -436,5 +436,12 @@ public class WorkflowClientRest extends RootClientRest implements
     return null;
   }
 
+  @Override
+  public RefsetList findReleaseProcessRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 }

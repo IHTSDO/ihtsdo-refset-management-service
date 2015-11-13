@@ -129,6 +129,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("externalUrl");
     tester.include("forTranslation");
     tester.include("public");
+    tester.include("namespace");
     tester.include("name");
     tester.include("project");
     tester.include("type");
@@ -265,6 +266,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("type");
     tester.include("workflowStatus");
     tester.include("projectId");
+    tester.include("namespace");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

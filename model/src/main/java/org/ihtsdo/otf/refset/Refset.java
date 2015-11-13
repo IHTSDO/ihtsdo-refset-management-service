@@ -363,4 +363,18 @@ public interface Refset extends Component, Searchable {
    */
   public Map<User, UserRole> getUserRoleMap();
 
+  /**
+   * Returns the namespace.
+   *
+   * @return the namespace
+   */
+  public String getNamespace();
+
+  /**
+   * Sets the namespace.
+   *
+   * @param namespace the namespace
+   */
+  public void setNamespace(String namespace);
+
 }

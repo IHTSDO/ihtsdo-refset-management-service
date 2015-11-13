@@ -765,6 +765,9 @@ tsApp.directive('refsetTable',
               $scope.refset = refset;
               $scope.refsetTypes = refsetTypes;
               $scope.terminologyEditions = terminologyEditions;
+              $scope.project = project;
+              
+              
               
               $scope.terminologySelected = function(terminology) {
                 $scope.terminologyVersions = terminologyVersions[terminology].sort();

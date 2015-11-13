@@ -11,6 +11,8 @@
       Module id:<br> <input ng-model="refset.moduleId"><br>
       Organization:<br> <input ng-model="refset.organization"><br>
       Email contact:<br> <input ng-model="refset.feedbackEmail"><br>
+      Namespace:<br> <input ng-model="refset.namespace" 
+        ng-init="refset.namespace=project.namespace"><br>
       Terminology:<br> <select ng-model="refset.terminology" 
         ng-change="terminologySelected(refset.terminology)"
         ng-options="item for item in terminologyEditions"></select><br>
