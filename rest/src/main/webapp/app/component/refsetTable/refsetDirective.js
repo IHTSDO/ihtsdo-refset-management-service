@@ -813,8 +813,7 @@ tsApp.directive('refsetTable',
 
 
 
-            // modal for editing a refset 
-            // this
+            // modal for editing a refset
             $scope.openEditRefsetModal = function(lrefset) {
 
               console.debug("openEditRefsetModal ");
@@ -849,11 +848,12 @@ tsApp.directive('refsetTable',
             };
 
             var EditRefsetModalCtrl = function($scope, $modalInstance, refset, refsetTypes,
-              project, terminologyEditions, terminologyVersions) {
+              project, terminologyEditions, terminologyVersions, $rootScope) {
 
               console.debug("Entered edit refset modal control");
 
               $scope.refset = refset;
+              $scope.originalDefinition = $scope.refset.definition;
               $scope.refsetTypes = refsetTypes;
               $scope.terminologyEditions = terminologyEditions;
               $scope.terminologyVersions = terminologyVersions;
@@ -873,8 +873,25 @@ tsApp.directive('refsetTable',
                     .alert("The name, description, and terminology fields cannot be blank. ");
                   return;
                 }
-
+                refset.releaseInfo = undefined;
+                
                 refsetService.updateRefset(refset).then(function(data) {
+                  if (refset.definition != $scope.originalDefinition) {
+                    console.log("need to run redefinition");
+                    refsetService.beginRedefinition(refset.id, refset.definition)
+                    .then(function(data) {
+                      
+                      refsetService.finishRedefinition(refset.id)
+                      .then(function(data) {  
+                        $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                        
+                        $modalInstance.close();
+                      }, function(data) {
+                      })
+                                           
+                    }, function(data) {
+                    })
+                  }
                   $modalInstance.close();
                 }, function(data) {
                   $modalInstance.close();
