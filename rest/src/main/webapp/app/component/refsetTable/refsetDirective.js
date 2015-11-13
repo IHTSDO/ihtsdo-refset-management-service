@@ -144,7 +144,8 @@ tsApp.directive('refsetTable',
                 if ($scope.value == 'ASSIGNED' && $scope.role == 'ADMIN') {
                   $scope.findAllAssignedRefsets();
                 }
-                if ($scope.value == 'RELEASE') {
+                if ($scope.value == 'RELEASE'  && 
+                  ($scope.role == 'REVIEWER' || $scope.role == 'ADMIN')) {
                   $scope.findReleaseRefsets();
                 }
               })
@@ -522,28 +523,18 @@ tsApp.directive('refsetTable',
               console.debug("Entered clone refset modal control", refset.id);
 
               $scope.refset = refset;
-              $scope.newRefset = refset;
+              $scope.refset.releaseInfo = undefined;
+              
+              $scope.newRefset = {};
               $scope.newRefset.terminologyId = null;
-              $scope.newRefset.id = null;
-              $scope.newRefset.projectId = null;
-              $scope.newRefset.releaseInfo = undefined;
+              
 
               $scope.clone = function() {
                 console.debug("clone refset", refset.id);
 
 
-                refsetService.addRefset($scope.newRefset);
-                
-                // clone refset members
-
-                $scope.getMembers(refset).then(function(data) {
-                  $scope.refset.members = data;
-                  for (var i = 0; i < $scope.refset.members.length; i++) {
-                    $scope.newMember = $scope.refset.members[i];
-                    $scope.newMember.id = null;
-                    refsetService.addRefsetMember($scope.newMember);
-                  }
-                });
+                refsetService.cloneRefset($scope.refset, $scope.newRefset.projectId,
+                  $scope.newRefset.terminologyId);
 
                 $modalInstance.close();
               };

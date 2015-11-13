@@ -1,0 +1,35 @@
+<div class="modal-header">
+  <h4>Clone Refset</h4>
+</div>
+
+<div class="modal-body">
+  <div>
+    <div>
+      Refset id (optional):<br> <input ng-model="newRefset.terminologyId"><br>
+      Project id:<br> <input ng-model="newRefset.projectId"><br>
+      Refset name:<br> {{refset.name}}<br> 
+      Description:<br> {{refset.description}}<br>
+      Module id:<br> {{refset.moduleId}}<br>
+      Organization:<br> {{refset.organization}}<br>
+      Email contact:<br> {{refset.feedbackEmail}}<br>
+      Terminology:<br> {{refset.terminology}}<br>
+      Version:<br> {{refset.version}}<br>
+      Workflow path:<br> {{refset.workflowPath}}<br>    
+      Type:<br> {{refset.type}}<br>
+    </div>
+    <!-- TODO: cloning doesn't make sense for external refsets -->
+    <div ng-show="refset.type == 'EXTERNAL'">
+      External url:<br> {{refset.externalUrl}}<br>
+    </div>
+    <div ng-show="refset.type == 'INTENSIONAL'">
+      Definition:<br> {{refset.definition}}<br>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="clone(refset); 
+    ">Clone</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

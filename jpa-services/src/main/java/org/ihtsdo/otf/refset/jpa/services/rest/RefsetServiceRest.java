@@ -435,4 +435,16 @@ public interface RefsetServiceRest {
    */
   public StringList getRefsetTypes(String authToken) throws Exception;
 
+  /**
+   * Clone refset.
+   *
+   * @param refsetId the refset id
+   * @param projectId the project id
+   * @param terminologyId the terminology id
+   * @param authToken the auth token
+   * @return the long
+   * @throws Exception the exception
+   */
+  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId, String authToken) throws Exception;
+
 }

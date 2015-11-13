@@ -145,6 +145,30 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     }
+    
+    // clone refset
+    this.cloneRefset = function(refset, projectId, terminologyId) {
+      console.debug("cloneRefset");
+      var deferred = $q.defer();
+
+      // Clone refset
+      gpService.increment()
+      $http.put(refsetUrl + 'clone' + "?refsetId=" + refset.id + "&projectId=" + projectId + 
+        "&terminologyId=" + terminologyId).then(
+      // success
+      function(response) {
+        console.debug("  refset = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
 
     // update refset
     this.updateRefset = function(refset) {

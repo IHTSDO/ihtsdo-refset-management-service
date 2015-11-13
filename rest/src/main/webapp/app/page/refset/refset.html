@@ -36,7 +36,9 @@
     <div refset-table value="ASSIGNED_ALL"></div>
     </accordion-group>
 
-    <accordion-group is-open="false"> <accordion-heading>
+    <accordion-group is-open="false"
+    ng-show="user.projectRoleMap[selectedProject.id] == 'ADMIN' ||
+     user.projectRoleMap[selectedProject.id] == 'REVIEWER'"> <accordion-heading>
     <h5 class="section-header">Release</h5>
     </accordion-heading>
     <div refset-table value="RELEASE"></div>

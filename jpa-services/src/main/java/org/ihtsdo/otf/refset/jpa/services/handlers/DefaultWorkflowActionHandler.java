@@ -694,9 +694,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     };
 
     // NEW Refsets for this project that do not yet have tracking records
+    // workflow status doesn not have to be 'NEW' because sometimes work
+    // that is in progress is unassigned
     String queryStr =
-        "select a from RefsetJpa a where workflowStatus = 'NEW' "
-            + "and a.project.id = :projectId "
+        "select a from RefsetJpa a where " //workflowStatus = 'NEW' "
+            + " a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa)";
 
     Query ctQuery =

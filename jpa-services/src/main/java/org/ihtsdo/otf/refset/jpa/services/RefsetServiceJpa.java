@@ -36,11 +36,13 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * JPA enabled implementation of {@link RefsetService}.
@@ -160,6 +162,60 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return newRefset;
   }
 
+  @Override
+  public Refset cloneRefset(Long refsetId, Long projectId, String terminologyId) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - clone refset " + refsetId);
+    
+    Refset refset = getRefset(refsetId);
+    Refset newRefset = new RefsetJpa(refset);
+    newRefset.setId(null);
+    newRefset.setTerminologyId(null);
+    
+    // Assign id
+    if (terminologyId.equals("null")) {
+      IdentifierAssignmentHandler idHandler = null;
+      if (assignIdentifiersFlag) {
+        idHandler = getIdentifierAssignmentHandler(newRefset.getTerminology());
+        if (idHandler == null) {
+          throw new Exception("Unable to find id handler for "
+              + newRefset.getTerminology());
+        }
+        String id = idHandler.getTerminologyId(newRefset);
+        newRefset.setTerminologyId(id);
+      }
+    } else {
+      newRefset.setTerminologyId(terminologyId);
+    }
+    if (projectId != null) {
+      ProjectService projectService = new ProjectServiceJpa();
+      newRefset.setProject(projectService.getProject(projectId));
+      projectService.close();
+    }
+    newRefset.setWorkflowStatus(WorkflowStatus.NEW);
+
+    // Add component
+    Refset result = addHasLastModified(newRefset);
+    
+    // Add members
+    ConceptRefsetMemberList members = 
+        findMembersForRefset(refset.getId(), null, null);
+    for (ConceptRefsetMember member : members.getObjects()) {
+      ConceptRefsetMember newMember = new ConceptRefsetMemberJpa(member);
+      newMember.setRefset(result);
+      newMember.setId(null);
+      addMember(newMember);
+    }
+
+    // Inform listeners
+    if (listenersEnabled) {
+      for (WorkflowListener listener : workflowListeners) {
+        listener.refsetChanged(result, WorkflowListener.Action.ADD);
+      }
+    }
+    return result;
+  }
+
+  
   /* see superclass */
   @Override
   public void updateRefset(Refset refset) throws Exception {
