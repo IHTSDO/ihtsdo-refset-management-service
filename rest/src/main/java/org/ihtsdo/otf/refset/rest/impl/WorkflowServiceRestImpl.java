@@ -684,4 +684,53 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
+  
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/refset/release")
+  @ApiOperation(value = "Find refsets in release process", notes = "Finds refsets in ready for publication, preview or published states.", response = RefsetListJpa.class)
+  public RefsetList findReleaseProcessRefsets(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "User name, e.g. 'admin'", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /refset/release " + userName);
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find release process refsets", UserRole.REVIEWER);
+
+      // Get object references
+      User user = securityService.getUser(userName);
+
+      // Combine results from all workflow action handlers
+      List<Refset> list = new ArrayList<>();
+      for (WorkflowActionHandler handler : workflowService
+          .getWorkflowHandlers()) {
+        list.addAll(handler.findReleaseProcessRefsets(projectId, user, pfs,
+            workflowService).getObjects());
+      }
+
+      // Apply pfs
+      RefsetList result = new RefsetListJpa();
+      result.setTotalCount(list.size());
+      list =
+          ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
+              Refset.class, pfs);
+      result.setObjects(list);
+      return result;
+
+    } catch (Exception e) {
+      handleException(e, "trying to find release process refsets");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
 }

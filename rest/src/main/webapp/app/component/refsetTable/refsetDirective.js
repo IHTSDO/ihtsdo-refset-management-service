@@ -144,6 +144,9 @@ tsApp.directive('refsetTable',
                 if ($scope.value == 'ASSIGNED' && $scope.role == 'ADMIN') {
                   $scope.findAllAssignedRefsets();
                 }
+                if ($scope.value == 'RELEASE') {
+                  $scope.findReleaseRefsets();
+                }
               })
 
             };
@@ -235,6 +238,21 @@ tsApp.directive('refsetTable',
               };
 
               workflowService.findAssignedReviewRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+            
+            
+            $scope.findReleaseRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findReleaseProcessRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
                 $scope.refsets = data.refsets;
                 $scope.refsets.totalCount = data.totalCount;
               })
@@ -374,8 +392,14 @@ tsApp.directive('refsetTable',
                     .alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
                   return;
                 }
+                if (object.members != null) {
+                  if (!confirm("The refset has members that will also be deleted.")) {
+                    return;
+                  }
+                }
                 refsetService.removeRefset(object.id).then(function() {
                   $scope.getRefsets();
+                  $scope.refset = null;
                 });
               }
               if (type == 'member') {
@@ -466,7 +490,71 @@ tsApp.directive('refsetTable',
             
             //
             // Modals
-            //
+            //  
+            // modal for creating a clone of a refset
+            $scope.openCloneRefsetModal = function(lrefset) {
+
+              console.debug("cloneRefsetModal ", lrefset);
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/clone.html',
+                controller : CloneRefsetModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  ioHandlers : function() {
+                    return $scope.ioHandlers;
+                  }
+                }
+              });
+              
+              modalInstance.result.then(
+                // Success
+                function() {
+                  $scope.findAvailableEditingRefsets();               
+                });
+
+            };
+
+            var CloneRefsetModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
+
+              console.debug("Entered clone refset modal control", refset.id);
+
+              $scope.refset = refset;
+              $scope.newRefset = refset;
+              $scope.newRefset.terminologyId = null;
+              $scope.newRefset.id = null;
+              $scope.newRefset.projectId = null;
+              $scope.newRefset.releaseInfo = undefined;
+
+              $scope.clone = function() {
+                console.debug("clone refset", refset.id);
+
+
+                refsetService.addRefset($scope.newRefset);
+                
+                // clone refset members
+
+                $scope.getMembers(refset).then(function(data) {
+                  $scope.refset.members = data;
+                  for (var i = 0; i < $scope.refset.members.length; i++) {
+                    $scope.newMember = $scope.refset.members[i];
+                    $scope.newMember.id = null;
+                    refsetService.addRefsetMember($scope.newMember);
+                  }
+                });
+
+                $modalInstance.close();
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };            
+            
+            
             // modal for exporting refset, definition and/or members
             $scope.openExportModal = function(lrefset) {
 
@@ -484,7 +572,6 @@ tsApp.directive('refsetTable',
                   }
                 }
               });
-
             };
 
             var ExportModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
@@ -504,12 +591,6 @@ tsApp.directive('refsetTable',
               $scope.export = function() {
                 console.debug("export", refset.id);
 
-                if ($scope.selectedIOHandler == null 
-                  || $scope.selectedIOHandler == undefined) {
-                  window.alert("The I/O handler must be selected. ");
-                  return;
-                }
-
                 if ($scope.selectedContent == 'Definition') {
                   refsetService.exportDefinition(refset, $scope.selectedIOHandler.id);
                 }
@@ -524,6 +605,56 @@ tsApp.directive('refsetTable',
               };
 
             };
+            
+            
+            // modal for exporting refset, definition and/or members
+            $scope.openReleaseProcessModal = function(lrefset, lEffectiveTime) {
+
+              console.debug("releaseProcessModal ", lrefset);
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/page/refset/release.html',
+                controller : ReleaseProcessModalCtrl,
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  ioHandlers : function() {
+                    return $scope.ioHandlers;
+                  },
+                  effectiveTime : function() {
+                    return lEffectiveTime
+                  }
+                }
+              });
+            };
+
+            var ReleaseProcessModalCtrl = function($scope, $modalInstance, refset, ioHandlers, effectiveTime) {
+
+              console.debug("Entered release process modal", refset.id, ioHandlers);
+
+              $scope.refset = refset;
+              $scope.ioHandlers = ioHandlers;
+              $scope.selectedIOHandler = $scope.ioHandlers[0];
+              
+
+              $scope.release = function() {
+                console.debug("export", refset.id);
+
+
+                releaseService.beginRefsetRelease(refset.id, effectiveTime).then(function(data) {
+                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIOHandler.id);
+                }, function(data){});
+
+                $modalInstance.close();
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+            
             
             // modal for choosing a user for refset assignment
             $scope.openChooseUserModal = function(lrefset) {

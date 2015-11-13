@@ -141,6 +141,32 @@ tsApp.service('workflowService',
         });
         return deferred.promise;
       }
+      
+      // Find release process refsets
+      this.findReleaseProcessRefsets = function(projectId,
+        userName, pfs) {
+        console.debug("findReleaseProcessRefsets");
+        var deferred = $q.defer();
+
+        gpService.increment()
+        $http.get(
+          workflowUrl + "refset/release" + "?projectId="
+            + projectId + "&userName="
+            + userName, pfs).then(
+        // success
+        function(response) {
+          console.debug("  work = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+      }
 
       // Perform workflow action on a translation
       this.performWorkflowActionOnTranslation = function(projectId,

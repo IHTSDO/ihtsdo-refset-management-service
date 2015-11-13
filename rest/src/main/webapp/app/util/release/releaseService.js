@@ -215,6 +215,54 @@ tsApp.service('releaseService', [
         });
       return deferred.promise;
     }
+    
+    // begin refset release
+    this.beginRefsetRelease = function(refsetId, effectiveTime) {
+      console.debug("beginRefsetRelease");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'refset/begin' + "?refsetId=" + refsetId + "&effectiveTime=" + effectiveTime)
+        .then(
+        // success
+        function(response) {
+          console.debug("  release info = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
+    
+    // preview refset release
+    this.previewRefsetRelease = function(refsetId, ioHandlerId) {
+      console.debug("previewRefsetRelease");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'refset/preview' + "?refsetId=" + refsetId + "&ioHandlerId=" + ioHandlerId)
+        .then(
+        // success
+        function(response) {
+          console.debug("  release info = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
 
     // Remove release artifact
     this.removeReleaseArtifact = function(artifactId) {

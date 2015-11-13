@@ -49,7 +49,7 @@
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <th class="col-md-1 col-xs-1"
-          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL'"
+          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'"
           ng-click="setSortField('refset','type', null)">Actions<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
       </thead>
@@ -63,7 +63,7 @@
             ng-show="iconConfig[refset.moduleId]" title="Flag icon"
             src="{{iconConfig[refset.moduleId]}}" /> <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}}
-            <span ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
+            <span ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">
               <br> {{refset.workflowStatus}}</span>
           </td>
           <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
@@ -91,6 +91,9 @@
               </a>&nbsp;<a title="Assign"
                 ng-click="openChooseUserModal(refset); $event.stopPropagation()">
                 <i title="Assign" class="material-icons md-18">assignment</i>
+              </a>&nbsp;<a title="Clone"
+                ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
+                <i title="Clone" class="material-icons md-18">content_copy</i>
               </a></td>
            <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'"><a title="Edit"
                 ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
@@ -120,6 +123,13 @@
               </a>&nbsp;<a title="Finish"
                 ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
                 <i title="Finish" class="material-icons md-18">done</i>
+              </a></td>
+           <td class="nobreak" ng-show="value == 'RELEASE'"><a title="Remove"
+                ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
+                <i title="Delete" class="material-icons md-18">delete</i>
+              </a>&nbsp;<a title="Publish"
+                ng-click="openReleaseProcessModal(refset, '20151112')">
+                <i title="Publish" class="material-icons md-18">publish</i>
               </a></td>
         </tr>
       </tbody>

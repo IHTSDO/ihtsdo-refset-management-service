@@ -18,7 +18,7 @@
     <accordion-heading>
     <h5 class="section-header">Available</h5>
     </accordion-heading>
-    <div refset-table value="AVAILABLE" project=1></div>
+    <div refset-table value="AVAILABLE"></div>
     </accordion-group> 
     
     <accordion-group is-open="false" 
@@ -26,15 +26,21 @@
     <h5 class="section-header">Assigned</h5>
     </accordion-heading>
     <!-- TODO project="{{selectedProject.id}}" -->
-    <div refset-table value="ASSIGNED" project=1></div>
+    <div refset-table value="ASSIGNED"></div>
     </accordion-group> 
     
     <accordion-group is-open="false" 
     ng-show="user.projectRoleMap[selectedProject.id] == 'ADMIN'"> <accordion-heading>
     <h5 class="section-header">Assigned All</h5>
     </accordion-heading>
-    <div refset-table value="ASSIGNED_ALL" project=1></div>
-    </accordion-group> 
+    <div refset-table value="ASSIGNED_ALL"></div>
+    </accordion-group>
+
+    <accordion-group is-open="false"> <accordion-heading>
+    <h5 class="section-header">Release</h5>
+    </accordion-heading>
+    <div refset-table value="RELEASE"></div>
+    </accordion-group>
     
     </accordion>
 

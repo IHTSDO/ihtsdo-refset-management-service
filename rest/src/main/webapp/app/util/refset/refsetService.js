@@ -174,7 +174,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http['delete'](refsetUrl + 'remove' + "/" + refsetId).then(
+      $http['delete'](refsetUrl + 'remove' + "/" + refsetId + "?cascade=true").then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);

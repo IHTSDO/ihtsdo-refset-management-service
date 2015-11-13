@@ -196,4 +196,17 @@ public interface WorkflowServiceRest {
   public RefsetList findAllAssignedRefsets(Long projectId, String userName,
     PfsParameterJpa pfs, String authToken) throws Exception;
 
+  /**
+   * Find release process refsets.
+   *
+   * @param projectId the project id
+   * @param userName the user name
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the refset list
+   * @throws Exception the exception
+   */
+  public RefsetList findReleaseProcessRefsets(Long projectId, String userName,
+    PfsParameterJpa pfs, String authToken) throws Exception;
+
 }

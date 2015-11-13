@@ -300,7 +300,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Preview refset release", notes = "Previews the release process by creating the staging release for refset.", response = RefsetJpa.class)
   public Refset previewRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
+    @ApiParam(value = "IoHandler Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId, 
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     // check preconditions
     // - refset exists
