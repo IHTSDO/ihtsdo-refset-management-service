@@ -1005,13 +1005,17 @@ tsApp.directive('refsetTable',
                     return;
                   }
 
+                  $scope.searchResults = [];
+                  $scope.parents = [];
+                  $scope.children = [];
+                  $scope.concept = null;
+                  
                   // if search term is an id, simply look up the id
                   if (/^\d+$/.test(search)) {
 
                     projectService.getConceptWithDescriptions(search,
                       refset.terminology, refset.version, pfs).then(
                       function(data) {
-                        $scope.searchResults = [];
                         $scope.searchResults[0] = data;
                         $scope.selectConcept($scope.searchResults[0]);
                       }, function(data) {
