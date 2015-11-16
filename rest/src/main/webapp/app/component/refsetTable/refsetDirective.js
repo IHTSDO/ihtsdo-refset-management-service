@@ -1039,7 +1039,7 @@ tsApp.directive('refsetTable',
                   $scope.getConceptParents(concept.terminologyId);
                   $scope.getConceptChildren(concept);
                   // TODO: add back
-                  //$scope.getConceptWithDescriptions(concept.terminologyId);
+                  $scope.getConceptWithDescriptions(concept.terminologyId);
                 };
 
                 
