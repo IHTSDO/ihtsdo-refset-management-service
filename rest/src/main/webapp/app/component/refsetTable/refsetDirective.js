@@ -1011,7 +1011,9 @@ tsApp.directive('refsetTable',
                     projectService.getConceptWithDescriptions(search,
                       refset.terminology, refset.version, pfs).then(
                       function(data) {
-                        $scope.searchResults = data;
+                        $scope.searchResults = [];
+                        $scope.searchResults[0] = data;
+                        $scope.selectConcept($scope.searchResults[0]);
                       }, function(data) {
                     })                    
                   
@@ -1038,7 +1040,6 @@ tsApp.directive('refsetTable',
                   $scope.selectedConcept = concept;
                   $scope.getConceptParents(concept.terminologyId);
                   $scope.getConceptChildren(concept);
-                  // TODO: add back
                   $scope.getConceptWithDescriptions(concept.terminologyId);
                 };
 
