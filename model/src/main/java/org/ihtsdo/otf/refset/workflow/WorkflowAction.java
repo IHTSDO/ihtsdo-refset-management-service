@@ -21,5 +21,7 @@ public enum WorkflowAction {
   /** The publish action. */
   PUBLISH,
   /** The cancel action. */
-  CANCEL,
+  CANCEL,   
+  /**  The reassign. */
+  REASSIGN,
 }

@@ -591,7 +591,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
  
-    this.exportDefinition = function(refsetId, handlerId) {
+    this.exportDefinition = function(refsetId, handlerId, extension) {
       var deferred = $q.defer();
       gpService.increment()
       $http({
@@ -612,7 +612,7 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = "_blank";
-        a.download = refsetId + "_definition.txt";
+        a.download = refsetId + "_definition." + extension;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -625,11 +625,11 @@ tsApp.service('refsetService', [
       });
     };
 
-    this.exportMembers = function(refset, handlerId) {
+    this.exportMembers = function(refsetId, handlerId, extension) {
       var deferred = $q.defer();
       gpService.increment()
       $http({
-        url : refsetUrl + "export/members?refsetId=" + refset.id + "&handlerId=" + handlerId,
+        url : refsetUrl + "export/members?refsetId=" + refsetId + "&handlerId=" + handlerId,
         dataType : "json",
         method : "GET",
         headers : {
@@ -646,7 +646,7 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = "_blank";
-        a.download = refset.name + "_members.txt";
+        a.download = refsetId + "_members." + extension;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();

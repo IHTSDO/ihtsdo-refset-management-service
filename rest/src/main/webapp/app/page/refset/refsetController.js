@@ -67,7 +67,7 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
     };
     
     $scope.setSelectedProject = function() {
-      console.log("rootScope.broadcast", $scope.selectedProject);  // Will log "From" date
+      console.log("rootScope.broadcast", $scope.selectedProject);  
       $rootScope.$broadcast('refset:project', $scope.selectedProject);
       
     }
