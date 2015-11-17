@@ -76,7 +76,7 @@ tsApp.directive('refsetTable',
               projectService.getProject(projectId).then(function(data) {
                 $scope.selectedProject = data;
                 console.debug("value: ", $scope.value);
-                $scope.findAssignedUsersForProject();
+                $scope.initializeUsersAndRefsets();
               })
             };
             
@@ -103,7 +103,7 @@ tsApp.directive('refsetTable',
             // get assigned users - this is the list of users that are
             // already
             // assigned to the selected project
-            $scope.findAssignedUsersForProject = function() {
+            $scope.initializeUsersAndRefsets = function() {
 
               var pfs = {
                 startIndex : 0,
@@ -490,7 +490,7 @@ tsApp.directive('refsetTable',
               projectService.findProjectsAsList("", pfs).then(function(data) {
                 $scope.candidateProjects = data.projects;
                 $scope.candidateProjects.totalCount = data.totalCount;
-                //$scope.findAssignedUsersForProject();
+                //$scope.initializeUsersAndRefsets();
 
               })
 
@@ -602,7 +602,7 @@ tsApp.directive('refsetTable',
               });
             };
 
-            var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir, contentType, ioHandlers, $upload) {
+            var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir, contentType, ioHandlers) {
 
               console.debug("Entered import export modal control", refset.id, ioHandlers, dir, contentType);
 

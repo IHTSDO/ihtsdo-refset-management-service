@@ -322,6 +322,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else if (refset.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
+          
         }
 
         // Otherwise status stays the same
@@ -349,7 +350,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // After UNASSIGN and deleting the tracking record,
     // this would create a new tracking record to keep the
     // refset assigned
-    if (action != WorkflowAction.UNASSIGN) {
+    // also for FINISH, this would persist the tracking record that was just supposed
+    // to have been deleted
+    if (action != WorkflowAction.UNASSIGN && 
+        !(action == WorkflowAction.FINISH && 
+        refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
       service.updateTrackingRecord(record);
     }
     return record;
