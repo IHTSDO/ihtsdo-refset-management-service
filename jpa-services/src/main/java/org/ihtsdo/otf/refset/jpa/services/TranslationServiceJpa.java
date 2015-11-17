@@ -715,7 +715,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             + "originTranslation.id = :translationId");
     try {
       query.setParameter("translationId", translationId);
-      StagedTranslationChange change = (StagedTranslationChange) query.getSingleResult();
+      StagedTranslationChange change =
+          (StagedTranslationChange) query.getSingleResult();
       handleTranslationLazyInitialization(change.getOriginTranslation());
       handleTranslationLazyInitialization(change.getStagedTranslation());
       return change;
@@ -723,7 +724,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       return null;
     }
   }
-  
+
   @Override
   public SpellingDictionary addSpellingDictionary(SpellingDictionary dictionary)
     throws Exception {
@@ -810,36 +811,37 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       removeObject(phraseMemory, PhraseMemory.class);
     }
   }
-  
+
   @Override
   public MemoryEntry getMemoryEntry(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get Memory Entry " + id);
 
-    return getObject(id,MemoryEntryJpa.class);
+    return getObject(id, MemoryEntryJpa.class);
   }
-  
+
   /* see superclass */
   @Override
   @SuppressWarnings("unchecked")
   public TranslationList getTranslations() {
-    Logger.getLogger(getClass()).debug("Translation Service - get translations");
+    Logger.getLogger(getClass())
+        .debug("Translation Service - get translations");
     javax.persistence.Query query =
         manager.createQuery("select a from TranslationJpa a");
     try {
       List<Translation> translations = query.getResultList();
       TranslationList translationList = new TranslationListJpa();
       translationList.setObjects(translations);
-      //TODO: handle lazy initialization
-
       return translationList;
     } catch (NoResultException e) {
       return null;
     }
   }
 
-  public Translation stageTranslation(Translation translation, Translation.StagingType stagingType)
-    throws Exception {
+  /* see superclass */
+  @Override
+  public Translation stageTranslation(Translation translation,
+    Translation.StagingType stagingType) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - stage translation " + translation.getId());
 
@@ -854,40 +856,42 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // then call addXXX on each component
     translationCopy.setId(null);
     translationCopy.setDescriptionTypes(null);
-    /*for (DescriptionTypeRefsetMember type : translationCopy.getDescriptionTypes()) {
-      type.setId(null);
-      translationCopy.addDescriptionType(type);
-      //addDescriptionType(type);
-    }*/
+    /*
+     * for (DescriptionTypeRefsetMember type :
+     * translationCopy.getDescriptionTypes()) { type.setId(null);
+     * translationCopy.addDescriptionType(type); //addDescriptionType(type); }
+     */
 
     addTranslation(translationCopy);
 
-   
-      // without doing the copy constructor, we get the following errors:
-      // identifier of an instance of
-      // org.ihtsdo.otf.translation.rf2.jpa.ConceptTranslationMemberJpa was altered from
-      // 6901 to null
-      for (Concept originConcept : translation.getConcepts()) {
-        Concept concept = new ConceptJpa(originConcept, false);
-        //member.setLastModifiedBy(userName);
+    // without doing the copy constructor, we get the following errors:
+    // identifier of an instance of
+    // org.ihtsdo.otf.translation.rf2.jpa.ConceptTranslationMemberJpa was
+    // altered from
+    // 6901 to null
+    for (Concept originConcept : translation.getConcepts()) {
+      Concept concept = new ConceptJpa(originConcept, false);
+      // member.setLastModifiedBy(userName);
 
-        //member.setPublishable(true);
-        concept.setTranslation(translationCopy);
-        concept.setTerminology(translationCopy.getTerminology());
-        concept.setVersion(translationCopy.getVersion());
-        concept.setId(null);
-        translationCopy.addConcept(concept);
-        addConcept(concept);
-      }
+      // member.setPublishable(true);
+      concept.setTranslation(translationCopy);
+      concept.setTerminology(translationCopy.getTerminology());
+      concept.setVersion(translationCopy.getVersion());
+      concept.setId(null);
+      translationCopy.addConcept(concept);
+      addConcept(concept);
+    }
 
-      for (DescriptionTypeRefsetMember originType : translation.getDescriptionTypes()) {
-        DescriptionTypeRefsetMember type = new DescriptionTypeRefsetMemberJpa(originType);
-        type.setTerminology(translationCopy.getTerminology());
-        type.setVersion(translationCopy.getVersion());
-        type.setId(null);
-        translationCopy.addDescriptionType(type);
-        //addDescriptionType(type);
-      }
+    for (DescriptionTypeRefsetMember originType : translation
+        .getDescriptionTypes()) {
+      DescriptionTypeRefsetMember type =
+          new DescriptionTypeRefsetMemberJpa(originType);
+      type.setTerminology(translationCopy.getTerminology());
+      type.setVersion(translationCopy.getVersion());
+      type.setId(null);
+      translationCopy.addDescriptionType(type);
+      // addDescriptionType(type);
+    }
     // set staging parameters on the original translation
     translation.setStaged(true);
     translation.setStagingType(stagingType);

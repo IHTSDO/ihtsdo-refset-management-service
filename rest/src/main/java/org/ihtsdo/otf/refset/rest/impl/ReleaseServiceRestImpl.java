@@ -196,7 +196,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "begin refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
@@ -264,7 +264,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "validate refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -366,7 +366,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "preview refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -496,7 +496,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "cancel refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -562,7 +562,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService,
               translation.getProject().getId(), securityService, authToken,
-              "begin translation release", UserRole.REVIEWER);
+              "begin translation release", UserRole.AUTHOR);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
@@ -614,7 +614,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "validate translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
           ReleaseInfoList releaseInfoList =
               releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -670,7 +670,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "preview translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -771,7 +771,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "cancel translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -899,7 +899,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       }
       authorizeProject(releaseService, project.getId(), securityService,
-          authToken, "remove release artifact", UserRole.REVIEWER);
+          authToken, "remove release artifact", UserRole.AUTHOR);
 
       // remove artifact
       releaseService.removeReleaseArtifact(artifactId);
@@ -944,7 +944,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
       String userName =
           authorizeProject(releaseService, project.getId(), securityService,
-              authToken, "import release artifact", UserRole.REVIEWER);
+              authToken, "import release artifact", UserRole.AUTHOR);
 
       // Create an populate
       ReleaseArtifact artifact = new ReleaseArtifactJpa();

@@ -270,7 +270,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      // TODO: changed this to only require project role AUTHOR - discuss
       final String userName =
           authorizeProject(refsetService, refset.getProjectId(),
               securityService, authToken, "add refset", UserRole.AUTHOR);
@@ -339,7 +338,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "removerefset", UserRole.REVIEWER);
+          securityService, authToken, "remove refset", UserRole.AUTHOR);
 
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
@@ -364,20 +363,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Refset): /clone " + refsetId + ", " + projectId + ", " + terminologyId);
-  
+        "RESTful call PUT (Refset): /clone " + refsetId + ", " + projectId
+            + ", " + terminologyId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      // TODO: changed this to only require project role AUTHOR - discuss
       final String userName =
-          authorizeProject(refsetService, projectId,
-              securityService, authToken, "add refset", UserRole.AUTHOR);
+          authorizeProject(refsetService, projectId, securityService,
+              authToken, "add refset", UserRole.AUTHOR);
 
       // Add refset - if the project is invalid, this will fail
-      Refset newRefset = refsetService.cloneRefset(refsetId, projectId, terminologyId);
+      Refset newRefset =
+          refsetService.cloneRefset(refsetId, projectId, terminologyId);
       newRefset.setLastModifiedBy(userName);
-      
+
       return newRefset.getId();
     } catch (Exception e) {
       handleException(e, "trying to clone a refset");
@@ -416,7 +415,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "import refset definition",
-          UserRole.REVIEWER);
+          UserRole.AUTHOR);
 
       // Obtain the import handler
       ImportRefsetHandler handler =
@@ -463,9 +462,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "export refset definition",
-          UserRole.AUTHOR);
+      authorizeApp(securityService, authToken, "export definition",
+          UserRole.VIEWER);
 
       // Obtain the export handler
       ExportRefsetHandler handler =
@@ -511,8 +509,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "export refset members ", UserRole.AUTHOR);
+      authorizeApp(securityService, authToken, "export definition",
+          UserRole.VIEWER);
 
       // Obtain the export handler
       ExportRefsetHandler handler =
@@ -554,11 +552,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "Add new refset member",
-          UserRole.VIEWER);
-
       Refset refset = refsetService.getRefset(member.getRefsetId());
-      
+
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "import refset definition",
+          UserRole.AUTHOR);
+
       ConceptRefsetMember newMember = refsetService.addMember(member);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -587,20 +586,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "Remove a refset member",
-          UserRole.VIEWER);
+      Refset refset = refsetService.getMember(memberId).getRefset();
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "remove refset member", UserRole.AUTHOR);
 
-      // Create service and configure transaction scope
       refsetService.removeMember(memberId);
-      /**
-       * TODO: // if this gives you JPA errors, may have to load refset, remove
-       * member from // refset...
-       * 
-       * Refset refset = refsetService.getMember(memberId).getRefset();
-       * refset.removeMember(member);
-       * 
-       * refsetService.updateRefset(refset);
-       **/
 
     } catch (Exception e) {
       handleException(e, "trying to remove a refset member ");
@@ -631,8 +621,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find refset members",
           UserRole.VIEWER);
 
-      return refsetService.findMembersForRefset(refsetId,
-          query, pfs);
+      return refsetService.findMembersForRefset(refsetId, query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refset members ");
       return null;
@@ -659,11 +648,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      String userName =
-          authorizeApp(securityService, authToken, "Add new refset inclusion",
-              UserRole.VIEWER);
-
       Refset refset = refsetService.getRefset(refsetId);
+
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "add refset inclusion",
+              UserRole.AUTHOR);
 
       for (ConceptRefsetMember member : refset.getMembers()) {
         if (conceptId.equals(member.getConceptId())) {
@@ -722,10 +712,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "Add new refset exclusion",
-          UserRole.VIEWER);
 
       Refset refset = refsetService.getRefset(refsetId);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "add refset exclusion",
+          UserRole.AUTHOR);
 
       ConceptRefsetMember member = null;
       for (ConceptRefsetMember c : refset.getMembers()) {
@@ -841,7 +832,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "begin refset migration",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.isStaged()) {
@@ -908,8 +899,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             if (refsetService.getTerminologyHandler().assignNames()) {
               member.setConceptName(refsetService
                   .getTerminologyHandler()
-                  .getConcept(member.getConceptId(), refsetCopy.getTerminology(),
-                      refsetCopy.getVersion()).getName());
+                  .getConcept(member.getConceptId(),
+                      refsetCopy.getTerminology(), refsetCopy.getVersion())
+                  .getName());
             } else {
               member.setConceptName("TBD");
             }
@@ -1013,14 +1005,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "finish refset migration",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // verify that staged
       if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
         throw new Exception(
             "Refset is not staged for migration, cannot finish.");
       }
-
 
       // turn transaction per operation off
       // create a transaction
@@ -1055,7 +1046,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         } else if (stagedMember.getMemberType() == Refset.MemberType.INACTIVE_INCLUSION) {
           refsetService.removeMember(stagedMember.getId());
         }
-        // New member, rewire to origin - this moves the content back to the origin refset
+        // New member, rewire to origin - this moves the content back to the
+        // origin refset
         else if (!originMembers.contains(stagedMember)) {
           stagedMember.setRefset(refset);
           refsetService.updateMember(stagedMember);
@@ -1063,7 +1055,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // Member matches one in origin - remove it
         else {
           refsetService.removeMember(stagedMember.getId());
-      }
+        }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
 
@@ -1117,7 +1109,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "cancel refset migration",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Refset must be staged as MIGRATION
       if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
@@ -1176,7 +1168,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "begin refset redefinition",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.isStaged()) {
@@ -1276,8 +1268,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             include.setId(null);
             refsetCopy.addMember(include);
             refsetService.addMember(include);
-            /*member.setRefset(refsetCopy);
-            refsetCopy.addMember(member);*/
+            /*
+             * member.setRefset(refsetCopy); refsetCopy.addMember(member);
+             */
           }
         }
       }
@@ -1323,7 +1316,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "finish refset redefinition",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // verify that staged
       if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
@@ -1426,7 +1419,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "cancel refset redefinition",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Refset must be staged as DEFINITION
       if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
@@ -1603,7 +1596,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  @POST
+  @GET
   @Path("/release/report")
   @ApiOperation(value = "Releases a report and token", notes = "Deletes a report.")
   public void releaseReportToken(
@@ -1644,10 +1637,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve the definition",
           UserRole.VIEWER);
 
-      Refset refset = refsetService.getRefset(refsetId);
-      if (refset != null) {
-        return refset.getDefinition();
-      }
+      //Refset refset = refsetService.getRefset(refsetId);
+      // TODO: implement this
       return null;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
@@ -1685,7 +1676,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "import refset members",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.isStaged()) {
@@ -1761,7 +1752,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "resume refset redefinition",
-          UserRole.REVIEWER);
+          UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.getStagingType() != Refset.StagingType.DEFINITION) {
@@ -1804,7 +1795,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "resume refset migration",
-          UserRole.REVIEWER);
+          UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
@@ -1850,7 +1841,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "import refset members",
-          UserRole.REVIEWER);
+          UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {
@@ -1907,7 +1898,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "import refset members",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // verify that staged
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {
@@ -2005,7 +1996,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "import refset members",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {

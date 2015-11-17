@@ -212,7 +212,7 @@ public abstract class AbstractComponent implements Component {
     result =
         prime * result
             + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    // TODO: removed bc was preventing compare on migrations from returning anything in common
+    // Removed bc was preventing compare on migrations from returning anything in common
     //result = prime * result + ((version == null) ? 0 : version.hashCode());
     return result;
   }
@@ -245,7 +245,7 @@ public abstract class AbstractComponent implements Component {
     } else if (!terminologyId.equals(other.terminologyId))
       return false;
 
-    // TODO: removed bc was preventing compare on migrations from returning anything in common
+    // Removed bc was preventing compare on migrations from returning anything in common
     /*if (version == null) {
       if (other.version != null)
         return false;

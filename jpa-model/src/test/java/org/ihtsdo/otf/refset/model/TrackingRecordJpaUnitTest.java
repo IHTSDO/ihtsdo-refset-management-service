@@ -221,8 +221,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
-  // TODO:
-  //@Test
+  @Test
   public void testModelXmlSerialization041() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
@@ -230,9 +229,11 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     User user = new UserJpa();
     user.setUserName("abc");
     Concept concept = new ConceptJpa();
-    concept.setId(1L);
+    concept.setTerminologyId("1");
     Refset refset = new RefsetJpa();
     refset.setId(1L);
+    refset.setRefsetDescriptorUuid("UUID");
+    System.out.println(refset.getRefsetDescriptorUuid());
     Translation translation = new TranslationJpa();
     translation.setId(1L);
     Project project = new ProjectJpa();

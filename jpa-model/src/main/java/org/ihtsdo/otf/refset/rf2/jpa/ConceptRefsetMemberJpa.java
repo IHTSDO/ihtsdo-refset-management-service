@@ -32,8 +32,9 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
  * Concrete implementation of {@link ConceptRefsetMember}.
  */
 @Entity
-// TODO: confirm correct unique constraints - was able to add two of the same member to a refset
-@Table(name = "concept_refset_members")
+@Table(name = "concept_refset_members", uniqueConstraints = @UniqueConstraint(columnNames = {
+    "refset_id", "conceptId", "memberType"
+}))
 @Audited
 @Indexed
 @XmlRootElement(name = "member")
@@ -142,7 +143,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     this.conceptName = conceptName;
   }
 
-  /* see superclass  */
+  /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Refset.MemberType getMemberType() {
@@ -171,7 +172,6 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
             + ((refset == null || refset.getTerminologyId() == null) ? 0
                 : refset.getTerminologyId().hashCode());
     return result;
-    
 
   }
 

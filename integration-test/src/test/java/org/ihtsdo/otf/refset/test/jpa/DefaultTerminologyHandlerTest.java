@@ -3,7 +3,8 @@
  */
 package org.ihtsdo.otf.refset.test.jpa;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -54,7 +55,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testGetDescriptions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -76,7 +77,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testGetConcept() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -87,14 +88,13 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     assertEquals("Neoplasm of kidney", concept.getName());
     service.close();
   }
-  
 
   /**
    * Test resolve expression.
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testResolveExpression() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -102,8 +102,8 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setMaxResults(25);
     pfs.setStartIndex(5);
     ConceptList conceptList =
-        service.getTerminologyHandler().resolveExpression("<<284009009|Route of administration|", 
-            "SNOMEDCT", "latest", pfs);
+        service.getTerminologyHandler().resolveExpression(
+            "<<284009009|Route of administration|", "SNOMEDCT", "latest", pfs);
     assertEquals(conceptList.getTotalCount(), 25);
     service.close();
   }
@@ -121,12 +121,16 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Concept concept =
         service.getTerminologyHandler().getConceptWithDescriptions("126880001",
             "SNOMEDCT", "latest");
-    assertEquals("Neoplasm of kidney",concept.getName());
+    assertEquals("Neoplasm of kidney", concept.getName());
     assertEquals(6, concept.getDescriptions().size());
     service.close();
   }
 
-
+  /**
+   * Test get concept parents.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testGetConceptParents() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
@@ -136,11 +140,16 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
         service.getTerminologyHandler().getConceptParents("108369006",
             "SNOMEDCT", "latest");
     assertEquals(1, concepts.getObjects().size());
-    assertEquals("Neoplasm and/or hamartoma (morphologic abnormality)", 
+    assertEquals("Neoplasm and/or hamartoma (morphologic abnormality)",
         concepts.getObjects().get(0).getName());
     service.close();
   }
 
+  /**
+   * Test get concept children.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testGetConceptChildren() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
@@ -150,16 +159,16 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
         service.getTerminologyHandler().getConceptChildren("108369006",
             "SNOMEDCT", "latest");
     assertEquals(40, concepts.getObjects().size());
-    
+
     service.close();
   }
-  
+
   /**
    * Test getting concepts with descriptions from Snow Owl.
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testFindConceptsForQuery() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -170,7 +179,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     ConceptList concepts =
         service.getTerminologyHandler().findConceptsForQuery("tumor",
             "SNOMEDCT", "latest", pfs);
-    assertEquals(concepts.getObjects().size(),49);
+    assertEquals(concepts.getObjects().size(), 49);
     service.close();
   }
 

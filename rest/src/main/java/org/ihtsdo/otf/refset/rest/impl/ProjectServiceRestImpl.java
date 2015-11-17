@@ -258,9 +258,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           "find candidate users for project", UserRole.VIEWER);
 
       // return all users assigned to the project
-      // TODO: should this query restriction be appended to one that is
-      // supplied?
-      pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
+      if (pfs.getQueryRestriction() != null
+          && !pfs.getQueryRestriction().isEmpty()) {
+        pfs.setQueryRestriction(pfs.getQueryRestriction()
+            + " AND NOT projectAnyRole:" + projectId);
+      } else {
+        pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
+      }
       UserList list = securityService.findUsersForQuery(query, pfs);
 
       return list;
@@ -542,7 +546,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       list.setTotalCount(list.getCount());
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to et all terminologies");
+      handleException(e, "trying to get all terminologies");
     } finally {
       securityService.close();
     }
@@ -572,7 +576,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
       return list;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to get versions");
     } finally {
@@ -614,7 +618,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-
   /* see superclass */
   @Override
   @POST
@@ -629,7 +632,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find concepts for query, " + query + ", " + terminology + ", " + version + ", " + pfs);
+        "RESTful call (Project): find concepts for query, " + query + ", "
+            + terminology + ", " + version + ", " + pfs);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -638,7 +642,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       ConceptList concepts =
           projectService.getTerminologyHandler().findConceptsForQuery(query,
               terminology, version, pfs);
-      
+
       return concepts;
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
@@ -648,10 +652,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
-  }  
-  
+  }
+
   @Override
-  @POST
+  @GET
   @Path("/concept")
   @ApiOperation(value = "Retrieves a concept with descriptions", notes = "Retrieves a concept with descriptions", response = ConceptJpa.class)
   public Concept getConceptWithDescriptions(
@@ -662,16 +666,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): get concept with description, " + terminologyId + ", " + terminology + ", " + version);
+        "RESTful call (Project): get concept with description, "
+            + terminologyId + ", " + terminology + ", " + version);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve concept", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "retrieve concept",
+          UserRole.VIEWER);
 
       Concept concept =
-          projectService.getTerminologyHandler().getConceptWithDescriptions(terminologyId,
-              terminology, version);
-      
+          projectService.getTerminologyHandler().getConceptWithDescriptions(
+              terminologyId, terminology, version);
+
       return concept;
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
@@ -681,13 +687,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
-  }  
- 
+  }
+
   /* see superclass */
   @Override
-  @POST
+  @GET
   @Path("/parents")
-  @ApiOperation(value = "Retrieves concept's parents", notes = "Retrieves concept's parents", response = ConceptListJpa.class)
+  @ApiOperation(value = "Retrieve concept parents", notes = "Retrieves parents concepts of the indicated concept", response = ConceptListJpa.class)
   public ConceptList getConceptParents(
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
@@ -696,16 +702,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): retrieves concept's parents, " + terminologyId + ", " + terminology + ", " + version);
+        "RESTful call (Project): retrieves concept's parents, " + terminologyId
+            + ", " + terminology + ", " + version);
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get concept parents", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get concept parents",
+          UserRole.VIEWER);
 
       ConceptList concepts =
-          projectService.getTerminologyHandler().getConceptParents(terminologyId,
-              terminology, version);
-      
+          projectService.getTerminologyHandler().getConceptParents(
+              terminologyId, terminology, version);
+
       return concepts;
     } catch (Exception e) {
       handleException(e, "trying to retrieve concept parents ");
@@ -715,13 +723,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
-  }  
-  
+  }
+
   /* see superclass */
   @Override
   @POST
-  @Path("/children")
-  @ApiOperation(value = "Retrieves concept's children", notes = "Retrieves concept's children", response = ConceptListJpa.class)
+  @Path("/concept/children")
+  @ApiOperation(value = "Retrieve concept children", notes = "Retrieves child concepts of the indicated concept", response = ConceptListJpa.class)
   public ConceptList getConceptChildren(
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
@@ -731,24 +739,26 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): retrieves concept's children, " + terminologyId + ", " + terminology + ", " + version);
+        "RESTful call (Project): retrieves concept's children, "
+            + terminologyId + ", " + terminology + ", " + version);
 
     ProjectService projectService = new ProjectServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get concept children", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get concept children",
+          UserRole.VIEWER);
 
       ConceptList children =
-          projectService.getTerminologyHandler().getConceptChildren(terminologyId,
-              terminology, version);
-      
+          projectService.getTerminologyHandler().getConceptChildren(
+              terminologyId, terminology, version);
+
       // apply pfs to add paging/sorting
       ConceptList list = new ConceptListJpa();
       list.setTotalCount(children.getObjects().size());
       list.setObjects(refsetService.applyPfsToList(children.getObjects(),
           Concept.class, pfs));
       return list;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to retrieve concept children ");
       return null;
@@ -758,5 +768,5 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
     }
 
-  }  
+  }
 }

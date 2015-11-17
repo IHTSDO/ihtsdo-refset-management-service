@@ -463,7 +463,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + "release/report" + "?reportToken=" + reportToken)
+      $http.get(refsetUrl + "release/report" + "?reportToken=" + reportToken)
         .then(
         // success
         function(response) {
