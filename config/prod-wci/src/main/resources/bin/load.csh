@@ -25,7 +25,7 @@ if ($status != 0) then
     cat mvn.log
     exit 1
 endif
-:
+
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
