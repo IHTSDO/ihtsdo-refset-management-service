@@ -433,7 +433,7 @@ tsApp.directive('refsetTable',
                  })
             };
             
-            // get terminology Editions
+            // get terminology editions
             $scope.getTerminologyEditions = function() {
               console.debug("getTerminologyEditions");
               projectService.getTerminologyEditions().then(function(data) {
@@ -473,11 +473,37 @@ tsApp.directive('refsetTable',
               releaseService.exportReleaseArtifact(artifact);
             }
             
+            // get all projects where user has a role
+            $scope.retrieveCandidateProjects = function() {
+
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : 'name',
+                queryRestriction : 'userAnyRole:' + $scope.user.userName
+              };
+              // clear queryRestriction for application admins
+              if ($scope.user.applicationRole == 'ADMIN') {
+                pfs.queryRestriction = null;
+              }
+
+              projectService.findProjectsAsList("", pfs).then(function(data) {
+                $scope.candidateProjects = data.projects;
+                $scope.candidateProjects.totalCount = data.totalCount;
+                //$scope.findAssignedUsersForProject();
+
+              })
+
+            };
+            
+
+            
             // Initialize
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
             $scope.getIOHandlers();
+            $scope.retrieveCandidateProjects();
             // this is no longer needed because broadcast of project, causes this to occur
             /*if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
               || $scope.value == 'ASSIGNED_ALL') {
@@ -506,6 +532,9 @@ tsApp.directive('refsetTable',
                   },
                   ioHandlers : function() {
                     return $scope.ioHandlers;
+                  },
+                  candidateProjects : function() {
+                    return $scope.candidateProjects;
                   }
                 }
               });
@@ -518,10 +547,12 @@ tsApp.directive('refsetTable',
 
             };
 
-            var CloneRefsetModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
+            var CloneRefsetModalCtrl = function($scope, $modalInstance, refset,
+              ioHandlers, candidateProjects) {
 
               console.debug("Entered clone refset modal control", refset.id);
 
+              $scope.candidateProjects = candidateProjects;
               $scope.refset = refset;
               $scope.refset.releaseInfo = undefined;
               
@@ -533,7 +564,7 @@ tsApp.directive('refsetTable',
                 console.debug("clone refset", refset.id);
 
 
-                refsetService.cloneRefset($scope.refset, $scope.newRefset.projectId,
+                refsetService.cloneRefset($scope.refset, $scope.newRefset.project.id,
                   $scope.newRefset.terminologyId);
 
                 $modalInstance.close();
@@ -547,16 +578,22 @@ tsApp.directive('refsetTable',
             
             
             // modal for exporting refset, definition and/or members
-            $scope.openExportModal = function(lrefset) {
+            $scope.openImportExportModal = function(lrefset, ldir, lcontentType) {
 
               console.debug("exportModal ", lrefset);
 
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/export.html',
-                controller : ExportModalCtrl,
+                controller : ImportExportModalCtrl,
                 resolve : {
                   refset : function() {
                     return lrefset;
+                  },
+                  dir : function() {
+                    return ldir;
+                  },
+                  contentType : function() {
+                    return lcontentType;
                   },
                   ioHandlers : function() {
                     return $scope.ioHandlers;
@@ -565,30 +602,70 @@ tsApp.directive('refsetTable',
               });
             };
 
-            var ExportModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
+            var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir, contentType, ioHandlers, $upload) {
 
-              console.debug("Entered export modal control", refset.id, ioHandlers);
+              console.debug("Entered import export modal control", refset.id, ioHandlers, dir, contentType);
 
               $scope.refset = refset;
               $scope.ioHandlers = ioHandlers;
               $scope.selectedIOHandler = $scope.ioHandlers[0];
-              $scope.content = ['Full Refset', 'Refset Members'];
-              $scope.selectedContent = 'Refset Members';
+              $scope.selectedContent = contentType;
+              $scope.dir = dir;
               
-              if ($scope.refset.type == 'INTENSIONAL') {
-                $scope.content.push('Definition');
-              }
-
               $scope.export = function() {
                 console.debug("export", refset.id);
 
-                if ($scope.selectedContent == 'Definition') {
-                  refsetService.exportDefinition(refset, $scope.selectedIOHandler.id);
+                if (contentType == 'Definition') {
+                  refsetService.exportDefinition(refset.id, $scope.selectedIOHandler.id,
+                    $scope.selectedIOHandler.fileTypeFilter);
                 }
-                if ($scope.selectedContent == 'Refset Members') {
-                  refsetService.exportMembers(refset, $scope.selectedIOHandler.id);
+                if (contentType == 'Refset Members') {
+                  refsetService.exportMembers(refset.id, $scope.selectedIOHandler.id,
+                    $scope.selectedIOHandler.fileTypeFilter);
                 }
                 $modalInstance.close();
+              };
+              
+              $scope.import = function() {
+                console.debug("import", refset.id);
+
+                if (contentType == 'Definition') {
+                  refsetService.importDefinition(refset.id, $scope.selectedIOHandler.id,
+                    $scope.selectedIOHandler.fileTypeFilter);
+                }
+                if (contentType == 'Refset Members') {
+                  refsetService.importMembers(refset.id, $scope.selectedIOHandler.id,
+                    $scope.selectedIOHandler.fileTypeFilter);
+                }
+                $modalInstance.close();
+              };
+              
+              $scope.onFileSelect = function($files) {
+                console.debut("onFileSelect");
+                // $files: an array of files selected, each file
+                // has name, size, and type.
+                /*for (var i = 0; i < $files.length; i++) {
+                  var $file = $files[i];
+                  $rootScope.glassPane++;
+                  $upload
+                    .upload({
+                      url : refsetUrl + "import/definition?handlerId=" + 
+                      handlerId + "&refsetId=" + refsetId,
+                      file : $file,
+                      progress : function(e) {
+                      }
+                    })
+                    .error(function(data, status, headers, config) {
+                      // file is not uploaded
+                      // successfully
+                      // TODO.. handle error
+                    })
+                    .success(
+                      function(data) {
+                        // file is uploaded
+                        // successfully, "data" contains the filename
+                      });
+                }*/
               };
 
               $scope.cancel = function() {
@@ -648,9 +725,8 @@ tsApp.directive('refsetTable',
             
             
             // modal for choosing a user for refset assignment
-            $scope.openChooseUserModal = function(lrefset) {
-
-              console.debug("openChooseUserModal ", lrefset);
+            $scope.openChooseUserModal = function(lrefset, laction, luserName) {
+              console.debug("openChooseUserModal ", lrefset, laction, luserName);
 
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/chooseUser.html',
@@ -658,6 +734,12 @@ tsApp.directive('refsetTable',
                 resolve : {
                   refset : function() {
                     return lrefset;
+                  },
+                  action : function() {
+                    return laction;
+                  },
+                  currentUserName : function() {
+                    return luserName;
                   },
                   assignedUsers : function() {
                     return $scope.assignedUsers;
@@ -670,8 +752,8 @@ tsApp.directive('refsetTable',
 
             };
 
-            var ChooseUserModalCtrl = function($scope, $modalInstance, refset,
-              assignedUsers, selectedProject, $rootScope) {
+            var ChooseUserModalCtrl = function($scope, $modalInstance, refset, action,
+              currentUserName, assignedUsers, selectedProject, $rootScope) {
 
               console.debug("Entered choose user modal control", assignedUsers, selectedProject.id);
 
@@ -683,25 +765,37 @@ tsApp.directive('refsetTable',
                 $scope.assignedUserNames.push(assignedUsers[i].userName);
               }
 
-              $scope.submitChosenUser = function(userName) {
-                console.debug("Submitting chosen user", userName);
+              $scope.submitChosenUser = function(newUserName) {
+                console.debug("Submitting chosen user", newUserName);
 
-                if (userName == null 
-                  || userName == undefined) {
+                if (newUserName == null 
+                  || newUserName == undefined) {
                   window.alert("The user must be selected. ");
                   return;
                 }
 
-                $scope.selectedUserName = userName;
-
-                workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
-                  userName, "ASSIGN").then(function(data) {
-                  $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                $scope.selectedUserName = newUserName;
+                if (action == 'ASSIGN') {
+                  workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                    newUserName, "ASSIGN").then(function(data) {
+                    $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
                     
-                  $modalInstance.close();
-                }, function(data) {
-                  $modalInstance.close();
-                })
+                    $modalInstance.close();
+                  }, function(data) {
+                    $modalInstance.close();
+                  })
+                } else if (action == 'REASSIGN') {
+                  // first unassign something in review, then reassign to an author
+                  workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                      currentUserName, 'UNASSIGN').then(function(data) {
+                        workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, newUserName, 'REASSIGN').then(function(data) {
+                          $modalInstance.close();
+                        }, function(data) {
+                          $modalInstance.close();
+                        })
+                      })
+                  
+                }
               };
 
               $scope.cancel = function() {

@@ -116,7 +116,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // the tracking record goes away when something is set to PREVIEW or
         // READY_FOR_PUBLICATION, or PUBLISHED
         boolean authorFlag =
-            projectRole == UserRole.AUTHOR
+        projectRole == UserRole.AUTHOR
                 && record == null
                 && EnumSet.of(WorkflowStatus.NEW,
                     WorkflowStatus.READY_FOR_PUBLICATION).contains(
@@ -125,7 +125,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         boolean reviewerFlag =
             projectRole == UserRole.REVIEWER
                 && record != null
-                && EnumSet.of(WorkflowStatus.EDITING_DONE).contains(
+                && EnumSet.of(WorkflowStatus.EDITING_DONE,
+                    WorkflowStatus.EDITING_IN_PROGRESS).contains(
                     refset.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
         break;
@@ -137,7 +138,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_IN_PROGRESS,
                     WorkflowStatus.EDITING_DONE, WorkflowStatus.REVIEW_NEW,
                     WorkflowStatus.REVIEW_IN_PROGRESS,
-                    WorkflowStatus.REVIEW_DONE).contains(
+                    WorkflowStatus.REVIEW_DONE,
+                    WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                    refset.getWorkflowStatus());
+        break;
+      case REASSIGN:
+        // record must exist and an "assigned" state must be present
+        flag = projectRole == UserRole.AUTHOR &&
+            record != null
+                && EnumSet.of(
+                    WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus());
         break;
       case SAVE:
@@ -264,7 +274,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
         else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
-            WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
+            WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE,
+            WorkflowStatus.READY_FOR_PUBLICATION)
             .contains(refset.getWorkflowStatus())) {
           record.getReviewers().remove(user);
           record.setForAuthoring(true);
@@ -275,6 +286,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
+      case REASSIGN:
+        refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+        break;
+        
       case SAVE:
         // AUTHOR - NEW becomes EDITING_IN_PROGRESS
         if (projectRole == UserRole.AUTHOR
