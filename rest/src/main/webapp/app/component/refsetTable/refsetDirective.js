@@ -56,12 +56,12 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
-            $scope.$on('refsetTable:initialize', function (event, data) {
+            $scope.$on('refsetChanged', function (event, data) {
               console.log('on refsetTable:initialize', data, $scope.value);  
               $scope.initializeProjectAndRefsets(data);
             });
             
-            $scope.$on('refset:project', function (event, data) {
+            $scope.$on('projectChanged', function (event, data) {
               console.log('on refset:project', data);  
               $scope.selectedProject = data;
               if ($scope.selectedProject != undefined && $scope.selectedProject != null) {
@@ -428,8 +428,7 @@ tsApp.directive('refsetTable',
                 //$scope.trackingRecord = data.trackingRecord;
                 //$scope.initializeProjectAndRefsets($scope.project);
 
-                console.log("rootScope.broadcast", $scope.value);  
-                $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                refsetService.fireRefsetChanged($scope.selectedProject.id);
                  })
             };
             
@@ -775,10 +774,11 @@ tsApp.directive('refsetTable',
                 }
 
                 $scope.selectedUserName = newUserName;
+                
                 if (action == 'ASSIGN') {
                   workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                     newUserName, "ASSIGN").then(function(data) {
-                    $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                    refsetService.fireRefsetChanged($scope.selectedProject.id);
                     
                     $modalInstance.close();
                   }, function(data) {
@@ -789,6 +789,7 @@ tsApp.directive('refsetTable',
                   workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                       currentUserName, 'UNASSIGN').then(function(data) {
                         workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, newUserName, 'REASSIGN').then(function(data) {
+                          refsetService.fireRefsetChanged($scope.selectedProject.id);                
                           $modalInstance.close();
                         }, function(data) {
                           $modalInstance.close();
@@ -977,7 +978,7 @@ tsApp.directive('refsetTable',
                       
                       refsetService.finishRedefinition(refset.id)
                       .then(function(data) {  
-                        $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                        refsetService.fireRefsetChanged($scope.selectedProject.id);
                         
                         $modalInstance.close();
                       }, function(data) {
