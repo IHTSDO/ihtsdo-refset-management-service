@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -323,8 +324,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     // Make a webservice call to SnowOwl to get concept
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(url + "browser/" + branch + // TODO: add back in "/" + version + 
-            "/concepts/"
+        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId);
     Response response =
         target.request("*/*").header("Authorization", authHeader).get();
@@ -560,15 +560,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target:" +  url + "browser/" + branch + "/" + version
-            + "/descriptions?query=" + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20") 
-            + "&offset=" + pfs.getStartIndex()
-            + "&limit=" + pfs.getMaxResults());
+    System.out.println("target:" + url + "browser/" + branch + "/" + version
+        + "/descriptions?query="
+        + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20") + "&offset="
+        + pfs.getStartIndex() + "&limit=" + pfs.getMaxResults());
     WebTarget target =
-        client.target(url + "browser/" + branch //+ TODO add this back in? "/" + version
-            + "/descriptions?query=" + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20") 
-            + "&offset=" + pfs.getStartIndex()
-            + "&limit=" + pfs.getMaxResults());
+        client.target(url + "browser/" + branch + "/" + version
+            + "/descriptions?query="
+            + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
+            + "&offset=" + pfs.getStartIndex() + "&limit="
+            + pfs.getMaxResults());
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -609,9 +610,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       concept.setTerminology(terminology);
       concept.setVersion(version);
       concept.setTerminologyId(cpt.get("conceptId").asText());
-      // TODO: how to set effective time - no field in json
+      // No access to date info
+      concept.setEffectiveTime(new Date(0));
       concept.setLastModified(concept.getEffectiveTime());
-      concept.setLastModifiedBy(terminology);
+      concept.setLastModifiedBy("admin");
       concept.setModuleId(cpt.get("moduleId").asText());
       concept.setDefinitionStatusId(cpt.get("definitionStatus").asText());
       concept.setName(entry.get("term").asText());
@@ -627,16 +629,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception {
+  public ConceptList getConceptParents(String terminologyId,
+    String terminology, String version) throws Exception {
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target: " + url + "browser/" + branch 
-        + "/concepts/" + terminologyId + "/parents");
+    System.out.println("target: " + url + "browser/" + branch + "/concepts/"
+        + terminologyId + "/parents");
     WebTarget target =
-        client.target(url + "browser/" + branch //+ TODO add this back in? "/" + version
-            + "/concepts/" + terminologyId + "/parents");
+        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
+            + terminologyId + "/parents");
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -664,19 +666,19 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     JsonNode entry = null;
     int index = 0;
     while ((entry = doc.get(index++)) != null) {
-      JsonNode cpt = entry.findValue("concept");
       Concept concept = new ConceptJpa();
 
-      // TODO: assuming active
+      // Assuming active
       concept.setActive(true);
       concept.setTerminology(terminology);
       concept.setVersion(version);
       concept.setTerminologyId(entry.get("conceptId").asText());
-      // TODO: how to set effective time - no field in json
+      // no effective time information
+      concept.setEffectiveTime(new Date(0));
       concept.setLastModified(concept.getEffectiveTime());
       concept.setLastModifiedBy(terminology);
-      // TODO: moduleId is not provided
-      //concept.setModuleId(cpt.get("moduleId").asText());
+      // moduleId is not provided
+      concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
       concept.setName(entry.get("fsn").asText());
 
@@ -688,20 +690,19 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     return conceptList;
   }
-  
-  
+
   /* see superclass */
   @Override
-  public ConceptList getConceptChildren(String terminologyId, String terminology,
-    String version) throws Exception {
+  public ConceptList getConceptChildren(String terminologyId,
+    String terminology, String version) throws Exception {
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target: " + url + "browser/" + branch 
+    System.out.println("target: " + url + "browser/" + branch + "/" + version
         + "/concepts/" + terminologyId + "/children");
     WebTarget target =
-        client.target(url + "browser/" + branch //+ TODO add this back in? "/" + version
-            + "/concepts/" + terminologyId + "/children");
+        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
+            + terminologyId + "/children");
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -729,19 +730,19 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     JsonNode entry = null;
     int index = 0;
     while ((entry = doc.get(index++)) != null) {
-      JsonNode cpt = entry.findValue("concept");
       Concept concept = new ConceptJpa();
 
-      // TODO: assuming active
+      // Assuming active
       concept.setActive(true);
       concept.setTerminology(terminology);
       concept.setVersion(version);
       concept.setTerminologyId(entry.get("conceptId").asText());
-      // TODO: how to set effective time - no field in json
+      // no effective time supplied
+      concept.setEffectiveTime(new Date(0));
       concept.setLastModified(concept.getEffectiveTime());
       concept.setLastModifiedBy(terminology);
-      // TODO: moduleId is not provided
-      //concept.setModuleId(cpt.get("moduleId").asText());
+      // no moduleId supplied
+      concept.setModuleId(null);
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
       concept.setName(entry.get("fsn").asText());
 
@@ -753,7 +754,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     return conceptList;
   }
-  
+
   /* see superclass */
   @Override
   public Description getDescription(String terminologyId, String terminology,
@@ -847,7 +848,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     String terminology, String version) throws Exception {
     DescriptionTypeRefsetMemberList list =
         new DescriptionTypeRefsetMemberListJpa();
-    // TODO: could make this configurable in config.properties
     /**
      * <pre>
      * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255

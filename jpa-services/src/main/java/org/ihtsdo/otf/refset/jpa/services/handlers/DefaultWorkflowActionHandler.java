@@ -347,9 +347,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     service.updateRefset(refset);
-    
-    // TODO: needed to comment this out, because after UNASSIGN and deleting
-    // the tracking record, this would create a new tracking record to keep the
+    // After UNASSIGN and deleting the tracking record,
+    // this would create a new tracking record to keep the
     // refset assigned
     // also for FINISH, this would persist the tracking record that was just supposed
     // to have been deleted
@@ -718,7 +717,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // workflow status doesn not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     String queryStr =
-        "select a from RefsetJpa a where " //workflowStatus = 'NEW' "
+        "select a from RefsetJpa a where " // workflowStatus = 'NEW' "
             + " a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa)";
 
@@ -783,18 +782,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       // n/a
     };
 
-    // Refsets for this project that are in workflowStatus READY_FOR_PUBLICATION,
+    // Refsets for this project that are in workflowStatus
+    // READY_FOR_PUBLICATION,
     // PUBLISHED, or PREVIEW
     String queryStr =
         "select a from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-        + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
+            + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
             + "and a.project.id = :projectId";
 
     Query ctQuery =
-        rootService.getEntityManager().createQuery(
-            "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-        + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-            + "and a.project.id = :projectId");
+        rootService
+            .getEntityManager()
+            .createQuery(
+                "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
+                    + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
+                    + "and a.project.id = :projectId");
 
     ctQuery.setParameter("projectId", projectId);
 

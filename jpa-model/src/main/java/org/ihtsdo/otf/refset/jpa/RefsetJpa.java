@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -130,7 +131,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    * 9593e365-0182-5d93-be5b-73c1d5f5bc97 20150901 1 731000124108 900000000000456007 442311000124105 900000000000461009 900000000000461009 0
    * </pre>
    * 
-   * The UUID is all we need to remember. The ohter fields are all static or
+   * The UUID is all we need to remember. The other fields are all static or
    * easily computed
    **/
   @Column(nullable = false)
@@ -552,9 +553,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   })
   @Override
   public Map<User, UserRole> getUserRoleMap() {
-    // TODO: when creating refset member project is null; only have projectId
+    // When creating refset member project is null; only have projectId
     if (getProject() == null)
-      return null;
+      return new HashMap<>();
     else 
       return getProject().getUserRoleMap();
   }

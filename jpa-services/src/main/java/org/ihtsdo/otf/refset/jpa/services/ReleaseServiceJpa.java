@@ -112,8 +112,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Release Service - add release info " + releaseInfo.getName());
     return this.addHasLastModified(releaseInfo);
-    // TODO: consider whether these add/remove methods should have workflow
-    // listener hooks
+
   }
 
   /* see superclass */

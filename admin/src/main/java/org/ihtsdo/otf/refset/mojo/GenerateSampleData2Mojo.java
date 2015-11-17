@@ -670,7 +670,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     releaseInfo.addArtifact(artifact);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
-    artifact = (ReleaseArtifactJpa)service.addReleaseArtifact(artifact);
+    artifact = service.addReleaseArtifact(artifact);
     service.close();
     return artifact;
   }
@@ -855,6 +855,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @param refset the refset
    * @param project the project
    * @param num the num
+   * @param edition the edition
    * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception

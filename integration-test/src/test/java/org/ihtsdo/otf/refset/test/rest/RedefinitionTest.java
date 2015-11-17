@@ -493,9 +493,6 @@ public class RedefinitionTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     // default from files is 20150131
-    // TODO: try test with //<<70759006 |Pyoderma (disorder)|", or some other
-    // definition that requires
-    // multiple resolveExpression calls
     Refset janRefset =
         makeRefset("refset1", "<<259866009 |Malaria antibody (substance)|",
             Refset.Type.INTENSIONAL, project2, null, admin);

@@ -178,8 +178,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
-  // TODO reinstate this test with projectId longbridge
-  //@Test
+  @Test
   public void testModelXmlSerialization036() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
