@@ -384,7 +384,7 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + 
+          $http.get(projectUrl + "concept/parents" + "?terminologyId=" + terminologyId + "&terminology=" + 
             terminology + "&version=" + version)
           .then(
           // success
@@ -411,7 +411,7 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + "children" + "?terminologyId=" + terminologyId + "&terminology=" + 
+          $http.post(projectUrl + "concept/children" + "?terminologyId=" + terminologyId + "&terminology=" + 
             terminology + "&version=" + version, pfs)
           .then(
           // success
@@ -439,7 +439,7 @@ tsApp
 
           // Make POST call
           gpService.increment();
-          $http.post(projectUrl + "concept" + "?terminologyId=" + terminologyId + "&terminology=" + 
+          $http.get(projectUrl + "concept" + "?terminologyId=" + terminologyId + "&terminology=" + 
             terminology + "&version=" + version)
           .then(
           // success

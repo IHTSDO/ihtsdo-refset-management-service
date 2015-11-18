@@ -56,12 +56,12 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
-            $scope.$on('refsetTable:initialize', function (event, data) {
+            $scope.$on('refsetChanged', function (event, data) {
               console.log('on refsetTable:initialize', data, $scope.value);  
               $scope.initializeProjectAndRefsets(data);
             });
             
-            $scope.$on('refset:project', function (event, data) {
+            $scope.$on('projectChanged', function (event, data) {
               console.log('on refset:project', data);  
               $scope.selectedProject = data;
               if ($scope.selectedProject != undefined && $scope.selectedProject != null) {
@@ -76,7 +76,7 @@ tsApp.directive('refsetTable',
               projectService.getProject(projectId).then(function(data) {
                 $scope.selectedProject = data;
                 console.debug("value: ", $scope.value);
-                $scope.findAssignedUsersForProject();
+                $scope.initializeUsersAndRefsets();
               })
             };
             
@@ -103,7 +103,7 @@ tsApp.directive('refsetTable',
             // get assigned users - this is the list of users that are
             // already
             // assigned to the selected project
-            $scope.findAssignedUsersForProject = function() {
+            $scope.initializeUsersAndRefsets = function() {
 
               var pfs = {
                 startIndex : 0,
@@ -428,8 +428,7 @@ tsApp.directive('refsetTable',
                 //$scope.trackingRecord = data.trackingRecord;
                 //$scope.initializeProjectAndRefsets($scope.project);
 
-                console.log("rootScope.broadcast", $scope.value);  
-                $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                refsetService.fireRefsetChanged($scope.selectedProject.id);
                  })
             };
             
@@ -490,7 +489,7 @@ tsApp.directive('refsetTable',
               projectService.findProjectsAsList("", pfs).then(function(data) {
                 $scope.candidateProjects = data.projects;
                 $scope.candidateProjects.totalCount = data.totalCount;
-                //$scope.findAssignedUsersForProject();
+                //$scope.initializeUsersAndRefsets();
 
               })
 
@@ -602,7 +601,7 @@ tsApp.directive('refsetTable',
               });
             };
 
-            var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir, contentType, ioHandlers, $upload) {
+            var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir, contentType, ioHandlers) {
 
               console.debug("Entered import export modal control", refset.id, ioHandlers, dir, contentType);
 
@@ -775,10 +774,11 @@ tsApp.directive('refsetTable',
                 }
 
                 $scope.selectedUserName = newUserName;
+                
                 if (action == 'ASSIGN') {
                   workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                     newUserName, "ASSIGN").then(function(data) {
-                    $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                    refsetService.fireRefsetChanged($scope.selectedProject.id);
                     
                     $modalInstance.close();
                   }, function(data) {
@@ -789,6 +789,7 @@ tsApp.directive('refsetTable',
                   workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                       currentUserName, 'UNASSIGN').then(function(data) {
                         workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, newUserName, 'REASSIGN').then(function(data) {
+                          refsetService.fireRefsetChanged($scope.selectedProject.id);                
                           $modalInstance.close();
                         }, function(data) {
                           $modalInstance.close();
@@ -977,7 +978,7 @@ tsApp.directive('refsetTable',
                       
                       refsetService.finishRedefinition(refset.id)
                       .then(function(data) {  
-                        $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                        refsetService.fireRefsetChanged($scope.selectedProject.id);
                         
                         $modalInstance.close();
                       }, function(data) {

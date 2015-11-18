@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
-import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
@@ -47,7 +46,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
 
   /**
    * Setup.
-   * @throws Exception 
+   * @throws Exception
    */
   @Before
   public void setup() throws Exception {
@@ -65,8 +64,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
-  // TODO: get this to work with setRefsetId(..)
-  //@Test
+  @Test
   public void testModelGetSet021() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
@@ -82,26 +80,26 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
    */
   @Test
   public void testModelEqualsHashcode021() throws Exception {
-// TODO: need to get this working
-//    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
-//    EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-//    tester.include("active");
-//    tester.include("moduleId");
-//    tester.include("terminology");
-//    tester.include("terminologyId");
-//    //tester.include("version");
-//    tester.include("conceptId");
-//    tester.include("conceptName");
-//    tester.include("memberType");
-//
-//    //tester.proxy(Refset.class, 1, r1);
-//    //tester.proxy(Refset.class, 2, r2); 
-//    assertTrue(tester.testIdentitiyFieldEquals());
-//    assertTrue(tester.testNonIdentitiyFieldEquals());
-//    assertTrue(tester.testIdentityFieldNotEquals());
-//    assertTrue(tester.testIdentitiyFieldHashcode());
-//    assertTrue(tester.testNonIdentitiyFieldHashcode());
-//    assertTrue(tester.testIdentityFieldDifferentHashcode());
+    // TODO: need to get this working
+    // Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+    // EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
+    // tester.include("active");
+    // tester.include("moduleId");
+    // tester.include("terminology");
+    // tester.include("terminologyId");
+    // //tester.include("version");
+    // tester.include("conceptId");
+    // tester.include("conceptName");
+    // tester.include("memberType");
+    //
+    // //tester.proxy(Refset.class, 1, r1);
+    // //tester.proxy(Refset.class, 2, r2);
+    // assertTrue(tester.testIdentitiyFieldEquals());
+    // assertTrue(tester.testNonIdentitiyFieldEquals());
+    // assertTrue(tester.testIdentityFieldNotEquals());
+    // assertTrue(tester.testIdentitiyFieldHashcode());
+    // assertTrue(tester.testNonIdentitiyFieldHashcode());
+    // assertTrue(tester.testIdentityFieldDifferentHashcode());
   }
 
   /**
@@ -114,7 +112,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
     tester.proxy(Refset.class, 1, r1);
-    tester.proxy(Refset.class, 1, r2);    
+    tester.proxy(Refset.class, 1, r2);
     assertTrue(tester.testCopyConstructor(ConceptRefsetMember.class));
   }
 

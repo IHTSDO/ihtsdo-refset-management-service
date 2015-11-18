@@ -18,6 +18,7 @@ public interface ValidationService extends RootService {
    * Validate concept.
    *
    * @param concept the concept
+   * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
@@ -28,6 +29,7 @@ public interface ValidationService extends RootService {
    * Validate translation.
    *
    * @param translation the translation
+   * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
@@ -49,6 +51,7 @@ public interface ValidationService extends RootService {
    * Validate refset.
    *
    * @param refset the refset
+   * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */

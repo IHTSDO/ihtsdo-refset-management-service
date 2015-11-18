@@ -24,11 +24,14 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 
 /**
  * A client for connecting to a project REST service.
@@ -402,16 +405,56 @@ public class ProjectClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public StringList getTerminologyEditions(String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/terminology/all");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    StringList list =
+        (StringList) ConfigUtility.getGraphForString(resultString,
+            StringList.class);
+    return list;
   }
 
   /* see superclass */
   @Override
   public TerminologyList getTerminologyVersions(String terminology,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/terminology/"
+            + terminology + "/all");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    TerminologyListJpa list =
+        (TerminologyListJpa) ConfigUtility.getGraphForString(resultString,
+            TerminologyListJpa.class);
+    return list;
   }
 
   /* see superclass */
@@ -440,31 +483,156 @@ public class ProjectClientRest extends RootClientRest implements
     return list;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Project Client - find concepts for query " + query + ", "
+            + terminology + ", " + version + ", " + pfs);
+    validateNotEmpty(query, "query");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/concepts?"
+            + "terminology="
+            + terminology
+            + "&version="
+            + version
+            + "&query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
+    return list;
   }
 
+  /* see superclass */
   @Override
   public Concept getConceptWithDescriptions(String terminologyId,
     String terminology, String version, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get concept with descriptions - " + terminologyId
+            + ", " + terminology + ", " + version);
+    validateNotEmpty(terminologyId, "terminologyId");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/concepts?"
+            + "terminologyId=" + terminologyId + "&terminology=" + terminology
+            + "&version=" + version);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ConceptJpa list =
+        (ConceptJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptJpa.class);
+    return list;
   }
 
+  /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    String terminology, String version, PfsParameterJpa pfs, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get children - " + terminologyId + ", " + terminology
+            + ", " + version + ", " + pfs);
+    validateNotEmpty(terminologyId, "terminologyId");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/concept/children?" + "terminologyId=" + terminologyId
+            + "&terminology=" + terminology + "&version=" + version);
+
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
+    return list;
   }
 
+  /* see superclass */
   @Override
   public ConceptList getConceptParents(String terminologyId,
     String terminology, String version, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get parents - " + terminologyId + ", " + terminology
+            + ", " + version);
+    validateNotEmpty(terminologyId, "terminologyId");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/concept/parents?" + "terminologyId=" + terminologyId
+            + "&terminology=" + terminology + "&version=" + version);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
+    return list;
   }
 }

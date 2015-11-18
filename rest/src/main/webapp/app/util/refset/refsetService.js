@@ -5,9 +5,20 @@ tsApp.service('refsetService', [
   'gpService',
   'utilService',
   'projectService',
-  function($http, $q, gpService, utilService, projectService) {
+  '$rootScope',
+  function($http, $q, gpService, utilService, projectService, $rootScope) {
     console.debug("configure refsetService");
 
+    // broadcasts a new project id
+    this.fireProjectChanged = function(project) {
+      $rootScope.$broadcast('projectChanged', project);      
+    }
+    
+    // broadcasts a refset change
+    this.fireRefsetChanged = function(projectId) {
+      $rootScope.$broadcast('refsetChanged', projectId);
+    }
+    
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
       console.debug("getRefsetRevision");
@@ -463,7 +474,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + "release/report" + "?reportToken=" + reportToken)
+      $http.get(refsetUrl + "release/report" + "?reportToken=" + reportToken)
         .then(
         // success
         function(response) {

@@ -601,7 +601,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     releaseInfo.addArtifact(artifact);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
-    artifact = (ReleaseArtifactJpa) service.addReleaseArtifact(artifact);
+    artifact = service.addReleaseArtifact(artifact);
     service.close();
     return artifact;
   }

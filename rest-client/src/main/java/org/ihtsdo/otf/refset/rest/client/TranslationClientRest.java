@@ -35,7 +35,6 @@ import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -131,12 +130,13 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/translations/" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/translation/translations/" + refsetId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
-    String resultString = response.readEntity(String.class);    
+    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -779,8 +779,8 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public Translation beginMigration(Long translationId, String newTerminology,
     String newVersion, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Client - begin translation migration");
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - begin translation migration");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(newTerminology, "newTerminology");
     validateNotEmpty(newVersion, "newVersion");
@@ -793,9 +793,9 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/migration/begin" + "?translationId=" + translationId
-            + "&newTerminology=" + encodedTerminology + "&newVersion="
-            + encodedVersion);
+            + "/translation/migration/begin" + "?translationId="
+            + translationId + "&newTerminology=" + encodedTerminology
+            + "&newVersion=" + encodedVersion);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -822,7 +822,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/migration/finish" + "?translationId=" + translationId);
+            + "/translation/migration/finish" + "?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -843,15 +844,16 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void cancelMigration(Long translationId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Client - cancel translation migration");
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - cancel translation migration");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/migration/cancel" + "?translationId=" + translationId);
+            + "/translation/migration/cancel" + "?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -865,12 +867,12 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
-
   /* see superclass */
   @Override
-  public String compareTranslations(Long translationId1, Long translationId2, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Client - compare translations");
+  public String compareTranslations(Long translationId1, Long translationId2,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - compare translations");
     validateNotEmpty(translationId1, "translationId1");
     validateNotEmpty(translationId2, "translationId2");
 
@@ -878,7 +880,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/compare"
-            + "?translationId1=" + translationId1 + "&translationId2=" + translationId2);
+            + "?translationId1=" + translationId1 + "&translationId2="
+            + translationId2);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -897,8 +900,8 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptList findConceptsInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+  public ConceptList findConceptsInCommon(String reportToken, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception {
     validateNotEmpty(reportToken, "reportToken");
 
     Client client = ClientBuilder.newClient();
@@ -928,8 +931,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     // converting to object
     ConceptList list =
-        (ConceptListJpa) ConfigUtility.getGraphForString(
-            resultString, ConceptListJpa.class);
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
     return list;
   }
 
@@ -943,8 +946,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/diff/concepts"
-            + "?reportToken=" + reportToken);
+        client.target(config.getProperty("base.url")
+            + "/translation/diff/concepts" + "?reportToken=" + reportToken);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -963,7 +966,8 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void releaseReportToken(String reportToken, String authToken) throws Exception {
+  public void releaseReportToken(String reportToken, String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
 
   }
@@ -1095,7 +1099,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
 
   }
-  
+
   @Override
   public Translation resumeMigration(Long translationId, String authToken)
     throws Exception {
@@ -1107,7 +1111,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/migration/resume" + "?translationId=" + translationId);
+            + "/translation/migration/resume" + "?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

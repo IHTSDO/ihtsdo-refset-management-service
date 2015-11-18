@@ -1,3 +1,6 @@
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
+ */
 package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertTrue;
@@ -14,6 +17,9 @@ import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.Test;
 
+/**
+ * Integration test for extensional refset editing.
+ */
 public class ExtensionalRefsetEditingTest extends RefsetTest {
 
   /**
@@ -120,7 +126,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
           "Refset does not pass validation after workflow SAVE.");
     }
 
-    currentRefset = (RefsetJpa) record.getRefset();
+    currentRefset = record.getRefset();
 
     // Workflow - FINISH
     record =
@@ -167,7 +173,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
       throw new Exception(
           "Refset does not pass validation after workflow SAVE.");
     }
-    currentRefset = (RefsetJpa) record.getRefset();
+    currentRefset = record.getRefset();
 
     // FINISH - status
     record =
@@ -218,6 +224,14 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     assertTrue(refsetService.getRefset(currentRefset.getId(), adminAuthToken) == null);
   }
 
+  /**
+   * Returns the new refset in refset list.
+   *
+   * @param list the list
+   * @param oldRefset the old refset
+   * @return the new refset in refset list
+   */
+  @SuppressWarnings("static-method")
   private Refset getNewRefsetInRefsetList(RefsetList list, Refset oldRefset) {
     for (Refset ref : list.getObjects()) {
       if (ref.equals(oldRefset)) {
