@@ -65,6 +65,7 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
+            $scope.$on('refsetChanged', function (event, data) {
             $scope.ioImportHandlers = [];
             $scope.ioExportHandlers = [];
             
@@ -74,7 +75,7 @@ tsApp.directive('refsetTable',
               $scope.initializeProjectAndRefsets(data);
             });
             
-            $scope.$on('refset:project', function (event, data) {
+            $scope.$on('projectChanged', function (event, data) {
               console.log('on refset:project', data);  
               $scope.selectedProject = data;
               if ($scope.selectedProject != undefined && $scope.selectedProject != null) {
@@ -457,8 +458,7 @@ tsApp.directive('refsetTable',
               
               workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                 userName, action).then(function(data) {
-                console.log("rootScope.broadcast", $scope.value);  
-                $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                refsetService.fireRefsetChanged($scope.selectedProject.id);
                  })
             };
             
@@ -530,9 +530,23 @@ tsApp.directive('refsetTable',
 
             };
             
-            // Initialization routine
-            // TODO: this should go at the END of the controller
-            // i.e. declare everything, then perform init steps.
+            // reassign to author refset that is in review process
+            $scope.performReassign = function (refset) {
+              // first unassign, then assign to author who worked on it
+              workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                $scope.user.userName, 'UNASSIGN').then(function(data) {
+                  //refsetService.fireRefsetChanged($scope.selectedProject.id).then(function(data) {
+                    //newUserName = $scope.getAuthorsForRefsetId(refset.id)[0];
+                    workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, $scope.user.userName, 'REASSIGN').then(function(data) {
+                      refsetService.fireRefsetChanged($scope.selectedProject.id);
+                  }, function(data) {
+                  })
+                //})
+                })
+            };
+
+            
+            // Initialize
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
@@ -834,27 +848,17 @@ tsApp.directive('refsetTable',
                 }
 
                 $scope.selectedUserName = newUserName;
+                
                 if (action == 'ASSIGN') {
                   workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                     newUserName, "ASSIGN").then(function(data) {
-                    $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                    refsetService.fireRefsetChanged($scope.selectedProject.id);
                     
                     $modalInstance.close();
                   }, function(data) {
                     $modalInstance.close();
                   })
-                } else if (action == 'REASSIGN') {
-                  // first unassign something in review, then reassign to an author
-                  workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
-                      currentUserName, 'UNASSIGN').then(function(data) {
-                        workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, newUserName, 'REASSIGN').then(function(data) {
-                          $modalInstance.close();
-                        }, function(data) {
-                          $modalInstance.close();
-                        })
-                      })
-                  
-                }
+                } 
               };
 
               $scope.cancel = function() {
@@ -1044,7 +1048,7 @@ tsApp.directive('refsetTable',
                       
                       refsetService.finishRedefinition(refset.id)
                       .then(function(data) {  
-                        $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
+                        refsetService.fireRefsetChanged($scope.selectedProject.id);
                         
                         $modalInstance.close();
                       }, function(data) {

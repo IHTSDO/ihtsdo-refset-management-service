@@ -254,7 +254,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
+          "perform workflow action on translation", UserRole.REVIEWER);
 
       User user = securityService.getUser(userName);
       // Find tracking records "for review" for this translation and user

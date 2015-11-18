@@ -74,7 +74,7 @@ tsApp.controller('RefsetCtrl', [
     // Fire a "projectChanged" event
     $scope.setSelectedProject = function() {
       console.log("rootScope.broadcast", $scope.selectedProject);
-      $rootScope.$broadcast('refset:project', $scope.selectedProject);
+      refsetService.fireProjectChanged($scope.selectedProject);
 
     }
 

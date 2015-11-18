@@ -115,7 +115,7 @@
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="material-icons md-18">assignment_return</i>
             </a>&nbsp;<a title="Reassign" ng-show="role == 'REVIEWER'"
-              ng-click="openChooseUserModal(refset, 'REASSIGN', user.userName); $event.stopPropagation()">
+                ng-click="performReassign(refset); $event.stopPropagation()">
               <i title="Reassign" class="material-icons md-18">assignment_returned</i>
             </a>&nbsp;<a title="Save"
               ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()">

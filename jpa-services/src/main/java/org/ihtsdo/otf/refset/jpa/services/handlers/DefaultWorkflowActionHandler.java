@@ -144,7 +144,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
       case REASSIGN:
         // record must exist and an "assigned" state must be present
-        flag = projectRole == UserRole.AUTHOR &&
+        flag = 
             record != null
                 && EnumSet.of(
                     WorkflowStatus.EDITING_DONE).contains(

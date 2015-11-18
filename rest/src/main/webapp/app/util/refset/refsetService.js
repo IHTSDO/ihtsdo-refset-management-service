@@ -9,6 +9,16 @@ tsApp.service('refsetService', [
   function($http, $q, Upload, gpService, utilService, projectService) {
     console.debug("configure refsetService");
 
+    // broadcasts a new project id
+    this.fireProjectChanged = function(project) {
+      $rootScope.$broadcast('projectChanged', project);      
+    }
+    
+    // broadcasts a refset change
+    this.fireRefsetChanged = function(projectId) {
+      $rootScope.$broadcast('refsetChanged', projectId);
+    }
+    
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
       console.debug("getRefsetRevision");
