@@ -490,11 +490,24 @@ tsApp.directive('refsetTable',
                 $scope.candidateProjects = data.projects;
                 $scope.candidateProjects.totalCount = data.totalCount;
                 //$scope.initializeUsersAndRefsets();
-
               })
 
             };
             
+            // reassign to author refset that is in review process
+            $scope.performReassign = function (refset) {
+              // first unassign, then assign to author who worked on it
+              workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
+                $scope.user.userName, 'UNASSIGN').then(function(data) {
+                  //refsetService.fireRefsetChanged($scope.selectedProject.id).then(function(data) {
+                    //newUserName = $scope.getAuthorsForRefsetId(refset.id)[0];
+                    workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, $scope.user.userName, 'REASSIGN').then(function(data) {
+                      refsetService.fireRefsetChanged($scope.selectedProject.id);
+                  }, function(data) {
+                  })
+                //})
+                })
+            };
 
             
             // Initialize
@@ -784,19 +797,7 @@ tsApp.directive('refsetTable',
                   }, function(data) {
                     $modalInstance.close();
                   })
-                } else if (action == 'REASSIGN') {
-                  // first unassign something in review, then reassign to an author
-                  workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
-                      currentUserName, 'UNASSIGN').then(function(data) {
-                        workflowService.performWorkflowAction($scope.selectedProject.id, refset.id, newUserName, 'REASSIGN').then(function(data) {
-                          refsetService.fireRefsetChanged($scope.selectedProject.id);                
-                          $modalInstance.close();
-                        }, function(data) {
-                          $modalInstance.close();
-                        })
-                      })
-                  
-                }
+                } 
               };
 
               $scope.cancel = function() {
