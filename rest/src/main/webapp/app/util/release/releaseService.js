@@ -287,6 +287,7 @@ tsApp.service('releaseService', [
       return deferred.promise;
     }
 
+    // Export a release artifact and prompt the download, no promise returned
     this.exportReleaseArtifact = function(releaseArtifact) {
       gpService.increment()
       $http({

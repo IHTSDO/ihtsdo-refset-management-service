@@ -1715,11 +1715,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this is a chance to cancel or confirm");
+            .addError("Refset already contains members, this operation will add more members");
       } else {
         return result;
       }
-
+      return result;
     } catch (Exception e) {
       handleException(e, "trying to begin import refset members");
     } finally {
@@ -1854,7 +1854,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this is a chance to cancel or confirm");
+            .addError("Refset already contains members, this operation will add more members");
       } else {
         return result;
       }

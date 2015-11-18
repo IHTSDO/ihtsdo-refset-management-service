@@ -16,24 +16,33 @@ tsApp.directive('refsetTable',
       return {
         restrict : 'A',
         scope : {
+          // Legal "value" settings include
+          // For directory tab: PUBLISHED, PREVIEW
+          // For refset tab: AVAILABLE, ASSIGNED, ASSIGNED_ALL, RELEASE
           value : '@'
         },
         templateUrl : 'app/component/refsetTable/refsetTable.html',
         controller : [
           '$scope',
           function($scope) {
-            // Variable
+
+            // Variables
             $scope.iconConfig = projectService.getIconConfig();
             $scope.user = securityService.getUser();
+            $scope.role = 'VIEWER';
             $scope.refset = null;
             $scope.refsets = null;
-            $scope.pageSize = 10;
+
             $scope.memberTypes = [ "Member", "Exclusion", "Inclusion",
               "Inactive Member", "Inactive Inclusion" ];
             $scope.selectedProject = null;
+
+            // TODO: remove as I believe these are unused
             $scope.refsetIdToAuthorsMap = {};
             $scope.refsetIdToReviewersMap = {};
 
+            // Paging variables
+            $scope.pageSize = 10;
             $scope.paging = {};
             $scope.paging["refset"] = {
               page : 1,
@@ -56,6 +65,10 @@ tsApp.directive('refsetTable',
               ascending : null
             }
 
+            $scope.ioImportHandlers = [];
+            $scope.ioExportHandlers = [];
+            
+            // TODO: need to fix these according to the wiki (e.g. "projectChanged")
             $scope.$on('refsetTable:initialize', function (event, data) {
               console.log('on refsetTable:initialize', data, $scope.value);  
               $scope.initializeProjectAndRefsets(data);
@@ -80,7 +93,10 @@ tsApp.directive('refsetTable',
               })
             };
             
-            // get refsets
+            // Get $scope.refsets
+            // TODO: collapse ALL functionality for collecting $scope.refsets into this
+            // method . At the moment there are many functions that can populate this
+            // variable.  There should be only one.
             $scope.getRefsets = function() {
 
               var pfs = {
@@ -100,29 +116,36 @@ tsApp.directive('refsetTable',
               })
             };
             
-            // get assigned users - this is the list of users that are
-            // already
-            // assigned to the selected project
+            // Get users with role on project and determine which refsets to load
+            // TODO: this method should ALWAYS be used, not onoly for "refset" tab
+            // e.g. consolidate the logic and choose a more generic function name
             $scope.initializeUsersAndRefsets = function() {
 
               var pfs = {
                 startIndex : 0,
-                maxResults : 100,
+                maxResults : 100, // TODO: what if there are > 100 users?  Make start index -1
                 sortField : 'userName',
                 queryRestriction : null
               };
+              
+              // Find users with roles on this project
               projectService.findAssignedUsersForProject($scope.selectedProject.id,
                 "", pfs).then(function(data) {
                 $scope.assignedUsers = data.users;
                 for (var i = 0; i< $scope.assignedUsers.length; i++) {
                   if ($scope.assignedUsers[i].userName == $scope.user.userName) {
-                    $scope.user = $scope.assignedUsers[i];
-                 
+                    var projectRoleMap = $scope.assignedUsers[i].projectRoleMap;
+                    if (projectRoleMap) {
+                      $scope.role = projectRoleMap[$scope.selectedProject.id];                 
+                      break;
+                    }
                   }
                 }
-                $scope.role = $scope.user.projectRoleMap[$scope.selectedProject.id];
+                // TODO: move this logic into getRefsets which will become
+                // aware of $scope.value and project role (which can be a parameter)
+                // e.g. $scope.getRefsets(role);  The $scope.value is already
+                // a top-level variable and so does not need to be a parameter
                 console.debug("project role: ", $scope.role);
-                
                 if ($scope.value == 'AVAILABLE' && $scope.role == 'AUTHOR') {
                   $scope.findAvailableEditingRefsets();
                 }
@@ -141,17 +164,14 @@ tsApp.directive('refsetTable',
                 if ($scope.value == 'ASSIGNED' && $scope.role == 'REVIEWER') {
                   $scope.findAssignedReviewRefsets();
                 }
-                if ($scope.value == 'ASSIGNED' && $scope.role == 'ADMIN') {
-                  $scope.findAllAssignedRefsets();
-                }
-                if ($scope.value == 'RELEASE'  && 
-                  ($scope.role == 'REVIEWER' || $scope.role == 'ADMIN')) {
+                if ($scope.value == 'RELEASE') {
                   $scope.findReleaseRefsets();
                 }
               })
 
             };
             
+            // TODO: Logic of all these methods can be folded into getRefsets
             $scope.findAvailableEditingRefsets = function() {
               var pfs = {
                 startIndex : 0,
@@ -180,20 +200,7 @@ tsApp.directive('refsetTable',
               })
             };
             
-            $scope.findAllAvailableRefsets = function() {
-              var pfs = {
-                startIndex : 0,
-                maxResults : 100,
-                sortField : null,
-                queryRestriction : null
-              };
 
-              workflowService.findAllAvailableRefsets($scope.selectedProject.id, $scope.user.userName, pfs).then(function(data) {
-                $scope.refsets = data.refsets;
-                $scope.refsets.totalCount = data.totalCount;
-              })
-            };
-            
             $scope.findAssignedEditingRefsets = function() {
               var pfs = {
                 startIndex : 0,
@@ -208,6 +215,20 @@ tsApp.directive('refsetTable',
               })
             };
             
+            $scope.findAllAvailableRefsets = function() {
+              var pfs = {
+                startIndex : 0,
+                maxResults : 100,
+                sortField : null,
+                queryRestriction : null
+              };
+
+              workflowService.findAllAvailableRefsets($scope.selectedProject.id, '', pfs).then(function(data) {
+                $scope.refsets = data.refsets;
+                $scope.refsets.totalCount = data.totalCount;
+              })
+            };
+
             $scope.findAllAssignedRefsets = function() {
               var pfs = {
                 startIndex : 0,
@@ -259,7 +280,7 @@ tsApp.directive('refsetTable',
               })
             };
             
-            // get members
+            // Get $scope.members
             $scope.getMembers = function(refset) {
 
               var pfs = {
@@ -271,6 +292,7 @@ tsApp.directive('refsetTable',
                   : $scope.paging["member"].ascending,
                 queryRestriction : ""
               };
+              
               if ($scope.paging["member"].typeFilter) {
                 var value = $scope.paging["member"].typeFilter;
                 value = value.replace(" ", "_").toUpperCase();
@@ -284,7 +306,9 @@ tsApp.directive('refsetTable',
               })
             };
 
-            // get current refset release info
+            // Get current refset release info
+            // TODO: may be better to not attach this to the refset itself
+            // but instead to have a $scope.currentReleaseInfo variable
             $scope.getCurrentRefsetReleaseInfo = function(refset) {
               releaseService.getCurrentReleaseInfoForRefset(refset.id).then(
                 function(data) {
@@ -292,7 +316,7 @@ tsApp.directive('refsetTable',
                 })
             };
             
-            // begin redefinition (or first definition)
+            // Begin redefinition (or first definition)
             $scope.beginRedefinition = function(refsetId, definition) {
               refsetService.beginRedefinition(refset.id, definition).then(
                 function(data) {
@@ -310,7 +334,7 @@ tsApp.directive('refsetTable',
               return utilService.toShortDate(lastModified);
             };
 
-            // sort mechanism
+            // Table sorting mechanism
             $scope.setSortField = function(table, field, object) {
               $scope.paging[table].sortField = field;
               // reset page number too
@@ -352,18 +376,23 @@ tsApp.directive('refsetTable',
               }
             };
 
+            // Selects a refset (setting $scope.refset).
+            // Looks up current release info and members.
             $scope.selectRefset = function(refset) {
               $scope.refset = refset;
               $scope.getCurrentRefsetReleaseInfo(refset);
               $scope.getMembers(refset);
             };
 
+            // Used for styling inactive/disabled
             $scope.isDisabled = function(member) {
               return member.memberType == 'INACTIVE_MEMBER'
                 || member.memberType == 'INACTIVE_INCLUSION'
                 || member.memberType == 'EXCLUSION';
             }
 
+            // Used for styling - coordinated with css file
+            // TODO: this can be better
             $scope.getMemberStyle = function(member) {
               if (member.memberType == 'MEMBER') {
                 return "";
@@ -372,7 +401,7 @@ tsApp.directive('refsetTable',
             }
             
             
-            // get refset types
+            // Get $scope.refsetTypes - for picklist
             $scope.getRefsetTypes = function() {
               console.debug("getRefsetTypes");
               refsetService.getRefsetTypes().then(function(data) {
@@ -380,7 +409,8 @@ tsApp.directive('refsetTable',
               })
             };
             
-            // remove a refset
+            // Remove a refset  or a refset member
+            // TODO: why are these not separate methods?!
             $scope.remove = function(type, object, objArray) {
               if (!confirm("Are you sure you want to remove the " + type + " ("
                 + object.name + ")?")) {
@@ -412,7 +442,7 @@ tsApp.directive('refsetTable',
               }
             };
             
-            // add a refset exclusion
+            // Adds a refset exclusion and refreshes member list with current PFS settings
             $scope.exclude = function(refset, conceptId) {
                
                 refsetService.addRefsetExclusion(refset.id, conceptId).then(function() {
@@ -420,30 +450,28 @@ tsApp.directive('refsetTable',
                 });
 
             };
-            
+
+            // Performs a workflow action
+            // TODO: should fire "refsetChanged"
             $scope.performWorkflowAction = function(refset, action, userName) {
               
               workflowService.performWorkflowAction($scope.selectedProject.id, refset.id,
                 userName, action).then(function(data) {
-                //$scope.trackingRecord = data.trackingRecord;
-                //$scope.initializeProjectAndRefsets($scope.project);
-
                 console.log("rootScope.broadcast", $scope.value);  
                 $rootScope.$broadcast('refsetTable:initialize', $scope.selectedProject.id);
                  })
             };
             
-            // get terminology editions
+            // Get $scope.terminologyEditions, also loads versions for the first edition in the list
             $scope.getTerminologyEditions = function() {
               console.debug("getTerminologyEditions");
               projectService.getTerminologyEditions().then(function(data) {
                 $scope.terminologyEditions = data.strings;
-
                 $scope.getTerminologyVersions($scope.terminologyEditions[0]);
               })
             };
             
-            // get terminology versions
+            // Get $scope.terminologyVersions
             $scope.getTerminologyVersions = function(terminology) {
               console.debug("getTerminologyVersions");
               projectService.getTerminologyVersions(terminology).then(function(data) {
@@ -455,25 +483,33 @@ tsApp.directive('refsetTable',
                 }
               })
             };
-            
+
+            // Get $scope.io{Import,Export}Handlers
             $scope.getIOHandlers = function() {
+              refsetService.getImportRefsetHandlers().then(function(data) {
+                $scope.ioImportHandlers = data.handlers;
+              });
               refsetService.getExportRefsetHandlers().then(function(data) {
-                $scope.ioHandlers = data.handlers;
+                $scope.ioExportHandlers = data.handlers;
               });
             }
             
+            // TODO: remove as I believe these are unused
             $scope.getAuthorsForRefsetId = function(refsetId) {
               return $scope.refsetIdToAuthorsMap[refsetId];
             }
             $scope.getReviewersForRefsetId = function(refsetId) {
               return $scope.refsetIdToReviewersMap[refsetId];
             }
-            
+
+            // Exports a release artifact (and begins the download)
             $scope.exportReleaseArtifact = function(artifact) {
               releaseService.exportReleaseArtifact(artifact);
             }
             
             // get all projects where user has a role
+            // TODO: this scope variable should be defined at the top of the controller
+            // TODO: this should probably be "projects" instead of "candidateProjects"
             $scope.retrieveCandidateProjects = function() {
 
               var pfs = {
@@ -490,34 +526,25 @@ tsApp.directive('refsetTable',
               projectService.findProjectsAsList("", pfs).then(function(data) {
                 $scope.candidateProjects = data.projects;
                 $scope.candidateProjects.totalCount = data.totalCount;
-                //$scope.initializeUsersAndRefsets();
-
               })
 
             };
             
-
-            
-            // Initialize
+            // Initialization routine
+            // TODO: this should go at the END of the controller
+            // i.e. declare everything, then perform init steps.
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getRefsets();
             }
             $scope.getIOHandlers();
             $scope.retrieveCandidateProjects();
-            // this is no longer needed because broadcast of project, causes this to occur
-            /*if ($scope.value == 'AVAILABLE' || $scope.value == 'ASSIGNED' 
-              || $scope.value == 'ASSIGNED_ALL') {
-              $scope.initializeProjectAndRefsets($scope.project);
-              $scope.getRefsetTypes();
-              $scope.getTerminologyEditions();
-            }*/
-            
 
-            
-            
+           
             //
-            // Modals
+            // Modals:
+            // TODO: put partials pages with the directive and not with the controller
             //  
+
             // modal for creating a clone of a refset
             $scope.openCloneRefsetModal = function(lrefset) {
 
@@ -526,13 +553,11 @@ tsApp.directive('refsetTable',
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/clone.html',
                 controller : CloneRefsetModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
-                  },
-                  ioHandlers : function() {
-                    return $scope.ioHandlers;
-                  },
+                  },                  
                   candidateProjects : function() {
                     return $scope.candidateProjects;
                   }
@@ -541,6 +566,7 @@ tsApp.directive('refsetTable',
               
               modalInstance.result.then(
                 // Success
+                // TODO: this should fire a "refsetChanged" event instead.
                 function() {
                   $scope.findAvailableEditingRefsets();               
                 });
@@ -548,7 +574,7 @@ tsApp.directive('refsetTable',
             };
 
             var CloneRefsetModalCtrl = function($scope, $modalInstance, refset,
-              ioHandlers, candidateProjects) {
+              candidateProjects) {
 
               console.debug("Entered clone refset modal control", refset.id);
 
@@ -583,8 +609,9 @@ tsApp.directive('refsetTable',
               console.debug("exportModal ", lrefset);
 
               var modalInstance = $modal.open({
-                templateUrl : 'app/page/refset/export.html',
+                templateUrl : 'app/page/refset/importExport.html',
                 controller : ImportExportModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
@@ -596,7 +623,11 @@ tsApp.directive('refsetTable',
                     return lcontentType;
                   },
                   ioHandlers : function() {
-                    return $scope.ioHandlers;
+                    if (ldir == 'Import') {
+                      return $scope.ioImportHandlers;
+                    } else {
+                      return $scope.ioExportHandlers;
+                    }
                   }
                 }
               });
@@ -608,68 +639,94 @@ tsApp.directive('refsetTable',
 
               $scope.refset = refset;
               $scope.ioHandlers = ioHandlers;
-              $scope.selectedIOHandler = $scope.ioHandlers[0];
+              $scope.selectedIoHandler = $scope.ioHandlers[0];
               $scope.selectedContent = contentType;
               $scope.dir = dir;
+              $scope.errors = [];
               
-              $scope.export = function() {
-                console.debug("export", refset.id);
+              // Handle export
+              $scope.export = function(file) {
+                console.debug("export", $scope.refset.id, file);
 
                 if (contentType == 'Definition') {
-                  refsetService.exportDefinition(refset.id, $scope.selectedIOHandler.id,
-                    $scope.selectedIOHandler.fileTypeFilter);
+                  refsetService.exportDefinition($scope.refset.id, $scope.selectedIoHandler.id,
+                    $scope.selectedIoHandler.fileTypeFilter);
                 }
                 if (contentType == 'Refset Members') {
-                  refsetService.exportMembers(refset.id, $scope.selectedIOHandler.id,
-                    $scope.selectedIOHandler.fileTypeFilter);
+                  refsetService.exportMembers($scope.refset.id, $scope.selectedIoHandler.id,
+                    $scope.selectedIoHandler.fileTypeFilter);
                 }
                 $modalInstance.close();
               };
               
-              $scope.import = function() {
-                console.debug("import", refset.id);
+              // Handle import
+              $scope.import = function(file) {
+                console.debug("import", $scope.refset.id, file);
 
                 if (contentType == 'Definition') {
-                  refsetService.importDefinition(refset.id, $scope.selectedIOHandler.id,
-                    $scope.selectedIOHandler.fileTypeFilter);
+                  refsetService.importDefinition($scope.refset.id, $scope.selectedIoHandler.id,
+                    $scope.selectedIoHandler.fileTypeFilter);
                 }
+                
                 if (contentType == 'Refset Members') {
-                  refsetService.importMembers(refset.id, $scope.selectedIOHandler.id,
-                    $scope.selectedIOHandler.fileTypeFilter);
-                }
-                $modalInstance.close();
-              };
-              
-              $scope.onFileSelect = function($files) {
-                console.debut("onFileSelect");
-                // $files: an array of files selected, each file
-                // has name, size, and type.
-                /*for (var i = 0; i < $files.length; i++) {
-                  var $file = $files[i];
-                  $rootScope.glassPane++;
-                  $upload
-                    .upload({
-                      url : refsetUrl + "import/definition?handlerId=" + 
-                      handlerId + "&refsetId=" + refsetId,
-                      file : $file,
-                      progress : function(e) {
+                  refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id).then(
+
+                    // Success
+                    function(data) {
+                      console.debug("begin import members, valdiation = ",data);
+                      // data is a validation result, check for errors
+                      if (data.errors.length > 0) {
+                        $scope.errors = data.errors;
+                      } else {
+                      
+                        // If there are no errors, finish import
+                        refsetService.finishImportMembers($scope.refset.id, $scope.selectedIoHandler.id,file).then(
+                          // Success
+                          function(data) {
+                            $modalInstance.close();
+                          },
+                          // Failure - close dialog so error messages shows up
+                          function(data) {
+                            $modalInstance.close();
+                          }
+                        );
                       }
-                    })
-                    .error(function(data, status, headers, config) {
-                      // file is not uploaded
-                      // successfully
-                      // TODO.. handle error
-                    })
-                    .success(
-                      function(data) {
-                        // file is uploaded
-                        // successfully, "data" contains the filename
-                      });
-                }*/
+                    },
+                    
+                    // Failure - close dialog so error messages shows up
+                    function(data) {
+                      $modalInstance.close();
+                    }
+                  );
+                }
+              };
+              
+              // Handle continue import
+              $scope.continueImport = function(file) {
+                console.debug("continue import", $scope.refset.id, file);
+                
+                if (contentType == 'Refset Members') {
+                  refsetService.finishImportMembers($scope.refset.id, $scope.selectedIoHandler.id,file).then(
+                    // Success
+                    function(data) {
+                      $modalInstance.close();
+                    },
+                    // Failure - close dialog so error messages shows up
+                    function(data) {
+                      $modalInstance.close();
+                    }
+                  );
+                }
               };
 
               $scope.cancel = function() {
+                // If there are lingering errors, cancel the import
+                if ($scope.errors.length > 0) {
+                  refsetService.cancelImportMembers($scope.refset.id);
+                }
+                // dismiss the dialog
                 $modalInstance.dismiss('cancel');
+                                
               };
 
             };
@@ -683,6 +740,7 @@ tsApp.directive('refsetTable',
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/release.html',
                 controller : ReleaseProcessModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
@@ -703,7 +761,7 @@ tsApp.directive('refsetTable',
 
               $scope.refset = refset;
               $scope.ioHandlers = ioHandlers;
-              $scope.selectedIOHandler = $scope.ioHandlers[0];
+              $scope.selectedIoHandler = $scope.ioHandlers[0];
               
 
               $scope.release = function() {
@@ -711,7 +769,7 @@ tsApp.directive('refsetTable',
 
 
                 releaseService.beginRefsetRelease(refset.id, effectiveTime).then(function(data) {
-                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIOHandler.id);
+                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
                 }, function(data){});
 
                 $modalInstance.close();
@@ -731,6 +789,7 @@ tsApp.directive('refsetTable',
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/chooseUser.html',
                 controller : ChooseUserModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
@@ -806,6 +865,8 @@ tsApp.directive('refsetTable',
             
             
             // modal for creating a new refset 
+            // TODO: consolidate "new" and "edit" functionality into same modal and partials page
+            // 
             $scope.openNewRefsetModal = function(lrefset) {
 
               console.debug("openNewRefsetModal ", lrefset);
@@ -813,6 +874,7 @@ tsApp.directive('refsetTable',
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/newRefset.html',
                 controller : NewRefsetModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
@@ -870,8 +932,10 @@ tsApp.directive('refsetTable',
                 }
 
                 refset.projectId = project.id;
+                // TODO:!! this is hardcoded and almost certainly should not be
                 refset.workflowPath = 'DEFAULT';
                 // TODO replace with conversion from 20150131 format
+                // TODO:!! this is hardcoded and almost certainly should not be
                 refset.version = '2015-01-31';
                 refsetService.addRefset(refset).then(function(data) {
                   var newRefset = data;
@@ -905,8 +969,6 @@ tsApp.directive('refsetTable',
 
             };
 
-
-
             // modal for editing a refset
             $scope.openEditRefsetModal = function(lrefset) {
 
@@ -915,6 +977,7 @@ tsApp.directive('refsetTable',
               var modalInstance = $modal.open({
                 templateUrl : 'app/page/refset/editRefset.html',
                 controller : EditRefsetModalCtrl,
+                backdrop : 'static',
                 resolve : {
                   refset : function() {
                     return lrefset;
@@ -972,6 +1035,10 @@ tsApp.directive('refsetTable',
                 refsetService.updateRefset(refset).then(function(data) {
                   if (refset.definition != $scope.originalDefinition) {
                     console.log("need to run redefinition");
+                    // TODO: we can't actually do this in the long run
+                    // we need to have a "staged" operation where the user can review
+                    // the definition change and then cancel back out of it.
+                    // a special dialog will be required, etc.  It's fine for "new" but not for "Edit"
                     refsetService.beginRedefinition(refset.id, refset.definition)
                     .then(function(data) {
                       
@@ -1008,6 +1075,7 @@ tsApp.directive('refsetTable',
                 var modalInstance = $modal.open({
                   templateUrl : 'app/page/refset/newMember.html',
                   controller : NewMemberModalCtrl,
+                  backdrop : 'static',
                   resolve : {
                     member : function() {
                       return lmember;

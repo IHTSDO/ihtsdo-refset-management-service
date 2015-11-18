@@ -37,7 +37,6 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -214,7 +213,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.REVIEWER);
+          "perform workflow action on translation", UserRole.AUTHOR);
 
       // Get object references
       Translation translation = workflowService.getTranslation(translationId);
@@ -475,7 +474,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find available review work", UserRole.REVIEWER);
+          "trying to find available review work", UserRole.AUTHOR);
 
       // Get object references
       User user = securityService.getUser(userName);
@@ -523,7 +522,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset assigned review work", UserRole.REVIEWER);
+          "trying to find refset assigned review work", UserRole.AUTHOR);
 
       // Find refset tracking records "for review" for this user
       String query = "";
@@ -557,15 +556,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-
+  
   /* see superclass */
   @Override
-  @GET
+  @POST
   @Path("/refset/available/all")
-  @ApiOperation(value = "Find available work", notes = "Finds refsets available.", response = RefsetListJpa.class)
+  @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAllAvailableRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. 3", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -575,34 +574,53 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find available review work", UserRole.REVIEWER);
+          "trying to find refset available review work", UserRole.AUTHOR);
 
-      // Get object references
-      User user = securityService.getUser(userName);
-
-      // Combine results from all workflow action handlers
-      List<Refset> list = new ArrayList<>();
-
-      for (WorkflowActionHandler handler : workflowService
-          .getWorkflowHandlers()) {
-        list.addAll(handler.findAvailableEditingRefsets(projectId, user, pfs,
-            workflowService).getObjects());
+      // Find refset tracking records "for review" for this user
+      String query = "";
+      if (userName != null && !userName.equals("")) {
+        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
+              + " AND forReview:true";
+      } else {
+        query =
+            "refsetId:[* TO *]" + " AND forReview:true";
       }
-      for (WorkflowActionHandler handler : workflowService
-          .getWorkflowHandlers()) {
-        list.addAll(handler.findAvailableReviewRefsets(projectId, user, pfs,
-            workflowService).getObjects());
+      TrackingRecordList records =
+          workflowService.findTrackingRecordsForQuery(query, pfs);
+
+      String editingQuery = "";
+      if (userName != null && !userName.equals("")) {
+        editingQuery =
+            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+                + " AND forAuthoring:true AND forReview:false";
+      } else {
+        editingQuery =
+            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
+      }
+      TrackingRecordList editingRecords =
+          workflowService.findTrackingRecordsForQuery(editingQuery, pfs);
+
+      RefsetList list = new RefsetListJpa();
+      list.setTotalCount(records.getTotalCount()
+          + editingRecords.getTotalCount());
+      for (TrackingRecord record : records.getObjects()) {
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
+      }
+      for (TrackingRecord record : editingRecords.getObjects()) {
+        // handle lazy intialization
+        Refset refset = record.getRefset();
+        refset.getEnabledFeedbackEvents().size();
+        refset.getMembers().size();
+        refset.getTranslations().size();
+        list.getObjects().add(refset);
       }
 
-      // Apply pfs
-      RefsetList result = new RefsetListJpa();
-      result.setTotalCount(list.size());
-      list =
-          ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
-              Refset.class, pfs);
-      result.setObjects(list);
-      return result;
-
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to find available review work");
     } finally {
@@ -611,7 +629,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /* see superclass */
   @Override
   @POST
@@ -629,7 +647,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find refset assigned review work", UserRole.REVIEWER);
+          "trying to find refset assigned review work", UserRole.AUTHOR);
 
       // Find refset tracking records "for review" for this user
       String query = "";
@@ -684,7 +702,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /* see superclass */
   @Override
   @GET
@@ -702,7 +720,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
-          "trying to find release process refsets", UserRole.REVIEWER);
+          "trying to find release process refsets", UserRole.AUTHOR);
 
       // Get object references
       User user = securityService.getUser(userName);

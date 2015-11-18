@@ -7,13 +7,12 @@
     <h4>Refsets</h4>
     
     <span style="display: block;">    
-    <h5>Choose Project: <select ng-model="selectedProject" ng-show="candidateProjects.length > 1"
-      ng-options="item.name for item in candidateProjects" ng-change="setSelectedProject();
+    <h5>Choose Project: <select ng-model="selectedProject" ng-show="projects.length > 1"
+      ng-options="item.name for item in projects" ng-change="setSelectedProject();
       findAssignedUsersForProject()"></select><br>
     Role:{{user.projectRoleMap[selectedProject.id]}}</h5>
     </span>
     
-
     <accordion> <accordion-group is-open="true">
     <accordion-heading>
     <h5 class="section-header">Available</h5>
@@ -21,24 +20,24 @@
     <div refset-table value="AVAILABLE"></div>
     </accordion-group> 
     
+    <!-- do not show for admins -->
     <accordion-group is-open="false" 
-    ng-show="user.projectRoleMap[selectedProject.id] != 'ADMIN'"> <accordion-heading>
+    ng-show="!isProjectAdmin()"> <accordion-heading>
     <h5 class="section-header">Assigned</h5>
     </accordion-heading>
     <!-- TODO project="{{selectedProject.id}}" -->
     <div refset-table value="ASSIGNED"></div>
     </accordion-group> 
     
+    <!-- show only for admins -->
     <accordion-group is-open="false" 
-    ng-show="user.projectRoleMap[selectedProject.id] == 'ADMIN'"> <accordion-heading>
+    ng-show="isProjectAdmin()"> <accordion-heading>
     <h5 class="section-header">Assigned All</h5>
     </accordion-heading>
     <div refset-table value="ASSIGNED_ALL"></div>
     </accordion-group>
 
-    <accordion-group is-open="false"
-    ng-show="user.projectRoleMap[selectedProject.id] == 'ADMIN' ||
-     user.projectRoleMap[selectedProject.id] == 'REVIEWER'"> <accordion-heading>
+    <accordion-group is-open="false"> <accordion-heading>
     <h5 class="section-header">Release</h5>
     </accordion-heading>
     <div refset-table value="RELEASE"></div>

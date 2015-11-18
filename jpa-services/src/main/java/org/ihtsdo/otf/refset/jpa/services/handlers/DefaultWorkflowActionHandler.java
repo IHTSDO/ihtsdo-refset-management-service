@@ -714,12 +714,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     };
 
     // NEW Refsets for this project that do not yet have tracking records
-    // workflow status doesn not have to be 'NEW' because sometimes work
+    // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
+    // For sure, ready, preview, or published refsets are not available
     String queryStr =
         "select a from RefsetJpa a where " // workflowStatus = 'NEW' "
             + " a.project.id = :projectId "
-            + "and a not in (select refset from TrackingRecordJpa)";
+            + "and a not in (select refset from TrackingRecordJpa) "
+            + "and workflowStatus not in ('READY_FOR_PUBLICATION','PREVIEW','PUBLISHED')";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(

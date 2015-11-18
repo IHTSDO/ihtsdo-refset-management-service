@@ -612,7 +612,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (translation.getConcepts().size() != 0) {
         result
-            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+            .addError("Translation already contains concepts, this operation will add more concepts");
       } else {
         return result;
       }
@@ -667,7 +667,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (translation.getConcepts().size() != 0) {
         result
-            .addError("Translation already contains concepts, this is a chance to cancel or confirm");
+            .addError("Translation already contains concepts, this operation will add more concepts");
       } else {
         return result;
       }

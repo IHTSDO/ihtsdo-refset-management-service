@@ -1,24 +1,29 @@
 // Refset controller
-tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService',
-                                 'securityService', '$rootScope',
-  function($scope, $http, tabService, projectService, securityService, $rootScope) {
+tsApp.controller('RefsetCtrl', [
+  '$scope',
+  '$http',
+  'tabService',
+  'projectService',
+  'securityService',
+  '$rootScope',
+  function($scope, $http, tabService, projectService, securityService,
+    $rootScope) {
     console.debug('configure RefsetCtrl');
 
     // Handle resetting tabs on "back" button
     if (tabService.selectedTab.label != 'Refset') {
       tabService.setSelectedTabByLabel('Refset');
     }
-    
+
     // Initialize
     projectService.prepareIconConfig();
 
     $scope.user = securityService.getUser();
-
-    projectService.getUserHasAnyRole(); // TODO: is this needed?
+    $scope.role = null;
     $scope.selectedProject = null;
-    
+
     // get all projects where user has a role
-    $scope.retrieveCandidateProjects = function() {
+    $scope.retrieveProjects = function() {
 
       var pfs = {
         startIndex : 0,
@@ -32,17 +37,16 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
       }
 
       projectService.findProjectsAsList("", pfs).then(function(data) {
-        $scope.candidateProjects = data.projects;
-        $scope.candidateProjects.totalCount = data.totalCount;
-        $scope.selectedProject = $scope.candidateProjects[0];
+        $scope.projects = data.projects;
+        $scope.projects.totalCount = data.totalCount;
+        $scope.selectedProject = $scope.projects[0];
         $scope.setSelectedProject();
         $scope.findAssignedUsersForProject();
 
       })
 
     };
-    
-    
+
     // get assigned users - this is the list of users that are
     // already assigned to the selected project
     $scope.findAssignedUsersForProject = function() {
@@ -50,31 +54,38 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
       var pfs = {
         startIndex : 0,
         maxResults : 100,
-        sortField : 'userName',
+        sortField : null,
         queryRestriction : null
       };
-      projectService.findAssignedUsersForProject($scope.selectedProject.id,
-        "", pfs).then(function(data) {
+
+      projectService.findAssignedUsersForProject($scope.selectedProject.id, "",
+        pfs).then(function(data) {
         $scope.assignedUsers = data.users;
-        for (var i = 0; i< $scope.assignedUsers.length; i++) {
+        for (var i = 0; i < $scope.assignedUsers.length; i++) {
           if ($scope.assignedUsers[i].userName == $scope.user.userName) {
-            $scope.user = $scope.assignedUsers[i];
-         
+            $scope.role = $scope.assignedUsers[i].projectRoleMap[selectedProject.id];
+            break;
           }
         }
       })
 
     };
-    
+
+    // Fire a "projectChanged" event
     $scope.setSelectedProject = function() {
-      console.log("rootScope.broadcast", $scope.selectedProject);  
+      console.log("rootScope.broadcast", $scope.selectedProject);
       $rootScope.$broadcast('refset:project', $scope.selectedProject);
-      
+
+    }
+
+    // Determine whether the user is a project admin
+    $scope.isProjectAdmin = function() {
+      return $scope.role == 'ADMIN';
     }
     
-    $scope.retrieveCandidateProjects();
     
+    $scope.retrieveProjects();
+
   }
 
 ]);
-
