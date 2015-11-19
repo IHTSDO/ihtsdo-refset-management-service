@@ -764,7 +764,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Override
   public ValidationResult finishTranslationRelease(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
+
+    // see finishRefsetRelease
+    
     return null;
   }
 

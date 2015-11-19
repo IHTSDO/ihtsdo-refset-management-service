@@ -1,22 +1,22 @@
 // Refset Service
 tsApp.service('refsetService', [
-  '$http',
+  '$http', '$rootScope',
   '$q',
   'Upload',
   'gpService',
   'utilService',
   'projectService',
-  function($http, $q, Upload, gpService, utilService, projectService) {
+  function($http, $rootScope, $q, Upload, gpService, utilService, projectService) {
     console.debug("configure refsetService");
 
     // broadcasts a new project id
     this.fireProjectChanged = function(project) {
-      $rootScope.$broadcast('projectChanged', project);      
+      $rootScope.$broadcast('refset:projectChanged', project);      
     }
     
     // broadcasts a refset change
-    this.fireRefsetChanged = function(projectId) {
-      $rootScope.$broadcast('refsetChanged', projectId);
+    this.fireRefsetChanged = function(refset) {
+      $rootScope.$broadcast('refset:refsetChanged', refset);
     }
     
     // get refset revision

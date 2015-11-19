@@ -200,11 +200,11 @@
             <td>External Url</td>
             <td>{{refset.externalUrl}}</td>
           </tr>
-          <tr ng-show="refset.releaseInfo">
+          <tr ng-show="refsetReleaseInfo">
             <td>RELEASED</td>
-            <td>{{refset.releaseInfo.name}}
+            <td>{{refsetReleaseInfo.name}}
           </tr>
-          <tr ng-show="!refset.releaseInfo">
+          <tr ng-show="!refsetReleaseInfo">
             <td>Not yet released</td>
             <td>&nbsp;</td>
           </tr>
@@ -214,10 +214,10 @@
 
     <!-- release info -->
     <div class="col-md-12 col-xs-12">
-      <span ng-show="refset.releaseInfo && !refset.releaseInfo.artifacts"
+      <span ng-show="refsetReleaseInfo && !refsetReleaseInfo.artifacts"
         class="alert alert-warning">Release has no associated artifacts</span>
       <div class="col-md-12 col-xs-12">
-        <table ng-show="refset.releaseInfo && refset.releaseInfo.artifacts"
+        <table ng-show="refsetReleaseInfo && refsetReleaseInfo.artifacts"
           class="table">
           <thead>
             <th class="col-md-6 col-xs-6">Release File</th>
@@ -226,7 +226,7 @@
           </thead>
           <tbody>
             <tr
-              ng-repeat="artifact in refset.releaseInfo.artifacts | orderBy:'artifact.name'">
+              ng-repeat="artifact in refsetReleaseInfo.artifacts | orderBy:'artifact.name'">
               <td>{{artifact.name}}</td>
               <td>{{toShortDate(artifact.timestamp)}}</td>
               <td><span>

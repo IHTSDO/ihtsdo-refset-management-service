@@ -3,51 +3,48 @@
 <div class="row">
 
   <div class="col-md-12 col-xs-12">
-
-    <h4>Refsets</h4>
-    
-    <span style="display: block;">    
-    <h5>Choose Project: <select ng-model="selectedProject" ng-show="projects.length > 1"
-      ng-options="item.name for item in projects" ng-change="setSelectedProject();
-      findAssignedUsersForProject()"></select><br>
-    Role:{{user.projectRoleMap[selectedProject.id]}}</h5>
+    <h4 class="col-md-12">Refsets</h4>
+  </div>
+  <div class="col-md-12 col-xs-12">
+    <span class="col-md-4 col-xs-8">
+      <table class="table">
+        <tbody>
+          <tr>
+            <td>Choose Project:</td>
+            <td><select ng-model="project" ng-show="projects.length > 1"
+              ng-options="item.name for item in projects"
+              ng-change="setProject();
+      findAssignedUsersForProject()"></select></td>
+          </tr>
+          <tr>
+            <td>Role:</td>
+            <td>{{user.role}}</td>
+          </tr>
+        </tbody>
+      </table>
     </span>
-    
-    <accordion> <accordion-group is-open="true">
-    <accordion-heading>
+    <span class="col-md-8 col-xs-4"></span>
+  </div>
+  <div class="col-md-12 col-xs-12">
+    <accordion> <accordion-group is-open="true"> <accordion-heading>
     <h5 class="section-header">Available</h5>
     </accordion-heading>
-    <div refset-table value="AVAILABLE"></div>
-    </accordion-group> 
-    
-    <!-- do not show for admins -->
-    <accordion-group is-open="false" 
-    ng-show="!isProjectAdmin()"> <accordion-heading>
+    <div refset-table value="AVAILABLE" projects="projects"></div>
+    </accordion-group> <!-- do not show for admins --> <accordion-group is-open="false"
+      ng-show="!isProjectAdmin()"> <accordion-heading>
     <h5 class="section-header">Assigned</h5>
-    </accordion-heading>
-    <!-- TODO project="{{selectedProject.id}}" -->
-    <div refset-table value="ASSIGNED"></div>
-    </accordion-group> 
-    
-    <!-- show only for admins -->
-    <accordion-group is-open="false" 
-    ng-show="isProjectAdmin()"> <accordion-heading>
+    </accordion-heading> <!-- TODO project="{{project.id}}" -->
+    <div refset-table value="ASSIGNED" projects="projects"></div>
+    </accordion-group> <!-- show only for admins --> <accordion-group is-open="false"
+      ng-show="isProjectAdmin()"> <accordion-heading>
     <h5 class="section-header">Assigned All</h5>
     </accordion-heading>
-    <div refset-table value="ASSIGNED_ALL"></div>
-    </accordion-group>
-
-    <accordion-group is-open="false"> <accordion-heading>
+    <div refset-table value="ASSIGNED_ALL" projects="projects"></div>
+    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
     <h5 class="section-header">Release</h5>
     </accordion-heading>
-    <div refset-table value="RELEASE"></div>
-    </accordion-group>
-    
-    </accordion>
-
-
-
-
+    <div refset-table value="RELEASE" projects="projects"></div>
+    </accordion-group> </accordion>
   </div>
 </div>
 

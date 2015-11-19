@@ -31,6 +31,7 @@ import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -177,12 +178,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               + translationId + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-      ConceptList list = new ConceptListJpa();
-      list.setTotalCount(records.getTotalCount());
+          workflowService.findTrackingRecordsForQuery(query,
+              new PfsParameterJpa());
+      List<Concept> concepts = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        list.getObjects().add(record.getConcept());
+        concepts.add(record.getConcept());
       }
+
+      // Apply PFS to this list
+      ConceptList list = new ConceptListJpa();
+      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
+          pfs));
+      list.setTotalCount(records.getTotalCount());
+
       return list;
 
     } catch (Exception e) {
@@ -262,12 +270,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "reviewerUserNames:" + user.getId() + " AND translationId:"
               + translationId + " AND forReview:true";
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
+          workflowService.findTrackingRecordsForQuery(query,
+              new PfsParameterJpa());
+      List<Concept> concepts = new ArrayList<>();
+      for (TrackingRecord record : records.getObjects()) {
+        concepts.add(record.getConcept());
+      }
       ConceptList list = new ConceptListJpa();
       list.setTotalCount(records.getTotalCount());
-      for (TrackingRecord record : records.getObjects()) {
-        list.getObjects().add(record.getConcept());
-      }
+      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
+          pfs));
       return list;
 
     } catch (Exception e) {
@@ -434,18 +446,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         query =
             "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
       }
+      // Perform this search without pfs
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
-      RefsetList list = new RefsetListJpa();
-      list.setTotalCount(records.getTotalCount());
+          workflowService.findTrackingRecordsForQuery(query,
+              new PfsParameterJpa());
+
+      List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy intialization
+        // handle lazy initialization
         Refset refset = record.getRefset();
         refset.getEnabledFeedbackEvents().size();
         refset.getMembers().size();
         refset.getTranslations().size();
-        list.getObjects().add(refset);
+        refsets.add(refset);
       }
+      RefsetList list = new RefsetListJpa();
+      list.setObjects(workflowService
+          .applyPfsToList(refsets, Refset.class, pfs));
+      list.setTotalCount(records.getTotalCount());
+
       return list;
 
     } catch (Exception e) {
@@ -527,26 +546,29 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Find refset tracking records "for review" for this user
       String query = "";
       if (userName != null && !userName.equals("")) {
-        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
-              + " AND forReview:true";
-      } else {
         query =
-            "refsetId:[* TO *]" + " forReview:true";
+            "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
+                + " AND forReview:true";
+      } else {
+        query = "refsetId:[* TO *]" + " forReview:true";
       }
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
+          workflowService.findTrackingRecordsForQuery(query,
+              new PfsParameterJpa());
 
-      RefsetList list = new RefsetListJpa();
-      list.setTotalCount(records.getTotalCount());
+      List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
         // handle lazy intialization
         Refset refset = record.getRefset();
         refset.getEnabledFeedbackEvents().size();
         refset.getMembers().size();
         refset.getTranslations().size();
-        list.getObjects().add(refset);
+        refsets.add(refset);
       }
-
+      RefsetList list = new RefsetListJpa();
+      list.setTotalCount(records.getTotalCount());
+      list.setObjects(workflowService
+          .applyPfsToList(refsets, Refset.class, pfs));
       return list;
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
@@ -556,7 +578,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /* see superclass */
   @Override
   @POST
@@ -576,49 +598,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset available review work", UserRole.AUTHOR);
 
-      // Find refset tracking records "for review" for this user
-      String query = "";
-      if (userName != null && !userName.equals("")) {
-        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
-              + " AND forReview:true";
-      } else {
-        query =
-            "refsetId:[* TO *]" + " AND forReview:true";
-      }
-      TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
+      // Get available editing and available review and combine
+      RefsetList list1 =
+          findAvailableEditingRefsets(projectId, userName, pfs, authToken);
+      RefsetList list2 =
+          findAvailableReviewRefsets(projectId, userName, pfs, authToken);
 
-      String editingQuery = "";
-      if (userName != null && !userName.equals("")) {
-        editingQuery =
-            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
-                + " AND forAuthoring:true AND forReview:false";
-      } else {
-        editingQuery =
-            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
-      }
-      TrackingRecordList editingRecords =
-          workflowService.findTrackingRecordsForQuery(editingQuery, pfs);
+      List<Refset> refsets = new ArrayList<>();
+      refsets.addAll(list1.getObjects());
+      refsets.addAll(list2.getObjects());
 
       RefsetList list = new RefsetListJpa();
-      list.setTotalCount(records.getTotalCount()
-          + editingRecords.getTotalCount());
-      for (TrackingRecord record : records.getObjects()) {
-        // handle lazy intialization
-        Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
-        refset.getTranslations().size();
-        list.getObjects().add(refset);
-      }
-      for (TrackingRecord record : editingRecords.getObjects()) {
-        // handle lazy intialization
-        Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
-        refset.getTranslations().size();
-        list.getObjects().add(refset);
-      }
+      list.setTotalCount(refsets.size());
+      list.getObjects().addAll(
+          workflowService.applyPfsToList(refsets, Refset.class, pfs));
 
       return list;
     } catch (Exception e) {
@@ -649,49 +642,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset assigned review work", UserRole.AUTHOR);
 
-      // Find refset tracking records "for review" for this user
-      String query = "";
-      if (userName != null && !userName.equals("")) {
-        query = "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
-              + " AND forReview:true";
-      } else {
-        query =
-            "refsetId:[* TO *]" + " AND forReview:true";
-      }
-      TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, pfs);
+      // Get available editing and available review and combine
+      RefsetList list1 =
+          findAssignedEditingRefsets(projectId, userName, pfs, authToken);
+      RefsetList list2 =
+          findAssignedReviewRefsets(projectId, userName, pfs, authToken);
 
-      String editingQuery = "";
-      if (userName != null && !userName.equals("")) {
-        editingQuery =
-            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
-                + " AND forAuthoring:true AND forReview:false";
-      } else {
-        editingQuery =
-            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
-      }
-      TrackingRecordList editingRecords =
-          workflowService.findTrackingRecordsForQuery(editingQuery, pfs);
+      List<Refset> refsets = new ArrayList<>();
+      refsets.addAll(list1.getObjects());
+      refsets.addAll(list2.getObjects());
 
       RefsetList list = new RefsetListJpa();
-      list.setTotalCount(records.getTotalCount()
-          + editingRecords.getTotalCount());
-      for (TrackingRecord record : records.getObjects()) {
-        // handle lazy intialization
-        Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
-        refset.getTranslations().size();
-        list.getObjects().add(refset);
-      }
-      for (TrackingRecord record : editingRecords.getObjects()) {
-        // handle lazy intialization
-        Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
-        refset.getTranslations().size();
-        list.getObjects().add(refset);
-      }
+      list.setTotalCount(refsets.size());
+      list.getObjects().addAll(
+          workflowService.applyPfsToList(refsets, Refset.class, pfs));
 
       return list;
     } catch (Exception e) {
