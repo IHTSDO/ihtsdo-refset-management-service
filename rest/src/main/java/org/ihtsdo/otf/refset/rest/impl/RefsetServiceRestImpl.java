@@ -220,26 +220,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+      authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
+      
       int[] totalCt = new int[1];
       RefsetList result = new RefsetListJpa();
       result.setTotalCount(totalCt[0]);
-      result.setObjects(refsetService.getProject(projectId).getRefsets());
-      
-      // security check: if any refset is private then project->author, else viewer
-      boolean isPrivate = false;
-      for(Refset refset : result.getObjects()) {
-        if (!refset.isPublic()) {
-          isPrivate = true;
-          break;
-        }        
-      }
-      if (isPrivate) {
-        authorizeProject(projectService, projectId, securityService, authToken,
-            "finds refsets for project", UserRole.AUTHOR);       
-      } else {
-        authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
-      }  
-      
+      result.setObjects(refsetService.getProject(projectId).getRefsets());      
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
@@ -264,26 +250,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      RefsetList list = refsetService.findRefsetsForQuery(query, pfs);
-      
-      // security check: if any refset is private then project->author, else viewer
-      boolean isPrivate = false;
-      Long projectId = null;
-      for(Refset refset : list.getObjects()) {
-        if (!refset.isPublic()) {
-          isPrivate = true;
-          projectId = refset.getProject().getId();
-          break;
-        }        
-      }
-      if (isPrivate) {
-        authorizeProject(projectService, projectId, securityService, authToken,
-            "finds refsets based on pfs parameter and query", UserRole.AUTHOR);       
-      } else {
-        authorizeApp(securityService, authToken, "finds refsets based on pfs parameter and query", UserRole.VIEWER); 
-      }  
-      
-      return list;
+      authorizeApp(securityService, authToken,
+          "finds refsets based on pfs parameter and query", UserRole.VIEWER);
+      return refsetService.findRefsetsForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
       return null;
