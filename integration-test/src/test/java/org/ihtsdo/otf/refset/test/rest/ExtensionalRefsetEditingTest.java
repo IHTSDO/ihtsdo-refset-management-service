@@ -181,7 +181,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
             .performWorkflowAction(currentRefset.getProject().getId(),
                 currentRefset.getId(), testUser, "FINISH", adminAuthToken);
 
-    //TODO: Remove the line below later. Just for debugging
+    // TODO: Remove the line below later. Just for debugging
     WorkflowStatus status = record.getRefset().getWorkflowStatus();
 
     // remove refset

@@ -142,13 +142,12 @@ public interface WorkflowActionHandler extends Configurable {
    * Find release process refsets.
    *
    * @param projectId the project id
-   * @param user the user
    * @param pfs the pfs
    * @param service the service
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findReleaseProcessRefsets(Long projectId, User user,
+  public RefsetList findReleaseProcessRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception;
 
 }

@@ -149,14 +149,14 @@ tsApp
                   })
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.user.role == 'ADMIN') {
-                  workflowService.findAllAvailableRefsets($scope.project.id, '', pfs).then(
+                  workflowService.findAllAvailableRefsets($scope.project.id, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
                     })
                 }
                 if ($scope.value == 'ASSIGNED_ALL' && $scope.user.role == 'ADMIN') {
-                  workflowService.findAllAssignedRefsets($scope.project.id, '', pfs).then(
+                  workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
@@ -189,7 +189,7 @@ tsApp
                 }
                 if ($scope.value == 'RELEASE') {
                   workflowService.findReleaseProcessRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
+                    pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
                   })
