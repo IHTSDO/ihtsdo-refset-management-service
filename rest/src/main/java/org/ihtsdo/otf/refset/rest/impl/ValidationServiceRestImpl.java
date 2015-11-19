@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ConceptValidationResult;
 import org.ihtsdo.otf.refset.MemberValidationResult;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -26,6 +27,7 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptValidationResultListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.MemberValidationResultListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -35,6 +37,7 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -57,6 +60,9 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
+  
+  /** The project service. */
+  private ProjectService projectService;
 
   /**
    * Instantiates an empty {@link ValidationServiceRestImpl}.
@@ -65,6 +71,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
    */
   public ValidationServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
+    projectService = new ProjectServiceJpa();
   }
 
   /* see superclass */
@@ -83,7 +90,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "validate concept",
-          UserRole.VIEWER);
+          UserRole.ADMIN);
 
       return validationService.validateConcept(concept, translationService);
     } catch (Exception e) {
@@ -112,8 +119,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
 
     try {
-      authorizeApp(securityService, authToken, "validate refset",
-          UserRole.VIEWER);
+      authorizeProject(projectService, refset.getProjectId(), securityService, authToken,
+          "validate a refset", UserRole.AUTHOR);
 
       return validationService.validateRefset(refset, refsetService);
     } catch (Exception e) {
@@ -144,8 +151,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      authorizeApp(securityService, authToken, "validate translation",
-          UserRole.VIEWER);
+      authorizeProject(projectService, translation.getProjectId(), securityService, authToken,
+          "validate translation", UserRole.AUTHOR);
 
       return validationService.validateTranslation(translation,
           translationService);
@@ -176,7 +183,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "validate member",
-          UserRole.VIEWER);
+          UserRole.ADMIN);
 
       return validationService.validateMember(member, refsetService);
     } catch (Exception e) {
@@ -207,7 +214,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "validate all concepts",
-          UserRole.VIEWER);
+          UserRole.ADMIN);
 
       ConceptValidationResultList list = new ConceptValidationResultListJpa();
       ConceptList concepts =
@@ -249,8 +256,9 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "validate all members",
-          UserRole.VIEWER);
+      Refset refset = refsetService.getRefset(refsetId);
+      authorizeProject(projectService, refset.getProject().getId(), securityService, authToken,
+          "validate all members", UserRole.AUTHOR);
 
       MemberValidationResultList list = new MemberValidationResultListJpa();
       ConceptRefsetMemberList members =

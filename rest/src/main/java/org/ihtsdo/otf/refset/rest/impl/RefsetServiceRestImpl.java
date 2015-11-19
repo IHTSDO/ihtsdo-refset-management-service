@@ -49,12 +49,14 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -80,6 +82,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
+  
+  /** The project service. */
+  private ProjectService projectService;
 
   /** The members in common map. */
   private static Map<String, List<ConceptRefsetMember>> membersInCommonMap =
@@ -96,6 +101,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
    */
   public RefsetServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
+    projectService = new ProjectServiceJpa();
   }
 
   /* see superclass */
@@ -151,7 +157,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve the refset revision",
+      authorizeApp(securityService, authToken, "finds members of refset revision",
           UserRole.VIEWER);
 
       // check date format
@@ -183,11 +189,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve the refset",
-          UserRole.VIEWER);
-
       Refset refset = refsetService.getRefset(refsetId);
-
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken, "get refset for id",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, refset.getProject().getId(),
+            securityService, authToken, "get refset for id",
+            UserRole.AUTHOR);
+      }
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -201,6 +211,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/refsets/{projectid}")
+  @ApiOperation(value = "Finds refsets for project", notes = "Finds refsets based on projectId", response = RefsetListJpa.class)
   public RefsetList getRefsetsForProject(
     @ApiParam(value = "Project internal id, e.g. 2", required = true) Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -209,13 +220,26 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get refsets for project",
-          UserRole.VIEWER);
-
       int[] totalCt = new int[1];
       RefsetList result = new RefsetListJpa();
       result.setTotalCount(totalCt[0]);
       result.setObjects(refsetService.getProject(projectId).getRefsets());
+      
+      // security check: if any refset is private then project->author, else viewer
+      boolean isPrivate = false;
+      for(Refset refset : result.getObjects()) {
+        if (!refset.isPublic()) {
+          isPrivate = true;
+          break;
+        }        
+      }
+      if (isPrivate) {
+        authorizeProject(projectService, projectId, securityService, authToken,
+            "finds refsets for project", UserRole.AUTHOR);       
+      } else {
+        authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
+      }  
+      
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
@@ -240,9 +264,26 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find refsets", UserRole.VIEWER);
-
-      return refsetService.findRefsetsForQuery(query, pfs);
+      RefsetList list = refsetService.findRefsetsForQuery(query, pfs);
+      
+      // security check: if any refset is private then project->author, else viewer
+      boolean isPrivate = false;
+      Long projectId = null;
+      for(Refset refset : list.getObjects()) {
+        if (!refset.isPublic()) {
+          isPrivate = true;
+          projectId = refset.getProject().getId();
+          break;
+        }        
+      }
+      if (isPrivate) {
+        authorizeProject(projectService, projectId, securityService, authToken,
+            "finds refsets based on pfs parameter and query", UserRole.AUTHOR);       
+      } else {
+        authorizeApp(securityService, authToken, "finds refsets based on pfs parameter and query", UserRole.VIEWER); 
+      }  
+      
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
       return null;
@@ -462,9 +503,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeApp(securityService, authToken, "export definition",
-          UserRole.VIEWER);
-
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken, "export definition",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(refsetService, refset.getProject().getId(),
+            securityService, authToken, "export definition", UserRole.AUTHOR);
+      }
+      
       // Obtain the export handler
       ExportRefsetHandler handler =
           refsetService.getExportRefsetHandler(ioHandlerInfoId);
@@ -509,8 +555,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeApp(securityService, authToken, "export definition",
-          UserRole.VIEWER);
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken, "export refset members",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(refsetService, refset.getProject().getId(),
+            securityService, authToken, "export refset members", UserRole.AUTHOR);
+      }
 
       // Obtain the export handler
       ExportRefsetHandler handler =
@@ -618,8 +669,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find refset members",
-          UserRole.VIEWER);
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken, "export definition",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(refsetService, refset.getProject().getId(),
+            securityService, authToken, "export definition", UserRole.AUTHOR);
+      }
 
       return refsetService.findMembersForRefset(refsetId, query, pfs);
     } catch (Exception e) {
@@ -1471,6 +1534,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Refset refset1 = refsetService.getRefset(refsetId1);
       Refset refset2 = refsetService.getRefset(refsetId2);
       String reportToken = UUID.randomUUID().toString();
+      
+      // Authorize the call
+      if (!refset1.isPublic()) {
+        authorizeProject(refsetService, refset1.getProject().getId(),
+            securityService, authToken, "compares two refsets", UserRole.AUTHOR);
+      }
+      if (!refset2.isPublic()) {
+        authorizeProject(refsetService, refset2.getProject().getId(),
+            securityService, authToken, "compares two refsets", UserRole.AUTHOR);
+      }
+      if (refset1.isPublic() && refset2.isPublic()) {
+        authorizeApp(securityService, authToken, "compares two refsets",
+            UserRole.VIEWER);
+      } 
 
       // creates a "members in common" list (where reportToken is the key)
       List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
@@ -1535,6 +1612,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+      // TODO: how can I get the projectId?
       authorizeApp(securityService, authToken, "find members in common",
           UserRole.VIEWER);
 
@@ -1574,6 +1652,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+   // TODO: how can I get the projectId?
       authorizeApp(securityService, authToken, "returns diff report",
           UserRole.VIEWER);
 
@@ -1634,12 +1713,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve the definition",
-          UserRole.VIEWER);
-
-      //Refset refset = refsetService.getRefset(refsetId);
-      // TODO: implement this
-      return null;
+      Refset refset = refsetService.getRefset(refsetId);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "get definition for refset id", UserRole.AUTHOR);
+      
+      return refset.getDefinition();
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
       return null;

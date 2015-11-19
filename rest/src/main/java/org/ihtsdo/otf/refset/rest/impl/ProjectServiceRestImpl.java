@@ -126,10 +126,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      // Check if user is either an admin overall or an ADMIN on this project
-      // now try to validate project role
       authorizeProject(projectService, projectId, securityService, authToken,
-          "add user to project", UserRole.ADMIN);
+          "add user to project", UserRole.AUTHOR);
 
       Project project = projectService.getProject(projectId);
       User user = securityService.getUser(userName);
@@ -169,14 +167,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      // Check if user is either an admin overall or an ADMIN on this project
+      // Check if user is either an ADMIN overall or an AUTHOR on this project
       try {
-        authorizeApp(securityService, authToken, "add user to project",
+        authorizeApp(securityService, authToken, "unassign user from project",
             UserRole.ADMIN);
       } catch (Exception e) {
         // now try to validate project role
         authorizeProject(projectService, projectId, securityService, authToken,
-            "add user to project", UserRole.ADMIN);
+            "unassign user from project", UserRole.AUTHOR);
       }
 
       Project project = projectService.getProject(projectId);
@@ -213,8 +211,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find users for project",
-          UserRole.VIEWER);
+      authorizeProject(projectService, projectId, securityService, authToken,
+          "find users assigned to project", UserRole.AUTHOR);
 
       // return all users assigned to the project
       if (pfs.getQueryRestriction() == null
@@ -254,9 +252,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "find candidate users for project", UserRole.VIEWER);
-
+      authorizeProject(projectService, projectId, securityService, authToken,
+          "find candidate users for project", UserRole.AUTHOR);
       // return all users assigned to the project
       if (pfs.getQueryRestriction() != null
           && !pfs.getQueryRestriction().isEmpty()) {
@@ -291,6 +288,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
+      
       final String userName =
           authorizeApp(securityService, authToken, "add project",
               UserRole.ADMIN);
@@ -671,7 +669,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve concept",
+      authorizeApp(securityService, authToken, "retrieve concept with description",
           UserRole.VIEWER);
 
       Concept concept =
