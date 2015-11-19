@@ -15,6 +15,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ConceptValidationResult;
 import org.ihtsdo.otf.refset.MemberValidationResult;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -89,8 +90,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "validate concept",
-          UserRole.ADMIN);
+      authorizeProject(projectService, concept.getTranslation().getProject().getId(), securityService, authToken,
+          "validate concept", UserRole.AUTHOR);
 
       return validationService.validateConcept(concept, translationService);
     } catch (Exception e) {
@@ -182,9 +183,9 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "validate member",
-          UserRole.ADMIN);
-
+      authorizeProject(projectService, member.getRefset().getProject().getId(), securityService, authToken,
+          "validate member", UserRole.AUTHOR);
+      
       return validationService.validateMember(member, refsetService);
     } catch (Exception e) {
       handleException(e, "trying to validate refset member");
@@ -213,6 +214,10 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
     try {
+      Translation translation = translationService.getTranslation(translationId);
+      authorizeProject(projectService, translation.getProject().getId(), securityService, authToken,
+          "validate all concepts", UserRole.AUTHOR);
+      
       authorizeApp(securityService, authToken, "validate all concepts",
           UserRole.ADMIN);
 

@@ -44,6 +44,8 @@ import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.ValidationServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.WorkflowServiceRestImpl;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -354,28 +356,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       RefsetJpa refset1 =
           makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1,
-              "11111912342013", reviewer1);
+              "11111912342013", reviewer1, true);
 
       // Create two refsets in project 2 (intensional and external)
       reviewer2 = (UserJpa) security.authenticate("reviewer2", "reviewer2");
       RefsetJpa refset2 =
           makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
-              "222222912342013", reviewer2);
+              "222222912342013", reviewer2, true);
 
       RefsetJpa refset3 =
           makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
-              "33333912342013", reviewer2);
+              "33333912342013", reviewer2, true);
 
       // Create a refset (extensional) and a translation refset in project 3
       // (extensional)
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
       RefsetJpa refset4 =
           makeRefset("refset4", null, Refset.Type.EXTENSIONAL, project3,
-              "44444912342013", reviewer3);
+              "44444912342013", reviewer3, true);
 
       RefsetJpa refset5 =
           makeRefset("refset5", null, Refset.Type.EXTENSIONAL, project3,
-              "55555912342013", reviewer3);
+              "55555912342013", reviewer3, true);
       refset5.setForTranslation(true);
       new RefsetServiceRestImpl().updateRefset(refset5,
           reviewer3.getAuthToken());
@@ -390,79 +392,79 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // Create refsets 6-12 on project 5
       makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
-          "666666912342013", admin);
+          "666666912342013", admin, true);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
-          "777777912342013", admin);
+          "777777912342013", admin, true);
       makeRefset("refset8", null, Refset.Type.EXTERNAL, project5,
-          "888888912342013", admin);
+          "888888912342013", admin, true);
       makeRefset("refset9", null, Refset.Type.EXTERNAL, project5,
-          "999999912342013", admin);
+          "999999912342013", admin, true);
       makeRefset("refset10", null, Refset.Type.EXTERNAL, project5,
-          "101010912342013", admin);
+          "101010912342013", admin, true);
       makeRefset("refset11", null, Refset.Type.EXTERNAL, project5,
-          "111111912342013", admin);
+          "111111912342013", admin, true);
       makeRefset("refset12", null, Refset.Type.EXTERNAL, project5,
-          "12121212342013", admin);
+          "12121212342013", admin, true);
 
       // Create refsets 20-32 on project 6, as PREVIEW
       RefsetJpa refset =
           makeRefset("refset20", null, Refset.Type.EXTERNAL, project6,
-              "206666612342013", admin);
+              "206666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset21", null, Refset.Type.EXTERNAL, project6,
-              "216666612342013", admin);
+              "216666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset22", null, Refset.Type.EXTERNAL, project6,
-              "226666612342013", admin);
+              "226666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset23", null, Refset.Type.EXTERNAL, project6,
-              "236666612342013", admin);
+              "236666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset24", null, Refset.Type.EXTERNAL, project6,
-              "246666612342013", admin);
+              "246666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset25", null, Refset.Type.EXTERNAL, project6,
-              "256666612342013", admin);
+              "256666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset26", null, Refset.Type.EXTERNAL, project6,
-              "266666612342013", admin);
+              "266666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset27", null, Refset.Type.EXTERNAL, project6,
-              "276666612342013", admin);
+              "276666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset28", null, Refset.Type.EXTERNAL, project6,
-              "286666612342013", admin);
+              "286666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset29", null, Refset.Type.EXTERNAL, project6,
-              "296666612342013", admin);
+              "296666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset30", null, Refset.Type.EXTERNAL, project6,
-              "306666612342013", admin);
+              "306666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset31", null, Refset.Type.EXTERNAL, project6,
-              "316666612342013", admin);
+              "316666612342013", admin, true);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
 
@@ -493,6 +495,136 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           translationReleaseInfo,
           "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt");
 
+      //
+      // Test Refsets
+      //
+      // test1: new intensional with definition and members -> author1
+      // test2: new extensional with members -> author1
+      // test3: new intensional with definition, members & incl/excl -> author1
+      // test4: clone of test1
+      // test5: clone of test2
+      // test6: clone of test3
+      // test7: same as test1 advanced in workflow to review new
+      // test8: same as test2 advanced in workflow to review new
+      // test9: same as test3 advanced in workflow to review new
+      // test10: same as test 2 advanced in workflow to review new and then reassign
+      //
+      //
+      Logger.getLogger(getClass()).info("Create test refsets");
+      author1 = (UserJpa) security.authenticate("author1", "author1");
+
+      // test 1
+      RefsetJpa test1 =
+          makeRefset("test1", "<<406473004 |  Contact allergen (substance)|", Refset.Type.INTENSIONAL, project1,
+              "111111", author1, false);
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test1.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      
+      // test 2
+      RefsetJpa test2 =
+          makeRefset("test2", null, Refset.Type.EXTENSIONAL, project1,
+              "222222", author1, false);
+      ConceptRefsetMemberJpa test2member1 =
+          makeRefsetMember(test2, "62621002", "Bednar tumor", Refset.MemberType.MEMBER, 
+              "SNOMEDCT", "20150131", "731000124108", "62621002", author1.getName(), author1);
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test2.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      
+      // test 3
+      RefsetJpa test3 =
+          makeRefset("test3", "<<406473004 |  Contact allergen (substance)|", Refset.Type.INTENSIONAL, project1,
+              "333333", author1, false);
+      new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(), "427811002", author1.getAuthToken());
+      new RefsetServiceRestImpl().addRefsetInclusion(test3.getId(), "133928008", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test3.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      
+      // test 4
+      Long test4Id = new RefsetServiceRestImpl().cloneRefset(test1.getId(), project1.getId(), "444444", 
+          author1.getAuthToken());
+      Refset test4 = new RefsetServiceRestImpl().getRefset(test4Id, author1.getAuthToken());
+      test4.setName("test4");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test4, author1.getAuthToken());
+      
+      // test 5
+      Long test5Id = new RefsetServiceRestImpl().cloneRefset(test2.getId(), project1.getId(), "555555", 
+          author1.getAuthToken());
+      Refset test5 = new RefsetServiceRestImpl().getRefset(test5Id, author1.getAuthToken());
+      test5.setName("test5");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test5, author1.getAuthToken());
+      
+      // test 6
+      Long test6Id = new RefsetServiceRestImpl().cloneRefset(test3.getId(), project1.getId(), "666666", 
+          author1.getAuthToken());
+      Refset test6 = new RefsetServiceRestImpl().getRefset(test6Id, author1.getAuthToken());
+      test6.setName("test6");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test6, author1.getAuthToken());
+      
+      
+      // test 7
+      Long test7Id = new RefsetServiceRestImpl().cloneRefset(test1.getId(), project1.getId(), "777777", 
+          author1.getAuthToken());
+      Refset test7 = new RefsetServiceRestImpl().getRefset(test7Id, author1.getAuthToken());
+      test7.setName("test7");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test7, author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test7.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test7.getId(), "author1", 
+          "SAVE", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test7.getId(), "author1", 
+          "FINISH", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test7.getId(), "reviewer1", 
+              "ASSIGN", author1.getAuthToken());
+      
+      // test 8
+      Long test8Id = new RefsetServiceRestImpl().cloneRefset(test2.getId(), project1.getId(), "888888", 
+          author1.getAuthToken());
+      Refset test8 = new RefsetServiceRestImpl().getRefset(test8Id, author1.getAuthToken());
+      test8.setName("test8");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test8, author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test8.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test8.getId(), "author1", 
+          "SAVE", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test8.getId(), "author1", 
+          "FINISH", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test8.getId(), "reviewer1", 
+              "ASSIGN", author1.getAuthToken());
+      
+      // test 9
+      Long test9Id = new RefsetServiceRestImpl().cloneRefset(test3.getId(), project1.getId(), "999999", 
+          author1.getAuthToken());
+      Refset test9 = new RefsetServiceRestImpl().getRefset(test9Id, author1.getAuthToken());
+      test9.setName("test9");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test9, author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test9.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test9.getId(), "author1", 
+          "SAVE", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test9.getId(), "author1", 
+          "FINISH", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test9.getId(), "reviewer1", 
+              "ASSIGN", author1.getAuthToken());
+            
+      // test 10
+      Long test10Id = new RefsetServiceRestImpl().cloneRefset(test2.getId(), project1.getId(), "101010101010", 
+          author1.getAuthToken());
+      Refset test10 = new RefsetServiceRestImpl().getRefset(test10Id, author1.getAuthToken());
+      test10.setName("test10");
+      new RefsetServiceRestImpl().updateRefset((RefsetJpa)test10, author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "author1", 
+          "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "author1", 
+          "SAVE", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "author1", 
+          "FINISH", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "reviewer1", 
+          "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "reviewer1", 
+          "UNASSIGN", reviewer1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(), test10.getId(), "reviewer1", 
+          "REASSIGN", reviewer1.getAuthToken());
+      
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -542,6 +674,26 @@ public class GenerateSampleDataMojo extends AbstractMojo {
         auth.getAuthToken());
   }
 
+  private ConceptRefsetMemberJpa makeRefsetMember(Refset refset, String conceptId, String conceptName,
+    Refset.MemberType memberType, String terminology, String version, String moduleId, String terminologyId,
+    String lastModifiedBy, User auth) throws Exception {
+    final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+    member.setTerminologyId(terminologyId);
+    member.setConceptId(conceptId);
+    member.setConceptName(conceptName);
+    member.setMemberType(memberType);
+    member.setTerminology(terminology);
+    member.setVersion(version);
+    member.setModuleId(moduleId);
+    member.setLastModifiedBy(lastModifiedBy);
+    member.setRefset(refset);
+    refset.addMember(member);
+    
+    return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl().addRefsetMember(member,
+        auth.getAuthToken());
+    
+    
+  }
   /**
    * Make release info.
    *
@@ -619,7 +771,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
    * @throws Exception the exception
    */
   private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, User auth)
+    Refset.Type type, Project project, String refsetId, User auth, boolean importMembers)
     throws Exception {
     ++refsetCt;
     final RefsetJpa refset = new RefsetJpa();
@@ -643,9 +795,13 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     // This is an opportunity to use "branch"
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
-    refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    if (importMembers) {
+      refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    } else {
+      refset.setWorkflowStatus(WorkflowStatus.NEW);
+    }
 
-    if (type == Refset.Type.INTENSIONAL) {
+    if (type == Refset.Type.INTENSIONAL && definition == null) {
       refset.setDefinition("needs definition");
     } else if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
@@ -666,31 +822,36 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refsetService.addRefset(refset, auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
 
-    if (type == Refset.Type.EXTENSIONAL) {
-      // Import members (from file)
-      ValidationResult vr =
-          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-              auth.getAuthToken());
-      if (!vr.isValid()) {
-        throw new Exception("import staging is invalid - " + vr);
+    if (importMembers) {
+      if (type == Refset.Type.EXTENSIONAL) {
+        // Import members (from file)
+        ValidationResult vr =
+            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+                auth.getAuthToken());
+        if (!vr.isValid()) {
+          throw new Exception("import staging is invalid - " + vr);
+        }
+        refsetService = new RefsetServiceRestImpl();
+        InputStream in =
+            new FileInputStream(
+                new File(
+                    "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+        refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+            auth.getAuthToken());
+        in.close();
+      } else if (type == Refset.Type.INTENSIONAL) {
+        // Import definition (from file)
+        InputStream in =
+            new FileInputStream(
+                new File(
+                    "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+        refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
+            auth.getAuthToken());
+        in.close();
       }
-      refsetService = new RefsetServiceRestImpl();
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
-          auth.getAuthToken());
-      in.close();
-    } else if (type == Refset.Type.INTENSIONAL) {
-      // Import definition (from file)
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
-      refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
-          auth.getAuthToken());
-      in.close();
+    } else if (type == Refset.Type.INTENSIONAL && definition != null) {
+      new RefsetServiceRestImpl().beginRedefinition(refset.getId(), definition, auth.getAuthToken());
+      new RefsetServiceRestImpl().finishRedefinition(refset.getId(), auth.getAuthToken());
     }
 
     return refset;

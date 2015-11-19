@@ -1001,23 +1001,20 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "copy spelling dictionary",
-          UserRole.VIEWER);
-
       Translation fromTranslation =
           translationService.getTranslation(fromTranslationId);
-
       if (fromTranslation.getSpellingDictionary() == null) {
         throw new Exception(
             "The from translation must have an associated spelling dictionary: "
                 + fromTranslationId);
       }
+      
       Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
         throw new Exception("The to translation is not found: "
             + toTranslationId);
-      }
+      }      
 
       // Authorize call
       authorizeProject(translationService, toTranslation.getProject().getId(),
@@ -1064,9 +1061,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      authorizeApp(securityService, authToken,
-          "add new entry to the spelling dictionary", UserRole.VIEWER);
-
       Translation translation =
           translationService.getTranslation(translationId);
 
