@@ -116,7 +116,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // the tracking record goes away when something is set to PREVIEW or
         // READY_FOR_PUBLICATION, or PUBLISHED
         boolean authorFlag =
-            projectRole == UserRole.AUTHOR
+        projectRole == UserRole.AUTHOR
                 && record == null
                 && EnumSet.of(WorkflowStatus.NEW,
                     WorkflowStatus.READY_FOR_PUBLICATION).contains(
@@ -125,7 +125,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         boolean reviewerFlag =
             projectRole == UserRole.REVIEWER
                 && record != null
-                && EnumSet.of(WorkflowStatus.EDITING_DONE).contains(
+                && EnumSet.of(WorkflowStatus.EDITING_DONE,
+                    WorkflowStatus.EDITING_IN_PROGRESS).contains(
                     refset.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
         break;
@@ -137,7 +138,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_IN_PROGRESS,
                     WorkflowStatus.EDITING_DONE, WorkflowStatus.REVIEW_NEW,
                     WorkflowStatus.REVIEW_IN_PROGRESS,
-                    WorkflowStatus.REVIEW_DONE).contains(
+                    WorkflowStatus.REVIEW_DONE,
+                    WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                    refset.getWorkflowStatus());
+        break;
+      case REASSIGN:
+        // record must exist and an "assigned" state must be present
+        flag = 
+            record != null
+                && EnumSet.of(
+                    WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus());
         break;
       case SAVE:
@@ -264,7 +274,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
         else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
-            WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
+            WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE,
+            WorkflowStatus.READY_FOR_PUBLICATION)
             .contains(refset.getWorkflowStatus())) {
           record.getReviewers().remove(user);
           record.setForAuthoring(true);
@@ -275,6 +286,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         break;
 
+      case REASSIGN:
+        refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
+        break;
+        
       case SAVE:
         // AUTHOR - NEW becomes EDITING_IN_PROGRESS
         if (projectRole == UserRole.AUTHOR
@@ -307,6 +322,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else if (refset.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
+          
         }
 
         // Otherwise status stays the same
@@ -331,10 +347,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     service.updateRefset(refset);
-    // TODO: needed to comment this out, because after UNASSIGN and deleting
-    // the tracking record, this would create a new tracking record to keep the
+    // After UNASSIGN and deleting the tracking record,
+    // this would create a new tracking record to keep the
     // refset assigned
-    if (action != WorkflowAction.UNASSIGN) {
+    // also for FINISH, this would persist the tracking record that was just supposed
+    // to have been deleted
+    if (action != WorkflowAction.UNASSIGN && 
+        !(action == WorkflowAction.FINISH && 
+        refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
       service.updateTrackingRecord(record);
     }
     return record;
@@ -697,7 +717,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // workflow status doesn not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     String queryStr =
-        "select a from RefsetJpa a where " //workflowStatus = 'NEW' "
+        "select a from RefsetJpa a where " // workflowStatus = 'NEW' "
             + " a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa)";
 
@@ -762,18 +782,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       // n/a
     };
 
-    // Refsets for this project that are in workflowStatus READY_FOR_PUBLICATION,
+    // Refsets for this project that are in workflowStatus
+    // READY_FOR_PUBLICATION,
     // PUBLISHED, or PREVIEW
     String queryStr =
         "select a from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-        + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
+            + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
             + "and a.project.id = :projectId";
 
     Query ctQuery =
-        rootService.getEntityManager().createQuery(
-            "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-        + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-            + "and a.project.id = :projectId");
+        rootService
+            .getEntityManager()
+            .createQuery(
+                "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
+                    + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
+                    + "and a.project.id = :projectId");
 
     ctQuery.setParameter("projectId", projectId);
 

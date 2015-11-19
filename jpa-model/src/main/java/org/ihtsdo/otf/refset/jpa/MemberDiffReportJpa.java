@@ -33,8 +33,6 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   /** The new not old. */
   private List<ConceptRefsetMember> newNotOld = new ArrayList<>();
 
-  // TODO: inclusionsNowInactive
-  
   /**
    * Instantiates an empty {@link MemberDiffReportJpa}.
    */

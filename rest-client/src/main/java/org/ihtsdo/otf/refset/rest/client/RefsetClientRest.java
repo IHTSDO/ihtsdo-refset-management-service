@@ -449,11 +449,10 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/inclusion/add/"
-            + refsetId + "?conceptId="+conceptId);
+            + refsetId + "?conceptId=" + conceptId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken)
-            .get();
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -870,7 +869,25 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - release report token - " + reportToken);
+    validateNotEmpty(reportToken, "reportToken");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/refset/release/report?reportToken=" + reportToken);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
 
   }
 
@@ -1079,17 +1096,56 @@ public class RefsetClientRest extends RootClientRest implements
 
   @Override
   public StringList getRefsetTypes(String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Refset Client - get refset types");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/types");
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (StringList) ConfigUtility.getGraphForString(resultString,
+        StringList.class);
   }
 
   @Override
   public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - clone refset " + refsetId + ", " + projectId + ", "
+            + terminologyId);
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(terminologyId, "terminologyId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/clone"
+            + "?refsetId=" + refsetId + "&projectId=" + projectId
+            + "&terminologyId=" + terminologyId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.text(""));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return Long.valueOf(resultString);
   }
-
-
 
 }

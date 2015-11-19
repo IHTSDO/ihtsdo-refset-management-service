@@ -1,7 +1,7 @@
 // Refset controller
 tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService',
-                                 'securityService', '$rootScope',
-  function($scope, $http, tabService, projectService, securityService, $rootScope) {
+                                 'securityService', 'refsetService', '$rootScope',
+  function($scope, $http, tabService, projectService, securityService, refsetService, $rootScope) {
     console.debug('configure RefsetCtrl');
 
     // Handle resetting tabs on "back" button
@@ -67,8 +67,8 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService','projectService
     };
     
     $scope.setSelectedProject = function() {
-      console.log("rootScope.broadcast", $scope.selectedProject);  // Will log "From" date
-      $rootScope.$broadcast('refset:project', $scope.selectedProject);
+      console.log("rootScope.broadcast", $scope.selectedProject);  
+      refsetService.fireProjectChanged($scope.selectedProject);
       
     }
     

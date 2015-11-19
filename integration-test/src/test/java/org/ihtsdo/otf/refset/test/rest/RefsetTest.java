@@ -51,7 +51,7 @@ public class RefsetTest {
 
   /** The project service. */
   protected static ProjectClientRest projectService;
-  
+
   /** The workflow service. */
   protected static WorkflowClientRest workflowService;
 
@@ -153,6 +153,7 @@ public class RefsetTest {
    * @return the refset jpa
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   protected RefsetJpa makeRefset(String name, String definition,
     Refset.Type type, Project project, String refsetId) throws Exception {
     RefsetJpa refset = new RefsetJpa();
@@ -183,8 +184,18 @@ public class RefsetTest {
 
     return refset;
   }
-  
-  protected ConceptRefsetMemberJpa makeConceptRefsetMember(String name, String id, Refset refset) {
+
+  /**
+   * Make concept refset member.
+   *
+   * @param name the name
+   * @param id the id
+   * @param refset the refset
+   * @return the concept refset member jpa
+   */
+  @SuppressWarnings("static-method")
+  protected ConceptRefsetMemberJpa makeConceptRefsetMember(String name,
+    String id, Refset refset) {
     ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
     member.setActive(true);
     member.setConceptId(id);

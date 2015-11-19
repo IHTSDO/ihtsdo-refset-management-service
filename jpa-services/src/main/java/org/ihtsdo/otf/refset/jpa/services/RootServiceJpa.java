@@ -260,8 +260,9 @@ public abstract class RootServiceJpa implements RootService {
     if (pfs == null) {
       return list;
     }
-    //TODO: handle obsolete logic
-    //TODO: handle filtering as well.
+    
+    // NOTE: does not handle active/inactive logic
+
     List<T> result = list;
 
     // Handle sorting

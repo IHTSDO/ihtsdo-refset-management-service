@@ -204,7 +204,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
    */
   @XmlElement
   private Long getConceptId() {
-    return concept != null ? concept.getId() : 0;
+    return concept != null && concept.getId() != null ? concept.getId() : 0L;
   }
 
   /**

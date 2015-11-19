@@ -387,7 +387,7 @@ public interface RefsetServiceRest {
    * Release report token.
    *
    * @param reportToken the report token
-   * @param authToken TODO
+   * @param authToken the auth token
    * @throws Exception the exception
    */
   public void releaseReportToken(String reportToken, String authToken)
@@ -445,6 +445,7 @@ public interface RefsetServiceRest {
    * @return the long
    * @throws Exception the exception
    */
-  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId, String authToken) throws Exception;
+  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
+    String authToken) throws Exception;
 
 }

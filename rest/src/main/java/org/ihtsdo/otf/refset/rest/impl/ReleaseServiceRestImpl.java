@@ -43,6 +43,7 @@ import org.ihtsdo.otf.refset.jpa.algo.BeginRefsetReleaseAlgorthm;
 import org.ihtsdo.otf.refset.jpa.algo.BeginTranslationReleaseAlgorthm;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -51,6 +52,7 @@ import org.ihtsdo.otf.refset.jpa.services.ValidationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ReleaseServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -82,6 +84,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
+  
+  /** The project service. */
+  private ProjectService projectService;
 
   /**
    * Instantiates an empty {@link ReleaseServiceRestImpl}.
@@ -90,6 +95,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
    */
   public ReleaseServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
+    projectService = new ProjectServiceJpa();
   }
 
   /* see superclass */
@@ -107,9 +113,17 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Release): /" + refsetId + " " + query);
 
     ReleaseService releaseService = new ReleaseServiceJpa();
+    RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "retrieve the release history for the refset", UserRole.VIEWER);
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken,
+            "retrieve the release history for the refset", UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, refset.getProject().getId(), securityService, authToken,
+            "validate all members", UserRole.AUTHOR);
+      }
+      
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
@@ -131,7 +145,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
   public ReleaseInfoList findTranslationReleasesForQuery(
     @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") String query,
+    @ApiParam(value = "Query, e.g. 2", required = true) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -139,13 +153,21 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Release): /" + translationId);
 
     ReleaseService releaseService = new ReleaseServiceJpa();
+    TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "retrieve the release history for the translation", UserRole.VIEWER);
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation.isPublic()) {
+        authorizeApp(securityService, authToken,
+            "retrieve the release history for the translation", UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, translation.getProject().getId(),
+            securityService, authToken,
+            "retrieve the release history for the translation", UserRole.AUTHOR);
+      }
 
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, query,
-              pfs);
+              pfs); 
 
       return releaseInfoList;
     } catch (Exception e) {
@@ -196,7 +218,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "begin refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
@@ -264,7 +286,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "validate refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -366,7 +388,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "preview refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -496,7 +518,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "cancel refset release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -562,7 +584,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService,
               translation.getProject().getId(), securityService, authToken,
-              "begin translation release", UserRole.REVIEWER);
+              "begin translation release", UserRole.AUTHOR);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
@@ -614,7 +636,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Authorize the call
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "validate translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
           ReleaseInfoList releaseInfoList =
               releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -670,7 +692,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "preview translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -771,7 +793,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       String userName =
           authorizeProject(translationService, translation.getProject().getId(),
               securityService, authToken, "cancel translation release",
-              UserRole.REVIEWER);
+              UserRole.AUTHOR);
 
       ReleaseInfoList releaseInfoList =
           releaseService.findTranslationReleasesForQuery(translationId, null, null);
@@ -826,9 +848,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     ReleaseService releaseService = new ReleaseServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "get current refset release info", UserRole.VIEWER);
       Refset refset = refsetService.getRefset(refsetId);
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken,
+            "get current refset release info", UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, refset.getProject().getId(), securityService, authToken,
+            "get current refset release info", UserRole.AUTHOR);
+      }
+      
       return releaseService.getCurrentReleaseInfoForRefset(
           refset.getTerminologyId(), refset.getProject().getId());
     } catch (Exception e) {
@@ -858,10 +886,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     ReleaseService releaseService = new ReleaseServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "get current translation release info", UserRole.VIEWER);
-      Translation translation =
-          translationService.getTranslation(translationId);
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation.isPublic()) {
+        authorizeApp(securityService, authToken,
+            "retrieve the release history for the translation", UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, translation.getProject().getId(),
+            securityService, authToken,
+            "retrieve the release history for the translation", UserRole.AUTHOR);
+      }
+      
       return releaseService.getCurrentReleaseInfoForTranslation(
           translation.getTerminologyId(), translation.getProject().getId());
     } catch (Exception e) {
@@ -899,7 +933,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       }
       authorizeProject(releaseService, project.getId(), securityService,
-          authToken, "remove release artifact", UserRole.REVIEWER);
+          authToken, "remove release artifact", UserRole.AUTHOR);
 
       // remove artifact
       releaseService.removeReleaseArtifact(artifactId);
@@ -934,17 +968,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid release info id " + info);
       }
 
-      Project project = null;
-      if (info.getRefset() != null) {
-        project = info.getRefset().getProject();
-      } else {
-        project = info.getTranslation().getProject();
-
-      }
       // Authorize the call
-      String userName =
-          authorizeProject(releaseService, project.getId(), securityService,
-              authToken, "import release artifact", UserRole.REVIEWER);
+      String userName = authorizeApp(securityService, authToken,
+          "import release artifact", UserRole.VIEWER);
 
       // Create an populate
       ReleaseArtifact artifact = new ReleaseArtifactJpa();

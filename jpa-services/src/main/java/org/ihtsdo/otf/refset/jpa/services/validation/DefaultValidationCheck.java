@@ -92,8 +92,6 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("Non-exclusion members should be publishable");
     }
 
-    // TODO: check that the concept id of the member is active
-    // may want to pass the terminology handler to these methods
     return result;
   }
 

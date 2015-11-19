@@ -56,8 +56,6 @@ public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
   /** The refset. */
   private Refset refset;
 
-  // TODO will need other information from calling environment
-  
   /**
    * Instantiates an empty {@link BeginRefsetReleaseAlgorthm}.
    * @throws Exception if anything goes wrong
