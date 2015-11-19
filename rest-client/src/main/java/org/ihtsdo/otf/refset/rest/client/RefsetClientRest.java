@@ -1084,8 +1084,8 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public Long cloneRefset(RefsetJpa refset, Long projectId,
-    String terminologyId, String authToken) throws Exception {
+  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
