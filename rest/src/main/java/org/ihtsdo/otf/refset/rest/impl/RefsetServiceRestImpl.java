@@ -624,14 +624,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @DELETE
-  @Path("/{refsetId}/remove/members")
+  @Path("/member/remove/all/{refsetId}")
   @ApiOperation(value = "Remove refset members", notes = "Removes the refset members for the specified refset")
   public void removeAllRefsetMembers(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Refset): " + refsetId + "/remove/members");
+        "RESTful call DELETE (Refset): member/remove/all/" + refsetId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {

@@ -402,11 +402,11 @@ public class RefsetClientRest extends RootClientRest implements
   public void removeAllRefsetMembers(Long refsetId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Rest Client - remove refset members " + refsetId);
+        "Rest Client - remove all refset members " + refsetId);
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/"
+        client.target(config.getProperty("base.url") + "/member/remove/all/"
             + refsetId);
 
     Response response =

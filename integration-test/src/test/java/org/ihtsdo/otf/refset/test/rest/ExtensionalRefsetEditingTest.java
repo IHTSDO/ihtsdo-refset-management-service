@@ -14,7 +14,6 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
-import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.Test;
 
 /**
@@ -182,7 +181,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
                 currentRefset.getId(), testUser, "FINISH", adminAuthToken);
 
     // TODO: Remove the line below later. Just for debugging
-    WorkflowStatus status = record.getRefset().getWorkflowStatus();
+    //WorkflowStatus status = record.getRefset().getWorkflowStatus();
 
     // remove refset
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
