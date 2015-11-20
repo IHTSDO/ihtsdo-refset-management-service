@@ -150,6 +150,16 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
+   * Removes the all refset members.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeAllRefsetMembers(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
    * Find members for refset.
    *
    * @param refsetId the refset id

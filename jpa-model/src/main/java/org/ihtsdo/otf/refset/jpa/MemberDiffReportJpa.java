@@ -162,7 +162,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     this.newNotOld = newNotOld;
   }
 
-
+ 
   /* see superclass */
   @Override
   public int hashCode() {

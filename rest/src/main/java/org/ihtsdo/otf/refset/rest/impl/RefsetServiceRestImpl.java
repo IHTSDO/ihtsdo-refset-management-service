@@ -219,12 +219,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
-      
+      authorizeApp(securityService, authToken, "finds refsets for project",
+          UserRole.VIEWER);
+
       int[] totalCt = new int[1];
       RefsetList result = new RefsetListJpa();
       result.setTotalCount(totalCt[0]);
-      result.setObjects(refsetService.getProject(projectId).getRefsets());      
+      result.setObjects(refsetService.getProject(projectId).getRefsets());
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
@@ -568,7 +569,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (member): /member/add " + member);
+        "RESTful call PUT (refset): /member/add " + member);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -602,7 +603,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Member): /member/remove/" + memberId);
+        "RESTful call DELETE (Refset): /member/remove/" + memberId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -613,6 +614,40 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeMember(memberId);
 
     } catch (Exception e) {
+      handleException(e, "trying to remove a refset member ");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
+  @DELETE
+  @Path("/{refsetId}/remove/members")
+  @ApiOperation(value = "Remove refset members", notes = "Removes the refset members for the specified refset")
+  public void removeAllRefsetMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Refset): " + refsetId + "/remove/members");
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      Refset refset = refsetService.getRefset(refsetId);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "remove refset member", UserRole.AUTHOR);
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
+      for (ConceptRefsetMember member : refsetService.findMembersForRefset(
+          refsetId, "", null).getObjects()) {
+        refsetService.removeMember(member.getId());
+      }
+      refsetService.commit();
+
+    } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to remove a refset member ");
     } finally {
       refsetService.close();
@@ -1004,6 +1039,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to begin redefinition of refset");
     } finally {
       refsetService.close();
@@ -1109,6 +1145,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refset;
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to finish refset migration");
     } finally {
       refsetService.close();
@@ -1166,6 +1203,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to cancel migration of refset");
     } finally {
       refsetService.close();
@@ -1315,6 +1353,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to begin redefinition of refset");
     } finally {
       refsetService.close();
@@ -1419,6 +1458,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refset;
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to finish refset redefinition");
     } finally {
       refsetService.close();
@@ -1476,6 +1516,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to cancel redefinition of refset");
     } finally {
       refsetService.close();

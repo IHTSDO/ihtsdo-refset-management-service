@@ -95,6 +95,16 @@ tsApp
 
               });
 
+              // Tests that the key has an icon
+              $scope.hasIcon = function(key) {
+                return projectService.hasIcon(key);
+              }
+
+              // Returns the icon path for the key (moduleId or namespaceId)
+              $scope.getIcon = function(key) {
+                return projectService.getIcon(key);
+              }
+
               // Get $scope.project and reload
               // $scope.refsets
               $scope.getProject = function(projectId) {
@@ -188,11 +198,11 @@ tsApp
                   })
                 }
                 if ($scope.value == 'RELEASE') {
-                  workflowService.findReleaseProcessRefsets($scope.project.id,
-                    pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
-                    $scope.refsets.totalCount = data.totalCount;
-                  })
+                  workflowService.findReleaseProcessRefsets($scope.project.id, pfs).then(
+                    function(data) {
+                      $scope.refsets = data.refsets;
+                      $scope.refsets.totalCount = data.totalCount;
+                    })
                 }
 
               };
@@ -630,6 +640,14 @@ tsApp
 
                 };
 
+              };
+
+              // Directive scoped method for cancelling an import
+              $scope.cancelImport = function(refset) {
+                $scope.refset = refset;
+                refsetService.cancelImportMembers($scope.refset.id).then(new function() {
+                  refsetService.fireRefsetChanged($scope.refset);
+                });
               };
 
               // Release Process modal

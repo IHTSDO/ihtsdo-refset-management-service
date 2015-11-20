@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.ws.rs.ApplicationPath;
 import javax.ws.rs.core.Application;
@@ -62,16 +61,9 @@ public class RefsetServerApplication extends Application {
   }
 
   /**
-   * Initialization task.
+   * Initialization task. class InitializationTask extends TimerTask {
+   * @Override public void run() { // n/a } }
    */
-  class InitializationTask extends TimerTask {
-
-    /* see superclass */
-    @Override
-    public void run() {
-      // n/a
-    }
-  }
 
   /* see superclass */
   @Override

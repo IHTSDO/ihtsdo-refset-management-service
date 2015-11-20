@@ -8,30 +8,24 @@ tsApp
       '$location',
       'securityService',
       'gpService',
-      'errorService',
+      'utilService',
       function($scope, $http, $location, securityService, gpService,
-        errorService) {
+        utilService) {
 
         $scope.message = "Authenticating ...";
 
         // Need to call IMS/api/accounts
+        // THis requires an nginx setup to redirect ims-api to
+        // https://ims.ihtsdotools.org
         $http
-          .get('ims-api/account')
-          .success(
+          .get('ims-api/account').then(
             function(data) {
-              errorService.clearError();
+              utilService.clearError();
               console.debug("user = ", data);
 
-              $http({
-                url : securityUrl + 'authenticate/' + data.login,
-                dataType : "json",
-                data : data,
-                method : "POST",
-                headers : {
-                  "Content-Type" : "text/plain"
-                }
-              })
-                .success(function(data) {
+              $http.post(securityUrl + 'authenticate/' + data.login, data).then(
+                // Success 
+                function(data) {
                   console.debug("user = ", data);
                   securityService.setUser(data);
 
@@ -40,19 +34,16 @@ tsApp
                   $http.defaults.headers.common.Authorization = data.authToken;
                   $location.path("/refset");
 
-                })
-                .error(
-                  function(data, status, headers, config) {
-                    errorService.handleError(data, status, headers, config);
-                    $scope.message = "You may need to login first at https://dev-ims.ihtsdotools.org";
+                },
+                // Error
+                function(data, status, headers, config) {
+                    utilService.handleError(data, status, headers, config);
+                    $scope.message = "You may need to login first at https://ims.ihtsdotools.org";
                   });
 
-            })
-          .error(
+            },
             function(data, status, headers, config) {
-              $scope.message = "You may need to login first at https://dev-ims.ihtsdotools.org";
-              // errorService.handleError(data, status, headers,
-                            // config);
+              $scope.message = "You may need to login first at https://ims.ihtsdotools.org";             
             });
 
       } ]);

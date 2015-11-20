@@ -1499,6 +1499,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
+      translationService.rollback();
       handleException(e, "trying to begin migration of translation");
     } finally {
       translationService.close();
@@ -1597,6 +1598,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       return translation;
 
     } catch (Exception e) {
+      translationService.rollback();
       handleException(e, "trying to finish translation migration");
     } finally {
       translationService.close();
@@ -1656,6 +1658,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.commit();
 
     } catch (Exception e) {
+      translationService.rollback();
       handleException(e, "trying to cancel migration of translation");
     } finally {
       translationService.close();
