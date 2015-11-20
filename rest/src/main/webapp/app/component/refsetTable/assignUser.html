@@ -1,0 +1,32 @@
+<div class="modal-header">
+  <h4>Assign Refset to User</h4>
+</div>
+
+<div class="modal-body">
+  <table class="table">
+    <tr>
+      <td><b>Id</b></td>
+      <td>{{refset.terminologyId}}</td>
+    </tr>
+    <tr>
+      <td><b>Name</b></td>
+      <td>{{refset.name}}</td>
+    </tr>
+    <tr>
+      <td><b>Description</b></td>
+      <td>{{refset.description}}</td>
+    </tr>
+    <tr>
+      <td><b>Select user</b></td>
+      <td><select ng-model="selectedUserName" ng-init="user.userName"
+        ng-options="item for item in assignedUserNames"></select></td>
+    </tr>
+  </table>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary"
+    ng-click="submitChosenUser(selectedUserName); 
+    ">Assign Refset</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

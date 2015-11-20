@@ -99,7 +99,7 @@
     ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
  -->
   <button class="btn btn-primary" ng-disabled="selectedConcept == null || selectedConcept == 'undefined'"
-    ng-click="submitNewMember(selectedConcept); 
+    ng-click="addMember(selectedConcept); 
     ">Add Member</button>
   <button class="btn btn-warning"
     title="Add selected concept as new refset member" ng-click="cancel()">Cancel</button>

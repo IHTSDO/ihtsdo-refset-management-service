@@ -114,8 +114,18 @@ tsApp
 
                   // Refresh refsets
                   $scope.getRefsets();
-                })
+                });
 
+                // Look up assigned users while getting project data
+                projectService.findAssignedUsersForProject($scope.project.id, "", {}).then(
+                  function(data) {
+                    $scope.assignedUsers = data.users;
+                    for (var i = 0; i < $scope.assignedUsers.length; i++) {
+                      if ($scope.assignedUsers[i].userName == $scope.user.userName) {
+                        $scope.user = $scope.assignedUsers[i];
+                      }
+                    }
+                  });
               };
 
               // Get $scope.refsets
@@ -398,7 +408,7 @@ tsApp
                   return;
                 }
                 refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
-                  refsetService.fireRefsetChanged($scope.selectedProject.id)
+                  refsetService.fireRefsetChanged($scope.project.id)
                   $scope.selectRefset(refset);
                 })
               };
@@ -487,7 +497,7 @@ tsApp
                 console.debug("cloneRefsetModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/clone.html',
+                  templateUrl : 'app/component/refsetTable/clone.html',
                   controller : CloneRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
@@ -540,7 +550,7 @@ tsApp
                 console.debug("exportModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/importExport.html',
+                  templateUrl : 'app/component/refsetTable/importExport.html',
                   controller : ImportExportModalCtrl,
                   backdrop : 'static',
                   resolve : {
@@ -687,7 +697,7 @@ tsApp
                 console.debug("releaseProcessModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/release.html',
+                  templateUrl : 'app/component/refsetTable/release.html',
                   controller : ReleaseProcessModalCtrl,
                   backdrop : 'static',
                   resolve : {
@@ -732,13 +742,13 @@ tsApp
 
               };
 
-              // Choose User modal
-              $scope.openChooseUserModal = function(lrefset, laction, luserName) {
-                console.debug("openChooseUserModal ", lrefset, laction, luserName);
+              // Assign User modal
+              $scope.openAssignUserModal = function(lrefset, laction, luserName) {
+                console.debug("openAssignUserModal ", lrefset, laction, luserName);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/chooseUser.html',
-                  controller : ChooseUserModalCtrl,
+                  templateUrl : 'app/component/refsetTable/assignUser.html',
+                  controller : AssignUserModalCtrl,
                   backdrop : 'static',
                   resolve : {
                     refset : function() {
@@ -762,11 +772,11 @@ tsApp
 
               };
 
-              // Choose user controller
-              var ChooseUserModalCtrl = function($scope, $modalInstance, refset, action,
+              // Assign user controller
+              var AssignUserModalCtrl = function($scope, $modalInstance, refset, action,
                 currentUserName, assignedUsers, project, $rootScope) {
 
-                console.debug("Entered choose user modal control", assignedUsers, project.id);
+                console.debug("Entered assign user modal control", assignedUsers, project.id);
 
                 $scope.refset = refset;
                 $scope.project = project;
@@ -805,12 +815,12 @@ tsApp
               };
 
               // Add Refset modal
-              $scope.openNewRefsetModal = function(lrefset) {
-                console.debug("openNewRefsetModal ", lrefset);
+              $scope.openAddRefsetModal = function(lrefset) {
+                console.debug("openAddRefsetModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/newRefset.html',
-                  controller : NewRefsetModalCtrl,
+                  templateUrl : 'app/component/refsetTable/addRefset.html',
+                  controller : AddRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
                     refset : function() {
@@ -842,10 +852,10 @@ tsApp
               };
 
               // Add Refset controller
-              var NewRefsetModalCtrl = function($scope, $modalInstance, refset, refsets,
+              var AddRefsetModalCtrl = function($scope, $modalInstance, refset, refsets,
                 refsetTypes, project, terminologyEditions, terminologyVersions) {
 
-                console.debug("Entered new refset modal control", refsetTypes, terminologyVersions);
+                console.debug("Entered add refset modal control", refsetTypes, terminologyVersions);
 
                 $scope.refset = refset;
                 $scope.refsetTypes = refsetTypes;
@@ -856,8 +866,8 @@ tsApp
                   $scope.terminologyVersions = terminologyVersions[terminology].sort().reverse();
                 };
 
-                $scope.submitNewRefset = function(refset) {
-                  console.debug("Submitting new refset", refset);
+                $scope.submitAddRefset = function(refset) {
+                  console.debug("Submitting add refset", refset);
 
                   if (refset == null || refset.name == null || refset.name == undefined
                     || refset.description == null || refset.description == undefined) {
@@ -911,7 +921,7 @@ tsApp
                 console.debug("openEditRefsetModal ");
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/editRefset.html',
+                  templateUrl : 'app/component/refsetTable/editRefset.html',
                   controller : EditRefsetModalCtrl,
                   backdrop : 'static',
                   resolve : {
@@ -1002,15 +1012,15 @@ tsApp
 
               };
 
-              // New member modal
+              // Add member modal
 
-              $scope.openNewMemberModal = function(lmember, lrefset) {
+              $scope.openAddMemberModal = function(lmember, lrefset) {
 
-                console.debug("openNewMemberModal ", lrefset);
+                console.debug("openAddMemberModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/newMember.html',
-                  controller : NewMemberModalCtrl,
+                  templateUrl : 'app/component/refsetTable/addMember.html',
+                  controller : AddMemberModalCtrl,
                   backdrop : 'static',
                   resolve : {
                     member : function() {
@@ -1036,11 +1046,11 @@ tsApp
                 });
               };
 
-              // New member controller
-              var NewMemberModalCtrl = function($scope, $modalInstance, member, refset, project,
+              // Add member controller
+              var AddMemberModalCtrl = function($scope, $modalInstance, member, refset, project,
                 paging) {
 
-                console.debug("Entered new member modal control");
+                console.debug("Entered add member modal control");
                 $scope.pageSize = 10;
                 $scope.paging = paging;
                 if (refset.type == 'EXTENSIONAL') {
@@ -1050,8 +1060,8 @@ tsApp
                   $scope.memberType = 'INCLUSION';
                 }
 
-                $scope.submitNewMember = function(concept) {
-                  console.debug("Submitting new member", concept);
+                $scope.addMember = function(concept) {
+                  console.debug("add member", concept);
 
                   var member = {
                     conceptId : concept.terminologyId,
