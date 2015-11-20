@@ -43,8 +43,8 @@
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
           <td>{{translation.name}}</td>
           <td>{{translation.moduleId}}<!-- Mobile friendly line-break --> <br
-            class="visible-xs-inline" /> <img ng-show="iconConfig[translation.moduleId]" title="Flag icon"
-              src="{{iconConfig[translation.moduleId]}}" /> <!-- Mobile friendly line-break -->
+            class="visible-xs-inline" /> <img ng-show="hasIcon(translation.moduleId)" title="Flag icon"
+              ng-src="{{getIcon(translation.moduleId)}}" /> <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{translation.organization}}
           </td>
         </tr>
@@ -76,8 +76,8 @@
           </tr>
           <tr>
             <td>Module Id</td>
-            <td>{{translation.moduleId}} <img ng-show="iconConfig[translation.moduleId]" title="Flag icon"
-              src="{{iconConfig[translation.moduleId]}}" /></td>
+            <td>{{translation.moduleId}} <img ng-show="hasIcon(translation.moduleId)" title="Flag icon"
+              ng-src="{{getIcon(translation.moduleId)}}" /></td>
           </tr>
           <tr>
             <td>Effective Time</td>

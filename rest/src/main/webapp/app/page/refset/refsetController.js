@@ -1,12 +1,6 @@
 // Refset controller
-tsApp.controller('RefsetCtrl', [
-  '$scope',
-  '$http',
-  'tabService',
-  'securityService',
-  'projectService',
-  'refsetService',
-  '$rootScope',
+tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService', 'securityService',
+  'projectService', 'refsetService', '$rootScope',
   function($scope, $http, tabService, securityService, projectService, refsetService, $rootScope) {
     console.debug('configure RefsetCtrl');
 
@@ -34,32 +28,34 @@ tsApp.controller('RefsetCtrl', [
       projectService.findProjectsAsList("", pfs).then(function(data) {
         $scope.projects = data.projects;
         $scope.projects.totalCount = data.totalCount;
-        $scope.project = $scope.projects[0];
-        $scope.setProject();
+        $scope.setProject(data.projects[0]);
       })
 
     };
 
-
     // Fire a "projectChanged" event after looking up role
-    $scope.setProject = function() {
-      
+    $scope.setProject = function(project) {
+
+      $scope.project = project;
+
       // Empty PFS
-      var pfs = {
-      };
+      var pfs = {};
       // Find role
-      projectService.findAssignedUsersForProject($scope.project.id, "", pfs).then(
-        function(data) {
-          $scope.assignedUsers = data.users;
-          for (var i = 0; i < $scope.assignedUsers.length; i++) {
-            if ($scope.assignedUsers[i].userName == $scope.user.userName) {
-              $scope.user.role = $scope.assignedUsers[i].projectRoleMap[$scope.project.id];
-              break;
-            }
+      projectService.findAssignedUsersForProject($scope.project.id, "", pfs).then(function(data) {
+        $scope.assignedUsers = data.users;
+        for (var i = 0; i < $scope.assignedUsers.length; i++) {
+          if ($scope.assignedUsers[i].userName == $scope.user.userName) {
+            $scope.user.role = $scope.assignedUsers[i].projectRoleMap[$scope.project.id];
+            break;
           }
-          // ASSUMPTION: $scope.user.role is set
-          refsetService.fireProjectChanged($scope.project);
-        })
+        }
+        // ASSUMPTION: $scope.user.role is set
+        if (!$scope.user.role) {
+          window.alert("$scope.user.role is not set");
+        }
+        console.debug("set project", project);
+        refsetService.fireProjectChanged($scope.project);
+      })
     }
 
     // Determine whether the user is a project admin
@@ -67,6 +63,7 @@ tsApp.controller('RefsetCtrl', [
       return $scope.user.role == 'ADMIN';
     }
 
+    // Initialize
     $scope.getProjects();
 
   }

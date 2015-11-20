@@ -139,8 +139,7 @@ tsApp
                     : $scope.paging["refset"].ascending,
                   queryRestriction : null
                 };
-                console.debug("PFS=", pfs);
-                console.debug("paging=", $scope.paging["refset"]);
+
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
                   refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
@@ -483,6 +482,7 @@ tsApp
               if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
                 $scope.getRefsets();
               }
+              
               // Initialize some metadata first time
               $scope.getRefsetTypes();
               $scope.getTerminologyEditions();
@@ -781,25 +781,30 @@ tsApp
                 $scope.refset = refset;
                 $scope.project = project;
                 $scope.assignedUserNames = [];
-
+                $scope.selectedUserName = currentUserName;
+                
+                // Prep userNames picklist
                 for (var i = 0; i < assignedUsers.length; i++) {
                   $scope.assignedUserNames.push(assignedUsers[i].userName);
                 }
+                $scope.assignedUserNames = $scope.assignedUserNames.sort();
+                
+                
+                $scope.assignUser = function(userName) {
+                  console.debug("Submitting chosen user", userName);
 
-                $scope.submitChosenUser = function(newUserName) {
-                  console.debug("Submitting chosen user", newUserName);
-
-                  if (newUserName == null || newUserName == undefined) {
+                  if (userName == null || userName == undefined) {
                     window.alert("The user must be selected. ");
                     return;
                   }
 
-                  $scope.selectedUserName = newUserName;
+                  $scope.selectedUserName = userName;
 
                   if (action == 'ASSIGN') {
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      newUserName, "ASSIGN").then(function(data) {
-                      refsetService.fireRefsetChanged(refset);
+                      userName, "ASSIGN").then(function(data) {
+                      // Update lists
+                      refsetService.fireProjectChanged($scope.project);
 
                       $modalInstance.close();
                     }, function(data) {

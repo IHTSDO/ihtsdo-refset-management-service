@@ -18,7 +18,7 @@
     </tr>
     <tr>
       <td><b>Select user</b></td>
-      <td><select ng-model="selectedUserName" ng-init="user.userName"
+      <td><select ng-model="selectedUserName" 
         ng-options="item for item in assignedUserNames"></select></td>
     </tr>
   </table>
@@ -26,7 +26,7 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary"
-    ng-click="submitChosenUser(selectedUserName); 
-    ">Assign Refset</button>
+    ng-click="assignUser(selectedUserName); 
+    ">Assign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

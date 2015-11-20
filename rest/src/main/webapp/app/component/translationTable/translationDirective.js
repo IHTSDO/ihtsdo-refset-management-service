@@ -36,11 +36,20 @@ tsApp.directive('translationTable', [
             ascending : null
           };
 
+          // Tests that the key has an icon
+          $scope.hasIcon = function(key) {
+            return projectService.hasIcon(key);
+          }
+
+          // Returns the icon path for the key (moduleId or namespaceId)
+          $scope.getIcon = function(key) {
+            return projectService.getIcon(key);
+          }
+
           // get translations
           $scope.getTranslations = function() {
             var pfs = {
-              startIndex : ($scope.paging["translation"].page - 1)
-                * $scope.pageSize,
+              startIndex : ($scope.paging["translation"].page - 1) * $scope.pageSize,
               maxResults : $scope.pageSize,
               sortField : $scope.paging["translation"].sortField,
               ascending : $scope.paging["translation"].ascending == null ? true
@@ -48,22 +57,21 @@ tsApp.directive('translationTable', [
               queryRestriction : 'workflowStatus:' + $scope.value
             };
 
-            translationService.findTranslationsForQuery(
-              $scope.paging["translation"].filter, pfs).then(function(data) {
-              $scope.translations = data.translations;
-              $scope.translations.totalCount = data.totalCount;
-              for (var i = 0; i < $scope.translations.length; i++) {
-                $scope.translations[i].isExpanded = false;
-              }
-            })
+            translationService.findTranslationsForQuery($scope.paging["translation"].filter, pfs)
+              .then(function(data) {
+                $scope.translations = data.translations;
+                $scope.translations.totalCount = data.totalCount;
+                for (var i = 0; i < $scope.translations.length; i++) {
+                  $scope.translations[i].isExpanded = false;
+                }
+              })
           };
 
           // get translation concepts
           $scope.getConcepts = function(translation) {
 
             var pfs = {
-              startIndex : ($scope.paging["concept"].page - 1)
-                * $scope.pageSize,
+              startIndex : ($scope.paging["concept"].page - 1) * $scope.pageSize,
               maxResults : $scope.pageSize,
               sortField : $scope.paging["concept"].sortField,
               ascending : $scope.paging["concept"].ascending == null ? true
@@ -75,18 +83,17 @@ tsApp.directive('translationTable', [
               $scope.paging["concept"].filter, pfs).then(function(data) {
               translation.concepts = data.concepts;
               translation.concepts.totalCount = data.totalCount;
-              console.debug("concepts",translation.concepts);
-              })
+              console.debug("concepts", translation.concepts);
+            })
 
           };
 
           // get current translation release info
           $scope.getCurrentTranslationReleaseInfo = function(translation) {
 
-            releaseService.getCurrentTranslationRelease(translation.id).then(
-              function(data) {
-                translation.releaseInfo = data;
-              })
+            releaseService.getCurrentTranslationRelease(translation.id).then(function(data) {
+              translation.releaseInfo = data;
+            })
           };
 
           // export release artifact
@@ -137,12 +144,10 @@ tsApp.directive('translationTable', [
             if ($scope.paging[table].ascending == null) {
               return "";
             }
-            if ($scope.paging[table].sortField == field
-              && $scope.paging[table].ascending) {
+            if ($scope.paging[table].sortField == field && $scope.paging[table].ascending) {
               return "▴";
             }
-            if ($scope.paging[table].sortField == field
-              && !$scope.paging[table].ascending) {
+            if ($scope.paging[table].sortField == field && !$scope.paging[table].ascending) {
               return "▾";
             }
           }

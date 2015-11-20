@@ -62,7 +62,7 @@
           <td>{{refset.moduleId}}<!-- Mobile friendly line-break --> <br
             class="visible-xs-inline" /> <img
             ng-show="hasIcon(refset.moduleId)" title="Flag icon"
-            src="{{getIcon(refset.moduleId)}}" /> <!-- Mobile friendly line-break -->
+            ng-src="{{getIcon(refset.moduleId)}}" /> <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}} <span
               ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">
               <br> {{refset.workflowStatus}}
@@ -88,7 +88,7 @@
               ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
               <i title="Remove" class="material-icons md-18">delete</i>
             </a>&nbsp;<a title="Assign" ng-show="role != 'ADMIN'"
-              ng-click="openChooseUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
+              ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="material-icons md-18">assignment</i>
             </a>&nbsp;<a title="Clone" ng-show="role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
@@ -137,7 +137,7 @@
               <i title="Remove" class="material-icons md-18">delete</i>
             </a>&nbsp;<a title="Assign"
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openChooseUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
+              ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="material-icons md-18">assignment</i>
             </a>&nbsp;<a title="Publish"
               ng-click="openReleaseProcessModal(refset, '20151112')">
@@ -175,7 +175,7 @@
           <tr>
             <td>Module Id</td>
             <td>{{refset.moduleId}} <img ng-show="hasIcon(refset.moduleId)"
-              title="Flag icon" src="{{getIcon(refset.moduleId)}}" /></td>
+              title="Flag icon" ng-src="{{getIcon(refset.moduleId)}}" /></td>
           </tr>
           <tr>
             <td>Organization</td>
