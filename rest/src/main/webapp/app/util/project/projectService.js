@@ -52,14 +52,12 @@ tsApp.service('projectService', [
     }
 
     // Tests that the key has an icon
-    this.hasIcon(key)
-    {
+    this.hasIcon = function(key) {
       return iconConfig[key] !== undefined;
     }
 
     // Returns the icon path for the key (moduleId or namespaceId)
-    this.getIcon(key)
-    {
+    this.getIcon = function(key) {
       return iconConfig[key];
     }
 
