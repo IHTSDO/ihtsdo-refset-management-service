@@ -14,6 +14,11 @@ tsApp.service('projectService', [
 
     var iconConfig = {};
 
+    // broadcasts a new project id
+    this.fireProjectChanged = function(project) {
+      $rootScope.$broadcast('refset:projectChanged', project);
+    }
+
     // Gets the user projects info
     this.getUserProjectsInfo = function() {
       return userProjectsInfo;
