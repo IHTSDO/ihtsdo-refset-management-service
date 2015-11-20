@@ -239,6 +239,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseService.commit();
       return algo.getReleaseInfo();
     } catch (Exception e) {
+      releaseService.rollback();
       handleException(e, "trying to begin release of refset");
     } finally {
       refsetService.close();
@@ -448,6 +449,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseService.commit();
       return refsetService.getRefset(stageRefset.getId());
     } catch (Exception e) {
+      releaseService.rollback();
       handleException(e, "trying to preview release of refset");
     } finally {
       refsetService.close();
@@ -546,6 +548,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
       releaseService.commit();
     } catch (Exception e) {
+      releaseService.rollback();
       handleException(e, "trying to cancel release of refset");
     } finally {
       refsetService.close();
@@ -752,6 +755,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseService.commit();
       return translationService.getTranslation(stageTranslation.getId());
     } catch (Exception e) {
+      releaseService.rollback();
       handleException(e, "trying to preview release of ");
     } finally {
       translationService.close();
@@ -823,6 +827,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
       releaseService.commit();
     } catch (Exception e) {
+      releaseService.rollback();
       handleException(e, "trying to cancel release of translation");
     } finally {
       translationService.close();

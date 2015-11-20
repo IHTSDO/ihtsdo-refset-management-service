@@ -398,6 +398,29 @@ public class RefsetClientRest extends RootClientRest implements
 
   }
 
+  @Override
+  public void removeAllRefsetMembers(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove refset members " + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/member/remove/"
+            + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
+
+  }
+
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findRefsetMembersForQuery(Long refsetId,

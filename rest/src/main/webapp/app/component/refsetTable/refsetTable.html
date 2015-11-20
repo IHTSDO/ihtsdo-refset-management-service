@@ -83,8 +83,8 @@
                 tooltip="Intenional refset, defined as a definition with includes/excludes."
                 class="material-icons md-18">functions</i>
             </a></td>
-          <td class="nobreak" ng-show="value == 'AVAILABLE'">
-              <a title="Remove"
+          <td class="nobreak" ng-show="value == 'AVAILABLE'"><a
+              title="Remove"
               ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
               <i title="Remove" class="material-icons md-18">delete</i>
             </a>&nbsp;<a title="Assign" ng-show="role != 'ADMIN'"
@@ -94,14 +94,16 @@
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
               <i title="Clone" class="material-icons md-18">content_copy</i>
             </a></td>
-          <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'">
-              <a title="Remove"
+          <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'"><a
+              title="Remove"
               ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
               <i title="Remove" class="material-icons md-18">delete</i>
             </a>&nbsp;<a title="Assigned">
-                <i title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} 
-                {{refsetIdToReviewersMap[refset.id][0].userName}}" class="material-icons md-18">assignment_ind</i>
-              </a>&nbsp;<a title="Unassign"
+              <i
+                title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} 
+                {{refsetIdToReviewersMap[refset.id][0].userName}}"
+                class="material-icons md-18">assignment_ind</i>
+            </a>&nbsp;<a title="Unassign"
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="material-icons md-18">assignment_return</i>
             </a></td>
@@ -115,7 +117,7 @@
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="material-icons md-18">assignment_return</i>
             </a>&nbsp;<a title="Reassign" ng-show="role == 'REVIEWER'"
-                ng-click="performReassign(refset); $event.stopPropagation()">
+              ng-click="performReassign(refset); $event.stopPropagation()">
               <i title="Reassign" class="material-icons md-18">assignment_returned</i>
             </a>&nbsp;<a title="Save"
               ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()">
@@ -123,12 +125,16 @@
             </a>&nbsp;<a title="Finish"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
               <i title="Finish" class="material-icons md-18">done</i>
-            </a></td>
+            </a><span ng-show="refset.stagingType == 'IMPORT'">
+              <br />
+              <button class="btn btn-xs btn-warning" ng-click="cancelImport(refset)"
+                tooltip="Click to cancel failed import">Cancel Import</button>
+            </span></td>
           <td class="nobreak" ng-show="value == 'RELEASE'"><a
               title="Remove"
               ng-click="remove('refset',refset,refsets); $event.stopPropagation()">
               <i title="Remove" class="material-icons md-18">delete</i>
-            </a>&nbsp;<a title="Assign" 
+            </a>&nbsp;<a title="Assign"
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openChooseUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="material-icons md-18">assignment</i>
