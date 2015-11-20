@@ -653,6 +653,36 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
+  @DELETE
+  @Path("/member/remove/all/{refsetId}")
+  @ApiOperation(value = "Removes all refset members", notes = "Removes the refset members")
+  public void removeAllRefsetMembers(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Member): /member/remove/all" + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      Refset refset = refsetService.getRefset(refsetId);
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "remove refset members", UserRole.AUTHOR);
+
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        refsetService.removeMember(member.getId());
+      }
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove all refset members ");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+
+  }
+
+  @Override
   @POST
   @Path("/members")
   @ApiOperation(value = "Finds refset members", notes = "Finds refset members based on refset id, pfs parameter and query", response = ConceptRefsetMemberListJpa.class)

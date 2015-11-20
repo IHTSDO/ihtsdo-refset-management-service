@@ -280,6 +280,11 @@
                 ng-click="openNewMemberModal(lmember, refset)">
                 <i title="Create new refset member" class="material-icons md-24">add</i>
               </a>
+              <a title="Remove all members" 
+                ng-show="refset.type == 'EXTENSIONAL' && refset.members.length > 0"
+                ng-click="removeAllRefsetMembers(refset)">
+                <i title="Remove all members" class="material-icons md-24">delete</i>
+              </a>
             </div>
           </h4>
         </span>

@@ -270,6 +270,29 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // remove refset member
+    this.removeAllRefsetMembers = function(refsetId) {
+      console.debug("removeAllRefsetMembers");
+      var deferred = $q.defer();
+
+      // remove refset member
+      gpService.increment()
+      $http['delete'](refsetUrl + "member/remove/all/" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  remove refset members = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
     // find members for refset
     this.findRefsetMembersForQuery = function(refsetId, query, pfs) {
       console.debug("findRefsetMembersForQuery");
