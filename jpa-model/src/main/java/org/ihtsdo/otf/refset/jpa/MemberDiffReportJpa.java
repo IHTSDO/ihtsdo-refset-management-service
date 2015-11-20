@@ -162,7 +162,162 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     this.newNotOld = newNotOld;
   }
 
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getStagedInclusions() {
+    List<ConceptRefsetMember> stagedInclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
+        stagedInclusions.add(member);
+      }
+    }
+    return stagedInclusions;
+  }
+  
+  /* see superclass */
+  @Override  
+  public List<ConceptRefsetMember> getValidInclusions() {
+    //oldNotNew members with type INCLUSION with concept ids not matching 
+    //newNotOld members with type MEMBER or INCLUSION_STAGED
+    List<ConceptRefsetMember> alreadyIncluded = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER ||
+          member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
+        alreadyIncluded.add(member);
+      }
+    }
+    List<ConceptRefsetMember> validInclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION &&
+          !alreadyIncluded.contains(member)) {
+        validInclusions.add(member);
+      }
+    }
+    return validInclusions;
+  }
+  
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getInvalidInclusions() {
+    //oldNotNew members with type INCLUSION with concept ids 
+    //matching newNotOld members with type MEMBER
+    List<ConceptRefsetMember> alreadyIncluded = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER) {
+        alreadyIncluded.add(member);
+      }
+    }
+    List<ConceptRefsetMember> invalidInclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION &&
+          alreadyIncluded.contains(member)) {
+        invalidInclusions.add(member);
+      }
+    }   
+    return invalidInclusions;
+  }
+  
+  /* see superclass */
+  @Override  
+  public List<ConceptRefsetMember> getValidExclusions() {
+    // oldNotNew members with type EXCLUSION with concept ids matching 
+    // newNotOld members with type MEMBER and not matching newNotOld 
+    // members with type EXCLUSION_STAGED
+    List<ConceptRefsetMember> alreadyExcluded = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
+        alreadyExcluded.add(member);
+      }
+    }
+    List<ConceptRefsetMember> newMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER) {
+        newMembers.add(member);
+      }
+    }
+    List<ConceptRefsetMember> validExclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION &&
+          newMembers.contains(member) && !alreadyExcluded.contains(member)) {
+        validExclusions.add(member);
+      }
+    }
+    return validExclusions;
+  }
+  
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getInvalidExclusions() {
+    // oldNotNew members with type EXCLUSION with concept ids 
+    // not matching newNotOld members with type MEMBER
+    List<ConceptRefsetMember> nowNotExcluded = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER) {
+        nowNotExcluded.add(member);
+      }
+    }
+    List<ConceptRefsetMember> invalidExclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION &&
+          !nowNotExcluded.contains(member)) {
+        invalidExclusions.add(member);
+      }
+    }   
+    return invalidExclusions;
+  }
+
  
+  /* see superclass */
+  @Override
+  // TODO
+  public List<ConceptRefsetMember> getNewRegularMembers() {
+    // newNotOld members with type MEMBER not matching oldNotNew members 
+    // with type MEMBER and not matching newNotOld members with type EXCLUSION_STAGED
+    List<ConceptRefsetMember> exclusionStaged = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
+        exclusionStaged.add(member);
+      }
+    }
+    List<ConceptRefsetMember> oldRegularMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER &&
+          !exclusionStaged.contains(member)) {
+        oldRegularMembers.add(member);
+      }
+    }  
+    List<ConceptRefsetMember> newRegularMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER &&
+          !exclusionStaged.contains(member) && !oldRegularMembers.contains(member)) {
+        newRegularMembers.add(member);
+      }
+    }   
+    return newRegularMembers;
+  }
+  
+  /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getOldRegularMembers() {
+    // oldNotNew members with type MEMBER with concept ids not matching 
+    // newNotOld members with type MEMBER or type INCLUSION_STAGED
+    List<ConceptRefsetMember> alreadyMember = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER ||
+          member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
+        alreadyMember.add(member);
+      }
+    }
+    List<ConceptRefsetMember> oldRegularMembers = new ArrayList<>();
+    for (ConceptRefsetMember member : oldNotNew) {
+      if (member.getMemberType() == Refset.MemberType.MEMBER &&
+          !alreadyMember.contains(member)) {
+        oldRegularMembers.add(member);
+      }
+    }   
+    return oldRegularMembers;
+  }
+
   /* see superclass */
   @Override
   public int hashCode() {

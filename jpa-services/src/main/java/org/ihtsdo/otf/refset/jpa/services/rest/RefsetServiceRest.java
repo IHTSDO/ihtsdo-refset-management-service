@@ -458,4 +458,14 @@ public interface RefsetServiceRest {
   public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
     String authToken) throws Exception;
 
+  /**
+   * Removes all refset members.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeAllRefsetMembers(Long refsetId, String authToken) 
+    throws Exception;
+
 }

@@ -68,5 +68,54 @@ public interface MemberDiffReport {
    */
   public void setNewNotOld(List<ConceptRefsetMember> newNotOld);
 
+  /**
+   * Returns the invalid inclusions.
+   *
+   * @return the invalid inclusions
+   */
+  public List<ConceptRefsetMember> getInvalidInclusions();
+
+  /**
+   * Returns the valid inclusions.
+   *
+   * @return the valid inclusions
+   */
+  public List<ConceptRefsetMember> getValidInclusions();
+
+  /**
+   * Returns the staged inclusions.
+   *
+   * @return the staged inclusions
+   */
+  public List<ConceptRefsetMember> getStagedInclusions();
+
+  /**
+   * Returns the valid exclusions.
+   *
+   * @return the valid exclusions
+   */
+  public List<ConceptRefsetMember> getValidExclusions();
+
+  /**
+   * Returns the invalid exclusions.
+   *
+   * @return the invalid exclusions
+   */
+  public List<ConceptRefsetMember> getInvalidExclusions();
+
+  /**
+   * Returns the new regular members.
+   *
+   * @return the new regular members
+   */
+  public List<ConceptRefsetMember> getNewRegularMembers();
+
+  /**
+   * Returns the old regular members.
+   *
+   * @return the old regular members
+   */
+  public List<ConceptRefsetMember> getOldRegularMembers();
+
 
 }
