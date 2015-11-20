@@ -673,19 +673,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      // Load refset
+      authorizeApp(securityService, authToken, "export definition",
+          UserRole.VIEWER);      // Load refset
+
       Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
-      }
-
-      // Authorize the call
-      if (refset.isPublic()) {
-        authorizeApp(securityService, authToken, "export definition",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(refsetService, refset.getProject().getId(),
-            securityService, authToken, "export definition", UserRole.AUTHOR);
       }
 
       return refsetService.findMembersForRefset(refsetId, query, pfs);
