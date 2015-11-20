@@ -33,6 +33,9 @@
 <link rel="stylesheet"
   href="ui/components/angular-ui-tree/dist/angular-ui-tree.min.css">
 
+<!-- Angular file upload script must be after angular.js -->
+<script src="ui/components/ng-file-upload/ng-file-upload.min.js"></script>
+
 <!-- Application style overrides -->
 <link href="css/refsetApp.css" rel="stylesheet">
 
@@ -80,7 +83,7 @@
     <div ng-include src="'app/page/general/error.html'"></div>
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
       <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"
-        ng-show="isAdmin() || isTabShowing(tab)"><a href="{{tab.link}}"
+        ng-show="((tab.label == 'Admin' || tab.label == 'Directory') && isAdmin()) || userProjectsInfo.anyRole"><a href="{{tab.link}}"
           ng-click="setSelectedTab(tab)"> {{tab.label}} </a></li>
     </ul>
     <!-- Body -->

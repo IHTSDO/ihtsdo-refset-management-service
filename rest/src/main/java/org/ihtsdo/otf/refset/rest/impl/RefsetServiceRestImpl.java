@@ -82,7 +82,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
-  
+
   /** The project service. */
   private ProjectService projectService;
 
@@ -157,8 +157,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "finds members of refset revision",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken,
+          "finds members of refset revision", UserRole.VIEWER);
 
       // check date format
       if (!date.matches("([0-9]{8})"))
@@ -195,8 +195,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             UserRole.VIEWER);
       } else {
         authorizeProject(projectService, refset.getProject().getId(),
-            securityService, authToken, "get refset for id",
-            UserRole.AUTHOR);
+            securityService, authToken, "get refset for id", UserRole.AUTHOR);
       }
       return refset;
     } catch (Exception e) {
@@ -220,26 +219,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+      authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
+      
       int[] totalCt = new int[1];
       RefsetList result = new RefsetListJpa();
       result.setTotalCount(totalCt[0]);
-      result.setObjects(refsetService.getProject(projectId).getRefsets());
-      
-      // security check: if any refset is private then project->author, else viewer
-      boolean isPrivate = false;
-      for(Refset refset : result.getObjects()) {
-        if (!refset.isPublic()) {
-          isPrivate = true;
-          break;
-        }        
-      }
-      if (isPrivate) {
-        authorizeProject(projectService, projectId, securityService, authToken,
-            "finds refsets for project", UserRole.AUTHOR);       
-      } else {
-        authorizeApp(securityService, authToken, "finds refsets for project", UserRole.VIEWER); 
-      }  
-      
+      result.setObjects(refsetService.getProject(projectId).getRefsets());      
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
@@ -264,26 +249,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      RefsetList list = refsetService.findRefsetsForQuery(query, pfs);
-      
-      // security check: if any refset is private then project->author, else viewer
-      boolean isPrivate = false;
-      Long projectId = null;
-      for(Refset refset : list.getObjects()) {
-        if (!refset.isPublic()) {
-          isPrivate = true;
-          projectId = refset.getProject().getId();
-          break;
-        }        
-      }
-      if (isPrivate) {
-        authorizeProject(projectService, projectId, securityService, authToken,
-            "finds refsets based on pfs parameter and query", UserRole.AUTHOR);       
-      } else {
-        authorizeApp(securityService, authToken, "finds refsets based on pfs parameter and query", UserRole.VIEWER); 
-      }  
-      
-      return list;
+      authorizeApp(securityService, authToken,
+          "finds refsets based on pfs parameter and query", UserRole.VIEWER);
+      return refsetService.findRefsetsForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
       return null;
@@ -510,7 +478,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeProject(refsetService, refset.getProject().getId(),
             securityService, authToken, "export definition", UserRole.AUTHOR);
       }
-      
+
       // Obtain the export handler
       ExportRefsetHandler handler =
           refsetService.getExportRefsetHandler(ioHandlerInfoId);
@@ -560,7 +528,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             UserRole.VIEWER);
       } else {
         authorizeProject(refsetService, refset.getProject().getId(),
-            securityService, authToken, "export refset members", UserRole.AUTHOR);
+            securityService, authToken, "export refset members",
+            UserRole.AUTHOR);
       }
 
       // Obtain the export handler
@@ -808,8 +777,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       Refset refset = refsetService.getRefset(refsetId);
       authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "add refset exclusion",
-          UserRole.AUTHOR);
+          securityService, authToken, "add refset exclusion", UserRole.AUTHOR);
 
       ConceptRefsetMember member = null;
       for (ConceptRefsetMember c : refset.getMembers()) {
@@ -1564,7 +1532,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Refset refset1 = refsetService.getRefset(refsetId1);
       Refset refset2 = refsetService.getRefset(refsetId2);
       String reportToken = UUID.randomUUID().toString();
-      
+
       // Authorize the call
       if (!refset1.isPublic()) {
         authorizeProject(refsetService, refset1.getProject().getId(),
@@ -1577,7 +1545,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset1.isPublic() && refset2.isPublic()) {
         authorizeApp(securityService, authToken, "compares two refsets",
             UserRole.VIEWER);
-      } 
+      }
 
       // creates a "members in common" list (where reportToken is the key)
       List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
@@ -1682,7 +1650,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-   // TODO: how can I get the projectId?
+      // TODO: how can I get the projectId?
       authorizeApp(securityService, authToken, "returns diff report",
           UserRole.VIEWER);
 
@@ -1745,8 +1713,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       Refset refset = refsetService.getRefset(refsetId);
       authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "get definition for refset id", UserRole.AUTHOR);
-      
+          securityService, authToken, "get definition for refset id",
+          UserRole.AUTHOR);
+
       return refset.getDefinition();
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
@@ -1823,11 +1792,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this is a chance to cancel or confirm");
+            .addError("Refset already contains members, this operation will add more members");
       } else {
         return result;
       }
-
+      return result;
     } catch (Exception e) {
       handleException(e, "trying to begin import refset members");
     } finally {
@@ -1948,8 +1917,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "import refset members",
-          UserRole.AUTHOR);
+          securityService, authToken, "import refset members", UserRole.AUTHOR);
 
       // Check staging flag
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {
@@ -1962,7 +1930,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ValidationResult result = new ValidationResultJpa();
       if (refset.getMembers().size() != 0) {
         result
-            .addError("Refset already contains members, this is a chance to cancel or confirm");
+            .addError("Refset already contains members, this operation will add more members");
       } else {
         return result;
       }

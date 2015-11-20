@@ -115,8 +115,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptRefsetMemberList) ConfigUtility.getGraphForString(resultString,
-        ConceptRefsetMemberListJpa.class);
+    return (ConceptRefsetMemberList) ConfigUtility.getGraphForString(
+        resultString, ConceptRefsetMemberListJpa.class);
   }
 
   /* see superclass */
@@ -423,25 +423,24 @@ public class WorkflowClientRest extends RootClientRest implements
   }
 
   @Override
-  public RefsetList findAllAvailableRefsets(Long projectId, String userName,
+  public RefsetList findAllAvailableRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public RefsetList findAllAssignedRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
+  public RefsetList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public RefsetList findReleaseProcessRefsets(Long projectId, String userName,
+  public RefsetList findReleaseProcessRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
-
 
 }

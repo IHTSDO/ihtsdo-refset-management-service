@@ -86,7 +86,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private boolean provisional;
 
   /** The staging type. */
-  // @Enumerated(EnumType.STRING)
+  @Enumerated(EnumType.STRING)
   @Column(nullable = true)
   private StagingType stagingType;
 

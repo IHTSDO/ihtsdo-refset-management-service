@@ -49,19 +49,17 @@ public enum UserRole {
    * @return true, if successful
    */
   public boolean hasPrivilegesOf(UserRole role) {
-    if (this.equals(UserRole.VIEWER) && role.equals(UserRole.VIEWER))
+    if (this == UserRole.VIEWER && role == UserRole.VIEWER)
       return true;
-    else if (this.equals(UserRole.AUTHOR)
-        && (role.equals(UserRole.VIEWER) || role.equals(UserRole.AUTHOR)))
+    else if (this == UserRole.AUTHOR
+        && (role == UserRole.VIEWER || role == UserRole.AUTHOR))
       return true;
-    else if (this.equals(UserRole.REVIEWER)
-        && (role.equals(UserRole.VIEWER) || role.equals(UserRole.AUTHOR) || role
-            .equals(UserRole.REVIEWER)))
+    else if (this == UserRole.REVIEWER
+        && (role == UserRole.VIEWER || role == UserRole.AUTHOR || role == UserRole.REVIEWER))
       return true;
-    else if (this.equals(UserRole.ADMIN))
+    else if (this == UserRole.ADMIN)
       return true;
     else
       return false;
   }
-
 }

@@ -1,7 +1,8 @@
 'use strict'
 
-var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree' ])
-  .config(function($rootScopeProvider) {
+var tsApp = angular.module('tsApp',
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload' ]).config(
+  function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
     // $rootScopeProvider.digestTtl(15);
@@ -146,17 +147,6 @@ tsApp.controller('TabCtrl', [
       return securityService.isAdmin();
     }
 
-    // for ng-show
-    $scope.isTabShowing = function(tab) {
-      return true;
-      // TODO: need to figure out how to get active tabs to redraw after 
-      //projectService.getUserHasAnyRole() returns and is available or not to display 
-      // in the first place until anyrole is available
-        /*return $scope.isAdmin() || tab.label == 'Directory'
-          || $scope.userProjectsInfo.anyrole;*/
-      
-    }
-
   } ]);
 
 // Header controller
@@ -187,7 +177,6 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
     }
-
   } ]);
 
 // Footer controller

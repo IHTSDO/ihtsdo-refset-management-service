@@ -19,17 +19,17 @@ import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 /**
  * Implementation of an algorithm to export a refset definition.
  */
-public class ExportRefsetRf2Handler extends RootServiceJpa implements
+public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
     ExportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
 
   /**
-   * Instantiates an empty {@link ExportRefsetRf2Handler}.
+   * Instantiates an empty {@link ExportRefsetRf2WithNameHandler}.
    * @throws Exception if anything goes wrong
    */
-  public ExportRefsetRf2Handler() throws Exception {
+  public ExportRefsetRf2WithNameHandler() throws Exception {
     super();
   }
 
@@ -41,7 +41,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
 
   @Override
   public String getFileName(String namespace, String type, String version) {
-    return "der2_sRefset_Simple" + type + "_" + namespace + "_" + version
+    return "der2_Refset_Simple" + type + "_" + namespace + "_" + version
         + getFileTypeFilter();
   }
 
@@ -54,7 +54,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   /* see superclass */
   @Override
   public String getName() {
-    return "Export RF2 with name";
+    return "Export RF2";
   }
 
   /* see superclass */
@@ -62,7 +62,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Export refset members with names - " + refset.getTerminologyId() + ", "
+        "Export refset members- " + refset.getTerminologyId() + ", "
             + refset.getName());
 
     // Write a header
@@ -77,7 +77,6 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
     sb.append("referencedComponentId").append("\t");
-    sb.append("name").append("\t");
     sb.append("\r\n");
 
     for (ConceptRefsetMember member : members) {
@@ -93,7 +92,6 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
       sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
       sb.append(member.getConceptId()).append("\t");
-      sb.append(member.getConceptName()).append("\t");
       sb.append("\r\n");
     }
 

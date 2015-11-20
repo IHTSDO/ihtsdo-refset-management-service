@@ -1,22 +1,22 @@
 // Refset Service
 tsApp.service('refsetService', [
-  '$http',
+  '$http', '$rootScope',
   '$q',
+  'Upload',
   'gpService',
   'utilService',
   'projectService',
-  '$rootScope',
-  function($http, $q, gpService, utilService, projectService, $rootScope) {
+  function($http, $rootScope, $q, Upload, gpService, utilService, projectService) {
     console.debug("configure refsetService");
 
     // broadcasts a new project id
     this.fireProjectChanged = function(project) {
-      $rootScope.$broadcast('projectChanged', project);      
+      $rootScope.$broadcast('refset:projectChanged', project);      
     }
     
     // broadcasts a refset change
-    this.fireRefsetChanged = function(projectId) {
-      $rootScope.$broadcast('refsetChanged', projectId);
+    this.fireRefsetChanged = function(refset) {
+      $rootScope.$broadcast('refset:refsetChanged', refset);
     }
     
     // get refset revision
@@ -626,17 +626,12 @@ tsApp.service('refsetService', [
     }
  
     this.exportDefinition = function(refsetId, handlerId, extension) {
+      console.debug("exportDefinition");
       var deferred = $q.defer();
       gpService.increment()
-      $http({
-        url : refsetUrl + "export/definition?refsetId=" + refsetId + "&handlerId=" + handlerId,
-        dataType : "json",
-        method : "GET",
-        headers : {
-          "Content-Type" : "application/json"
-        },
-        responseType : 'arraybuffer'
-      }).success(function(data) {
+      $http.get(refsetUrl + "export/definition?refsetId=" + refsetId + "&handlerId=" + handlerId).then(
+      // Success
+      function(data) {
         var blob = new Blob([ data ], {
           type : ""
         });
@@ -646,13 +641,15 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = "_blank";
-        a.download = refsetId + "_definition." + extension;
+        a.download = "definition." + refsetId + "." + extension;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
 
         deferred.resolve(data);
-      }).error(function(response) {
+      },
+      // Error
+      function(response) {
         utilService.handleError(response);
         gpService.decrement();
         deferred.reject(data);
@@ -660,17 +657,12 @@ tsApp.service('refsetService', [
     };
 
     this.exportMembers = function(refsetId, handlerId, extension) {
+      console.debug("exportMembers");
       var deferred = $q.defer();
       gpService.increment()
-      $http({
-        url : refsetUrl + "export/members?refsetId=" + refsetId + "&handlerId=" + handlerId,
-        dataType : "json",
-        method : "GET",
-        headers : {
-          "Content-Type" : "application/json"
-        },
-        responseType : 'arraybuffer'
-      }).success(function(data) {
+      $http.get(refsetUrl + "export/members?refsetId=" + refsetId + "&handlerId=" + handlerId).then(
+      // Success
+      function(data) {
         var blob = new Blob([ data ], {
           type : ""
         });
@@ -680,22 +672,90 @@ tsApp.service('refsetService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = "_blank";
-        a.download = refsetId + "_members." + extension;
+        a.download = "members." + refsetId + "." + extension;;
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
 
         deferred.resolve(data);
-      }).error(function(response) {
+      },
+      // Error
+      function(response) {
         utilService.handleError(response);
         gpService.decrement();
         deferred.reject(data);
       });
     };
 
-    // Initialize user role - only when refset service loads
-    //projectService.getUserHasAnyRole();
+    // Begin import members - if validation is result, OK to proceed.
+    this.beginImportMembers = function(refsetId, handlerId) {
+      console.debug("begin import members");
+      var deferred = $q.defer();
+      gpService.increment()
+      $http.get(refsetUrl + "import/begin?refsetId=" + refsetId + "&handlerId=" + handlerId).then(
+        // success
+        function(response) {
+          console.debug("  validation result = ",response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+    };
 
+
+    // Cancel import members
+    this.cancelImportMembers = function(refsetId) {
+      console.debug("cancel import members");
+      var deferred = $q.defer();
+      gpService.increment()
+      $http.get(refsetUrl + "import/cancel?refsetId=" + refsetId).then(
+        // success
+        function(response) {
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+        return deferred.promise;
+    };
     
+    // Finish import members - if validation is result, OK to proceed.
+    this.finishImportMembers = function(refsetId, handlerId, file) {
+      console.debug("finish import members");
+      var deferred = $q.defer();
+      gpService.increment()
+      Upload.upload({
+            url: refsetUrl + "import/finish?refsetId=" + refsetId + "&handlerId=" + handlerId,
+            data: {file: file}
+        }).then(
+          // Success
+          function(response) {
+            gpService.decrement();
+            deferred.resolve(response.data);
+          
+          },
+          // error
+          function(response) {
+            utilService.handleError(response);
+            gpService.decrement();
+            deferred.reject(response.data);
+          }, 
+          // event
+          function (evt) {
+            var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+            console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+        });      
+        return deferred.promise;
+    };    
     
   } ]);
