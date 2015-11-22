@@ -90,7 +90,9 @@ tsApp
                 if (!$scope.project) {
                   return;
                 }
-                $scope.getProject($scope.project.id);
+                // No need to call getProject as the project is passed in to the event
+                // Refresh refset table
+                $scope.getRefsets();
 
               });
 
@@ -131,6 +133,7 @@ tsApp
               // Get $scope.refsets
               // Logic for this depends on the $scope.value and $scope.user.role
               $scope.getRefsets = function() {
+                console.debug("get refsets");
                 var pfs = {
                   startIndex : ($scope.paging["refset"].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
@@ -399,7 +402,7 @@ tsApp
                   return;
                 }
                 refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
-                  refsetService.fireRefsetChanged($scope.project.id)
+                  refsetService.fireRefsetChanged(refset);
                   $scope.selectRefset(refset);
                 })
               };
@@ -439,8 +442,8 @@ tsApp
                 });
               }
 
-              // TODO: remove as I believe these are unused
-              $scope.getAuthorsForRefsetId = function(refsetId) {
+              // Used for admin to indicate what refsets are assigned to whom 
+               $scope.getAuthorsForRefsetId = function(refsetId) {
                 return $scope.refsetIdToAuthorsMap[refsetId];
               }
               $scope.getReviewersForRefsetId = function(refsetId) {
@@ -623,6 +626,8 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
+                              refsetService.fireRefsetChanged(refset);
+                              $scope.selectRefset(refset);
                               $modalInstance.close();
                             },
                             // Failure - show error
@@ -678,8 +683,8 @@ tsApp
               // Directive scoped method for cancelling an import
               $scope.cancelImport = function(refset) {
                 $scope.refset = refset;
-                refsetService.cancelImportMembers($scope.refset.id).then(new function() {
-                  refsetService.fireRefsetChanged($scope.refset);
+                refsetService.cancelImportMembers(refset.id).then(new function() {
+                  refsetService.fireRefsetChanged(refset);
                 });
               };
 
@@ -796,7 +801,7 @@ tsApp
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
                       userName, "ASSIGN").then(function(data) {
                       // Update lists
-                      refsetService.fireProjectChanged($scope.project);
+                      projectService.fireProjectChanged($scope.project);
 
                       $modalInstance.close();
                     }, function(data) {

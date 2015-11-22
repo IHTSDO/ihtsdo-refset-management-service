@@ -2,9 +2,10 @@
 tsApp.service('projectService', [
   '$http',
   '$q',
+  '$rootScope',
   'gpService',
   'utilService',
-  function($http, $q, gpService, utilService) {
+  function($http, $q, $rootScope, gpService, utilService) {
     console.debug("configure projectService");
 
     // Declare the model
@@ -13,6 +14,11 @@ tsApp.service('projectService', [
     };
 
     var iconConfig = {};
+
+    // broadcasts a new project id
+    this.fireProjectChanged = function(project) {
+      $rootScope.$broadcast('refset:projectChanged', project);
+    }
 
     // Gets the user projects info
     this.getUserProjectsInfo = function() {

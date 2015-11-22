@@ -97,7 +97,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/available/editing" + "?projectId="
-            + projectId + "?translationIdId=" + translationId + "?userName="
+            + projectId + "?translationId=" + translationId + "?userName="
             + userName);
 
     String pfsStr =
@@ -136,7 +136,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/assigned/editing" + "?projectId="
-            + projectId + "?translationIdId=" + translationId + "?userName="
+            + projectId + "?translationId=" + translationId + "?userName="
             + userName);
 
     String pfsStr =
@@ -175,7 +175,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/available/review" + "?projectId="
-            + projectId + "?translationIdId=" + translationId + "?userName="
+            + projectId + "?translationId=" + translationId + "?userName="
             + userName);
 
     String pfsStr =
@@ -214,7 +214,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/assigned/review" + "?projectId="
-            + projectId + "?translationIdId=" + translationId + "?userName="
+            + projectId + "?translationId=" + translationId + "?userName="
             + userName);
 
     String pfsStr =
