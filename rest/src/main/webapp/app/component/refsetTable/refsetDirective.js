@@ -252,14 +252,6 @@ tsApp
 
               };
 
-              // Begin redefinition (or first definition)
-              $scope.beginRedefinition = function(refsetId, definition) {
-                refsetService.beginRedefinition(refset.id, definition).then(function(data) {
-                  console.debug("data", data);
-                })
-
-              };
-
               // Convert date to a string
               $scope.toDate = function(lastModified) {
                 return utilService.toDate(lastModified);
@@ -1216,12 +1208,12 @@ tsApp
               };
 
               // modal for resolving redefinition issues
-              $scope.openRedefinitionModal = function(lrefset, ldefinition) {
+              $scope.openRedefinitionModal = function(lrefset) {
 
-                console.debug("openRedefinitionModal ", lrefset, ldefinition);
+                console.debug("openRedefinitionModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/redefinition.html',
+                  templateUrl : 'app/component/refsetTable/redefinition.html',
                   controller : RedefinitionModalCtrl,
                   resolve : {
 
@@ -1229,7 +1221,7 @@ tsApp
                       return lrefset;
                     },
                     definition : function() {
-                      return ldefinition;
+                      return lrefset.definition;
                     },
                     paging : function() {
                       return $scope.paging;
@@ -1247,10 +1239,19 @@ tsApp
                 paging) {
 
                 console.debug("Entered redefinition modal control");
+                $scope.refset = refset;
+                
+                $scope.redefine = function(newDefinition) {
+                  console.debug("Begin redefinition", newDefinition);
 
-                $scope.beginRedefinition(refset.id, definition).then(function(data) {
-                  $scope.stagedRefset = data;
-                });
+                  refsetService.beginRedefinition(refset.id, newDefinition).then(function(data) {
+                    console.debug("data", data);
+                  })
+                }
+                
+                $scope.cancel = function() {
+                  $modalInstance.dismiss('cancel');
+                };
 
               }
 

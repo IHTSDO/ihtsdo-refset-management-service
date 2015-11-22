@@ -137,7 +137,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition001");
 
@@ -170,7 +170,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition002");
 
@@ -202,7 +202,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition003");
 
@@ -247,7 +247,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition004");
 

@@ -36,7 +36,7 @@
   <div class="col-md-6 col-xs-12">
   <span ng-show="searchResults && !selectedConcept" class="alert alert-warning">Select a concept to
     see details</span>
-    <h5 ng-show="parents"><b>Parents</b></h5>
+    <h5 ng-show="parents.length > 0"><b>Parents</b></h5>
     <table ng-show="parents" class="table">
       <tbody>
         <tr ng-repeat="concept in parents">

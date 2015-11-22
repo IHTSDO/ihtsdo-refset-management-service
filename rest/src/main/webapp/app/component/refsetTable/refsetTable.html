@@ -199,7 +199,10 @@
           <a ng-click="openImportExportModal(refset, 'Import', 'Definition')">
                     <i title="Import definition"
                       class="material-icons md-18">file_upload</i>
-          </a> -->
+          </a> --><a
+                ng-click="openRedefinitionModal(refset)">
+                <i title="Redefinition" class="material-icons md-18">find_replace</i>
+              </a>
             </td>
           </tr>
           <tr ng-show="refset.type == 'EXTERNAL'">
