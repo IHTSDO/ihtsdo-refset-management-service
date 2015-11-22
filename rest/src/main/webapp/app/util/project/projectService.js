@@ -2,9 +2,10 @@
 tsApp.service('projectService', [
   '$http',
   '$q',
+  '$rootScope',
   'gpService',
   'utilService',
-  function($http, $q, gpService, utilService) {
+  function($http, $q, $rootScope, gpService, utilService) {
     console.debug("configure projectService");
 
     // Declare the model

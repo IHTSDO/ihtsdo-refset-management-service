@@ -35,8 +35,10 @@ tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService', 'securityServi
 
     // Fire a "projectChanged" event after looking up role
     $scope.setProject = function(project) {
-
       $scope.project = project;
+      if (!$scope.project) {
+        return;
+      }
 
       // Empty PFS
       var pfs = {};
