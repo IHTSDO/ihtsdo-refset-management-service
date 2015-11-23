@@ -4,34 +4,68 @@
 
 <div class="modal-body">
   <div>
-    <div>
-      Refset id:<br> <input ng-model="refset.terminologyId"><br>
-      Refset name:<br> <input ng-model="refset.name"><br> 
-      Description:<br> <input ng-model="refset.description"><br>
-      Module id:<br> <input ng-model="refset.moduleId"><br>
-      Organization:<br> <input ng-model="refset.organization"><br>
-      Email contact:<br> <input ng-model="refset.feedbackEmail"><br>
-      Terminology:<br> <select ng-model="refset.terminology" 
-        ng-change="terminologySelected(refset.terminology)"
-        ng-options="item for item in terminologyEditions"></select><br>
-      Version:<br> <select ng-model="refset.version" 
-        ng-options="item for item in terminologyVersions"></select><br>
-      Workflow path:<br> <input ng-model="refset.workflowPath"><br>    
-      Type:<br> <select ng-model="refset.type" 
-        ng-options="item for item in refsetTypes"></select><br>
-    </div>
-    <div ng-show="refset.type == 'EXTERNAL'">
-      External url:<br> <input ng-model="refset.externalUrl"><br>
-    </div>
-    <div ng-show="refset.type == 'INTENSIONAL'">
-      Definition:<br> <textarea rows="4" cols="40" ng-model="refset.definition"></textarea><br>
-    </div>
+    <table class="table">
+      <tr>
+        <td>Project Id:</td>
+        <td><input ng-model="project.id"></td>
+      </tr>
+      <tr>
+        <td>Refset Id:</td>
+        <td><input ng-model="refset.terminologyId"></td>
+      </tr>
+      <tr>
+        <td>Name:</td>
+        <td><input ng-model="refset.name"></td>
+      </tr>
+      <tr>
+        <td>Description:</td>
+        <td><input ng-model="refset.description"></td>
+      </tr>
+      <tr>
+        <td>Module Id:</td>
+        <td><input ng-model="refset.moduleId"></td>
+      </tr>
+      <tr>
+        <td>Organization:</td>
+        <td><input ng-model="refset.organization"></td>
+      </tr>
+      <tr>
+        <td>Feedback email:</td>
+        <td><input ng-model="refset.feedbackEmail"></td>
+      </tr>
+      <tr>
+        <td>Terminology:</td>
+        <td><select ng-model="refset.terminology"
+          ng-change="terminologySelected(refset.terminology)"
+          ng-options="item for item in terminologies"></select></td>
+      </tr>
+      <tr>
+        <td>Version:</td>
+        <td><select ng-model="refset.version"
+          ng-options="item for item in versions"></select></td>
+      </tr>
+      <tr>
+        <td>Workflow path:</td>
+        <td><input ng-model="refset.workflowPath"></td>
+      </tr>
+      <tr>
+        <td>Type:</td>
+        <td><select ng-model="refset.type"
+          ng-options="item for item in refsetTypes"></select></td>
+      </tr>
+      <tr ng-show="refset.type == 'EXTERNAL'">
+        <td>External Url:</td>
+        <td><input ng-model="refset.externalUrl"></td>
+      </tr>
+      <tr ng-show="refset.type == 'INTENSIONAL'">
+        <td>Definition:</td>
+        <td><textarea rows="4" cols="40" ng-model="refset.definition"></textarea></td>
+      </tr>
+    </table>
   </div>
-</div>
 
-<div class="modal-footer">
-  <button class="btn btn-primary"
-    ng-click="submitEditRefset(refset); 
+  <div class="modal-footer">
+    <button class="btn btn-primary" ng-click="submitRefset(refset); 
     ">Save</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-</div>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  </div>

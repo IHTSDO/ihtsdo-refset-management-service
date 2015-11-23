@@ -15,9 +15,9 @@
         ng-init="refset.namespace=project.namespace"><br>
       Terminology:<br> <select ng-model="refset.terminology" 
         ng-change="terminologySelected(refset.terminology)"
-        ng-options="item for item in terminologyEditions"></select><br>
+        ng-options="item for item in terminologies"></select><br>
       Version:<br> <select ng-model="refset.version" 
-        ng-options="item for item in terminologyVersions"></select><br>
+        ng-options="item for item in versions"></select><br>
       Type:<br> <select ng-model="refset.type" 
         ng-options="item for item in refsetTypes"></select><br>
     </div>

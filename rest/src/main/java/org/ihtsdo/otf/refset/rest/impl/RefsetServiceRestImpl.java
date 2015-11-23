@@ -1591,9 +1591,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @POST
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
   @Path("/common/members")
   @ApiOperation(value = "Finds members in common", notes = "Finds members in common given a reportToken based on pfs parameter and query", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList findMembersInCommon(

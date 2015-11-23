@@ -175,8 +175,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // it is assigned to this translation and marked for editing
       // and not for review
       String query =
-          "authorUserNames:" + user.getId() + " AND translationId:"
-              + translationId + " AND forAuthoring:true AND forReview:false";
+          "projectId:" + projectId + " AND " + "authorUserNames:"
+              + user.getId() + " AND translationId:" + translationId
+              + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
@@ -267,8 +268,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       User user = securityService.getUser(userName);
       // Find tracking records "for review" for this translation and user
       String query =
-          "reviewerUserNames:" + user.getId() + " AND translationId:"
-              + translationId + " AND forReview:true";
+          "projectId:" + projectId + " AND " + "reviewerUserNames:"
+              + user.getId() + " AND translationId:" + translationId
+              + " AND forReview:true";
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       List<Concept> concepts = new ArrayList<>();
@@ -458,7 +460,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       String query = "";
       if (userName != null && !userName.equals("")) {
         query =
-            "authorUserNames:" + userName + " AND refsetId:[* TO *]"
+            "projectId:" + projectId + " AND " + "authorUserNames:" + userName
+                + " AND refsetId:[* TO *]"
                 + " AND forAuthoring:true AND forReview:false";
       } else {
         query =
@@ -583,10 +586,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       String query = "";
       if (userName != null && !userName.equals("")) {
         query =
-            "reviewerUserNames:" + userName + " AND refsetId:[* TO *]"
-                + " AND forReview:true";
+            "projectId:" + projectId + " AND " + "reviewerUserNames:"
+                + userName + " AND refsetId:[* TO *]" + " AND forReview:true";
       } else {
-        query = "refsetId:[* TO *]" + " forReview:true";
+        throw new Exception("UserName must always be set");
       }
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
