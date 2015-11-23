@@ -79,6 +79,7 @@ public class MemoryEntryJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
+    tester.include("translatedName");
     tester.include("frequency");
     tester.include("phraseMemory");
 
@@ -137,6 +138,7 @@ public class MemoryEntryJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("name");
+    tester.include("translatedName");
 
     assertTrue(tester.testNotNullFields());
   }

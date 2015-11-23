@@ -1,7 +1,7 @@
 // Refset controller
-tsApp.controller('RefsetCtrl', [ '$scope', '$http', 'tabService', 'securityService',
-  'projectService', 'refsetService', '$rootScope',
-  function($scope, $http, tabService, securityService, projectService, refsetService, $rootScope) {
+tsApp.controller('RefsetCtrl', [ '$scope', '$http', '$rootScope', 'tabService', 'securityService',
+  'projectService',
+  function($scope, $http, $rootScope, tabService, securityService, projectService) {
     console.debug('configure RefsetCtrl');
 
     // Handle resetting tabs on "back" button

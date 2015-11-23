@@ -36,6 +36,10 @@ public class MemoryEntryJpa implements MemoryEntry {
   @Column(nullable = false)
   private String name;
 
+  /** The translated name. */
+  @Column(nullable = false)
+  private String translatedName;
+
   /** The frequency. */
   private Integer frequency;
 
@@ -58,6 +62,7 @@ public class MemoryEntryJpa implements MemoryEntry {
   public MemoryEntryJpa(MemoryEntry memoryEntry) {
     super();
     this.name = memoryEntry.getName();
+    this.translatedName = memoryEntry.getTranslatedName();
     this.frequency = memoryEntry.getFrequency();
     this.phraseMemory = memoryEntry.getPhraseMemory();
   }
@@ -72,6 +77,18 @@ public class MemoryEntryJpa implements MemoryEntry {
   @Override
   public void setName(String name) {
     this.name = name;
+  }
+
+  /* see superclass */
+  @Override
+  public String getTranslatedName() {
+    return translatedName;
+  }
+
+  /* see superclass */
+  @Override
+  public void setTranslatedName(String translatedName) {
+    this.translatedName = translatedName;
   }
 
   /* see superclass */
@@ -142,6 +159,9 @@ public class MemoryEntryJpa implements MemoryEntry {
     result = prime * result + ((frequency == null) ? 0 : frequency.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
+        prime * result
+            + ((translatedName == null) ? 0 : translatedName.hashCode());
+    result =
         prime
             * result
             + ((phraseMemory == null || phraseMemory.getId() == null) ? 0
@@ -168,6 +188,11 @@ public class MemoryEntryJpa implements MemoryEntry {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
+      return false;
+    if (translatedName == null) {
+      if (other.translatedName != null)
+        return false;
+    } else if (!translatedName.equals(other.translatedName))
       return false;
     if (phraseMemory == null) {
       if (other.phraseMemory != null)

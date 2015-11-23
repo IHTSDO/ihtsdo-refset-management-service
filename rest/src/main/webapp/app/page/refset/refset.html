@@ -1,4 +1,4 @@
-<!-- Controlled by ContentCtrl (in contentController.js)  -->
+<!-- Controlled by RefsetCtrl (in refsetController.js)  -->
 
 <div class="row">
 
@@ -13,8 +13,7 @@
             <td>Choose Project:</td>
             <td><select ng-model="project" ng-show="projects.length > 1"
               ng-options="item.name for item in projects"
-              ng-change="setProject(project);
-      findAssignedUsersForProject()"></select></td>
+              ng-change="setProject(project); sfindAssignedUsersForProject()"></select></td>
           </tr>
           <tr>
             <td>Role:</td>
