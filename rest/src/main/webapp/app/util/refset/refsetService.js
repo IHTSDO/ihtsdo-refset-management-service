@@ -9,10 +9,6 @@ tsApp.service('refsetService', [
   function($http, $rootScope, $q, Upload, gpService, utilService, projectService) {
     console.debug("configure refsetService");
 
-    // broadcasts a new project id
-    this.fireProjectChanged = function(project) {
-      $rootScope.$broadcast('refset:projectChanged', project);      
-    }
     
     // broadcasts a refset change
     this.fireRefsetChanged = function(refset) {
