@@ -459,9 +459,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
-    throws Exception {
+  @Path("/refset/finish")
+  @ApiOperation(value = "Finish refset release", notes = "Finishes the release process by removing the staging release for refset.", response = ValidationResultJpa.class)
+  public ValidationResult finishRefsetRelease(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
     // check preconditions
     // refset exists...
     // Refset must be staged and with a workflow status of "PREVIEW"
@@ -483,6 +487,66 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     // set the lastModifiedBy and save it.
     //
     // releaseService.commit()
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /refset/finish " + refsetId );
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "finish refset release",
+              UserRole.AUTHOR);
+
+      if(!refset.isStaged())
+        throw new Exception("refset workflowstatus is not staged for " + refsetId);
+      StagedRefsetChange stagedRefsetChange = refsetService.getStagedRefsetChange(refsetId);
+      if(!WorkflowStatus.PREVIEW.equals(stagedRefsetChange.getStagedRefset().getWorkflowStatus())) {
+        throw new Exception("Refset must be staged and with a workflow status of PREVIEW"); 
+      }
+      Refset originRefset = stagedRefsetChange.getOriginRefset();
+      originRefset.setStaged(false);
+      originRefset.setStagingType(null);
+      originRefset.setLastModifiedBy(userName);
+      refsetService.updateRefset(originRefset);
+      ReleaseInfoList releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(refsetId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      releaseService.removeReleaseInfo(releaseInfo.getId());
+      Refset stagedRefset = stagedRefsetChange.getStagedRefset();
+      stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
+      stagedRefset.setLastModifiedBy(userName);
+      refsetService.updateRefset(stagedRefset);
+      releaseInfoList =
+          releaseService.findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for refset " + refsetId);
+      }
+      releaseInfo = releaseInfoList.getObjects().get(0);
+      releaseInfo.setPublished(true);
+      releaseInfo.setPlanned(false);
+      releaseService.updateReleaseInfo(releaseInfo);
+      refsetService.removeStagedRefsetChange(stagedRefsetChange.getId());
+    } catch (Exception e) {
+      releaseService.rollback();
+      handleException(e, "trying to finish release of refset");
+    } finally {
+      refsetService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
 
@@ -765,12 +829,94 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @GET
   @Override
-  public ValidationResult finishTranslationRelease(Long translationId,
-    String authToken) throws Exception {
+  @Path("/translation/finish")
+  @ApiOperation(value = "Finish translation release", notes = "Finishes the release process by removing the staging release for translation.", response = ValidationResultJpa.class)
+  public ValidationResult finishTranslationRelease(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    // check preconditions
+    // translation exists...
+    // Translation must be staged and with a workflow status of "PREVIEW"
+    // - get the staged translation change for the translation passed in
+    // - get the staged translation from that and verify the workflowSTatus
+    //
+    // releaseService.setTransactionPerOperation(false)
+    // releaseService.beginTransaction();
+    //
+    // Get the stagedTranslationChange for the translation id
+    // Get the origin translation and change the staging type to null, set
+    // lastModifiedBy and save it.
+    // remove the release info connected to the origin translation
+    // Remove the StagedTranslationChange object
+    // Get the staged translation and setWorkflowStatus to PUBLISHED, set
+    // lastModifiedBy and save it.
+    // get the releaseInfo attached to the staged translation and setPublished(true),
+    // setPlanned(false)
+    // set the lastModifiedBy and save it.
+    //
+    // releaseService.commit()
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /translation/finish " + translationId );
 
-    // see finishRefsetRelease
-    
+    TranslationService translationService = new TranslationServiceJpa();
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      String userName =
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "finish translation release",
+              UserRole.AUTHOR);
+
+      if(!translation.isStaged())
+        throw new Exception("translation workflowstatus is not staged for " + translationId);
+      StagedTranslationChange stagedTranslationChange = translationService.getStagedTranslationChange(translationId);
+      if(!WorkflowStatus.PREVIEW.equals(stagedTranslationChange.getStagedTranslation().getWorkflowStatus())) {
+        throw new Exception("Translation must be staged and with a workflow status of PREVIEW"); 
+      }
+      Translation originTranslation = stagedTranslationChange.getOriginTranslation();
+      originTranslation.setStaged(false);
+      originTranslation.setStagingType(null);
+      originTranslation.setLastModifiedBy(userName);
+      translationService.updateTranslation(originTranslation);
+      ReleaseInfoList releaseInfoList =
+          releaseService.findTranslationReleasesForQuery(translationId, null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for translation " + translationId);
+      }
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      releaseService.removeReleaseInfo(releaseInfo.getId());
+      Translation stagedTranslation = stagedTranslationChange.getStagedTranslation();
+      stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
+      stagedTranslation.setLastModifiedBy(userName);
+      translationService.updateTranslation(stagedTranslation);
+      releaseInfoList =
+          releaseService.findTranslationReleasesForQuery(stagedTranslation.getId(), null, null);
+      if(releaseInfoList.getCount() != 1) {
+        throw new Exception("Cannot find release info for translation " + translationId);
+      }
+      releaseInfo = releaseInfoList.getObjects().get(0);
+      releaseInfo.setPublished(true);
+      releaseInfo.setPlanned(false);
+      releaseService.updateReleaseInfo(releaseInfo);
+      translationService.removeStagedTranslationChange(stagedTranslationChange.getId());
+    } catch (Exception e) {
+      releaseService.rollback();
+      handleException(e, "trying to finish release of translation");
+    } finally {
+      translationService.close();
+      releaseService.close();
+      securityService.close();
+    }
     return null;
   }
 
