@@ -391,7 +391,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + "concept/parents" + "?terminologyId=" + terminologyId + "&terminology="
+        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology="
           + terminology + "&version=" + version).then(
       // success
       function(response) {

@@ -647,7 +647,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to remove a refset member ");
     } finally {
       refsetService.close();
@@ -1032,7 +1032,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to begin redefinition of refset");
     } finally {
       refsetService.close();
@@ -1138,7 +1138,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refset;
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to finish refset migration");
     } finally {
       refsetService.close();
@@ -1196,7 +1196,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to cancel migration of refset");
     } finally {
       refsetService.close();
@@ -1346,7 +1346,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // we want a queryRestriction to include " AND provisional:false".
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to begin redefinition of refset");
     } finally {
       refsetService.close();
@@ -1451,7 +1451,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refset;
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();();
       handleException(e, "trying to finish refset redefinition");
     } finally {
       refsetService.close();
@@ -1509,7 +1509,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
-      refsetService.rollback();
+      //refsetService.rollback();
       handleException(e, "trying to cancel redefinition of refset");
     } finally {
       refsetService.close();
