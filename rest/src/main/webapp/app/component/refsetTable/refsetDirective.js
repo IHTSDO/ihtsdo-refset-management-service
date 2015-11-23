@@ -90,9 +90,7 @@ tsApp
                 if (!$scope.project) {
                   return;
                 }
-                // No need to call getProject as the project is passed in to the event
-                // Refresh refset table
-                $scope.getRefsets();
+                $scope.getProject($scope.project.id);
 
               });
 
@@ -133,7 +131,6 @@ tsApp
               // Get $scope.refsets
               // Logic for this depends on the $scope.value and $scope.user.role
               $scope.getRefsets = function() {
-                console.debug("get refsets");
                 var pfs = {
                   startIndex : ($scope.paging["refset"].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
@@ -251,14 +248,6 @@ tsApp
                 $scope.refsetReleaseInfo = null;
                 releaseService.getCurrentReleaseInfoForRefset(refset.id).then(function(data) {
                   $scope.refsetReleaseInfo = data;
-                })
-
-              };
-
-              // Begin redefinition (or first definition)
-              $scope.beginRedefinition = function(refsetId, definition) {
-                refsetService.beginRedefinition(refset.id, definition).then(function(data) {
-                  console.debug("data", data);
                 })
 
               };
@@ -410,7 +399,7 @@ tsApp
                   return;
                 }
                 refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
-                  refsetService.fireRefsetChanged(refset);
+                  refsetService.fireRefsetChanged($scope.project.id)
                   $scope.selectRefset(refset);
                 })
               };
@@ -450,8 +439,8 @@ tsApp
                 });
               }
 
-              // Used for admin to indicate what refsets are assigned to whom 
-               $scope.getAuthorsForRefsetId = function(refsetId) {
+              // TODO: remove as I believe these are unused
+              $scope.getAuthorsForRefsetId = function(refsetId) {
                 return $scope.refsetIdToAuthorsMap[refsetId];
               }
               $scope.getReviewersForRefsetId = function(refsetId) {
@@ -634,8 +623,6 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
-                              refsetService.fireRefsetChanged(refset);
-                              $scope.selectRefset(refset);
                               $modalInstance.close();
                             },
                             // Failure - show error
@@ -691,8 +678,8 @@ tsApp
               // Directive scoped method for cancelling an import
               $scope.cancelImport = function(refset) {
                 $scope.refset = refset;
-                refsetService.cancelImportMembers(refset.id).then(new function() {
-                  refsetService.fireRefsetChanged(refset);
+                refsetService.cancelImportMembers($scope.refset.id).then(new function() {
+                  refsetService.fireRefsetChanged($scope.refset);
                 });
               };
 
@@ -809,7 +796,7 @@ tsApp
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
                       userName, "ASSIGN").then(function(data) {
                       // Update lists
-                      projectService.fireProjectChanged($scope.project);
+                      refsetService.fireProjectChanged($scope.project);
 
                       $modalInstance.close();
                     }, function(data) {
@@ -1163,16 +1150,16 @@ tsApp
                 // select concept and get concept data
                 $scope.selectConcept = function(concept) {
                   $scope.selectedConcept = concept;
-                  $scope.getConceptParents(concept.terminologyId);
+                  $scope.getConceptParents(concept);
                   $scope.getConceptChildren(concept);
-                  $scope.getConceptWithDescriptions(concept.terminologyId);
+                  $scope.getConceptWithDescriptions(concept);
                 };
 
                 // get concept parents
                 $scope.getConceptParents = function(concept) {
                   console.debug("Getting concept parents", concept);
 
-                  projectService.getConceptParents(concept, concept.terminology, concept.version)
+                  projectService.getConceptParents(concept.terminologyId, concept.terminology, concept.version)
                     .then(function(data) {
                       $scope.parents = data.concepts;
                     }, function(data) {
@@ -1205,7 +1192,7 @@ tsApp
                 $scope.getConceptWithDescriptions = function(concept) {
                   console.debug("Getting concept with descriptions", concept);
 
-                  projectService.getConceptWithDescriptions(concept, concept.terminology,
+                  projectService.getConceptWithDescriptions(concept.terminologyId, concept.terminology,
                     concept.version).then(
                   // Success
                   function(data) {
@@ -1221,12 +1208,12 @@ tsApp
               };
 
               // modal for resolving redefinition issues
-              $scope.openRedefinitionModal = function(lrefset, ldefinition) {
+              $scope.openRedefinitionModal = function(lrefset) {
 
-                console.debug("openRedefinitionModal ", lrefset, ldefinition);
+                console.debug("openRedefinitionModal ", lrefset);
 
                 var modalInstance = $modal.open({
-                  templateUrl : 'app/page/refset/redefinition.html',
+                  templateUrl : 'app/component/refsetTable/redefinition.html',
                   controller : RedefinitionModalCtrl,
                   resolve : {
 
@@ -1234,7 +1221,7 @@ tsApp
                       return lrefset;
                     },
                     definition : function() {
-                      return ldefinition;
+                      return lrefset.definition;
                     },
                     paging : function() {
                       return $scope.paging;
@@ -1252,10 +1239,33 @@ tsApp
                 paging) {
 
                 console.debug("Entered redefinition modal control");
+                $scope.refset = refset;
+                
+                $scope.redefine = function(newDefinition) {
+                  console.debug("Begin redefinition", newDefinition);
 
-                $scope.beginRedefinition(refset.id, definition).then(function(data) {
-                  $scope.stagedRefset = data;
-                });
+                  refsetService.beginRedefinition(refset.id, newDefinition).then(function(data) {
+                    console.debug("data", data);
+                    refsetService.compareRefsets(refset1.getId(), copy.getId()).then(function(data) {
+                        $scope.diffReport = refsetService.getDiffReport(data);
+                      })
+                  })
+                                     
+                }
+                
+                $scope.finish = function(refset) {
+                  console.debug("Finish redefinition", refset.id);
+
+                  refsetService.finishRedefinition(refset.id).then(function(data) {
+                    console.debug("data", data);
+                    
+                  })
+                                     
+                }
+                
+                $scope.cancel = function() {
+                  $modalInstance.dismiss('cancel');
+                };
 
               }
 

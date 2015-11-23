@@ -22,7 +22,7 @@
 
       <h4 ng-show="value == 'AVAILABLE'">
         <div style="float: right;">
-          <a title="Add refset" ng-click="openNewRefsetModal(lrefset)">
+          <a title="Add refset" ng-click="openAddRefsetModal(lrefset)">
             <i title="Add refset" class="material-icons md-24">add</i>
           </a>
         </div>
@@ -199,7 +199,10 @@
           <a ng-click="openImportExportModal(refset, 'Import', 'Definition')">
                     <i title="Import definition"
                       class="material-icons md-18">file_upload</i>
-          </a> -->
+          </a> --><a
+                ng-click="openRedefinitionModal(refset)">
+                <i title="Redefinition" class="material-icons md-18">find_replace</i>
+              </a>
             </td>
           </tr>
           <tr ng-show="refset.type == 'EXTERNAL'">
@@ -286,7 +289,7 @@
           <h4 ng-show="value == 'ASSIGNED'">
             <div style="float: right;">
               <a title="Add refset member"
-                ng-click="openNewMemberModal(lmember, refset)">
+                ng-click="openAddMemberModal(lmember, refset)">
                 <i title="Add refset member" class="material-icons md-24">add</i>
               </a>
               <a title="Remove all members"

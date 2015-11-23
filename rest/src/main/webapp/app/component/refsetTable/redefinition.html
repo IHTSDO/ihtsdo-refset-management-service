@@ -1,13 +1,15 @@
 <div class="modal-header">
-  <h4>Add Refset Member</h4>
+  <h4>Redefinition</h4>
 
   <div>
+  
+    <h5><b>Origin Definition:</b>{{refset.definition}}</h5>
     <span>
-      <form ng-submit="getSearchResults(search)">
-        <input ng-model="search">
+      <form ng-submit="redefine(newDefinition)">
+        <input ng-model="newDefinition">
         <button class="btn btn-primary"
-          ng-click="getSearchResults(search); 
-    ">Search</button>
+          ng-click="redefine(newDefinition); 
+    ">Redefine</button>
       </form>
     </span>
   </div>
@@ -36,7 +38,7 @@
   <div class="col-md-6 col-xs-12">
   <span ng-show="searchResults && !selectedConcept" class="alert alert-warning">Select a concept to
     see details</span>
-    <h5 ng-show="parents.length > 0"><b>Parents</b></h5>
+    <h5 ng-show="parents"><b>Parents</b></h5>
     <table ng-show="parents" class="table">
       <tbody>
         <tr ng-repeat="concept in parents">
@@ -98,9 +100,9 @@
   <!-- Member type:<select ng-model="memberType" 
     ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
  -->
-  <button class="btn btn-primary" ng-disabled="selectedConcept == null || selectedConcept == 'undefined'"
-    ng-click="addMember(selectedConcept); 
-    ">Add Member</button>
+  <button class="btn btn-primary" 
+    ng-click="finish(refset); 
+    ">Finish</button>
   <button class="btn btn-warning"
     title="Add selected concept as new refset member" ng-click="cancel()">Cancel</button>
 </div>

@@ -516,7 +516,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // test 1
       RefsetJpa test1 =
-          makeRefset("test1", "<<406473004 |  Contact allergen (substance)|",
+          makeRefset("test1", "<<387293003 | Anthralin (substance)|",
               Refset.Type.INTENSIONAL, project1, "111111", author1, false);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test1.getId(), "author1", "ASSIGN", author1.getAuthToken());
