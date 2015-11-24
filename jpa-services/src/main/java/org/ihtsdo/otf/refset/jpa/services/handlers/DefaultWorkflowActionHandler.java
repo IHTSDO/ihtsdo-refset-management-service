@@ -38,9 +38,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
-  /** The workflow path. */
-  private String workflowPath = null;
-
   /**
    * Instantiates an empty {@link DefaultWorkflowActionHandler}.
    *
@@ -55,12 +52,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @Override
   public void setProperties(Properties p) throws Exception {
 
-    if (p.containsKey("path")) {
-      workflowPath = p.getProperty("path");
-    } else {
-      throw new Exception(
-          "Workflow action handlers must specify a path property");
-    }
     // n/a
   }
 
@@ -68,12 +59,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @Override
   public String getName() {
     return "Default workflow handler";
-  }
-
-  /* see superclass */
-  @Override
-  public String getWorkflowPath() {
-    return workflowPath;
   }
 
   /* see superclass */
@@ -766,43 +751,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
-    List<Refset> results = query.getResultList();
-    RefsetListJpa list = new RefsetListJpa();
-    list.setObjects(results);
-    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
-
-    return list;
-  }
-
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findReleaseProcessRefsets(Long projectId, PfsParameter pfs,
-    WorkflowService service) throws Exception {
-    RootServiceJpa rootService = new RootServiceJpa() {
-      // n/a
-    };
-
-    // Refsets for this project that are in workflowStatus
-    // READY_FOR_PUBLICATION,
-    // PUBLISHED, or PREVIEW
-    String queryStr =
-        "select a from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-            + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-            + "and a.project.id = :projectId";
-
-    Query ctQuery =
-        rootService
-            .getEntityManager()
-            .createQuery(
-                "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-                    + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-                    + "and a.project.id = :projectId");
-
-    ctQuery.setParameter("projectId", projectId);
-
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
-    query.setParameter("projectId", projectId);
     List<Refset> results = query.getResultList();
     RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);

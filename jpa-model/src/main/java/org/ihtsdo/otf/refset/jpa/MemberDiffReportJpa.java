@@ -268,8 +268,8 @@ public class MemberDiffReportJpa implements MemberDiffReport {
 
  
   /* see superclass */
+  @XmlTransient
   @Override
-  // TODO
   public List<ConceptRefsetMember> getNewRegularMembers() {
     // newNotOld members with type MEMBER not matching oldNotNew members 
     // with type MEMBER and not matching newNotOld members with type EXCLUSION_STAGED
@@ -297,6 +297,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   }
   
   /* see superclass */
+  @XmlTransient
   @Override
   public List<ConceptRefsetMember> getOldRegularMembers() {
     // oldNotNew members with type MEMBER with concept ids not matching 

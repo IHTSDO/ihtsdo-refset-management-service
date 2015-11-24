@@ -23,13 +23,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 public interface WorkflowActionHandler extends Configurable {
 
   /**
-   * Returns the workflow path.
-   *
-   * @return the workflow path
-   */
-  public String getWorkflowPath();
-
-  /**
    * Validate workflow action.
    *
    * @param refset the refset
@@ -43,7 +36,7 @@ public interface WorkflowActionHandler extends Configurable {
     WorkflowAction action, WorkflowService service) throws Exception;
 
   /**
-   * Find available editing work. Something like dual independent review wouls
+   * Find available editing work. Something like dual independent review would
    * force the workflow action handler to implement this differently.
    *
    * @param translation the translation
@@ -53,8 +46,9 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptRefsetMemberList findAvailableEditingConcepts(Translation translation,
-    User user, PfsParameter pfs, WorkflowService service) throws Exception;
+  public ConceptRefsetMemberList findAvailableEditingConcepts(
+    Translation translation, User user, PfsParameter pfs,
+    WorkflowService service) throws Exception;
 
   /**
    * Find available review work.
@@ -137,17 +131,5 @@ public interface WorkflowActionHandler extends Configurable {
   public TrackingRecord performWorkflowAction(Translation translation,
     User user, WorkflowAction action, Concept concept, WorkflowService service)
     throws Exception;
-
-  /**
-   * Find release process refsets.
-   *
-   * @param projectId the project id
-   * @param pfs the pfs
-   * @param service the service
-   * @return the refset list
-   * @throws Exception the exception
-   */
-  public RefsetList findReleaseProcessRefsets(Long projectId,
-    PfsParameter pfs, WorkflowService service) throws Exception;
 
 }

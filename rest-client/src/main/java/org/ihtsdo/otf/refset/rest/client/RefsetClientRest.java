@@ -807,8 +807,8 @@ public class RefsetClientRest extends RootClientRest implements
             + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2);
 
     Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+        target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -817,6 +817,7 @@ public class RefsetClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     // converting to object
+    
     return resultString;
 
   }
@@ -1140,25 +1141,28 @@ public class RefsetClientRest extends RootClientRest implements
         StringList.class);
   }
 
+  /* see superclass */
   @Override
-  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
+  public RefsetJpa cloneRefset(Long projectId, Long refsetId, RefsetJpa refset,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - clone refset " + refsetId + ", " + projectId + ", "
-            + terminologyId);
+            + refset);
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(projectId, "projectId");
-    validateNotEmpty(terminologyId, "terminologyId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/clone"
-            + "?refsetId=" + refsetId + "&projectId=" + projectId
-            + "&terminologyId=" + terminologyId);
+            + "?refsetId=" + refsetId + "&projectId=" + projectId);
+
+    String refsetString =
+        ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
+            : refset);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.text(""));
+            .header("Authorization", authToken).put(Entity.xml(refsetString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1168,7 +1172,8 @@ public class RefsetClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return Long.valueOf(resultString);
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
   }
 
 }

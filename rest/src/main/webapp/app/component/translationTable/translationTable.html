@@ -39,7 +39,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="translation in translations"
-          ng-click="setTranslation(translation);" class="table-select-row">
+          ng-click="selectTranslation(translation);" class="table-select-row">
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
           <td>{{translation.name}}</td>
           <td>{{translation.moduleId}}<!-- Mobile friendly line-break --> <br
@@ -91,11 +91,11 @@
             <td>Version</td>
             <td>{{translation.version}}</td>
           </tr>
-          <tr ng-show="translation.releaseInfo">
+          <tr ng-show="translationReleaseInfo">
             <td>RELEASED</td>
-            <td>{{refset.releaseInfo.name}}
+            <td>{{translationReleaseInfo.name}}
           </tr>
-          <tr ng-show="!translation.releaseInfo">
+          <tr ng-show="!translationReleaseInfo">
             <td>Not yet released</td>
             <td>&nbsp;</td>
           </tr>
@@ -106,11 +106,11 @@
     <!-- release info -->
     <div class="col-md-12 col-xs-12">
       <span
-        ng-show="translation.releaseInfo && !translation.releaseInfo.artifacts"
+        ng-show="translationReleaseInfo && !translationReleaseInfo.artifacts"
         class="alert alert-warning">Release has no associated artifacts</span>
       <div class="col-md-12 col-xs-12">
         <table
-          ng-show="translation.releaseInfo && translation.releaseInfo.artifacts"
+          ng-show="translationReleaseInfo && translationReleaseInfo.artifacts"
           class="table">
           <thead>
             <th class="col-md-6 col-xs-6">Release File</th>

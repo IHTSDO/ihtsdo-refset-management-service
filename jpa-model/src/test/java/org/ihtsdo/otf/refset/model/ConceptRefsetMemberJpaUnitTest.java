@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -157,6 +158,38 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     assertTrue(tester.testNotNullFields());
   }
 
+  /**
+   * Test field indexing.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testModelIndexedFields021() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("conceptName");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    assertTrue(tester.testAnalyzedIndexedFields());
+    tester = new IndexedFieldTester(object);
+    tester.include("terminologyId");
+    tester.include("terminology");
+    tester.include("version");
+    tester.include("effectiveTime");
+    tester.include("lastModified");
+    tester.include("lastModifiedBy");
+    tester.include("moduleId");
+    tester.include("conceptId");
+    tester.include("refsetId");
+    tester.include("memberType");
+    tester.include("conceptNameSort");
+
+    assertTrue(tester.testNotAnalyzedIndexedFields());
+
+  }
   /**
    * Teardown.
    */

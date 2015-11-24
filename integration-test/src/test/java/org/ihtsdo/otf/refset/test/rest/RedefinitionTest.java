@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -137,7 +138,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition001");
 
@@ -164,13 +165,19 @@ public class RedefinitionTest {
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
+  // <<445768003 | Intragastric route (qualifier value) | (4)
+  // <<372454008 | Gastroenteral route (qualifier value) | (19)
+  
+  // <<373482005 | Benzethonium (substance) |
+  
+  
   /**
    * Test redefinition including begin, finish and then redefining a second time
    * with a broader definition.
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition002");
 
@@ -202,7 +209,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition003");
 
@@ -225,6 +232,7 @@ public class RedefinitionTest {
     String reportToken =
         refsetService.compareRefsets(refset1.getId(), copy.getId(),
             adminAuthToken);
+    
     MemberDiffReport diffReport =
         refsetService.getDiffReport(reportToken, adminAuthToken);
     assertEquals(0, diffReport.getOldNotNew().size());
@@ -247,7 +255,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testRedefinition004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRedefinition004");
 

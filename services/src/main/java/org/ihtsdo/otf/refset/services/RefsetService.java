@@ -283,16 +283,4 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMember getMember(Long id) throws Exception;
 
-  /**
-   * Clone refset.
-   *
-   * @param refsetId the refset id
-   * @param projectId the project id
-   * @param terminologyId the terminology id
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset cloneRefset(Long refsetId, Long projectId, String terminologyId)
-    throws Exception;
-
 }

@@ -193,6 +193,25 @@ public class TrackingRecordJpa implements TrackingRecord {
     return userNames;
   }
 
+  /**
+   * Returns the project id. Just for indexing.
+   * Possibly consider making this @XmlElement, though
+   * then "set" method becomes complicated and nondeterministic
+   * for testing.
+   * @return the project id
+   */
+  @XmlTransient
+  @FieldBridge(impl = LongBridge.class)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public Long getProjectId() {
+    if (this.refset != null) {
+      return refset.getProject().getId();
+    } else if (translation != null) {
+      return translation.getProject().getId();
+    }
+    return 0L;
+  }
+
   /* see superclass */
   @XmlElement(type = UserJpa.class)
   @Override

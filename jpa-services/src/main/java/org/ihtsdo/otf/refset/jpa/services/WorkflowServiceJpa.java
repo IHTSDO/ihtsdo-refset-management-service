@@ -135,8 +135,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     if (userName != null && !userName.equals("")) {
       User user = getUser(userName);
       list =
-        findTrackingRecordsForQuery("refsetId:" + refset.getId()
-            + " AND user.id:" + user.getId(), new PfsParameterJpa());
+          findTrackingRecordsForQuery("refsetId:" + refset.getId()
+              + " AND user.id:" + user.getId(), new PfsParameterJpa());
     } else {
       list =
           findTrackingRecordsForQuery("refsetId:" + refsetId,
@@ -156,8 +156,6 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     }
 
   }
-  
-
 
   /* see superclass */
   @Override
@@ -191,8 +189,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   public StringList getWorkflowPaths() {
     Logger.getLogger(getClass()).debug("Workflow Service - get workflow paths");
     List<String> paths = new ArrayList<>();
-    for (WorkflowActionHandler handler : workflowHandlerMap.values()) {
-      paths.add(handler.getWorkflowPath());
+    for (String path : workflowHandlerMap.keySet()) {
+      paths.add(path);
     }
     Collections.sort(paths);
     StringList list = new StringList();
@@ -205,12 +203,11 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public WorkflowActionHandler getWorkflowHandlerForPath(String path)
     throws Exception {
-    for (WorkflowActionHandler handler : workflowHandlerMap.values()) {
-      if (handler.getWorkflowPath().equals(path)) {
-        return handler;
-      }
+    WorkflowActionHandler handler = workflowHandlerMap.get(path);
+    if (handler == null) {
+      throw new Exception("Unable to find workflow handler for path " + path);
     }
-    throw new Exception("Unable to find workflow handler for path " + path);
+    return handler;
   }
 
   /* see superclass */

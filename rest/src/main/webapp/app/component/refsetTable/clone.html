@@ -8,7 +8,7 @@
       Refset id (optional):<br> <input ng-model="newRefset.terminologyId"><br>
       <!--  Project id:<br> <input ng-model="newRefset.projectId"><br> -->
       Project id:<br> <select ng-model="newRefset.project" 
-        ng-options="item.id for item in candidateProjects"></select><br>
+        ng-options="item.id for item in projects.data"></select><br>
       Refset name:<br> {{refset.name}}<br> 
       Description:<br> {{refset.description}}<br>
       Module id:<br> {{refset.moduleId}}<br>

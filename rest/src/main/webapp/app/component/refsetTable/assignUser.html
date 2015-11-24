@@ -18,8 +18,13 @@
     </tr>
     <tr>
       <td><b>Select user</b></td>
-      <td><select ng-model="selectedUserName" 
+      <td><select ng-model="selectedUserName"
         ng-options="item for item in assignedUserNames"></select></td>
+    </tr>
+    <tr ng-show="errors.length > 0">
+      <td>&nbsp;</td>
+      <td><div class="alert alert-danger alert-error"
+          ng-repeat="error in errors">{{error}}</div></td>
     </tr>
   </table>
 </div>

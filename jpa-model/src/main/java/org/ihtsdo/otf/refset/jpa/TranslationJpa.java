@@ -32,6 +32,7 @@ import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -55,7 +56,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @Table(name = "translations", uniqueConstraints = @UniqueConstraint(columnNames = {
     "terminologyId", "name", "description", "project_id", "provisional"
 }))
-
 @Audited
 @Indexed
 @XmlRootElement(name = "translation")
@@ -89,7 +89,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
-  
+
   /** The provisional flag. */
   @Column(nullable = false)
   private boolean provisional;
@@ -194,7 +194,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   public void setPublic(boolean isPublic) {
     this.isPublic = isPublic;
   }
-  
+
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -206,8 +206,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setProvisional(boolean provisional) {
     this.provisional = provisional;
-  } 
-  
+  }
+
   /* see superclass */
   @Override
   public boolean isStaged() {
@@ -264,6 +264,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    * @return the refset id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getRefsetId() {
     return (refset != null) ? refset.getId() : 0;
@@ -301,6 +302,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    * @return the project id
    */
   @XmlElement
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getProjectId() {
     return (project != null) ? project.getId() : 0;
