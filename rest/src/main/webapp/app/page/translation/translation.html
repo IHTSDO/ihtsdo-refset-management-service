@@ -11,13 +11,14 @@
         <tbody>
           <tr>
             <td>Choose Project:</td>
-            <td><select ng-model="project" ng-show="projects.length > 1"
-              ng-options="item.name for item in projects"
-              ng-change="setProject(project); findAssignedUsersForProject()"></select></td>
+            <td><select ng-model="project"
+              ng-show="projects.data.length > 1"
+              ng-options="item.name for item in projects.data"
+              ng-change="setProject(project);"></select></td>
           </tr>
           <tr>
             <td>Role:</td>
-            <td>{{user.role}}</td>
+            <td>{{projects.role}}</td>
           </tr>
         </tbody>
       </table>
@@ -25,24 +26,24 @@
     <span class="col-md-8 col-xs-4"></span>
   </div>
   <div class="col-md-12 col-xs-12">
-    <accordion> <accordion-group is-open="true"> <accordion-heading>
-    <h5 class="section-header">Available</h5>
+    <accordion> <accordion-group
+      ng-show="!isProjectAdmin() is-open="true"> <accordion-heading>
+    <h5 class="section-header">Editing</h5>
     </accordion-heading>
-    <div translation-table value="AVAILABLE" projects="projects"></div>
-    </accordion-group> <!-- do not show for admins --> <accordion-group is-open="false"
-      ng-show="!isProjectAdmin()"> <accordion-heading>
-    <h5 class="section-header">Assigned</h5>
-    </accordion-heading> <!-- TODO project="{{project.id}}" -->
-    <div translation-table value="ASSIGNED" projects="projects"></div>
-    </accordion-group> <!-- show only for admins --> <accordion-group is-open="false"
-      ng-show="isProjectAdmin()"> <accordion-heading>
-    <h5 class="section-header">Assigned All</h5>
+    <div translation-table value="EDITING" projects="projects"
+      metadata="metadata"></div>
+    </accordion-group>
+    <accordion-group ng-show="isProjectAdmin() is-open="true">
+    <accordion-heading>
+    <h5 class="section-header">Editing All</h5>
     </accordion-heading>
-    <div translation-table value="ASSIGNED_ALL" projects="projects"></div>
+    <div translation-table value="EDITING_ALL" projects="projects"
+      metadata="metadata"></div>
     </accordion-group> <accordion-group is-open="false"> <accordion-heading>
     <h5 class="section-header">Release</h5>
     </accordion-heading>
-    <div translation-table value="RELEASE" projects="projects"></div>
+    <div translation-table value="RELEASE" projects="projects"
+      metadata="metadata"></div>
     </accordion-group> </accordion>
   </div>
 </div>

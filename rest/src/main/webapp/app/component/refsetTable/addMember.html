@@ -14,11 +14,14 @@
 </div>
 
 <div class="modal-body">
-
   <div class="row">
     <!--  Left hand side -->
     <div class="col-md-6 col-xs-12">
-      <table ng-show="searchResults" class="table">
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
+      <span ng-show="searchResults.length == 0" class="alert alert-warning">No
+        results</span>
+
+      <table ng-show="searchResults.length > 0" class="table">
         <thead>
           <th class="col-md-3 col-xs-3">Concept Id</th>
           <th class="col-md-9 col-xs-9">Name</th>
@@ -36,12 +39,12 @@
 
     <!--  Right hand side -->
     <div class="col-md-6 col-xs-12">
-      <span ng-show="searchResults && !selectedConcept"
-        class="alert alert-warning">Select a concept to see details</span>
+      <span ng-show="searchResults.length > 0 && !concept"
+        class="alert alert-warning">Select a concept to see details</span>      
       <h5 ng-show="parents.length > 0">
         <b>Parents</b>
       </h5>
-      <table ng-show="parents" class="table">
+      <table ng-show="parents.length > 0" class="table">
         <thead>
           <th class="col-md-3 col-xs-3">Concept Id</th>
           <th class="col-md-9 col-xs-9">Name</th>
@@ -76,17 +79,17 @@
           first-text="&laquo;" last-text="&raquo;"
           ng-show="children.totalCount > pageSize || paging['children'].filter"
           total-items="children.totalCount" ng-model="paging['children'].page"
-          ng-change="getConceptChildren(selectedConcept)"></pagination>
+          ng-change="getConceptChildren(concept)"></pagination>
         <!-- TODO: cannot implement this in term server
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="children.totalCount > pageSize || paging['children'].filter"
           type="text" ng-model="paging['children'].filter"
           ng-model-options="{ debounce: 300 }"
-          ng-change="getConceptChildren(selectedConcept)">
+          ng-change="getConceptChildren(concept)">
 
         <button class="btn btn-xs btn-warning"
           ng-show="paging['children'].filter"
-          ng-click="paging['children'].filter = ''; getConceptChildren(selectedConcept)"
+          ng-click="paging['children'].filter = ''; getConceptChildren(concept)"
           title="Click to clear filter text">Clear</button>
  -->
       </span>
@@ -119,7 +122,7 @@
     ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
  -->
   <button class="btn btn-primary"
-    ng-disabled="selectedConcept == null || selectedConcept == 'undefined'"
+    ng-disabled="!concept"
     ng-click="addMember(selectedConcept); 
     ">Add</button>
   <button class="btn btn-warning"

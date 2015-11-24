@@ -227,10 +227,12 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     throws Exception {
     Logger.getLogger(getClass()).info("Refset Service - find refsets " + query);
     int[] totalCt = new int[1];
+    // NOTE: this method ignores provisional refsets
     List<Refset> list =
         (List<Refset>) getQueryResults(query == null || query.isEmpty()
-            ? "id:[* TO *]" : query, RefsetJpa.class, RefsetJpa.class, pfs,
-            totalCt);
+            ? "id:[* TO *] AND provisional:false" : query
+                + " AND provisional:false", RefsetJpa.class, RefsetJpa.class,
+            pfs, totalCt);
 
     for (Refset refset : list) {
       handleRefsetLazyInitialization(refset);

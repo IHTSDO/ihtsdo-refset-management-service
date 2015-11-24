@@ -4,16 +4,16 @@ tsApp
   .directive(
     'refsetTable',
     [
+      '$modal',
+      '$rootScope',
       'utilService',
+      'securityService',
       'projectService',
       'refsetService',
       'releaseService',
       'workflowService',
-      'securityService',
-      '$modal',
-      '$rootScope',
-      function(utilService, projectService, refsetService, releaseService, workflowService,
-        securityService, $modal, $rootScope) {
+      function($modal, $rootScope, utilService, securityService, projectService, refsetService,
+        releaseService, workflowService) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -126,11 +126,6 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
-                      // Refresh the refset if it is
-                      // selected
-                      if ($scope.refset) {
-                        $scope.selectRefset(refset);
-                      }
                     })
                 }
 
@@ -569,7 +564,7 @@ tsApp
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
-                $scope.selectedContent = contentType;
+                $scope.contentType = contentType;
                 $scope.dir = dir;
                 $scope.errors = [];
 
@@ -1044,6 +1039,10 @@ tsApp
                 $scope.pageSize = 10;
                 $scope.paging = paging;
                 $scope.errors = [];
+                $scope.parents = [];
+                $scope.children = [];
+                $scope.concept = null;
+                $scope.searchResults = null;
 
                 if (refset.type == 'EXTENSIONAL') {
                   $scope.memberType = 'MEMBER';
@@ -1105,8 +1104,8 @@ tsApp
                     $scope.errors[0] = "The search field cannot be blank. ";
                     return;
                   }
-
-                  $scope.searchResults = [];
+                  // clear data structures
+                  $scope.errors = [];
                   $scope.parents = [];
                   $scope.children = [];
                   $scope.concept = null;
@@ -1155,7 +1154,7 @@ tsApp
 
                 // select concept and get concept data
                 $scope.selectConcept = function(concept) {
-                  $scope.selectedConcept = concept;
+                  $scope.concept = concept;
                   $scope.getConceptParents(concept);
                   $scope.getConceptChildren(concept);
                   $scope.getConceptWithDescriptions(concept);

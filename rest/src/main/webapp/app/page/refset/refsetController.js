@@ -8,10 +8,11 @@ tsApp
       '$rootScope',
       'tabService',
       'securityService',
+      'projectService',
       'refsetService',
-      'projectService', 'workflowService',
-      function($scope, $http, $rootScope, tabService, securityService, refsetService,
-        projectService, workflowService) {
+      'workflowService',
+      function($scope, $http, $rootScope, tabService, securityService, projectService,
+        refsetService, workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on "back" button
@@ -93,7 +94,6 @@ tsApp
 
         // Get $scope.refsetTypes - for picklist
         $scope.getRefsetTypes = function() {
-          console.debug("getRefsetTypes");
           refsetService.getRefsetTypes().then(function(data) {
             $scope.metadata.refsetTypes = data.strings;
           })
@@ -102,7 +102,6 @@ tsApp
         // Get $scope.metadata.terminologies, also loads
         // versions for the first edition in the list
         $scope.getTerminologyEditions = function() {
-          console.debug("getTerminologyEditions");
           projectService.getTerminologyEditions().then(function(data) {
             $scope.metadata.terminologies = data.strings;
             // Look up all versions
@@ -115,7 +114,6 @@ tsApp
 
         // Get $scope.metadata.versions
         $scope.getTerminologyVersions = function(terminology) {
-          console.debug("getTerminologyVersions", terminology);
           projectService.getTerminologyVersions(terminology).then(function(data) {
             $scope.metadata.versions[terminology] = [];
             for (var i = 0; i < data.translations.length; i++) {
@@ -142,7 +140,6 @@ tsApp
           });
         }
 
-    
         // Initialize
         $scope.getProjects();
         // Initialize some metadata first time

@@ -759,41 +759,4 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     return list;
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public RefsetList findReleaseProcessRefsets(Long projectId, PfsParameter pfs,
-    WorkflowService service) throws Exception {
-    RootServiceJpa rootService = new RootServiceJpa() {
-      // n/a
-    };
-
-    // Refsets for this project that are in workflowStatus
-    // READY_FOR_PUBLICATION,
-    // PUBLISHED, or PREVIEW
-    String queryStr =
-        "select a from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-            + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-            + "and a.project.id = :projectId";
-
-    Query ctQuery =
-        rootService
-            .getEntityManager()
-            .createQuery(
-                "select count(*) from RefsetJpa a where (workflowStatus = 'READY_FOR_PUBLICATION' or "
-                    + "workflowStatus = 'PUBLISHED' or workflowStatus = 'PREVIEW') "
-                    + "and a.project.id = :projectId");
-
-    ctQuery.setParameter("projectId", projectId);
-
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
-    query.setParameter("projectId", projectId);
-    List<Refset> results = query.getResultList();
-    RefsetListJpa list = new RefsetListJpa();
-    list.setObjects(results);
-    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
-
-    return list;
-  }
-
 }

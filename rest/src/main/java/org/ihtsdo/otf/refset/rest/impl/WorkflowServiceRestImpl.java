@@ -25,10 +25,12 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
@@ -43,6 +45,7 @@ import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -745,7 +748,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
+  @POST
   @Path("/refset/release")
   @ApiOperation(value = "Find refsets in release process", notes = "Finds refsets in ready for publication, preview or published states.", response = RefsetListJpa.class)
   public RefsetList findReleaseProcessRefsets(
@@ -761,22 +764,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find release process refsets", UserRole.AUTHOR);
 
-      // Combine results from all workflow action handlers
-      List<Refset> list = new ArrayList<>();
-      for (WorkflowActionHandler handler : workflowService
-          .getWorkflowHandlers()) {
-        list.addAll(handler.findReleaseProcessRefsets(projectId, pfs,
-            workflowService).getObjects());
-      }
-
-      // Apply pfs
-      RefsetList result = new RefsetListJpa();
-      result.setTotalCount(list.size());
-      list =
-          ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
-              Refset.class, pfs);
-      result.setObjects(list);
-      return result;
+      // NOTE: this is defined at the top level so all action handlers must respect it     
+      return workflowService.findRefsetsForQuery("projectId:" + projectId
+          + " AND (workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
+          + "OR workflowStatus:" + WorkflowStatus.PREVIEW + "OR workflowStatus:"
+          + WorkflowStatus.PUBLISHED + ")", pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find release process refsets");
@@ -787,4 +779,66 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @Override
+  @POST
+  @Path("/translation/release")
+  @ApiOperation(value = "Find translations in release process", notes = "Finds translations in ready for publication, preview or published states.", response = TranslationListJpa.class)
+  public TranslationList findReleaseProcessTranslations(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/release ");
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find release process translation", UserRole.AUTHOR);
+
+      return workflowService.findTranslationsForQuery("projectId:" + projectId
+          + " AND (workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
+          + " OR workflowStatus:" + WorkflowStatus.PREVIEW
+          + " OR workflowStatus:" + WorkflowStatus.PUBLISHED + ")", pfs);
+
+    } catch (Exception e) {
+      handleException(e, "trying to find release process translations");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @Override
+  @POST
+  @Path("/translation/nonrelease")
+  @ApiOperation(value = "Find translations not in release process", notes = "Finds translations not in the release proces.", response = TranslationListJpa.class)
+  public TranslationList findNonReleaseProcessTranslations(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/release ");
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeProject(workflowService, projectId, securityService, authToken,
+          "trying to find non release process translations", UserRole.AUTHOR);
+
+      return workflowService.findTranslationsForQuery("projectId:" + projectId
+          + " AND NOT workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
+          + " AND NOT workflowStatus:" + WorkflowStatus.PREVIEW
+          + " AND NOT workflowStatus:" + WorkflowStatus.PUBLISHED, pfs);
+
+
+    } catch (Exception e) {
+      handleException(e, "trying to find non release process translations");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
 }

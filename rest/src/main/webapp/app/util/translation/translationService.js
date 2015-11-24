@@ -12,7 +12,7 @@ tsApp.service('translationService', [
       $rootScope.$broadcast('translation:translationChanged', translation);
     }
 
-    // broadcasts a conceptchange
+    // broadcasts a concept change
     this.fireConceptChanged = function(concept) {
       $rootScope.$broadcast('translation:conceptChanged', concept);
     }
