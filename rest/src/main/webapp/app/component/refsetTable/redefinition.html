@@ -2,106 +2,191 @@
   <h4>Redefinition</h4>
 
   <div>
-  
-    <h5><b>Origin Definition:</b>{{refset.definition}}</h5>
+
+    <h5>
+      <b>Origin Definition:</b>{{refset.definition}}
+    </h5>
     <span>
-      <form ng-submit="redefine(newDefinition)">
-        <input ng-model="newDefinition">
+      <!-- <form ng-submit="redefine(newDefinition)"> -->
+      <h5>
+        <b>New Definition:</b> <input ng-model="newDefinition" size="80">
         <button class="btn btn-primary"
           ng-click="redefine(newDefinition); 
     ">Redefine</button>
-      </form>
+      </h5>
+      <!-- </form> -->
     </span>
   </div>
 </div>
 
 <div class="modal-body">
 
-   <div class="row">
-   <div class="col-md-6 col-xs-12">
-    <table ng-show="searchResults" class="table">
-      <thead>
-        <th class="col-md-3 col-xs-3">Concept id</th>
-        <th class="col-md-9 col-xs-9">Concept name</th>
-      </thead>
-      <tbody>
-        <tr ng-repeat="concept in searchResults"
-          ng-click="selectConcept(concept)"
-          ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}">
-          <td>{{concept.terminologyId}}</td>
-          <td>{{concept.name}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <div class="row">
+    <div class="col-md-8 col-xs-12">
+      <div class="col-md-12 col-xs-12">
+        <h5 ng-show="membersInCommon.length > 0">
+          <b>Members In Common</b>
+        </h5>
+        <span style="display: block;">
+          <pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
+            total-items="membersInCommon.totalCount"
+            ng-model="paging['membersInCommon'].page"
+            ng-change="findMembersInCommon()"></pagination>
+        </span>
 
-  <div class="col-md-6 col-xs-12">
-  <span ng-show="searchResults && !selectedConcept" class="alert alert-warning">Select a concept to
-    see details</span>
-    <h5 ng-show="parents"><b>Parents</b></h5>
-    <table ng-show="parents" class="table">
-      <tbody>
-        <tr ng-repeat="concept in parents">
-          <td>{{concept.terminologyId}}</td>
-          <td>{{concept.name}}</td>
-        </tr>
-      </tbody>
-    </table>
+        <table ng-show="membersInCommon.length > 0" class="table">
+          <thead>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-9 col-xs-9">Concept name</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="concept in membersInCommon">
+              <td>{{concept.conceptId}}</td>
+              <td>{{concept.name}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+     <div class="col-md-6 col-xs-6">
+        <h5 ng-show="validInclusions.length > 0">
+          <b>Valid Inclusions</b>
+        </h5>
 
-    <h5 ng-show="concept"><b>Concept</b> {{concept.terminologyId}}</h5>
-    <h5 ng-show="concept"><b>Name</b> {{concept.name}}</h5>
-    <h5 ng-show="concept && concept.descriptions.length > 0"><b>Descriptions</b> </h5>
-    <table ng-show="concept.descriptions.length > 0" class="table">
-      <tbody>
-        <tr ng-repeat="description in concept.descriptions">
-          <td>{{description.terminologyId}}</td>
-          <td>{{description.term}}</td>
-        </tr>
-      </tbody>
-    </table>
+        <table ng-show="validInclusions.length > 0" class="table">
+          <thead>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-8 col-xs-8">Concept name</th>
+            <th class="col-md-1 col-xs-1"></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="concept in validInclusions">
+              <td>{{concept.conceptId}}</td>
+              <td>{{concept.name}}</td>
+              <td><a ng-click="">
+              <i tooltip="Add inclusion to staged refset."
+                class="material-icons md-18">arrow_forward</i>
+            </a></td>
+            </tr>
+          </tbody>
+        </table>
+        
+        <h5 ng-show="invalidInclusions.length > 0">
+          <b>Invalid Inclusions</b>
+        </h5>
 
-    <h5 ng-show="children.length > 0"><b>Children</b></h5>
-    
-    <span style="display: block;">
+        <table ng-show="invalidInclusions.length > 0" class="table">
+          <thead>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-9 col-xs-9">Concept name</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="concept in invalidInclusions">
+              <td>{{concept.conceptId}}</td>
+              <td>{{concept.name}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="col-md-6 col-xs-6">
+        <h5 ng-show="stagedInclusions.length > 0">
+          <b>Staged Inclusions</b>
+        </h5>
+
+        <table ng-show="stagedInclusions.length > 0" class="table">
+          <thead>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-8 col-xs-8">Concept name</th>
+            <th class="col-md-1 col-xs-1"></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="concept in stagedInclusions">
+              <td>{{concept.conceptId}}</td>
+              <td>{{concept.name}}</td>
+              <td><a ng-click="">
+              <i tooltip="Revert staged inclusion."
+                class="material-icons md-18">arrow_backward</i>
+            </a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="col-md-4 col-xs-12">
+      <h5 ng-show="newRegularMembers.length > 0">
+        <b>New Members</b>
+      </h5>
+      <!-- <span style="display: block;">
       <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
         class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
         first-text="&laquo;" last-text="&raquo;"
-        ng-show="children.totalCount > pageSize || paging['children'].filter"
-        total-items="children.totalCount" ng-model="paging['children'].page"
-        ng-change="getConceptChildren(selectedConcept)"></pagination>
+        ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
+        total-items="membersInCommon.totalCount" ng-model="paging['membersInCommon'].page"
+        ng-change="findMembersInCommon()"></pagination>
+        </span> -->
 
-      <!-- TODO RootService.applyPfsToList doesn't do filtering yet -->
-      <!-- <input class="input-filter" placeholder="Enter filter text"
-        ng-show="children.totalCount > pageSize || paging['children'].filter"
-        type="text" ng-model="paging['children'].filter"
-        ng-model-options="{ debounce: 300 }" ng-change="getConceptChildren(selectedConcept)">
+      <table ng-show="newRegularMembers.length > 0" class="table">
+        <thead>
+          <th class="col-md-3 col-xs-3">Concept id</th>
+          <th class="col-md-9 col-xs-9">Concept name</th>
+          <th class="col-md-8 col-xs-8"></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="concept in newRegularMembers">
+            <td>{{concept.conceptId}}</td>
+            <td>{{concept.name}}</td>
+            <td><a ng-click="">
+              <i tooltip="Exclude new member."
+                class="material-icons md-18">remove_circle_outline</i>
+            </a></td>
+          </tr>
+        </tbody>
+      </table>
 
-      <button class="btn btn-xs btn-warning" ng-show="paging['children'].filter"
-        ng-click="paging['children'].filter = ''; getConceptChildren(selectedConcept)"
-        title="Click to clear filter text">Clear</button> -->
-    </span>
-    
-    
-    <table ng-show="children.length > 0" class="table">
-      
-      <tbody>
-        <tr ng-repeat="concept in children">
-          <td>{{concept.terminologyId}}</td>
-          <td>{{concept.name}}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+
+      <h5 ng-show="oldRegularMembers.length > 0">
+        <b>Old Members</b>
+      </h5>
+      <!-- <span style="display: block;">
+      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+        first-text="&laquo;" last-text="&raquo;"
+        ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
+        total-items="membersInCommon.totalCount" ng-model="paging['membersInCommon'].page"
+        ng-change="findMembersInCommon()"></pagination>
+        </span> -->
+
+      <table ng-show="oldRegularMembers.length > 0" class="table">
+        <thead>
+          <th class="col-md-3 col-xs-3">Concept id</th>
+          <th class="col-md-8 col-xs-8">Concept name</th>
+          <th class="col-md-1 col-xs-1"></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="concept in oldRegularMembers">
+            <td>{{concept.conceptId}}</td>
+            <td>{{concept.name}}</td>
+            <td><a ng-click="">
+              <i tooltip="Include old member."
+                class="material-icons md-18">add_circle_outline</i>
+            </a></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
-
 
 <div class="modal-footer">
   <!-- Member type:<select ng-model="memberType" 
     ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
  -->
-  <button class="btn btn-primary" 
-    ng-click="finish(refset); 
+  <button class="btn btn-primary" ng-click="finish(refset); 
     ">Finish</button>
   <button class="btn btn-warning"
     title="Add selected concept as new refset member" ng-click="cancel()">Cancel</button>

@@ -1264,7 +1264,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // collect exclusions concept ids from origin refset
       Set<String> exclusionConceptIds = new HashSet<>();
       for (ConceptRefsetMember member : refset.getMembers()) {
-        if (member.getMemberType().equals("EXCLUSION")) {
+        if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
           exclusionConceptIds.add(member.getConceptId());
         }
       }
@@ -1328,6 +1328,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           if (!found) {
             ConceptRefsetMember include = new ConceptRefsetMemberJpa(member);
             include.setId(null);
+            include.setRefset(refsetCopy);
             refsetCopy.addMember(include);
             refsetService.addMember(include);
             /*
@@ -1519,6 +1520,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
+  @Produces("text/plain")
   @Path("/compare")
   @ApiOperation(value = "Compares two refsets", notes = "Compares two refsets and returns a reportToken key to the comparison report data.", response = String.class)
   public String compareRefsets(

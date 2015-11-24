@@ -413,11 +413,10 @@ tsApp.service('refsetService', [
       console.debug("compareRefsets");
       var deferred = $q.defer();
 
-      // redefinition cancel
       gpService.increment()
       $http.get(
         refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2="
-          + refsetId2).then(
+          + refsetId2, { headers: { "Content-type" : "text/plain" }}).then(
       // success
       function(response) {
         console.debug("  compare refsets = ", response.data);
