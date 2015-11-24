@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -239,7 +240,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -262,7 +263,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -287,7 +288,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -314,7 +315,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);

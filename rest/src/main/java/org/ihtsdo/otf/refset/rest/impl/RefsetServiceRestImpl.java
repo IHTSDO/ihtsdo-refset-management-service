@@ -197,8 +197,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeProject(projectService, refset.getProject().getId(),
             securityService, authToken, "get refset for id", UserRole.AUTHOR);
       }
-      // force fetching of member
-      refset.getMembers();
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
