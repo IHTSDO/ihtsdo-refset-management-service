@@ -19,11 +19,19 @@
         ng-show="paging['translation'].filter"
         ng-click="paging['translation'].filter = ''; getTranslations()"
         title="Click to clear filter text">Clear</button>
+
+      <h4 ng-show="value == 'EDITING'">
+        <div style="float: right;">
+          <a title="Add refset" ng-click="openAddTranslationModal()">
+            <i title="Add refset" class="material-icons md-24">add</i>
+          </a>
+        </div>
+      </h4>
     </span>
 
 
     <span ng-show="translations.totalCount == 0" style="display: block;"
-      class="alert alert-warning">No {{value}} translations.</span>
+      class="alert alert-warning">No translations.</span>
     <table ng-show="translations.totalCount > 0" class="table">
       <thead>
         <th class="col-md-2 col-xs-2"
@@ -43,9 +51,11 @@
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
           <td>{{translation.name}}</td>
           <td>{{translation.moduleId}}<!-- Mobile friendly line-break --> <br
-            class="visible-xs-inline" /> <img ng-show="hasIcon(translation.moduleId)" title="Flag icon"
-              ng-src="{{getIcon(translation.moduleId)}}" /> <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" /> {{translation.organization}}
+            class="visible-xs-inline" /> <img
+            ng-show="hasIcon(translation.moduleId)" title="Flag icon"
+            ng-src="{{getIcon(translation.moduleId)}}" /> <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{translation.organization}} <br
+            class="visible-xs-inline" /> {{translation.workflowStatus}}
           </td>
         </tr>
       </tbody>
@@ -53,8 +63,8 @@
   </div>
 
 
-  <span ng-show="!translation && translations.length > 0" class="alert alert-warning">Select a
-    translation to see details</span>
+  <span ng-show="!translation && translations.length > 0"
+    class="alert alert-warning">Select a translation to see details</span>
 
   <!-- Details, Releases, Concept-->
   <div ng-show="translation" class="col-md-6 col-xs-12">
@@ -76,7 +86,8 @@
           </tr>
           <tr>
             <td>Module Id</td>
-            <td>{{translation.moduleId}} <img ng-show="hasIcon(translation.moduleId)" title="Flag icon"
+            <td>{{translation.moduleId}} <img
+              ng-show="hasIcon(translation.moduleId)" title="Flag icon"
               ng-src="{{getIcon(translation.moduleId)}}" /></td>
           </tr>
           <tr>

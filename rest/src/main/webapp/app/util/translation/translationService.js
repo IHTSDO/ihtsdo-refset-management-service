@@ -2,9 +2,10 @@
 tsApp.service('translationService', [
   '$http',
   '$q',
+  '$rootScope',
   'gpService',
   'utilService',
-  function($http, $q, gpService, utilService) {
+  function($http, $q, $rootScope, gpService, utilService) {
     console.debug("configure translationService");
 
     // broadcasts a refset change
@@ -129,7 +130,7 @@ tsApp.service('translationService', [
 
     // Add new translation
     this.addTranslation = function(translation) {
-      console.debug("addTranslation");
+      console.debug("addTranslation", translation);
       var deferred = $q.defer();
 
       // Add new translation
