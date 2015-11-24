@@ -1,10 +1,51 @@
 <!-- Controlled by TranslationCtrl (in translationController.js)  -->
+
 <div class="row">
 
-  <!-- Content -->
   <div class="col-md-12 col-xs-12">
-
-  <h3>TRANSLATION PAGE</h3>
+    <h4 class="col-md-12">Translations</h4>
   </div>
-
+  <div class="col-md-12 col-xs-12">
+    <span class="col-md-4 col-xs-8">
+      <table class="table">
+        <tbody>
+          <tr>
+            <td>Choose Project:</td>
+            <td><select ng-model="project"
+              ng-show="projects.data.length > 1"
+              ng-options="item.name for item in projects.data"
+              ng-change="setProject(project);"></select></td>
+          </tr>
+          <tr>
+            <td>Role:</td>
+            <td>{{projects.role}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </span>
+    <span class="col-md-8 col-xs-4"></span>
+  </div>
+  <div class="col-md-12 col-xs-12">
+    <accordion> <accordion-group
+      ng-show="!isProjectAdmin() is-open="true"> <accordion-heading>
+    <h5 class="section-header">Editing</h5>
+    </accordion-heading>
+    <div translation-table value="EDITING" projects="projects"
+      metadata="metadata"></div>
+    </accordion-group>
+    <accordion-group ng-show="isProjectAdmin() is-open="true">
+    <accordion-heading>
+    <h5 class="section-header">Editing All</h5>
+    </accordion-heading>
+    <div translation-table value="EDITING_ALL" projects="projects"
+      metadata="metadata"></div>
+    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
+    <h5 class="section-header">Release</h5>
+    </accordion-heading>
+    <div translation-table value="RELEASE" projects="projects"
+      metadata="metadata"></div>
+    </accordion-group> </accordion>
+  </div>
 </div>
+
+

@@ -225,7 +225,7 @@ public class ConfigUtility {
     }
     throw new Exception("Handler is not assignable from " + type.getName());
   }
-
+  
   /**
    * Instantiates a handler using standard setup and configures it with
    * properties.
@@ -270,7 +270,7 @@ public class ConfigUtility {
     }
     handler.setProperties(handlerProperties);
     return handler;
-  }
+  }  
 
   /**
    * Returns the graph for string.

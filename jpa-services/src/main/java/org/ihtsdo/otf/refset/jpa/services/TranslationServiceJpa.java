@@ -260,7 +260,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     int[] totalCt = new int[1];
     List<Translation> list =
         (List<Translation>) getQueryResults(query == null || query.isEmpty()
-            ? "id:[* TO *]" : query, TranslationJpa.class,
+            ? "id:[* TO *] AND provisional:false" : query
+                + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
     for (Translation translation : list) {
       handleTranslationLazyInitialization(translation);

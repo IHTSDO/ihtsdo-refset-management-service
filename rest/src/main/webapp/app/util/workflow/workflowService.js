@@ -7,6 +7,29 @@ tsApp.service('workflowService', [
   function($http, $q, gpService, utilService) {
     console.debug("configure workflowService");
 
+    // Get workflow paths
+    this.getWorkflowPaths = function() {
+      console.debug("getWorkflowPaths");
+      var deferred = $q.defer();
+
+      // Perform workflow action on a refset
+      gpService.increment()
+      $http.get(workflowUrl + 'paths').then(
+      // success
+      function(response) {
+        console.debug("  paths = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Perform workflow action on a refset
     this.performWorkflowAction = function(projectId, refsetId, userName, action) {
       console.debug("performWorkflowAction");
@@ -138,7 +161,7 @@ tsApp.service('workflowService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(workflowUrl + "refset/release" + "?projectId=" + projectId, pfs).then(
+      $http.post(workflowUrl + "refset/release" + "?projectId=" + projectId, pfs).then(
       // success
       function(response) {
         console.debug("  work = ", response.data);
@@ -154,6 +177,50 @@ tsApp.service('workflowService', [
       return deferred.promise;
     }
 
+    // Find release process translations
+    this.findReleaseProcessTranslations = function(projectId, pfs) {
+      console.debug("findReleaseProcessTranslations");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.post(workflowUrl + "translation/release" + "?projectId=" + projectId, pfs).then(
+      // success
+      function(response) {
+        console.debug("  work = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
+    // Find non release process translations
+    this.findNonReleaseProcessTranslations = function(projectId, pfs) {
+      console.debug("findReleaseProcessTranslations");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.post(workflowUrl + "translation/nonrelease" + "?projectId=" + projectId, pfs).then(
+      // success
+      function(response) {
+        console.debug("  work = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }    
+    
     // Perform workflow action on a translation
     this.performWorkflowActionOnTranslation = function(projectId, translationId, userName, action,
       concept) {

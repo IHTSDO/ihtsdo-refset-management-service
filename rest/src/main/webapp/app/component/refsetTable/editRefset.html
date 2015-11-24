@@ -4,34 +4,99 @@
 
 <div class="modal-body">
   <div>
-    <div>
-      Refset id:<br> <input ng-model="refset.terminologyId"><br>
-      Refset name:<br> <input ng-model="refset.name"><br> 
-      Description:<br> <input ng-model="refset.description"><br>
-      Module id:<br> <input ng-model="refset.moduleId"><br>
-      Organization:<br> <input ng-model="refset.organization"><br>
-      Email contact:<br> <input ng-model="refset.feedbackEmail"><br>
-      Terminology:<br> <select ng-model="refset.terminology" 
-        ng-change="terminologySelected(refset.terminology)"
-        ng-options="item for item in terminologyEditions"></select><br>
-      Version:<br> <select ng-model="refset.version" 
-        ng-options="item for item in terminologyVersions"></select><br>
-      Workflow path:<br> <input ng-model="refset.workflowPath"><br>    
-      Type:<br> <select ng-model="refset.type" 
-        ng-options="item for item in refsetTypes"></select><br>
-    </div>
-    <div ng-show="refset.type == 'EXTERNAL'">
-      External url:<br> <input ng-model="refset.externalUrl"><br>
-    </div>
-    <div ng-show="refset.type == 'INTENSIONAL'">
-      Definition:<br> <textarea rows="4" cols="40" ng-model="refset.definition"></textarea><br>
-    </div>
+    <table class="table">
+      <tr>
+        <td><b><span ng-show="action == 'CLONE'">Clone to </span>Project:</b></td>
+        <td><select ng-show="action == 'CLONE'" ng-model="refset.project"
+          ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
+        </select> <span ng-show="action != 'CLONE'">{{project.name}}
+            ({{project.id}})</span></td>
+      </tr>
+      <tr>
+        <td><b>Refset Id</b></td>
+        <td><input ng-model="refset.terminologyId" placeholder="Optional"></td>
+      </tr>
+      <tr>
+        <td><b>Name</b></td>
+        <td><input ng-model="refset.name" size="40"></td>
+      </tr>
+      <tr>
+        <td><b>Description</b></td>
+        <td><textarea rows="4" cols="40" ng-model="refset.description"></textarea></td>
+      </tr>
+      <tr>
+        <td><b>Module Id</b></td>
+        <td><input ng-model="refset.moduleId"></td>
+      </tr>
+      <tr>
+        <td><b>Organization</b></td>
+        <td><input ng-model="refset.organization"></td>
+      </tr>
+      <tr>
+        <td><b>Feedback email</b></td>
+        <td><input type="email" ng-model="refset.feedbackEmail" size="40"></td>
+      </tr>
+      <tr>
+        <td><b>Terminology</b></td>
+        <td><select ng-model="refset.terminology"
+          ng-change="terminologySelected(refset.terminology)"
+          ng-options="item for item in metadata.terminologies"></select></td>
+      </tr>
+      <tr>
+        <td><b>Version</b></td>
+        <td><select ng-model="refset.version"
+          ng-options="item for item in versions"></select></td>
+      </tr>
+      <tr>
+        <td><b>Workflow path</b></td>
+        <td><span ng-show="metadata.workflowPaths.length == 1">{{refset.workflowPath}}</span>
+          <select ng-show="metadata.workflowPaths.length > 1"
+          ng-model="refset.workflowPath"
+          ng-options="item for item in metadata.workflowPaths"></select></td>
+      </tr>
+      <tr>
+        <td><b>Type</b></td>
+        <td><span ng-show="action == 'EDIT'">
+            <a ng-show="refset.type == 'EXTERNAL'" ng-click=""
+              style="text-decoration: none">
+              <i tooltip="Reference to an external refset stored elsewhere."
+                class="material-icons md-18">forward</i>
+            </a>
+            <a ng-show="refset.type == 'EXTENSIONAL'" ng-click=""
+              style="text-decoration: none">
+              <i ng-show="refset.type == 'EXTENSIONAL'"
+                tooltip="Extensional refset, defined as an explicit list of members."
+                class="material-icons md-18">list</i>
+            </a>
+            <a ng-show="refset.type == 'INTENSIONAL'" ng-click=""
+              style="text-decoration: none">
+              <i ng-show="refset.type == 'INTENSIONAL'"
+                tooltip="Intenional refset, defined as a definition with includes/excludes."
+                class="material-icons md-18">settings-square</i>
+            </a>
+          </span> <select ng-show="action != 'EDIT'" ng-model="refset.type"
+          ng-options="item for item in metadata.refsetTypes"></select></td>
+      </tr>
+      <tr ng-show="refset.type == 'EXTERNAL'">
+        <td><b>External Url</b></td>
+        <td><input ng-model="refset.externalUrl"></td>
+      </tr>
+      <tr ng-show="refset.type == 'INTENSIONAL'">
+        <td><b>Definition</b></td>
+        <td><textarea ng-show="action == 'ADD'" rows="4" cols="40"
+            ng-model="refset.definition"></textarea> <span
+            ng-show="action != 'ADD'">{{refset.definition}}</span></td>
+      </tr>
+      <tr ng-show="errors.length > 0">
+        <td>&nbsp;</td>
+        <td><div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">{{error}}</div></td>
+      </tr>
+    </table>
   </div>
-</div>
 
-<div class="modal-footer">
-  <button class="btn btn-primary"
-    ng-click="submitEditRefset(refset); 
+  <div class="modal-footer">
+    <button class="btn btn-primary" ng-click="submitRefset(refset); 
     ">Save</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-</div>
+    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  </div>

@@ -18,10 +18,13 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
@@ -43,6 +46,31 @@ public class WorkflowClientRest extends RootClientRest implements
    */
   public WorkflowClientRest(Properties config) {
     this.config = config;
+  }
+
+  /* see superclass */
+  @Override
+  public StringList getWorkflowPaths(String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Workflow Client - get workflow paths");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/workflow/paths");
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (StringList) ConfigUtility.getGraphForString(resultString,
+        StringList.class);
   }
 
   /* see superclass */
@@ -415,6 +443,7 @@ public class WorkflowClientRest extends RootClientRest implements
         RefsetListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public TrackingRecord getTrackingRecordForRefset(Long refsetId,
     String authToken) throws Exception {
@@ -422,6 +451,7 @@ public class WorkflowClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAllAvailableRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
@@ -429,6 +459,7 @@ public class WorkflowClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public RefsetList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
     String authToken) throws Exception {
@@ -436,11 +467,105 @@ public class WorkflowClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public RefsetList findReleaseProcessRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find release process refsets - " + projectId + ", "
+            + pfs);
+
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/release?projectId=" + projectId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
+  /* see superclass */
+  @Override
+  public TranslationList findReleaseProcessTranslations(Long projectId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find release process translations - " + projectId
+            + ", " + pfs);
+
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/translation/release?projectId=" + projectId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TranslationList) ConfigUtility.getGraphForString(resultString,
+        TranslationListJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public TranslationList findNonReleaseProcessTranslations(Long projectId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find non release process translations - " + projectId
+            + ", " + pfs);
+
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/translation/nonrelease?projectId=" + projectId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TranslationList) ConfigUtility.getGraphForString(resultString,
+        TranslationListJpa.class);
+  }
 }
