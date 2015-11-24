@@ -106,8 +106,28 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - finish refset release");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/refset/finish"
+            + "?refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
   }
 
   @Override
@@ -168,8 +188,28 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ValidationResult finishTranslationRelease(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - finish translation release");
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/translation/finish"
+            + "?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
+        ValidationResultJpa.class);
   }
 
   @Override

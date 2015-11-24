@@ -569,6 +569,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   private void handleRefsetLazyInitialization(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
+    if(refset.getMembers() != null)
+      refset.getMembers().size();
     for (Translation translation : refset.getTranslations()) {
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();

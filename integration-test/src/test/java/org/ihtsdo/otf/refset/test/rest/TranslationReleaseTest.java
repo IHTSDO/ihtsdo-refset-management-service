@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -306,7 +307,7 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
@@ -331,7 +332,7 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
@@ -358,7 +359,7 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
     // Begin release
@@ -375,4 +376,33 @@ public class TranslationReleaseTest {
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test translation release including begin, validate, preview and finish.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRelease004() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration001");
+
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (intensional) and import definition
+    RefsetJpa refset1 =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
+            admin);
+    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+    // Begin release
+    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    // Validate release
+    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    // Preview release
+    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    // Finish release
+    releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
+    // clean up
+    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+  }
 }

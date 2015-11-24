@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -239,7 +240,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -262,7 +263,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -279,7 +280,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -287,7 +288,7 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, null,
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
             admin);
     // Begin release
     releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
@@ -301,4 +302,30 @@ public class RefsetReleaseTest {
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test refset release including begin, validate, preview and finish.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRelease004() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration001");
+
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (intensional) and import definition
+    RefsetJpa refset1 =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
+            admin);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Preview release
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    // clean up
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+  }
 }
