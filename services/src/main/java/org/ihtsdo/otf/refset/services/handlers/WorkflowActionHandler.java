@@ -23,13 +23,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowAction;
 public interface WorkflowActionHandler extends Configurable {
 
   /**
-   * Returns the workflow path.
-   *
-   * @return the workflow path
-   */
-  public String getWorkflowPath();
-
-  /**
    * Validate workflow action.
    *
    * @param refset the refset
@@ -43,7 +36,7 @@ public interface WorkflowActionHandler extends Configurable {
     WorkflowAction action, WorkflowService service) throws Exception;
 
   /**
-   * Find available editing work. Something like dual independent review wouls
+   * Find available editing work. Something like dual independent review would
    * force the workflow action handler to implement this differently.
    *
    * @param translation the translation

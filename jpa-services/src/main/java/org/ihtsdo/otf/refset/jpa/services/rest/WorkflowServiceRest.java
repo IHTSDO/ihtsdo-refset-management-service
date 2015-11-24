@@ -7,6 +7,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
@@ -15,6 +16,15 @@ import org.ihtsdo.otf.refset.workflow.TrackingRecord;
  * Represents a service for performing workflow actions.
  */
 public interface WorkflowServiceRest {
+
+  /**
+   * Returns the workflow paths.
+   *
+   * @param authToken the auth token
+   * @return the workflow paths
+   * @throws Exception the exception
+   */
+  public StringList getWorkflowPaths(String authToken) throws Exception;
 
   /**
    * Find available editing refsets.

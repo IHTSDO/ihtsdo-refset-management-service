@@ -448,14 +448,14 @@ public interface RefsetServiceRest {
   /**
    * Clone refset.
    *
-   * @param refsetId the refset id
    * @param projectId the project id
-   * @param terminologyId the terminology id
+   * @param origRefsetId the orig refset id
+   * @param refset the refset
    * @param authToken the auth token
    * @return the long
    * @throws Exception the exception
    */
-  public Long cloneRefset(Long refsetId, Long projectId, String terminologyId,
+  public Refset cloneRefset(Long projectId, Long origRefsetId, RefsetJpa refset,
     String authToken) throws Exception;
 
 }

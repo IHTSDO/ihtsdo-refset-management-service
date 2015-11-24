@@ -9,9 +9,9 @@ tsApp
       'tabService',
       'securityService',
       'refsetService',
-      'projectService',
+      'projectService', 'workflowService',
       function($scope, $http, $rootScope, tabService, securityService, refsetService,
-        projectService) {
+        projectService, workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on "back" button
@@ -37,7 +37,8 @@ tsApp
           terminologies : [],
           versions : {},
           importHandlers : [],
-          exportHandlers : []
+          exportHandlers : [],
+          workflowPaths : []
         }
 
         // Get $scope.projects
@@ -98,7 +99,7 @@ tsApp
           })
         };
 
-        // Get $scope.terminologyEditions, also loads
+        // Get $scope.metadata.terminologies, also loads
         // versions for the first edition in the list
         $scope.getTerminologyEditions = function() {
           console.debug("getTerminologyEditions");
@@ -112,7 +113,7 @@ tsApp
 
         };
 
-        // Get $scope.terminologyVersions
+        // Get $scope.metadata.versions
         $scope.getTerminologyVersions = function(terminology) {
           console.debug("getTerminologyVersions", terminology);
           projectService.getTerminologyVersions(terminology).then(function(data) {
@@ -124,7 +125,7 @@ tsApp
           })
         };
 
-        // Get $scope.io{Import,Export}Handlers
+        // Get $scope.metadata.{import,export}Handlers
         $scope.getIOHandlers = function() {
           refsetService.getImportRefsetHandlers().then(function(data) {
             $scope.metadata.importHandlers = data.handlers;
@@ -134,12 +135,21 @@ tsApp
           });
         }
 
+        // Get $scope.metadata.workflowPaths
+        $scope.getWorkflowPaths = function() {
+          workflowService.getWorkflowPaths().then(function(data) {
+            $scope.metadata.workflowPaths = data.strings;
+          });
+        }
+
+    
         // Initialize
         $scope.getProjects();
         // Initialize some metadata first time
         $scope.getRefsetTypes();
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
+        $scope.getWorkflowPaths();
       }
 
     ]);

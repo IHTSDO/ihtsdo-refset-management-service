@@ -7,6 +7,29 @@ tsApp.service('workflowService', [
   function($http, $q, gpService, utilService) {
     console.debug("configure workflowService");
 
+    // Get workflow paths
+    this.getWorkflowPaths = function() {
+      console.debug("getWorkflowPaths");
+      var deferred = $q.defer();
+
+      // Perform workflow action on a refset
+      gpService.increment()
+      $http.get(workflowUrl + 'paths').then(
+      // success
+      function(response) {
+        console.debug("  paths = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Perform workflow action on a refset
     this.performWorkflowAction = function(projectId, refsetId, userName, action) {
       console.debug("performWorkflowAction");

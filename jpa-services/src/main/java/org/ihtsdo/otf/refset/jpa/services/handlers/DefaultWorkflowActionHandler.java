@@ -38,9 +38,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
-  /** The workflow path. */
-  private String workflowPath = null;
-
   /**
    * Instantiates an empty {@link DefaultWorkflowActionHandler}.
    *
@@ -55,12 +52,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @Override
   public void setProperties(Properties p) throws Exception {
 
-    if (p.containsKey("path")) {
-      workflowPath = p.getProperty("path");
-    } else {
-      throw new Exception(
-          "Workflow action handlers must specify a path property");
-    }
     // n/a
   }
 
@@ -68,12 +59,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @Override
   public String getName() {
     return "Default workflow handler";
-  }
-
-  /* see superclass */
-  @Override
-  public String getWorkflowPath() {
-    return workflowPath;
   }
 
   /* see superclass */

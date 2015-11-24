@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -68,6 +69,32 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    */
   public WorkflowServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/paths")
+  @ApiOperation(value = "Get workflow paths", notes = "Gets the supported workflow paths.", response = StringList.class)
+  public StringList getWorkflowPaths(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful POST call (Workflow): /paths");
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get workflow paths",
+          UserRole.VIEWER);
+
+      return workflowService.getWorkflowPaths();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get workflow paths");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
   }
 
   /* see superclass */

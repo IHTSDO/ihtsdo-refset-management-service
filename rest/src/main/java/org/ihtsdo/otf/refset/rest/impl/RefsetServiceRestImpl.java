@@ -365,16 +365,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/clone")
-  @ApiOperation(value = "Clone refset", notes = "Creates a new refset that is cloned from provided refset", response = Long.class)
-  public Long cloneRefset(
-    @ApiParam(value = "Refset id, e.g. 2206", required = true) @QueryParam("refsetId") Long refsetId,
+  @ApiOperation(value = "Clone refset", notes = "Creates the specified refset", response = RefsetJpa.class)
+  public Refset cloneRefset(
     @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Terminology id, e.g. 347582394", required = false) @QueryParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Refset , e.g. 347582394", required = false) RefsetJpa refset,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Refset): /clone " + refsetId + ", " + projectId
-            + ", " + terminologyId);
+            + ", " + refset);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -382,12 +382,35 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(refsetService, projectId, securityService,
               authToken, "add refset", UserRole.AUTHOR);
 
-      // Add refset - if the project is invalid, this will fail
-      Refset newRefset =
-          refsetService.cloneRefset(refsetId, projectId, terminologyId);
-      newRefset.setLastModifiedBy(userName);
+      refsetService.setTransactionPerOperation(false);
+      refsetService.beginTransaction();
 
-      return newRefset.getId();
+      // Add the refset
+      refset.setLastModifiedBy(userName);
+      Refset newRefset = refsetService.addRefset(refset);
+
+      // Copy all the members if EXTENSIONAL
+      if (refset.getType() == Refset.Type.EXTENSIONAL) {
+
+        // Get the original reference set
+        Refset originRefset = refsetService.getRefset(refsetId);
+        for (ConceptRefsetMember originMember : originRefset.getMembers()) {
+          ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
+          member.setLastModifiedBy(userName);
+          member.setPublished(false);
+          member.setPublishable(true);
+          member.setRefset(newRefset);
+          member.setTerminology(newRefset.getTerminology());
+          member.setVersion(newRefset.getVersion());
+          // Insert new members
+          member.setId(null);
+          refsetService.addMember(member);
+        }
+      }
+
+      // done
+      refsetService.commit();
+      return newRefset;
     } catch (Exception e) {
       handleException(e, "trying to clone a refset");
       return null;
@@ -673,7 +696,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "export definition",
-          UserRole.VIEWER);      // Load refset
+          UserRole.VIEWER); // Load refset
 
       Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {

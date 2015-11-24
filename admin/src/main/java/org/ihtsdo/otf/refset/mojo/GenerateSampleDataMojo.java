@@ -544,45 +544,57 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test3.getId(), "author1", "ASSIGN", author1.getAuthToken());
 
       // test 4
-      Long test4Id =
-          new RefsetServiceRestImpl().cloneRefset(test1.getId(),
-              project1.getId(), "444444", author1.getAuthToken());
+      RefsetJpa test1Copy = new RefsetJpa(test1);
+      test1Copy.setId(null);
+      test1Copy.setTerminologyId("444444");
+      test1Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test1.getId(), test1Copy, author1.getAuthToken());
       Refset test4 =
-          new RefsetServiceRestImpl()
-              .getRefset(test4Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test1Copy.getId(),
+              author1.getAuthToken());
       test4.setName("test4");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test4,
           author1.getAuthToken());
 
       // test 5
-      Long test5Id =
-          new RefsetServiceRestImpl().cloneRefset(test2.getId(),
-              project1.getId(), "555555", author1.getAuthToken());
+      RefsetJpa test2Copy = new RefsetJpa(test2);
+      test2Copy.setId(null);
+      test2Copy.setTerminologyId("555555");
+      test2Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test2.getId(), test2Copy, author1.getAuthToken());
       Refset test5 =
-          new RefsetServiceRestImpl()
-              .getRefset(test5Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
+              author1.getAuthToken());
       test5.setName("test5");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test5,
           author1.getAuthToken());
 
       // test 6
-      Long test6Id =
-          new RefsetServiceRestImpl().cloneRefset(test3.getId(),
-              project1.getId(), "666666", author1.getAuthToken());
+      RefsetJpa test3Copy = new RefsetJpa(test3);
+      test3Copy.setId(null);
+      test3Copy.setTerminologyId("666666");
+      test3Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test3.getId(), test3Copy, author1.getAuthToken());
       Refset test6 =
-          new RefsetServiceRestImpl()
-              .getRefset(test6Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
+              author1.getAuthToken());
       test6.setName("test6");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test6,
           author1.getAuthToken());
 
       // test 7
-      Long test7Id =
-          new RefsetServiceRestImpl().cloneRefset(test1.getId(),
-              project1.getId(), "777777", author1.getAuthToken());
+      RefsetJpa test4Copy = new RefsetJpa(test4);
+      test4Copy.setId(null);
+      test4Copy.setTerminologyId("777777");
+      test4Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test1.getId(), test4Copy, author1.getAuthToken());
       Refset test7 =
-          new RefsetServiceRestImpl()
-              .getRefset(test7Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test4Copy.getId(),
+              author1.getAuthToken());
       test7.setName("test7");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test7,
           author1.getAuthToken());
@@ -596,12 +608,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test7.getId(), "reviewer1", "ASSIGN", author1.getAuthToken());
 
       // test 8
-      Long test8Id =
-          new RefsetServiceRestImpl().cloneRefset(test2.getId(),
-              project1.getId(), "888888", author1.getAuthToken());
+      test2Copy.setId(null);
+      test2Copy.setTerminologyId("888888");
+      test2Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test2.getId(), test2Copy, author1.getAuthToken());
       Refset test8 =
-          new RefsetServiceRestImpl()
-              .getRefset(test8Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
+              author1.getAuthToken());
       test8.setName("test8");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test8,
           author1.getAuthToken());
@@ -615,12 +629,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test8.getId(), "reviewer1", "ASSIGN", author1.getAuthToken());
 
       // test 9
-      Long test9Id =
-          new RefsetServiceRestImpl().cloneRefset(test3.getId(),
-              project1.getId(), "999999", author1.getAuthToken());
+      test3Copy.setId(null);
+      test3Copy.setTerminologyId("999999");
+      test3Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test3.getId(), test3Copy, author1.getAuthToken());
       Refset test9 =
-          new RefsetServiceRestImpl()
-              .getRefset(test9Id, author1.getAuthToken());
+          new RefsetServiceRestImpl().getRefset(test3Copy.getId(),
+              author1.getAuthToken());
       test9.setName("test9");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test9,
           author1.getAuthToken());
@@ -634,11 +650,13 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "reviewer1", "ASSIGN", author1.getAuthToken());
 
       // test 10
-      Long test10Id =
-          new RefsetServiceRestImpl().cloneRefset(test2.getId(),
-              project1.getId(), "101010101010", author1.getAuthToken());
+      test2Copy.setId(null);
+      test2Copy.setTerminologyId("101010101010");
+      test2Copy =
+          (RefsetJpa) new RefsetServiceRestImpl().cloneRefset(project1.getId(),
+              test2.getId(), test2Copy, author1.getAuthToken());
       Refset test10 =
-          new RefsetServiceRestImpl().getRefset(test10Id,
+          new RefsetServiceRestImpl().getRefset(test2Copy.getId(),
               author1.getAuthToken());
       test10.setName("test10");
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test10,
