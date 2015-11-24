@@ -406,22 +406,22 @@ tsApp.service('refsetService', [
       console.debug("compareRefsets");
       var deferred = $q.defer();
 
-      // redefinition cancel
       gpService.increment()
-      $http.get(refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2)
-        .then(
-        // success
-        function(response) {
-          console.debug("  compare refsets = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.get(
+        refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2="
+          + refsetId2, { headers: { "Content-type" : "text/plain" }}).then(
+      // success
+      function(response) {
+        console.debug("  compare refsets = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 

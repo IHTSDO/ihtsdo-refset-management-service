@@ -807,8 +807,8 @@ public class RefsetClientRest extends RootClientRest implements
             + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2);
 
     Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+        target.request(MediaType.TEXT_PLAIN)
+        .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -817,6 +817,7 @@ public class RefsetClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     // converting to object
+    
     return resultString;
 
   }

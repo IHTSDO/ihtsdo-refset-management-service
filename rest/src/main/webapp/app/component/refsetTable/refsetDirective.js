@@ -69,6 +69,13 @@ tsApp
                 sortField : 'name',
                 ascending : null
               }
+              $scope.paging["membersInCommon"] = {
+                page : 1,
+                filter : "",
+                typeFilter : "",
+                sortField : 'name',
+                ascending : null
+              }
 
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
@@ -1239,6 +1246,7 @@ tsApp
                 var modalInstance = $modal.open({
                   templateUrl : 'app/component/refsetTable/redefinition.html',
                   controller : RedefinitionModalCtrl,
+                  size: 'lg',
                   resolve : {
 
                     refset : function() {
@@ -1265,21 +1273,54 @@ tsApp
 
                 console.debug("Entered redefinition modal control");
                 $scope.refset = refset;
-
+                $scope.membersInCommon = null;
+                $scope.pageSize = 10;
+                $scope.paging = paging;
+                
+                $scope.getDiffReport = function() {
+                  refsetService.getDiffReport($scope.reportToken).then(function(data) {
+                    console.debug("diffReport", data);
+                    $scope.diffReport = data;
+                    $scope.newRegularMembers = data.newRegularMembers;
+                    $scope.oldRegularMembers = data.oldRegularMembers;
+                    $scope.validInclusions = data.validInclusions;
+                    $scope.validExclusions = data.validExclusions;
+                    $scope.invalidInclusions = data.invalidInclusions;
+                    $scope.invalidExclusions = data.invalidExclusions;
+                    $scope.stagedInclusions = data.stagedInclusions;
+                    $scope.findMembersInCommon();
+                  });
+                };
+                
+                $scope.findMembersInCommon = function() {
+                  var pfs = {
+                    startIndex : ($scope.paging["membersInCommon"].page - 1) * $scope.pageSize,
+                    maxResults : $scope.pageSize,
+                    sortField : null,
+                    queryRestriction : $scope.paging["membersInCommon"].filter != undefined ? $scope.paging["membersInCommon"].filter
+                      : null
+                  };
+                  refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(function(data) {
+                    console.debug("membersInCommon", data);
+                    $scope.membersInCommon = data.members;
+                    $scope.membersInCommon.totalCount = data.totalCount;
+                  })
+                };
+                
                 $scope.redefine = function(newDefinition) {
                   console.debug("Begin redefinition", newDefinition);
 
-                  refsetService.beginRedefinition(refset.id, newDefinition).then(
-                    function(data) {
-                      console.debug("data", data);
-                      refsetService.compareRefsets(refset1.getId(), copy.getId()).then(
-                        function(data) {
-                          $scope.diffReport = refsetService.getDiffReport(data);
-                        })
-                    })
+                  refsetService.beginRedefinition(refset.id, newDefinition).then(function(data) {
+                    console.debug("stagedRefset", data);
+                    refsetService.compareRefsets(refset.id, data.id).then(function(data) {
+                      console.debug("reportToken", data); 
+                      $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      })
+                  })
+                };                     
 
-                }
-
+                
                 $scope.finish = function(refset) {
                   console.debug("Finish redefinition", refset.id);
 
@@ -1288,7 +1329,7 @@ tsApp
 
                   })
 
-                }
+                };
 
                 $scope.cancel = function() {
                   $modalInstance.dismiss('cancel');
