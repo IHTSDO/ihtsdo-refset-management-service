@@ -23,21 +23,7 @@
       </tr>
       <tr>
         <td><b>Type</b></td>
-        <td><a ng-show="refset.type == 'EXTERNAL'" ng-click=""
-            style="text-decoration: none">
-            <i tooltip="Reference to an external refset stored elsewhere."
-              class="material-icons md-18">forward</i>
-          </a> <a ng-show="refset.type == 'EXTENSIONAL'" ng-click=""
-            style="text-decoration: none">
-            <i ng-show="refset.type == 'EXTENSIONAL'"
-              tooltip="Extensional refset, defined as an explicit list of members."
-              class="material-icons md-18">list</i>
-          </a> <a ng-show="refset.type == 'INTENSIONAL'" ng-click=""
-            style="text-decoration: none">
-            <i ng-show="refset.type == 'INTENSIONAL'"
-              tooltip="Intenional refset, defined as a definition with includes/excludes."
-              class="material-icons md-18">settings-square</i>
-          </a></td>
+        <td><span refset-type-icon refset="refset"></span></td>
       </tr>
       <tr>
         <td><b>Workflow Status</b></td>

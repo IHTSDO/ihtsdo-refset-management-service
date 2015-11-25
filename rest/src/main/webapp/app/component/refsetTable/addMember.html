@@ -4,7 +4,7 @@
   <div>
     <span>
       <form ng-submit="getSearchResults(search)">
-        <input ng-model="search">
+        <input autofocus ng-model="search">
         <button class="btn btn-primary"
           ng-click="getSearchResults(search); 
     ">Search</button>
@@ -39,92 +39,19 @@
 
     <!--  Right hand side -->
     <div class="col-md-6 col-xs-12">
-      <span ng-show="searchResults.length > 0 && !concept"
-        class="alert alert-warning">Select a concept to see details</span>      
-      <h5 ng-show="parents.length > 0">
-        <b>Parents</b>
-      </h5>
-      <table ng-show="parents.length > 0" class="table">
-        <thead>
-          <th class="col-md-3 col-xs-3">Concept Id</th>
-          <th class="col-md-9 col-xs-9">Name</th>
-        </thead>
-        <tbody>
-          <tr ng-repeat="concept in parents | orderBy:'concept.name'">
-            <td>{{concept.terminologyId}}</td>
-            <td>{{concept.name}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <span ng-show="searchResults.length > 0 && !data.concept"
+        class="alert alert-warning">Select a concept to see details</span>
 
-      <h5 ng-show="concept">
-        <b>Concept</b> {{concept.terminologyId}}
-      </h5>
-      <table ng-show="concept.descriptions.length > 0" class="table">
-        <tbody>
-          <tr ng-repeat="description in concept.descriptions">
-            <td>{{description.terminologyId}}</td>
-            <td>{{description.term}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Concept display -->
+      <div ng-show="data.concept" concept-info data="data" ></div>
 
-      <h5 ng-show="children.length > 0">
-        <b>Children</b>
-      </h5>
-
-      <span style="display: block;">
-        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-          first-text="&laquo;" last-text="&raquo;"
-          ng-show="children.totalCount > pageSize || paging['children'].filter"
-          total-items="children.totalCount" ng-model="paging['children'].page"
-          ng-change="getConceptChildren(concept)"></pagination>
-        <!-- TODO: cannot implement this in term server
-        <input class="input-filter" placeholder="Enter filter text"
-          ng-show="children.totalCount > pageSize || paging['children'].filter"
-          type="text" ng-model="paging['children'].filter"
-          ng-model-options="{ debounce: 300 }"
-          ng-change="getConceptChildren(concept)">
-
-        <button class="btn btn-xs btn-warning"
-          ng-show="paging['children'].filter"
-          ng-click="paging['children'].filter = ''; getConceptChildren(concept)"
-          title="Click to clear filter text">Clear</button>
- -->
-      </span>
-
-
-      <table ng-show="children.length > 0" class="table">
-        <thead>
-          <th class="col-md-3 col-xs-3"
-            ng-click="setSortField('children','terminologyId', null)">Concept
-            Id Id<span ng-bind="getSortIndicator('children','terminologyId')"></span>
-          </th>
-          <th class="col-md-9 col-xs-9"
-            ng-click="setSortField('children','name', null)">Name<span
-              ng-bind="getSortIndicator('children','name',null)"></span></th>
-        </thead>
-        <tbody>
-          <tr class="table-select-row" ng-repeat="concept in children">
-            <td>{{concept.terminologyId}}</td>
-            <td>{{concept.name}}</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </div>
 
-
 <div class="modal-footer">
-  <!-- Member type:<select ng-model="memberType" 
-    ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
- -->
-  <button class="btn btn-primary"
-    ng-disabled="!concept"
-    ng-click="addMember(selectedConcept); 
-    ">Add</button>
-  <button class="btn btn-warning"
-    title="Add selected concept as new refset member" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-disabled="!data.concept"
+    ng-click="addMember(data.concept);"
+    title=" Add new refset member for concept">Add</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

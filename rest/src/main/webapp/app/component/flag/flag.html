@@ -1,0 +1,5 @@
+<!-- NOTE: could also do this for namespace, but
+will namespace and module ever not both be set? 
+or will they disagree? if so, which wins? -->
+<img ng-show="obj.moduleId && hasIcon(obj.moduleId)" title="Flag icon"
+  ng-src="{{getIcon(obj.moduleId)}}" />
