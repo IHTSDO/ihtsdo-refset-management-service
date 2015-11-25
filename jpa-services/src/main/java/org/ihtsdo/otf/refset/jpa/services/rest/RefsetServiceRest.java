@@ -458,4 +458,30 @@ public interface RefsetServiceRest {
   public Refset cloneRefset(Long projectId, Long origRefsetId, RefsetJpa refset,
     String authToken) throws Exception;
 
+  /**
+   * Returns the old regular members.
+   *
+   * @param reportToken the report token
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the old regular members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Returns the new regular members.
+   *
+   * @param reportToken the report token
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the new regular members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
 }

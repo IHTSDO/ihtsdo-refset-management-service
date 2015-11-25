@@ -169,6 +169,7 @@ public class RedefinitionTest {
   // <<372454008 | Gastroenteral route (qualifier value) | (19)
   
   // <<373482005 | Benzethonium (substance) |
+  // <<418136008 | Gastro-intestinal stoma route (qualifier value) |
   
   
   /**

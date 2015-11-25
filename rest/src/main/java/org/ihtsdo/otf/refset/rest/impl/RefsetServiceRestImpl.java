@@ -1659,6 +1659,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  
   @Override
   @GET
   @Path("/diff/members")
@@ -1694,6 +1695,90 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  @Override
+  @POST
+  @Path("/old/members")
+  @ApiOperation(value = "Returns old regular members", notes = "Returns list of .", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList getOldRegularMembers(
+    @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call (Refset): old/members");
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // VIEWER access is fine, this is a read-only method 
+      authorizeApp(securityService, authToken, "returns diff report",
+          UserRole.VIEWER);
+
+      MemberDiffReport memberDiffReport = memberDiffReportMap.get(reportToken);
+      ConceptRefsetMemberList oldMembers = new ConceptRefsetMemberListJpa();
+      
+      // if the value is null, throw an exception
+      if (memberDiffReport == null) {
+        throw new LocalException("No member diff report was found.");
+      }
+
+      // apply pfs and query
+      oldMembers.setTotalCount(memberDiffReport.getOldRegularMembers().size());
+      oldMembers.setObjects(refsetService.applyPfsToList(memberDiffReport.getOldRegularMembers(),
+          ConceptRefsetMember.class, pfs));
+      return oldMembers;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get old regular members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
+  @Override
+  @POST
+  @Path("/new/members")
+  @ApiOperation(value = "Returns new regular members", notes = "Returns list of .", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList getNewRegularMembers(
+    @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
+    @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
+    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info("RESTful call (Refset): new/members");
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // VIEWER access is fine, this is a read-only method 
+      authorizeApp(securityService, authToken, "returns diff report",
+          UserRole.VIEWER);
+
+      MemberDiffReport memberDiffReport = memberDiffReportMap.get(reportToken);
+      ConceptRefsetMemberList newMembers = new ConceptRefsetMemberListJpa();
+      
+      // if the value is null, throw an exception
+      if (memberDiffReport == null) {
+        throw new LocalException("No member diff report was found.");
+      }
+
+      // apply pfs and query
+      newMembers.setTotalCount(memberDiffReport.getNewRegularMembers().size());
+      newMembers.setObjects(refsetService.applyPfsToList(memberDiffReport.getNewRegularMembers(),
+          ConceptRefsetMember.class, pfs));
+      return newMembers;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get new regular members");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
   @Override
   @GET
   @Path("/release/report")
