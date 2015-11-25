@@ -1176,4 +1176,18 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetJpa.class);
   }
 
+  @Override
+  public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 }
