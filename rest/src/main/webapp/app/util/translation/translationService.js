@@ -10,12 +10,12 @@ tsApp.service('translationService', [
 
     // broadcasts a refset change
     this.fireTranslationChanged = function(translation) {
-      $rootScope.$broadcast('translation:translationChanged', translation);
+      $rootScope.$broadcast('refset:translationChanged', translation);
     }
 
     // broadcasts a concept change
     this.fireConceptChanged = function(concept) {
-      $rootScope.$broadcast('translation:conceptChanged', concept);
+      $rootScope.$broadcast('refset:conceptChanged', concept);
     }
 
     // Get translation for id and date

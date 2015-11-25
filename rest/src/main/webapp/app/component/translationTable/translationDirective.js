@@ -12,7 +12,7 @@ tsApp.directive('translationTable',
     'releaseService',
     'workflowService',
     function($modal, $rootScope, utilService, securityService, projectService, translationService,
-     refsetService, releaseService, workflowService) {
+      refsetService, releaseService, workflowService) {
       console.debug('configure translationTable directive');
       return {
         restrict : 'A',
@@ -31,6 +31,9 @@ tsApp.directive('translationTable',
 
             // Variables
             $scope.user = securityService.getUser();
+            $scope.data = {
+              concept : null
+            };
             $scope.translation = null;
             $scope.translations = null;
             $scope.translationReleaseInfo = null;
@@ -57,16 +60,6 @@ tsApp.directive('translationTable',
               ascending : null
             };
 
-            // Tests that the key has an icon
-            $scope.hasIcon = function(key) {
-              return projectService.hasIcon(key);
-            }
-
-            // Returns the icon path for the key (moduleId or namespaceId)
-            $scope.getIcon = function(key) {
-              return projectService.getIcon(key);
-            }
-
             $scope.ioImportHandlers = [];
             $scope.ioExportHandlers = [];
 
@@ -74,9 +67,7 @@ tsApp.directive('translationTable',
             $scope.$on('refset:translationChanged', function(event, data) {
               console.debug('on refset:translationChanged', data);
               // If the translation is set, refresh refsets list
-              if (data) {
-                $scope.getTranslations();
-              }
+              $scope.getTranslations();
             });
 
             // Concept Changed handler
@@ -146,7 +137,7 @@ tsApp.directive('translationTable',
                     $scope.translations.totalCount = data.totalCount;
                     // Refresh the translation if it is selected
                     if ($scope.translation) {
-                      $scope.selectTranslation(translation);
+                      $scope.selectTranslation($scope.translation);
                     }
                   })
               }
@@ -158,7 +149,7 @@ tsApp.directive('translationTable',
                     $scope.translations.totalCount = data.totalCount;
                     // Refresh the translation if it is selected
                     if ($scope.translation) {
-                      $scope.selectTranslation(translation);
+                      $scope.selectTranslation($scope.translation);
                     }
                   })
               }
@@ -210,7 +201,6 @@ tsApp.directive('translationTable',
 
             // get current translation release info
             $scope.getCurrentTranslationReleaseInfo = function(translation) {
-
               releaseService.getCurrentTranslationRelease(translation.id).then(function(data) {
                 $scope.translationReleaseInfo = data;
               })
@@ -283,10 +273,39 @@ tsApp.directive('translationTable',
 
             };
 
+            // Selects a concepts (setting $scope.concept)
+            $scope.selectConcept = function(concept) {
+              $scope.data.concept = concept;
+              // Look up details of concept
+            };
+
             // Initialize if project setting isn't used
             if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
               $scope.getTranslations();
             }
+
+            // Remove a translation
+            $scope.removeTranslation = function(translation) {
+              // Confirm action
+              if (!confirm("Are you sure you want to remove the translation (" + translation.name
+                + ")?")) {
+                return;
+              }
+
+              // TODO need to handle where concepts isn't loaded
+              if (translation.concepts != null) {
+                if (!confirm("The translation has concepts that will also be deleted.")) {
+                  return;
+                }
+              }
+              translationService.removeTranslation(translation.id).then(
+              // Success
+              function() {
+                $scope.translation = null;
+                translationService.fireTranslationChanged();
+              });
+
+            };
 
             // 
             // MODALS
@@ -316,9 +335,7 @@ tsApp.directive('translationTable',
               modalInstance.result.then(
               // Success
               function(data) {
-                if (data) {
-                  translationService.fireTranslationChanged(data);
-                }
+                translationService.fireTranslationChanged(data);
               });
             };
 
@@ -369,6 +386,86 @@ tsApp.directive('translationTable',
               };
 
             };
+
+            $scope.openEditTranslationModal = function(ltranslation) {
+              console.debug("openEditTranslationModal ");
+
+              var modalInstance = $modal.open({
+                templateUrl : 'app/component/translationTable/editTranslation.html',
+                controller : EditTranslationModalCtrl,
+                backdrop : 'static',
+                resolve : {
+                  metadata : function() {
+                    return $scope.metadata;
+                  },
+                  refsets : function() {
+                    return $scope.refsets;
+                  },
+                  project : function() {
+                    return $scope.project;
+                  },
+                  translation : function() {
+                    return ltranslation;
+                  }
+                }
+              });
+
+              modalInstance.result.then(
+              // Success
+              function(data) {
+                translationService.fireTranslationChanged(data);
+              });
+            };
+
+            // Edit translation controller
+            var EditTranslationModalCtrl = function($scope, $modalInstance, metadata, refsets,
+              project, translation) {
+
+              console.debug("Entered edit translation modal control", metadata, translation);
+
+              $scope.action = 'EDIT';
+              $scope.errors = [];
+              $scope.metadata = metadata;
+              $scope.project = project;
+              $scope.translation = translation;
+
+              // find refset translation is attached to (by terminology id)
+              console.debug("refset id", translation.refsetId);
+              console.debug("refset tid", translation.terminologyId);
+              for (var i = 0; i < refsets.length; i++) {
+                console.debug("  refset = ", refsets[i]);
+                if ($scope.translation.refsetId == refsets[i].id) {
+                  $scope.refset = refsets[i];
+                  break;
+                }
+              }
+
+              $scope.submitTranslation = function(translation) {
+                console.debug("Submitting edit translation", translation);
+
+                if (!translation || !translation.name || !translation.description) {
+                  $scope.error = "The name, description, and terminology fields cannot be blank. ";
+                  return;
+                }
+                translationService.updateTranslation(translation).then(
+                // Success - update translation
+                function(data) {
+                  $modalInstance.close(data);
+                },
+                // Error - update translation
+                function(data) {
+                  $scope.errors[0] = data;
+                  utilService.clearError();
+                })
+              };
+
+              $scope.cancel = function() {
+                $modalInstance.dismiss('cancel');
+              };
+
+            };
+
+            // end
 
           } ]
       }
