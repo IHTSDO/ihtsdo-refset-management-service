@@ -447,7 +447,7 @@ tsApp
                 project, projects) {
                 console.debug("Entered clone refset modal control", refset, projects);
 
-                $scope.action = 'CLONE';
+                $scope.action = 'Clone';
                 $scope.errors = [];
                 $scope.project = project;
                 $scope.projects = projects;
@@ -836,7 +836,7 @@ tsApp
 
                 console.debug("Entered add refset modal control", metadata);
 
-                $scope.action = 'ADD';
+                $scope.action = 'Add';
                 $scope.errors = [];
                 $scope.metadata = metadata;
                 $scope.project = project;
@@ -845,7 +845,12 @@ tsApp
                   workflowPath : metadata.workflowPaths[0],
                   terminology : metadata.terminologies[0],
                   version : $scope.versions[0],
-                  type : metadata.refsetTypes[0]
+                  namespace : $scope.project.namespace,
+                  moduleId : $scope.project.projectId,
+                  organization : $scope.project.organization,
+                  terminology : $scope.project.terminology,
+                  version : $scope.project.version,
+                  type : metadata.refsetTypes[0],
                 };
 
                 $scope.terminologySelected = function(terminology) {
@@ -939,7 +944,7 @@ tsApp
 
                 console.debug("Entered edit refset modal control");
 
-                $scope.action = 'EDIT';
+                $scope.action = 'Edit';
                 $scope.errors = [];
                 $scope.refset = refset;
                 $scope.project = project;
