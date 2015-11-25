@@ -396,7 +396,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         Refset originRefset = refsetService.getRefset(refsetId);
         for (ConceptRefsetMember originMember : originRefset.getMembers()) {
           ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
-          member.setLastModifiedBy(userName);
           member.setPublished(false);
           member.setPublishable(true);
           member.setRefset(newRefset);
@@ -404,6 +403,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setVersion(newRefset.getVersion());
           // Insert new members
           member.setId(null);
+          member.setLastModifiedBy(userName);
           refsetService.addMember(member);
         }
       }
@@ -598,10 +598,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       Refset refset = refsetService.getRefset(member.getRefsetId());
 
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "import refset definition",
-          UserRole.AUTHOR);
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset definition",
+              UserRole.AUTHOR);
 
+      member.setLastModifiedBy(userName);
       ConceptRefsetMember newMember = refsetService.addMember(member);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
@@ -758,7 +760,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         inclusion.setConceptName("TBD");
       }
       inclusion.setEffectiveTime(null);
-      inclusion.setLastModifiedBy(userName);
       inclusion.setMemberType(Refset.MemberType.INCLUSION);
       inclusion.setModuleId(refset.getModuleId());
       inclusion.setPublishable(true);
@@ -766,6 +767,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setRefset(refset);
       inclusion.setTerminology(refset.getTerminology());
       inclusion.setVersion(refset.getVersion());
+      inclusion.setLastModifiedBy(userName);
       return refsetService.addMember(inclusion);
 
     } catch (Exception e) {
@@ -916,7 +918,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // CHECK PRECONDITIONS
-      
+
       // Check staging flag
       if (refset.isStaged()) {
         throw new LocalException(
@@ -974,7 +976,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           if (originMember != null) {
             member = new ConceptRefsetMemberJpa(originMember);
             member.setLastModifiedBy(userName);
-          } 
+          }
           // Otherwise create a new one
           else {
             member = new ConceptRefsetMemberJpa();
@@ -1035,6 +1037,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               } else {
                 member.setMemberType(Refset.MemberType.INCLUSION);
               }
+              member.setLastModifiedBy(userName);
               refsetService.addMember(member);
             }
           }
@@ -1359,6 +1362,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             include.setId(null);
             include.setRefset(refsetCopy);
             refsetCopy.addMember(include);
+            include.setLastModifiedBy(userName);
             refsetService.addMember(include);
             /*
              * member.setRefset(refsetCopy); refsetCopy.addMember(member);
@@ -1672,7 +1676,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      // VIEWER access is fine, this is a read-only method 
+      // VIEWER access is fine, this is a read-only method
       authorizeApp(securityService, authToken, "returns diff report",
           UserRole.VIEWER);
 
