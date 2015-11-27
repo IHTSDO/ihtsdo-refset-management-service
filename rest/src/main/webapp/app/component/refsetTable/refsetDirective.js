@@ -461,7 +461,7 @@ tsApp
                 project, projects) {
                 console.debug("Entered clone refset modal control", refset, projects);
 
-                $scope.action = 'CLONE';
+                $scope.action = 'Clone';
                 $scope.errors = [];
                 $scope.project = project;
                 $scope.projects = projects;
@@ -665,7 +665,9 @@ tsApp
               // Directive scoped method for cancelling an import
               $scope.cancelImport = function(refset) {
                 $scope.refset = refset;
-                refsetService.cancelImportMembers($scope.refset.id).then(new function() {
+                refsetService.cancelImportMembers($scope.refset.id).then(
+                // Success
+                function() {
                   refsetService.fireRefsetChanged($scope.refset);
                 });
               };
@@ -848,7 +850,7 @@ tsApp
 
                 console.debug("Entered add refset modal control", metadata);
 
-                $scope.action = 'ADD';
+                $scope.action = 'Add';
                 $scope.errors = [];
                 $scope.metadata = metadata;
                 $scope.project = project;
@@ -857,7 +859,12 @@ tsApp
                   workflowPath : metadata.workflowPaths[0],
                   terminology : metadata.terminologies[0],
                   version : $scope.versions[0],
-                  type : metadata.refsetTypes[0]
+                  namespace : $scope.project.namespace,
+                  moduleId : $scope.project.projectId,
+                  organization : $scope.project.organization,
+                  terminology : $scope.project.terminology,
+                  version : $scope.project.version,
+                  type : metadata.refsetTypes[0],
                 };
 
                 $scope.terminologySelected = function(terminology) {
@@ -951,7 +958,7 @@ tsApp
 
                 console.debug("Entered edit refset modal control");
 
-                $scope.action = 'EDIT';
+                $scope.action = 'Edit';
                 $scope.errors = [];
                 $scope.refset = refset;
                 $scope.project = project;
@@ -1012,9 +1019,6 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
-                    },
-                    paging : function() {
-                      return $scope.paging;
                     }
                   }
                 });
@@ -1027,17 +1031,23 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $modalInstance, member, refset, project,
-                paging) {
+              var AddMemberModalCtrl = function($scope, $modalInstance, member, refset, project) {
 
                 console.debug("Entered add member modal control");
-                $scope.paging = paging;
                 $scope.pageSize = 10;
                 $scope.errors = [];
                 $scope.searchResults = null;
                 $scope.data = {
                   concept : null
                 };
+                $scope.pageSize = 10;
+                $scope.paging = {};
+                $scope.paging["search"] = {
+                  page : 1,
+                  filter : "",
+                  sortField : null,
+                  ascending : null
+                }
 
                 if (refset.type == 'EXTENSIONAL') {
                   $scope.memberType = 'MEMBER';
@@ -1087,6 +1097,15 @@ tsApp
                   }
 
                 };
+                
+                $scope.getPreviousPage = function() {
+                  $scope.paging['search'].page--;
+                  $scope.getSearchResults($scope.search);
+                }
+                $scope.getNextPage = function() {
+                  $scope.paging['search'].page++;
+                  $scope.getSearchResults($scope.search);
+                }
 
                 // get search results
                 $scope.getSearchResults = function(search) {
@@ -1099,11 +1118,11 @@ tsApp
                   // clear data structures
                   $scope.errors = [];
 
-                  // TODO: manage paging of results
                   var pfs = {
-                    startIndex : 0,
-                    maxResults : 10,
+                    startIndex : ($scope.paging["search"].page - 1) * $scope.pageSize,
+                    maxResults : $scope.pageSize,
                     sortField : null,
+                    ascending : null,
                     queryRestriction : null
                   };
 
@@ -1112,6 +1131,7 @@ tsApp
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
+                    $scope.searchResults.totalCount = data.totalCount;
                   },
                   // Error
                   function(data) {
@@ -1121,6 +1141,11 @@ tsApp
 
                 };
 
+                // Clear errors
+                $scope.clearError = function() {
+                  $scope.errors = [];
+                }
+                
                 // select concept and get concept data
                 $scope.selectConcept = function(concept) {
                   $scope.data.concept = concept;

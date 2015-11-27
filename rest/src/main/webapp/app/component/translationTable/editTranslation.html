@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4>Edit Refset</h4>
+  <h4>{{action}} Refset</h4>
 </div>
 
 <div class="modal-body">
@@ -11,10 +11,10 @@
       </tr>
       <tr>
         <td><b>Refset</b></td>
-        <td><select ng-show="action == 'ADD'" ng-model="refset"
+        <td><select ng-show="action == 'Add'" ng-model="refset"
           ng-change="selectRefset(refset)"
           ng-options="item.name.concat(' (',item.id,')') for item in refsets"></select>
-          <span ng-show="refset && action == 'ADD'">
+          <span ng-show="refset && action == 'Add'">
             <br />
           </span> <span ng-show="refset">
             {{refset.name}}<br /> {{refset.moduleId}}
@@ -66,6 +66,6 @@
   <div class="modal-footer">
     <button class="btn btn-primary"
       ng-click="submitTranslation(translation); 
-    ">Save</button>
+    ">{{action}}</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>

@@ -1,15 +1,15 @@
 <div class="modal-header">
-  <h4>Edit Refset</h4>
+  <h4>{{action}} Refset</h4>
 </div>
 
 <div class="modal-body">
   <div>
     <table class="table">
       <tr>
-        <td><b><span ng-show="action == 'CLONE'">Clone to </span>Project:</b></td>
-        <td><select ng-show="action == 'CLONE'" ng-model="refset.project"
+        <td><b><span ng-show="action == 'Clone'">Clone to </span>Project:</b></td>
+        <td><select ng-show="action == 'Clone'" ng-model="refset.project"
           ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
-        </select> <span ng-show="action != 'CLONE'">{{project.name}}</span></td>
+        </select> <span ng-show="action != 'Clone'">{{project.name}}</span></td>
       </tr>
       <tr>
         <td><b>Refset Id</b></td>
@@ -22,6 +22,10 @@
       <tr>
         <td><b>Description</b></td>
         <td><textarea rows="4" cols="40" ng-model="refset.description"></textarea></td>
+      </tr>
+      <tr>
+        <td><b>Namespace</b></td>
+        <td><input ng-model="refset.namespace" /></td>
       </tr>
       <tr>
         <td><b>Module Id</b></td>
@@ -56,8 +60,8 @@
       </tr>
       <tr>
         <td><b>Type</b></td>
-        <td><span ng-show="action == 'EDIT'" refset-type-icon
-            refset="refset"> </span> <select ng-show="action != 'EDIT'"
+        <td><span ng-show="action == 'Edit'" refset-type-icon
+            refset="refset"> </span> <select ng-show="action != 'Edit'"
           ng-model="refset.type"
           ng-options="item for item in metadata.refsetTypes"></select></td>
       </tr>
@@ -67,20 +71,28 @@
       </tr>
       <tr ng-show="refset.type == 'INTENSIONAL'">
         <td><b>Definition</b></td>
-        <td><textarea ng-show="action == 'ADD'" rows="4" cols="40"
+        <td><textarea ng-show="action == 'Add'" rows="4" cols="40"
             ng-model="refset.definition"></textarea> <span
-            ng-show="action != 'ADD'">{{refset.definition}}</span></td>
+            ng-show="action != 'Add'">{{refset.definition}}</span></td>
       </tr>
       <tr ng-show="errors.length > 0">
         <td>&nbsp;</td>
-        <td><div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">{{error}}</div></td>
+        <td>
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">
+            {{error}}
+            <!-- DO NOT SUPPORT clearing error <div
+              style="cursor: pointer; display: inline; float: right; width: 3%;">
+              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+            </div> -->
+          </div>
+        </td>
       </tr>
     </table>
   </div>
 
   <div class="modal-footer">
     <button class="btn btn-primary" ng-click="submitRefset(refset); 
-    ">Save</button>
+    ">{{action}}</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>

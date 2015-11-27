@@ -1,22 +1,42 @@
 <div class="modal-header">
-  <h4>Edit User</h4>
+  <h4>{{action}} User</h4>
 </div>
 
 <div class="modal-body">
   <div>
-    <div>
-      Username:<br> <input ng-model="user.userName"><br>
-      Name:<br> <input ng-model="user.name"><br> 
-      Role:<br> <select ng-model="user.applicationRole" 
-        ng-options="item for item in applicationRoles"></select><br>
-      Email:<br> <input ng-model="user.email"><br>
-    </div>
+    <table class="table">
+      <tr>
+        <td><b>Username</b></td>
+        <td><input ng-show="action == 'Add'" ng-model="user.userName">
+          <span ng-show="action != 'Add'">{{user.userName}}</span></td>
+      </tr>
+      <tr>
+        <td><b>Name</b></td>
+        <td><input ng-show="action == 'Add'" ng-model="user.name">
+          <span ng-show="action != 'Add'">{{user.name}}</span></td>
+      </tr>
+      <tr>
+        <td><b>Email</b></td>
+        <td><input ng-show="action == 'Add'" ng-model="user.email"
+          size="40"> <span ng-show="action != 'Add'">{{user.email}}</span></td>
+      </tr>
+      <tr>
+        <td><b>Application Role</b></td>
+        <td><select ng-model="user.applicationRole"
+          ng-options="item for item in applicationRoles"></select></td>
+      </tr>
+      <tr ng-show="error">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-danger alert-error">{{error}}</div>
+        </td>
+      </tr>
+    </table>
   </div>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary"
-    ng-click="submitEditUser(user); 
-    ">Save</button>
+  <button class="btn btn-primary" ng-click="submitUser(user); 
+    ">{{action}}</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

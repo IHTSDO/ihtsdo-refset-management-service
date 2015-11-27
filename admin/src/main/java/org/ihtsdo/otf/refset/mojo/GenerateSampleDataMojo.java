@@ -781,6 +781,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       info.setTranslation((Translation) object);
     info.setLastModified(new Date());
     info.setLastModifiedBy("loader");
+    info.setEffectiveTime(new Date());
     info.setPublished(true);
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
@@ -945,7 +946,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setDescription("Description of translation "
         + translation.getName());
     translation.setActive(true);
-    translation.setEffectiveTime(new Date());
+    translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
     translation.setLanguage("es");
     translation.setModuleId("731000124108");

@@ -30,13 +30,13 @@ tsApp.directive('conceptInfo', [
           $scope.children = [];
           $scope.parents = [];
           $scope.parents = [];
-          $scope.errors = [];
+          $scope.error = null;
 
           // When concept changes, redo paging
           $scope.$watch('data.concept', function() {
             // When used by translation table, data.concept is null until selected
             // Clear error
-            $scope.errors = [];
+            $scope.error = null;
             if ($scope.data.concept) {
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptWithDescriptions($scope.data.concept);
@@ -49,6 +49,11 @@ tsApp.directive('conceptInfo', [
             $scope.getPagedChildren();
           });
 
+          // Clear error
+          $scope.clearError = function() {
+            $scope.error = null;
+          }
+          
           // get concept parents
           $scope.getConceptParents = function(concept) {
             console.debug("Getting concept parents", concept);
@@ -63,7 +68,7 @@ tsApp.directive('conceptInfo', [
             },
             // Error 
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             })
 
@@ -83,7 +88,7 @@ tsApp.directive('conceptInfo', [
             },
             // Error 
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             })
 
@@ -100,7 +105,7 @@ tsApp.directive('conceptInfo', [
             },
             // Error
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             });
 

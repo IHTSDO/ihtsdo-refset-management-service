@@ -345,7 +345,7 @@ tsApp.directive('translationTable',
 
               console.debug("Entered add translation modal control", metadata);
 
-              $scope.action = 'ADD';
+              $scope.action = 'Add';
               $scope.errors = [];
               $scope.metadata = metadata;
               $scope.project = project;
@@ -423,7 +423,7 @@ tsApp.directive('translationTable',
 
               console.debug("Entered edit translation modal control", metadata, translation);
 
-              $scope.action = 'EDIT';
+              $scope.action = 'Edit';
               $scope.errors = [];
               $scope.metadata = metadata;
               $scope.project = project;

@@ -868,7 +868,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setDescription("Description of translation "
         + translation.getName());
     translation.setActive(true);
-    translation.setEffectiveTime(new Date());
+    translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
     translation.setLanguage("es");
     translation.setModuleId(refset.getModuleId());
