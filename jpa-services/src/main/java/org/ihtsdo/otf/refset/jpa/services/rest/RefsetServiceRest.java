@@ -177,24 +177,28 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param staged the staged
+   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception;
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
 
   /**
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param staged the staged
+   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception;
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -483,5 +487,17 @@ public interface RefsetServiceRest {
    */
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
     String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Removes the refset exclusion.
+   *
+   * @param refsetId the refset id
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember removeRefsetExclusion(Long refsetId, String conceptId,
+    String authToken) throws Exception;
 
 }

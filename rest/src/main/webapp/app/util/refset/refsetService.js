@@ -312,13 +312,14 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetInclusion = function(refsetId, conceptId) {
+    this.addRefsetInclusion = function(refsetId, conceptId, staged, active) {
       console.debug("addRefsetInclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "inclusion/add/" + refsetId + "?conceptId=" + conceptId).then(
+      $http.get(refsetUrl + "inclusion/add/" + refsetId + "?conceptId=" + conceptId +
+        "&staged=" + staged + "&active=" + active).then(
       // success
       function(response) {
         console.debug("  inclusion = ", response.data);
@@ -335,13 +336,37 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetExclusion = function(refsetId, conceptId) {
+    this.addRefsetExclusion = function(refsetId, conceptId, staged, active) {
       console.debug("addRefsetExclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "exclusion/add/" + refsetId + "?conceptId=" + conceptId).then(
+      $http.get(refsetUrl + "exclusion/add/" + refsetId + "?conceptId=" + conceptId +
+        "&staged=" + staged + "&active=" + active).then(
+      // success
+      function(response) {
+        console.debug("  exclusion = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // remove refset inclusion
+    this.removeRefsetExclusion = function(refsetId, memberId) {
+      console.debug("removeRefsetExclusion");
+      var deferred = $q.defer();
+
+      // Remove refset inclusion
+      gpService.increment()
+      $http.get(refsetUrl + "exclusion/remove/" + memberId ).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);

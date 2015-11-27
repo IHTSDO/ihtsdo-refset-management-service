@@ -229,11 +229,11 @@ public abstract class AbstractComponent implements Component {
     AbstractComponent other = (AbstractComponent) obj;
     if (active != other.active)
       return false;
-    if (moduleId == null) {
+    /*if (moduleId == null) {
       if (other.moduleId != null)
         return false;
     } else if (!moduleId.equals(other.moduleId))
-      return false;
+      return false;*/
     if (terminology == null) {
       if (other.terminology != null)
         return false;

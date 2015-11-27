@@ -168,8 +168,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
-    result =
-        prime * result + ((memberType == null) ? 0 : memberType.hashCode());
+    /*result =
+        prime * result + ((memberType == null) ? 0 : memberType.hashCode());*/
     result =
         prime
             * result
@@ -199,11 +199,12 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptName.equals(other.conceptName))
       return false;
-    if (memberType == null) {
+    // removed this to get member diff report to work with IN/EXCLUSION_STAGED
+    /*if (memberType == null) {
       if (other.memberType != null)
         return false;
-    } else if (!memberType.equals(other.memberType))
-      return false;
+    } else if (memberType != other.memberType)
+      return false;*/
     if (refset == null) {
       if (other.refset != null)
         return false;

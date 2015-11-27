@@ -360,7 +360,7 @@ tsApp
               // list with current PFS settings
               $scope.exclude = function(refset, conceptId) {
 
-                refsetService.addRefsetExclusion(refset.id, conceptId).then(function() {
+                refsetService.addRefsetExclusion(refset.id, conceptId, false, true).then(function() {
                   $scope.getMembers(refset);
                 });
 
@@ -1074,7 +1074,7 @@ tsApp
                   }
 
                   if (member.memberType == 'INCLUSION') {
-                    refsetService.addRefsetInclusion(member.refsetId, member.conceptId).then(
+                    refsetService.addRefsetInclusion(member.refsetId, member.conceptId, false, true).then(
                     // Success
                     function(data) {
                       $modalInstance.close();
@@ -1176,8 +1176,6 @@ tsApp
                   refsetService.getDiffReport($scope.reportToken).then(function(data) {
                     console.debug("diffReport", data);
                     $scope.diffReport = data;
-                    //$scope.newRegularMembers = data.newRegularMembers;
-                    //$scope.oldRegularMembers = data.oldRegularMembers;
                     $scope.validInclusions = data.validInclusions;
                     $scope.validExclusions = data.validExclusions;
                     $scope.invalidInclusions = data.invalidInclusions;
@@ -1258,39 +1256,64 @@ tsApp
                   })
                 };
                 
-                $scope.save = function(refset) {
-                  console.debug("Save redefinition", refset.id);
-                  // TODO: what does this do?
-                };
-                
                 $scope.saveForLater = function(refset) {
                   console.debug("Save for later redefinition", refset.id);
-
+                  // updates refset on close
+                  // TODO: need resume redefinition alert button  disable icon
                   $modalInstance.close();
                 };
                 
-                $scope.exclude = function(refset, concept) {
-                  refsetService.addRefsetExclusion(refset.id, concept.conceptId).then(function() {
-                    concept.memberType = 'EXCLUSION';
+                // add exclusion
+                $scope.exclude = function(refset, concept, staged, active) {
+                  refsetService.addRefsetExclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                    refsetService.releaseReportToken($scope.reportToken).then(function() {
+                      console.debug("Released report token");
+                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      });  
+                    });
                   });
                 }
 
-                $scope.include = function(refset, concept) {
-                  refsetService.addRefsetInclusion(refset.id, concept.conceptId).then(function() {
-                    concept.memberType = 'INCLUSION';
+                // add inclusion
+                $scope.include = function(refset, concept, staged, active) {
+                  refsetService.addRefsetInclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                    refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                    });                   
                   });
                 }
                 
+                // revert inclusions and exclusions
                 $scope.revert = function(refset, concept) {
                   if (concept.memberType == 'INCLUSION') {
                     refsetService.removeRefsetMember(concept.id).then(function() {
-                      // TODO: how to update
+                      refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                      });                   
                     });
-                    concept.memberType = 'MEMBER';
                   } else if (concept.memberType == 'EXCLUSION') {
-                    refsetService.addRefsetMember(concept.id).then(function() {
-                   // TODO: how to update 
-                      concept.memberType = 'MEMBER';
+                    refsetService.removeRefsetExclusion($scope.stagedRefset.id, concept.id).then(function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                      });                   
                     });
                   }
                 }

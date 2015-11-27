@@ -537,9 +537,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeRefset("test3", "<<406473004 |  Contact allergen (substance)|",
               Refset.Type.INTENSIONAL, project1, "333333", author1, false);
       new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(),
-          "427811002", author1.getAuthToken());
+          "427811002", false, true, author1.getAuthToken());
       new RefsetServiceRestImpl().addRefsetInclusion(test3.getId(),
-          "133928008", author1.getAuthToken());
+          "133928008", false, true, author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test3.getId(), "author1", "ASSIGN", author1.getAuthToken());
 

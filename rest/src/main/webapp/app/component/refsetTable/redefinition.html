@@ -24,7 +24,7 @@
   <div class="row">
     <div class="col-md-8 col-xs-12">
       <div class="col-md-12 col-xs-12">
-        <h5>
+        <h5 ng-show="refset.stagingType != null">
           <b>Members In Common</b>
         </h5>
         <span ng-show="membersInCommon.length == 0" class="alert alert-warning">
@@ -68,7 +68,8 @@
             <tr ng-repeat="concept in validInclusions">
               <td>{{concept.conceptId}}</td>
               <td>{{concept.name}}</td>
-              <td><a ng-click="">
+              <td><a 
+                   ng-click="include(refset, concept, 'true', 'true')">
               <i tooltip="Add inclusion to staged refset."
                 class="material-icons md-18">arrow_forward</i>
             </a></td>
@@ -107,7 +108,7 @@
             <tr ng-repeat="concept in validExclusions">
               <td>{{concept.conceptId}}</td>
               <td>{{concept.name}}</td>
-              <td><a ng-click="">
+              <td><a ng-click="exclude(refset, concept, 'true', 'true')">
               <i tooltip="Add inclusion to staged refset."
                 class="material-icons md-18">arrow_forward</i>
             </a></td>
@@ -149,7 +150,7 @@
             <tr ng-repeat="concept in stagedInclusions">
               <td>{{concept.conceptId}}</td>
               <td>{{concept.name}}</td>
-              <td><a ng-click="">
+              <td><a ng-click="revert(refset, concept)">
               <i tooltip="Revert staged inclusion."
                 class="material-icons md-18">arrow_backward</i>
             </a></td>
@@ -172,7 +173,7 @@
             <tr ng-repeat="concept in stagedExclusions">
               <td>{{concept.conceptId}}</td>
               <td>{{concept.name}}</td>
-              <td><a ng-click="">
+              <td><a ng-click="revert(refset, concept)">
               <i tooltip="Revert staged inclusion."
                 class="material-icons md-18">arrow_backward</i>
             </a></td>
@@ -213,11 +214,11 @@
             <td>{{concept.conceptId}}</td>
             <td>{{concept.name}}</td>
             <td><a ng-show="concept.memberType == 'MEMBER'"
-                   ng-click="exclude(stagedRefset, concept)">
+                   ng-click="exclude(refset, concept, 'false', 'true')">
               <i tooltip="Exclude new member."
                 class="material-icons md-18">remove_circle_outline</i>
             </a><a ng-show="concept.memberType == 'EXCLUSION'"
-                   ng-click="revert(stagedRefset, concept)">
+                   ng-click="revert(refset, concept)">
               <i tooltip="Revert exclusion."
                 class="material-icons md-18">undo</i>
             </a></td>
@@ -250,11 +251,11 @@
             <td>{{concept.conceptId}}</td>
             <td>{{concept.name}}</td>
             <td><a ng-show="concept.memberType == 'MEMBER'"
-                   ng-click="include(stagedRefset, concept)">
+                   ng-click="include(refset, concept, 'false', 'true')">
               <i tooltip="Include old member."
                 class="material-icons md-18">add_circle_outline</i>
             </a><a ng-show="concept.memberType == 'INCLUSION'"
-                   ng-click="revert(stagedRefset, concept)">
+                   ng-click="revert(refset, concept)">
               <i tooltip="Revert inclusion."
                 class="material-icons md-18">undo</i>
             </a></td>
@@ -269,8 +270,6 @@
   <!-- Member type:<select ng-model="memberType" 
     ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
  -->
-  <button class="btn btn-primary" ng-disabled="refset.stagingType == null" ng-click="save(refset); 
-    ">Save</button>
   <button class="btn btn-primary" ng-disabled="refset.stagingType == null" ng-click="saveForLater(refset);
     ">Save for later</button>
   <button class="btn btn-primary" ng-disabled="refset.stagingType == null" ng-click="finish(refset); 
