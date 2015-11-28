@@ -35,7 +35,7 @@
       class="alert alert-warning">No refsets.</span>
 
     <table ng-show="refsets.totalCount > 0" class="table">
-      <thead>
+      <thead class="table-select-row">
         <th class="col-md-2 col-xs-2"
           ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
             ng-bind="getSortIndicator('refset','terminologyId')"></span>
@@ -54,7 +54,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
-          class="table-select-row">
+          ng-class="{selected: refset.id == selectedRefset.id}">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
           <td>{{refset.name}}</td>
           <td>{{refset.moduleId}}<!-- Mobile friendly line-break --> <br
@@ -65,6 +65,8 @@
             </span>
           </td>
           <td><span refset-type-icon refset="refset"></span></td>
+
+          <!-- AVAILABLE actions -->
           <td class="nobreak" ng-show="value == 'AVAILABLE'"><a
               title="Remove" class="toolicon"
               ng-click="removeRefset(refset); $event.stopPropagation()">
@@ -76,6 +78,8 @@
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
               <i title="Clone" class="material-icons md-18">content_copy</i>
             </a></td>
+
+          <!-- ASSIGNED_ALL actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'"><a
               class="toolicon" title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()">
@@ -89,6 +93,8 @@
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="material-icons md-18">assignment_return</i>
             </a></td>
+
+          <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'"><a
               class="toolicon" title="Edit"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
@@ -115,15 +121,21 @@
                 ng-click="cancelImport(refset)"
                 tooltip="Click to cancel failed import">Cancel Import</button>
             </span></td>
+
+          <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'"><a
+              ng-show="role == 'ADMIN' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               class="toolicon" title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()">
               <i title="Remove" class="material-icons md-18">delete</i>
-            </a>&nbsp;<a class="toolicon" title="Assign"
+            </a> <!-- For non-admins only if READY_FOR_PUBLICATION --> &nbsp;<a
+              class="toolicon" title="Assign"
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="material-icons md-18">assignment</i>
-            </a>&nbsp;<a class="toolicon" title="Publish"
+            </a> <!-- For admins only if READY_FOR_PUBLICATION --> &nbsp;<a
+              class="toolicon" title="Publish"
+              ng-show="role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openReleaseProcessModal(refset, '20151112')">
               <i title="Publish" class="material-icons md-18">publish</i>
             </a></td>
@@ -149,10 +161,6 @@
       </h4>
       <br /> <b>Description: </b>{{refset.description}}
       <table class="table">
-        <thead>
-          <th>&nbsp;</th>
-          <th>&nbsp;</th>
-        </thead>
         <tbody>
           <tr>
             <td>Refset Id</td>
@@ -166,7 +174,7 @@
             <td>Organization</td>
             <td>{{refset.organization}}</td>
           </tr>
-          <tr>
+          <tr ng-show="refset.effectiveTime">
             <td>Effective Time</td>
             <td>{{toShortDate(refset.effectiveTime)}}</td>
           </tr>
@@ -260,8 +268,7 @@
         <br />Refest has no members
       </span>
 
-      <span
-        ng-show="refset.members.totalCount > 0 || paging['member'].filter">
+      <span ng-show="refset.members.totalCount > 0 || paging['member'].filter">
         <span style="display: block;">
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
@@ -296,7 +303,7 @@
         </span>
 
         <table class="table">
-          <thead>
+          <thead class="table-select-row">
             <th class="col-md-4 col-xs-4"
               ng-click="setSortField('member','conceptId', refset)">Concept
               Id<span ng-bind="getSortIndicator('member','conceptId')"></span>

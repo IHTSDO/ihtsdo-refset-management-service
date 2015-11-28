@@ -33,7 +33,7 @@ tsApp
 
               // Variables
               $scope.user = securityService.getUser();
-              $scope.refset = null;
+              $scope.selectedRefset = null;
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
               $scope.project = null;
@@ -180,20 +180,20 @@ tsApp
                     })
                 }
 
-                // If $scope.refset is in the list, select it, if not clear $scope.refset
+                // If $scope.selectedRefset is in the list, select it, if not clear $scope.selectedRefset
                 var found = false;
-                if ($scope.refset) {
+                if ($scope.selectedRefset) {
                   for (var i = 0; i < $scope.refsets.length; i++) {
-                    if ($scope.refset.id == $scope.refsets[i].id) {
+                    if ($scope.selectedRefset.id == $scope.refsets[i].id) {
                       found = true;
                       break;
                     }
                   }
                 }
                 if (found) {
-                  $scope.getMembers($scope.refset);
+                  $scope.getMembers($scope.selectedRefset);
                 } else {
-                  $scope.refset = null;
+                  $scope.selectedRefset = null;
                 }
               };
 
@@ -285,10 +285,10 @@ tsApp
 
               };
 
-              // Selects a refset (setting $scope.refset).
+              // Selects a refset (setting $scope.selectedRefset).
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
-                $scope.refset = refset;
+                $scope.selectedRefset = refset;
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
 
@@ -321,8 +321,8 @@ tsApp
                     return;
                   }
                 }
-                refsetService.removeRefset(object.id).then(function() {
-                  $scope.refset = null;
+                refsetService.removeRefset(refset.id).then(function() {
+                  $scope.selectedRefset = null;
                   refsetService.fireRefsetChanged();
                 });
 
@@ -407,7 +407,7 @@ tsApp
               }
 
               //
-              // Modals:
+              // MODALS
               //
 
               // Clone Refset modal
