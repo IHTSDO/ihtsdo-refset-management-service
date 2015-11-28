@@ -846,7 +846,7 @@ tsApp
                   terminology : metadata.terminologies[0],
                   version : $scope.versions[0],
                   namespace : $scope.project.namespace,
-                  moduleId : $scope.project.projectId,
+                  moduleId : $scope.project.moduleId,
                   organization : $scope.project.organization,
                   terminology : $scope.project.terminology,
                   version : $scope.project.version,

@@ -96,4 +96,18 @@ public interface Project extends Searchable {
    * @param organization the organization
    */
   public void setOrganization(String organization);
+
+  /**
+   * Returns the module id.
+   *
+   * @return the module id
+   */
+  public String getModuleId();
+
+  /**
+   * Sets the module id.
+   *
+   * @param moduleId the module id
+   */
+  public void setModuleId(String moduleId);
 }
