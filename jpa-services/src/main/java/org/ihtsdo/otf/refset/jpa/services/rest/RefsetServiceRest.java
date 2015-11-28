@@ -177,24 +177,28 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param staged the staged
+   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception;
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
 
   /**
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param staged the staged
+   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception;
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -456,6 +460,44 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public Refset cloneRefset(Long projectId, Long origRefsetId, RefsetJpa refset,
+    String authToken) throws Exception;
+
+  /**
+   * Returns the old regular members.
+   *
+   * @param reportToken the report token
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the old regular members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Returns the new regular members.
+   *
+   * @param reportToken the report token
+   * @param query the query
+   * @param pfs the pfs
+   * @param authToken the auth token
+   * @return the new regular members
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+
+  /**
+   * Removes the refset exclusion.
+   *
+   * @param refsetId the refset id
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept refset member
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMember removeRefsetExclusion(Long refsetId, String conceptId,
     String authToken) throws Exception;
 
 }

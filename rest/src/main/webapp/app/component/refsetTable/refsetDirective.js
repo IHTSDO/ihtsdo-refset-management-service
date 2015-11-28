@@ -69,6 +69,20 @@ tsApp
                 sortField : 'name',
                 ascending : null
               }
+              $scope.paging["oldRegularMembers"] = {
+                page : 1,
+                filter : "",
+                typeFilter : "",
+                sortField : 'name',
+                ascending : null
+              }
+              $scope.paging["newRegularMembers"] = {
+                page : 1,
+                filter : "",
+                typeFilter : "",
+                sortField : 'name',
+                ascending : null
+              }
 
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
@@ -346,7 +360,7 @@ tsApp
               // list with current PFS settings
               $scope.exclude = function(refset, conceptId) {
 
-                refsetService.addRefsetExclusion(refset.id, conceptId).then(function() {
+                refsetService.addRefsetExclusion(refset.id, conceptId, false, true).then(function() {
                   $scope.getMembers(refset);
                 });
 
@@ -1070,7 +1084,7 @@ tsApp
                   }
 
                   if (member.memberType == 'INCLUSION') {
-                    refsetService.addRefsetInclusion(member.refsetId, member.conceptId).then(
+                    refsetService.addRefsetInclusion(member.refsetId, member.conceptId, false, true).then(
                     // Success
                     function(data) {
                       $modalInstance.close();
@@ -1178,6 +1192,7 @@ tsApp
 
                 console.debug("Entered redefinition modal control");
                 $scope.refset = refset;
+                $scope
                 $scope.membersInCommon = null;
                 $scope.pageSize = 10;
                 $scope.paging = paging;
@@ -1186,17 +1201,47 @@ tsApp
                   refsetService.getDiffReport($scope.reportToken).then(function(data) {
                     console.debug("diffReport", data);
                     $scope.diffReport = data;
-                    $scope.newRegularMembers = data.newRegularMembers;
-                    $scope.oldRegularMembers = data.oldRegularMembers;
                     $scope.validInclusions = data.validInclusions;
                     $scope.validExclusions = data.validExclusions;
                     $scope.invalidInclusions = data.invalidInclusions;
                     $scope.invalidExclusions = data.invalidExclusions;
                     $scope.stagedInclusions = data.stagedInclusions;
                     $scope.findMembersInCommon();
+                    $scope.getOldRegularMembers();
+                    $scope.getNewRegularMembers();
                   });
                 };
-
+ 
+                $scope.getOldRegularMembers = function() {
+                  var pfs = {
+                    startIndex : ($scope.paging["oldRegularMembers"].page - 1) * $scope.pageSize,
+                    maxResults : $scope.pageSize,
+                    sortField : null,
+                    queryRestriction : $scope.paging["oldRegularMembers"].filter != undefined ? $scope.paging["oldRegularMembers"].filter
+                      : null
+                  };
+                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(function(data) {
+                    console.debug("oldRegularMembers", data);
+                    $scope.oldRegularMembers = data.members;
+                    $scope.oldRegularMembers.totalCount = data.totalCount;
+                  })
+                };
+                
+                $scope.getNewRegularMembers = function() {
+                  var pfs = {
+                    startIndex : ($scope.paging["newRegularMembers"].page - 1) * $scope.pageSize,
+                    maxResults : $scope.pageSize,
+                    sortField : null,
+                    queryRestriction : $scope.paging["newRegularMembers"].filter != undefined ? $scope.paging["newRegularMembers"].filter
+                      : null
+                  };
+                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(function(data) {
+                    console.debug("newRegularMembers", data);
+                    $scope.newRegularMembers = data.members;
+                    $scope.newRegularMembers.totalCount = data.totalCount;
+                  })
+                };
+                
                 $scope.findMembersInCommon = function() {
                   var pfs = {
                     startIndex : ($scope.paging["membersInCommon"].page - 1) * $scope.pageSize,
@@ -1218,6 +1263,8 @@ tsApp
 
                   refsetService.beginRedefinition(refset.id, newDefinition).then(function(data) {
                     console.debug("stagedRefset", data);
+                    $scope.stagedRefset = data;
+                    $scope.refset.stagingType = 'DEFINITION';
                     refsetService.compareRefsets(refset.id, data.id).then(function(data) {
                       console.debug("reportToken", data);
                       $scope.reportToken = data;
@@ -1225,21 +1272,97 @@ tsApp
                     })
                   })
                 };
-
                 $scope.finish = function(refset) {
                   console.debug("Finish redefinition", refset.id);
 
                   refsetService.finishRedefinition(refset.id).then(function(data) {
                     console.debug("data", data);
-
+                    $modalInstance.close();
                   })
-
                 };
+                
+                $scope.saveForLater = function(refset) {
+                  console.debug("Save for later redefinition", refset.id);
+                  // updates refset on close
+                  // TODO: need resume redefinition alert button  disable icon
+                  $modalInstance.close();
+                };
+                
+                // add exclusion
+                $scope.exclude = function(refset, concept, staged, active) {
+                  refsetService.addRefsetExclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                    refsetService.releaseReportToken($scope.reportToken).then(function() {
+                      console.debug("Released report token");
+                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      });  
+                    });
+                  });
+                }
 
-                $scope.cancel = function() {
+                // add inclusion
+                $scope.include = function(refset, concept, staged, active) {
+                  refsetService.addRefsetInclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                    refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                    });                   
+                  });
+                }
+                
+                // revert inclusions and exclusions
+                $scope.revert = function(refset, concept) {
+                  if (concept.memberType == 'INCLUSION') {
+                    refsetService.removeRefsetMember(concept.id).then(function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                      });                   
+                    });
+                  } else if (concept.memberType == 'EXCLUSION') {
+                    refsetService.removeRefsetExclusion($scope.stagedRefset.id, concept.id).then(function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        });  
+                      });                   
+                    });
+                  }
+                }
+                
+                // Used for styling - coordinated with css file
+                // TODO: this can be better
+                $scope.getMemberStyle = function(member) {
+                  if (member.memberType == 'MEMBER') {
+                    return "";
+                  }
+                  return member.memberType.replace('_', ' ').toLowerCase();
+                }
+                
+                $scope.cancel = function(refset) {
+                  console.debug("Cancel redefinition", refset.id);
                   $modalInstance.dismiss('cancel');
+                  refsetService.cancelRedefinition(refset.id).then(function(data) {
+                    console.debug("data", data);
+                  })
                 };
 
+                $scope.close = function() {
+                  $modalInstance.close();
+                }
               }
 
             } ]
