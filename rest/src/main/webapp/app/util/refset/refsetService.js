@@ -312,14 +312,14 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetInclusion = function(refsetId, conceptId, staged, active) {
+    this.addRefsetInclusion = function(refset, conceptId, staged, active) {
       console.debug("addRefsetInclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "inclusion/add/" + refsetId + "?conceptId=" + conceptId +
-        "&staged=" + staged + "&active=" + active).then(
+      $http.get(refsetUrl + "inclusion/add/" + refset.id + "?conceptId=" + conceptId +
+        "&terminologyId=" + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
       // success
       function(response) {
         console.debug("  inclusion = ", response.data);
@@ -336,14 +336,14 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetExclusion = function(refsetId, conceptId, staged, active) {
+    this.addRefsetExclusion = function(refset, conceptId, staged, active) {
       console.debug("addRefsetExclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "exclusion/add/" + refsetId + "?conceptId=" + conceptId +
-        "&staged=" + staged + "&active=" + active).then(
+      $http.get(refsetUrl + "exclusion/add/" + refset.id + "?conceptId=" + conceptId +
+        "&terminologyId=" + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);
@@ -360,13 +360,13 @@ tsApp.service('refsetService', [
     }
 
     // remove refset inclusion
-    this.removeRefsetExclusion = function(refsetId, memberId) {
+    this.removeRefsetExclusion = function(memberId) {
       console.debug("removeRefsetExclusion");
       var deferred = $q.defer();
 
       // Remove refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "exclusion/remove/" + memberId ).then(
+      $http.get(refsetUrl + "exclusion/remove/" + memberId).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);

@@ -724,6 +724,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public ConceptRefsetMember addRefsetInclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
+    @ApiParam(value = "Terminology id, e.g. 1234231018", required = false) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Staged, e.g. true", required = true) @QueryParam("staged") boolean staged,
     @ApiParam(value = "Active, e.g. true", required = true) @QueryParam("active") boolean active,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -772,6 +773,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setPublished(false);
       inclusion.setRefset(refset);
       inclusion.setTerminology(refset.getTerminology());
+      inclusion.setTerminologyId(terminologyId);
       inclusion.setVersion(refset.getVersion());
       inclusion.setLastModifiedBy(userName);
       return refsetService.addMember(inclusion);
@@ -794,6 +796,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public ConceptRefsetMember addRefsetExclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
+    @ApiParam(value = "Terminology id, e.g. 1234231018", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Staged, e.g. true", required = true) @QueryParam("staged") boolean staged,
     @ApiParam(value = "Active, e.g. true", required = true) @QueryParam("active") boolean active,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -847,42 +850,27 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/exclusion/remove/{refsetId}")
+  @Path("/exclusion/remove/{memberId}")
   @ApiOperation(value = "Remove refset exclusion", notes = "Remove a refset exclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember removeRefsetExclusion(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
+    @ApiParam(value = "Member id, e.g. 3", required = true) @PathParam("memberId") Long memberId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call GET (exclusion): /exclusion/remove " + conceptId);
+        "RESTful call GET (exclusion): /exclusion/remove " + memberId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
 
-      Refset refset = refsetService.getRefset(refsetId);
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "add refset exclusion", UserRole.AUTHOR);
-
-      ConceptRefsetMember member = null;
-      for (ConceptRefsetMember c : refset.getMembers()) {
-        if (conceptId.equals(c.getConceptId())
-            && (c.getMemberType() == Refset.MemberType.EXCLUSION ||
-                c.getMemberType() == Refset.MemberType.EXCLUSION_STAGED)) {
-          member = c;
-          break;
-        } 
-      }
-
-      if (member == null) {
-        throw new LocalException(
-            "Unable to remove the exclusion as the refset does not contain a matching exclusion");
+      ConceptRefsetMember member = refsetService.getMember(memberId);
+      
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION ||
+          member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
+        member.setMemberType(Refset.MemberType.MEMBER);
+        refsetService.updateMember(member);
       }
       
-      member.setMemberType(Refset.MemberType.MEMBER);
-      
-      refsetService.updateMember(member);
       return member;
     } catch (Exception e) {
       handleException(e, "trying to remove a refset exclusion ");
@@ -1018,12 +1006,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         Date startDate = new Date();
 
         // collect exclusions concept ids from origin refset
-        Set<String> exclusionConceptIds = new HashSet<>();
+        /*Set<String> exclusionConceptIds = new HashSet<>();
         for (ConceptRefsetMember member : refset.getMembers()) {
           if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
             exclusionConceptIds.add(member.getConceptId());
           }
-        }
+        }*/
         // do this to re-use the terminology id
         Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
         for (ConceptRefsetMember member : refset.getMembers()) {
@@ -1062,11 +1050,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           }
 
           // If origin refset has this as in exclusion, keep it that way.
-          if (exclusionConceptIds.contains(member.getConceptId())) {
+          /*if (exclusionConceptIds.contains(member.getConceptId())) {
             member.setMemberType(MemberType.EXCLUSION);
-          } else {
+          } else {*/
             member.setMemberType(Refset.MemberType.MEMBER);
-          }
+         // }
           member.setPublishable(true);
           member.setRefset(refsetCopy);
           member.setTerminology(refsetCopy.getTerminology());
@@ -1078,7 +1066,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
         // add inclusions to the refsetCopy if they are not already in the
         // member list
-        for (ConceptRefsetMember member : refset.getMembers()) {
+        /*for (ConceptRefsetMember member : refset.getMembers()) {
           if (member.getMemberType() == Refset.MemberType.INCLUSION) {
             boolean found = false;
             for (Concept listConcept : conceptList.getObjects()) {
@@ -1103,7 +1091,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               refsetService.addMember(member);
             }
           }
-        }
+        }*/
       } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
@@ -1357,12 +1345,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Date startDate = new Date();
 
       // collect exclusions concept ids from origin refset
-      Set<String> exclusionConceptIds = new HashSet<>();
+      /*Set<String> exclusionConceptIds = new HashSet<>();
       for (ConceptRefsetMember member : refset.getMembers()) {
         if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
           exclusionConceptIds.add(member.getConceptId());
         }
-      }
+      }*/
       // do this to re-use the terminology id
       Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
       for (ConceptRefsetMember member : refset.getMembers()) {

@@ -184,8 +184,12 @@
           <a ng-click="openImportExportModal(refset, 'Import', 'Definition')">
                     <i title="Import definition"
                       class="material-icons md-18">file_upload</i>
-          </a> --> <a class="toolicon" ng-click="openRedefinitionModal(refset)">
+          </a> --> <a class="toolicon" ng-click="openRedefinitionModal(refset)"
+              ng-show="refset.stagingType == null">
                 <i title="Redefinition" class="material-icons md-18">find_replace</i>
+              </a><a class="toolicon" ng-click="openRedefinitionModal(refset)"
+              ng-show="refset.stagingType != null">
+                <i title="Resume redefinition" class="material-icons md-18">play_arrow</i>
               </a>
             </td>
           </tr>

@@ -1192,7 +1192,6 @@ tsApp
 
                 console.debug("Entered redefinition modal control");
                 $scope.refset = refset;
-                $scope
                 $scope.membersInCommon = null;
                 $scope.pageSize = 10;
                 $scope.paging = paging;
@@ -1206,6 +1205,7 @@ tsApp
                     $scope.invalidInclusions = data.invalidInclusions;
                     $scope.invalidExclusions = data.invalidExclusions;
                     $scope.stagedInclusions = data.stagedInclusions;
+                    $scope.stagedExclusions = data.stagedExclusions;
                     $scope.findMembersInCommon();
                     $scope.getOldRegularMembers();
                     $scope.getNewRegularMembers();
@@ -1290,7 +1290,7 @@ tsApp
                 
                 // add exclusion
                 $scope.exclude = function(refset, concept, staged, active) {
-                  refsetService.addRefsetExclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                  refsetService.addRefsetExclusion($scope.stagedRefset, concept.conceptId, staged, active).then(function() {
                     refsetService.releaseReportToken($scope.reportToken).then(function() {
                       console.debug("Released report token");
                       refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
@@ -1304,7 +1304,7 @@ tsApp
 
                 // add inclusion
                 $scope.include = function(refset, concept, staged, active) {
-                  refsetService.addRefsetInclusion($scope.stagedRefset.id, concept.conceptId, staged, active).then(function() {
+                  refsetService.addRefsetInclusion($scope.stagedRefset, concept.conceptId, staged, active).then(function() {
                     refsetService.releaseReportToken($scope.reportToken).then(function() {
                         console.debug("Released report token");
                         refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {
@@ -1318,7 +1318,8 @@ tsApp
                 
                 // revert inclusions and exclusions
                 $scope.revert = function(refset, concept) {
-                  if (concept.memberType == 'INCLUSION') {
+                  if (concept.memberType == 'INCLUSION' ||
+                    concept.memberType == 'INCLUSION_STAGED') {
                     refsetService.removeRefsetMember(concept.id).then(function() {
                       refsetService.releaseReportToken($scope.reportToken).then(function() {
                         console.debug("Released report token");
@@ -1329,8 +1330,9 @@ tsApp
                         });  
                       });                   
                     });
-                  } else if (concept.memberType == 'EXCLUSION') {
-                    refsetService.removeRefsetExclusion($scope.stagedRefset.id, concept.id).then(function() {
+                  } else if (concept.memberType == 'EXCLUSION' ||
+                    concept.memberType == 'EXCLUSION_STAGED') {
+                    refsetService.removeRefsetExclusion(concept.id).then(function() {
                       refsetService.releaseReportToken($scope.reportToken).then(function() {
                         console.debug("Released report token");
                         refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(function(data) {

@@ -152,7 +152,7 @@
               <td>{{concept.name}}</td>
               <td><a ng-click="revert(refset, concept)">
               <i tooltip="Revert staged inclusion."
-                class="material-icons md-18">arrow_backward</i>
+                class="material-icons md-18">arrow_back</i>
             </a></td>
             </tr>
           </tbody>
@@ -175,7 +175,7 @@
               <td>{{concept.name}}</td>
               <td><a ng-click="revert(refset, concept)">
               <i tooltip="Revert staged inclusion."
-                class="material-icons md-18">arrow_backward</i>
+                class="material-icons md-18">arrow_back</i>
             </a></td>
             </tr>
           </tbody>
@@ -213,14 +213,9 @@
               ng-class="getMemberStyle(concept)">
             <td>{{concept.conceptId}}</td>
             <td>{{concept.name}}</td>
-            <td><a ng-show="concept.memberType == 'MEMBER'"
-                   ng-click="exclude(refset, concept, 'false', 'true')">
+            <td><a ng-click="exclude(refset, concept, 'false', 'true')">
               <i tooltip="Exclude new member."
                 class="material-icons md-18">remove_circle_outline</i>
-            </a><a ng-show="concept.memberType == 'EXCLUSION'"
-                   ng-click="revert(refset, concept)">
-              <i tooltip="Revert exclusion."
-                class="material-icons md-18">undo</i>
             </a></td>
           </tr>
         </tbody>
@@ -254,10 +249,6 @@
                    ng-click="include(refset, concept, 'false', 'true')">
               <i tooltip="Include old member."
                 class="material-icons md-18">add_circle_outline</i>
-            </a><a ng-show="concept.memberType == 'INCLUSION'"
-                   ng-click="revert(refset, concept)">
-              <i tooltip="Revert inclusion."
-                class="material-icons md-18">undo</i>
             </a></td>
           </tr>
         </tbody>
@@ -267,9 +258,6 @@
 </div>
 
 <div class="modal-footer">
-  <!-- Member type:<select ng-model="memberType" 
-    ng-options="item for item in ['MEMBER', 'INCLUSION', 'EXCLUSION']"></select>
- -->
   <button class="btn btn-primary" ng-disabled="refset.stagingType == null" ng-click="saveForLater(refset);
     ">Save for later</button>
   <button class="btn btn-primary" ng-disabled="refset.stagingType == null" ng-click="finish(refset); 
