@@ -54,9 +54,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * JPA enabled implementation of {@link Refset}.
  */
+// TODO: Brian, explain why effectiveTime is required
 @Entity
 @Table(name = "refsets", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "project_id", "provisional"
+    "terminologyId", "project_id", "provisional", "effectiveTime"
 }))
 @Audited
 @Indexed

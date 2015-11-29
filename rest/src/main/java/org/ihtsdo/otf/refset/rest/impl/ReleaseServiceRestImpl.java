@@ -264,6 +264,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
+      if(refset.getMembers() != null)
+        refset.getMembers().size();
 
       // Authorize the call
       authorizeProject(refsetService, refset.getProject().getId(),
@@ -391,7 +393,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if (refset.isStaged())
         throw new Exception("refset workflowstatus is staged for " + refsetId);
       Refset stageRefset =
-          refsetService.stageRefset(refset, StagingType.PREVIEW);
+          refsetService.stageRefset(refset, StagingType.PREVIEW, releaseInfo.getEffectiveTime());
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
       stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
@@ -487,7 +489,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
+    refsetService.setTransactionPerOperation(false);
     releaseService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     releaseService.beginTransaction();
     ValidationResult result = new ValidationResultJpa();
     try {
@@ -524,6 +528,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       Refset stagedRefset = stagedRefsetChange.getStagedRefset();
       stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
       stagedRefset.setLastModifiedBy(userName);
+      stagedRefset.setProvisional(false);
       refsetService.updateRefset(stagedRefset);
       releaseInfoList =
           releaseService.findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
@@ -535,6 +540,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseInfo.setPlanned(false);
       releaseService.updateReleaseInfo(releaseInfo);
       refsetService.removeStagedRefsetChange(stagedRefsetChange.getId());
+      releaseService.commit();
+      refsetService.commit();
     } catch (Exception e) {
       releaseService.rollback();
       handleException(e, "trying to finish release of refset");
@@ -669,6 +676,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
       algo.setUserName(userName);
       algo.compute();
+      releaseService.commit();
       return algo.getReleaseInfo();
     } catch (Exception e) {
       handleException(e, "trying to begin release of translation");
@@ -793,7 +801,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
             + translationId);
       Translation stageTranslation =
           translationService.stageTranslation(translation,
-              Translation.StagingType.PREVIEW);
+              Translation.StagingType.PREVIEW, releaseInfo.getEffectiveTime());
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
       stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
@@ -889,7 +897,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
+    translationService.setTransactionPerOperation(false);
     releaseService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     releaseService.beginTransaction();
     ValidationResult result = new ValidationResultJpa();
     try {
@@ -937,6 +947,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseInfo.setPlanned(false);
       releaseService.updateReleaseInfo(releaseInfo);
       translationService.removeStagedTranslationChange(stagedTranslationChange.getId());
+      releaseService.commit();
+      translationService.commit();
     } catch (Exception e) {
       releaseService.rollback();
       handleException(e, "trying to finish release of translation");

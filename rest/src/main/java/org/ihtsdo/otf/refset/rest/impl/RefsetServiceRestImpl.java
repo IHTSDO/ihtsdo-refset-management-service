@@ -598,10 +598,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       Refset refset = refsetService.getRefset(member.getRefsetId());
 
-      authorizeProject(refsetService, refset.getProject().getId(),
+      final String userName =
+     authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "import refset definition",
           UserRole.AUTHOR);
 
+      member.setLastModifiedBy(userName);
       ConceptRefsetMember newMember = refsetService.addMember(member);
       refset.addMember(newMember);
       refsetService.updateRefset(refset);
