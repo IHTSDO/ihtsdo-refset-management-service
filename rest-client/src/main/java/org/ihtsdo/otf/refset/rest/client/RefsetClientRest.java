@@ -462,17 +462,17 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception {
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset inclusion " + " " + refsetId + ", "
-            + conceptId);
+            + conceptId + ", " + staged + ", " + active);
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/inclusion/add/"
-            + refsetId + "?conceptId=" + conceptId);
+            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged + "&active=" + active);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -494,17 +494,17 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception {
+    String conceptId, boolean staged, boolean active, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset exclusion " + " " + refsetId + ", "
-            + conceptId);
+            + conceptId + ", " + staged + ", " + active);
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/exclusion/add/"
-            + refsetId + "?conceptId=" + conceptId);
+            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged + "&active=" + active);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -1174,6 +1174,27 @@ public class RefsetClientRest extends RootClientRest implements
     // converting to object
     return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
         RefsetJpa.class);
+  }
+
+  @Override
+  public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
+    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ConceptRefsetMember removeRefsetExclusion(Long refsetId,
+    String conceptId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

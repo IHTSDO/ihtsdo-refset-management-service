@@ -26,14 +26,13 @@
     <span class="col-md-8 col-xs-4"></span>
   </div>
   <div class="col-md-12 col-xs-12">
-    <accordion> <accordion-group
-      ng-show="!isProjectAdmin() is-open="true"> <accordion-heading>
+    <accordion> <accordion-group ng-show="!isProjectAdmin()"
+      is-open="true"> <accordion-heading>
     <h5 class="section-header">Editing</h5>
     </accordion-heading>
     <div translation-table value="EDITING" projects="projects"
       metadata="metadata"></div>
-    </accordion-group>
-    <accordion-group ng-show="isProjectAdmin() is-open="true">
+    </accordion-group> <accordion-group ng-show="isProjectAdmin()" is-open="true">
     <accordion-heading>
     <h5 class="section-header">Editing All</h5>
     </accordion-heading>

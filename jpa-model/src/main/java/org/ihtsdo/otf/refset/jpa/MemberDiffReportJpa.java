@@ -167,7 +167,8 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getStagedInclusions() {
     List<ConceptRefsetMember> stagedInclusions = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
-      if (member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION_STAGED ||
+          member.getMemberType() == Refset.MemberType.INCLUSION) {
         stagedInclusions.add(member);
       }
     }

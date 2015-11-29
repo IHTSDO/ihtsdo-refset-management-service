@@ -16,8 +16,8 @@
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <a title="Create new project" ng-click="openNewProjectModal(lproject)">
-            <i title="Create new project" class="material-icons md-24">add</i>
+          <a title="Add project" ng-click="openAddProjectModal(lproject)">
+            <i title="Add project" class="material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -28,16 +28,16 @@
           first-text="&laquo;" last-text="&raquo;"
           ng-show="projects.totalCount > pageSize || paging['project'].filter"
           total-items="projects.totalCount" ng-model="paging['project'].page"
-          ng-change="retrieveProjects()"></pagination>
+          ng-change="getProjects()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="projects.totalCount > pageSize || paging['project'].filter"
           type="text" ng-model="paging['project'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="retrieveProjects()">
+          ng-model-options="{ debounce: 300 }" ng-change="getProjects()">
 
         <button class="btn btn-xs btn-warning"
           ng-show="paging['project'].filter"
-          ng-click="paging['project'].filter = ''; retrieveProjects()"
+          ng-click="paging['project'].filter = ''; getProjects()"
           title="Click to clear filter text">Clear</button>
       </span>
 
@@ -67,7 +67,7 @@
                 ng-click="openEditProjectModal(project); $event.stopPropagation()">
                 <i title="Edit" class="material-icons md-18">edit</i>
               </a>&nbsp;<a title="Remove"
-                ng-click="remove('project',project,projects); $event.stopPropagation()">
+                ng-click="removeProject(project); $event.stopPropagation()">
                 <i title="Delete" class="material-icons md-18">delete</i>
               </a></td>
           </tr>
@@ -83,8 +83,8 @@
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <a title="Create new user" ng-click="openNewUserModal(luser)">
-            <i title="Create new user" class="material-icons md-24">add</i>
+          <a title="Add user" ng-click="openAddUserModal(luser)">
+            <i title="Add user" class="material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -95,15 +95,15 @@
           first-text="&laquo;" last-text="&raquo;"
           ng-show="users.totalCount > pageSize || paging['user'].filter"
           total-items="users.totalCount" ng-model="paging['user'].page"
-          ng-change="retrieveUsers()"></pagination>
+          ng-change="getUsers()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="users.totalCount > pageSize || paging['user'].filter"
           type="text" ng-model="paging['user'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="retrieveUsers()">
+          ng-model-options="{ debounce: 300 }" ng-change="getUsers()">
 
         <button class="btn btn-xs btn-warning" ng-show="paging['user'].filter"
-          ng-click="paging['user'].filter = ''; retrieveUsers()"
+          ng-click="paging['user'].filter = ''; getUsers()"
           title="Click to clear filter text">Clear</button>
       </span>
 
@@ -133,7 +133,7 @@
                 ng-click="openEditUserModal(user); $event.stopPropagation()">
                 <i title="Edit" class="material-icons md-18">edit</i>
               </a>&nbsp;<a title="Remove"
-                ng-click="remove('user',user,users); $event.stopPropagation()">
+                ng-click="removeUser(user); $event.stopPropagation()">
                 <i title="Delete" class="material-icons md-18">delete</i>
               </a></td>
           </tr>
@@ -153,17 +153,17 @@
           ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
           total-items="candidateProjects.totalCount"
           ng-model="paging['candidateProject'].page"
-          ng-change="retrieveCandidateProjects()"></pagination>
+          ng-change="getCandidateProjects()"></pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
           type="text" ng-model="paging['candidateProject'].filter"
           ng-model-options="{ debounce: 300 }"
-          ng-change="retrieveCandidateProjects()">
+          ng-change="getCandidateProjects()">
 
         <button class="btn btn-xs btn-warning"
           ng-show="paging['candidateProject'].filter"
-          ng-click="paging['candidateProject'].filter = ''; retrieveCandidateProjects()"
+          ng-click="paging['candidateProject'].filter = ''; getCandidateProjects()"
           title="Click to clear filter text">Clear</button>
 
         <table class="table">
@@ -207,17 +207,17 @@
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               total-items="unassignedUsers.totalCount"
               ng-model="paging['candidateUser'].page"
-              ng-change="retrieveUnassignedUsers()"></pagination>
+              ng-change="getUnassignedUsers()"></pagination>
 
             <input class="input-filter" placeholder="Enter filter text"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               type="text" ng-model="paging['candidateUser'].filter"
               ng-model-options="{ debounce: 300 }"
-              ng-change="retrieveUnassignedUsers()">
+              ng-change="getUnassignedUsers()">
 
             <button class="btn btn-xs btn-warning"
               ng-show="project['candidateUser'].filter"
-              ng-click="project['candidateUser'].filter = ''; retrieveUnassignedUsers()"
+              ng-click="project['candidateUser'].filter = ''; getUnassignedUsers()"
               title="Click to clear filter text">Clear</button>
           </span>
 
@@ -269,17 +269,17 @@
               ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
               total-items="assignedUsers.totalCount"
               ng-model="paging['assignedUser'].page"
-              ng-change="retrieveAssignedUsers()"></pagination>
+              ng-change="getAssignedUsers()"></pagination>
 
             <input class="input-filter" placeholder="Enter filter text"
               ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
               type="text" ng-model="paging['assignedUser'].filter"
               ng-model-options="{ debounce: 300 }"
-              ng-change="retrieveAssignedUsers()">
+              ng-change="getAssignedUsers()">
 
             <button class="btn btn-xs btn-warning"
               ng-show="paging['assignedUser'].filter"
-              ng-click="paging['assignedUser'].filter = ''; retrieveAssignedUsers()"
+              ng-click="paging['assignedUser'].filter = ''; getAssignedUsers()"
               title="Click to clear filter text">Clear</button>
           </span>
 

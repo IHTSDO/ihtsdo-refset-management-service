@@ -537,9 +537,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeRefset("test3", "<<406473004 |  Contact allergen (substance)|",
               Refset.Type.INTENSIONAL, project1, "333333", author1, false);
       new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(),
-          "427811002", author1.getAuthToken());
+          "427811002", false, true, author1.getAuthToken());
       new RefsetServiceRestImpl().addRefsetInclusion(test3.getId(),
-          "133928008", author1.getAuthToken());
+          "133928008", false, true, author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test3.getId(), "author1", "ASSIGN", author1.getAuthToken());
 
@@ -781,6 +781,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       info.setTranslation((Translation) object);
     info.setLastModified(new Date());
     info.setLastModifiedBy("loader");
+    info.setEffectiveTime(new Date());
     info.setPublished(true);
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
@@ -945,7 +946,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setDescription("Description of translation "
         + translation.getName());
     translation.setActive(true);
-    translation.setEffectiveTime(new Date());
+    translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
     translation.setLanguage("es");
     translation.setModuleId("731000124108");

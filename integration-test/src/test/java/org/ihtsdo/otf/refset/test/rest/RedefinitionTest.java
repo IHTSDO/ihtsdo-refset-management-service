@@ -169,6 +169,7 @@ public class RedefinitionTest {
   // <<372454008 | Gastroenteral route (qualifier value) | (19)
   
   // <<373482005 | Benzethonium (substance) |
+  // <<418136008 | Gastro-intestinal stoma route (qualifier value) |
   
   
   /**
@@ -280,7 +281,7 @@ public class RedefinitionTest {
     assertEquals(7, memberList.getObjects().size());
 
     refsetService.addRefsetExclusion(refset1.getId(),
-        memberToExclude.getConceptId(), adminAuthToken);
+        memberToExclude.getConceptId(), false, true, adminAuthToken);
     memberList =
         refsetService.findRefsetMembersForQuery(refset1.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
@@ -297,7 +298,7 @@ public class RedefinitionTest {
 
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          bogusExclusion.getConceptId(), adminAuthToken);
+          bogusExclusion.getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -315,7 +316,7 @@ public class RedefinitionTest {
             "memberType:EXCLUSION", new PfsParameterJpa(), adminAuthToken);
     try {
       refsetService.addRefsetExclusion(refset1.getId(), exclusions.getObjects()
-          .get(0).getConceptId(), adminAuthToken);
+          .get(0).getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -337,7 +338,7 @@ public class RedefinitionTest {
 
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          memberToInclude.getConceptId(), adminAuthToken);
+          memberToInclude.getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -365,7 +366,7 @@ public class RedefinitionTest {
     memberToInclude = testingMemberList.getObjects().get(0);
     memberToInclude.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(refset1.getId(),
-        memberToInclude.getConceptId(), adminAuthToken);
+        memberToInclude.getConceptId(), false, true, adminAuthToken);
     refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
     assertEquals(
         6,
@@ -386,7 +387,7 @@ public class RedefinitionTest {
     inclusion.setMemberType(Refset.MemberType.EXCLUSION);
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          inclusion.getConceptId(), adminAuthToken);
+          inclusion.getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -400,7 +401,7 @@ public class RedefinitionTest {
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          inclusion.getConceptId(), adminAuthToken);
+          inclusion.getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -418,7 +419,7 @@ public class RedefinitionTest {
     exclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          exclusion.getConceptId(), adminAuthToken);
+          exclusion.getConceptId(), false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a

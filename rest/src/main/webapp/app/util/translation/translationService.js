@@ -2,19 +2,20 @@
 tsApp.service('translationService', [
   '$http',
   '$q',
+  '$rootScope',
   'gpService',
   'utilService',
-  function($http, $q, gpService, utilService) {
+  function($http, $q, $rootScope, gpService, utilService) {
     console.debug("configure translationService");
 
     // broadcasts a refset change
     this.fireTranslationChanged = function(translation) {
-      $rootScope.$broadcast('translation:translationChanged', translation);
+      $rootScope.$broadcast('refset:translationChanged', translation);
     }
 
     // broadcasts a concept change
     this.fireConceptChanged = function(concept) {
-      $rootScope.$broadcast('translation:conceptChanged', concept);
+      $rootScope.$broadcast('refset:conceptChanged', concept);
     }
 
     // Get translation for id and date
@@ -129,7 +130,7 @@ tsApp.service('translationService', [
 
     // Add new translation
     this.addTranslation = function(translation) {
-      console.debug("addTranslation");
+      console.debug("addTranslation", translation);
       var deferred = $q.defer();
 
       // Add new translation

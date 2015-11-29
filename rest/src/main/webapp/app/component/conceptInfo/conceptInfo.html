@@ -1,0 +1,90 @@
+
+<div ng-show="error">
+  <h4 class="alert alert-danger alert-error">
+    {{error}}
+    <div style="cursor: pointer; display: inline; float: right; width: 3%;">
+      <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+    </div>
+  </h4>
+</div>
+
+<h5 ng-show="parents.length > 0">
+  <b>Parents</b>
+</h5>
+<table ng-show="parents.length > 0" class="table">
+  <thead>
+    <th class="col-md-3 col-xs-3">Concept Id</th>
+    <th class="col-md-9 col-xs-9">Name</th>
+  </thead>
+  <tbody>
+    <tr ng-repeat="concept in parents | orderBy:'concept.name'">
+      <td>{{concept.terminologyId}}</td>
+      <td>{{concept.name}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5 ng-show="concept">
+  <b>Concept</b> {{concept.terminologyId}}
+</h5>
+<table ng-show="concept.descriptions.length > 0" class="table">
+  <tbody>
+    <tr ng-repeat="description in concept.descriptions">
+      <td>{{description.terminologyId}}</td>
+      <td>{{description.term}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h5 ng-show="children.length > 0">
+  <b>Children<span ng-show="pagedChildren.length > 0">
+      ({{pagedChildren.totalCount}})</span></b>
+</h5>
+
+<span style="display: block;">
+  <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+    class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
+    total-items="pagedChildren.totalCount" ng-model="paging['children'].page"
+    ng-change="getPagedChildren()"></pagination>
+
+  <input class="input-filter" placeholder="Enter filter text"
+    ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
+    type="text" ng-model="paging['children'].filter"
+    ng-model-options="{ debounce: 300 }" ng-change="getPagedChildren()">
+
+  <button class="btn btn-xs btn-warning" ng-show="paging['children'].filter"
+    ng-click="paging['children'].filter = ''; getPagedChildren()"
+    title="Click to clear filter text">Clear</button>
+
+</span>
+
+<span
+  ng-show="concept && pagedChildren.length == 0 && paging['children'].filter"
+  class="alert alert-warning">
+  <br />No children matching filter
+</span>
+<span
+  ng-show="concept && pagedChildren.length == 0 && !paging['children'].filter"
+  class="alert alert-warning">
+  <br />No child concepts
+</span>
+
+<table ng-show="pagedChildren.length > 0" class="table">
+  <thead>
+    <th class="col-md-3 col-xs-3"
+      ng-click="setSortField('children','terminologyId', null)">Concept Id
+      <span ng-bind="getSortIndicator('children','terminologyId')"></span>
+    </th>
+    <th class="col-md-9 col-xs-9"
+      ng-click="setSortField('children','name', null)">Name<span
+        ng-bind="getSortIndicator('children','name',null)"></span></th>
+  </thead>
+  <tbody>
+    <tr class="table-select-row" ng-repeat="concept in pagedChildren">
+      <td>{{concept.terminologyId}}</td>
+      <td>{{concept.name}}</td>
+    </tr>
+  </tbody>
+</table>
