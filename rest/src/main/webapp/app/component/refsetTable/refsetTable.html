@@ -112,8 +112,18 @@
             </a> <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
               <button class="btn btn-xs btn-warning"
-                ng-click="cancelImport(refset)"
+                ng-click="cancelAction(refset)"
                 tooltip="Click to cancel failed import">Cancel Import</button>
+            </span><span ng-show="refset.stagingType == 'DEFINITION'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelAction(refset)"
+                tooltip="Click to cancel redefinition">Cancel Redefinition</button>
+            </span><span ng-show="refset.stagingType == 'MIGRATION'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelAction(refset)"
+                tooltip="Click to cancel migration">Cancel Migration</button>
             </span></td>
           <td class="nobreak" ng-show="value == 'RELEASE'"><a
               class="toolicon" title="Remove"
@@ -172,7 +182,15 @@
           </tr>
           <tr>
             <td>Terminology</td>
-            <td>{{refset.terminology}} {{refset.version}}</td>
+            <td>{{refset.terminology}} {{refset.version}}
+            <a class="toolicon" ng-click="openRedefinitionModal(refset, 'Migration')"
+              ng-show="refset.stagingType == null">
+                <i title="Migration" class="material-icons md-18">find_replace</i>
+              </a><a class="toolicon" ng-click="openRedefinitionModal(refset, 'Migration')"
+              ng-show="refset.stagingType == 'MIGRATION'">
+                <i title="Resume migration" class="material-icons md-18">play_arrow</i>
+              </a>
+            </td>
           </tr>
           <tr ng-show="refset.type == 'INTENSIONAL'">
             <td>Definition</td>
@@ -184,11 +202,11 @@
           <a ng-click="openImportExportModal(refset, 'Import', 'Definition')">
                     <i title="Import definition"
                       class="material-icons md-18">file_upload</i>
-          </a> --> <a class="toolicon" ng-click="openRedefinitionModal(refset)"
+          </a> --> <a class="toolicon" ng-click="openRedefinitionModal(refset, 'Redefinition')"
               ng-show="refset.stagingType == null">
                 <i title="Redefinition" class="material-icons md-18">find_replace</i>
-              </a><a class="toolicon" ng-click="openRedefinitionModal(refset)"
-              ng-show="refset.stagingType != null">
+              </a><a class="toolicon" ng-click="openRedefinitionModal(refset, 'Redefinition')"
+              ng-show="refset.stagingType == 'DEFINITION'">
                 <i title="Resume redefinition" class="material-icons md-18">play_arrow</i>
               </a>
             </td>
