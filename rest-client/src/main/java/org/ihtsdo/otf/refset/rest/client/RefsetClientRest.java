@@ -1192,9 +1192,10 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+
   @Override
-  public ConceptRefsetMember removeRefsetExclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception {
+  public ConceptRefsetMember removeRefsetExclusion(Long memberId,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
   }
