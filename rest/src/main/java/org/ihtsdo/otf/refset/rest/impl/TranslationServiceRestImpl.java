@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1463,7 +1464,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.beginTransaction();
       Translation translationCopy =
           translationService.stageTranslation(translation,
-              Translation.StagingType.MIGRATION);
+              Translation.StagingType.MIGRATION, new Date());
       translationCopy.setTerminology(newTerminology);
       translationCopy.setVersion(newVersion);
 

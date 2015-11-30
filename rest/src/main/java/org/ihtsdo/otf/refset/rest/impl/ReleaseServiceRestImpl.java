@@ -410,6 +410,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseArtifact.setLastModified(new Date());
       releaseArtifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      releaseInfo = releaseService.getCurrentReleaseInfoForRefset(refset.getTerminologyId(), refset.getProject().getId());
       if (releaseInfo != null) {
         Set<ConceptRefsetMember> delta =
             Sets.newHashSet(releaseInfo.getRefset().getMembers());
@@ -642,6 +643,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
     TranslationService translationService = new TranslationServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
+    releaseService.setTransactionPerOperation(false);
+    releaseService.beginTransaction();
+
     BeginTranslationReleaseAlgorthm algo =
         new BeginTranslationReleaseAlgorthm();
     try {
@@ -818,6 +822,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseArtifact.setLastModified(new Date());
       releaseArtifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(translation.getTerminologyId(), translation.getProject().getId());
       if (releaseInfo != null) {
         Set<Concept> delta =
             Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
@@ -936,6 +941,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       Translation stagedTranslation = stagedTranslationChange.getStagedTranslation();
       stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
       stagedTranslation.setLastModifiedBy(userName);
+      stagedTranslation.setProvisional(false);
       translationService.updateTranslation(stagedTranslation);
       releaseInfoList =
           releaseService.findTranslationReleasesForQuery(stagedTranslation.getId(), null, null);
