@@ -437,10 +437,11 @@ public interface TranslationService extends RefsetService {
    *
    * @param translation the translation
    * @param stagingType the staging type
+   * @param effectiveTime 
    * @return the translation
    * @throws Exception the exception
    */
-  public Translation stageTranslation(Translation translation, StagingType stagingType)
+  public Translation stageTranslation(Translation translation, StagingType stagingType, Date effectiveTime)
     throws Exception;
 
 }

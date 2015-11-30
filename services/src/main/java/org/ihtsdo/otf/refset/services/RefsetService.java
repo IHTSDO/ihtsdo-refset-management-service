@@ -261,10 +261,11 @@ public interface RefsetService extends ProjectService {
    *
    * @param refset the refset
    * @param stagingType the staging type
+   * @param effectiveTime 
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception;
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType, Date effectiveTime) throws Exception;
 
   /**
    * Update member.

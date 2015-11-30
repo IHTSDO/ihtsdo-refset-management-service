@@ -54,7 +54,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 @Entity
 @Table(name = "translations", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "name", "description", "project_id", "provisional"
+    "terminologyId", "name", "description", "project_id", "provisional", "effectiveTime"
 }))
 @Audited
 @Indexed

@@ -569,8 +569,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   private void handleRefsetLazyInitialization(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
-    if(refset.getMembers() != null)
-      refset.getMembers().size();
     for (Translation translation : refset.getTranslations()) {
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();
@@ -663,7 +661,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   }
 
   @Override
-  public Refset stageRefset(Refset refset, Refset.StagingType stagingType)
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType, Date effectiveTime)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - stage refset " + refset.getId());
@@ -678,6 +676,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     // null its id and all of its components ids
     // then call addXXX on each component
     refsetCopy.setId(null);
+    refsetCopy.setEffectiveTime(effectiveTime);
 
     // translations and refset descriptor not relevant for staging
     // staging only affects members
