@@ -56,20 +56,6 @@ public interface Project extends Searchable {
   public void setRefsets(List<Refset> refsets);
 
   /**
-   * Adds the refset.
-   *
-   * @param refset the refset
-   */
-  public void addRefset(Refset refset);
-
-  /**
-   * Removes the refset.
-   *
-   * @param refset the refset
-   */
-  public void removeRefset(Refset refset);
-
-  /**
    * Returns the namespace.
    *
    * @return the namespace

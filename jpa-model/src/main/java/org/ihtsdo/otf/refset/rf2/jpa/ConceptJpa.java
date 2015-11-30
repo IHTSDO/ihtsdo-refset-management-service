@@ -37,7 +37,9 @@ import org.hibernate.search.annotations.TokenFilterDef;
 import org.hibernate.search.annotations.TokenizerDef;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -87,6 +89,11 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @ManyToOne(targetEntity = TranslationJpa.class, optional = false)
   private Translation translation;
 
+  /** The notes. */
+  @OneToMany(mappedBy = "concept", targetEntity = ConceptNoteJpa.class)
+  // @IndexedEmbedded - n/a
+  private List<Note> notes = new ArrayList<>();
+
   /**
    * Instantiates an empty {@link ConceptJpa}.
    */
@@ -113,6 +120,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
         Description newDescription = new DescriptionJpa(description, deepCopy);
         newDescription.setConcept(this);
         descriptions.add(newDescription);
+      }
+      for (Note note : concept.getNotes()) {
+        getNotes().add(new ConceptNoteJpa((ConceptNoteJpa) note));
       }
     }
   }
@@ -163,25 +173,6 @@ public class ConceptJpa extends AbstractComponent implements Concept {
       }
       this.descriptions.addAll(descriptions);
     }
-  }
-
-  /* see superclass */
-  @Override
-  public void addDescription(Description description) {
-    if (descriptions == null) {
-      descriptions = new ArrayList<>();
-    }
-    description.setConcept(this);
-    descriptions.add(description);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeDescription(Description description) {
-    if (descriptions == null) {
-      return;
-    }
-    descriptions.remove(description);
   }
 
   /* see superclass */
@@ -258,6 +249,23 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   }
 
   /* see superclass */
+  @XmlElement(type = ConceptNoteJpa.class)
+  @Override
+  public List<Note> getNotes() {
+    if (notes == null) {
+      notes = new ArrayList<Note>();
+    }
+    return notes;
+  }
+
+  /* see superclass */
+  @Override
+  public void setNotes(List<Note> notes) {
+    this.notes = notes;
+  }
+
+  /* see superclass */
+
   @Override
   public int hashCode() {
     final int prime = 31;

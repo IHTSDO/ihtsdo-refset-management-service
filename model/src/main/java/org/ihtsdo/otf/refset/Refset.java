@@ -47,12 +47,11 @@ public interface Refset extends Component, Searchable {
     /** The inactive member. */
     INACTIVE_MEMBER,
     /** The inactive inclusion. */
-    INACTIVE_INCLUSION,   
-    /**  The inclusion staged. */
-    INCLUSION_STAGED,   
-    /**  The exclusion staged. */
-    EXCLUSION_STAGED
-    ;
+    INACTIVE_INCLUSION,
+    /** The inclusion staged. */
+    INCLUSION_STAGED,
+    /** The exclusion staged. */
+    EXCLUSION_STAGED;
   }
 
   /**
@@ -264,18 +263,18 @@ public interface Refset extends Component, Searchable {
   public void setTranslations(List<Translation> translations);
 
   /**
-   * Adds the translation.
+   * Returns the notes.
    *
-   * @param translation the translation
+   * @return the notes
    */
-  public void addTranslation(Translation translation);
+  public List<Note> getNotes();
 
   /**
-   * Removes the translation.
+   * Sets the notes.
    *
-   * @param translation the translation
+   * @param notes the notes
    */
-  public void removeTranslation(Translation translation);
+  public void setNotes(List<Note> notes);
 
   /**
    * Returns the project.

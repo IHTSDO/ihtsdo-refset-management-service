@@ -778,7 +778,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             member.setPublished(false);
             member.setDescriptionId(description.getTerminologyId());
             translationService.addLanguageRefsetMember(member);
-            description.addLanguageRefetMember(member);
+            description.getLanguageRefsetMembers().add(member);
           }
           description.setId(null);
           description.setLastModifiedBy(userName);
@@ -1486,7 +1486,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (Concept cpt : conceptsToRemove) {
         System.out.println("concept " + cpt.getTerminologyId() + " "
             + cpt.getVersion());
-        translationCopy.removeConcept(cpt);
+        translationCopy.getConcepts().remove(cpt);
       }
 
       translationService.updateTranslation(translationCopy);

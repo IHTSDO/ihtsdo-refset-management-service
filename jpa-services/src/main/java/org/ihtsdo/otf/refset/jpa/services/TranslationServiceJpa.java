@@ -153,7 +153,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           .getStandardDescriptionTypes(translation.getTerminology(),
               translation.getVersion()).getObjects()) {
         member.setLastModifiedBy(translation.getLastModifiedBy());
-        translation.addDescriptionType(member);
+        translation.getDescriptionTypes().add(member);
       }
     }
     // Add component
@@ -880,7 +880,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       concept.setTerminology(translationCopy.getTerminology());
       concept.setVersion(translationCopy.getVersion());
       concept.setId(null);
-      translationCopy.addConcept(concept);
+      translationCopy.getConcepts().add(concept);
       addConcept(concept);
     }
 
@@ -891,7 +891,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       type.setTerminology(translationCopy.getTerminology());
       type.setVersion(translationCopy.getVersion());
       type.setId(null);
-      translationCopy.addDescriptionType(type);
+      translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
     // set staging parameters on the original translation

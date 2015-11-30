@@ -449,15 +449,6 @@ public class ReleaseInfoJpa implements ReleaseInfo {
 
   /* see superclass */
   @Override
-  public void addArtifact(ReleaseArtifact artifact) {
-    if (artifacts == null) {
-      artifacts = new ArrayList<>();
-    }
-    artifacts.add(artifact);
-  }
-
-  /* see superclass */
-  @Override
   public Date getEffectiveTime() {
     return effectiveTime;
   }

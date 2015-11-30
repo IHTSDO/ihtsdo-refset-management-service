@@ -423,23 +423,6 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public void addRefset(Refset refset) {
-    if (refsets == null) {
-      refsets = new ArrayList<Refset>();
-    }
-    refsets.add(refset);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeRefset(Refset refset) {
-    if (refsets != null) {
-      refsets.remove(refset);
-    }
-  }
-
-  /* see superclass */
-  @Override
   public String toString() {
     return "ProjectJpa [name=" + name + ", namespace=" + namespace
         + ", moduleId=" + moduleId + ", description=" + description
