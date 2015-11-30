@@ -117,5 +117,12 @@ public interface MemberDiffReport {
    */
   public List<ConceptRefsetMember> getOldRegularMembers();
 
+  /**
+   * Returns the staged exclusions.
+   *
+   * @return the staged exclusions
+   */
+  public List<ConceptRefsetMember> getStagedExclusions();
+
 
 }

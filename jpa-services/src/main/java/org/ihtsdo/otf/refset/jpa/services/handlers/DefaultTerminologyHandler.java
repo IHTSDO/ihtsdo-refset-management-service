@@ -142,7 +142,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(resultString);
+        throw new Exception(response.toString());
       }
 
       /**
