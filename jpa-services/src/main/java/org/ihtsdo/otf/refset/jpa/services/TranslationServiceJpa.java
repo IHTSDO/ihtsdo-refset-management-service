@@ -842,7 +842,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public Translation stageTranslation(Translation translation,
-    Translation.StagingType stagingType) throws Exception {
+    Translation.StagingType stagingType, Date effectiveTime) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - stage translation " + translation.getId());
 
@@ -857,6 +857,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // then call addXXX on each component
     translationCopy.setId(null);
     translationCopy.setDescriptionTypes(null);
+    translationCopy.setEffectiveTime(effectiveTime);
     /*
      * for (DescriptionTypeRefsetMember type :
      * translationCopy.getDescriptionTypes()) { type.setId(null);

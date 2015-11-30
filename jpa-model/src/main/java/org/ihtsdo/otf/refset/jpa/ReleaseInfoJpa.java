@@ -146,6 +146,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
+    effectiveTime = releaseInfo.getEffectiveTime();
     if(releaseInfo.getRefset() != null)
       refset = new RefsetJpa(releaseInfo.getRefset());
     if(releaseInfo.getTranslation() != null)

@@ -998,9 +998,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
 
+      Date startDate = new Date();
+
       // STAGE REFSET
       Refset refsetCopy =
-          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION);
+          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION, startDate);
       refsetCopy.setTerminology(newTerminology);
       refsetCopy.setVersion(newVersion);
 
@@ -1015,7 +1017,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             refsetService.getTerminologyHandler().resolveExpression(
                 refsetCopy.getDefinition(), refsetCopy.getTerminology(),
                 refsetCopy.getVersion(), null);
-        Date startDate = new Date();
 
         // collect exclusions concept ids from origin refset
         Set<String> exclusionConceptIds = new HashSet<>();
@@ -1340,12 +1341,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Redefinition is only allowed for intensional type refsets.");
       }
 
+      Date startDate = new Date();
       // turn transaction per operation off
       // create a transaction
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
       Refset refsetCopy =
-          refsetService.stageRefset(refset, Refset.StagingType.DEFINITION);
+          refsetService.stageRefset(refset, Refset.StagingType.DEFINITION, startDate);
       refsetCopy.setDefinition(newDefinition);
 
       // Compute the expression
@@ -1354,7 +1356,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           refsetService.getTerminologyHandler()
               .resolveExpression(newDefinition, refset.getTerminology(),
                   refset.getVersion(), null);
-      Date startDate = new Date();
 
       // collect exclusions concept ids from origin refset
       Set<String> exclusionConceptIds = new HashSet<>();
