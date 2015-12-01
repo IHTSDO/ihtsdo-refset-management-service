@@ -240,6 +240,7 @@
               <filtering>true</filtering>
               <includes>
                 <include>app/page/login/login.html</include>
+                <include>app/page/login/loginController.js</include>
                 <include>app/page/general/footer.html</include>
                 <include>app/page/general/header.html</include>
                 <include>index.html</include>
@@ -252,6 +253,7 @@
               <filtering>false</filtering>
               <excludes>
                 <exclude>app/page/login/login.html</exclude>
+                <exclude>app/page/login/loginController.js</exclude>
                 <exclude>app/page/general/footer.html</exclude>
                 <exclude>app/page/general/header.html</exclude>
                 <exclude>index.html</exclude>

@@ -108,6 +108,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       userFound.setEmail(authUser.getEmail());
       userFound.setName(authUser.getName());
       userFound.setUserName(authUser.getUserName());
+      userFound.setApplicationRole(authUser.getApplicationRole());
       updateUser(userFound);
 
     }
@@ -118,7 +119,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       newUser.setEmail(authUser.getEmail());
       newUser.setName(authUser.getName());
       newUser.setUserName(authUser.getUserName());
-      newUser.setApplicationRole(UserRole.VIEWER);
+      newUser.setApplicationRole(authUser.getApplicationRole());
       addUser(newUser);
       clear();
     }
