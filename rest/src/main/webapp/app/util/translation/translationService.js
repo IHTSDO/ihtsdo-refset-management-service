@@ -615,4 +615,103 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    this.addTranslationNote = function(translationId, note) {
+      console.debug("add translation note", translationId, note);
+      var deferred = $q.defer();
+
+      // Add translation
+      gpService.increment()
+      $http.put(translationUrl + 'add/note?translationId=' + translationId, note, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  note = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.removeTranslationNote = function(translationId, noteId) {
+      console.debug("remove translation note", translationId, noteId);
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http['delete'](
+        translationUrl + "/remove/note?translationId=" + translationId + "&noteId=" + noteId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.addTranslationConceptNote = function(translationId, conceptId, note) {
+      console.debug("add concept note", translationId, conceptId, note);
+      var deferred = $q.defer();
+
+      // Add translation
+      gpService.increment()
+      $http.put(
+        translationUrl + 'concept/add/note?translationId=' + translationId + "&conceptId="
+          + conceptId, note, {
+          headers : {
+            "Content-type" : "text/plain"
+          }
+        }).then(
+      // success
+      function(response) {
+        console.debug("  note = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.addTranslationConceptNote = function(translationId, noteId) {
+      console.debug("remove concept note", translationId, noteId);
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http['delete'](
+        translationUrl + "/concept/remove/note?translationId=" + translationId + "&noteId="
+          + noteId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // end    
+
   } ]);

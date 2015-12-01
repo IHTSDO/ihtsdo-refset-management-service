@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -117,7 +118,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   public Refset getRefset(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
     Refset refset = getHasLastModified(id, RefsetJpa.class);
-    handleRefsetLazyInitialization(refset);
+    handleLazyInit(refset);
     return refset;
   }
 
@@ -235,7 +236,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
             pfs, totalCt);
 
     for (Refset refset : list) {
-      handleRefsetLazyInitialization(refset);
+      handleLazyInit(refset);
     }
     RefsetList result = new RefsetListJpa();
     result.setTotalCount(totalCt[0]);
@@ -424,7 +425,10 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   @Override
   public ConceptRefsetMember getMember(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get member " + id);
-    return getHasLastModified(id, ConceptRefsetMemberJpa.class);
+    ConceptRefsetMember member =
+        getHasLastModified(id, ConceptRefsetMemberJpa.class);
+    handleLazyInit(member);
+    return member;
   }
 
   /* see superclass */
@@ -454,9 +458,13 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (ConceptRefsetMember member : result.getObjects()) {
+      handleLazyInit(member);
+    }
     return result;
   }
 
+  /* see superclass */
   @Override
   public StagedRefsetChange addStagedRefsetChange(StagedRefsetChange change)
     throws Exception {
@@ -473,6 +481,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return change;
   }
 
+  /* see superclass */
   @Override
   public void removeStagedRefsetChange(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -507,6 +516,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public StagedRefsetChange getStagedRefsetChange(Long refsetId)
     throws Exception {
@@ -518,8 +528,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     try {
       query.setParameter("refsetId", refsetId);
       StagedRefsetChange change = (StagedRefsetChange) query.getSingleResult();
-      handleRefsetLazyInitialization(change.getOriginRefset());
-      handleRefsetLazyInitialization(change.getStagedRefset());
+      handleLazyInit(change.getOriginRefset());
+      handleLazyInit(change.getStagedRefset());
       return change;
     } catch (NoResultException e) {
       return null;
@@ -556,7 +566,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     // get the most recent of the revisions that precede the date parameter
     Refset refset = revisions.get(0);
-    handleRefsetLazyInitialization(refset);
+    handleLazyInit(refset);
     return refset;
   }
 
@@ -566,7 +576,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
    * @param refset the refset
    */
   @SuppressWarnings("static-method")
-  private void handleRefsetLazyInitialization(Refset refset) {
+  private void handleLazyInit(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
     for (Translation translation : refset.getTranslations()) {
@@ -574,6 +584,17 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
       translation.getWorkflowStatus().name();
     }
     refset.getEnabledFeedbackEvents().size();
+    refset.getNotes().size();
+  }
+
+  /**
+   * Handle lazy init.
+   *
+   * @param member the member
+   */
+  @SuppressWarnings("static-method")
+  private void handleLazyInit(ConceptRefsetMember member) {
+    member.getNotes().size();
   }
 
   /* see superclass */
@@ -581,6 +602,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
     Date date, PfsParameter pfs) {
     // TODO Auto-generated method stub
+    // remember to do handleLazyInit
     return null;
   }
 
@@ -589,6 +611,7 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
   public SearchResultList findRefsetReleaseRevisions(Long refsetId)
     throws Exception {
     // TODO Auto-generated method stub
+    // remember to do handleLazyInit
     return null;
   }
 
@@ -660,9 +683,10 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return list;
   }
 
+  /* see superclass */
   @Override
-  public Refset stageRefset(Refset refset, Refset.StagingType stagingType, Date effectiveTime)
-    throws Exception {
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType,
+    Date effectiveTime) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - stage refset " + refset.getId());
 
@@ -740,4 +764,27 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
    * 
    * }
    */
+
+  /* see superclass */
+  /* see superclass */
+  @Override
+  public Note addNote(Note note) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - add note " + note);
+
+    // Add component
+    Note newNote = addHasLastModified(note);
+
+    // do not inform listeners
+    return newNote;
+
+  }
+
+  /* see superclass */
+  @Override
+  public void removeNote(Long id, Class<? extends Note> type) throws Exception {
+    Logger.getLogger(getClass()).debug("Refset Service - remove note " + id);
+    // Remove the component
+    removeHasLastModified(id, type);
+    // Do not inform listeners
+  }
 }

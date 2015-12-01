@@ -23,6 +23,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -33,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
@@ -333,7 +335,6 @@ public class TranslationClientRest extends RootClientRest implements
             "Translation Client - get translation concepts based on translation id, pfs parameter and query "
                 + translationId + query);
     validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
@@ -1127,5 +1128,109 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
     return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
         TranslationJpa.class);
+  }
+
+  @Override
+  public Note addTranslationNote(Long translationId, String note,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - add translation note - " + translationId + ", " + note);
+    validateNotEmpty(note, "note");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/translation/add/note?"
+            + "translationId=" + translationId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.text(note));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TranslationNoteJpa) ConfigUtility.getGraphForString(resultString,
+        TranslationNoteJpa.class);
+  }
+
+  @Override
+  public void removeTranslationNote(Long translationId, Long noteId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove concept note " + translationId + ", " + noteId);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(noteId, "noteId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/remove/note?" + "translationId=" + translationId
+            + "&noteId=" + noteId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
+  }
+
+  @Override
+  public Note addTranslationConceptNote(Long translationId, Long conceptId,
+    String note, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - add translation concept note - " + translationId
+            + ", " + conceptId + ", " + note);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(conceptId, "conceptId");
+    validateNotEmpty(note, "note");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/concept/add/note?" + "translationId="
+            + translationId + "&conceptId=" + conceptId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.text(note));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TranslationNoteJpa) ConfigUtility.getGraphForString(resultString,
+        TranslationNoteJpa.class);
+  }
+
+  @Override
+  public void removeTranslationConceptNote(Long translationId, Long noteId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove concept note " + translationId + ", " + noteId);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(noteId, "noteId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/concept/remove/note?" + "translationId="
+            + translationId + "&noteId=" + noteId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
   }
 }

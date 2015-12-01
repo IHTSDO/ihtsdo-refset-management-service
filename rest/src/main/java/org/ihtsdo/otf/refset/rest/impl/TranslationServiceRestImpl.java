@@ -30,6 +30,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.SpellingDictionary;
@@ -44,11 +45,13 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
+import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
@@ -1009,13 +1012,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "The from translation must have an associated spelling dictionary: "
                 + fromTranslationId);
       }
-      
+
       Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
         throw new Exception("The to translation is not found: "
             + toTranslationId);
-      }      
+      }
 
       // Authorize call
       authorizeProject(translationService, toTranslation.getProject().getId(),
@@ -1885,4 +1888,180 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/add/note")
+  @Consumes("text/plain")
+  @ApiOperation(value = "Add a translation note", notes = "Adds a note to the specified translation", response = TranslationNoteJpa.class)
+  public Note addTranslationNote(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Translation): /add/note " + translationId + ", "
+            + note);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new Exception(
+            "Translation must have a project with a non null identifier.");
+      }
+
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "adding translation note", UserRole.AUTHOR);
+
+      // Create the note
+      Note translationNote = new TranslationNoteJpa();
+      translationNote.setLastModifiedBy(userName);
+      translationNote.setValue(note);
+      ((TranslationNoteJpa) translationNote).setTranslation(translation);
+
+      // Add and return the note
+      return translationService.addNote(translationNote);
+
+    } catch (Exception e) {
+      handleException(e, "trying to add translation note");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  @Override
+  @DELETE
+  @Path("/remove/note")
+  @ApiOperation(value = "Remove a translation note", notes = "Removes the specified note from its translation", response = TranslationNoteJpa.class)
+  public void removeTranslationNote(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): /remove/note " + translationId
+            + ", " + noteId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new Exception(
+            "Translation must have a project with a non null identifier.");
+      }
+
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "remove translation note",
+          UserRole.AUTHOR);
+
+      // remove note
+      translationService.removeNote(noteId, TranslationNoteJpa.class);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a translation note");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  @Override
+  @PUT
+  @Consumes("text/plain")
+  @Path("/concept/add/note")
+  @ApiOperation(value = "Add a concept note", notes = "Adds a note to the translation concept", response = ConceptNoteJpa.class)
+  public Note addTranslationConceptNote(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Concept id, e.g. 3", required = true) @QueryParam("conceptId") Long conceptId,
+    @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Translation): /concept/add/note " + translationId
+            + "," + conceptId + ", " + note);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new Exception(
+            "Translation must have a project with a non null identifier.");
+      }
+
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "adding translation concept note", UserRole.AUTHOR);
+
+      // Look up the concept
+      Concept concept = translationService.getConcept(conceptId);
+      if (concept == null) {
+        throw new Exception("Unable to find concept for id " + conceptId);
+      }
+
+      // Create the note
+      Note conceptNote = new ConceptNoteJpa();
+      conceptNote.setLastModifiedBy(userName);
+      conceptNote.setValue(note);
+      ((ConceptNoteJpa) conceptNote).setConcept(concept);
+
+      // Add and return the note
+      return translationService.addNote(conceptNote);
+
+    } catch (Exception e) {
+      handleException(e, "trying to add translation note");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  @Override
+  @DELETE
+  @Path("/concept/remove/note")
+  @ApiOperation(value = "Remove a concept note", notes = "Removes specified note from its concept.", response = TranslationNoteJpa.class)
+  public void removeTranslationConceptNote(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): /concept/remove/note "
+            + translationId + ", " + noteId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation.getProject() == null
+          || translation.getProject().getId() == null) {
+        throw new Exception(
+            "Translation must have a project with a non null identifier.");
+      }
+
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "remove concept note", UserRole.AUTHOR);
+
+      // remove note
+      translationService.removeNote(noteId, ConceptNoteJpa.class);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a concept note");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
 }

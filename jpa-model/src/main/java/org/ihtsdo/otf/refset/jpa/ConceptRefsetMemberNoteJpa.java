@@ -3,22 +3,20 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
-import java.util.Date;
-
-import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.TableGenerator;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.envers.Audited;
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -30,31 +28,10 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
  * 
  */
 @Entity
-@Table(name = "notes", uniqueConstraints = @UniqueConstraint(columnNames = {
-  "noteName"
-}))
+@Table(name = "concept_refest_member_notes")
 @Audited
 @XmlRootElement(name = "note")
-public class ConceptRefsetMemberNoteJpa implements Note {
-
-  /** The id. Set initial value to 5 to bypass entries in import.sql */
-  @TableGenerator(name = "EntityIdGenNote", table = "table_generator_notes", pkColumnValue = "Entity", initialValue = 50)
-  @Id
-  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGenNote")
-  private Long id;
-
-  /** The last modified. */
-  @Column(nullable = false)
-  @Temporal(TemporalType.TIMESTAMP)
-  private Date lastModified = new Date();
-
-  /** The last modified. */
-  @Column(nullable = false)
-  private String lastModifiedBy;
-
-  /** The value. */
-  @Column(nullable = false, length = 4000)
-  private String value;
+public class ConceptRefsetMemberNoteJpa extends AbstractNote {
 
   /** The concept refset member. */
   @ManyToOne(targetEntity = ConceptRefsetMemberJpa.class, optional = false)
@@ -73,60 +50,52 @@ public class ConceptRefsetMemberNoteJpa implements Note {
    * @param note the note
    */
   public ConceptRefsetMemberNoteJpa(ConceptRefsetMemberNoteJpa note) {
-    super();
-    id = note.getId();
-    lastModified = note.getLastModified();
-    lastModifiedBy = note.getLastModifiedBy();
-    value = note.getValue();
-    member = note.member;
+    super(note);
+    member = note.getMember();
   }
 
-  /* see superclass */
-  @Override
-  public Long getId() {
-    return id;
+  /**
+   * Returns the member.
+   *
+   * @return the member
+   */
+  @XmlTransient
+  public ConceptRefsetMember getMember() {
+    return member;
   }
 
-  /* see superclass */
-  @Override
-  public void setId(Long id) {
-    this.id = id;
+  /**
+   * Sets the member.
+   *
+   * @param member the member
+   */
+  public void setMember(ConceptRefsetMember member) {
+    this.member = member;
   }
 
-  /* see superclass */
-  @Override
-  public Date getLastModified() {
-    return lastModified;
+  /**
+   * Returns the member id.
+   *
+   * @return the member id
+   */
+  @XmlElement
+  @FieldBridge(impl = LongBridge.class)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public Long getMemberId() {
+    return (member != null) ? member.getId() : 0;
   }
 
-  /* see superclass */
-  @Override
-  public void setLastModified(Date lastModified) {
-    this.lastModified = lastModified;
-  }
-
-  /* see superclass */
-  @Override
-  public String getLastModifiedBy() {
-    return lastModifiedBy;
-  }
-
-  /* see superclass */
-  @Override
-  public void setLastModifiedBy(String lastModifiedBy) {
-    this.lastModifiedBy = lastModifiedBy;
-  }
-
-  /* see superclass */
-  @Override
-  public String getValue() {
-    return value;
-  }
-
-  /* see superclass */
-  @Override
-  public void setValue(String value) {
-    this.value = value;
+  /**
+   * Sets the member id.
+   *
+   * @param memberId the member id
+   */
+  @SuppressWarnings("unused")
+  private void setMemberId(Long memberId) {
+    if (member == null) {
+      member = new ConceptRefsetMemberJpa();
+    }
+    member.setId(memberId);
   }
 
   /* see superclass */
@@ -134,7 +103,8 @@ public class ConceptRefsetMemberNoteJpa implements Note {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((value == null) ? 0 : value.hashCode());
+    result =
+        prime * result + ((getValue() == null) ? 0 : getValue().hashCode());
     result =
         prime
             * result
@@ -153,10 +123,10 @@ public class ConceptRefsetMemberNoteJpa implements Note {
     if (getClass() != obj.getClass())
       return false;
     ConceptRefsetMemberNoteJpa other = (ConceptRefsetMemberNoteJpa) obj;
-    if (value == null) {
-      if (other.value != null)
+    if (getValue() == null) {
+      if (other.getValue() != null)
         return false;
-    } else if (!value.equals(other.value))
+    } else if (!getValue().equals(other.getValue()))
       return false;
     if (member == null) {
       if (other.member != null)
@@ -173,8 +143,10 @@ public class ConceptRefsetMemberNoteJpa implements Note {
   /* see superclass */
   @Override
   public String toString() {
-    return "NoteJpa [id=" + id + ", lastModified=" + lastModified
-        + ", lastModifiedBy=" + lastModifiedBy + ", value=" + value + "]";
+    return "ConceptRefsetMemberNoteJpa [member=" + member
+        + ", getLastModified()=" + getLastModified() + ", getLastModifiedBy()="
+        + getLastModifiedBy() + ", getValue()=" + getValue() + ", getClass()="
+        + getClass() + ", toString()=" + super.toString() + "]";
   }
 
 }

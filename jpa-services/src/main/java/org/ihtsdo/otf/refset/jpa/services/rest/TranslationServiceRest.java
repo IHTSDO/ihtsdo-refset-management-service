@@ -11,6 +11,7 @@ import java.io.InputStream;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -90,6 +91,7 @@ public interface TranslationServiceRest {
    */
   public void removeTranslation(Long translationId, String authToken)
     throws Exception;
+
   /**
    * Export translation.
    *
@@ -498,5 +500,52 @@ public interface TranslationServiceRest {
    */
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception;
+
+  /**
+   * Adds the translation note.
+   *
+   * @param translationId the translation id
+   * @param note the note
+   * @param authToken the auth token
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addTranslationNote(Long translationId, String note,
+    String authToken) throws Exception;
+
+  /**
+   * Removes the translation note.
+   *
+   * @param translationId the translation id
+   * @param noteId the note id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeTranslationNote(Long translationId, Long noteId,
+    String authToken) throws Exception;
+
+  /**
+   * Adds the concept translation concept note.
+   *
+   * @param translationId the translation id
+   * @param conceptId the concept id
+   * @param note the note
+   * @param authToken the auth token
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addTranslationConceptNote(Long translationId, Long conceptId,
+    String note, String authToken) throws Exception;
+
+  /**
+   * Removes the concept translation concept note.
+   *
+   * @param translationId the translation id
+   * @param noteId the note id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeTranslationConceptNote(Long translationId, Long noteId,
+    String authToken) throws Exception;
 
 }
