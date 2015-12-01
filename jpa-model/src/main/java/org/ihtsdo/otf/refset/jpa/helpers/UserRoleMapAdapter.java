@@ -13,7 +13,7 @@ import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 
 /**
- * A map adapber for Map<User,UserRole>.
+ * A map adapter for Map<User,UserRole>.
  */
 public class UserRoleMapAdapter extends
     XmlAdapter<HashMap<String, String>, Map<User, UserRole>> {

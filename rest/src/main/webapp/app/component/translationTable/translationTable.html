@@ -23,7 +23,7 @@
       <h4 ng-show="value == 'EDITING'">
         <div style="float: right;">
           <a title="Add refset" ng-click="openAddTranslationModal()">
-            <i title="Add refset" class="material-icons md-24">add</i>
+            <i title="Add refset" class="noul material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -53,6 +53,7 @@
       </thead>
       <tbody>
         <tr ng-repeat="translation in translations"
+          ng-class="{selected: translation.id == selected.translation.id}"
           ng-click="selectTranslation(translation);" class="table-select-row">
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
           <td>{{translation.name}}</td>
@@ -67,20 +68,20 @@
           <td class="nobreak" ng-show="value == 'EDITING'"><a
               class="toolicon" title="Edit"
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
+              <i title="Edit" class="noul material-icons md-18">edit</i>
             </a>&nbsp;<a title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
 
           <!-- EDITING_ALL actions -->
           <td class="nobreak" ng-show="value == 'EDITING_ALL'"><a
               class="toolicon" title="Edit"
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
+              <i title="Edit" class="noul material-icons md-18">edit</i>
             </a> <a title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
           </td>
 
@@ -88,7 +89,7 @@
           <td class="nobreak" ng-show="value == 'RELEASE'"><a
               title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
         </tr>
       </tbody>
@@ -100,14 +101,14 @@
   <!-- Translations list, Details panel -->
   <div class="col-md-6 col-xs-12">
 
-    <span ng-show="!translation && translations.length > 0"
+    <span ng-show="!selected.translation && translations.length > 0"
       class="alert alert-warning">Select a translation to see details</span>
 
-    <div class="col-md-12 col-xs-12" ng-show="translation">
+    <div class="col-md-12 col-xs-12" ng-show="selected.translation">
 
       <!-- Translation Details -->
-      <h4>{{translation.name}}</h4>
-      <b>Description: </b>{{translation.description}}
+      <h4>{{selected.translation.name}}</h4>
+      <b>Description: </b>{{selected.translation.description}}
       <table class="table">
         <thead class="table-select-row">
           <th class="col-md-4 col-xs-4"></th>
@@ -116,28 +117,28 @@
         <tbody>
           <tr>
             <td>Refset Id</td>
-            <td>{{translation.terminologyId}}</td>
+            <td>{{selected.translation.terminologyId}}</td>
           </tr>
           <tr>
             <td>Module Id</td>
-            <td>{{translation.moduleId}} <span flag-icon obj="translation"></span>
+            <td>{{selected.translation.moduleId}} <span flag-icon obj="selected.translation"></span>
             </td>
           </tr>
-          <tr ng-show="translation.effectiveTime">
+          <tr ng-show="selected.translation.effectiveTime">
             <td>Effective Time</td>
-            <td>{{toShortDate(translation.effectiveTime)}}</td>
+            <td>{{toShortDate(selected.translation.effectiveTime)}}</td>
           </tr>
           <tr>
             <td>Language</td>
-            <td>{{translation.language}}</td>
+            <td>{{selected.translation.language}}</td>
           </tr>
           <tr>
             <td>Terminology</td>
-            <td>{{translation.terminology}}</td>
+            <td>{{selected.translation.terminology}}</td>
           </tr>
           <tr>
             <td>Version</td>
-            <td>{{translation.version}}</td>
+            <td>{{selected.translation.version}}</td>
           </tr>
           <tr ng-show="translationReleaseInfo">
             <td>RELEASED</td>
@@ -173,7 +174,7 @@
               <td><span>
                   <a ng-click="exportReleaseArtifact(artifact)">
                     <i title="Export {{artifact.name}}"
-                      class="material-icons md-18">file_download</i>
+                      class="noul material-icons md-18">file_download</i>
                   </a>
                 </span></td>
             </tr>
@@ -211,11 +212,11 @@
   <!-- Selected Concept Detail -->
   <div class="col-md-6 col-xs-12">
 
-    <span ng-show="!data.concept && translation.concepts.length > 0"
+    <span ng-show="!selected.concept && selected.translation.concepts.length > 0"
       class="alert alert-warning">Select a concept to see details</span>
 
-    <div class="col-md-12 col-xs-12" ng-show="data.concept">
-      <div concept-info data="data"></div>
+    <div class="col-md-12 col-xs-12" ng-show="selected.concept">
+      <div concept-info data="selected"></div>
     </div>
   </div>
 
@@ -223,56 +224,57 @@
   <div class="col-md-6 col-xs-12">
 
     <div class="col-md-12 col-xs-12">
-      <h4 ng-show="translation">
+      <h4 ng-show="selected.translation">
         Translation Concepts
-        <span ng-show="translation.concepts.totalCount>0">
-          ({{translation.concepts.totalCount}})</span>
+        <span ng-show="selected.translation.concepts.totalCount>0">
+          ({{selected.translation.concepts.totalCount}})</span>
       </h4>
 
       <span
-        ng-show="translation && !paging['concept'].filter && translation.concepts.totalCount == 0"
+        ng-show="selected.translation && !paging['concept'].filter && selected.translation.concepts.totalCount == 0"
         class="alert alert-warning">
         <br />Translation has no concepts
       </span>
 
       <span
-        ng-show="translation.concepts.totalCount > 1 || paging['concept'].filter">
+        ng-show="selected.translation.concepts.totalCount > 1 || paging['concept'].filter">
 
         <span style="display: block;">
           <pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-            ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
-            total-items="translation.concepts.totalCount"
+            ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
+            total-items="selected.translation.concepts.totalCount"
             ng-model="paging['concept'].page"
-            ng-change="getConcepts(translation)"></pagination>
+            ng-change="getConcepts(selected.translation)"></pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
-            ng-show="translation.concepts.totalCount > pageSize || paging['concept'].filter"
+            ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
             type="text" ng-model="paging['concept'].filter"
             ng-model-options="{ debounce: 300 }"
-            ng-change="getConcepts(translation)">
+            ng-change="getConcepts(selected.translation)">
 
           <button class="btn btn-xs btn-warning"
             ng-show="paging['concept'].filter"
-            ng-click="paging['concept'].filter = ''; getConcepts(translation)"
+            ng-click="paging['concept'].filter = ''; getConcepts(selected.translation)"
             title="Click to clear filter text">Clear</button>
         </span>
 
         <table class="table">
           <thead>
             <th class="col-md-4 col-xs-4"
-              ng-click="setSortField('concept','terminologyId', translation)">Concept
+              ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
               Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
             </th>
             <th class="col-md-4 col-xs-4"
-              ng-click="setSortField('concept','name', translation)">Name<span
+              ng-click="setSortField('concept','name', selected.translation)">Name<span
                 ng-bind="getSortIndicator('concept','name')"></span>
             </th>
             <th style="width: 1%; word-wrap: nowrap"></th>
           </thead>
           <tbody>
-            <tr ng-repeat="concept in translation.concepts"
+            <tr ng-repeat="concept in selected.translation.concepts"
+          ng-class="{selected: concept.id == selected.concept.id}"
               ng-click="selectConcept(concept);">
               <td>{{concept.terminologyId}}</td>
               <td>{{concept.name}} <br /> <span
@@ -283,7 +285,7 @@
           </tbody>
         </table>
         <span
-          ng-show="paging['concept'].filter && translation.concepts.totalCount == 0"
+          ng-show="paging['concept'].filter && selected.translation.concepts.totalCount == 0"
           class="alert alert-warning">
           <br />No translation concepts matching filter
         </span>
