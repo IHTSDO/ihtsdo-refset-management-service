@@ -421,12 +421,14 @@ public class ProjectJpa implements Project {
     this.refsets = refsets;
   }
 
-  /* see superclass */
   @Override
   public String toString() {
-    return "ProjectJpa [name=" + name + ", namespace=" + namespace
-        + ", moduleId=" + moduleId + ", description=" + description
-        + ", terminology=" + terminology + ", version=" + version + "]";
+    return "ProjectJpa [id=" + id + ", lastModified=" + lastModified
+        + ", lastModifiedBy=" + lastModifiedBy + ", name=" + name
+        + ", namespace=" + namespace + ", moduleId=" + moduleId
+        + ", organization=" + organization + ", description=" + description
+        + ", terminology=" + terminology + ", version=" + version
+        + ", userRoleMap=" + userRoleMap + "]";
   }
 
 }

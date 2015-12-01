@@ -235,12 +235,12 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
                 + " AND provisional:false", RefsetJpa.class, RefsetJpa.class,
             pfs, totalCt);
 
-    for (Refset refset : list) {
-      handleLazyInit(refset);
-    }
     RefsetList result = new RefsetListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (Refset refset : result.getObjects()) {
+      handleLazyInit(refset);
+    }
     return result;
   }
 

@@ -288,7 +288,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      
+
       final String userName =
           authorizeApp(securityService, authToken, "add project",
               UserRole.ADMIN);
@@ -344,6 +344,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       if (!found) {
         throw new Exception("Project " + project.getId() + " does not exist");
       }
+
+      // The map adapter for UserRoleMap only loads usernames and we need the
+      // ids This method also shouldn't be used to change user role map so we
+      // reload it from the persisted object and reuse it.  A similar thing
+      // is NOT needed for the user object because the role map persists
+      // only project ids.
+      project.setUserRoleMap(projectService.getProject(project.getId())
+          .getUserRoleMap());
 
       // Update project
       project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
@@ -669,8 +677,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve concept with description",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken,
+          "retrieve concept with description", UserRole.VIEWER);
 
       Concept concept =
           projectService.getTerminologyHandler().getConceptWithDescriptions(

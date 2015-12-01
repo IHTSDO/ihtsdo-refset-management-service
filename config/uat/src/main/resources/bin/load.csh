@@ -26,6 +26,8 @@ if ($status != 0) then
     exit 1
 endif
 
+# set permissions
+chmod -R 777 /var/lib/tomcat7/indexes/refset
 
 echo "------------------------------------------------"
 echo "Finished ...`/bin/date`"
