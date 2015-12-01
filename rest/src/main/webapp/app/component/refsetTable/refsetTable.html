@@ -145,12 +145,12 @@
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="material-icons md-18">assignment</i>
-            </a> <!-- For admins only if READY_FOR_PUBLICATION --> &nbsp;<a
-              class="toolicon" title="Publish"
-              ng-show="role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openReleaseProcessModal(refset, '20151112')">
-              <i title="Publish" class="material-icons md-18">publish</i>
-            </a></td>
+            </a> <!-- only if READY_FOR_PUBLICATION --> &nbsp; <a 
+              class="toolicon" title="Begin Release Process" 
+              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
+              ng-click="openReleaseProcessModal(refset); $event.stopPropagation()">
+              <i title="Begin release process" class="material-icons md-18">open_in_new</i>            
+            </a> </td>
         </tr>
       </tbody>
     </table>

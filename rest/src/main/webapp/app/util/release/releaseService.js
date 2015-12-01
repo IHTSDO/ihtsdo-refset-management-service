@@ -286,6 +286,27 @@ tsApp.service('releaseService', [
       return deferred.promise;
     }
 
+    this.finishRefsetRelease = function(refsetId) {
+      console.debug("finishRefsetRelease");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(releaseUrl + "refset/finish?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  finish refset release = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // Remove release artifact
     this.removeReleaseArtifact = function(artifactId) {
       console.debug("removeReleaseArtifact");

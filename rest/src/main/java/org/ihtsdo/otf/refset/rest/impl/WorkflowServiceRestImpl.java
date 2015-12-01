@@ -424,10 +424,29 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.addAll(handler.findAvailableEditingRefsets(projectId, user, null,
           workflowService).getObjects());
     }
+    for (Refset r : list) {
+      handleLazyInit(r);
+    }
     return list;
 
   }
 
+  /**
+   * Handle refset lazy initialization.
+   *
+   * @param refset the refset
+   */
+  @SuppressWarnings("static-method")
+  private void handleLazyInit(Refset refset) {
+    // handle all lazy initializations
+    refset.getProject().getName();
+    for (Translation translation : refset.getTranslations()) {
+      translation.getDescriptionTypes().size();
+      translation.getWorkflowStatus().name();
+    }
+    refset.getEnabledFeedbackEvents().size();
+    refset.getNotes().size();
+  }
   /* see superclass */
   @Override
   @GET
@@ -515,6 +534,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           .applyPfsToList(refsets, Refset.class, pfs));
       list.setTotalCount(records.getTotalCount());
 
+      for (Refset r : list.getObjects()) {
+        handleLazyInit(r);
+      }
       return list;
 
     } catch (Exception e) {
@@ -559,6 +581,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
       result.setObjects(list);
+
+      for (Refset r : list) {
+        handleLazyInit(r);
+      }
       return result;
 
     } catch (Exception e) {
@@ -637,6 +663,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.setTotalCount(records.getTotalCount());
       list.setObjects(workflowService
           .applyPfsToList(refsets, Refset.class, pfs));
+
+      for (Refset r : list.getObjects()) {
+        handleLazyInit(r);
+      }
       return list;
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");

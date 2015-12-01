@@ -689,7 +689,7 @@ tsApp
               };
 
               // Release Process modal
-              $scope.openReleaseProcessModal = function(lrefset, lEffectiveTime) {
+              $scope.openReleaseProcessModal = function(lrefset) {
 
                 console.debug("releaseProcessModal ", lrefset);
 
@@ -703,9 +703,6 @@ tsApp
                     },
                     ioHandlers : function() {
                       return $scope.metadata.exportHandlers;
-                    },
-                    effectiveTime : function() {
-                      return lEffectiveTime;
                     }
 
                   }
@@ -719,8 +716,7 @@ tsApp
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $modalInstance, refset, ioHandlers,
-                effectiveTime) {
+              var ReleaseProcessModalCtrl = function($scope, $modalInstance, refset, ioHandlers) {
 
                 console.debug("Entered release process modal", refset.id, ioHandlers);
 
@@ -729,14 +725,16 @@ tsApp
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.releaseInfo = [];
+                $scope.validationResult = null;
 
-                $scope.beginRefsetRelease = function(refset, effectiveTime) {
-                  console.debug("begin refset release", refset.id);
+                $scope.beginRefsetRelease = function(refset) {
+                  console.debug("begin refset release", refset.id, refset.effectiveTime);
 
-                  releaseService.beginRefsetRelease(refset.id, effectiveTime).then(
+                  releaseService.beginRefsetRelease(refset.id, refset.effectiveTime).then(
                   // Success
                   function(data) {
                     //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    $scope.refset.inPublicationProcess = true;
                   },
                   // Error
                   function(data) {
@@ -744,7 +742,6 @@ tsApp
                     utilService.clearError();
                   });
 
-                  $modalInstance.close();
                 };
 
                 $scope.validateRefsetRelease = function(refset) {
@@ -753,32 +750,79 @@ tsApp
                   releaseService.validateRefsetRelease(refset.id).then(
                   // Success
                   function(data) {
-                    //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    $scope.validationResult = data;
+                    refsetService.fireRefsetChanged(refset);
                   },
                   // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
                   });
+                };
+                
+                $scope.previewRefsetRelease = function(refset) {
+                  console.debug("preview refset release", refset.id);
+
+                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedRefset = data;
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+                
+
+                $scope.finishRefsetRelease = function(refset) {
+                  console.debug("finish refset release", refset.id);
+
+                  releaseService.finishRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                  
 
                   $modalInstance.close();
                 };
                 
                 $scope.cancel = function(refset) {
                   console.debug("Cancel ", refset.id);
-                  $modalInstance.dismiss('cancel');
-                  releaseService.getCurrentReleaseInfoForRefset(refset.id).then(function(data) {
-                    $scope.releaseInfo = data;
-                    if (data.length > 0) {
-                      releaseService.cancelRefsetRelease(refset.id).then(function(data) {
-                        console.debug("data", data);
-                        $modalInstance.close();
-                      })
-                    } else {
+                  $modalInstance.dismiss('cancel');                
+                    releaseService.cancelRefsetRelease(refset.id).then(function(data) {
+                      console.debug("cancel data", data);
                       $modalInstance.close();
-                    }
-                  });
+                    });
                 };
+                
+                $scope.close = function() {
+                  $modalInstance.close();
+                };
+
+                
+                $scope.open = function($event) {
+                  $scope.status.opened = true;
+                };
+                                
+                $scope.setDate = function(year, month, day) {
+                  $scope.dt = new Date(year, month, day);
+                };
+
+                $scope.format = 'yyyyMMdd';
+
+                $scope.status = {
+                  opened: false
+                };
+
               };
 
               // Assign User modal
