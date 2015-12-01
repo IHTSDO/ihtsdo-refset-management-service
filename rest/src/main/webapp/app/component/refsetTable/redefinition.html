@@ -50,13 +50,13 @@
         <span ng-show="membersInCommon.length == 0" class="alert alert-warning">
           Origin and staged refsets have no members in common</span>
         <span style="display: block;">
-          <pagination items-per-page="pageSize" max-size="5"
+          <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
             total-items="membersInCommon.totalCount"
             ng-model="paging['membersInCommon'].page"
-            ng-change="findMembersInCommon()"></pagination>
+            ng-change="findMembersInCommon()"></uib-pagination>
         </span>
 
         <table ng-show="membersInCommon.length > 0" class="table">
@@ -90,7 +90,7 @@
                 <td>{{concept.conceptId}}</td>
                 <td>{{concept.name}}</td>
                 <td><a ng-click="include(refset, concept, 'true', 'true')">
-                    <i tooltip="Add inclusion to staged refset."
+                    <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
                   </a></td>
               </tr>
@@ -116,7 +116,7 @@
                 <td>{{concept.conceptId}}</td>
                 <td>{{concept.name}}</td>
                 <td><a ng-click="revert(refset, concept)">
-                    <i tooltip="Revert staged inclusion."
+                    <i uib-tooltip="Revert staged inclusion."
                       class="noul material-icons md-18">arrow_back</i>
                   </a></td>
               </tr>
@@ -164,7 +164,7 @@
                 <td>{{concept.conceptId}}</td>
                 <td>{{concept.name}}</td>
                 <td><a ng-click="exclude(refset, concept, 'true', 'true')">
-                    <i tooltip="Add inclusion to staged refset."
+                    <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
                   </a></td>
               </tr>
@@ -188,7 +188,7 @@
                 <td>{{concept.conceptId}}</td>
                 <td>{{concept.name}}</td>
                 <td><a ng-click="revert(refset, concept)">
-                    <i tooltip="Revert staged inclusion."
+                    <i uib-tooltip="Revert staged inclusion."
                       class="noul material-icons md-18">arrow_back</i>
                   </a></td>
               </tr>
@@ -229,12 +229,12 @@
         <b>New Members</b>
       </h5>
       <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+      <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
         class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
         first-text="&laquo;" last-text="&raquo;"
         ng-show="newRegularMembers.totalCount > pageSize || paging['newRegularMembers'].filter"
         total-items="newRegularMembers.totalCount" ng-model="paging['newRegularMembers'].page"
-        ng-change="getNewRegularMembers()"></pagination>
+        ng-change="getNewRegularMembers()"></uib-pagination>
         </span> 
 
       <table ng-show="newRegularMembers.length > 0" class="table">
@@ -249,7 +249,7 @@
             <td>{{concept.conceptId}}</td>
             <td>{{concept.name}}</td>
             <td><a ng-click="exclude(refset, concept, 'false', 'true')">
-              <i tooltip="Exclude new member."
+              <i uib-tooltip="Exclude new member."
                 class="noul material-icons md-18">remove_circle_outline</i>
             </a></td>
           </tr>
@@ -261,12 +261,12 @@
         <b>Old Members</b>
       </h5>
       <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+      <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
         class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
         first-text="&laquo;" last-text="&raquo;"
         ng-show="oldRegularMembers.totalCount > pageSize || paging['oldRegularMembers'].filter"
         total-items="oldRegularMembers.totalCount" ng-model="paging['oldRegularMembers'].page"
-        ng-change="getOldRegularMembers()"></pagination>
+        ng-change="getOldRegularMembers()"></uib-pagination>
         </span> 
 
       <table ng-show="oldRegularMembers.length > 0" class="table">
@@ -282,7 +282,7 @@
             <td>{{concept.name}}</td>
             <td><a ng-show="concept.memberType == 'MEMBER'"
                    ng-click="include(refset, concept, 'false', 'true')">
-              <i tooltip="Include old member."
+              <i uib-tooltip="Include old member."
                 class="noul material-icons md-18">add_circle_outline</i>
             </a></td>
           </tr>

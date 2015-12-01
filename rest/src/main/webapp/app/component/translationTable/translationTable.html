@@ -3,12 +3,12 @@
   <div class="col-md-6 col-xs-12">
 
     <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+      <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
         class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
         first-text="&laquo;" last-text="&raquo;"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
         total-items="translations.totalCount"
-        ng-model="paging['translation'].page" ng-change="getTranslations()"></pagination>
+        ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
       <input class="input-filter" placeholder="Enter filter text"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
@@ -240,13 +240,13 @@
         ng-show="selected.translation.concepts.totalCount > 1 || paging['concept'].filter">
 
         <span style="display: block;">
-          <pagination items-per-page="pageSize" max-size="5"
+          <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
             total-items="selected.translation.concepts.totalCount"
             ng-model="paging['concept'].page"
-            ng-change="getConcepts(selected.translation)"></pagination>
+            ng-change="getConcepts(selected.translation)"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
             ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"

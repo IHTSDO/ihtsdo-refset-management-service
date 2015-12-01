@@ -42,12 +42,12 @@
 </h5>
 
 <span style="display: block;">
-  <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+  <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
     class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
     first-text="&laquo;" last-text="&raquo;"
     ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
     total-items="pagedChildren.totalCount" ng-model="paging['children'].page"
-    ng-change="getPagedChildren()"></pagination>
+    ng-change="getPagedChildren()"></uib-pagination>
 
   <input class="input-filter" placeholder="Enter filter text"
     ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"

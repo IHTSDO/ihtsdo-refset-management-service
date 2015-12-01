@@ -4,7 +4,7 @@ tsApp
   .directive(
     'refsetTable',
     [
-      '$modal',
+      '$uibModal',
       '$rootScope',
       'utilService',
       'securityService',
@@ -12,7 +12,7 @@ tsApp
       'refsetService',
       'releaseService',
       'workflowService',
-      function($modal, $rootScope, utilService, securityService, projectService, refsetService,
+      function($uibModal, $rootScope, utilService, securityService, projectService, refsetService,
         releaseService, workflowService) {
         console.debug('configure refsetTable directive');
         return {
@@ -448,7 +448,7 @@ tsApp
               $scope.openCloneRefsetModal = function(lrefset) {
                 console.debug("cloneRefsetModal ", lrefset);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
                   controller : CloneRefsetModalCtrl,
                   backdrop : 'static',
@@ -477,7 +477,7 @@ tsApp
               };
 
               // Clone Refset controller
-              var CloneRefsetModalCtrl = function($scope, $modalInstance, refset, metadata,
+              var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 project, projects) {
                 console.debug("Entered clone refset modal control", refset, projects);
 
@@ -509,7 +509,7 @@ tsApp
                         refsetService.finishRedefinition(newRefset.id).then(
                         // Success - finish redefinition
                         function(data) {
-                          $modalInstance.close();
+                          $uibModalInstance.close();
                         },
                         // Error - finish redefinition
                         function(data) {
@@ -523,7 +523,7 @@ tsApp
                         utilService.clearError();
                       })
                     } else {
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     }
                   },
                   // Error - add refset
@@ -534,7 +534,7 @@ tsApp
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -543,7 +543,7 @@ tsApp
               $scope.openImportExportModal = function(lrefset, ldir, lcontentType) {
                 console.debug("exportModal ", lrefset);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/importExport.html',
                   controller : ImportExportModalCtrl,
                   backdrop : 'static',
@@ -575,7 +575,7 @@ tsApp
               };
 
               // Import/Export controller
-              var ImportExportModalCtrl = function($scope, $modalInstance, refset, dir,
+              var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, dir,
                 contentType, ioHandlers) {
                 console.debug("Entered import export modal control", refset.id, ioHandlers, dir,
                   contentType);
@@ -601,7 +601,7 @@ tsApp
                     refsetService.exportMembers($scope.refset.id, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
                   }
-                  $modalInstance.close();
+                  $uibModalInstance.close();
                 };
 
                 // Handle import
@@ -630,13 +630,13 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
-                              $modalInstance.close();
+                              $uibModalInstance.close();
                             },
                             // Failure - show error
                             function(data) {
                               $scope.errors[0] = data;
                               utilService.clearError();
-                              // $modalInstance.close();
+                              // $uibModalInstance.close();
                             });
                           }
                         },
@@ -645,7 +645,7 @@ tsApp
                         function(data) {
                           $scope.errors[0] = data;
                           utilService.clearError();
-                          // $modalInstance.close();
+                          // $uibModalInstance.close();
                         });
                   }
                 };
@@ -659,13 +659,13 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     },
                     // Failure - show error
                     function(data) {
                       $scope.errors[0] = data;
                       utilService.clearError();
-                      // $modalInstance.close();
+                      // $uibModalInstance.close();
                     });
                   }
                 };
@@ -676,7 +676,7 @@ tsApp
                     refsetService.cancelImportMembers($scope.refset.id);
                   }
                   // dismiss the dialog
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
 
                 };
 
@@ -713,7 +713,7 @@ tsApp
 
                 console.debug("releaseProcessModal ", lrefset);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/release.html',
                   controller : ReleaseProcessModalCtrl,
                   backdrop : 'static',
@@ -739,7 +739,7 @@ tsApp
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $modalInstance, refset, ioHandlers,
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers,
                 effectiveTime) {
 
                 console.debug("Entered release process modal", refset.id, ioHandlers);
@@ -763,11 +763,11 @@ tsApp
                     utilService.clearError();
                   });
 
-                  $modalInstance.close();
+                  $uibModalInstance.close();
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -776,7 +776,7 @@ tsApp
               $scope.openAssignUserModal = function(lrefset, laction, luserName) {
                 console.debug("openAssignUserModal ", lrefset, laction, luserName);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/assignUser.html',
                   controller : AssignUserModalCtrl,
                   backdrop : 'static',
@@ -808,7 +808,7 @@ tsApp
               };
 
               // Assign user controller
-              var AssignUserModalCtrl = function($scope, $modalInstance, refset, action,
+              var AssignUserModalCtrl = function($scope, $uibModalInstance, refset, action,
                 currentUserName, assignedUsers, project, $rootScope) {
 
                 console.debug("Entered assign user modal control", assignedUsers, project.id);
@@ -840,7 +840,7 @@ tsApp
                       "ASSIGN").then(
                     // Success
                     function(data) {
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     },
                     // Error
                     function(data) {
@@ -851,7 +851,7 @@ tsApp
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -860,7 +860,7 @@ tsApp
               $scope.openAddRefsetModal = function() {
                 console.debug("openAddRefsetModal ");
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
                   controller : AddRefsetModalCtrl,
                   backdrop : 'static',
@@ -882,7 +882,7 @@ tsApp
               };
 
               // Add Refset controller
-              var AddRefsetModalCtrl = function($scope, $modalInstance, metadata, project) {
+              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project) {
 
                 console.debug("Entered add refset modal control", metadata);
 
@@ -929,7 +929,7 @@ tsApp
                         refsetService.finishRedefinition(newRefset.id).then(
                         // Success - finish redefinition
                         function(data) {
-                          $modalInstance.close(newRefset);
+                          $uibModalInstance.close(newRefset);
                         },
                         // Error - finish redefinition
                         function(data) {
@@ -943,7 +943,7 @@ tsApp
                         utilService.clearError();
                       })
                     } else {
-                      $modalInstance.close(newRefset);
+                      $uibModalInstance.close(newRefset);
                     }
                   },
                   // Error - add refset
@@ -955,7 +955,7 @@ tsApp
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -965,7 +965,7 @@ tsApp
 
                 console.debug("openEditRefsetModal ");
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
                   controller : EditRefsetModalCtrl,
                   backdrop : 'static',
@@ -990,7 +990,7 @@ tsApp
               };
 
               // Edit refset controller
-              var EditRefsetModalCtrl = function($scope, $modalInstance, refset, metadata, project) {
+              var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata, project) {
 
                 console.debug("Entered edit refset modal control");
 
@@ -1019,7 +1019,7 @@ tsApp
                     if (refset.definition != $scope.originalDefinition) {
                       $scope.error = "Definition is not allowed to change with refset edit.";
                     } else {
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     }
                   },
                   // Error - update refset
@@ -1031,7 +1031,7 @@ tsApp
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -1042,7 +1042,7 @@ tsApp
 
                 console.debug("openAddMemberModal ", lrefset);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/addMember.html',
                   controller : AddMemberModalCtrl,
                   backdrop : 'static',
@@ -1067,7 +1067,7 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $modalInstance, member, refset, project) {
+              var AddMemberModalCtrl = function($scope, $uibModalInstance, member, refset, project) {
 
                 console.debug("Entered add member modal control");
                 $scope.pageSize = 10;
@@ -1110,7 +1110,7 @@ tsApp
                     refsetService.addRefsetMember(member).then(
                     // Success
                     function(data) {
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     },
                     // Error
                     function(data) {
@@ -1124,7 +1124,7 @@ tsApp
                       .addRefsetInclusion(refset, member.conceptId, false, member.active).then(
                       // Success
                       function(data) {
-                        $modalInstance.close();
+                        $uibModalInstance.close();
                       },
                       // Error
                       function(data) {
@@ -1189,7 +1189,7 @@ tsApp
                 };
 
                 $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                 };
 
               };
@@ -1199,7 +1199,7 @@ tsApp
 
                 console.debug("openRedefinitionModal ", lrefset, ltype);
 
-                var modalInstance = $modal.open({
+                var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/redefinition.html',
                   controller : RedefinitionModalCtrl,
                   size : 'lg',
@@ -1230,7 +1230,7 @@ tsApp
                 });
               };
 
-              var RedefinitionModalCtrl = function($scope, $modalInstance, refset, definition,
+              var RedefinitionModalCtrl = function($scope, $uibModalInstance, refset, definition,
                 paging, type, metadata) {
 
                 console.debug("Entered redefinition modal control");
@@ -1362,12 +1362,12 @@ tsApp
                   if ($scope.type == 'Redefinition') {
                     refsetService.finishRedefinition(refset.id).then(function(data) {
                       console.debug("data", data);
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     })
                   } else if ($scope.type == 'Migration') {
                     refsetService.finishMigration(refset.id).then(function(data) {
                       console.debug("data", data);
-                      $modalInstance.close();
+                      $uibModalInstance.close();
                     })
                   }
                 };
@@ -1376,7 +1376,7 @@ tsApp
                   console.debug("Save for later ", $scope.type, refset.id);
                   // updates refset on close
                   // TODO: need resume redefinition alert button  disable icon
-                  $modalInstance.close();
+                  $uibModalInstance.close();
                 };
 
                 // add exclusion
@@ -1459,7 +1459,7 @@ tsApp
 
                 $scope.cancel = function(refset) {
                   console.debug("Cancel ", type, refset.id);
-                  $modalInstance.dismiss('cancel');
+                  $uibModalInstance.dismiss('cancel');
                   if ($scope.type == 'Redefinition') {
                     refsetService.cancelRedefinition(refset.id).then(function(data) {
                       console.debug("data", data);
@@ -1474,7 +1474,7 @@ tsApp
                 };
 
                 $scope.close = function() {
-                  $modalInstance.close();
+                  $uibModalInstance.close();
                 }
               }
 

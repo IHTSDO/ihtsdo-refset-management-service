@@ -4,12 +4,12 @@
   <div class="col-md-6 col-xs-12">
 
     <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+      <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
         class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
         first-text="&laquo;" last-text="&raquo;"
         ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
         total-items="refsets.totalCount" ng-model="paging['refset'].page"
-        ng-change="getRefsets()"></pagination>
+        ng-change="getRefsets()"></uib-pagination>
 
       <input class="input-filter" placeholder="Enter filter text"
         ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
@@ -119,18 +119,18 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                tooltip="Click to cancel failed import">Cancel Import</button>
+                uib-tooltip="Click to cancel failed import">Cancel Import</button>
             </span> <span ng-show="refset.stagingType == 'DEFINITION'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                tooltip="Click to cancel redefinition">Cancel
+                uib-tooltip="Click to cancel redefinition">Cancel
                 Redefinition</button>
             </span> <span ng-show="refset.stagingType == 'MIGRATION'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                tooltip="Click to cancel migration">Cancel Migration</button>
+                uib-tooltip="Click to cancel migration">Cancel Migration</button>
             </span></td>
 
           <!-- RELEASE actions -->
@@ -291,21 +291,21 @@
       </h4>
 
       <span
-        ng-show="selected.refset && !paging['member'].filter && !paging['member'].filterType && selected.refset.members.totalCount == 0"
+        ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0"
         class="alert alert-warning">
         <br />Refest has no members
       </span>
 
       <span
-        ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter">
+        ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter">
         <span style="display: block;">
-          <pagination items-per-page="pageSize" max-size="5"
+          <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="selected.refset.members.totalCount > pageSize"
             total-items="selected.refset.members.totalCount"
             ng-model="paging['member'].page"
-            ng-change="getMembers(selected.refset)"></pagination>
+            ng-change="getMembers(selected.refset)"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
             ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter"
@@ -360,15 +360,15 @@
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-show="getBaseMemberType(member) == 'MEMBER'"
-                  tooltip="Member">M</button>
+                  uib-tooltip="Member">M</button>
                 <button class="btn btn-xs btn-danger"
                   ng-show="getBaseMemberType(member) == 'EXCLUSION'"
-                  tooltip="Exclusion">X</button>
+                  uib-tooltip="Exclusion">X</button>
                 <button class="btn btn-xs btn-success"
                   ng-show="getBaseMemberType(member) == 'INCLUSION'"
-                  tooltip="Inclusion">I</button>
+                  uib-tooltip="Inclusion">I</button>
                 <button class="btn btn-xs retired" ng-show="!member.active"
-                  tooltip="Retired">R</button>
+                  uib-tooltip="Retired">R</button>
               </td>
               <td class="nobreak"
                 ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'"><a

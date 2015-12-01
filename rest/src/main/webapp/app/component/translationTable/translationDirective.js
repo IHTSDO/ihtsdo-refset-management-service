@@ -2,7 +2,7 @@
 // e.g. <div translation-table value="PUBLISHED"></div>
 tsApp.directive('translationTable',
   [
-    '$modal',
+    '$uibModal',
     '$rootScope',
     'utilService',
     'securityService',
@@ -11,7 +11,7 @@ tsApp.directive('translationTable',
     'refsetService',
     'releaseService',
     'workflowService',
-    function($modal, $rootScope, utilService, securityService, projectService, translationService,
+    function($uibModal, $rootScope, utilService, securityService, projectService, translationService,
       refsetService, releaseService, workflowService) {
       console.debug('configure translationTable directive');
       return {
@@ -315,7 +315,7 @@ tsApp.directive('translationTable',
             $scope.openAddTranslationModal = function() {
               console.debug("openAddTranslationModal ");
 
-              var modalInstance = $modal.open({
+              var modalInstance = $uibModal.open({
                 templateUrl : 'app/component/translationTable/editTranslation.html',
                 controller : AddTranslationModalCtrl,
                 backdrop : 'static',
@@ -340,7 +340,7 @@ tsApp.directive('translationTable',
             };
 
             // Add translation controller
-            var AddTranslationModalCtrl = function($scope, $modalInstance, metadata, refsets,
+            var AddTranslationModalCtrl = function($scope, $uibModalInstance, metadata, refsets,
               project) {
 
               console.debug("Entered add translation modal control", metadata);
@@ -372,7 +372,7 @@ tsApp.directive('translationTable',
                 translationService.addTranslation(translation).then(
                 // Success - add translation
                 function(data) {
-                  $modalInstance.close(data);
+                  $uibModalInstance.close(data);
                 },
                 // Error - add refset
                 function(data) {
@@ -382,7 +382,7 @@ tsApp.directive('translationTable',
               };
 
               $scope.cancel = function() {
-                $modalInstance.dismiss('cancel');
+                $uibModalInstance.dismiss('cancel');
               };
 
             };
@@ -390,7 +390,7 @@ tsApp.directive('translationTable',
             $scope.openEditTranslationModal = function(ltranslation) {
               console.debug("openEditTranslationModal ");
 
-              var modalInstance = $modal.open({
+              var modalInstance = $uibModal.open({
                 templateUrl : 'app/component/translationTable/editTranslation.html',
                 controller : EditTranslationModalCtrl,
                 backdrop : 'static',
@@ -418,7 +418,7 @@ tsApp.directive('translationTable',
             };
 
             // Edit translation controller
-            var EditTranslationModalCtrl = function($scope, $modalInstance, metadata, refsets,
+            var EditTranslationModalCtrl = function($scope, $uibModalInstance, metadata, refsets,
               project, translation) {
 
               console.debug("Entered edit translation modal control", metadata, translation);
@@ -450,7 +450,7 @@ tsApp.directive('translationTable',
                 translationService.updateTranslation(translation).then(
                 // Success - update translation
                 function(data) {
-                  $modalInstance.close(data);
+                  $uibModalInstance.close(data);
                 },
                 // Error - update translation
                 function(data) {
@@ -460,7 +460,7 @@ tsApp.directive('translationTable',
               };
 
               $scope.cancel = function() {
-                $modalInstance.dismiss('cancel');
+                $uibModalInstance.dismiss('cancel');
               };
 
             };
