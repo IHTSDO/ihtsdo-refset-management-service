@@ -859,6 +859,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
+    refset.setInPublicationProcess(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"

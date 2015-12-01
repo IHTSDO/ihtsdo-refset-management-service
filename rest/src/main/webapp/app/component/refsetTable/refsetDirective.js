@@ -705,7 +705,7 @@ tsApp
                       return $scope.metadata.exportHandlers;
                     },
                     effectiveTime : function() {
-                      return lEffectiveTime
+                      return lEffectiveTime;
                     }
 
                   }
@@ -728,14 +728,15 @@ tsApp
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.releaseInfo = [];
 
-                $scope.release = function() {
-                  console.debug("export", refset.id);
+                $scope.beginRefsetRelease = function(refset, effectiveTime) {
+                  console.debug("begin refset release", refset.id);
 
                   releaseService.beginRefsetRelease(refset.id, effectiveTime).then(
                   // Success
                   function(data) {
-                    releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
                   },
                   // Error
                   function(data) {
@@ -746,10 +747,38 @@ tsApp
                   $modalInstance.close();
                 };
 
-                $scope.cancel = function() {
-                  $modalInstance.dismiss('cancel');
-                };
+                $scope.validateRefsetRelease = function(refset) {
+                  console.debug("validate refset release", refset.id);
 
+                  releaseService.validateRefsetRelease(refset.id).then(
+                  // Success
+                  function(data) {
+                    //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
+                  $modalInstance.close();
+                };
+                
+                $scope.cancel = function(refset) {
+                  console.debug("Cancel ", refset.id);
+                  $modalInstance.dismiss('cancel');
+                  releaseService.getCurrentReleaseInfoForRefset(refset.id).then(function(data) {
+                    $scope.releaseInfo = data;
+                    if (data.length > 0) {
+                      releaseService.cancelRefsetRelease(refset.id).then(function(data) {
+                        console.debug("data", data);
+                        $modalInstance.close();
+                      })
+                    } else {
+                      $modalInstance.close();
+                    }
+                  });
+                };
               };
 
               // Assign User modal
@@ -1351,7 +1380,6 @@ tsApp
                 $scope.saveForLater = function(refset) {
                   console.debug("Save for later ", $scope.type, refset.id);
                   // updates refset on close
-                  // TODO: need resume redefinition alert button  disable icon
                   $modalInstance.close();
                 };
                 

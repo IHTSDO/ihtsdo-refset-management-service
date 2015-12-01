@@ -263,6 +263,28 @@ tsApp.service('releaseService', [
         });
       return deferred.promise;
     }
+    
+    this.cancelRefsetRelease = function(refsetId) {
+      console.debug("cancelRefsetRelease");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(releaseUrl + "refset/cancel?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  cancel refset release = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
 
     // Remove release artifact
     this.removeReleaseArtifact = function(artifactId) {

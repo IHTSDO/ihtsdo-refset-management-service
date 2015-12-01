@@ -217,6 +217,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.setUserName(userName);
       algo.compute();
       releaseService.commit();
+      
+      refset.setInPublicationProcess(true);
+      refsetService.updateRefset(refset);
       return algo.getReleaseInfo();
     } catch (Exception e) {
       releaseService.rollback();

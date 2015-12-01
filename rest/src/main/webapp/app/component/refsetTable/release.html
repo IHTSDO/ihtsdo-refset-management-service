@@ -28,9 +28,14 @@
       <tr>
         <td><b>Workflow Status</b></td>
         <td>{{refset.workflowStatus}}</td>
+      </tr>      
+      <tr>
+        <td><b>Release Version</b></td>
+        <td><select ng-model="releaseVersion"
+          ng-options="item for item in versions"></select></td>
       </tr>
       <tr>
-        <td>I/O Handler</td>
+        <td><b>I/O Handler</b></td>
         <td><span ng-show="ioHandlers.length>
               1">
             <select ng-model="selectedIoHandler"
@@ -53,7 +58,9 @@
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="release(refset) 
+<button class="btn btn-primary" ng-show="releaseInfo.length == 0" ng-click="validateRefsetRelease(refset) 
+    ">Validate</button>
+  <button class="btn btn-primary" ng-show="releaseInfo.length > 0" ng-click="beginRefsetRelease(refset, effectiveTime) 
     ">Release</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-click="cancel(refset)">Cancel</button>
 </div>

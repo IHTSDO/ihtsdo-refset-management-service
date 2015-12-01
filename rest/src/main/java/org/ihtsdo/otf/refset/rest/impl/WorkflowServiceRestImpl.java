@@ -767,7 +767,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // NOTE: this is defined at the top level so all action handlers must respect it     
       return workflowService.findRefsetsForQuery("projectId:" + projectId
           + " AND (workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
-          + "OR workflowStatus:" + WorkflowStatus.PREVIEW + "OR workflowStatus:"
+          + " OR workflowStatus:" + WorkflowStatus.PREVIEW + " OR workflowStatus:"
           + WorkflowStatus.PUBLISHED + ")", pfs);
 
     } catch (Exception e) {
