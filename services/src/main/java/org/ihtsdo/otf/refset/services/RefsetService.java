@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -64,7 +65,7 @@ public interface RefsetService extends ProjectService {
    * Removes the refset.
    *
    * @param id the id
-   * @param cascade 
+   * @param cascade the cascade
    * @throws Exception the exception
    */
   public void removeRefset(Long id, boolean cascade) throws Exception;
@@ -254,18 +255,20 @@ public interface RefsetService extends ProjectService {
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedRefsetChange getStagedRefsetChange(Long refsetId) throws Exception;
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+    throws Exception;
 
   /**
    * Stage refset.
    *
    * @param refset the refset
    * @param stagingType the staging type
-   * @param effectiveTime 
+   * @param effectiveTime the effective time
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset stageRefset(Refset refset, Refset.StagingType stagingType, Date effectiveTime) throws Exception;
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType,
+    Date effectiveTime) throws Exception;
 
   /**
    * Update member.
@@ -284,4 +287,21 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMember getMember(Long id) throws Exception;
 
+  /**
+   * Adds the note.
+   *
+   * @param note the note
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addNote(Note note) throws Exception;
+
+  /**
+   * Removes the note.
+   *
+   * @param id the id
+   * @param type the type
+   * @throws Exception the exception
+   */
+  public void removeNote(Long id, Class<? extends Note> type) throws Exception;
 }

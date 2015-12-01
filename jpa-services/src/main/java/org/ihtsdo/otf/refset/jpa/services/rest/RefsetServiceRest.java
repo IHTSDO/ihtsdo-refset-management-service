@@ -10,6 +10,7 @@ import java.io.InputStream;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.ihtsdo.otf.refset.MemberDiffReport;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -88,6 +89,53 @@ public interface RefsetServiceRest {
    */
   public void removeRefset(Long refsetId, boolean cascade, String authToken)
     throws Exception;
+
+  /**
+   * Adds the refset note.
+   *
+   * @param refsetId the refset id
+   * @param note the note
+   * @param authToken the auth token
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addRefsetNote(Long refsetId, String note, String authToken)
+    throws Exception;
+
+  /**
+   * Removes the refset note.
+   *
+   * @param refsetId the refset id
+   * @param noteId the note id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeRefsetNote(Long refsetId, Long noteId, String authToken)
+    throws Exception;
+
+  /**
+   * Adds the concept refset member note.
+   *
+   * @param refsetId the refset id
+   * @param memberId the member id
+   * @param note the note
+   * @param authToken the auth token
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addRefsetMemberNote(Long refsetId, Long memberId, String note,
+    String authToken) throws Exception;
+
+  /**
+   * Removes the concept refset member note.
+   *
+   * @param refsetId the refset id
+   * @param noteId the note id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+    String authToken) throws Exception;
 
   /**
    * Import refset definition.
@@ -177,6 +225,7 @@ public interface RefsetServiceRest {
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param terminologyId the terminology id
    * @param staged the staged
    * @param active the active
    * @param authToken the auth token
@@ -184,13 +233,15 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
+    String conceptId, String terminologyId, boolean staged, boolean active,
+    String authToken) throws Exception;
 
   /**
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
+   * @param terminologyId the terminology id
    * @param staged the staged
    * @param active the active
    * @param authToken the auth token
@@ -198,7 +249,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, boolean staged, boolean active, String authToken) throws Exception;
+    String conceptId, String terminologyId, boolean staged, boolean active,
+    String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -459,8 +511,8 @@ public interface RefsetServiceRest {
    * @return the long
    * @throws Exception the exception
    */
-  public Refset cloneRefset(Long projectId, Long origRefsetId, RefsetJpa refset,
-    String authToken) throws Exception;
+  public Refset cloneRefset(Long projectId, Long origRefsetId,
+    RefsetJpa refset, String authToken) throws Exception;
 
   /**
    * Returns the old regular members.
@@ -491,13 +543,12 @@ public interface RefsetServiceRest {
   /**
    * Removes the refset exclusion.
    *
-   * @param refsetId the refset id
-   * @param conceptId the concept id
+   * @param memberId the member id
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
-  public ConceptRefsetMember removeRefsetExclusion(Long refsetId, String conceptId,
+  public ConceptRefsetMember removeRefsetExclusion(Long memberId,
     String authToken) throws Exception;
 
 }

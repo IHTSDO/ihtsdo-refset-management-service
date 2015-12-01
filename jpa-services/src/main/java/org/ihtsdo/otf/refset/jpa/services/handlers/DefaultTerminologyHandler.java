@@ -142,7 +142,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(resultString);
+        throw new Exception(response.toString());
       }
 
       /**
@@ -445,11 +445,11 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         String key = language.fieldNames().next();
         member.setRefsetId(key);
         member.setAcceptabilityId(language.get(key).asText());
-        description.addLanguageRefetMember(member);
+        description.getLanguageRefsetMembers().add(member);
         Logger.getLogger(getClass()).debug("    member = " + member);
       }
 
-      concept.addDescription(description);
+      concept.getDescriptions().add(description);
     }
     return concept;
   }
@@ -830,7 +830,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       String key = language.fieldNames().next();
       member.setRefsetId(key);
       member.setAcceptabilityId(language.get(key).asText());
-      description.addLanguageRefetMember(member);
+      description.getLanguageRefsetMembers().add(member);
       Logger.getLogger(getClass()).debug("    member = " + member);
     }
 

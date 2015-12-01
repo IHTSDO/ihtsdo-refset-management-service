@@ -24,7 +24,6 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -167,7 +166,7 @@ public class RedefinitionTest {
 
   // <<445768003 | Intragastric route (qualifier value) | (4)
   // <<372454008 | Gastroenteral route (qualifier value) | (19)
-  
+
   // <<373482005 | Benzethonium (substance) |
   // <<418136008 | Gastro-intestinal stoma route (qualifier value) |
   
@@ -233,7 +232,7 @@ public class RedefinitionTest {
     String reportToken =
         refsetService.compareRefsets(refset1.getId(), copy.getId(),
             adminAuthToken);
-    
+
     MemberDiffReport diffReport =
         refsetService.getDiffReport(reportToken, adminAuthToken);
     assertEquals(0, diffReport.getOldNotNew().size());
@@ -281,7 +280,7 @@ public class RedefinitionTest {
     assertEquals(7, memberList.getObjects().size());
 
     refsetService.addRefsetExclusion(refset1.getId(),
-        memberToExclude.getConceptId(), false, true, adminAuthToken);
+        memberToExclude.getConceptId(), null, false, true, adminAuthToken);
     memberList =
         refsetService.findRefsetMembersForQuery(refset1.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
@@ -298,7 +297,7 @@ public class RedefinitionTest {
 
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          bogusExclusion.getConceptId(), false, true, adminAuthToken);
+          bogusExclusion.getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -316,7 +315,7 @@ public class RedefinitionTest {
             "memberType:EXCLUSION", new PfsParameterJpa(), adminAuthToken);
     try {
       refsetService.addRefsetExclusion(refset1.getId(), exclusions.getObjects()
-          .get(0).getConceptId(), false, true, adminAuthToken);
+          .get(0).getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -338,7 +337,7 @@ public class RedefinitionTest {
 
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          memberToInclude.getConceptId(), false, true, adminAuthToken);
+          memberToInclude.getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -366,7 +365,7 @@ public class RedefinitionTest {
     memberToInclude = testingMemberList.getObjects().get(0);
     memberToInclude.setMemberType(Refset.MemberType.INCLUSION);
     refsetService.addRefsetInclusion(refset1.getId(),
-        memberToInclude.getConceptId(), false, true, adminAuthToken);
+        memberToInclude.getConceptId(), null, false, true, adminAuthToken);
     refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
     assertEquals(
         6,
@@ -387,7 +386,7 @@ public class RedefinitionTest {
     inclusion.setMemberType(Refset.MemberType.EXCLUSION);
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          inclusion.getConceptId(), false, true, adminAuthToken);
+          inclusion.getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -401,7 +400,7 @@ public class RedefinitionTest {
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          inclusion.getConceptId(), false, true, adminAuthToken);
+          inclusion.getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -419,7 +418,7 @@ public class RedefinitionTest {
     exclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
       refsetService.addRefsetInclusion(refset1.getId(),
-          exclusion.getConceptId(), false, true, adminAuthToken);
+          exclusion.getConceptId(), null, false, true, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a

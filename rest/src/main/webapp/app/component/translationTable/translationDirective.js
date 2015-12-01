@@ -31,10 +31,10 @@ tsApp.directive('translationTable',
 
             // Variables
             $scope.user = securityService.getUser();
-            $scope.data = {
-              concept : null
+            $scope.selected = {
+              concept : null,
+              translation : null
             };
-            $scope.translation = null;
             $scope.translations = null;
             $scope.translationReleaseInfo = null;
             $scope.project = null;
@@ -136,8 +136,8 @@ tsApp.directive('translationTable',
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
                     // Refresh the translation if it is selected
-                    if ($scope.translation) {
-                      $scope.selectTranslation($scope.translation);
+                    if ($scope.selected.translation) {
+                      $scope.selectTranslation($scope.selected.translation);
                     }
                   })
               }
@@ -148,8 +148,8 @@ tsApp.directive('translationTable',
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
                     // Refresh the translation if it is selected
-                    if ($scope.translation) {
-                      $scope.selectTranslation($scope.translation);
+                    if ($scope.selected.translation) {
+                      $scope.selectTranslation($scope.selected.translation);
                     }
                   })
               }
@@ -162,24 +162,24 @@ tsApp.directive('translationTable',
                   })
               }
 
-              // If $scope.translation is in the list, select it, if not clear $scope.translation
+              // If $scope.selected.translation is in the list, select it, if not clear $scope.selected.translation
               var found = false;
-              if ($scope.translation) {
+              if ($scope.selected.translation) {
                 for (var i = 0; i < $scope.translations.length; i++) {
-                  if ($scope.translation.id == $scope.translations[i].id) {
+                  if ($scope.selected.translation.id == $scope.translations[i].id) {
                     found = true;
                     break;
                   }
                 }
               }
               if (found) {
-                $scope.getConcepts($scope.translation);
+                $scope.getConcepts($scope.selected.translation);
               } else {
-                $scope.translation = null;
+                $scope.selected.translation = null;
               }
             };
 
-            // Get $scope.translation.concepts
+            // Get $scope.selected.translation.concepts
             $scope.getConcepts = function(translation) {
 
               var pfs = {
@@ -264,10 +264,10 @@ tsApp.directive('translationTable',
 
             };
 
-            // Selects a translation (setting $scope.translation).
+            // Selects a translation (setting $scope.selected.translation).
             // Looks up current release info and members.
             $scope.selectTranslation = function(translation) {
-              $scope.translation = translation;
+              $scope.selected.translation = translation;
               $scope.getCurrentTranslationReleaseInfo(translation);
               $scope.getConcepts(translation);
 
@@ -275,7 +275,7 @@ tsApp.directive('translationTable',
 
             // Selects a concepts (setting $scope.concept)
             $scope.selectConcept = function(concept) {
-              $scope.data.concept = concept;
+              $scope.selected.concept = concept;
               // Look up details of concept
             };
 
@@ -300,8 +300,8 @@ tsApp.directive('translationTable',
               }
               translationService.removeTranslation(translation.id).then(
               // Success
-              function() {
-                $scope.translation = null;
+              function(data) {
+                $scope.selected.translation = null;
                 translationService.fireTranslationChanged();
               });
 

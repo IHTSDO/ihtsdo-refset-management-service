@@ -504,10 +504,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
         // handle lazy initialization
+        // TODO: reuse the refset service algortihm instead of this
         Refset refset = record.getRefset();
         refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
+        // refset.getMembers().size();
         refset.getTranslations().size();
+        refset.getNotes().size();
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -629,8 +631,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         // handle lazy intialization
         Refset refset = record.getRefset();
         refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
+        //refset.getMembers().size();
         refset.getTranslations().size();
+        refset.getNotes().size();
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -726,8 +729,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         // handle lazy initialization
         Refset refset = record.getRefset();
         refset.getEnabledFeedbackEvents().size();
-        refset.getMembers().size();
+        //refset.getMembers().size();
         refset.getTranslations().size();
+        refset.getNotes().size();
         refsets.add(refset);
       }
 

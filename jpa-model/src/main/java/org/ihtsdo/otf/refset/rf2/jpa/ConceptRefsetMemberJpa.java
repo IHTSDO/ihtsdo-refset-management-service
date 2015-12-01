@@ -3,11 +3,15 @@
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 import javax.xml.bind.annotation.XmlElement;
@@ -25,8 +29,11 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
@@ -60,6 +67,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   @Column(nullable = false)
   private Refset.MemberType memberType;
 
+  /** The notes. */
+  @OneToMany(mappedBy = "member", targetEntity = ConceptRefsetMemberNoteJpa.class)
+  // @IndexedEmbedded - n/a
+  private List<Note> notes = new ArrayList<>();
+
   /**
    * Instantiates an empty {@link ConceptRefsetMemberJpa}.
    */
@@ -79,6 +91,9 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     conceptId = member.getConceptId();
     conceptName = member.getConceptName();
     memberType = member.getMemberType();
+    for (Note note : refset.getNotes()) {
+      getNotes().add(new RefsetNoteJpa((RefsetNoteJpa) note));
+    }
   }
 
   /* see superclass */
@@ -161,6 +176,22 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  @XmlElement(type = ConceptRefsetMemberNoteJpa.class)
+  @Override
+  public List<Note> getNotes() {
+    if (notes == null) {
+      notes = new ArrayList<Note>();
+    }
+    return notes;
+  }
+
+  /* see superclass */
+  @Override
+  public void setNotes(List<Note> notes) {
+    this.notes = notes;
+  }
+
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -168,8 +199,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
-    /*result =
-        prime * result + ((memberType == null) ? 0 : memberType.hashCode());*/
+    /*
+     * result = prime * result + ((memberType == null) ? 0 :
+     * memberType.hashCode());
+     */
     result =
         prime
             * result
@@ -200,11 +233,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     } else if (!conceptName.equals(other.conceptName))
       return false;
     // removed this to get member diff report to work with IN/EXCLUSION_STAGED
-    /*if (memberType == null) {
-      if (other.memberType != null)
-        return false;
-    } else if (memberType != other.memberType)
-      return false;*/
+    /*
+     * if (memberType == null) { if (other.memberType != null) return false; }
+     * else if (memberType != other.memberType) return false;
+     */
     if (refset == null) {
       if (other.refset != null)
         return false;

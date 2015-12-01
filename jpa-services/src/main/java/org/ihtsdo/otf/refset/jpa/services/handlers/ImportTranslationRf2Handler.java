@@ -181,7 +181,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             concept.setTerminologyId(fields[4]);
             concept.setDefinitionStatusId("unknown");
             concept.setTranslation(translation);
-            concept.addDescription(description);
+            concept.getDescriptions().add(description);
             description.setConcept(concept);
 
             // Cache the description for lookup by the language reset member
@@ -277,7 +277,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         LanguageRefsetMember member =
             descLangMap.get(description.getTerminologyId());
         member.setDescriptionId(description.getTerminologyId());
-        description.addLanguageRefetMember(member);
+        description.getLanguageRefsetMembers().add(member);
 
         // If a description is a synonym (e.g. typeId=)
         // and language is prefered (e.g. acceptabilityId=)

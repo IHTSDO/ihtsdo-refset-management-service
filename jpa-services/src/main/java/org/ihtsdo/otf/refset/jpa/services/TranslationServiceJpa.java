@@ -116,7 +116,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public Translation getTranslation(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get translation " + id);
-    return getHasLastModified(id, TranslationJpa.class);
+    Translation translation = getHasLastModified(id, TranslationJpa.class);
+    handleLazyInit(translation);
+    return translation;
   }
 
   /* see superclass */
@@ -153,7 +155,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           .getStandardDescriptionTypes(translation.getTerminology(),
               translation.getVersion()).getObjects()) {
         member.setLastModifiedBy(translation.getLastModifiedBy());
-        translation.addDescriptionType(member);
+        translation.getDescriptionTypes().add(member);
       }
     }
     // Add component
@@ -264,7 +266,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
                 + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
     for (Translation translation : list) {
-      handleTranslationLazyInitialization(translation);
+      handleLazyInit(translation);
     }
     TranslationList result = new TranslationListJpa();
     result.setTotalCount(totalCt[0]);
@@ -301,6 +303,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     ConceptList result = new ConceptListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (Concept concept : result.getObjects()) {
+      handleLazyInit(concept);
+    }
     return result;
   }
 
@@ -310,13 +315,23 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
    * @param translation the translation
    */
   @SuppressWarnings("static-method")
-  private void handleTranslationLazyInitialization(Translation translation) {
+  private void handleLazyInit(Translation translation) {
     // handle all lazy initializations
     translation.getDescriptionTypes().size();
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
+    translation.getNotes().size();
+  }
 
+  /**
+   * Handle lazy init.
+   *
+   * @param concept the concept
+   */
+  @SuppressWarnings("static-method")
+  private void handleLazyInit(Concept concept) {
+    concept.getNotes().size();
   }
 
   /* see superclass */
@@ -350,7 +365,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // get the most recent of the revisions that preceed the date parameter
     Translation translation = revisions.get(0);
-    handleTranslationLazyInitialization(translation);
+    handleLazyInit(translation);
     return translation;
   }
 
@@ -497,7 +512,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public Concept getConcept(Long id) throws Exception {
     Logger.getLogger(getClass())
         .debug("Translation Service - get concept" + id);
-    return getHasLastModified(id, ConceptJpa.class);
+    Concept concept = getHasLastModified(id, ConceptJpa.class);
+    handleLazyInit(concept);
+    return concept;
   }
 
   @Override
@@ -718,8 +735,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       query.setParameter("translationId", translationId);
       StagedTranslationChange change =
           (StagedTranslationChange) query.getSingleResult();
-      handleTranslationLazyInitialization(change.getOriginTranslation());
-      handleTranslationLazyInitialization(change.getStagedTranslation());
+      handleLazyInit(change.getOriginTranslation());
+      handleLazyInit(change.getStagedTranslation());
       return change;
     } catch (NoResultException e) {
       return null;
@@ -880,7 +897,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       concept.setTerminology(translationCopy.getTerminology());
       concept.setVersion(translationCopy.getVersion());
       concept.setId(null);
-      translationCopy.addConcept(concept);
+      translationCopy.getConcepts().add(concept);
       addConcept(concept);
     }
 
@@ -891,7 +908,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       type.setTerminology(translationCopy.getTerminology());
       type.setVersion(translationCopy.getVersion());
       type.setId(null);
-      translationCopy.addDescriptionType(type);
+      translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
     // set staging parameters on the original translation

@@ -537,9 +537,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           makeRefset("test3", "<<406473004 |  Contact allergen (substance)|",
               Refset.Type.INTENSIONAL, project1, "333333", author1, false);
       new RefsetServiceRestImpl().addRefsetExclusion(test3.getId(),
-          "427811002", false, true, author1.getAuthToken());
+          "427811002", null, false, true, author1.getAuthToken());
       new RefsetServiceRestImpl().addRefsetInclusion(test3.getId(),
-          "133928008", false, true, author1.getAuthToken());
+          "133928008", null, false, true, author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test3.getId(), "author1", "ASSIGN", author1.getAuthToken());
 
@@ -818,7 +818,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     byte[] data = Files.readAllBytes(path);
     artifact.setData(data);
 
-    releaseInfo.addArtifact(artifact);
+    releaseInfo.getArtifacts().add(artifact);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
     artifact = service.addReleaseArtifact(artifact);

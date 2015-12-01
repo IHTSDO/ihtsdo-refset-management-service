@@ -252,7 +252,6 @@ tsApp.service('refsetService', [
       $http['delete'](refsetUrl + "member/remove/" + memberId).then(
       // success
       function(response) {
-        console.debug("  refset member = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -312,14 +311,15 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetInclusion = function(refsetId, conceptId, staged, active) {
+    this.addRefsetInclusion = function(refset, conceptId, staged, active) {
       console.debug("addRefsetInclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "inclusion/add/" + refsetId + "?conceptId=" + conceptId +
-        "&staged=" + staged + "&active=" + active).then(
+      $http.get(
+        refsetUrl + "inclusion/add/" + refset.id + "?conceptId=" + conceptId + "&terminologyId="
+          + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
       // success
       function(response) {
         console.debug("  inclusion = ", response.data);
@@ -336,14 +336,15 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetExclusion = function(refsetId, conceptId, staged, active) {
+    this.addRefsetExclusion = function(refset, conceptId, staged, active) {
       console.debug("addRefsetExclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "exclusion/add/" + refsetId + "?conceptId=" + conceptId +
-        "&staged=" + staged + "&active=" + active).then(
+      $http.get(
+        refsetUrl + "exclusion/add/" + refset.id + "?conceptId=" + conceptId + "&terminologyId="
+          + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);
@@ -360,13 +361,13 @@ tsApp.service('refsetService', [
     }
 
     // remove refset inclusion
-    this.removeRefsetExclusion = function(refsetId, memberId) {
+    this.removeRefsetExclusion = function(memberId) {
       console.debug("removeRefsetExclusion");
       var deferred = $q.defer();
 
       // Remove refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + "exclusion/remove/" + memberId ).then(
+      $http.get(refsetUrl + "exclusion/remove/" + memberId).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);
@@ -432,9 +433,11 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(
-        refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2="
-          + refsetId2, { headers: { "Content-type" : "text/plain" }}).then(
+      $http.get(refsetUrl + "compare" + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
       // success
       function(response) {
         console.debug("  compare refsets = ", response.data);
@@ -555,23 +558,24 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(refsetUrl + "old/members" + "?reportToken=" + reportToken +
-        "&query=" + query, pfs).then(
-      // success
-      function(response) {
-        console.debug("  output = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      $http
+        .post(refsetUrl + "old/members" + "?reportToken=" + reportToken + "&query=" + query, pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
-    
+
     // get list of new regular members from diff report
     this.getNewRegularMembers = function(reportToken, query, pfs) {
       console.debug("getNewRegularMembers");
@@ -580,23 +584,24 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(refsetUrl + "new/members" + "?reportToken=" + reportToken +
-        "&query=" + query, pfs).then(
-      // success
-      function(response) {
-        console.debug("  output = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      $http
+        .post(refsetUrl + "new/members" + "?reportToken=" + reportToken + "&query=" + query, pfs)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
-    
+
     // get refset types
     this.getRefsetTypes = function() {
       console.debug("getRefsetTypes");
@@ -663,7 +668,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     }
-    
+
     this.cancelRedefinition = function(refsetId) {
       console.debug("cancelRedefinition");
       var deferred = $q.defer();
@@ -866,5 +871,191 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+
+    this.beginMigration = function(refsetId, terminology, version) {
+      console.debug("beginMigration");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(
+        refsetUrl + "migration/begin?refsetId=" + refsetId + "&newTerminology=" + terminology
+          + "&newVersion=" + version).then(
+      // success
+      function(response) {
+        console.debug("  refset revision = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.finishMigration = function(refsetId) {
+      console.debug("finishMigration");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "migration/finish?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  finish refset migration = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.cancelMigration = function(refsetId) {
+      console.debug("cancelMigration");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "migration/cancel?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  cancel refset migration = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.resumeMigration = function(refsetId) {
+      console.debug("resumeMigration");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "migration/resume?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  resume refset migration = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.addRefsetNote = function(refsetId, note) {
+      console.debug("add refset note", refsetId, note);
+      var deferred = $q.defer();
+
+      // Add refset
+      gpService.increment()
+      $http.put(refsetUrl + 'add/note?refsetId=' + refsetId, note, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  note = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.removeRefsetNote = function(refsetId, noteId) {
+      console.debug("remove refset note", refsetId, noteId);
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http['delete'](refsetUrl + "/remove/note?refsetId=" + refsetId + "&noteId=" + noteId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.addRefsetMemberNote = function(refsetId, memberId, note) {
+      console.debug("add member note", refsetId, memberId, note);
+      var deferred = $q.defer();
+
+      // Add refset
+      gpService.increment()
+      $http.put(refsetUrl + 'member/add/note?refsetId=' + refsetId + "&memberId=" + memberId, note,
+        {
+          headers : {
+            "Content-type" : "text/plain"
+          }
+        }).then(
+      // success
+      function(response) {
+        console.debug("  note = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    this.addRefsetMemberNote = function(refsetId, noteId) {
+      console.debug("remove member note", refsetId, noteId);
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http['delete'](refsetUrl + "/member/remove/note?refsetId=" + refsetId + "&noteId=" + noteId)
+        .then(
+        // success
+        function(response) {
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
+
+    // end
 
   } ]);

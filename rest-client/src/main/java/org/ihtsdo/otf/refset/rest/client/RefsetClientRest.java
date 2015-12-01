@@ -22,6 +22,7 @@ import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.ihtsdo.otf.refset.MemberDiffReport;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
@@ -462,17 +464,20 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, boolean staged, boolean active, String authToken) throws Exception {
+    String conceptId, String terminologyId, boolean staged, boolean active,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset inclusion " + " " + refsetId + ", "
-            + conceptId + ", " + staged + ", " + active);
+            + conceptId + ", " + terminologyId + ", " + staged + ", " + active);
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(conceptId, "conceptId");
 
     Client client = ClientBuilder.newClient();
+
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/inclusion/add/"
-            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged + "&active=" + active);
+            + refsetId + "?conceptId=" + conceptId + "&terminologyId"
+            + terminologyId + "&staged=" + staged + "&active=" + active);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -494,7 +499,8 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, boolean staged, boolean active, String authToken) throws Exception {
+    String conceptId, String terminologyId, boolean staged, boolean active,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - add refset exclusion " + " " + refsetId + ", "
             + conceptId + ", " + staged + ", " + active);
@@ -504,7 +510,8 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/exclusion/add/"
-            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged + "&active=" + active);
+            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged
+            + "&active=" + active);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -807,8 +814,8 @@ public class RefsetClientRest extends RootClientRest implements
             + "?refsetId1=" + refsetId1 + "&refsetId2=" + refsetId2);
 
     Response response =
-        target.request(MediaType.TEXT_PLAIN)
-        .header("Authorization", authToken).get();
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -817,7 +824,7 @@ public class RefsetClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     // converting to object
-    
+
     return resultString;
 
   }
@@ -1191,10 +1198,114 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public ConceptRefsetMember removeRefsetExclusion(Long refsetId,
-    String conceptId, String authToken) throws Exception {
+  public ConceptRefsetMember removeRefsetExclusion(Long memberId,
+    String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  public Note addRefsetNote(Long refsetId, String note, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - add refset note - " + refsetId + ", " + note);
+    validateNotEmpty(note, "note");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/add/note?"
+            + "refsetId=" + refsetId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.text(note));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (RefsetNoteJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetNoteJpa.class);
+  }
+
+  @Override
+  public void removeRefsetNote(Long refsetId, Long noteId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove member note " + refsetId + ", " + noteId);
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(noteId, "noteId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/remove/note?"
+            + "refsetId=" + refsetId + "&noteId=" + noteId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
+  }
+
+  @Override
+  public Note addRefsetMemberNote(Long refsetId, Long memberId, String note,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - add refset member note - " + refsetId + ", "
+            + memberId + ", " + note);
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(memberId, "memberId");
+    validateNotEmpty(note, "note");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/refset/member/add/note?" + "refsetId=" + refsetId
+            + "&memberId=" + memberId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.text(note));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (RefsetNoteJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetNoteJpa.class);
+  }
+
+  @Override
+  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove member note " + refsetId + ", " + noteId);
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(noteId, "noteId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/refset/member/remove/note?" + "refsetId=" + refsetId
+            + "&noteId=" + noteId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
   }
 
 }

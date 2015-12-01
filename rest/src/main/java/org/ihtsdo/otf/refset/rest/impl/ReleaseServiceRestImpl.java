@@ -527,7 +527,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       Refset stagedRefset = stagedRefsetChange.getStagedRefset();
-      stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
+      stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
       stagedRefset.setLastModifiedBy(userName);
       stagedRefset.setProvisional(false);
       refsetService.updateRefset(stagedRefset);
@@ -939,7 +939,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       Translation stagedTranslation = stagedTranslationChange.getStagedTranslation();
-      stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
+      stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
       stagedTranslation.setLastModifiedBy(userName);
       stagedTranslation.setProvisional(false);
       translationService.updateTranslation(stagedTranslation);

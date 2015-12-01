@@ -289,26 +289,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
 
   /* see superclass */
   @Override
-  public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember) {
-    if (languageRefsetMembers == null) {
-      languageRefsetMembers = new ArrayList<>();
-    }
-    languageRefsetMember.setDescriptionId(this.getTerminologyId());
-    languageRefsetMembers.add(languageRefsetMember);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember) {
-    if (languageRefsetMembers == null) {
-      return;
-    }
-    languageRefsetMembers.remove(languageRefsetMember);
-  }
-
-  /* see superclass */
-  @Override
   public String toString() {
     return "DescriptionJpa [, languageCode=" + languageCode + ", typeId="
         + typeId + ", term=" + term + ", caseSignificanceId="

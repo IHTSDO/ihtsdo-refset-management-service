@@ -6,14 +6,15 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
+import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
+import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -21,13 +22,18 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link ProjectJpa}.
+ * Unit testing for {@link ConceptNoteJpa}.
  */
-public class ProjectJpaUnitTest extends ModelUnitSupport {
+public class ConceptNoteJpaUnitTest extends ModelUnitSupport {
 
   /** The model object to test. */
-  private ProjectJpa object;
+  private ConceptNoteJpa object;
 
+  /** Test fixture */
+  private ConceptJpa c1;
+
+  /** Test fixture */
+  private ConceptJpa c2;
 
   /**
    * Setup class.
@@ -43,8 +49,11 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    */
   @Before
   public void setup() throws Exception {
-    object = new ProjectJpa();
+    object = new ConceptNoteJpa();
 
+    ProxyTester tester = new ProxyTester(new ConceptJpa());
+    c1 = (ConceptJpa) tester.createObject(1);
+    c2 = (ConceptJpa) tester.createObject(2);
   }
 
   /**
@@ -53,31 +62,26 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelGetSet001() throws Exception {
+  public void testModelGetSet003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     GetterSetterTester tester = new GetterSetterTester(object);
-    tester.exclude("objectId");
-    tester.exclude("terminologyId");
     tester.test();
   }
 
   /**
-   * Test equals and hashcode methods.
+   * Test equals and hascode methods.
    *
    * @throws Exception the exception
    */
   @Test
-  public void testModelEqualsHashcode001() throws Exception {
+  public void testModelEqualsHashcode003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("name");
-    tester.include("namespace");
-    tester.include("moduleId");
-    tester.include("organization");
-    tester.include("description");
-    tester.include("terminology");
-    tester.include("version");
+    tester.include("value");
+    tester.include("concept");
 
+    tester.proxy(Concept.class, 1, c1);
+    tester.proxy(Concept.class, 2, c2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -92,10 +96,11 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelCopy001() throws Exception {
+  public void testModelCopy003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
-    assertTrue(tester.testCopyConstructor(Project.class));
+
+    assertTrue(tester.testCopyConstructor(ConceptNoteJpa.class));
   }
 
   /**
@@ -104,9 +109,13 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelXmlSerialization001() throws Exception {
+  public void testModelXmlSerialization003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
+
+    Concept concept = new ConceptJpa();
+    concept.setId(1L);
+    tester.proxy(Concept.class, 1, concept);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -116,15 +125,12 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelNotNullField001() throws Exception {
+  public void testModelNotNullField003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("name");
-    tester.include("description");
-    tester.include("terminology");
-    tester.include("version");
+    tester.include("value");
     assertTrue(tester.testNotNullFields());
   }
 
@@ -134,32 +140,10 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testModelIndexedFields001() throws Exception {
+  public void testModelIndexedFields003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // Test analyzed fields
-    IndexedFieldTester tester = new IndexedFieldTester(object);
-    tester.include("name");
-    tester.include("description");
-    tester.include("userRoleMap");
-    tester.include("userAnyRole");
-    tester.include("organization");
-    assertTrue(tester.testAnalyzedIndexedFields());
-
-    // Test non analyzed fields
-    tester = new IndexedFieldTester(object);
-    tester.include("namespace");
-    tester.include("moduleId");
-    tester.include("organizationSort");
-    tester.include("id");
-    tester.include("lastModified");
-    tester.include("lastModifiedBy");
-    tester.include("terminology");
-    tester.include("version");
-    tester.include("nameSort");
-    tester.include("descriptionSort");
-
-    assertTrue(tester.testNotAnalyzedIndexedFields());
+    // n/a
 
   }
 

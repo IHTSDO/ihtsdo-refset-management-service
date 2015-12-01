@@ -50,7 +50,7 @@
           <tbody>
             <tr ng-repeat="concept in searchResults"
               ng-click="selectConcept(concept)"
-              ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}">
+              ng-class="{selected: concept.terminologyId === data.concept.terminologyId}">
               <td>{{concept.terminologyId}}</td>
               <td>{{concept.name}}</td>
             </tr>
