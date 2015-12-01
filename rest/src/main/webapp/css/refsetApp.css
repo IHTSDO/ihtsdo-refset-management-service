@@ -146,15 +146,17 @@ a:hover {
 /* Styles for member list */
 .exclusion {
 	text-decoration: line-through;
+	font-color: red;
 }
 
 .inclusion {
-	font-color: blue;
+	font-color: green;
 }
 
-.inactive {
-	opacity: 0.5;
+.retired {
+	color: grey;
 }
+
 
 .drop-box {
 	background: #F8F8F8;
@@ -168,4 +170,8 @@ a:hover {
 
 .dragover {
 	border: 5px dashed blue;
+}
+
+.noul {
+	text-decoration: none;
 }

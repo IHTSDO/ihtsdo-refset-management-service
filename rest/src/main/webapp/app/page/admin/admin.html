@@ -17,7 +17,7 @@
       <h4>
         <div style="float: right;">
           <a title="Add project" ng-click="openAddProjectModal()">
-            <i title="Add project" class="material-icons md-24">add</i>
+            <i title="Add project" class="noul material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -65,10 +65,10 @@
 
             <td class="nobreak"><a title="Edit"
                 ng-click="openEditProjectModal(project); $event.stopPropagation()">
-                <i title="Edit" class="material-icons md-18">edit</i>
+                <i title="Edit" class="noul material-icons md-18">edit</i>
               </a>&nbsp;<a title="Remove"
                 ng-click="removeProject(project); $event.stopPropagation()">
-                <i title="Delete" class="material-icons md-18">delete</i>
+                <i title="Delete" class="noul material-icons md-18">delete</i>
               </a></td>
           </tr>
         </tbody>
@@ -84,7 +84,7 @@
       <h4>
         <div style="float: right;">
           <a title="Add user" ng-click="openAddUserModal(luser)">
-            <i title="Add user" class="material-icons md-24">add</i>
+            <i title="Add user" class="noul material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -131,10 +131,10 @@
 
             <td class="nobreak"><a title="Edit"
                 ng-click="openEditUserModal(user); $event.stopPropagation()">
-                <i title="Edit" class="material-icons md-18">edit</i>
+                <i title="Edit" class="noul material-icons md-18">edit</i>
               </a>&nbsp;<a title="Remove"
                 ng-click="removeUser(user); $event.stopPropagation()">
-                <i title="Delete" class="material-icons md-18">delete</i>
+                <i title="Delete" class="noul material-icons md-18">delete</i>
               </a></td>
           </tr>
         </tbody>
@@ -242,7 +242,7 @@
                 <td><a title="Add user to project with selected role."
                     ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)">
                     <i title="Add user to project with selected role."
-                      class="material-icons md-18">add</i>
+                      class="noul material-icons md-18">add</i>
                   </a></td>
               </tr>
             </tbody>
@@ -301,7 +301,7 @@
                 <td>{{user.projectRoleMap[selectedProject.id]}}</td>
                 <td><a title="Unassign"
                     ng-click="unassignUserFromProject(selectedProject.id, user.userName);">
-                    <i title="Unassign user" class="material-icons md-18">remove</i>
+                    <i title="Unassign user" class="noul material-icons md-18">remove</i>
                   </a></td>
               </tr>
             </tbody>

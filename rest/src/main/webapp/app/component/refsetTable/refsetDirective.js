@@ -227,6 +227,7 @@ tsApp
 
                 if ($scope.paging["member"].typeFilter) {
                   var value = $scope.paging["member"].typeFilter;
+                  // Handle inactive
                   value = value.replace(" ", "_").toUpperCase();
                   pfs.queryRestriction = "memberType:" + value;
                 }
@@ -305,25 +306,23 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                console.debug("  selected.refset = ", refset);
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
 
               };
 
-              // Used for styling inactive/disabled
-              $scope.isDisabled = function(member) {
-                return member.memberType == 'INACTIVE_MEMBER'
-                  || member.memberType == 'INACTIVE_INCLUSION' || member.memberType == 'EXCLUSION';
+              // Get whether it is EXCLUSION, INCLUSION, or MEMBER
+              $scope.getBaseMemberType = function(member) {
+                return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
               }
 
-              // Used for styling - coordinated with css file
-              // TODO: this can be better
+              // Member type style
               $scope.getMemberStyle = function(member) {
                 if (member.memberType == 'MEMBER') {
                   return "";
-
                 }
-                return member.memberType.replace('_', ' ').toLowerCase();
+                return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
               }
 
               // Remove a refset
@@ -345,27 +344,45 @@ tsApp
               };
 
               // Remove refset member
-              $scope.removeMember = function(member) {
+              $scope.removeRefsetMember = function(refset, member) {
                 if (!confirm("Are you sure you want to remove the member (" + member.conceptName
                   + ")?")) {
                   return;
                 }
-
                 refsetService.removeRefsetMember(member.id).then(
                 // Success 
                 function() {
-                  $scope.getMembers();
+                  $scope.getMembers(refset);
+                });
+              };
+              // Remove refset inclusion
+              $scope.removeRefsetInclusion = function(refset, member) {
+                if (!confirm("Are you sure you want to remove the inclusion (" + member.conceptName
+                  + ")?")) {
+                  return;
+                }
+                refsetService.removeRefsetMember(member.id).then(
+                // Success 
+                function() {
+                  $scope.getMembers(refset);
                 });
               };
 
               // Adds a refset exclusion and refreshes member
               // list with current PFS settings
-              $scope.exclude = function(refset, conceptId) {
-
-                refsetService.addRefsetExclusion(refset.id, conceptId, false, true).then(
-                  function() {
+              $scope.addRefsetExclusion = function(refset, member) {
+                refsetService.addRefsetExclusion(refset, member.conceptId, false, member.active)
+                  .then(function() {
                     $scope.getMembers(refset);
                   });
+
+              };
+
+              // Remove refset exclusion and refreshes members
+              $scope.removeRefsetExclusion = function(refset, member) {
+                refsetService.removeRefsetExclusion(member.id).then(function() {
+                  $scope.getMembers(refset);
+                });
 
               };
 
@@ -1104,7 +1121,7 @@ tsApp
 
                   if (member.memberType == 'INCLUSION') {
                     refsetService
-                      .addRefsetInclusion(member.refsetId, member.conceptId, false, true).then(
+                      .addRefsetInclusion(refset, member.conceptId, false, member.active).then(
                       // Success
                       function(data) {
                         $modalInstance.close();
@@ -1433,12 +1450,11 @@ tsApp
                 }
 
                 // Used for styling - coordinated with css file
-                // TODO: this can be better
                 $scope.getMemberStyle = function(member) {
                   if (member.memberType == 'MEMBER') {
                     return "";
                   }
-                  return member.memberType.replace('_', ' ').toLowerCase();
+                  return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '')
                 }
 
                 $scope.cancel = function(refset) {

@@ -23,7 +23,7 @@
       <h4 ng-show="value == 'EDITING'">
         <div style="float: right;">
           <a title="Add refset" ng-click="openAddTranslationModal()">
-            <i title="Add refset" class="material-icons md-24">add</i>
+            <i title="Add refset" class="noul material-icons md-24">add</i>
           </a>
         </div>
       </h4>
@@ -68,20 +68,20 @@
           <td class="nobreak" ng-show="value == 'EDITING'"><a
               class="toolicon" title="Edit"
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
+              <i title="Edit" class="noul material-icons md-18">edit</i>
             </a>&nbsp;<a title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
 
           <!-- EDITING_ALL actions -->
           <td class="nobreak" ng-show="value == 'EDITING_ALL'"><a
               class="toolicon" title="Edit"
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
+              <i title="Edit" class="noul material-icons md-18">edit</i>
             </a> <a title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
           </td>
 
@@ -89,7 +89,7 @@
           <td class="nobreak" ng-show="value == 'RELEASE'"><a
               title="Remove" class="toolicon"
               ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
+              <i title="Remove" class="noul material-icons md-18">delete</i>
             </a></td>
         </tr>
       </tbody>
@@ -174,7 +174,7 @@
               <td><span>
                   <a ng-click="exportReleaseArtifact(artifact)">
                     <i title="Export {{artifact.name}}"
-                      class="material-icons md-18">file_download</i>
+                      class="noul material-icons md-18">file_download</i>
                   </a>
                 </span></td>
             </tr>

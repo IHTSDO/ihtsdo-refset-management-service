@@ -335,12 +335,12 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    // add refset inclusion
+    // add refset exclusion
     this.addRefsetExclusion = function(refset, conceptId, staged, active) {
-      console.debug("addRefsetExclusion");
+      console.debug("addRefsetExclusion", refset, conceptId, staged, active);
       var deferred = $q.defer();
 
-      // Add refset inclusion
+      // Add refset exclusion
       gpService.increment()
       $http.get(
         refsetUrl + "exclusion/add/" + refset.id + "?conceptId=" + conceptId + "&terminologyId="
