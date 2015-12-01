@@ -195,11 +195,4 @@ public interface ReleaseInfo extends HasLastModified {
    */
   public void setArtifacts(List<ReleaseArtifact> artifacts);
 
-  /**
-   * Adds the artifact.
-   *
-   * @param artifact the artifact
-   */
-  public void addArtifact(ReleaseArtifact artifact);
-
 }

@@ -56,20 +56,6 @@ public interface Project extends Searchable {
   public void setRefsets(List<Refset> refsets);
 
   /**
-   * Adds the refset.
-   *
-   * @param refset the refset
-   */
-  public void addRefset(Refset refset);
-
-  /**
-   * Removes the refset.
-   *
-   * @param refset the refset
-   */
-  public void removeRefset(Refset refset);
-
-  /**
    * Returns the namespace.
    *
    * @return the namespace
@@ -96,4 +82,18 @@ public interface Project extends Searchable {
    * @param organization the organization
    */
   public void setOrganization(String organization);
+
+  /**
+   * Returns the module id.
+   *
+   * @return the module id
+   */
+  public String getModuleId();
+
+  /**
+   * Sets the module id.
+   *
+   * @param moduleId the module id
+   */
+  public void setModuleId(String moduleId);
 }

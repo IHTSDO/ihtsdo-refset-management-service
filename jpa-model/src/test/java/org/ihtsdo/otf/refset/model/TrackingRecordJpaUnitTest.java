@@ -139,10 +139,10 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     t2.setProject(p2);
     t1.setRefset(r1);
     t2.setRefset(r2);
-    r1.addTranslation(t1);
-    r2.addTranslation(t2);
-    t1.addConcept(c1);
-    t2.addConcept(c2);
+    r1.getTranslations().add(t1);
+    r2.getTranslations().add(t2);
+    t1.getConcepts().add(c1);
+    t2.getConcepts().add(c2);
   }
 
   /**

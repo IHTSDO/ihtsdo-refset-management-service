@@ -85,6 +85,10 @@ public class ProjectJpa implements Project {
   @Column(nullable = true)
   private String namespace;
 
+  /** The moduleId. */
+  @Column(nullable = true)
+  private String moduleId;
+
   /** The organization. */
   @Column(nullable = true)
   private String organization;
@@ -134,6 +138,7 @@ public class ProjectJpa implements Project {
     lastModifiedBy = project.getLastModifiedBy();
     name = project.getName();
     namespace = project.getNamespace();
+    moduleId = project.getModuleId();
     organization = project.getOrganization();
     description = project.getDescription();
     terminology = project.getTerminology();
@@ -259,6 +264,19 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getModuleId() {
+    return moduleId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setModuleId(String moduleId) {
+    this.moduleId = moduleId;
+  }
+
+  /* see superclass */
+  @Override
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "descriptionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -289,13 +307,6 @@ public class ProjectJpa implements Project {
     this.organization = organization;
   }
 
-  @Override
-  public String toString() {
-    return "ProjectJpa [name=" + name + ", namespace=" + namespace
-        + ", description=" + description + ", terminology=" + terminology
-        + ", version=" + version + "]";
-  }
-
   /* see superclass */
   @Override
   public int hashCode() {
@@ -305,6 +316,7 @@ public class ProjectJpa implements Project {
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+    result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
     result =
         prime * result + ((organization == null) ? 0 : organization.hashCode());
     result =
@@ -370,6 +382,11 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!namespace.equals(other.namespace))
       return false;
+    if (moduleId == null) {
+      if (other.moduleId != null)
+        return false;
+    } else if (!moduleId.equals(other.moduleId))
+      return false;
     if (organization == null) {
       if (other.organization != null)
         return false;
@@ -406,20 +423,10 @@ public class ProjectJpa implements Project {
 
   /* see superclass */
   @Override
-  public void addRefset(Refset refset) {
-    if (refsets == null) {
-      refsets = new ArrayList<Refset>();
-    }
-    refsets.add(refset);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeRefset(Refset refset) {
-    if (refsets != null) {
-      refsets.remove(refset);
-    }
-
+  public String toString() {
+    return "ProjectJpa [name=" + name + ", namespace=" + namespace
+        + ", moduleId=" + moduleId + ", description=" + description
+        + ", terminology=" + terminology + ", version=" + version + "]";
   }
 
 }

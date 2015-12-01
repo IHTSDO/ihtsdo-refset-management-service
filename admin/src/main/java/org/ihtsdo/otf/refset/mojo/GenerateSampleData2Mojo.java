@@ -667,7 +667,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     byte[] data = Files.readAllBytes(path);
     artifact.setData(data);
 
-    releaseInfo.addArtifact(artifact);
+    releaseInfo.getArtifacts().add(artifact);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
     artifact = service.addReleaseArtifact(artifact);

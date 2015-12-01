@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.rf2;
 
 import java.util.List;
 
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -56,20 +57,6 @@ public interface Concept extends Component {
   public void setDescriptions(List<Description> descriptions);
 
   /**
-   * Adds the description.
-   * 
-   * @param description the description
-   */
-  public void addDescription(Description description);
-
-  /**
-   * Removes the description.
-   * 
-   * @param description the description
-   */
-  public void removeDescription(Description description);
-
-  /**
    * Gets the default preferred name.
    * 
    * @return the default preferred name
@@ -96,4 +83,18 @@ public interface Concept extends Component {
    * @param translation the translation
    */
   public void setTranslation(Translation translation);
+
+  /**
+   * Returns the notes.
+   *
+   * @return the notes
+   */
+  public List<Note> getNotes();
+
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
+  public void setNotes(List<Note> notes);
 }

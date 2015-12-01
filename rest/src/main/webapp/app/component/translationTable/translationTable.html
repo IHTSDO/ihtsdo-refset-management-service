@@ -123,7 +123,7 @@
             <td>{{translation.moduleId}} <span flag-icon obj="translation"></span>
             </td>
           </tr>
-          <tr>
+          <tr ng-show="translation.effectiveTime">
             <td>Effective Time</td>
             <td>{{toShortDate(translation.effectiveTime)}}</td>
           </tr>

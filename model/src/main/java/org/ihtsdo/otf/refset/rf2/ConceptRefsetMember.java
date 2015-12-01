@@ -3,6 +3,9 @@
  */
 package org.ihtsdo.otf.refset.rf2;
 
+import java.util.List;
+
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 
 /**
@@ -66,4 +69,18 @@ public interface ConceptRefsetMember extends Component {
    */
   public void setMemberType(Refset.MemberType type);
 
+
+  /**
+   * Returns the notes.
+   *
+   * @return the notes
+   */
+  public List<Note> getNotes();
+
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
+  public void setNotes(List<Note> notes);
 }

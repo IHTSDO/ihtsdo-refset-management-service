@@ -24,7 +24,6 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -167,7 +166,7 @@ public class RedefinitionTest {
 
   // <<445768003 | Intragastric route (qualifier value) | (4)
   // <<372454008 | Gastroenteral route (qualifier value) | (19)
-  
+
   // <<373482005 | Benzethonium (substance) |
   // <<418136008 | Gastro-intestinal stoma route (qualifier value) |
   
@@ -233,7 +232,7 @@ public class RedefinitionTest {
     String reportToken =
         refsetService.compareRefsets(refset1.getId(), copy.getId(),
             adminAuthToken);
-    
+
     MemberDiffReport diffReport =
         refsetService.getDiffReport(reportToken, adminAuthToken);
     assertEquals(0, diffReport.getOldNotNew().size());

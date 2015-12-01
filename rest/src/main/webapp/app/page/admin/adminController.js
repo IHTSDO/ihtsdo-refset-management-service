@@ -192,22 +192,10 @@ tsApp
           })
         };
 
-        // Get $scope.terminologies (and then load versions)
+        // Get $scope.terminologies
         $scope.getTerminologies = function() {
           projectService.getTerminologyEditions().then(function(data) {
             $scope.terminologies = data.strings;
-            $scope.getVersions($scope.terminologies[0]);
-          })
-        };
-
-        // Get $scope.versions
-        $scope.getVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(function(data) {
-            $scope.versions = {};
-            $scope.versions[terminology] = [];
-            for (var i = 0; i < data.translations.length; i++) {
-              $scope.versions[terminology].push(data.translations[i].version.replace(/-/gi, ""));
-            }
           })
         };
 
@@ -364,20 +352,14 @@ tsApp
         //
 
         // Add project modal
-        $scope.openAddProjectModal = function(lproject) {
+        $scope.openAddProjectModal = function() {
 
           var modalInstance = $modal.open({
             templateUrl : 'app/page/admin/editProject.html',
             controller : AddProjectModalCtrl,
             resolve : {
-              project : function() {
-                return lproject;
-              },
               terminologies : function() {
                 return $scope.terminologies;
-              },
-              versions : function() {
-                return $scope.versions;
               }
             }
           });
@@ -391,16 +373,14 @@ tsApp
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $modalInstance, project, terminologies, versions) {
+        var AddProjectModalCtrl = function($scope, $modalInstance, terminologies) {
 
           $scope.action = 'Add';
-          $scope.project = project;
           $scope.terminologies = terminologies;
-          $scope.error = null;
-
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = versions[terminology].sort().reverse();
+          $scope.project = {
+            terminology : terminologies[0]
           };
+          $scope.error = null;
 
           $scope.submitProject = function(project) {
 
@@ -440,9 +420,6 @@ tsApp
               },
               terminologies : function() {
                 return $scope.terminologies;
-              },
-              versions : function() {
-                return $scope.versions;
               }
             }
           });
@@ -454,13 +431,11 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $modalInstance, project, terminologies,
-          versions) {
+        var EditProjectModalCtrl = function($scope, $modalInstance, project, terminologies) {
 
           $scope.action = 'Edit';
           $scope.project = project;
           $scope.terminologies = terminologies;
-          $scope.versions = versions[project.terminology].sort().reverse();
           $scope.error = null;
 
           $scope.submitProject = function(project) {
