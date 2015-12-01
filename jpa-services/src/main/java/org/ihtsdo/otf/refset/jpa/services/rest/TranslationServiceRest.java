@@ -368,12 +368,13 @@ public interface TranslationServiceRest {
    * @param contentDispositionHeader the content disposition header
    * @param in the in
    * @param translationId the translation id
+   * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
    * @throws Exception the exception
    */
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception;
+    Long translationId, String ioHandlerInfoId, String authToken) throws Exception;
 
   /**
    * Export phrase memory.

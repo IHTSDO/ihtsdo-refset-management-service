@@ -66,6 +66,7 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 
 import com.wordnik.swagger.annotations.Api;
@@ -1390,11 +1391,49 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @POST
   @Override
+  @Path("/import/phrasememory")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of phrase memory file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/phrasememory " + translationId );
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import translation definition",
+          UserRole.AUTHOR);
+
+      // Obtain the import handler
+      ImportTranslationHandler handler =
+          translationService.getImportTranslationHandler(ioHandlerInfoId);
+      if (handler == null) {
+        throw new Exception("invalid handler id " + ioHandlerInfoId);
+      }
+      // Load definition
+      String definition = handler.importDefinition(in);
+
+    } catch (Exception e) {
+      handleException(e, "trying to import translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
