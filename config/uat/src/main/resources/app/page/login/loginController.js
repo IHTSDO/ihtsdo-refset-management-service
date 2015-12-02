@@ -7,7 +7,9 @@ tsApp.controller('LoginCtrl', [ '$scope', '$http', '$location', 'securityService
     // Need to call IMS/api/accounts
     // THis requires an nginx setup to redirect ims-api to
     // https://ims.ihtsdotools.org
-    $http.get('ims-api/account').then(function(data) {
+    $http.get('ims-api/account').then(
+    // Success
+    function(data) {
       utilService.clearError();
       console.debug("user = ", data);
 
@@ -29,7 +31,9 @@ tsApp.controller('LoginCtrl', [ '$scope', '$http', '$location', 'securityService
         $location.path("${security.handler.IMS.url}/#/login?serviceReferer=${base.url}")
       });
 
-    }, function(response) {
+    },
+    // Error
+    function(response) {
       utilService.handleError(response);
       $scope.message = "Authentication error, log in at https://dev-ims.ihtsdotools.org";
       $location.path("${security.handler.IMS.url}/#/login?serviceReferer=${base.url}")

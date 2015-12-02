@@ -412,7 +412,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    * @return the list
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   private List<Refset> findAvailableEditingRefsetsHelper(Long projectId,
     User user, WorkflowService workflowService) throws Exception {
 
@@ -445,6 +444,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     refset.getEnabledFeedbackEvents().size();
     refset.getNotes().size();
   }
+
   /* see superclass */
   @Override
   @GET
@@ -801,7 +801,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Get all assigned editing refsets
       String query =
-          "translationId:" + translationId + " AND (forAuthoring:true OR forReview:true)";
+          "translationId:" + translationId
+              + " AND (forAuthoring:true OR forReview:true)";
       // Perform this search without pfs
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
