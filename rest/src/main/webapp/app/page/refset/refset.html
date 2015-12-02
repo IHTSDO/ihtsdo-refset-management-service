@@ -25,25 +25,25 @@
     <span class="col-md-8 col-xs-4"></span>
   </div>
   <div class="col-md-12 col-xs-12">
-    <accordion> <accordion-group is-open="true"> <accordion-heading>
+    <uib-accordion> <uib-accordion-group is-open="true"> <uib-accordion-heading>
     <h5 class="section-header">Available</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div refset-table value="AVAILABLE" projects="projects" metadata="metadata"></div>
-    </accordion-group> <!-- do not show for admins --> <accordion-group is-open="false"
-      ng-show="!isProjectAdmin()"> <accordion-heading>
+    </uib-accordion-group> <!-- do not show for admins --> <uib-accordion-group is-open="false"
+      ng-show="!isProjectAdmin()"> <uib-accordion-heading>
     <h5 class="section-header">Assigned</h5>
-    </accordion-heading> <!-- TODO project="{{project.id}}" -->
+    </uib-accordion-heading> <!-- TODO project="{{project.id}}" -->
     <div refset-table value="ASSIGNED" projects="projects" metadata="metadata"></div>
-    </accordion-group> <!-- show only for admins --> <accordion-group is-open="false"
-      ng-show="isProjectAdmin()"> <accordion-heading>
+    </uib-accordion-group> <!-- show only for admins --> <uib-accordion-group is-open="false"
+      ng-show="isProjectAdmin()"> <uib-accordion-heading>
     <h5 class="section-header">Assigned All</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div refset-table value="ASSIGNED_ALL" projects="projects" metadata="metadata"></div>
-    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
+    </uib-accordion-group> <uib-accordion-group is-open="false"> <uib-accordion-heading>
     <h5 class="section-header">Release</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div refset-table value="RELEASE" projects="projects" metadata="metadata"></div>
-    </accordion-group> </accordion>
+    </uib-accordion-group> </uib-accordion>
   </div>
 </div>
 

@@ -26,24 +26,24 @@
     <span class="col-md-8 col-xs-4"></span>
   </div>
   <div class="col-md-12 col-xs-12">
-    <accordion> <accordion-group ng-show="!isProjectAdmin()"
-      is-open="true"> <accordion-heading>
+    <uib-accordion> <uib-accordion-group ng-show="!isProjectAdmin()"
+      is-open="true"> <uib-accordion-heading>
     <h5 class="section-header">Editing</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div translation-table value="EDITING" projects="projects"
       metadata="metadata"></div>
-    </accordion-group> <accordion-group ng-show="isProjectAdmin()" is-open="true">
-    <accordion-heading>
+    </uib-accordion-group> <uib-accordion-group ng-show="isProjectAdmin()" is-open="true">
+    <uib-accordion-heading>
     <h5 class="section-header">Editing All</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div translation-table value="EDITING_ALL" projects="projects"
       metadata="metadata"></div>
-    </accordion-group> <accordion-group is-open="false"> <accordion-heading>
+    </uib-accordion-group> <uib-accordion-group is-open="false"> <uib-accordion-heading>
     <h5 class="section-header">Release</h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div translation-table value="RELEASE" projects="projects"
       metadata="metadata"></div>
-    </accordion-group> </accordion>
+    </uib-accordion-group> </uib-accordion>
   </div>
 </div>
 
