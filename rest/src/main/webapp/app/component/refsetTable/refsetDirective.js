@@ -1298,8 +1298,9 @@ tsApp
 
                 modalInstance.result.then(
                 // Success
-                function() {
-                  refsetService.fireRefsetChanged(lrefset);
+                function(data) {
+                  refsetService.fireRefsetChanged(data);
+                  $scope.selectRefset(data);
                 });
               };
 
@@ -1435,12 +1436,12 @@ tsApp
                   if ($scope.type == 'Redefinition') {
                     refsetService.finishRedefinition(refset.id).then(function(data) {
                       console.debug("data", data);
-                      $modalInstance.close();
+                      $modalInstance.close(data);
                     })
                   } else if ($scope.type == 'Migration') {
                     refsetService.finishMigration(refset.id).then(function(data) {
                       console.debug("data", data);
-                      $modalInstance.close();
+                      $modalInstance.close(data);
                     })
                   }
                 };
@@ -1487,6 +1488,27 @@ tsApp
                     });
                 }
 
+                // add all inclusions
+                $scope.includeAll = function(refset, list, staged, active) {
+                  for (var i = 0; i < list.length; i++) {
+                    $scope.include(refset, list[i]);
+                  }
+                }
+                
+                // exclude all
+                $scope.excludeAll = function(refset, list, staged, active) {
+                  for (var i = 0; i < list.length; i++) {
+                    $scope.exclude(refset, list[i]);
+                  }
+                }
+                
+                // revert all inclusions or exclusions
+                $scope.revertAll = function(refset, list) {
+                  for (var i = 0; i < list.length; i++) {
+                    $scope.revert(refset, list[i]);
+                  }
+                }
+                
                 // revert inclusions and exclusions
                 $scope.revert = function(refset, concept) {
                   if (concept.memberType == 'INCLUSION' || concept.memberType == 'INCLUSION_STAGED') {
@@ -1531,16 +1553,16 @@ tsApp
 
                 $scope.cancel = function(refset) {
                   console.debug("Cancel ", type, refset.id);
-                  $modalInstance.dismiss('cancel');
+                  //$modalInstance.dismiss('cancel');
                   if ($scope.type == 'Redefinition') {
                     refsetService.cancelRedefinition(refset.id).then(function(data) {
-                      console.debug("data", data);
-                      $scope.stagedRefset = null;
+                      refset.stagingType = null;
+                      $modalInstance.close(refset);
                     })
                   } else if ($scope.type == 'Migration') {
                     refsetService.cancelMigration(refset.id).then(function(data) {
-                      console.debug("data", data);
-                      $scope.stagedRefset = null;
+                      refset.stagingType = null;
+                      $modalInstance.close(refset);
                     })
                   }
                 };

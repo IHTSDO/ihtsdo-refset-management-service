@@ -593,7 +593,8 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
    * @param member the member
    */
   @SuppressWarnings("static-method")
-  private void handleLazyInit(ConceptRefsetMember member) {
+  @Override
+  public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
   }
 

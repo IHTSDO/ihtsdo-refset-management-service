@@ -44,7 +44,7 @@
     <div class="col-md-8 col-xs-12">
       <div class="row">
       <div class="col-md-12 col-xs-12">
-        <h5 ng-show="refset.stagingType != null">
+        <h5 ng-show="refset.stagingType != null && membersInCommon.length > 0">
           <b>Members In Common</b>
         </h5>
         <span ng-show="membersInCommon.length == 0" class="alert alert-warning">
@@ -77,6 +77,13 @@
         <div class="col-md-6 col-xs-6">
           <h5 ng-show="validInclusions.length > 0 || stagedInclusions.length > 0">
             <b>Valid Inclusions</b>
+            <div style="float: right;">
+              <a class="toolicon" title="Add all valid inclusions"
+                ng-show="validInclusions.length > 0"
+                ng-click="includeAll(refset, validInclusions, 'true', 'true')">
+                <i title="Add all valid inclusions" class="noul material-icons md-24">arrow_forward</i>
+              </a>              
+            </div>
           </h5>
 
           <table ng-show="validInclusions.length > 0 || stagedInclusions.length > 0" class="table">
@@ -103,6 +110,13 @@
         <div class="col-md-6 col-xs-6">
           <h5 ng-show="stagedInclusions.length > 0 || validInclusions.length > 0">
             <b>Staged Inclusions</b>
+            <div style="float: right;">
+              <a class="toolicon" title="Revert all staged inclusions"
+                ng-show="stagedInclusions.length > 0"
+                ng-click="revertAll(refset, stagedInclusions)">
+                <i title="Revert all staged inclusions" class="noul material-icons md-24">arrow_back</i>
+              </a>              
+            </div>
           </h5>
 
           <table ng-show="stagedInclusions.length > 0 || validInclusions.length > 0" class="table">
@@ -151,6 +165,13 @@
         <div class="col-md-6 col-xs-6">
           <h5 ng-show="validExclusions.length > 0 || stagedExclusions.length > 0">
             <b>Valid Exclusions</b>
+            <div style="float: right;">
+              <a class="toolicon" title="Exclude all valid exclusions"
+                ng-show="validExclusions.length > 0"
+                ng-click="excludeAll(refset, validExclusions, 'true', 'true')">
+                <i title="Exclude all valid exclusions" class="noul material-icons md-24">arrow_forward</i>
+              </a>              
+            </div>
           </h5>
 
           <table ng-show="validExclusions.length > 0 || stagedExclusions.length > 0" class="table">
@@ -175,6 +196,13 @@
         <div class="col-md-6 col-xs-6">
           <h5 ng-show="stagedExclusions.length > 0 || validExclusions.length > 0">
             <b>Staged Exclusions</b>
+            <div style="float: right;">
+              <a class="toolicon" title="Revert all staged exclusions"
+                ng-show="stagedExclusions.length > 0"
+                ng-click="revertAll(refset, stagedExclusions)">
+                <i title="Revert all staged exclusions" class="noul material-icons md-24">arrow_back</i>
+              </a>              
+            </div>
           </h5>
 
           <table ng-show="stagedExclusions.length > 0 || validExclusions.length > 0" class="table">
@@ -227,6 +255,13 @@
     <div class="col-md-4 col-xs-12">
       <h5 ng-show="newRegularMembers.length > 0">
         <b>New Members</b>
+        <div style="float: right;">
+              <a class="toolicon" title="Exlude all new members"
+                ng-show="newRegularMembers.length > 0"
+                ng-click="excludeAll(refset, newRegularMembers, 'false', 'true')">
+                <i title="Exclude all new members" class="noul material-icons md-24">remove_circle_outline</i>
+              </a>              
+            </div>
       </h5>
       <span style="display: block;">
       <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
@@ -259,6 +294,13 @@
 
       <h5 ng-show="oldRegularMembers.length > 0">
         <b>Old Members</b>
+        <div style="float: right;">
+              <a class="toolicon" title="Add all old members"
+                ng-show="oldRegularMembers.length > 0"
+                ng-click="includeAll(refset, oldRegularMembers, 'false', 'true')">
+                <i title="Add all old members" class="noul material-icons md-24">add_circle_outline</i>
+              </a>              
+            </div>
       </h5>
       <span style="display: block;">
       <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
