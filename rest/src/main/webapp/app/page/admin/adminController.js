@@ -14,8 +14,8 @@ tsApp
       'tabService',
       'securityService',
       'projectService',
-      function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService, utilService,
-        tabService, securityService, projectService) {
+      function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
+        utilService, tabService, securityService, projectService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -257,22 +257,8 @@ tsApp
 
         // sort mechanism 
         $scope.setSortField = function(table, field) {
-          $scope.paging[table].sortField = field;
-          // reset page number too
-          $scope.paging[table].page = 1;
-          // handles null case also
-          if (!$scope.paging[table].ascending) {
-            $scope.paging[table].ascending = true;
-          } else {
-            $scope.paging[table].ascending = false;
-          }
-          // reset the paging for the correct table
-          for ( var key in $scope.paging) {
-            if ($scope.paging.hasOwnProperty(key)) {
-              if (key == table)
-                $scope.paging[key].page = 1;
-            }
-          }
+          utilService.setSortField(table, field, $scope.paging);
+          
           // retrieve the correct table
           if (table === 'candidateProject') {
             $scope.getCandidateProjects();
@@ -290,15 +276,7 @@ tsApp
 
         // Return up or down sort chars if sorted
         $scope.getSortIndicator = function(table, field) {
-          if ($scope.paging[table].ascending == null) {
-            return "";
-          }
-          if ($scope.paging[table].sortField == field && $scope.paging[table].ascending) {
-            return "▴";
-          }
-          if ($scope.paging[table].sortField == field && !$scope.paging[table].ascending) {
-            return "▾";
-          }
+          return utilService.getSortIndicator(table, field, $scope.paging);
         }
 
         // assign user to project

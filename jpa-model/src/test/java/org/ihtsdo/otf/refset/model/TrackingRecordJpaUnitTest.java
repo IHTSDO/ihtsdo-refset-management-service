@@ -172,6 +172,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("concept");
     tester.include("forAuthoring");
     tester.include("forReview");
+    tester.include("revision");
     tester.include("translation");
     tester.include("authors");
     tester.include("reviewers");
@@ -263,6 +264,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("forAuthoring");
     tester.include("forReview");
+    tester.include("revision");
     assertTrue(tester.testNotNullFields());
   }
 
@@ -289,6 +291,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("translationid");
     tester.include("refsetId");
     tester.include("forReview");
+    tester.include("revision");
     tester.include("forAuthoring");
     tester.include("projectId");
     assertTrue(tester.testNotAnalyzedIndexedFields());

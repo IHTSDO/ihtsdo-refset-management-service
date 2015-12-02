@@ -88,6 +88,41 @@ tsApp.service('utilService', [
       // console.debug(queryStr, " => ", cleanQuery);
       return cleanQuery;
     }
+    
+    // Table sorting mechanism
+    this.setSortField = function(table, field, paging) {
+      paging[table].sortField = field;
+      // reset page number too
+      paging[table].page = 1;
+      // handles null case also
+      if (!paging[table].ascending) {
+        paging[table].ascending = true;
+      } else {
+        paging[table].ascending = false;
+      }
+      // reset the paging for the correct table
+      for ( var key in paging) {
+        if (paging.hasOwnProperty(key)) {
+          if (key == table)
+            paging[key].page = 1;
+        }
+      }
+    };
+
+    // Return up or down sort chars if sorted
+    this.getSortIndicator = function(table, field, paging) {
+      if (paging[table].ascending == null) {
+        return "";
+      }
+      if (paging[table].sortField == field && paging[table].ascending) {
+        return "▴";
+      }
+      if (paging[table].sortField == field && !paging[table].ascending) {
+        return "▾";
+      }
+    };    
+    
+    
   } ]);
 
 // Glass pane service

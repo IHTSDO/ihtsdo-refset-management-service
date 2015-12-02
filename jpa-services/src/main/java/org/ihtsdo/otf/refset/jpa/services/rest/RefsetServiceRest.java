@@ -505,14 +505,13 @@ public interface RefsetServiceRest {
    * Clone refset.
    *
    * @param projectId the project id
-   * @param origRefsetId the orig refset id
-   * @param refset the refset
+   * @param refset the refset - must contain the id of the refset being cloned
    * @param authToken the auth token
    * @return the long
    * @throws Exception the exception
    */
-  public Refset cloneRefset(Long projectId, Long origRefsetId,
-    RefsetJpa refset, String authToken) throws Exception;
+  public Refset cloneRefset(Long projectId, RefsetJpa refset, String authToken)
+    throws Exception;
 
   /**
    * Returns the old regular members.

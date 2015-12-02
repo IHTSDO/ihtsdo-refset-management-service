@@ -1,12 +1,14 @@
 
+<!-- R1 -->
 <div class="row">
 
+  <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
 
     <span style="display: block;">
-      <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-        first-text="&laquo;" last-text="&raquo;"
+      <uib-pagination items-per-page="pageSize" max-size="5"
+        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
         ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
         total-items="refsets.totalCount" ng-model="paging['refset'].page"
         ng-change="getRefsets()"></uib-pagination>
@@ -29,7 +31,6 @@
       </h4>
     </span>
 
-
     <!-- Basic Refset info -->
     <span ng-show="refsets.totalCount == 0" style="display: block;"
       class="alert alert-warning">No refsets.</span>
@@ -49,8 +50,12 @@
         <th class="col-md-1 col-xs-1"
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
+        <!-- Actions header -->
         <th class="col-md-1 col-xs-1"
           ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">Actions</th>
+        <th class="col-md-1 col-xs-1"
+          ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">Actions</th>
+
       </thead>
       <tbody>
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
@@ -65,6 +70,15 @@
             </span>
           </td>
           <td><span refset-type-icon refset="refset"></span></td>
+
+          <!-- PUBLISHED/PREVIEW actions -->
+          <td class="nobreak"
+            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">
+            <a class="toolicon" title="Clone"
+              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
+              <i title="Clone" class="noul material-icons md-18">content_copy</i>
+            </a>
+          </td>
 
           <!-- AVAILABLE actions -->
           <td class="nobreak" ng-show="value == 'AVAILABLE'"><a
@@ -119,7 +133,8 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel failed import">Cancel Import</button>
+                uib-tooltip="Click to cancel failed import">Cancel
+                Import</button>
             </span> <span ng-show="refset.stagingType == 'DEFINITION'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -130,7 +145,8 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel migration">Cancel Migration</button>
+                uib-tooltip="Click to cancel migration">Cancel
+                Migration</button>
             </span></td>
 
           <!-- RELEASE actions -->
@@ -153,17 +169,17 @@
         </tr>
       </tbody>
     </table>
+    <!-- End R1C1 -->
   </div>
 
-
-
-  <!-- Details, Releases, Members -->
+  <!-- R1C2 -->
   <div class="col-md-6 col-xs-12">
 
+    <!-- Details, Releases, Members -->
     <span ng-show="!selected.refset && refsets.length > 0"
       class="alert alert-warning">Select a refset to see details</span>
 
-    <div ng-show="selected.refset" class="col-md-12 col-xs-12">
+    <div class="col-md-12 col-xs-12" ng-show="selected.refset">
 
       <!-- Refset Details -->
       <h4>
@@ -194,11 +210,11 @@
             <td>Terminology</td>
             <td>{{selected.refset.terminology}} {{selected.refset.version}}
               <a class="toolicon"
-                ng-click="openRedefinitionModal(selected.refset, 'Migration')"
+                ng-click="openRefactorModel(selected.refset, 'Migration')"
                 ng-show="selected.refset.stagingType == null">
                 <i title="Migration" class="noul material-icons md-18">find_replace</i>
               </a> <a class="toolicon"
-                ng-click="openRedefinitionModal(selected.refset, 'Migration')"
+                ng-click="openRefactorModal(selected.refset, 'Migration')"
                 ng-show="selected.refset.stagingType == 'MIGRATION'">
                 <i title="Resume migration" class="noul material-icons md-18">play_arrow</i>
               </a>
@@ -215,11 +231,11 @@
                     <i title="Import definition"
                       class="noul material-icons md-18">file_upload</i>
           </a> --> <a class="toolicon"
-                ng-click="openRedefinitionModal(selected.refset, 'Redefinition')"
+                ng-click="openRefactorModal(selected.refset, 'Redefinition')"
                 ng-show="selected.refset.stagingType == null">
                 <i title="Redefinition" class="noul material-icons md-18">find_replace</i>
               </a> <a class="toolicon"
-                ng-click="openRedefinitionModal(selected.refset, 'Redefinition')"
+                ng-click="openRefactorModal(selected.refset, 'Redefinition')"
                 ng-show="selected.refset.stagingType == 'DEFINITION'">
                 <i title="Resume redefinition" class="noul material-icons md-18">play_arrow</i>
               </a>
@@ -269,6 +285,26 @@
         </table>
       </div>
     </div>
+    <!-- End R1C2 -->
+  </div>
+
+  <!-- End R1 -->
+</div>
+
+
+<!-- R2 -->
+<div class="row">
+
+  <!-- R2C1 -->
+  <div class="col-md-6 col-xs-12">
+
+    <div ng-show="selected.member" member-info data="selected"></div>
+
+    <!-- End R2C1 -->
+  </div>
+
+  <!-- R2C2 -->
+  <div class="col-md-6 col-xs-12">
 
     <div class="col-md-12 col-xs-12">
       <h4 ng-show="selected.refset">
@@ -354,9 +390,10 @@
           </thead>
           <tbody>
             <tr ng-repeat="member in selected.refset.members"
-              ng-class="getMemberStyle(member)">
+              ng-click="selectMember(member);"
+              ng-class="{selected : member.id == selected.member.id}">
               <td>{{member.conceptId}}</td>
-              <td>{{member.conceptName}}</td>
+              <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-show="getBaseMemberType(member) == 'MEMBER'"
@@ -400,7 +437,9 @@
 
       </span>
     </div>
+
+    <!-- End R2C2 -->
   </div>
 
-  <!-- End row -->
+  <!-- End R2 -->
 </div>

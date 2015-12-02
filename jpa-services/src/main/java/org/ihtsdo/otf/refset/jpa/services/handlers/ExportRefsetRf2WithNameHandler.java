@@ -54,7 +54,7 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
   /* see superclass */
   @Override
   public String getName() {
-    return "Export RF2";
+    return "Export RF2 with name";
   }
 
   /* see superclass */
@@ -77,6 +77,7 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
     sb.append("referencedComponentId").append("\t");
+    sb.append("name").append("\t");
     sb.append("\r\n");
 
     for (ConceptRefsetMember member : members) {
@@ -84,7 +85,7 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
       sb.append(member.getTerminologyId()).append("\t");
       if (member.getEffectiveTime() != null) {
         sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
-          .append("\t");
+            .append("\t");
       } else {
         sb.append("\t");
       }
@@ -92,6 +93,7 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
       sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
       sb.append(member.getConceptId()).append("\t");
+      sb.append(member.getConceptName()).append("\t");
       sb.append("\r\n");
     }
 
@@ -119,7 +121,7 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
     sb.append(UUID.randomUUID().toString()).append("\t");
     if (refset.getEffectiveTime() != null) {
       sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
-        .append("\t");
+          .append("\t");
     } else {
       sb.append("\t");
     }
