@@ -1553,16 +1553,15 @@ tsApp
 
                 $scope.cancel = function(refset) {
                   console.debug("Cancel ", type, refset.id);
-                  //$modalInstance.dismiss('cancel');
                   if ($scope.type == 'Redefinition') {
                     refsetService.cancelRedefinition(refset.id).then(function(data) {
                       refset.stagingType = null;
-                      $modalInstance.close(refset);
+                      $uibModalInstance.close(refset);
                     })
                   } else if ($scope.type == 'Migration') {
                     refsetService.cancelMigration(refset.id).then(function(data) {
                       refset.stagingType = null;
-                      $modalInstance.close(refset);
+                      $uibModalInstance.close(refset);
                     })
                   }
                 };
