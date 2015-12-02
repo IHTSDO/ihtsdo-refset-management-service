@@ -229,7 +229,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
-
+        window.location.href = "${logout.url}";
       },
       // error
       function(response) {
