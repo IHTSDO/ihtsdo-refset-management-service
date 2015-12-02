@@ -161,10 +161,10 @@
       <artifactId>jsr311-api</artifactId>
     </dependency>
 
-	<dependency>
-		<groupId>com.google.guava</groupId>
-		<artifactId>guava</artifactId>
-	</dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+    </dependency>
 
   </dependencies>
 
@@ -229,8 +229,20 @@
           <webResources>
             <resource>
               <directory>${project.build.directory}/config/resources</directory>
-              <!-- avoid unnecessary stuff -->
+              <filtering>true</filtering>
+              <!-- include files to filter -->
+              <includes>
+                <include>app/page/login/login.html</include>
+                <include>app/page/login/loginController.js</include>
+              </includes>
+            </resource>
+            <resource>
+              <directory>${project.build.directory}/config/resources</directory>
+              <!-- avoid unnecessary stuff and filtered files -->
+              <filtering>false</filtering>
               <excludes>
+                <exclude>app/page/login/login.html</exclude>
+                <exclude>app/page/login/loginController.js</exclude>
                 <exclude>bin/**</exclude>
                 <exclude>config*.properties</exclude>
               </excludes>
