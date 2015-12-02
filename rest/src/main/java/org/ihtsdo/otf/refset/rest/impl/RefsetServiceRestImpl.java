@@ -1624,6 +1624,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // creates a "members in common" list (where reportToken is the key)
       List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
       for (ConceptRefsetMember member1 : refset1.getMembers()) {
+        refsetService.handleLazyInit(member1);
         if (member1.getMemberType() == Refset.MemberType.MEMBER
             && refset2.getMembers().contains(member1)) {
           membersInCommon.add(member1);
@@ -1637,11 +1638,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       List<ConceptRefsetMember> newNotOld = new ArrayList<>();
 
       for (ConceptRefsetMember member1 : refset1.getMembers()) {
+        refsetService.handleLazyInit(member1);
         if (!refset2.getMembers().contains(member1)) {
           oldNotNew.add(member1);
         }
       }
       for (ConceptRefsetMember member2 : refset2.getMembers()) {
+        refsetService.handleLazyInit(member2);
         if (!refset1.getMembers().contains(member2)) {
           newNotOld.add(member2);
         }
@@ -1771,6 +1774,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       oldMembers.setObjects(refsetService.applyPfsToList(
           memberDiffReport.getOldRegularMembers(), ConceptRefsetMember.class,
           pfs));
+      for (ConceptRefsetMember member : oldMembers.getObjects()) {
+        refsetService.handleLazyInit(member);
+      }
       return oldMembers;
 
     } catch (Exception e) {
@@ -1814,6 +1820,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       newMembers.setObjects(refsetService.applyPfsToList(
           memberDiffReport.getNewRegularMembers(), ConceptRefsetMember.class,
           pfs));
+      for (ConceptRefsetMember member : newMembers.getObjects()) {
+        refsetService.handleLazyInit(member);
+      }
       return newMembers;
 
     } catch (Exception e) {

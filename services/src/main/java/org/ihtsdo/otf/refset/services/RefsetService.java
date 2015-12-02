@@ -304,4 +304,11 @@ public interface RefsetService extends ProjectService {
    * @throws Exception the exception
    */
   public void removeNote(Long id, Class<? extends Note> type) throws Exception;
+
+  /**
+   * Handle lazy init.
+   *
+   * @param member the member
+   */
+  public void handleLazyInit(ConceptRefsetMember member);
 }

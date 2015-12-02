@@ -41,7 +41,7 @@
           ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
             ng-bind="getSortIndicator('refset','terminologyId')"></span>
         </th>
-        <th class="col-md-5 col-xs-5"
+        <th class="col-md-4 col-xs-4"
           ng-click="setSortField('refset','name', null)">Name<span
             ng-bind="getSortIndicator('refset','name',null)"></span></th>
         <th class="col-md-3 col-xs-3"
@@ -51,9 +51,9 @@
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <!-- Actions header -->
-        <th class="col-md-1 col-xs-1"
+        <th class="col-md-2 col-xs-2"
           ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">Actions</th>
-        <th class="col-md-1 col-xs-1"
+        <th class="col-md-2 col-xs-2"
           ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">Actions</th>
 
       </thead>
@@ -66,8 +66,7 @@
             class="visible-xs-inline" /> <span flag-icon obj="refset"></span> <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}} <span
               ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">
-              <br /> {{refset.workflowStatus}}
-            </span>
+              <br />{{refset.workflowStatus}}</span>
           </td>
           <td><span refset-type-icon refset="refset"></span></td>
 
@@ -126,9 +125,12 @@
             </a>&nbsp;<a class="toolicon" title="Save"
               ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()">
               <i title="Save" class="noul material-icons md-18">save</i>
-            </a>&nbsp;<a class="toolicon" title="Finish"
+            </a>&nbsp;<a class="toolicon" title="Finish" ng-show="refset.workflowStatus != 'REVIEW_DONE'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
               <i title="Finish" class="noul material-icons md-18">done</i>
+            </a><a class="toolicon" title="Prepare for publication" ng-show="refset.workflowStatus == 'REVIEW_DONE'"
+              ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
+              <i title="Prepare for publication" class="material-icons md-18">open_in_new</i>
             </a> <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -160,12 +162,12 @@
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="noul material-icons md-18">assignment</i>
-            </a> <!-- For admins only if READY_FOR_PUBLICATION --> &nbsp;<a
-              class="toolicon" title="Publish"
-              ng-show="role == 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openReleaseProcessModal(refset, '20151112')">
-              <i title="Publish" class="noul material-icons md-18">publish</i>
-            </a></td>
+            </a> <!-- only if READY_FOR_PUBLICATION --> &nbsp; <a 
+              class="toolicon" title="Begin Release Process" 
+              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
+              ng-click="openReleaseProcessModal(refset); $event.stopPropagation()">
+              <i title="Begin release process" class="material-icons md-18">open_in_new</i>            
+            </a> </td>
         </tr>
       </tbody>
     </table>
@@ -211,11 +213,11 @@
             <td>{{selected.refset.terminology}} {{selected.refset.version}}
               <a class="toolicon"
                 ng-click="openRefactorModel(selected.refset, 'Migration')"
-                ng-show="selected.refset.stagingType == null">
+                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'">
                 <i title="Migration" class="noul material-icons md-18">find_replace</i>
               </a> <a class="toolicon"
                 ng-click="openRefactorModal(selected.refset, 'Migration')"
-                ng-show="selected.refset.stagingType == 'MIGRATION'">
+                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'">
                 <i title="Resume migration" class="noul material-icons md-18">play_arrow</i>
               </a>
             </td>

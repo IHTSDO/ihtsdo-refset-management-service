@@ -691,7 +691,7 @@ tsApp
               };
 
               // Release Process modal
-              $scope.openReleaseProcessModal = function(lrefset, lEffectiveTime) {
+              $scope.openReleaseProcessModal = function(lrefset) {
 
                 console.debug("releaseProcessModal ", lrefset);
 
@@ -705,9 +705,6 @@ tsApp
                     },
                     ioHandlers : function() {
                       return $scope.metadata.exportHandlers;
-                    },
-                    effectiveTime : function() {
-                      return lEffectiveTime
                     }
 
                   }
@@ -721,8 +718,7 @@ tsApp
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers,
-                effectiveTime) {
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers) {
 
                 console.debug("Entered release process modal", refset.id, ioHandlers);
 
@@ -730,14 +726,65 @@ tsApp
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.releaseInfo = [];
+                $scope.validationResult = null;
 
-                $scope.release = function() {
-                  console.debug("export", refset.id);
+                $scope.beginRefsetRelease = function(refset) {
+                  console.debug("begin refset release", refset.id, refset.effectiveTime);
 
-                  releaseService.beginRefsetRelease(refset.id, effectiveTime).then(
+                  releaseService.beginRefsetRelease(refset.id, refset.effectiveTime).then(
                   // Success
                   function(data) {
-                    releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    $scope.refset.inPublicationProcess = true;
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
+                };
+
+                $scope.validateRefsetRelease = function(refset) {
+                  console.debug("validate refset release", refset.id);
+
+                  releaseService.validateRefsetRelease(refset.id).then(
+                  // Success
+                  function(data) {
+                    $scope.validationResult = data;
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.previewRefsetRelease = function(refset) {
+                  console.debug("preview refset release", refset.id);
+
+                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedRefset = data;
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.finishRefsetRelease = function(refset) {
+                  console.debug("finish refset release", refset.id);
+
+                  releaseService.finishRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(refset);
                   },
                   // Error
                   function(data) {
@@ -748,362 +795,98 @@ tsApp
                   $uibModalInstance.close(refset);
                 };
 
-                $scope.cancel = function() {
+                $scope.cancel = function(refset) {
+                  console.debug("Cancel ", refset.id);
                   $uibModalInstance.dismiss('cancel');
+                  releaseService.cancelRefsetRelease(refset.id).then(function(data) {
+                    console.debug("cancel data", data);
+                    $uibModalInstance.close(refset);
+                  });
                 };
 
-              };
-
-              // Assign refset modal
-              $scope.openAssignRefsetModal = function(lrefset, laction, luserName) {
-                console.debug("openAssignRefsetModal ", lrefset, laction, luserName);
-
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/assignRefset.html',
-                  controller : AssignRefsetModalCtrl,
-                  backdrop : 'static',
-                  resolve : {
-                    refset : function() {
-                      return lrefset;
-                    },
-                    action : function() {
-                      return laction;
-                    },
-                    currentUserName : function() {
-                      return luserName;
-                    },
-                    assignedUsers : function() {
-                      return $scope.projects.assignedUsers;
-                    },
-                    project : function() {
-                      return $scope.project;
-                    }
-                  }
-
-                });
-
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  refsetService.fireRefsetChanged(data);
-                });
-              };
-
-              // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, refset, action,
-                currentUserName, assignedUsers, project, $rootScope) {
-
-                console.debug("Entered assign refset modal control", assignedUsers, project.id);
-
-                $scope.refset = refset;
-                $scope.project = project;
-                $scope.assignedUserNames = [];
-                $scope.selectedUserName = currentUserName;
-                $scope.errors = [];
-
-                // Prep userNames picklist
-                for (var i = 0; i < assignedUsers.length; i++) {
-                  $scope.assignedUserNames.push(assignedUsers[i].userName);
-                }
-                $scope.assignedUserNames = $scope.assignedUserNames.sort();
-
-                $scope.assignRefset = function(userName) {
-                  console.debug("Submitting chosen user", userName);
-                  if (!userName) {
-                    $scope.errors[0] = "The user must be selected. ";
-                    return;
-                  }
-
-                  $scope.selectedUserName = userName;
-
-                  if (action == 'ASSIGN') {
-                    workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                      "ASSIGN").then(
-                    // Success
-                    function(data) {
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  }
+                $scope.close = function() {
+                  $uibModalInstance.close(refset);
                 };
 
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                $scope.open = function($event) {
+                  $scope.status.opened = true;
                 };
 
-              };
-
-              // Add Refset modal
-              $scope.openAddRefsetModal = function() {
-                console.debug("openAddRefsetModal ");
-
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/editRefset.html',
-                  controller : AddRefsetModalCtrl,
-                  backdrop : 'static',
-                  resolve : {
-                    metadata : function() {
-                      return $scope.metadata;
-                    },
-                    project : function() {
-                      return $scope.project;
-                    }
-                  }
-                });
-
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  refsetService.fireRefsetChanged(data);
-                });
-              };
-
-              // Add Refset controller
-              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project) {
-
-                console.debug("Entered add refset modal control", metadata);
-
-                $scope.action = 'Add';
-                $scope.errors = [];
-                $scope.metadata = metadata;
-                $scope.project = project;
-                $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
-                $scope.refset = {
-                  workflowPath : metadata.workflowPaths[0],
-                  terminology : metadata.terminologies[0],
-                  version : $scope.versions[0],
-                  namespace : $scope.project.namespace,
-                  moduleId : $scope.project.moduleId,
-                  organization : $scope.project.organization,
-                  terminology : $scope.project.terminology,
-                  version : $scope.project.version,
-                  type : metadata.refsetTypes[0],
+                $scope.setDate = function(year, month, day) {
+                  $scope.dt = new Date(year, month, day);
                 };
 
-                $scope.terminologySelected = function(terminology) {
-                  $scope.versions = metadata.versions[terminology].sort().reverse();
+                $scope.format = 'yyyyMMdd';
+
+                $scope.status = {
+                  opened : false
                 };
 
-                $scope.submitRefset = function(refset) {
-                  console.debug("Submitting add refset", refset);
+                // Assign refset modal
+                $scope.openAssignRefsetModal = function(lrefset, laction, luserName) {
+                  console.debug("openAssignRefsetModal ", lrefset, laction, luserName);
 
-                  if (!refset || !refset.name || !refset.description) {
-                    $scope.errors[0] = "The name and description fields cannot be blank. ";
-                    return;
-                  }
-
-                  refset.projectId = project.id;
-                  refsetService.addRefset(refset).then(
-                  // Success - add refset
-                  function(data) {
-                    var newRefset = data;
-                    // IF intensional, apply the definition
-                    if (newRefset.type == 'INTENSIONAL') {
-                      refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
-                      // Success - begin redefinition
-                      function(data) {
-
-                        refsetService.finishRedefinition(newRefset.id).then(
-                        // Success - finish redefinition
-                        function(data) {
-                          $uibModalInstance.close(newRefset);
-                        },
-                        // Error - finish redefinition
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/assignRefset.html',
+                    controller : AssignRefsetModalCtrl,
+                    backdrop : 'static',
+                    resolve : {
+                      refset : function() {
+                        return lrefset;
                       },
-                      // Error - begin redefinition
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      })
-                    } else {
-                      $uibModalInstance.close(newRefset);
+                      action : function() {
+                        return laction;
+                      },
+                      currentUserName : function() {
+                        return luserName;
+                      },
+                      assignedUsers : function() {
+                        return $scope.projects.assignedUsers;
+                      },
+                      project : function() {
+                        return $scope.project;
+                      }
                     }
-                  },
-                  // Error - add refset
+
+                  });
+
+                  modalInstance.result.then(
+                  // Success
                   function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
-
+                    refsetService.fireRefsetChanged(data);
+                  });
                 };
 
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
-                };
+                // Assign refset controller
+                var AssignRefsetModalCtrl = function($scope, $uibModalInstance, refset, action,
+                  currentUserName, assignedUsers, project, $rootScope) {
 
-              };
+                  console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
-              // Edit refset modal
-              $scope.openEditRefsetModal = function(lrefset) {
+                  $scope.refset = refset;
+                  $scope.project = project;
+                  $scope.assignedUserNames = [];
+                  $scope.selectedUserName = currentUserName;
+                  $scope.errors = [];
 
-                console.debug("openEditRefsetModal ");
+                  // Prep userNames picklist
+                  for (var i = 0; i < assignedUsers.length; i++) {
+                    $scope.assignedUserNames.push(assignedUsers[i].userName);
+                  }
+                  $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/editRefset.html',
-                  controller : EditRefsetModalCtrl,
-                  backdrop : 'static',
-                  resolve : {
-                    refset : function() {
-                      return lrefset;
-                    },
-                    metadata : function() {
-                      return $scope.metadata;
-                    },
-                    project : function() {
-                      return $scope.project;
+                  $scope.assignRefset = function(userName) {
+                    console.debug("Submitting chosen user", userName);
+                    if (!userName) {
+                      $scope.errors[0] = "The user must be selected. ";
+                      return;
                     }
-                  }
-                });
 
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  refsetService.fireRefsetChanged(data);
-                });
-              };
+                    $scope.selectedUserName = userName;
 
-              // Edit refset controller
-              var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                project) {
-
-                console.debug("Entered edit refset modal control");
-
-                $scope.action = 'Edit';
-                $scope.errors = [];
-                $scope.refset = refset;
-                $scope.project = project;
-                $scope.originalDefinition = $scope.refset.definition;
-                $scope.metadata = metadata;
-                $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
-
-                $scope.terminologySelected = function(terminology) {
-                  $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
-                };
-
-                $scope.submitRefset = function(refset) {
-                  console.debug("Submitting edit refset", refset);
-
-                  if (!refset || !refset.name || !refset.description) {
-                    $scope.error = "The name, description, and terminology fields cannot be blank. ";
-                    return;
-                  }
-                  refsetService.updateRefset(refset).then(
-                  // Success - update refset
-                  function(data) {
-                    if (refset.definition != $scope.originalDefinition) {
-                      $scope.error = "Definition is not allowed to change with refset edit.";
-                    } else {
-                      $uibModalInstance.close(refset);
-                    }
-                  },
-                  // Error - update refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
-
-                };
-
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
-                };
-
-              };
-
-              // Add member modal
-
-              $scope.openAddMemberModal = function(lmember, lrefset) {
-
-                console.debug("openAddMemberModal ", lrefset);
-
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/addMember.html',
-                  controller : AddMemberModalCtrl,
-                  backdrop : 'static',
-                  resolve : {
-                    member : function() {
-                      return lmember;
-                    },
-                    refset : function() {
-                      return lrefset;
-                    },
-                    project : function() {
-                      return $scope.project;
-                    }
-                  }
-                });
-
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  refsetService.fireRefsetChanged(data);
-                });
-              };
-
-              // Add member controller
-              var AddMemberModalCtrl = function($scope, $uibModalInstance, member, refset, project) {
-
-                console.debug("Entered add member modal control");
-                $scope.pageSize = 10;
-                $scope.errors = [];
-                $scope.searchResults = null;
-                $scope.data = {
-                  concept : null
-                };
-                $scope.pageSize = 10;
-                $scope.paging = {};
-                $scope.paging["search"] = {
-                  page : 1,
-                  filter : "",
-                  sortField : null,
-                  ascending : null
-                }
-
-                if (refset.type == 'EXTENSIONAL') {
-                  $scope.memberType = 'MEMBER';
-                }
-                if (refset.type == 'INTENSIONAL') {
-                  $scope.memberType = 'INCLUSION';
-                }
-
-                $scope.addMember = function(concept) {
-                  console.debug("add member", concept);
-
-                  var member = {
-                    conceptId : concept.terminologyId,
-                    conceptName : concept.name,
-                    memberType : $scope.memberType,
-                    terminology : refset.terminology,
-                    version : refset.version,
-                    moduleId : refset.moduleId,
-                  };
-                  member.refsetId = refset.id;
-
-                  if (member.memberType == 'MEMBER') {
-
-                    refsetService.addRefsetMember(member).then(
-                    // Success
-                    function(data) {
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  }
-
-                  if (member.memberType == 'INCLUSION') {
-                    refsetService
-                      .addRefsetInclusion(refset, member.conceptId, false, member.active).then(
+                    if (action == 'ASSIGN') {
+                      workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
+                        "ASSIGN").then(
                       // Success
                       function(data) {
                         $uibModalInstance.close(refset);
@@ -1113,548 +896,856 @@ tsApp
                         $scope.errors[0] = data;
                         utilService.clearError();
                       })
-                  }
-
-                };
-
-                // Page search results
-                $scope.getPreviousPage = function() {
-                  $scope.paging['search'].page--;
-                  $scope.getSearchResults($scope.search);
-                }
-                $scope.getNextPage = function() {
-                  $scope.paging['search'].page++;
-                  $scope.getSearchResults($scope.search);
-                }
-
-                // get search results
-                $scope.getSearchResults = function(search) {
-                  console.debug("Getting search results", search);
-
-                  if (!search) {
-                    $scope.errors[0] = "The search field cannot be blank. ";
-                    return;
-                  }
-                  // clear data structures
-                  $scope.errors = [];
-
-                  var pfs = {
-                    startIndex : ($scope.paging["search"].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : null,
-                    ascending : null,
-                    queryRestriction : null
+                    }
                   };
 
-                  projectService.findConceptsForQuery(search, refset.terminology, refset.version,
-                    pfs).then(
-                  // Success
-                  function(data) {
-                    $scope.searchResults = data.concepts;
-                    $scope.searchResults.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
+                  $scope.cancel = function() {
+                    $uibModalInstance.dismiss('cancel');
+                  };
+
+                };
+
+                // Add Refset modal
+                $scope.openAddRefsetModal = function() {
+                  console.debug("openAddRefsetModal ");
+
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/editRefset.html',
+                    controller : AddRefsetModalCtrl,
+                    backdrop : 'static',
+                    resolve : {
+                      metadata : function() {
+                        return $scope.metadata;
+                      },
+                      project : function() {
+                        return $scope.project;
+                      }
+                    }
                   });
 
+                  modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(data);
+                  });
                 };
 
-                // Clear errors
-                $scope.clearError = function() {
+                // Add Refset controller
+                var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project) {
+
+                  console.debug("Entered add refset modal control", metadata);
+
+                  $scope.action = 'Add';
                   $scope.errors = [];
-                }
+                  $scope.metadata = metadata;
+                  $scope.project = project;
+                  $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                  $scope.refset = {
+                    workflowPath : metadata.workflowPaths[0],
+                    terminology : metadata.terminologies[0],
+                    version : $scope.versions[0],
+                    namespace : $scope.project.namespace,
+                    moduleId : $scope.project.moduleId,
+                    organization : $scope.project.organization,
+                    terminology : $scope.project.terminology,
+                    version : $scope.project.version,
+                    type : metadata.refsetTypes[0],
+                  };
 
-                // select concept and get concept data
-                $scope.selectConcept = function(concept) {
-                  $scope.data.concept = concept;
+                  $scope.terminologySelected = function(terminology) {
+                    $scope.versions = metadata.versions[terminology].sort().reverse();
+                  };
+
+                  $scope.submitRefset = function(refset) {
+                    console.debug("Submitting add refset", refset);
+
+                    if (!refset || !refset.name || !refset.description) {
+                      $scope.errors[0] = "The name and description fields cannot be blank. ";
+                      return;
+                    }
+
+                    refset.projectId = project.id;
+                    refsetService.addRefset(refset).then(
+                    // Success - add refset
+                    function(data) {
+                      var newRefset = data;
+                      // IF intensional, apply the definition
+                      if (newRefset.type == 'INTENSIONAL') {
+                        refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
+                        // Success - begin redefinition
+                        function(data) {
+
+                          refsetService.finishRedefinition(newRefset.id).then(
+                          // Success - finish redefinition
+                          function(data) {
+                            $uibModalInstance.close(newRefset);
+                          },
+                          // Error - finish redefinition
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
+                        },
+                        // Error - begin redefinition
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
+                      } else {
+                        $uibModalInstance.close(newRefset);
+                      }
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+
+                  };
+
+                  $scope.cancel = function() {
+                    $uibModalInstance.dismiss('cancel');
+                  };
+
                 };
 
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                // Edit refset modal
+                $scope.openEditRefsetModal = function(lrefset) {
+
+                  console.debug("openEditRefsetModal ");
+
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/editRefset.html',
+                    controller : EditRefsetModalCtrl,
+                    backdrop : 'static',
+                    resolve : {
+                      refset : function() {
+                        return lrefset;
+                      },
+                      metadata : function() {
+                        return $scope.metadata;
+                      },
+                      project : function() {
+                        return $scope.project;
+                      }
+                    }
+                  });
+
+                  modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(data);
+                  });
                 };
 
-              };
+                // Edit refset controller
+                var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
+                  project) {
 
-              // Refactor modal - for redefinition or migration
-              $scope.openRefactorModal = function(lrefset, ltype) {
+                  console.debug("Entered edit refset modal control");
 
-                console.debug("openRefactorModal ", lrefset, ltype);
+                  $scope.action = 'Edit';
+                  $scope.errors = [];
+                  $scope.refset = refset;
+                  $scope.project = project;
+                  $scope.originalDefinition = $scope.refset.definition;
+                  $scope.metadata = metadata;
+                  $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
 
-                var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/refactor.html',
-                  controller : RefactorModalCtrl,
-                  size : 'lg',
-                  resolve : {
+                  $scope.terminologySelected = function(terminology) {
+                    $scope.versions = $scope.metadata.versions[terminology].sort().reverse();
+                  };
 
-                    refset : function() {
-                      return lrefset;
+                  $scope.submitRefset = function(refset) {
+                    console.debug("Submitting edit refset", refset);
+
+                    if (!refset || !refset.name || !refset.description) {
+                      $scope.error = "The name, description, and terminology fields cannot be blank. ";
+                      return;
+                    }
+                    refsetService.updateRefset(refset).then(
+                    // Success - update refset
+                    function(data) {
+                      if (refset.definition != $scope.originalDefinition) {
+                        $scope.error = "Definition is not allowed to change with refset edit.";
+                      } else {
+                        $uibModalInstance.close(refset);
+                      }
                     },
-                    definition : function() {
-                      return lrefset.definition;
+                    // Error - update refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+
+                  };
+
+                  $scope.cancel = function() {
+                    $uibModalInstance.dismiss('cancel');
+                  };
+
+                };
+
+                // Add member modal
+
+                $scope.openAddMemberModal = function(lmember, lrefset) {
+
+                  console.debug("openAddMemberModal ", lrefset);
+
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/addMember.html',
+                    controller : AddMemberModalCtrl,
+                    backdrop : 'static',
+                    resolve : {
+                      member : function() {
+                        return lmember;
+                      },
+                      refset : function() {
+                        return lrefset;
+                      },
+                      project : function() {
+                        return $scope.project;
+                      }
+                    }
+                  });
+
+                  modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(data);
+                  });
+                };
+
+                // Add member controller
+                var AddMemberModalCtrl = function($scope, $uibModalInstance, member, refset,
+                  project) {
+
+                  console.debug("Entered add member modal control");
+                  $scope.pageSize = 10;
+                  $scope.errors = [];
+                  $scope.searchResults = null;
+                  $scope.data = {
+                    concept : null
+                  };
+                  $scope.pageSize = 10;
+                  $scope.paging = {};
+                  $scope.paging["search"] = {
+                    page : 1,
+                    filter : "",
+                    sortField : null,
+                    ascending : null
+                  }
+
+                  if (refset.type == 'EXTENSIONAL') {
+                    $scope.memberType = 'MEMBER';
+                  }
+                  if (refset.type == 'INTENSIONAL') {
+                    $scope.memberType = 'INCLUSION';
+                  }
+
+                  $scope.addMember = function(concept) {
+                    console.debug("add member", concept);
+
+                    var member = {
+                      conceptId : concept.terminologyId,
+                      conceptName : concept.name,
+                      memberType : $scope.memberType,
+                      terminology : refset.terminology,
+                      version : refset.version,
+                      moduleId : refset.moduleId,
+                    };
+                    member.refsetId = refset.id;
+
+                    if (member.memberType == 'MEMBER') {
+
+                      refsetService.addRefsetMember(member).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                    }
+
+                    if (member.memberType == 'INCLUSION') {
+                      refsetService.addRefsetInclusion(refset, member.conceptId, false,
+                        member.active).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                    }
+
+                  };
+
+                  // Page search results
+                  $scope.getPreviousPage = function() {
+                    $scope.paging['search'].page--;
+                    $scope.getSearchResults($scope.search);
+                  }
+                  $scope.getNextPage = function() {
+                    $scope.paging['search'].page++;
+                    $scope.getSearchResults($scope.search);
+                  }
+
+                  // get search results
+                  $scope.getSearchResults = function(search) {
+                    console.debug("Getting search results", search);
+
+                    if (!search) {
+                      $scope.errors[0] = "The search field cannot be blank. ";
+                      return;
+                    }
+                    // clear data structures
+                    $scope.errors = [];
+
+                    var pfs = {
+                      startIndex : ($scope.paging["search"].page - 1) * $scope.pageSize,
+                      maxResults : $scope.pageSize,
+                      sortField : null,
+                      ascending : null,
+                      queryRestriction : null
+                    };
+
+                    projectService.findConceptsForQuery(search, refset.terminology, refset.version,
+                      pfs).then(
+                    // Success
+                    function(data) {
+                      $scope.searchResults = data.concepts;
+                      $scope.searchResults.totalCount = data.totalCount;
                     },
-                    paging : function() {
-                      return $scope.paging;
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+
+                  };
+
+                  // Clear errors
+                  $scope.clearError = function() {
+                    $scope.errors = [];
+                  }
+
+                  // select concept and get concept data
+                  $scope.selectConcept = function(concept) {
+                    $scope.data.concept = concept;
+                  };
+
+                  $scope.cancel = function() {
+                    $uibModalInstance.dismiss('cancel');
+                  };
+
+                };
+
+                // Refactor modal - for redefinition or migration
+                $scope.openRefactorModal = function(lrefset, ltype) {
+
+                  console.debug("openRefactorModal ", lrefset, ltype);
+
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/refactor.html',
+                    controller : RefactorModalCtrl,
+                    size : 'lg',
+                    resolve : {
+
+                      refset : function() {
+                        return lrefset;
+                      },
+                      definition : function() {
+                        return lrefset.definition;
+                      },
+                      paging : function() {
+                        return $scope.paging;
+                      },
+                      type : function() {
+                        return ltype;
+                      },
+                      metadata : function() {
+                        return $scope.metadata;
+                      }
+                    }
+                  });
+
+                  modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    refsetService.fireRefsetChanged(data);
+                    $scope.selectRefset(data);
+                  });
+                };
+
+                // Refactor modal controller
+                var RefactorModalCtrl = function($scope, $uibModalInstance, refset, definition,
+                  paging, type, metadata) {
+
+                  console.debug("Entered refactor modal control");
+
+                  // set up variables
+                  $scope.refset = refset;
+                  $scope.membersInCommon = null;
+                  $scope.pageSize = 10;
+                  $scope.paging = paging;
+                  $scope.type = type;
+                  $scope.metadata = metadata;
+                  $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                  $scope.errors = [];
+
+                  // Initialize
+                  if ($scope.refset.stagingType == 'DEFINITION') {
+                    refsetService.resumeRedefinition($scope.refset.id).then(
+                    // Success
+                    function(data) {
+                      console.debug("stagedRefset", data);
+                      $scope.stagedRefset = data;
+                      refsetService.compareRefsets($scope.refset.id, data.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
                     },
-                    type : function() {
-                      return ltype;
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  } else if ($scope.refset.stagingType == 'MIGRATION') {
+                    refsetService.resumeMigration($scope.refset.id).then(
+                    // Success
+                    function(data) {
+                      console.debug("stagedRefset", data);
+                      $scope.stagedRefset = data;
+                      refsetService.compareRefsets($scope.refset.id, data.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
                     },
-                    metadata : function() {
-                      return $scope.metadata;
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  }
+
+                  //
+                  $scope.getDiffReport = function() {
+                    refsetService.getDiffReport($scope.reportToken).then(
+                    // Success
+                    function(data) {
+                      console.debug("diffReport", data);
+                      $scope.diffReport = data;
+                      $scope.validInclusions = data.validInclusions;
+                      $scope.validExclusions = data.validExclusions;
+                      $scope.invalidInclusions = data.invalidInclusions;
+                      $scope.invalidExclusions = data.invalidExclusions;
+                      $scope.stagedInclusions = data.stagedInclusions;
+                      $scope.stagedExclusions = data.stagedExclusions;
+                      $scope.findMembersInCommon();
+                      $scope.getOldRegularMembers();
+                      $scope.getNewRegularMembers();
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Load "old regular members" with paging
+                  $scope.getOldRegularMembers = function() {
+                    var pfs = {
+                      startIndex : ($scope.paging["oldRegularMembers"].page - 1) * $scope.pageSize,
+                      maxResults : $scope.pageSize,
+                      sortField : null,
+                      queryRestriction : $scope.paging["oldRegularMembers"].filter != undefined ? $scope.paging["oldRegularMembers"].filter
+                        : null
+                    };
+                    refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
+                    // Success
+                    function(data) {
+                      console.debug("oldRegularMembers", data);
+                      $scope.oldRegularMembers = data.members;
+                      $scope.oldRegularMembers.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Load "new regular members" with paging
+                  $scope.getNewRegularMembers = function() {
+                    var pfs = {
+                      startIndex : ($scope.paging["newRegularMembers"].page - 1) * $scope.pageSize,
+                      maxResults : $scope.pageSize,
+                      sortField : null,
+                      queryRestriction : $scope.paging["newRegularMembers"].filter != undefined ? $scope.paging["newRegularMembers"].filter
+                        : null
+                    };
+                    refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
+                    // Success
+                    function(data) {
+                      console.debug("newRegularMembers", data);
+                      $scope.newRegularMembers = data.members;
+                      $scope.newRegularMembers.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Load "members in common" with paging
+                  $scope.findMembersInCommon = function() {
+                    var pfs = {
+                      startIndex : ($scope.paging["membersInCommon"].page - 1) * $scope.pageSize,
+                      maxResults : $scope.pageSize,
+                      sortField : null,
+                      queryRestriction : $scope.paging["membersInCommon"].filter != undefined ? $scope.paging["membersInCommon"].filter
+                        : null
+                    };
+                    refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(
+                    // Succcess
+                    function(data) {
+                      console.debug("membersInCommon", data);
+                      $scope.membersInCommon = data.members;
+                      $scope.membersInCommon.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Begin redefinition and compare refsets and get diff report
+                  $scope.beginRedefinition = function(newDefinition) {
+                    console.debug("Begin redefinition", newDefinition);
+
+                    refsetService.beginRedefinition(refset.id, newDefinition).then(
+                    // Success
+                    function(data) {
+                      console.debug("stagedRefset", data);
+                      $scope.stagedRefset = data;
+                      $scope.refset.stagingType = 'DEFINITION';
+                      refsetService.compareRefsets(refset.id, data.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Begin migration and compare refsets and get diff report
+                  $scope.beginMigration = function(newTerminology, newVersion) {
+                    console.debug("Begin migration", newTerminology, newVersion);
+
+                    refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
+                    // Success
+                    function(data) {
+                      console.debug("stagedRefset", data);
+                      $scope.stagedRefset = data;
+                      $scope.refset.stagingType = 'MIGRATION';
+                      refsetService.compareRefsets(refset.id, data.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("reportToken", data);
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  };
+
+                  // Finish redefinition or migration
+                  $scope.finish = function(refset) {
+                    console.debug("Finish ", $scope.type, refset.id);
+
+                    if ($scope.type == 'Redefinition') {
+                      refsetService.finishRedefinition(refset.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("data", data);
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    } else if ($scope.type == 'Migration') {
+                      refsetService.finishMigration(refset.id).then(
+                      // Success
+                      function(data) {
+                        console.debug("data", data);
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    }
+                  };
+
+                  // Save for later, allow state to be resumed
+                  $scope.saveForLater = function(refset) {
+                    console.debug("Save for later ", $scope.type, refset.id);
+                    // updates refset on close
+                    $uibModalInstance.close(refset);
+                  };
+
+                  // add exclusion
+                  $scope.exclude = function(refset, member, staged, active) {
+                    refsetService.addRefsetExclusion($scope.stagedRefset, member.conceptId, staged,
+                      active).then(
+                    // Success
+                    function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                        // Success
+                        function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  }
+
+                  // add inclusion
+                  $scope.include = function(refset, member, staged, active) {
+                    refsetService.addRefsetInclusion($scope.stagedRefset, member.conceptId, staged,
+                      active).then(
+                    // Success
+                    function() {
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        console.debug("Released report token");
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                        // Success
+                        function(data) {
+                          console.debug("reportToken", data);
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                  }
+
+                  // add all inclusions
+                  $scope.includeAll = function(refset, list, staged, active) {
+                    for (var i = 0; i < list.length; i++) {
+                      $scope.include(refset, list[i]);
                     }
                   }
-                });
 
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  refsetService.fireRefsetChanged(data);
-                });
-              };
-
-              // Refactor modal controller
-              var RefactorModalCtrl = function($scope, $uibModalInstance, refset, definition,
-                paging, type, metadata) {
-
-                console.debug("Entered refactor modal control");
-
-                // set up variables
-                $scope.refset = refset;
-                $scope.membersInCommon = null;
-                $scope.pageSize = 10;
-                $scope.paging = paging;
-                $scope.type = type;
-                $scope.metadata = metadata;
-                $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
-                $scope.errors = [];
-
-                // Initialize
-                if ($scope.refset.stagingType == 'DEFINITION') {
-                  refsetService.resumeRedefinition($scope.refset.id).then(
-                  // Success
-                  function(data) {
-                    console.debug("stagedRefset", data);
-                    $scope.stagedRefset = data;
-                    refsetService.compareRefsets($scope.refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("reportToken", data);
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                } else if ($scope.refset.stagingType == 'MIGRATION') {
-                  refsetService.resumeMigration($scope.refset.id).then(
-                  // Success
-                  function(data) {
-                    console.debug("stagedRefset", data);
-                    $scope.stagedRefset = data;
-                    refsetService.compareRefsets($scope.refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("reportToken", data);
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                }
-
-                //
-                $scope.getDiffReport = function() {
-                  refsetService.getDiffReport($scope.reportToken).then(
-                  // Success
-                  function(data) {
-                    console.debug("diffReport", data);
-                    $scope.diffReport = data;
-                    $scope.validInclusions = data.validInclusions;
-                    $scope.validExclusions = data.validExclusions;
-                    $scope.invalidInclusions = data.invalidInclusions;
-                    $scope.invalidExclusions = data.invalidExclusions;
-                    $scope.stagedInclusions = data.stagedInclusions;
-                    $scope.stagedExclusions = data.stagedExclusions;
-                    $scope.findMembersInCommon();
-                    $scope.getOldRegularMembers();
-                    $scope.getNewRegularMembers();
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Load "old regular members" with paging
-                $scope.getOldRegularMembers = function() {
-                  var pfs = {
-                    startIndex : ($scope.paging["oldRegularMembers"].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : null,
-                    queryRestriction : $scope.paging["oldRegularMembers"].filter != undefined ? $scope.paging["oldRegularMembers"].filter
-                      : null
-                  };
-                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
-                  // Success
-                  function(data) {
-                    console.debug("oldRegularMembers", data);
-                    $scope.oldRegularMembers = data.members;
-                    $scope.oldRegularMembers.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Load "new regular members" with paging
-                $scope.getNewRegularMembers = function() {
-                  var pfs = {
-                    startIndex : ($scope.paging["newRegularMembers"].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : null,
-                    queryRestriction : $scope.paging["newRegularMembers"].filter != undefined ? $scope.paging["newRegularMembers"].filter
-                      : null
-                  };
-                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
-                  // Success
-                  function(data) {
-                    console.debug("newRegularMembers", data);
-                    $scope.newRegularMembers = data.members;
-                    $scope.newRegularMembers.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Load "members in common" with paging
-                $scope.findMembersInCommon = function() {
-                  var pfs = {
-                    startIndex : ($scope.paging["membersInCommon"].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : null,
-                    queryRestriction : $scope.paging["membersInCommon"].filter != undefined ? $scope.paging["membersInCommon"].filter
-                      : null
-                  };
-                  refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(
-                  // Succcess
-                  function(data) {
-                    console.debug("membersInCommon", data);
-                    $scope.membersInCommon = data.members;
-                    $scope.membersInCommon.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Begin redefinition and compare refsets and get diff report
-                $scope.beginRedefinition = function(newDefinition) {
-                  console.debug("Begin redefinition", newDefinition);
-
-                  refsetService.beginRedefinition(refset.id, newDefinition).then(
-                  // Success
-                  function(data) {
-                    console.debug("stagedRefset", data);
-                    $scope.stagedRefset = data;
-                    $scope.refset.stagingType = 'DEFINITION';
-                    refsetService.compareRefsets(refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("reportToken", data);
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Begin migration and compare refsets and get diff report
-                $scope.beginMigration = function(newTerminology, newVersion) {
-                  console.debug("Begin migration", newTerminology, newVersion);
-
-                  refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
-                  // Success
-                  function(data) {
-                    console.debug("stagedRefset", data);
-                    $scope.stagedRefset = data;
-                    $scope.refset.stagingType = 'MIGRATION';
-                    refsetService.compareRefsets(refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("reportToken", data);
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
-                // Finish redefinition or migration
-                $scope.finish = function(refset) {
-                  console.debug("Finish ", $scope.type, refset.id);
-
-                  if ($scope.type == 'Redefinition') {
-                    refsetService.finishRedefinition(refset.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("data", data);
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  } else if ($scope.type == 'Migration') {
-                    refsetService.finishMigration(refset.id).then(
-                    // Success
-                    function(data) {
-                      console.debug("data", data);
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
+                  // exclude all
+                  $scope.excludeAll = function(refset, list, staged, active) {
+                    for (var i = 0; i < list.length; i++) {
+                      $scope.exclude(refset, list[i]);
+                    }
                   }
-                };
 
-                // Save for later, allow state to be resumed
-                $scope.saveForLater = function(refset) {
-                  console.debug("Save for later ", $scope.type, refset.id);
-                  // updates refset on close
-                  // TODO: need resume redefinition alert button  disable icon
-                  $uibModalInstance.close(refset);
-                };
+                  // revert all inclusions or exclusions
+                  $scope.revertAll = function(refset, list) {
+                    for (var i = 0; i < list.length; i++) {
+                      $scope.revert(refset, list[i]);
+                    }
+                  }
 
-                // add exclusion
-                $scope.exclude = function(refset, member, staged, active) {
-                  refsetService.addRefsetExclusion($scope.stagedRefset, member.conceptId, staged,
-                    active).then(
-                  // Success
-                  function() {
-                    refsetService.releaseReportToken($scope.reportToken).then(
-                    // Success
-                    function() {
-                      console.debug("Released report token");
-                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                  // revert inclusions and exclusions
+                  $scope.revert = function(refset, member) {
+                    if (member.memberType == 'INCLUSION' || member.memberType == 'INCLUSION_STAGED') {
+                      refsetService.removeRefsetMember(member.id).then(
+                      // Success - remove refse member
+                      function() {
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success - release report token
+                        function() {
+                          console.debug("Released report token");
+                          refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                          // Success - compare refsets
+                          function(data) {
+                            console.debug("reportToken", data);
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                          },
+                          // Error - compare refsets
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          });
+                        },
+                        // Error - release report token
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      },
+                      // Error - remove refset member
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    } else if (member.memberType == 'EXCLUSION'
+                      || member.memberType == 'EXCLUSION_STAGED') {
+                      refsetService.removeRefsetExclusion(member.id).then(
+                      // Success
+                      function() {
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                        // Success - release report token
+                        function() {
+                          console.debug("Released report token");
+                          refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                          // Success - compare refsets
+                          function(data) {
+                            console.debug("reportToken", data);
+                            $scope.reportToken = data;
+                            $scope.getDiffReport();
+                          },
+                          // Error - compare refsets
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          });
+                        },
+                        // Error - release report token
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      },
+                      // Error - remove refset exclusion
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    }
+                  }
+
+                  // Used for styling - coordinated with css file
+                  $scope.getMemberStyle = function(member) {
+                    if (member.memberType == 'MEMBER') {
+                      return "";
+                    }
+                    return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
+                  }
+
+                  // Cancel redefinition or migration
+                  $scope.cancel = function(refset) {
+                    if (!confirm("Are you sure you want to cancel " + $scope.type + "?")) {
+                      return;
+                    }
+                    if ($scope.type == 'Redefinition') {
+                      refsetService.cancelRedefinition(refset.id).then(
                       // Success
                       function(data) {
-                        console.debug("reportToken", data);
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
+                        $scope.stagedRefset = null;
                       },
                       // Error
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       });
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                }
-
-                // add inclusion
-                $scope.include = function(refset, member, staged, active) {
-                  refsetService.addRefsetInclusion($scope.stagedRefset, member.conceptId, staged,
-                    active).then(
-                  // Success
-                  function() {
-                    refsetService.releaseReportToken($scope.reportToken).then(
-                    // Success
-                    function() {
-                      console.debug("Released report token");
-                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                    } else if ($scope.type == 'Migration') {
+                      refsetService.cancelMigration(refset.id).then(
                       // Success
                       function(data) {
-                        console.debug("reportToken", data);
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
+                        $scope.stagedRefset = null;
                       },
                       // Error
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       });
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                }
+                    }
+                    $uibModalInstance.dismiss('cancel');
+                  };
 
-                // revert inclusions and exclusions
-                $scope.revert = function(refset, member) {
-                  if (member.memberType == 'INCLUSION' || member.memberType == 'INCLUSION_STAGED') {
-                    refsetService.removeRefsetMember(member.id).then(
-                    // Success - remove refse member
-                    function() {
-                      refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success - release report token
-                      function() {
-                        console.debug("Released report token");
-                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                        // Success - compare refsets
-                        function(data) {
-                          console.debug("reportToken", data);
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error - compare refsets
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        });
-                      },
-                      // Error - release report token
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      });
-                    },
-                    // Error - remove refset member
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  } else if (member.memberType == 'EXCLUSION'
-                    || member.memberType == 'EXCLUSION_STAGED') {
-                    refsetService.removeRefsetExclusion(member.id).then(
-                    // Success
-                    function() {
-                      refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success - release report token
-                      function() {
-                        console.debug("Released report token");
-                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                        // Success - compare refsets
-                        function(data) {
-                          console.debug("reportToken", data);
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error - compare refsets
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        });
-                      },
-                      // Error - release report token
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      });
-                    },
-                    // Error - remove refset exclusion
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
+                  $scope.close = function(refset) {
+                    $uibModalInstance.close(refset);
                   }
-                }
-
-                // Used for styling - coordinated with css file
-                $scope.getMemberStyle = function(member) {
-                  if (member.memberType == 'MEMBER') {
-                    return "";
-                  }
-                  return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '')
-                }
-
-                // Cancel redefinition or migration
-                $scope.cancel = function(refset) {
-                  if (!confirm("Are you sure you want to cancel " + $scope.type + "?")) {
-                    return;
-                  }
-                  if ($scope.type == 'Redefinition') {
-                    refsetService.cancelRedefinition(refset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.stagedRefset = null;
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  } else if ($scope.type == 'Migration') {
-                    refsetService.cancelMigration(refset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.stagedRefset = null;
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  }
-                  $uibModalInstance.dismiss('cancel');
-                };
-
-                $scope.close = function(refset) {
-                  $uibModalInstance.close();
                 }
               }
 

@@ -217,6 +217,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.setUserName(userName);
       algo.compute();
       releaseService.commit();
+      
+      refset.setInPublicationProcess(true);
+      refsetService.updateRefset(refset);
       return algo.getReleaseInfo();
     } catch (Exception e) {
       releaseService.rollback();
@@ -518,6 +521,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       originRefset.setStaged(false);
       originRefset.setStagingType(null);
       originRefset.setLastModifiedBy(userName);
+      originRefset.setInPublicationProcess(false);
       refsetService.updateRefset(originRefset);
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
@@ -527,7 +531,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       Refset stagedRefset = stagedRefsetChange.getStagedRefset();
-      stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+      stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
       stagedRefset.setLastModifiedBy(userName);
       stagedRefset.setProvisional(false);
       refsetService.updateRefset(stagedRefset);
@@ -606,6 +610,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         refsetService.removeStagedRefsetChange(change.getId());
         refset.setStagingType(null);
         refset.setLastModifiedBy(userName);
+        refset.setInPublicationProcess(false);
         refsetService.updateRefset(refset);
         releaseInfoList =
             releaseService.findRefsetReleasesForQuery(change.getStagedRefset()
@@ -939,7 +944,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       releaseService.removeReleaseInfo(releaseInfo.getId());
       Translation stagedTranslation = stagedTranslationChange.getStagedTranslation();
-      stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+      stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);;
       stagedTranslation.setLastModifiedBy(userName);
       stagedTranslation.setProvisional(false);
       translationService.updateTranslation(stagedTranslation);

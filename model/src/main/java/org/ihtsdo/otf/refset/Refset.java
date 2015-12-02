@@ -384,4 +384,18 @@ public interface Refset extends Component, Searchable {
    */
   public void setNamespace(String namespace);
 
+  /**
+   * Indicates whether or not in publication process is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isInPublicationProcess();
+
+  /**
+   * Sets the in publication process.
+   *
+   * @param inPublicationProcess the in publication process
+   */
+  public void setInPublicationProcess(boolean inPublicationProcess);
+
 }
