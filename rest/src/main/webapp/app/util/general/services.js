@@ -228,7 +228,6 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
 
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
-        $location.path("/");
         gpService.decrement();
 
       },
