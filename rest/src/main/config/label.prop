@@ -2,4 +2,4 @@
 # applications within the same container and can
 # be safely ignored if not needed. 
 
-run.config.label=${run.config.label}
+refset.config.label=${run.config.label}

@@ -9,18 +9,21 @@ tsApp.controller('LoginCtrl', [ '$scope', '$http', '$location', 'securityService
     // https://ims.ihtsdotools.org
     $http.get('ims-api/account').then(
     // Success
-    function(data) {
+    function(response) {
       utilService.clearError();
-      console.debug("user = ", data);
+      console.debug("user = ", response.data);
 
-      $http.post(securityUrl + 'authenticate/' + data.login, data).then(
+      $http.post(securityUrl + 'authenticate/' + response.data.login, 
+        JSON.stringify(response.data),
+        { headers : { "Content-type" : "text/plain" } }).then(
+
       // Success 
       function(response) {
         console.debug("user = ", response.data);
         securityService.setUser(response.data);
 
         // set request header authorization and rerouted
-        $http.defaults.headers.common.Authorization = data.authToken;
+        $http.defaults.headers.common.Authorization = response.authToken;
         $location.path("/directory");
 
       },
