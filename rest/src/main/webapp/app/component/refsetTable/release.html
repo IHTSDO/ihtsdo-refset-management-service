@@ -4,7 +4,7 @@
 
 <div class="modal-body">
   <span ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'PREVIEW'"
-      class="alert alert-warning">Release of {{releaseInfo.name}} has been started.</span>
+      class="alert alert-warning">Release of {{releaseDate}} has been started.</span>
            
   <span ng-show="validationResult && refset.stagingType != 'PREVIEW' &&
     validationResult.comments.length == 0 && validationResult.warnings.length == 0 &&
@@ -106,7 +106,7 @@
 
   <button class="btn btn-primary" ng-show="!refset.inPublicationProcess" ng-click="beginRefsetRelease(refset) 
     ">Release</button>
-  <button class="btn btn-primary" ng-show="refset.inPublicationProcess" ng-click="validateRefsetRelease(refset) 
+  <button class="btn btn-primary" ng-show="refset.inPublicationProcess && refset.stagingType != 'PREVIEW'" ng-click="validateRefsetRelease(refset) 
     ">Validate</button>
   <button class="btn btn-primary" ng-show="validationResult && refset.stagingType != 'PREVIEW'" ng-click="previewRefsetRelease(refset) 
     ">Preview</button>

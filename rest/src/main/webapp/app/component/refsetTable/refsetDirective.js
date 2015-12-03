@@ -454,6 +454,108 @@ tsApp
               //
               // MODALS
               //
+              
+
+              // Notes modal
+              $scope.openNotesModal = function(lobject, ltype) {
+                console.debug("openNotesModal ", lobject, ltype);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/notes.html',
+                  controller : NotesModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    object : function() {
+                      return lobject;
+                    },
+                    type : function() {
+                      return ltype;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  refsetService.fireRefsetChanged(data);
+                  $scope.selectRefset(data);
+                });
+
+              };
+
+              // Notes controller
+              var NotesModalCtrl = function($scope, $uibModalInstance, object, type) {
+                console.debug("Entered notes modal control", object, type);
+
+                $scope.errors = [];
+                
+                $scope.object = object;
+                $scope.type = type;
+                $scope.newNote = null;
+
+                $scope.removeNote = function(object, note) {
+                  console.debug("remove note", object.id, note.value);
+                  if ($scope.type == 'Refset') {                   
+                    refsetService.removeRefsetNote(object.id, note.id).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newNote = null;
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  } else if ($scope.type == 'Member') {
+                    refsetService.removeRefsetMemberNote(object.id, note.id).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newNote = null;
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  }
+                }
+                
+                $scope.submitNote = function(object, text) {
+                  console.debug("submit note", object.id, text);
+                  
+                  if ($scope.type == 'Refset') {                   
+                    refsetService.addRefsetNote(object.id, text).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newNote = null;
+                      refsetService.fireRefsetChanged(data);
+                      $scope.selectRefset(object);
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  } else if ($scope.type == 'Member') {
+                    refsetService.addRefsetMemberNote(object.refsetId, object.id, text).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newNote = null;
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  }
+                };
+
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+              };
+
 
               // Clone Refset modal
               $scope.openCloneRefsetModal = function(lrefset) {
@@ -767,6 +869,7 @@ tsApp
                 $scope.releaseInfo = [];
                 $scope.validationResult = null;
                 $scope.format = 'yyyyMMdd';
+                $scope.releaseDate = utilService.toSimpleDate($scope.refset.effectiveTime);
                 $scope.status = {
                   opened : false
                 };

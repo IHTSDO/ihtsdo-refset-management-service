@@ -1027,7 +1027,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.addRefsetMemberNote = function(refsetId, noteId) {
+    this.removeRefsetMemberNote = function(refsetId, noteId) {
       console.debug("remove member note", refsetId, noteId);
       var deferred = $q.defer();
 
