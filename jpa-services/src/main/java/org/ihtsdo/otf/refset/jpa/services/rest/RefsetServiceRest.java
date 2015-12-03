@@ -550,14 +550,6 @@ public interface RefsetServiceRest {
   public ConceptRefsetMember removeRefsetExclusion(Long memberId,
     String authToken) throws Exception;
 
-  /**
-   * Resume release.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset resumeRelease(Long refsetId, String authToken) throws Exception;
+
 
 }

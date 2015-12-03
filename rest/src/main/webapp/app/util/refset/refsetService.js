@@ -713,27 +713,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.resumeRelease = function(refsetId) {
-      console.debug("resumeRelease");
-      var deferred = $q.defer();
 
-      // get refset revision
-      gpService.increment()
-      $http.get(refsetUrl + "release/resume?refsetId=" + refsetId).then(
-      // success
-      function(response) {
-        console.debug("  resume refset release = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    }
     
     this.getExportRefsetHandlers = function() {
       console.debug("getExportRefsetHandlers");

@@ -768,7 +768,7 @@ tsApp
                 $scope.validationResult = null;
                 
                 if (refset.stagingType == 'PREVIEW') {
-                  refsetService.resumeRelease(refset.id).then(
+                  releaseService.resumeRelease(refset.id).then(
                     // Success
                     function(data) {
                       $scope.stagedRefset = data;
