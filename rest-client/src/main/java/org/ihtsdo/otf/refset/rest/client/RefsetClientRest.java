@@ -309,7 +309,7 @@ public class RefsetClientRest extends RootClientRest implements
             + "/refset/export/definition" + "?refsetId=" + refsetId
             + "&handlerId=" + ioHandlerInfoId);
     Response response =
-        target.request(MediaType.APPLICATION_XML)
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
 
     InputStream in = response.readEntity(InputStream.class);
@@ -334,7 +334,7 @@ public class RefsetClientRest extends RootClientRest implements
         client.target(config.getProperty("base.url") + "/refset/export/members"
             + "?refsetId=" + refsetId + "&handlerId=" + ioHandlerInfoId);
     Response response =
-        target.request(MediaType.APPLICATION_XML)
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
 
     InputStream in = response.readEntity(InputStream.class);

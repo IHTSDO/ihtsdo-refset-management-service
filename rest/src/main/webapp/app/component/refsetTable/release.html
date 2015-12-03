@@ -65,15 +65,15 @@
       <tr>
         <td><b>Release Date</b></td>
         <td><p class="input-group">
-            <input type="text" class="form-control"
+            <span class="input-group-btn">
+            <input style="width: 100px" type="text"  class="form-control"
               uib-datepicker-popup="yyyymmdd" ng-model="refset.effectiveTime"
               is-open="status.opened" datepicker-options="dateOptions"
               date-disabled="disabled(date, mode)" ng-required="true"
               close-text="Close" />
-            <span class="input-group-btn">
               <button type="button" class="btn btn-default"
                 ng-click="open($event)">
-                <i class="glyphicon glyphicon-calendar"></i>
+                <i title="Calendar" class="glyphicon glyphicon-calendar"></i>
               </button>
             </span>
           </p>

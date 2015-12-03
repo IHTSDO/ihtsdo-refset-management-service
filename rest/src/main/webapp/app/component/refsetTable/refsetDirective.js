@@ -600,13 +600,13 @@ tsApp
                   console.debug("export", $scope.refset.id, file);
 
                   if (contentType == 'Definition') {
-                    refsetService.exportDefinition($scope.refset.id, $scope.selectedIoHandler.id,
+                    refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
 
                   }
 
                   if (contentType == 'Refset Members') {
-                    refsetService.exportMembers($scope.refset.id, $scope.selectedIoHandler.id,
+                    refsetService.exportMembers($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
                   }
                   $uibModalInstance.close(refset);

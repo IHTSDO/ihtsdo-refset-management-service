@@ -159,20 +159,19 @@ tsApp.service('refsetService', [
 
       // Clone refset
       gpService.increment()
-      $http.put(refsetUrl + 'clone' + "?&projectId=" + projectId, refset)
-        .then(
-        // success
-        function(response) {
-          console.debug("  refset = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.put(refsetUrl + 'clone' + "?&projectId=" + projectId, refset).then(
+      // success
+      function(response) {
+        console.debug("  refset = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -713,8 +712,6 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-
-    
     this.getExportRefsetHandlers = function() {
       console.debug("getExportRefsetHandlers");
       var deferred = $q.defer();
@@ -737,68 +734,61 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.exportDefinition = function(refsetId, handlerId, extension) {
+    this.exportDefinition = function(refset, handlerId, extension) {
       console.debug("exportDefinition");
-      var deferred = $q.defer();
       gpService.increment()
-      $http.get(refsetUrl + "export/definition?refsetId=" + refsetId + "&handlerId=" + handlerId)
+      $http.get(refsetUrl + "export/definition?refsetId=" + refset.id + "&handlerId=" + handlerId)
         .then(
         // Success
-        function(data) {
-          var blob = new Blob([ data ], {
+        function(response) {
+          var blob = new Blob([ response.data ], {
             type : ""
           });
 
-          // hack to download store a file having its URL
+          // fake a file URL and download it
           var fileURL = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = "_blank";
-          a.download = "definition." + refsetId + "." + extension;
+          a.download = "definition." + refset.terminologyId + "." + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
-
-          deferred.resolve(data);
+          
         },
         // Error
         function(response) {
           utilService.handleError(response);
           gpService.decrement();
-          deferred.reject(data);
         });
     };
 
-    this.exportMembers = function(refsetId, handlerId, extension) {
+    this.exportMembers = function(refset, handlerId, extension) {
       console.debug("exportMembers");
-      var deferred = $q.defer();
       gpService.increment()
-      $http.get(refsetUrl + "export/members?refsetId=" + refsetId + "&handlerId=" + handlerId)
+      $http.get(refsetUrl + "export/members?refsetId=" + refset.id + "&handlerId=" + handlerId)
         .then(
         // Success
-        function(data) {
-          var blob = new Blob([ data ], {
+        function(response) {
+          var blob = new Blob([ response.data ], {
             type : ""
           });
 
-          // hack to download store a file having its URL
+          // fake a file URL and download it
           var fileURL = URL.createObjectURL(blob);
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = "_blank";
-          a.download = "members." + refsetId + "." + extension;
-          ;
+          a.download = "members." + refset.terminologyId + "." + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
 
-          deferred.resolve(data);
         },
         // Error
         function(response) {
           utilService.handleError(response);
           gpService.decrement();
-          deferred.reject(data);
         });
     };
 
