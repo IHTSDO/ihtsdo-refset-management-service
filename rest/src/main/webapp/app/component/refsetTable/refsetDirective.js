@@ -825,9 +825,8 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
-                    alert("Release refset is now available to be previewed from the refset tab.");
-                    //refsetService.fireRefsetChanged(refset);
                     $uibModalInstance.close($scope.stagedRefset);
+                    alert("The PREVIEW refset has been added .");
                   },
                   // Error
                   function(data) {
@@ -853,6 +852,9 @@ tsApp
 
                 $scope.cancel = function(refset) {
                   console.debug("Cancel ", refset.id);
+                  if (!confirm("Are you sure you want to cancel the refset release?")) {
+                    return;
+                  }
                   $uibModalInstance.dismiss('cancel');
                   releaseService.cancelRefsetRelease(refset.id).then(
                   // Success
@@ -876,7 +878,7 @@ tsApp
 
                 $scope.format = 'yyyyMMdd';
               }
-              
+
               // Assign refset modal
               $scope.openAssignRefsetModal = function(lrefset, laction, luserName) {
                 console.debug("openAssignRefsetModal ", lrefset, laction, luserName);

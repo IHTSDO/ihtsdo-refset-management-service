@@ -6,7 +6,8 @@ tsApp.controller('LoginCtrl', [
   'securityService',
   'gpService',
   'utilService',
-  function($scope, $http, $location, securityService, gpService, utilService) {
+  'projectService',
+  function($scope, $http, $location, securityService, gpService, utilService, projectService) {
 
     $scope.message = "Authenticating ${security.handler.IMS.url} user ...";
 
@@ -48,7 +49,8 @@ tsApp.controller('LoginCtrl', [
       function(response) {
         utilService.handleError(response);
         $scope.message = "Authentication error, log in at ${security.handler.IMS.url}";
-        window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}";h
+        window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}";
+        h
       });
 
   } ])

@@ -555,7 +555,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /translation/preview "
             + translationId);
-    PerformTranslationPreviewAlgorithm algo = new PerformTranslationPreviewAlgorithm();
+    PerformTranslationPreviewAlgorithm algo =
+        new PerformTranslationPreviewAlgorithm();
     // Manage transaction
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
@@ -569,8 +570,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       String userName =
-          authorizeProject(algo, translation.getProject().getId(), securityService,
-              authToken, "preview translation release", UserRole.AUTHOR);
+          authorizeProject(algo, translation.getProject().getId(),
+              securityService, authToken, "preview translation release",
+              UserRole.AUTHOR);
 
       algo.setTranslation(translation);
       algo.setIoHandlerId(ioHandlerId);
@@ -606,7 +608,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
             "RESTful call POST (Translation): /translation/finish "
                 + translationId);
 
-    PerformTranslationPublishAlgorithm algo = new PerformTranslationPublishAlgorithm();
+    PerformTranslationPublishAlgorithm algo =
+        new PerformTranslationPublishAlgorithm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
@@ -618,8 +621,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Authorize the call
       String userName =
-          authorizeProject(algo, translation.getProject().getId(), securityService,
-              authToken, "finish translation release", UserRole.AUTHOR);
+          authorizeProject(algo, translation.getProject().getId(),
+              securityService, authToken, "finish translation release",
+              UserRole.AUTHOR);
 
       algo.setUserName(userName);
       algo.setTranslation(translation);
@@ -707,8 +711,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken,
           "get current refset release info", UserRole.VIEWER);
 
-      return refsetService.getCurrentReleaseInfoForRefset(
-          refset.getTerminologyId(), refset.getProject().getId());
+      ReleaseInfo info =
+          refsetService.getCurrentReleaseInfoForRefset(
+              refset.getTerminologyId(), refset.getProject().getId());
+      if (info != null) {
+        info.getArtifacts().size();
+      }
+      return info;
     } catch (Exception e) {
       handleException(e, "trying to get current refset release info");
     } finally {
@@ -741,8 +750,14 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
 
-      return translationService.getCurrentReleaseInfoForTranslation(
-          translation.getTerminologyId(), translation.getProject().getId());
+      ReleaseInfo info =
+          translationService.getCurrentReleaseInfoForTranslation(
+              translation.getTerminologyId(), translation.getProject().getId());
+      if (info != null) {
+        info.getArtifacts().size();
+      }
+
+      return info;
     } catch (Exception e) {
       handleException(e, "trying to get current translation release info");
     } finally {

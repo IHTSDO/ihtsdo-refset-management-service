@@ -56,7 +56,12 @@
           ng-class="{selected: translation.id == selected.translation.id}"
           ng-click="selectTranslation(translation);" class="table-select-row">
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
-          <td>{{translation.name}}</td>
+          <td>
+            {{translation.name}}
+            <span ng-show="refset.effectiveTime">
+              <br />{{toShortDate(refset.effectiveTime)}}
+            </span>
+          </td>
           <td>
             {{translation.moduleId}}
             <!-- Mobile friendly line-break -->
@@ -205,23 +210,27 @@
 
 <!-- R2 (for "preview/published") -->
 <div ng-show="value != 'PUBLISHED' && value != 'PREVIEW'" class="row">
-
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
     <!-- Available Concepts -->
     <div class="col-md-12 col-xs-12"></div>
-
+    <h4 ng-show="selected.translation">
+      Available Concepts
+      <span ng-show="selected.translation.available.totalCount>0">
+        ({{selected.translation.available.totalCount}})</span>
+    </h4>
+    TODO: assign batch
     <span style="display: block;">
       <uib-pagination items-per-page="pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="translations.available.totalCount > pageSize || paging['available'].filter"
-        total-items="translations.available.totalCount"
+        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        total-items="selected.translation.available.totalCount"
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Enter filter text"
-        ng-show="translations.available.totalCount > pageSize || paging['available'].filter"
+        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
         type="text" ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAvailableConcepts(selected.translation)">
@@ -232,10 +241,10 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="translations.available.totalCount == 0"
+    <span ng-show="selected.translation.available.totalCount == 0"
       style="display: block;" class="alert alert-warning">No available
       concepts.</span>
-    <table ng-show="translations.available.totalCount > 0" class="table">
+    <table ng-show="selected.translation.available.totalCount > 0" class="table">
       <thead>
         <th class="col-md-4 col-xs-4"
           ng-click="setSortField('available','terminologyId', null)">Concept
@@ -253,7 +262,9 @@
           <!-- Actions -->
           <td class="nobreak">
             <!-- Assign -->
-            actions here
+            <i ng-show="projects.role != 'ADMIN'"
+              ng-click="openAssignConceptModal(translation, concept, 'ASSIGN', user.userName); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment</i>
           </td>
         </tr>
       </tbody>
@@ -267,17 +278,23 @@
     <!-- Assigned Concepts-->
     <div class="col-md-12 col-xs-12"></div>
 
+    <h4 ng-show="selected.translation">
+      Assigned Concepts
+      <span ng-show="selected.translation.assigned.totalCount>0">
+        ({{selected.translation.assigned.totalCount}})</span>
+    </h4>
+    TODO: return all assigned
     <span style="display: block;">
       <uib-pagination items-per-page="pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-        ng-show="translations.assigned.totalCount > pageSize || paging['assigned'].filter"
-        total-items="translations.assigned.totalCount"
+        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        total-items="selected.translation.assigned.totalCount"
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
       <input class="input-filter" placeholder="Enter filter text"
-        ng-show="translations.assigned.totalCount > pageSize || paging['assigned'].filter"
+        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
         type="text" ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
         ng-change="getAssignedConcepts(selected.translation)">
@@ -287,10 +304,10 @@
         title="Click to clear filter text">Clear</button>
     </span>
 
-    <span ng-show="translations.assigned.totalCount == 0"
+    <span ng-show="selected.translation.assigned.totalCount == 0"
       style="display: block;" class="alert alert-warning">No assigned
       concepts.</span>
-    <table ng-show="translations.assigned.totalCount > 0" class="table">
+    <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
       <thead>
         <th class="col-md-4 col-xs-4"
           ng-click="setSortField('assigned','terminologyId', null)">Concept
@@ -329,12 +346,11 @@
   <!-- R3C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <!-- Selected Concept Detail -->
-    <span
-      ng-show="!selected.concept && selected.translation.concepts.length > 0"
-      class="alert alert-warning">Select a concept to see details</span>
-
     <div class="col-md-12 col-xs-12" ng-show="selected.concept">
+      <!-- Selected Concept Detail -->
+      <span
+        ng-show="!selected.concept && selected.translation.concepts.length > 0"
+        class="alert alert-warning">Select a concept to see details</span>
       <div concept-info data="selected"></div>
     </div>
     <!-- End R3C1 -->
@@ -345,6 +361,7 @@
 
     <!-- Translation Concepts -->
     <div class="col-md-12 col-xs-12">
+
       <h4 ng-show="selected.translation">
         Translation Concepts
         <span ng-show="selected.translation.concepts.totalCount>0">
