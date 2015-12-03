@@ -177,7 +177,12 @@ a:hover {
 }
 
 .noul {
+	color: #337ab7;
+	cursor: pointer;
 	text-decoration: none;
+}
+.noul:hover {
+	color: #00a6e5;
 }
 
 /* For vertical centering */

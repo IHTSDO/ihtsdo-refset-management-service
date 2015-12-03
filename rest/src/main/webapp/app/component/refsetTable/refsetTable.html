@@ -41,7 +41,7 @@
           ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
             ng-bind="getSortIndicator('refset','terminologyId')"></span>
         </th>
-        <th class="col-md-4 col-xs-4"
+        <th class="col-md-5 col-xs-5"
           ng-click="setSortField('refset','name', null)">Name<span
             ng-bind="getSortIndicator('refset','name',null)"></span></th>
         <th class="col-md-3 col-xs-3"
@@ -51,129 +51,168 @@
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <!-- Actions header -->
-        <th class="col-md-2 col-xs-2"
-          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">Actions</th>
-        <th class="col-md-2 col-xs-2"
-          ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">Actions</th>
-
+        <th class="col-md-1 col-xs-1">Actions</th>
       </thead>
       <tbody>
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
           ng-class="{selected: refset.id == selected.refset.id}">
           <td style="word-break: break-word;">{{refset.terminologyId}}</td>
           <td>{{refset.name}}</td>
-          <td>{{refset.moduleId}}<!-- Mobile friendly line-break --> <br
-            class="visible-xs-inline" /> <span flag-icon obj="refset"></span> <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" /> {{refset.organization}} <span
+          <td>
+            {{refset.moduleId}}
+            <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" />
+            <span flag-icon obj="refset"></span>
+            <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{refset.organization}}
+            <span
               ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">
-              <br />{{refset.workflowStatus}}</span>
+              <br />{{refset.workflowStatus}}
+            </span>
           </td>
-          <td><span refset-type-icon refset="refset"></span></td>
+          <td>
+            <span refset-type-icon refset="refset"></span>
+          </td>
 
           <!-- PUBLISHED/PREVIEW actions -->
-          <td class="nobreak"
-            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">
-            <a class="toolicon" title="Clone"
-              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
-              <i title="Clone" class="noul material-icons md-18">content_copy</i>
-            </a>
+          <td class="nobreak">
+            <i
+              ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')"
+              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
+              title="Clone"
+              ng-click="openCloneRefsetModal(refset);
+              $event.stopPropagation()"
+              class="noul material-icons
+              md-18">content_copy</i>
+            &nbsp;
+            <i title="Feedback - to be implemented" ng-click=""
+              class="noul material-icons md-18">comment</i>
           </td>
 
           <!-- AVAILABLE actions -->
-          <td class="nobreak" ng-show="value == 'AVAILABLE'"><a
-              title="Remove" class="toolicon"
-              ng-click="removeRefset(refset); $event.stopPropagation()">
-              <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>&nbsp;<a class="toolicon" title="Assign" ng-show="role != 'ADMIN'"
-              ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
-              <i title="Assign" class="noul material-icons md-18">assignment</i>
-            </a>&nbsp;<a class="toolicon" title="Clone" ng-show="role != 'ADMIN'"
-              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()">
-              <i title="Clone" class="noul material-icons md-18">content_copy</i>
-            </a></td>
+          <td class="nobreak" ng-show="value == 'AVAILABLE'">
+            <i title="Remove"
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              class="noul material-icons md-18">delete</i>
+            <i ng-show="role != 'ADMIN'"
+              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment</i>
+            <i ng-show="role != 'ADMIN'"
+              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
+              title="Clone" class="noul material-icons md-18">content_copy</i>
+            </a>
+          </td>
 
           <!-- ASSIGNED_ALL actions -->
-          <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'"><a
-              class="toolicon" title="Remove"
+          <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'">
+            <a class="toolicon" title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()">
               <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>&nbsp;<a class="toolicon" title="Assigned">
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Assigned">
               <i
                 title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} 
                 {{refsetIdToReviewersMap[refset.id][0].userName}}"
                 class="noul material-icons md-18">assignment_ind</i>
-            </a>&nbsp;<a class="toolicon" title="Unassign"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Unassign"
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="noul material-icons md-18">assignment_return</i>
-            </a></td>
+            </a>
+          </td>
 
           <!-- ASSIGNED actions -->
-          <td class="nobreak" ng-show="value == 'ASSIGNED'"><a
-              class="toolicon" title="Edit"
+          <td class="nobreak" ng-show="value == 'ASSIGNED'">
+            <a class="toolicon" title="Edit"
               ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
               <i title="Edit" class="noul material-icons md-18">edit</i>
-            </a>&nbsp;<a class="toolicon" title="Remove"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()">
               <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>&nbsp;<a class="toolicon" title="Unassign"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Unassign"
               ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
               <i title="Unassign" class="noul material-icons md-18">assignment_return</i>
-            </a>&nbsp;<a class="toolicon" title="Reassign"
-              ng-show="role == 'REVIEWER'"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Reassign" ng-show="role == 'REVIEWER'"
               ng-click="performReassign(refset); $event.stopPropagation()">
               <i title="Reassign" class="noul material-icons md-18">assignment_returned</i>
-            </a>&nbsp;<a class="toolicon" title="Save"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Save"
               ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()">
               <i title="Save" class="noul material-icons md-18">save</i>
-            </a>&nbsp;<a class="toolicon" title="Finish" ng-show="refset.workflowStatus != 'REVIEW_DONE'"
+            </a>
+            &nbsp;
+            <a class="toolicon" title="Finish"
+              ng-show="refset.workflowStatus != 'REVIEW_DONE'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
               <i title="Finish" class="noul material-icons md-18">done</i>
-            </a><a class="toolicon" title="Prepare for publication" ng-show="refset.workflowStatus == 'REVIEW_DONE'"
+            </a>
+            <a class="toolicon" title="Prepare for publication"
+              ng-show="refset.workflowStatus == 'REVIEW_DONE'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
               <i title="Prepare for publication" class="material-icons md-18">open_in_new</i>
-            </a> <span ng-show="refset.stagingType == 'IMPORT'">
+            </a>
+            <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel failed import">Cancel
                 Import</button>
-            </span> <span ng-show="refset.stagingType == 'DEFINITION'">
+            </span>
+            <span ng-show="refset.stagingType == 'DEFINITION'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel redefinition">Cancel
                 Redefinition</button>
-            </span> <span ng-show="refset.stagingType == 'MIGRATION'">
+            </span>
+            <span ng-show="refset.stagingType == 'MIGRATION'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel migration">Cancel
                 Migration</button>
-            </span></td>
+            </span>
+          </td>
 
           <!-- RELEASE actions -->
-          <td class="nobreak" ng-show="value == 'RELEASE'"><a
+          <td class="nobreak" ng-show="value == 'RELEASE'">
+            <a
               ng-show="role == 'ADMIN' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               class="toolicon" title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()">
               <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a> <!-- For non-admins only if READY_FOR_PUBLICATION --> &nbsp;<a
-              class="toolicon" title="Assign"
+            </a>
+            <!-- For non-admins only if READY_FOR_PUBLICATION -->
+            &nbsp;
+            <a class="toolicon" title="Assign"
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignUserModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
+              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
               <i title="Assign" class="noul material-icons md-18">assignment</i>
-            </a> <!-- only if READY_FOR_PUBLICATION --> &nbsp; <a 
-              class="toolicon" title="Begin Release Process" 
+            </a>
+            <!-- only if READY_FOR_PUBLICATION -->
+            &nbsp;
+            <a class="toolicon" title="Begin Release Process"
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()">
-              <i title="Release process" class="material-icons md-18">open_in_new</i>            
+              <i title="Release process" class="material-icons md-18">open_in_new</i>
             </a>
             <span ng-show="refset.stagingType == 'PREVIEW'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel release process">Cancel Release</button>
-            </span> </td>
+                uib-tooltip="Click to cancel release process">Cancel
+                Release</button>
+            </span>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -203,8 +242,10 @@
           </tr>
           <tr>
             <td>Module Id</td>
-            <td>{{selected.refset.moduleId}} <span flag-icon
-                obj="selected.refset"></span></td>
+            <td>
+              {{selected.refset.moduleId}}
+              <span flag-icon obj="selected.refset"></span>
+            </td>
           </tr>
           <tr>
             <td>Organization</td>
@@ -216,12 +257,14 @@
           </tr>
           <tr>
             <td>Terminology</td>
-            <td>{{selected.refset.terminology}} {{selected.refset.version}}
+            <td>
+              {{selected.refset.terminology}} {{selected.refset.version}}
               <a class="toolicon"
                 ng-click="openRefactorModel(selected.refset, 'Migration')"
                 ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'">
                 <i title="Migration" class="noul material-icons md-18">find_replace</i>
-              </a> <a class="toolicon"
+              </a>
+              <a class="toolicon"
                 ng-click="openRefactorModal(selected.refset, 'Migration')"
                 ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'">
                 <i title="Resume migration" class="noul material-icons md-18">play_arrow</i>
@@ -230,19 +273,25 @@
           </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>Definition</td>
-            <td>{{selected.refset.definition}} <a class="toolicon"
+            <td>
+              {{selected.refset.definition}}
+              <a class="toolicon"
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition')">
                 <i title="Export definition" class="noul material-icons md-18">file_download</i>
-              </a> <!-- For now, disable importing of a definition, it's just cut/paste
-               and redefinition is complicated --> <!-- 
+              </a>
+              <!-- For now, disable importing of a definition, it's just cut/paste
+               and redefinition is complicated -->
+              <!-- 
           <a ng-click="openImportExportModal(selected.refset, 'Import', 'Definition')">
                     <i title="Import definition"
                       class="noul material-icons md-18">file_upload</i>
-          </a> --> <a class="toolicon"
+          </a> -->
+              <a class="toolicon"
                 ng-click="openRefactorModal(selected.refset, 'Redefinition')"
                 ng-show="selected.refset.stagingType == null">
                 <i title="Redefinition" class="noul material-icons md-18">find_replace</i>
-              </a> <a class="toolicon"
+              </a>
+              <a class="toolicon"
                 ng-click="openRefactorModal(selected.refset, 'Redefinition')"
                 ng-show="selected.refset.stagingType == 'DEFINITION'">
                 <i title="Resume redefinition" class="noul material-icons md-18">play_arrow</i>
@@ -282,12 +331,14 @@
               ng-repeat="artifact in refsetReleaseInfo.artifacts | orderBy:'artifact.name'">
               <td>{{artifact.name}}</td>
               <td>{{toShortDate(artifact.timestamp)}}</td>
-              <td><span>
+              <td>
+                <span>
                   <a class="toolicon" ng-click="exportReleaseArtifact(artifact)">
                     <i title="Export {{artifact.name}}"
                       class="noul material-icons md-18">file_download</i>
                   </a>
-                </span></td>
+                </span>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -416,24 +467,28 @@
                   uib-tooltip="Retired">R</button>
               </td>
               <td class="nobreak"
-                ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'"><a
-                  class="toolicon" title="Remove"
+                ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
+                <a class="toolicon" title="Remove"
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member)=='INCLUSION'"
                   ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()">
                   <i title="Remove inclusion" class="noul material-icons md-18">delete</i>
-                </a> <a class="toolicon" title="Remove"
+                </a>
+                <a class="toolicon" title="Remove"
                   ng-show="selected.refset.type == 'EXTENSIONAL'"
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()">
                   <i title="Remove" class="noul material-icons md-18">delete</i>
-                </a> <a class="toolicon" title="Remove"
+                </a>
+                <a class="toolicon" title="Remove"
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member) == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member); $event.stopPropagation()">
                   <i title="Remove exclusion" class="noul material-icons md-18">delete</i>
-                </a> <a class="toolicon" title="Make exclusion"
+                </a>
+                <a class="toolicon" title="Make exclusion"
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member) == 'MEMBER'"
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()">
                   <i title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
-                </a></td>
+                </a>
+              </td>
             </tr>
           </tbody>
         </table>
