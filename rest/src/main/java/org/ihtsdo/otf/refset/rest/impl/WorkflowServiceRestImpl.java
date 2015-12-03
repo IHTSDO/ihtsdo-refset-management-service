@@ -907,8 +907,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // respect it
       return workflowService.findRefsetsForQuery("projectId:" + projectId
           + " AND (workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
-          + "OR workflowStatus:" + WorkflowStatus.PREVIEW
-          + "OR workflowStatus:" + WorkflowStatus.PUBLISHED + ")", pfs);
+          + " OR workflowStatus:" + WorkflowStatus.PREVIEW
+          + " OR workflowStatus:" + WorkflowStatus.PUBLISHED + ")", pfs);
 
     } catch (Exception e) {
       handleException(e, "trying to find release process refsets");

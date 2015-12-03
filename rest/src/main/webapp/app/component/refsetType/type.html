@@ -1,15 +1,10 @@
 
-<a ng-show="refset.type == 'EXTERNAL'" ng-click="">
-  <i uib-tooltip="Reference to an external refset stored elsewhere."
-    class="noul material-icons md-18">forward</i>
-</a>
-<a ng-show="refset.type == 'EXTENSIONAL'" ng-click="">
-  <i ng-show="refset.type == 'EXTENSIONAL'"
-    uib-tooltip="Extensional refset, defined as an explicit list of members."
-    class="noul material-icons md-18">list</i>
-</a>
-<a ng-show="refset.type == 'INTENSIONAL'" ng-click="">
-  <i ng-show="refset.type == 'INTENSIONAL'"
-    uib-tooltip="Intensional refset, defined as a definition with includes/excludes."
-    class="noul material-icons md-18">settings-square</i>
-</a>
+<i ng-show="refset.type == 'INTENSIONAL'"
+  uib-tooltip="Intensional refset, definition with includes/excludes."
+  class="noul material-icons md-18">settings</i>
+<i ng-show="refset.type == 'EXTERNAL'"
+  uib-tooltip="External refset stored elsewhere."
+  class="noul material-icons md-18">forward</i>
+<i ng-show="refset.type == 'EXTENSIONAL'"
+  uib-tooltip="Extensional refset, explicit list of members."
+  class="noul material-icons md-18">list</i>

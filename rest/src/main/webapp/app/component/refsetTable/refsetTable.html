@@ -24,9 +24,8 @@
 
       <h4 ng-show="value == 'AVAILABLE'">
         <div style="float: right;">
-          <a title="Add refset" ng-click="openAddRefsetModal()">
-            <i title="Add refset" class="noul material-icons md-24">add</i>
-          </a>
+          <i ng-click="openAddRefsetModal()" title="Add refset"
+            class="noul material-icons md-24">add</i>
         </div>
       </h4>
     </span>
@@ -44,9 +43,15 @@
         <th class="col-md-5 col-xs-5"
           ng-click="setSortField('refset','name', null)">Name<span
             ng-bind="getSortIndicator('refset','name',null)"></span></th>
-        <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('refset','moduleId', null)">Module<span
-            ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
+        <th class="col-md-3 col-xs-3"><span
+            ng-click="setSortField('refset','moduleId', null)">Module</span>
+          <span ng-bind="getSortIndicator('refset','moduleId',null)"></span> / <span
+            ng-click="setSortField('refset','organization', null)">
+            <span class="visible-xs">Org</span>
+            <span class="hidden-xs">Organization</span>
+          </span>
+          <span ng-bind="getSortIndicator('refset','organization',null)"></span>
+        </th>
         <th class="col-md-1 col-xs-1"
           ng-click="setSortField('refset','type', null)">Type<span
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
@@ -60,8 +65,6 @@
           <td>{{refset.name}}</td>
           <td>
             {{refset.moduleId}}
-            <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" />
             <span flag-icon obj="refset"></span>
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{refset.organization}}
@@ -71,13 +74,13 @@
             </span>
           </td>
           <td>
-            <span refset-type-icon refset="refset"></span>
+            <div refset-type-icon refset="refset"></div>
           </td>
 
           <!-- PUBLISHED/PREVIEW actions -->
-          <td class="nobreak">
-            <i
-              ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')"
+          <td class="nobreak"
+            ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">
+            <i ng-show="userProjectsInfo.anyRole"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               title="Clone"
               ng-click="openCloneRefsetModal(refset);
@@ -100,66 +103,45 @@
             <i ng-show="role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               title="Clone" class="noul material-icons md-18">content_copy</i>
-            </a>
+
           </td>
 
           <!-- ASSIGNED_ALL actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'">
-            <a class="toolicon" title="Remove"
-              ng-click="removeRefset(refset); $event.stopPropagation()">
-              <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Assigned">
-              <i
-                title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} 
+
+            <i ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+            <i
+              title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} 
                 {{refsetIdToReviewersMap[refset.id][0].userName}}"
-                class="noul material-icons md-18">assignment_ind</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Unassign"
-              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
-              <i title="Unassign" class="noul material-icons md-18">assignment_return</i>
-            </a>
+              class="material-icons md-18">assignment_ind</i>
+            <i
+              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()"
+              title="Unassign" class="noul material-icons md-18">assignment_return</i>
           </td>
 
           <!-- ASSIGNED actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
-            <a class="toolicon" title="Edit"
-              ng-click="openEditRefsetModal(refset); $event.stopPropagation()">
-              <i title="Edit" class="noul material-icons md-18">edit</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Remove"
-              ng-click="removeRefset(refset); $event.stopPropagation()">
-              <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Unassign"
-              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()">
-              <i title="Unassign" class="noul material-icons md-18">assignment_return</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Reassign" ng-show="role == 'REVIEWER'"
-              ng-click="performReassign(refset); $event.stopPropagation()">
-              <i title="Reassign" class="noul material-icons md-18">assignment_returned</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Save"
-              ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()">
-              <i title="Save" class="noul material-icons md-18">save</i>
-            </a>
-            &nbsp;
-            <a class="toolicon" title="Finish"
-              ng-show="refset.workflowStatus != 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
-              <i title="Finish" class="noul material-icons md-18">done</i>
-            </a>
-            <a class="toolicon" title="Prepare for publication"
-              ng-show="refset.workflowStatus == 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()">
-              <i title="Prepare for publication" class="material-icons md-18">open_in_new</i>
-            </a>
+            <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
+              title="Edit" class="noul material-icons md-18">edit</i>
+            <i ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+            <i
+              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()"
+              title="Unassign" class="noul material-icons md-18">assignment_return</i>
+            <i ng-show="role == 'REVIEWER'"
+              ng-click="performReassign(refset); $event.stopPropagation()"
+              title="Reassign" class="noul material-icons md-18">assignment_returned</i>
+            <i
+              ng-click="performWorkflowAction(refset, 'SAVE', user.userName); $event.stopPropagation()"
+              title="Save" class="noul material-icons md-18">save</i>
+            <i ng-show="refset.workflowStatus != 'REVIEW_DONE'"
+              ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()"
+              title="Finish" class="noul material-icons md-18">done</i>
+            <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
+              ng-click="performWorkflowAction(refset, 'FINISH', user.userName); $event.stopPropagation()"
+              title="Prepare for publication" class="material-icons md-18">open_in_new</i>
+
             <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -185,26 +167,23 @@
 
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
-            <a
+            <i
               ng-show="role == 'ADMIN' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              class="toolicon" title="Remove"
-              ng-click="removeRefset(refset); $event.stopPropagation()">
-              <i title="Remove" class="noul material-icons md-18">delete</i>
-            </a>
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+
             <!-- For non-admins only if READY_FOR_PUBLICATION -->
-            &nbsp;
-            <a class="toolicon" title="Assign"
+            <i
               ng-show="role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()">
-              <i title="Assign" class="noul material-icons md-18">assignment</i>
-            </a>
+              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment</i>
+
             <!-- only if READY_FOR_PUBLICATION -->
-            &nbsp;
-            <a class="toolicon" title="Begin Release Process"
-              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openReleaseProcessModal(refset); $event.stopPropagation()">
-              <i title="Release process" class="material-icons md-18">open_in_new</i>
-            </a>
+
+            <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
+              ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
+              title="Release process" class="material-icons md-18">open_in_new</i>
+
             <span ng-show="refset.stagingType == 'PREVIEW'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -259,43 +238,29 @@
             <td>Terminology</td>
             <td>
               {{selected.refset.terminology}} {{selected.refset.version}}
-              <a class="toolicon"
-                ng-click="openRefactorModel(selected.refset, 'Migration')"
-                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'">
-                <i title="Migration" class="noul material-icons md-18">find_replace</i>
-              </a>
-              <a class="toolicon"
-                ng-click="openRefactorModal(selected.refset, 'Migration')"
-                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'">
-                <i title="Resume migration" class="noul material-icons md-18">play_arrow</i>
-              </a>
+              <i ng-click="openRefactorModel(selected.refset, 'Migration')"
+                ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'"
+                title="Migration" class="noul material-icons md-18">find_replace</i>
+              <i ng-click="openRefactorModal(selected.refset, 'Migration')"
+                ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'"
+                title="Resume migration" class="noul material-icons md-18">play_arrow</i>
+
             </td>
           </tr>
           <tr ng-show="selected.refset.type == 'INTENSIONAL'">
             <td>Definition</td>
             <td>
               {{selected.refset.definition}}
-              <a class="toolicon"
-                ng-click="openImportExportModal(selected.refset, 'Export', 'Definition')">
-                <i title="Export definition" class="noul material-icons md-18">file_download</i>
-              </a>
-              <!-- For now, disable importing of a definition, it's just cut/paste
-               and redefinition is complicated -->
-              <!-- 
-          <a ng-click="openImportExportModal(selected.refset, 'Import', 'Definition')">
-                    <i title="Import definition"
-                      class="noul material-icons md-18">file_upload</i>
-          </a> -->
-              <a class="toolicon"
-                ng-click="openRefactorModal(selected.refset, 'Redefinition')"
-                ng-show="selected.refset.stagingType == null">
-                <i title="Redefinition" class="noul material-icons md-18">find_replace</i>
-              </a>
-              <a class="toolicon"
-                ng-click="openRefactorModal(selected.refset, 'Redefinition')"
-                ng-show="selected.refset.stagingType == 'DEFINITION'">
-                <i title="Resume redefinition" class="noul material-icons md-18">play_arrow</i>
-              </a>
+              <i
+                ng-click="openImportExportModal(selected.refset, 'Export', 'Definition')"
+                title="Export definition" class="noul material-icons md-18">file_download</i>
+
+              <i ng-click="openRefactorModal(selected.refset, 'Redefinition')"
+                ng-show="selected.refset.stagingType == null"
+                title="Redefinition" class="noul material-icons md-18">find_replace</i>
+              <i ng-click="openRefactorModal(selected.refset, 'Redefinition')"
+                ng-show="selected.refset.stagingType == 'DEFINITION'"
+                title="Resume redefinition" class="noul material-icons md-18">play_arrow</i>
             </td>
           </tr>
           <tr ng-show="selected.refset.type == 'EXTERNAL'">
@@ -333,10 +298,9 @@
               <td>{{toShortDate(artifact.timestamp)}}</td>
               <td>
                 <span>
-                  <a class="toolicon" ng-click="exportReleaseArtifact(artifact)">
-                    <i title="Export {{artifact.name}}"
-                      class="noul material-icons md-18">file_download</i>
-                  </a>
+                  <i ng-click="exportReleaseArtifact(artifact)"
+                    title="Export {{artifact.name}}"
+                    class="noul material-icons md-18">file_download</i>
                 </span>
               </td>
             </tr>
@@ -372,16 +336,15 @@
           ({{selected.refset.members.totalCount}})</span>
 
         <div style="float: right;">
-          <a class="toolicon"
-            ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members')">
-            <i title="Export refset members" class="noul material-icons md-18">file_download</i>
-          </a>
+          <i
+            ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members')"
+            title="Export refset members" class="noul material-icons md-18">file_download</i>
           <!-- Only show import button on "ASSIGNED" refsets for EXTENSIONAL refsets-->
-          <a class="toolicon"
+          <i
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
-            ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members')">
-            <i title="Import refset members" class="noul material-icons md-18">file_upload</i>
-          </a>
+            ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members')"
+            title="Import refset members" class="noul material-icons md-18">file_upload</i>
+
         </div>
       </h4>
 
@@ -415,15 +378,12 @@
 
           <h4 ng-show="value == 'ASSIGNED'">
             <div style="float: right;">
-              <a class="toolicon" title="Add refset member"
-                ng-click="openAddMemberModal(lmember, selected.refset)">
-                <i title="Add refset member" class="noul material-icons md-24">add</i>
-              </a>
-              <a class="toolicon" title="Remove all members"
+              <i ng-click="openAddMemberModal(lmember, selected.refset)"
+                title="Add refset member" class="noul material-icons md-24">add</i>
+              <i
                 ng-show="selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
-                ng-click="removeAllRefsetMembers(selected.refset)">
-                <i title="Remove all members" class="noul material-icons md-24">delete</i>
-              </a>
+                ng-click="removeAllRefsetMembers(selected.refset)"
+                title="Remove all members" class="noul material-icons md-24">delete</i>
             </div>
           </h4>
         </span>
@@ -468,26 +428,21 @@
               </td>
               <td class="nobreak"
                 ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
-                <a class="toolicon" title="Remove"
+                <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member)=='INCLUSION'"
-                  ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()">
-                  <i title="Remove inclusion" class="noul material-icons md-18">delete</i>
-                </a>
-                <a class="toolicon" title="Remove"
-                  ng-show="selected.refset.type == 'EXTENSIONAL'"
-                  ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()">
-                  <i title="Remove" class="noul material-icons md-18">delete</i>
-                </a>
-                <a class="toolicon" title="Remove"
+                  ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
+                  title="Remove inclusion" class="noul material-icons md-18">delete</i>
+                <i ng-show="selected.refset.type == 'EXTENSIONAL'"
+                  ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
+                  title="Remove" class="noul material-icons md-18">delete</i>
+                <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member) == 'EXCLUSION'"
-                  ng-click="removeRefsetExclusion(selected.refset,member); $event.stopPropagation()">
-                  <i title="Remove exclusion" class="noul material-icons md-18">delete</i>
-                </a>
-                <a class="toolicon" title="Make exclusion"
+                  ng-click="removeRefsetExclusion(selected.refset,member); $event.stopPropagation()"
+                  title="Remove exclusion" class="noul material-icons md-18">delete</i>
+                <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member) == 'MEMBER'"
-                  ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()">
-                  <i title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
-                </a>
+                  ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
+                  title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
               </td>
             </tr>
           </tbody>

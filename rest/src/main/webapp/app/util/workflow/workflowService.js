@@ -214,7 +214,7 @@ tsApp.service('workflowService', [
       $http.post(workflowUrl + "refset/release" + "?projectId=" + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug("  release refsets = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
