@@ -5,8 +5,6 @@ package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 
 /**
  * Generically represents a service for accessing {@link ReleaseInfo}.
@@ -46,52 +44,6 @@ public interface ReleaseService extends ProjectService {
    * @throws Exception
    */
   public void updateReleaseInfo(ReleaseInfo releaseInfo) throws Exception;
-
-  /**
-   * Returns the current release info for refset.
-   *
-   * @param terminologyId the terminology id
-   * @param projectId the project id
-   * @return the current release info for refset
-   * @throws Exception the exception
-   */
-  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
-    Long projectId) throws Exception;
-
-  /**
-   * Returns the release history for refset.
-   *
-   * @param refsetId the refset id
-   * @param query the query
-   * @param pfs the pfs
-   * @return the release history for refset
-   * @throws Exception the exception
-   */
-  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
-    String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Find translation releases for query.
-   *
-   * @param translationId the translations id
-   * @param query the query
-   * @param pfs the pfs
-   * @return the release info list
-   * @throws Exception the exception
-   */
-  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
-    String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Returns the current release info for translation.
-   *
-   * @param terminologyId the translation terminology id
-   * @param projectId the project id
-   * @return the current release info for translation
-   * @throws Exception the exception
-   */
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
-    Long projectId) throws Exception;
 
   /**
    * Adds the release artifact.

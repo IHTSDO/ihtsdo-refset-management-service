@@ -49,16 +49,17 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult validateRefsetRelease(Long refsetId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - validate refset release");
+  public ValidationResult validateRefsetRelease(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - validate refset release");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/refset/validate"
-            + "?refsetId=" + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/release/refset/validate" + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -76,17 +77,19 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public Refset previewRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - preview refset release");
+  public Refset previewRefsetRelease(Long refsetId, String ioHandlerId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - preview refset release");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerId, "ioHandlerId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/refset/preview"
-            + "?refsetId=" + refsetId + "&ioHandlerId=" + ioHandlerId);
+        client.target(config.getProperty("base.url")
+            + "/release/refset/preview" + "?refsetId=" + refsetId
+            + "&ioHandlerId=" + ioHandlerId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -104,9 +107,10 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
+  public void finishRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - finish refset release");
+    Logger.getLogger(getClass())
+        .debug("Release Client - finish refset release");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
@@ -119,28 +123,27 @@ public class ReleaseClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
+
   }
 
   @Override
   public ValidationResult validateTranslationRelease(Long translationId,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - validate translation release");
+    Logger.getLogger(getClass()).debug(
+        "Release Client - validate translation release");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/validate"
-            + "?translationId=" + translationId);
+        client.target(config.getProperty("base.url")
+            + "/release/translation/validate" + "?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -160,15 +163,17 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public Translation previewTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - preview translation release");
+    Logger.getLogger(getClass()).debug(
+        "Release Client - preview translation release");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerId, "ioHandlerId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/preview"
-            + "?translationId=" + translationId + "&ioHandlerId=" + ioHandlerId);
+        client.target(config.getProperty("base.url")
+            + "/release/translation/preview" + "?translationId="
+            + translationId + "&ioHandlerId=" + ioHandlerId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -186,36 +191,37 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ValidationResult finishTranslationRelease(Long translationId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - finish translation release");
+  public void finishTranslationRelease(Long translationId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - finish translation release");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/finish"
-            + "?translationId=" + translationId);
+        client
+            .target(config.getProperty("base.url")
+                + "/release/translation/finish" + "?translationId="
+                + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
-    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-    // converting to object
-    return (ValidationResultJpa) ConfigUtility.getGraphForString(resultString,
-        ValidationResultJpa.class);
+
   }
 
   @Override
   public void cancelRefsetRelease(Long refsetId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - cancel refset release");
+    Logger.getLogger(getClass())
+        .debug("Release Client - cancel refset release");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
@@ -236,16 +242,19 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public void cancelTranslationRelease(Long translationId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - cancel translation release");
+  public void cancelTranslationRelease(Long translationId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - cancel translation release");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/cancel"
-            + "?translationId=" + translationId);
+        client
+            .target(config.getProperty("base.url")
+                + "/release/translation/cancel" + "?translationId="
+                + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -311,8 +320,7 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Client - begin refset release");
+    Logger.getLogger(getClass()).debug("Release Client - begin refset release");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(effectiveTime, "effectiveTime");
 
@@ -321,9 +329,9 @@ public class ReleaseClientRest extends RootClientRest implements
         URLEncoder.encode(effectiveTime, "UTF-8").replaceAll("\\+", "%20");
 
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/release/refset/begin" + "?refsetId=" + refsetId
-            + "&effectiveTime=" + encodedEffectiveTime);
+        client.target(config.getProperty("base.url") + "/release/refset/begin"
+            + "?refsetId=" + refsetId + "&effectiveTime="
+            + encodedEffectiveTime);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

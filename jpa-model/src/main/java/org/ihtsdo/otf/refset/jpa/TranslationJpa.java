@@ -96,6 +96,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Column(nullable = false)
   private boolean provisional;
 
+  /** The in publication process. */
+  @Column(nullable = false)
+  private boolean inPublicationProcess;
+
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
   private Refset refset;
@@ -146,6 +150,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     description = translation.getDescription();
     isPublic = translation.isPublic();
     provisional = translation.isProvisional();
+    inPublicationProcess = translation.isInPublicationProcess();
     stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
@@ -215,6 +220,18 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setProvisional(boolean provisional) {
     this.provisional = provisional;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isInPublicationProcess() {
+    return inPublicationProcess;
+  }
+
+  /* see superclass */
+  @Override
+  public void setInPublicationProcess(boolean inPublicationProcess) {
+    this.inPublicationProcess = inPublicationProcess;
   }
 
   /* see superclass */
@@ -426,6 +443,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
+    result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
@@ -451,6 +469,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     if (isPublic != other.isPublic)
       return false;
     if (stagingType != other.stagingType)
+      return false;
+    if (inPublicationProcess != other.inPublicationProcess)
       return false;
     if (language == null) {
       if (other.language != null)
