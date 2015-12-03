@@ -41,9 +41,13 @@
           ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
             ng-bind="getSortIndicator('refset','terminologyId')"></span>
         </th>
-        <th class="col-md-4 col-xs-4"
-          ng-click="setSortField('refset','name', null)">Name<span
-            ng-bind="getSortIndicator('refset','name',null)"></span></th>
+        <th class="col-md-4 col-xs-4">
+          <span ng-click="setSortField('refset','name', null)">Name<span
+            ng-bind="getSortIndicator('refset','name',null)"></span></span>
+          <span ng-show="value == 'PUBLISHED' || value == 'PREVIEW' || value = 'RELEASE'">
+          <span ng-click="setSortField('refset','effectiveTime', null)">Effective Time<span
+            ng-bind="getSortIndicator('refset','effectiveTime',null)"></span></span></span>
+        </th>
         <th class="col-md-3 col-xs-3"
           ng-click="setSortField('refset','moduleId', null)">Module<span
             ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
