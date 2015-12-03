@@ -32,6 +32,7 @@ tsApp.controller('LoginCtrl', [
 
           // set request header authorization and rerouted
           $http.defaults.headers.common.Authorization = response.data.authToken;
+          projectService.getUserHasAnyRole();
           $location.path("/directory");
 
         },
