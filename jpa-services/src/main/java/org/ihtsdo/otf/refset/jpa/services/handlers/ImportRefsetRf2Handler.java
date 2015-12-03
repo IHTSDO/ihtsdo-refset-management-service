@@ -77,7 +77,8 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       final String fields[] = line.split("\t");
 
       // Check field lengths
-      if (fields.length != 6) {
+      // Support any RF2 refset file with 6 or more fields.
+      if (fields.length > 5) {
         pbr.close();
         Logger.getLogger(getClass()).error("line = " + line);
         throw new Exception(

@@ -96,13 +96,13 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
+    // tester.include("version");
     tester.include("description");
     tester.include("public");
     tester.include("language");
     tester.include("name");
     tester.include("stagingType");
-
+    tester.include("inPublicationProcess");
     // Set up objects
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -182,6 +182,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("workflowStatus");
     tester.include("workflowPath");
     tester.include("provisional");
+    tester.include("inPublicationProcess");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -220,7 +221,6 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("nameSort");
     tester.include("descriptionSort");
     tester.include("provisional");
-    
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
