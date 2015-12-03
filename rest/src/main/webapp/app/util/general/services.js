@@ -71,6 +71,21 @@ tsApp.service('utilService', [
       }
       return year + "-" + month + "-" + day;
     }
+    
+    // Convert date to a simple string
+    this.toSimpleDate = function(lastModified) {
+      var date = new Date(lastModified);
+      var year = "" + date.getFullYear();
+      var month = "" + (date.getMonth() + 1);
+      if (month.length == 1) {
+        month = "0" + month;
+      }
+      var day = "" + date.getDate();
+      if (day.length == 1) {
+        day = "0" + day;
+      }
+      return year + month + day;
+    }
 
     // Utility for cleaning a query
     this.cleanQuery = function(queryStr) {

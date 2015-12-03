@@ -706,6 +706,13 @@ tsApp
                     refsetService.fireRefsetChanged($scope.refset);
                   });
                 }
+                if (refset.stagingType == 'PREVIEW') {
+                  releaseService.cancelRefsetRelease($scope.refset.id).then(
+                  // Success
+                  function() {
+                    refsetService.fireRefsetChanged($scope.refset);
+                  });
+                }
               };
 
               // Release Process modal
@@ -723,6 +730,9 @@ tsApp
                     },
                     ioHandlers : function() {
                       return $scope.metadata.exportHandlers;
+                    },
+                    utilService : function() {
+                      return utilService;
                     }
 
                   }
@@ -730,13 +740,15 @@ tsApp
 
                 modalInstance.result.then(
                 // Success
-                function() {
-                  refsetService.fireRefsetChanged(lrefset);
-                });
+                  function(data) {
+                    refsetService.fireRefsetChanged(data);
+                    $scope.selectRefset(data);
+                  });
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers) {
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, 
+                ioHandlers, utilService) {
 
                 console.debug("Entered release process modal", refset.id, ioHandlers);
 
@@ -746,14 +758,28 @@ tsApp
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.releaseInfo = [];
                 $scope.validationResult = null;
+                
+                if (refset.stagingType == 'PREVIEW') {
+                  refsetService.resumeRelease(refset.id).then(
+                    // Success
+                    function(data) {
+                      $scope.stagedRefset = data;
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                }
 
                 $scope.beginRefsetRelease = function(refset) {
                   console.debug("begin refset release", refset.id, refset.effectiveTime);
 
-                  releaseService.beginRefsetRelease(refset.id, refset.effectiveTime).then(
+                  releaseService.beginRefsetRelease(refset.id, 
+                    utilService.toSimpleDate(refset.effectiveTime)).then(
                   // Success
                   function(data) {
-                    //releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id);
+                    $scope.releaseInfo = data;
                     $scope.refset.inPublicationProcess = true;
                   },
                   // Error
@@ -787,7 +813,9 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
-                    refsetService.fireRefsetChanged(refset);
+                    alert("Release refset is now available to be previewed from the refset tab.");
+                    //refsetService.fireRefsetChanged(refset);
+                    $uibModalInstance.close($scope.stagedRefset);
                   },
                   // Error
                   function(data) {
@@ -803,16 +831,13 @@ tsApp
                   releaseService.finishRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
-                    refsetService.fireRefsetChanged(refset);
+                    $uibModalInstance.close(refset);
                   },
                   // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
                   });
-                  
-
-                  $uibModalInstance.close();
                 };
                 
                 $scope.cancel = function(refset) {
@@ -833,9 +858,7 @@ tsApp
                   $scope.status.opened = true;
                 };
                                 
-                $scope.setDate = function(year, month, day) {
-                  $scope.dt = new Date(year, month, day);
-                };
+
 
                 $scope.format = 'yyyyMMdd';
 

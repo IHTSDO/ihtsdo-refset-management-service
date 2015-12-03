@@ -150,8 +150,14 @@
               class="toolicon" title="Begin Release Process" 
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()">
-              <i title="Begin release process" class="material-icons md-18">open_in_new</i>            
-            </a> </td>
+              <i title="Release process" class="material-icons md-18">open_in_new</i>            
+            </a>
+            <span ng-show="refset.stagingType == 'PREVIEW'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelAction(refset)"
+                uib-tooltip="Click to cancel release process">Cancel Release</button>
+            </span> </td>
         </tr>
       </tbody>
     </table>

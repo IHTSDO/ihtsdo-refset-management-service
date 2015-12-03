@@ -444,6 +444,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       stageRefset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       stageRefset.setLastModified(new Date());
       stageRefset.setLastModifiedBy(userName);
+      stageRefset.setProvisional(false);
       refsetService.updateRefset(refset);
       refsetService.updateRefset(stageRefset);
       releaseService.addReleaseInfo(stageReleaseInfo);

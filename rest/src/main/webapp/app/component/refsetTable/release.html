@@ -3,6 +3,39 @@
 </div>
 
 <div class="modal-body">
+  <span ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'PREVIEW'"
+      class="alert alert-warning">Release of {{releaseInfo.name}} has been started.</span>
+           
+  <span ng-show="validationResult && refset.stagingType != 'PREVIEW' &&
+    validationResult.comments.length == 0 && validationResult.warnings.length == 0 &&
+    validationResult.errors.length == 0"
+    class="alert alert-warning">Validation passed with no errors or warnings.</span> 
+    
+  <span ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+      class="alert alert-warning">Release refset is available to be previewed from the refset tab.</span><br>
+  <span ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+      class="alert alert-warning">Click 'Finish' to complete the release.</span>
+      
+  <div ng-show="validationResult && refset.stagingType != 'PREVIEW'">
+    <h4 ng-show="validationResult.comments.length > 0">Comments</h4>
+    <table class="table">
+      <tr ng-repeat="comment in validationResult.comments">
+        <td>{{comment}}</td>
+      </tr>
+    </table>
+    <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>
+    <table class="table">
+      <tr ng-repeat="warning in validationResult.warnings">
+        <td>{{warning}}</td>
+      </tr>
+    </table>
+    <h4 ng-show="validationResult.errors.length > 0">Errors</h4>
+    <table class="table">
+      <tr ng-repeat="error in validationResult.errors">
+        <td>{{error}}</td>
+      </tr>
+    </table>
+  </div>
   <div ng-show="!refset.inPublicationProcess">
     <table class="table">
       <tr>
@@ -28,23 +61,23 @@
       <tr>
         <td><b>Workflow Status</b></td>
         <td>{{refset.workflowStatus}}</td>
-      </tr>      
+      </tr>
       <tr>
         <td><b>Release Date</b></td>
-        <td>    <pre>Selected date is: <em>{{dt | date:'fullDate' }}</em></pre>
-
-    <input ng-model="refset.effectiveTime" size="40" />
-
-    
-
-            <p class="input-group">
-              <input type="text" class="form-control" uib-datepicker-popup="{{format}}" ng-model="dt" is-open="status.opened" datepicker-options="dateOptions" date-disabled="disabled(date, mode)" ng-required="true" close-text="Close" />
-              <span class="input-group-btn">
-                <button type="button" class="btn btn-default" ng-click="open($event)"><i class="glyphicon glyphicon-calendar"></i></button>
-              </span>
-            </p>
-
-    </td>
+        <td><p class="input-group">
+            <input type="text" class="form-control"
+              uib-datepicker-popup="yyyymmdd" ng-model="refset.effectiveTime"
+              is-open="status.opened" datepicker-options="dateOptions"
+              date-disabled="disabled(date, mode)" ng-required="true"
+              close-text="Close" />
+            <span class="input-group-btn">
+              <button type="button" class="btn btn-default"
+                ng-click="open($event)">
+                <i class="glyphicon glyphicon-calendar"></i>
+              </button>
+            </span>
+          </p>
+        </td>
       </tr>
       <tr>
         <td><b>I/O Handler</b></td>
@@ -75,9 +108,9 @@
     ">Release</button>
   <button class="btn btn-primary" ng-show="refset.inPublicationProcess" ng-click="validateRefsetRelease(refset) 
     ">Validate</button>
-  <button class="btn btn-primary" ng-show="validationResult && stagedRefset.workflowStatus != 'PREVIEW'" ng-click="previewRefsetRelease(refset) 
+  <button class="btn btn-primary" ng-show="validationResult && refset.stagingType != 'PREVIEW'" ng-click="previewRefsetRelease(refset) 
     ">Preview</button>
-  <button class="btn btn-primary" ng-show="stagedRefset.workflowStatus == 'PREVIEW'" ng-click="finishRefsetRelease(refset) 
+  <button class="btn btn-primary" ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'" ng-click="finishRefsetRelease(refset) 
     ">Finish</button>  
   <button class="btn btn-warning" ng-show="refset.inPublicationProcess" ng-click="cancel(refset)">Cancel</button>
   <button class="btn btn-warning" ng-click="close()">Close</button>
