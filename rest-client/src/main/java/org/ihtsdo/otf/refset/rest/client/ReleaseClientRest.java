@@ -372,4 +372,9 @@ public class ReleaseClientRest extends RootClientRest implements
         ReleaseInfoJpa.class);
   }
 
+  @Override
+  public Refset resumeRelease(Long refsetId, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

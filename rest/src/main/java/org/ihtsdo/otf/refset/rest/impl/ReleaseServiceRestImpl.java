@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -444,6 +445,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       stageRefset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       stageRefset.setLastModified(new Date());
       stageRefset.setLastModifiedBy(userName);
+      stageRefset.setProvisional(false);
       refsetService.updateRefset(refset);
       refsetService.updateRefset(stageRefset);
       releaseService.addReleaseInfo(stageReleaseInfo);
@@ -1109,6 +1111,50 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
+
+  @GET
+  @Override
+  @Path("/release/resume")
+  @ApiOperation(value = "Resume refset release", notes = "Resumes the release process by re-validating the refset.", response = RefsetJpa.class)
+  public Refset resumeRelease(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /release/resume " + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Load refset
+      Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      // Authorize the call
+      authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "resume refset release",
+          UserRole.AUTHOR);
+
+      // Check staging flag
+      if (refset.getStagingType() != Refset.StagingType.PREVIEW) {
+        throw new LocalException("Refset is not staged for release.");
+
+      }
+
+      // recovering the previously saved state of the staged refset
+      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+
+    } catch (Exception e) {
+      handleException(e, "trying to resume refset release");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
 
   @Override
   @DELETE
