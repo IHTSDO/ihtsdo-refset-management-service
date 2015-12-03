@@ -318,60 +318,17 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "IoHandler Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // check preconditions
-    // - refset exists
-    // - current release info is planned and not published
-    // - refset is unstaged (refset.isStaged())
-    //
-    // releaseService.setTransactionPerOperation(false)
-    // releaseService.beginTransaction();
-    //
-    // Actions
-    // Stage this refset (e.g. refsetService.stageRefset) with a staging type of
-    // PREVIEW
-    // Copy the release info from origin refset and add a new one attached to
-    // this refset
-    // - also copy any release artifacts over
-    // - null ids
-    // Generate a "snapshot" release artifact based on ioHandlerId (e.g.
-    // DEFAULT)
-    // - refsetService.getExportHandler(ioHandlerId)
-    // - handler.exportMembers(refset,members) -> inputstream
-    // - convert input stream into a byteArrayStream
-    // - create ReleaseArtifactJpa and set data to ...
-    // - Set the release artifact name to
-    // handler.getFileName(refset.getProject().getNamespace()
-    // ,"Snapshot", ConfigUtility.DATE_FORMAT.format(releaseInfo.getName())
-    // Generate a "delta" release artifact if there is a previous release info
-    // - releaseService.getCurrentReleaseInfo
-    // - if null, continue (i.e. skip this part)
-    // - compare the corresponding member lists.
-    // - create a member list where old-not-new are inactive with the
-    // effectiveTime of releaseInfo.getEffectiveTime()
-    // - create a members list where new-not-old (use current effective time and
-    // "active=true")
-    // - generate like with snapshot, but pass "Delta" to the export method and
-    // this specially
-    // tailored list of members
-    // Using calculation above - set the effectiveTime of of any new-not-old
-    // members to the
-    // effective time of the current release and save those changes
-    // - these are the members connected to the staged refset.
-    // - presumably, these members will all have a "null" effective time
-    // Set the workflow status of the staged refset to "PREVIEW"
-    // set the lastModifiedBy (to the user who called this method)
-    // save the staged refset changes.
-    //
-    // releaseService.commit()
-    // return staged refset (change return type)
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refset/preview " + refsetId);
 
     RefsetService refsetService = new RefsetServiceJpa();
     ReleaseService releaseService = new ReleaseServiceJpa();
+
+    // Manage transaction
     releaseService.setTransactionPerOperation(false);
     releaseService.beginTransaction();
     try {
+
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
@@ -384,25 +341,34 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "preview refset release",
               UserRole.AUTHOR);
 
+      // Check preconditions
       ReleaseInfoList releaseInfoList =
           releaseService.findRefsetReleasesForQuery(refsetId, null, null);
       if (releaseInfoList.getCount() != 1) {
         throw new Exception("Cannot find release info for refset " + refsetId);
       }
+
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new Exception("refset release is not ready to preview "
             + refsetId);
+
       if (refset.isStaged())
-        throw new Exception("refset workflowstatus is staged for " + refsetId);
+        throw new Exception("refset is staged for " + refsetId);
+
+      // Stage the refset for preview
       Refset stageRefset =
           refsetService.stageRefset(refset, StagingType.PREVIEW,
               releaseInfo.getEffectiveTime());
+
+      // Create the release info
       ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
       stageReleaseInfo.setId(null);
       stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
       stageReleaseInfo.setRefset(stageRefset);
+
+      // Generate the snapshot release artifact
       ExportRefsetHandler handler =
           refsetService.getExportRefsetHandler(ioHandlerId);
       InputStream inputStream =
@@ -414,7 +380,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseArtifact.setTimestamp(new Date());
       releaseArtifact.setLastModified(new Date());
       releaseArtifact.setLastModifiedBy(userName);
+      releaseService.addReleaseArtifact(releaseArtifact);
+
+      // Add it to the staged release info
       stageReleaseInfo.getArtifacts().add(releaseArtifact);
+
+      // Generate the delta release artifact
       releaseInfo =
           releaseService.getCurrentReleaseInfoForRefset(
               refset.getTerminologyId(), refset.getProject().getId());
@@ -443,16 +414,23 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         releaseArtifact.setTimestamp(new Date());
         releaseArtifact.setLastModified(new Date());
         releaseArtifact.setLastModifiedBy(userName);
+        releaseService.addReleaseArtifact(releaseArtifact);
+
+        // Add it to the staged release info
         stageReleaseInfo.getArtifacts().add(releaseArtifact);
       }
+      
+      // Set aspects of staged refset
       stageRefset.setWorkflowStatus(WorkflowStatus.PREVIEW);
-      stageRefset.setLastModified(new Date());
       stageRefset.setLastModifiedBy(userName);
-      stageRefset.setProvisional(false);
+
       refsetService.updateRefset(refset);
       refsetService.updateRefset(stageRefset);
       releaseService.addReleaseInfo(stageReleaseInfo);
+
+      // Finish transaction
       releaseService.commit();
+
       return refsetService.getRefset(stageRefset.getId());
     } catch (Exception e) {
       releaseService.rollback();

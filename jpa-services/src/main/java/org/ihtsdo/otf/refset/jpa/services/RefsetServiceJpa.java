@@ -693,10 +693,13 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     // Clone the refset and call set it provisional
     Refset refsetCopy = new RefsetJpa(refset);
-    // only exist for staging purposes
-    // will become real if a finish operation is completed
-    // used to prevent retrieving with index
-    refsetCopy.setProvisional(true);
+
+    // Mark as provisional if staging type isn't preview
+    if (stagingType == Refset.StagingType.PREVIEW) {
+      refsetCopy.setProvisional(false);
+    } else {
+      refsetCopy.setProvisional(true);
+    }
 
     // null its id and all of its components ids
     // then call addXXX on each component
@@ -711,14 +714,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     addRefset(refsetCopy);
 
-    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
-      // for (ConceptRefsetMember member : refset.getMembers()) {
-      /*
-       * member.setId(null); member.setRefset(refsetCopy); addMember(member);
-       */
-
-      // refsetCopy.addMember(member);
-
+    // Copy members for EXTENSIONAL staging, or for PREVIEW staging
+    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL
+        || stagingType == Refset.StagingType.PREVIEW) {
       // without doing the copy constructor, we get the following errors:
       // identifier of an instance of
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
@@ -726,9 +724,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
       for (ConceptRefsetMember originMember : refset.getMembers()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member = new ConceptRefsetMemberJpa(originMember);
-        // member.setLastModifiedBy(userName);
-
-        // member.setPublishable(true);
         member.setRefset(refsetCopy);
         member.setTerminology(refsetCopy.getTerminology());
         member.setVersion(refsetCopy.getVersion());
@@ -736,7 +731,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
         refsetCopy.addMember(member);
         addMember(member);
       }
-      // }
     }
 
     // set staging parameters on the original refset
