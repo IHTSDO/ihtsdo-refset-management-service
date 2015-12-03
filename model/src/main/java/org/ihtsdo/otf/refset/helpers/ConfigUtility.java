@@ -179,7 +179,7 @@ public class ConfigUtility {
           System.getProperty("refset.config"
               + (label.isEmpty() ? "" : "." + label));
       Logger.getLogger(ConfigUtility.class.getName()).info(
-          "  refset.config." + (label.isEmpty() ? "" : "." + label) + " = "
+          "  refset.config" + (label.isEmpty() ? "" : "." + label) + " = "
               + configFileName);
       config = new Properties();
       FileReader in = new FileReader(new File(configFileName));

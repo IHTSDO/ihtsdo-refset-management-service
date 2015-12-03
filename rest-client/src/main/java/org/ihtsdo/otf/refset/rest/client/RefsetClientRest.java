@@ -1150,18 +1150,16 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetJpa cloneRefset(Long projectId, Long refsetId, RefsetJpa refset,
+  public RefsetJpa cloneRefset(Long projectId, RefsetJpa refset,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Client - clone refset " + refsetId + ", " + projectId + ", "
-            + refset);
-    validateNotEmpty(refsetId, "refsetId");
+        "Refset Client - clone refset " + projectId + ", " + refset);
     validateNotEmpty(projectId, "projectId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/clone"
-            + "?refsetId=" + refsetId + "&projectId=" + projectId);
+            + "?projectId=" + projectId);
 
     String refsetString =
         ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()

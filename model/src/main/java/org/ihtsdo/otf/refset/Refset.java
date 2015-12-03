@@ -76,7 +76,10 @@ public interface Refset extends Component, Searchable {
     /** The exnclusion add. */
     EXCLUSION_ADD,
     /** The exnclusion remove. */
-    EXCLUSION_REMOVE;
+    EXCLUSION_REMOVE,
+
+    /** The workflow action. */
+    WORKFLOW_ACTION;
   }
 
   /**

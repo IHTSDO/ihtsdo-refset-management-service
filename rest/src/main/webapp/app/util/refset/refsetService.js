@@ -153,13 +153,13 @@ tsApp.service('refsetService', [
     }
 
     // clone refset
-    this.cloneRefset = function(projectId, refsetId, refset) {
+    this.cloneRefset = function(projectId, refset) {
       console.debug("cloneRefset");
       var deferred = $q.defer();
 
       // Clone refset
       gpService.increment()
-      $http.put(refsetUrl + 'clone' + "?refsetId=" + refset.id + "&projectId=" + projectId, refset)
+      $http.put(refsetUrl + 'clone' + "?&projectId=" + projectId, refset)
         .then(
         // success
         function(response) {

@@ -76,6 +76,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Column(nullable = false)
   private boolean forReview = false;
 
+  /** The revision. */
+  @Column(nullable = false)
+  private boolean revision = false;
+
   /** The authors. */
   @ManyToMany(targetEntity = UserJpa.class)
   @CollectionTable(name = "tracking_record_authors")
@@ -117,6 +121,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     lastModifiedBy = record.getLastModifiedBy();
     forAuthoring = record.isForAuthoring();
     forReview = record.isForReview();
+    revision = record.isRevision();
     authors = new ArrayList<>(record.getAuthors());
     reviewers = new ArrayList<>(record.getReviewers());
     translation = new TranslationJpa(record.getTranslation());
@@ -194,11 +199,11 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Returns the project id. Just for indexing.
-   * Possibly consider making this @XmlElement, though
-   * then "set" method becomes complicated and nondeterministic
-   * for testing.
+   * Returns the project id. Just for indexing. Possibly consider making this
+   *
    * @return the project id
+   * @XmlElement, though then "set" method becomes complicated and
+   *              nondeterministic for testing.
    */
   @XmlTransient
   @FieldBridge(impl = LongBridge.class)
@@ -367,6 +372,19 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public boolean isRevision() {
+    return revision;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRevision(boolean revision) {
+    this.revision = revision;
+  }
+
+  /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public boolean isForAuthoring() {
@@ -387,6 +405,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     result = prime * result + ((concept == null) ? 0 : concept.hashCode());
     result = prime * result + (forAuthoring ? 1231 : 1237);
     result = prime * result + (forReview ? 1231 : 1237);
+    result = prime * result + (revision ? 1231 : 1237);
     result =
         prime * result + ((translation == null) ? 0 : translation.hashCode());
     result = prime * result + ((authors == null) ? 0 : authors.hashCode());
@@ -413,6 +432,8 @@ public class TrackingRecordJpa implements TrackingRecord {
       return false;
     if (forReview != other.forReview)
       return false;
+    if (revision != other.revision)
+      return false;
     if (translation == null) {
       if (other.translation != null)
         return false;
@@ -431,12 +452,14 @@ public class TrackingRecordJpa implements TrackingRecord {
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
     return "TrackingRecordJpa [id=" + id + ", lastModified=" + lastModified
         + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
-        + forAuthoring + ", forReview=" + forReview + ", authors=" + authors
-        + ", reviewers=" + reviewers + ", translation=" + translation
-        + ", refset=" + refset + ", concept=" + concept + "]";
+        + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
+        + ", authors=" + authors + ", reviewers=" + reviewers
+        + ", translation=" + translation + ", refset=" + refset + ", concept="
+        + concept + "]";
   }
 }

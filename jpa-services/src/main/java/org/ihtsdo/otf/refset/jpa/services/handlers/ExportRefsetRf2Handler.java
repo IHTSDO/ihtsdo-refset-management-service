@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
@@ -54,7 +55,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   /* see superclass */
   @Override
   public String getName() {
-    return "Export RF2 with name";
+    return "Export RF2";
   }
 
   /* see superclass */
@@ -62,8 +63,8 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Export refset members with names - " + refset.getTerminologyId() + ", "
-            + refset.getName());
+        "Export refset members with names - " + refset.getTerminologyId()
+            + ", " + refset.getName());
 
     // Write a header
     // Obtain members for refset,
@@ -77,15 +78,20 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
     sb.append("referencedComponentId").append("\t");
-    sb.append("name").append("\t");
     sb.append("\r\n");
 
     for (ConceptRefsetMember member : members) {
       Logger.getLogger(getClass()).debug("  member = " + member);
+
+      // Skip exclusions
+      if (EnumSet.of(Refset.MemberType.EXCLUSION).contains(
+          member.getMemberType())) {
+        continue;
+      }
       sb.append(member.getTerminologyId()).append("\t");
       if (member.getEffectiveTime() != null) {
         sb.append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
-          .append("\t");
+            .append("\t");
       } else {
         sb.append("\t");
       }
@@ -93,7 +99,6 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
       sb.append(refset.getModuleId()).append("\t");
       sb.append(member.getRefset().getTerminologyId()).append("\t");
       sb.append(member.getConceptId()).append("\t");
-      sb.append(member.getConceptName()).append("\t");
       sb.append("\r\n");
     }
 
@@ -121,7 +126,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append(UUID.randomUUID().toString()).append("\t");
     if (refset.getEffectiveTime() != null) {
       sb.append(ConfigUtility.DATE_FORMAT.format(refset.getEffectiveTime()))
-        .append("\t");
+          .append("\t");
     } else {
       sb.append("\t");
     }

@@ -63,6 +63,7 @@ import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -370,12 +371,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Clone refset", notes = "Creates the specified refset", response = RefsetJpa.class)
   public Refset cloneRefset(
     @ApiParam(value = "Project id, e.g. 3", required = true) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Refset , e.g. 347582394", required = false) RefsetJpa refset,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Refset): /clone " + refsetId + ", " + projectId
+        "RESTful call PUT (Refset): /clone " + refset.getId() + ", " + projectId
             + ", " + refset);
 
     RefsetService refsetService = new RefsetServiceJpa();
@@ -387,7 +387,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
 
-      // Add the refset
+      // Add the refset (null the id)
+      Long refsetId = refset.getId();
+      Refset originRefset = refsetService.getRefset(refsetId);
+
+      refset.setId(null);
+      refset.setWorkflowStatus(WorkflowStatus.NEW);
       refset.setLastModifiedBy(userName);
       Refset newRefset = refsetService.addRefset(refset);
 
@@ -395,7 +400,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset.getType() == Refset.Type.EXTENSIONAL) {
 
         // Get the original reference set
-        Refset originRefset = refsetService.getRefset(refsetId);
         for (ConceptRefsetMember originMember : originRefset.getMembers()) {
           ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
           member.setPublished(false);
