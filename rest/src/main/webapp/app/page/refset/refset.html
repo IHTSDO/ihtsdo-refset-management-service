@@ -13,7 +13,8 @@
             <td>Choose Project:</td>
             <td><select ng-model="project" ng-show="projects.data.length > 1"
               ng-options="item.name for item in projects.data"
-              ng-change="setProject(project);"></select></td>
+              ng-change="setProject(project);"></select>
+              <span ng-show="projects.data.length == 1">{{project.name}}</span></td>
           </tr>
           <tr>
             <td>Role:</td>
