@@ -107,7 +107,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public void finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .debug("Release Client - finish refset release");
@@ -123,12 +123,15 @@ public class ReleaseClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-
+    // converting to object
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
   }
 
   @Override
@@ -191,7 +194,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public void finishTranslationRelease(Long translationId, String authToken)
+  public Translation finishTranslationRelease(Long translationId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Client - finish translation release");
@@ -209,12 +212,15 @@ public class ReleaseClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
-
+    // converting to object
+    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
+        TranslationJpa.class);
   }
 
   @Override
