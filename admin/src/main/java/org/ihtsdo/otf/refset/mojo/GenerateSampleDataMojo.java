@@ -186,6 +186,17 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       UserJpa author3 = makeUser("author3", "Author3");
       author3 = (UserJpa) security.addUser(author3, admin.getAuthToken());
 
+      // 
+      // Add some users for uat
+      //
+      Logger.getLogger(getClass()).info("Add uat users");
+      UserJpa refsetadmin1 = makeUser("refsetadmin1", "RefsetAdmin1");
+      refsetadmin1 = (UserJpa) security.addUser(refsetadmin1, admin.getAuthToken());
+      UserJpa refsetreviewer1 = makeUser("refsetreviewer1", "RefsetReviewer1");
+      refsetreviewer1 = (UserJpa) security.addUser(refsetreviewer1, admin.getAuthToken());
+      UserJpa refsetauthor1 = makeUser("refsetauthor1", "RefsetAuthor1");
+      refsetauthor1 = (UserJpa) security.addUser(refsetauthor1, admin.getAuthToken());
+      
       //
       // Add some viewer users to trigger paging
       //
@@ -241,6 +252,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project1.getId(), admin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), refsetadmin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
 
       // Project 1
       project = new ProjectServiceRestImpl();
@@ -252,6 +266,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           UserRole.AUTHOR.toString(), admin.getAuthToken());
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project1.getId(), author2.getUserName(),
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
+      
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), refsetreviewer1.getUserName(),
+          UserRole.REVIEWER.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), refsetauthor1.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       // Project 2
