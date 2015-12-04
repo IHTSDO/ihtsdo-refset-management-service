@@ -1429,7 +1429,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
       // Load definition
-      String definition = handler.importDefinition(in);
+      List<MemoryEntry> memories = handler.importPhraseMemory(translation,in);
 
     } catch (Exception e) {
       handleException(e, "trying to import translation phrase memory");

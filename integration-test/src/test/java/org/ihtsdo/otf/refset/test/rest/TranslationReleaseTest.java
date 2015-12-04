@@ -428,7 +428,7 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
     // Add 5 members to refset
@@ -454,11 +454,13 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    Translation stagedTranslation2 = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
   

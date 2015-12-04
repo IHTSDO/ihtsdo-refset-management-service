@@ -751,7 +751,7 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
+    Long translationId, String ioHandlerInfoId, String authToken) throws Exception {
     // TODO Auto-generated method stub
 
   }
