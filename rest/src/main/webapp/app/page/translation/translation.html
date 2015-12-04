@@ -14,7 +14,8 @@
             <td><select ng-model="project"
               ng-show="projects.data.length > 1"
               ng-options="item.name for item in projects.data"
-              ng-change="setProject(project);"></select></td>
+              ng-change="setProject(project);"></select> <span
+                ng-show="projects.data.length == 1">{{project.name}}</span></td>
           </tr>
           <tr>
             <td>Role:</td>
@@ -26,8 +27,8 @@
     <span class="col-md-8 col-xs-4"></span>
   </div>
   <div class="col-md-12 col-xs-12">
-    <uib-accordion> <uib-accordion-group ng-show="!isProjectAdmin()"
-      is-open="true"> <uib-accordion-heading>
+    <uib-accordion> <uib-accordion-group
+      ng-show="!isProjectAdmin()" is-open="true"> <uib-accordion-heading>
     <h5 class="section-header">Editing</h5>
     </uib-accordion-heading>
     <div translation-table value="EDITING" projects="projects"

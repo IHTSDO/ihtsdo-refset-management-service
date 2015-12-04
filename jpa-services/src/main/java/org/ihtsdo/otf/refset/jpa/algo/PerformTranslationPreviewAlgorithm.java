@@ -118,7 +118,6 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
     stageReleaseInfo.getArtifacts().add(artifact);
-    addReleaseArtifact(artifact);
 
     // Generate the delta release artifact and add it
     releaseInfo =
@@ -150,7 +149,6 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
       stageReleaseInfo.getArtifacts().add(artifact);
-      addReleaseArtifact(artifact);
     }
 
     // Update staged and origin translations

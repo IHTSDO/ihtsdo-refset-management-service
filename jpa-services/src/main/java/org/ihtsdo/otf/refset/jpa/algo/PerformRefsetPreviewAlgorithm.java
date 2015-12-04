@@ -120,7 +120,6 @@ public class PerformRefsetPreviewAlgorithm extends RefsetServiceJpa implements
     releaseArtifact.setTimestamp(new Date());
     releaseArtifact.setLastModified(new Date());
     releaseArtifact.setLastModifiedBy(userName);
-    addReleaseArtifact(releaseArtifact);
 
     // Add it to the staged release info
     stageReleaseInfo.getArtifacts().add(releaseArtifact);
@@ -154,7 +153,6 @@ public class PerformRefsetPreviewAlgorithm extends RefsetServiceJpa implements
       releaseArtifact.setTimestamp(new Date());
       releaseArtifact.setLastModified(new Date());
       releaseArtifact.setLastModifiedBy(userName);
-      addReleaseArtifact(releaseArtifact);
 
       // Add it to the staged release info
       stageReleaseInfo.getArtifacts().add(releaseArtifact);

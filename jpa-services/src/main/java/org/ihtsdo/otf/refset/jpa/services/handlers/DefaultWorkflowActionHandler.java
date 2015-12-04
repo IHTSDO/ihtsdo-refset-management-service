@@ -649,18 +649,18 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // That do not have concepts in the translation
     String queryStr =
         "select a from ConceptRefsetMemberJpa a, RefsetJpa b "
-            + "where b.id = :refsetId and a.refset = b"
+            + "where b.id = :refsetId and a.refset = b "
             + "and a.conceptId NOT IN "
-            + "(select d.terminologyId TranslationJpa c, ConceptJpa d "
-            + " where c.refset = a AND c.concept = d)";
+            + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
+            + " where c.refset = a AND d.translation = c)";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
             "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
-                + "where b.id = :refsetId and a.refset = b"
+                + "where b.id = :refsetId and a.refset = b "
                 + "and a.conceptId NOT IN "
-                + "(select d.terminologyId TranslationJpa c, ConceptJpa d "
-                + " where c.refset = a AND c.concept = d)");
+                + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
+                + " where c.refset = a AND d.translation = c)");
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 

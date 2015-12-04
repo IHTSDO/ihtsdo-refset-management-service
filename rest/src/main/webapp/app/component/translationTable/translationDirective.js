@@ -85,7 +85,8 @@ tsApp.directive('translationTable', [
           $scope.$on('refset:conceptChanged', function(event, data) {
             console.debug('on refset:conceptChanged', data, $scope.selected.translation);
             // If the translation is set, refresh available/assigned lists
-            if (data && $scope.selected.translation) {
+            if ($scope.selected.translation) {
+              $scope.selectTranslation($scope.selected.translation);
               $scope.getAvailableConcepts($scope.selected.translation);
               $scope.getAssignedConcepts($scope.selected.translation);
             }
@@ -537,6 +538,91 @@ tsApp.directive('translationTable', [
                 $scope.errors[0] = data;
                 utilService.clearError();
               })
+            };
+
+            $scope.cancel = function() {
+              $uibModalInstance.dismiss('cancel');
+            };
+
+          };
+
+          // Assign concept modal
+          $scope.openAssignConceptModal = function(ltranslation, lconcept, laction, luserName) {
+            console.debug("openAssignConceptModal ", ltranslation, lconcept, laction, luserName);
+
+            var modalInstance = $uibModal.open({
+              templateUrl : 'app/component/translationTable/assignConcept.html',
+              controller : AssignConceptModalCtrl,
+              backdrop : 'static',
+              resolve : {
+                concept : function() {
+                  return lconcept;
+                },
+                translation : function() {
+                  return translation;
+                },
+                action : function() {
+                  return laction;
+                },
+                currentUserName : function() {
+                  return luserName;
+                },
+                assignedUsers : function() {
+                  return $scope.projects.assignedUsers;
+                },
+                project : function() {
+                  return $scope.project;
+                }
+              }
+
+            });
+
+            modalInstance.result.then(
+            // Success
+            function(data) {
+              translationService.fireConceptChanged(data);
+            });
+          };
+
+          // Assign concept controller
+          var AssignConceptModalCtrl = function($scope, $uibModalInstance, concept, action,
+            currentUserName, assignedUsers, project, $rootScope) {
+
+            console.debug("Entered assign concept modal control", assignedUsers, project.id);
+
+            $scope.concept = concept;
+            $scope.project = project;
+            $scope.assignedUserNames = [];
+            $scope.selectedUserName = currentUserName;
+            $scope.errors = [];
+
+            // Prep userNames picklist
+            for (var i = 0; i < assignedUsers.length; i++) {
+              $scope.assignedUserNames.push(assignedUsers[i].userName);
+            }
+            $scope.assignedUserNames = $scope.assignedUserNames.sort();
+
+            $scope.assignConcept = function(userName) {
+              if (!userName) {
+                $scope.errors[0] = "The user must be selected. ";
+                return;
+              }
+
+              $scope.selectedUserName = userName;
+
+              if (action == 'ASSIGN') {
+                workflowService.performTranslationWorkflowAction($scope.project.id, translation.id,
+                  userName, "ASSIGN", concept).then(
+                // Success
+                function(data) {
+                  $uibModalInstance.close(concept);
+                },
+                // Error
+                function(data) {
+                  $scope.errors[0] = data;
+                  utilService.clearError();
+                })
+              }
             };
 
             $scope.cancel = function() {
