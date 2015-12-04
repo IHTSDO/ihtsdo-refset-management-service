@@ -185,6 +185,12 @@ a:hover {
 	color: #00a6e5;
 }
 
+.md-grey {
+	color: grey;
+	cursor: pointer;
+	text-decoration: none;
+}
+
 /* For vertical centering */
 .v-wrap{
     height: 100%;

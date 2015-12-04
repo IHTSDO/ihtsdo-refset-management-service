@@ -194,8 +194,13 @@
         <div style="float: left;">{{selected.refset.name}}</div>
         <div style="float: right;">
           <a class="toolicon"
-            ng-click="openNotesModal(selected.refset, 'Refset')">
+            ng-click="openNotesModal(selected.refset, 'Refset')"
+            ng-show="selected.refset.notes.length > 0">
             <i title="Refset Notes" class="noul material-icons md-18">assignment</i>
+          </a><a class="toolicon"
+            ng-click="openNotesModal(selected.refset, 'Refset')"
+            ng-show="!selected.refset.notes || selected.refset.notes.length == 0">
+            <i title="Refset Notes" class="md-grey material-icons md-18">assignment</i>
           </a>
         </div>
       </h4>
@@ -439,8 +444,11 @@
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()">
                   <i title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
                 </a><a class="toolicon" title="Refset Member Notes"
-                  ng-click="openNotesModal(member, 'Member')">
+                  ng-click="openNotesModal(member, 'Member')" ng-show="member.notes.length > 0">
                   <i title="Refset Member Notes" class="noul material-icons md-18">assignment</i>
+                </a><a class="toolicon" title="Refset Member Notes"
+                  ng-click="openNotesModal(member, 'Member')" ng-show="!member.notes || member.notes.length == 0">
+                  <i title="Add Refset Member Notes" class="md-grey material-icons md-18">assignment</i>
                 </a></td>
             </tr>
           </tbody>

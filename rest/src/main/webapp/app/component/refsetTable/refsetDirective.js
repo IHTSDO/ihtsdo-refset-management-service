@@ -507,7 +507,7 @@ tsApp
                       utilService.clearError();
                     })
                   } else if ($scope.type == 'Member') {
-                    refsetService.removeRefsetMemberNote(object.id, note.id).then(
+                    refsetService.removeRefsetMemberNote(object.refsetId, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
@@ -528,8 +528,7 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      refsetService.fireRefsetChanged(data);
-                      $scope.selectRefset(object);
+                      $uibModalInstance.close(object);
                     },
                     // Error - add refset
                     function(data) {
@@ -541,6 +540,7 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
+                      $uibModalInstance.close(refset);
                     },
                     // Error - add refset
                     function(data) {
@@ -553,6 +553,10 @@ tsApp
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');
                 };
+                
+                $scope.close = function(refset) {
+                  $uibModalInstance.close(refset);
+                }
 
               };
 
