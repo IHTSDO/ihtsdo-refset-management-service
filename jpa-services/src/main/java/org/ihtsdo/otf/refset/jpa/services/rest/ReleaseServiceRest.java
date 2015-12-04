@@ -110,9 +110,10 @@ public interface ReleaseServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -165,9 +166,10 @@ public interface ReleaseServiceRest {
    *
    * @param translationId the translation id
    * @param authToken the auth token
+   * @return the translation
    * @throws Exception the exception
    */
-  public void finishTranslationRelease(Long translationId,
+  public Translation finishTranslationRelease(Long translationId,
     String authToken) throws Exception;
 
   /**

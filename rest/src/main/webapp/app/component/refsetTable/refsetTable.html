@@ -209,8 +209,13 @@
         <div style="float: left;">{{selected.refset.name}}</div>
         <div style="float: right;">
           <a class="toolicon"
-            ng-click="openNotesModal(selected.refset, 'Refset')">
+            ng-click="openNotesModal(selected.refset, 'Refset')"
+            ng-show="selected.refset.notes.length > 0">
             <i title="Refset Notes" class="noul material-icons md-18">assignment</i>
+          </a><a class="toolicon"
+            ng-click="openNotesModal(selected.refset, 'Refset')"
+            ng-show="!selected.refset.notes || selected.refset.notes.length == 0">
+            <i title="Refset Notes" class="md-grey material-icons md-18">assignment</i>
           </a>
         </div>
       </h4>
@@ -357,11 +362,10 @@
       <span
         ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
         <br />
-        <span class="alert alert-warning">Refest has no members</span>
+        <span class="alert alert-warning">Refset has no members</span>
       </span>
 
-      <span
-        ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter">
+      <span>
         <span style="display: block;">
           <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
@@ -397,7 +401,9 @@
           </h4>
         </span>
 
-        <table class="table">
+        <table
+          ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
+          class="table">
           <thead class="table-select-row">
             <th class="col-md-3 col-xs-3"
               ng-click="setSortField('member','conceptId', selected.refset)">Concept
@@ -453,11 +459,13 @@
                   ng-show="selected.refset.type == 'INTENSIONAL' && getBaseMemberType(member) == 'MEMBER'"
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()">
                   <i title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
-                </a>
-                <a class="toolicon" title="Refset Member Notes"
-                  ng-click="openNotesModal(member, 'Member')">
+                </a> <a class="toolicon" title="Refset Member Notes"
+                  ng-click="openNotesModal(member, 'Member')" ng-show="member.notes.length > 0">
                   <i title="Refset Member Notes"
                     class="noul material-icons md-18">assignment</i>
+                </a><a class="toolicon" title="Refset Member Notes"
+                  ng-click="openNotesModal(member, 'Member')" ng-show="!member.notes || member.notes.length == 0">
+                  <i title="Add Refset Member Notes" class="md-grey material-icons md-18">assignment</i>
                 </a></td>
             </tr>
           </tbody>
