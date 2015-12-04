@@ -32,250 +32,221 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
  * SpellingCorrection components. Uses local storage where not possible.
  */
 public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
-		SpellingCorrectionHandler {
+    SpellingCorrectionHandler {
 
-	private static final String INDEX_NAME = "spellingCorrectionIdx-";
+  private static final String INDEX_NAME = "spellingCorrectionIdx-";
 
-	private PlainTextDictionary ptDict;
-	private SpellChecker checker;
-	private Long tId = new Long(-1);
-	private FSDirectory indexDir;
+  private PlainTextDictionary ptDict = null;
 
-	/**
-	 * Instantiates an empty {@link DefaultSpellingCorrectionHandler}.
-	 *
-	 * @throws Exception
-	 *             the exception
-	 */
-	public DefaultSpellingCorrectionHandler() throws Exception {
-	}
+  private SpellChecker checker = null;
 
-	public DefaultSpellingCorrectionHandler(Long translationId)
-			throws Exception {
-		tId = translationId;
-	}
+  private Long tId = new Long(-1);
 
-	public DefaultSpellingCorrectionHandler(Long translationId,
-			List<String> contents) throws Exception {
-		tId = translationId;
-		updateDictionaryFromList(contents, true);
-	}
+  private FSDirectory indexDir;
 
-	public DefaultSpellingCorrectionHandler(Long translationId, InputStream in)
-			throws Exception {
-		tId = translationId;
-		updateDictionaryFromStream(in, true);
-	}
+  /**
+   * Instantiates an empty {@link DefaultSpellingCorrectionHandler}.
+   *
+   * @throws Exception the exception
+   */
+  public DefaultSpellingCorrectionHandler() throws Exception {
+  }
 
-	
-	
+  @Override
+  public void addEntries(List<String> newTerms) throws IOException {
+    buildDictionary(newTerms);
+    reindex(true);
+  }
 
-	@Override
-	public void addEntries(List<String> newTerms) throws IOException {
-		buildDictionary(newTerms);
-		reindex(true);
-	}
+  @Override
+  public void removeEntries(List<String> removeTerms) throws IOException {
+    StringBuilder sb = new StringBuilder();
 
-	@Override
-	public void removeEntries(List<String> removeTerms) throws IOException {
-		StringBuilder sb = new StringBuilder();
+    File f = new File(INDEX_NAME + tId + ".txt");
 
-		File f = new File(INDEX_NAME + tId + ".txt");
+    // Create new Stream except for selected terms
+    IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
+    int maxDoc = ir.maxDoc();
 
-		if (f.exists()) {
-			// Create new Stream except for selected terms
-			IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
-			int maxDoc = ir.maxDoc();
+    if (maxDoc > 0) {
+      for (int i = 0; i < maxDoc; i++) {
+        Document doc = ir.document(i);
+        String val = doc.get(doc.getFields().get(0).name());
 
-			if (maxDoc > 0) {
-				for (int i = 0; i < maxDoc; i++) {
-					Document doc = ir.document(i);
-					String val = doc.get(doc.getFields().get(0).name());
+        if (!removeTerms.contains(val)) {
+          sb.append(val);
+          sb.append("\n");
+        }
+      }
+    }
 
-					if (!removeTerms.contains(val)) {
-						sb.append(val);
-						sb.append("\n");
-					}
-				}
-			}
+    // Clear Index prior to rebuild
+    clearIndex();
 
-			// Clear Index prior to rebuild
-			clearIndex();
+    // Build new Index From Stream
+    updateDictionaryFromStream(
+        new ByteArrayInputStream(sb.toString().getBytes("UTF-8")), true);
+  }
 
-			// Build new Index From Stream
-			updateDictionaryFromStream(new ByteArrayInputStream(sb.toString()
-					.getBytes("UTF-8")), true);
-		}
-	}
+  @Override
+  public void updateDictionaryFromList(List<String> contents, boolean append)
+    throws IOException {
+    buildDictionary(contents);
+    reindex(append);
+  }
 
-	@Override
-	public void updateDictionaryFromList(List<String> contents, boolean append)
-			throws IOException {
-		buildDictionary(contents);
-		reindex(append);
-	}
+  public void updateDictionaryFromStream(InputStream in, boolean append)
+    throws IOException {
+    ptDict = new PlainTextDictionary(in);
 
-	public void updateDictionaryFromStream(InputStream in, boolean append)
-			throws IOException {
-		ptDict = new PlainTextDictionary(in);
+    reindex(append);
+  }
 
-		reindex(append);
-	}
+  @Override
+  public void reindex(boolean append) throws IOException {
+    IndexWriterConfig iwConfig =
+        new IndexWriterConfig(Version.LATEST, new StandardAnalyzer());
+    if (append) {
+      iwConfig.setOpenMode(OpenMode.APPEND);
+    }
 
-	@Override
-	public void reindex(boolean append) throws IOException {
-		try {
-			IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST,
-					new StandardAnalyzer());
-			if (append) {
-				iwConfig.setOpenMode(OpenMode.APPEND);
-			}
+    if (tId < 0) {
+      throw new IOException("Translation Id never set");
+    }
+    indexDir = FSDirectory.open(new File(INDEX_NAME + tId + ".txt"));
+    checker = new SpellChecker(indexDir);
 
-			if (tId < 0) {
-				throw new IOException("Translation Id never set");
-			}
-			indexDir = FSDirectory.open(new File(INDEX_NAME + tId + ".txt"));
-			checker = new SpellChecker(indexDir);
+    checker.indexDictionary(ptDict, iwConfig, true);
+  }
 
-			checker.indexDictionary(ptDict, iwConfig, true);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+  @Override
+  public void clearIndex() throws IOException {
+    checker.clearIndex();
+  }
 
-	}
+  @Override
+  public List<String> suggestSpelling(String term, int amt) throws IOException {
+    if (exists(term)) {
+      return new ArrayList<String>();
+    } else {
+      String[] results = checker.suggestSimilar(term, amt);
+      return Arrays.asList(results);
+    }
+  }
 
-	@Override
-	public void clearIndex() throws IOException {
-		checker.clearIndex();
-	}
+  @Override
+  public ByteArrayInputStream getEntriesAsStream() throws IOException {
+    StringBuilder sb = new StringBuilder();
 
-	@Override
-	public List<String> suggestSpelling(String term, int amt) {
-		try {
-			String[] results = checker.suggestSimilar(term, amt);
-			return Arrays.asList(results);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    File f = new File(INDEX_NAME + tId + ".txt");
 
-		return null;
-	}
+    if (f.exists()) {
+      IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
+      int maxDoc = ir.maxDoc();
 
-	@Override
-	public ByteArrayInputStream getAllEntriesAsStream() throws IOException {
-		StringBuilder sb = new StringBuilder();
+      if (maxDoc > 0) {
+        for (int i = 0; i < maxDoc; i++) {
+          Document doc = ir.document(i);
+          String val = doc.get(doc.getFields().get(0).name());
+          sb.append(val);
+          sb.append("\n");
+        }
+      }
+    }
 
-		File f = new File(INDEX_NAME + tId + ".txt");
+    return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+  }
 
-		if (f.exists()) {
-			IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
-			int maxDoc = ir.maxDoc();
+  @Override
+  public List<String> getEntriesAsList() throws IOException {
+    List<String> retList = new ArrayList<>();
 
-			if (maxDoc > 0) {
-				for (int i = 0; i < maxDoc; i++) {
-					Document doc = ir.document(i);
-					String val = doc.get(doc.getFields().get(0).name());
-					sb.append(val);
-					sb.append("\n");
-				}
-			}
-		}
+    File f = new File(INDEX_NAME + tId + ".txt");
 
-		return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-	}
+    if (f.exists()) {
+      IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
+      int maxDoc = ir.maxDoc();
 
-	@Override
-	public List<String> getAllEntriesAsList() throws IOException {
-		List<String> retList = new ArrayList<>();
+      if (maxDoc > 0) {
+        for (int i = 0; i < maxDoc; i++) {
+          Document doc = ir.document(i);
+          String val = doc.get(doc.getFields().get(0).name());
+          retList.add(val);
+        }
+      }
+    }
 
-		File f = new File(INDEX_NAME + tId + ".txt");
+    return retList;
+  }
 
-		if (f.exists()) {
-			IndexReader ir = DirectoryReader.open(FSDirectory.open(f));
-			int maxDoc = ir.maxDoc();
+  @Override
+  public int getEntriesSize() throws IOException {
+    return getEntriesAsList().size();
+  }
 
-			if (maxDoc > 0) {
-				for (int i = 0; i < maxDoc; i++) {
-					Document doc = ir.document(i);
-					String val = doc.get(doc.getFields().get(0).name());
-					retList.add(val);
-				}
-			}
-		}
+  @Override
+  public void setTranslationId(Long translationId) {
+    tId = translationId;
+  }
 
-		return retList;
-	}
+  @Override
+  public Long getTranslationId() {
+    return tId;
+  }
 
-	@Override
-	public int getEntriesSize() throws IOException {
-		return getAllEntriesAsList().size();
-	}
+  /* see superclass */
+  @Override
+  public SpellingCorrectionHandler copy() throws Exception {
+    DefaultSpellingCorrectionHandler handler =
+        new DefaultSpellingCorrectionHandler();
+    handler.setTranslationId(this.tId);
+    if (!indexEmpty()) {
+      InputStream in = this.getEntriesAsStream();
 
-	@Override
-	public void setTranslationId(Long translationId) {
-		tId = translationId;
-	}
+      handler.updateDictionaryFromStream(in, true);
+    }
 
-	@Override
-	public Long getTranslationId() {
-		return tId;
-	}
+    return handler;
+  }
 
+  /* see superclass */
+  @Override
+  public void setProperties(Properties p) throws Exception {
+    if (p.containsKey("translationId")) {
+      this.setTranslationId(Long.parseLong(p.getProperty("translationId")));
+    } else {
+      this.setTranslationId(new Long(-1));
+    }
+  }
 
-	/* see superclass */
-	@Override
-	public SpellingCorrectionHandler copy() throws Exception {
-		DefaultSpellingCorrectionHandler handler = new DefaultSpellingCorrectionHandler();
-		handler.setTranslationId(this.tId);
+  /* see superclass */
+  @Override
+  public String getName() {
+    return "Default SpellingCorrection handler";
+  }
 
-		InputStream in = this.getAllEntriesAsStream();
+  /* see superclass */
+  @Override
+  public boolean indexEmpty() throws Exception {
+    return getEntriesSize() == 0;
+  }
 
-		if (this.getEntriesSize() > 0) {
-			handler.updateDictionaryFromStream(in, true);
-		}
+  /* see superclass */
+  @Override
+  public boolean exists(String term) throws IOException {
+    return getEntriesAsList().contains(term);
+  }
 
-		return handler;
-	}
+  private void buildDictionary(List<String> dictContents)
+    throws UnsupportedEncodingException {
+    StringBuilder builder = new StringBuilder();
+    for (String s : dictContents) {
+      builder.append(s);
+      builder.append("\n");
+    }
 
-	/* see superclass */
-	@Override
-	public void setProperties(Properties p) throws Exception {
-		if (p.containsKey("translationId")) {
-			this.setTranslationId(Long.parseLong(p.getProperty("translationId")));
-		} else {
-			this.setTranslationId(new Long(-1));
-		}
-	}
-
-	/* see superclass */
-	@Override
-	public String getName() {
-		return "Default SpellingCorrection handler";
-	}
-
-	/* see superclass */
-	@Override
-	public List<String> getSpellingCorrectionEditions() throws Exception {
-		return Arrays.asList(new String[] { "SNOMEDCT" });
-	}
-
-	private void buildDictionary(List<String> dictContents) {
-		StringBuilder builder = new StringBuilder();
-		for (String s : dictContents) {
-			builder.append(s);
-			builder.append("\n");
-		}
-
-		try {
-			InputStream is = new ByteArrayInputStream(builder.toString()
-					.getBytes("UTF-8"));
-			ptDict = new PlainTextDictionary(is);
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-	}
+    InputStream is =
+        new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+    ptDict = new PlainTextDictionary(is);
+  }
 }

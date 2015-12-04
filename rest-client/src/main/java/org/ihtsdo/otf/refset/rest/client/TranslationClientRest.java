@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Properties;
 
@@ -533,12 +534,18 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/add/" + entry);
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/add" + "?translationId=" + translationId
+            + "&entry=" + entry);
 
-    Response response =
+    URI uri = target.getUri();
+
+    /*
+     * System.out.println("bbb-5 with WebTarget:  " + uri.getHost() +
+     * uri.getPath() + uri.getQuery());
+     */Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.xml(entry));
+            .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -558,8 +565,9 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/remove/" + entry);
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/remove" + "?translationId="
+            + translationId + "&entry=" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -733,18 +741,58 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void importSpellingDictionary(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+  public void importSpellingDictionary(InputStream is, Long translationId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - import Spelling Dictionary for translation "
+            + translationId);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(is.toString(), "in");
 
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/import" + "?translationId="
+            + translationId + "&is=" + is);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   @Override
   public InputStream exportSpellingDictionary(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - export Spelling Dictionary for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/export" + "?translationId="
+            + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
+            .header("Authorization", authToken).get();
+
+    InputStream resultString = response.readEntity(InputStream.class);
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return resultString;
   }
 
   @Override
@@ -763,10 +811,36 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public StringList suggestSpelling(String term, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  public StringList suggestSpelling(Long translationId, String entry,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - export Spelling Dictionary for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/suggest" + "?translationId="
+            + translationId + "&entry=" + entry);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    StringList suggestions = response.readEntity(StringList.class);
+
+    System.out.println("Total: " + suggestions.getCount());
+    for (String s : suggestions.getObjects()) {
+      System.out.println(s);
+    }
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return suggestions;
   }
 
   @Override

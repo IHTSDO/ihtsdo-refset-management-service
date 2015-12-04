@@ -347,9 +347,8 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void importSpellingDictionary(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception;
+  public void importSpellingDictionary(InputStream is, Long translationId,
+    String authToken) throws Exception;
 
   /**
    * Export spelling dictionary.
@@ -394,8 +393,8 @@ public interface TranslationServiceRest {
    * @return the string list
    * @throws Exception the exception
    */
-  public StringList suggestSpelling(String term, String authToken)
-    throws Exception;
+  public StringList suggestSpelling(Long translationId, String term,
+    String authToken) throws Exception;
 
   /**
    * Suggest translatio.
