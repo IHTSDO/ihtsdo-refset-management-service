@@ -385,4 +385,26 @@ public class ReleaseClientRest extends RootClientRest implements
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public void removeReleaseInfo(Long releaseInfoId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove release info " + releaseInfoId);
+    validateNotEmpty(releaseInfoId, "releaseInfoId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/remove/"
+            + releaseInfoId );
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
+  }
 }
