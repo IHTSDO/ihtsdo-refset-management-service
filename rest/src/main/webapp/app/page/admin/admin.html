@@ -5,30 +5,29 @@
   <div class="col-md-12 col-xs-12">
     <h4 ng-show="user.applicationRole == 'ADMIN'">Application
       Administration</h4>
-    <accordion ng-show="user.applicationRole == 'ADMIN'"> <accordion-group
-      heading="Application Administration" is-open="false"> <!-- Projects -->
-    <accordion-heading>
+    <uib-accordion ng-show="user.applicationRole == 'ADMIN'"> <uib-accordion-group
+      heading="Application Administration" is-open="false">
+    <!-- Projects --> <uib-accordion-heading>
     <h5>
-      <span tooltip-placement="right" tooltip="List of the projects.">
+      <span uib-tooltip-placement="right" uib-tooltip="List of the projects.">
         Projects </span>
     </h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <a title="Add project" ng-click="openAddProjectModal()">
-            <i title="Add project" class="material-icons md-24">add</i>
-          </a>
+          <i ng-click="openAddProjectModal()"> title="Add project"
+            class="noul material-icons md-24">add</i>
         </div>
       </h4>
 
       <span style="display: block;">
-        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-          first-text="&laquo;" last-text="&raquo;"
+        <uib-pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
           ng-show="projects.totalCount > pageSize || paging['project'].filter"
           total-items="projects.totalCount" ng-model="paging['project'].page"
-          ng-change="getProjects()"></pagination>
+          ng-change="getProjects()"></uib-pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="projects.totalCount > pageSize || paging['project'].filter"
@@ -63,39 +62,43 @@
             <td>{{project.description}}</td>
             <td>{{project.namespace}}</td>
 
-            <td class="nobreak"><a title="Edit"
-                ng-click="openEditProjectModal(project); $event.stopPropagation()">
-                <i title="Edit" class="material-icons md-18">edit</i>
-              </a>&nbsp;<a title="Remove"
-                ng-click="removeProject(project); $event.stopPropagation()">
-                <i title="Delete" class="material-icons md-18">delete</i>
-              </a></td>
+            <td class="nobreak">
+
+              <i
+                ng-click="openEditProjectModal(project); $event.stopPropagation()"
+                title="Edit" class="noul material-icons md-18">edit</i>
+
+              <i ng-click="removeProject(project); $event.stopPropagation()"
+                title="Delete" class="noul material-icons md-18">delete</i>
+
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!--  end Projects --> </accordion-group> <accordion-group> <!-- Users --> <accordion-heading>
+    <!--  end Projects --> </uib-accordion-group> <uib-accordion-group> <!-- Users -->
+    <uib-accordion-heading>
     <h5>
-      <span tooltip-placement="right"
-        tooltip="List of the users and their application roles."> Users </span>
+      <span uib-tooltip-placement="right"
+        uib-tooltip="List of the users and their application roles.">
+        Users </span>
     </h5>
-    </accordion-heading>
+    </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <a title="Add user" ng-click="openAddUserModal(luser)">
-            <i title="Add user" class="material-icons md-24">add</i>
-          </a>
+          <i ng-click="openAddUserModal(luser)" title="Add user"
+            class="noul material-icons md-24">add</i>
         </div>
       </h4>
 
       <span style="display: block;">
-        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-          first-text="&laquo;" last-text="&raquo;"
+        <uib-pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
           ng-show="users.totalCount > pageSize || paging['user'].filter"
           total-items="users.totalCount" ng-model="paging['user'].page"
-          ng-change="getUsers()"></pagination>
+          ng-change="getUsers()"></uib-pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="users.totalCount > pageSize || paging['user'].filter"
@@ -129,31 +132,30 @@
             <td>{{user.email}}</td>
             <td>{{user.applicationRole}}</td>
 
-            <td class="nobreak"><a title="Edit"
-                ng-click="openEditUserModal(user); $event.stopPropagation()">
-                <i title="Edit" class="material-icons md-18">edit</i>
-              </a>&nbsp;<a title="Remove"
-                ng-click="removeUser(user); $event.stopPropagation()">
-                <i title="Delete" class="material-icons md-18">delete</i>
-              </a></td>
+            <td class="nobreak">
+              <i ng-click="openEditUserModal(user); $event.stopPropagation()"
+                title="Edit" class="noul material-icons md-18">edit</i>
+              <i ng-click="removeUser(user); $event.stopPropagation()"
+                title="Delete" class="noul material-icons md-18">delete</i>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
-    <!--  end Users --> </accordion-group> </accordion>
+    <!--  end Users --> </uib-accordion-group> </uib-accordion>
 
     <h4>User & Project Management</h4>
     <div class="col-md-6 col-xs-12">
       <h5 class="section-header">Project List</h5>
 
       <span ng-show="candidateProjects.totalCount != 0" style="display: block;">
-        <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-          class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-          first-text="&laquo;" last-text="&raquo;"
+        <uib-pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
           ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
           total-items="candidateProjects.totalCount"
           ng-model="paging['candidateProject'].page"
-          ng-change="getCandidateProjects()"></pagination>
+          ng-change="getCandidateProjects()"></uib-pagination>
 
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
@@ -183,9 +185,9 @@
             <tr ng-class="{selected: project.id === selectedProject.id}"
               ng-repeat="project in candidateProjects"
               ng-click="setProject(project)">
-              <td >{{project.id}}</td>
-              <td >{{project.name}}</td>
-              <td >{{project.description}}</td>
+              <td>{{project.id}}</td>
+              <td>{{project.name}}</td>
+              <td>{{project.description}}</td>
             </tr>
           </tbody>
         </table>
@@ -200,14 +202,14 @@
         <h5 class="section-header">Unassigned Users</h5>
         <span ng-show="selectedProject && unassignedUsers.totalCount > 0">
           <span style="display: block;">
-            <pagination items-per-page="pageSize" max-size="5"
+            <uib-pagination items-per-page="pageSize" max-size="5"
               boundary-links="true" class="pagination-sm"
               previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
               last-text="&raquo;"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               total-items="unassignedUsers.totalCount"
               ng-model="paging['candidateUser'].page"
-              ng-change="getUnassignedUsers()"></pagination>
+              ng-change="getUnassignedUsers()"></uib-pagination>
 
             <input class="input-filter" placeholder="Enter filter text"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
@@ -236,14 +238,18 @@
               <tr ng-repeat="user in unassignedUsers">
                 <td>{{user.name}}</td>
                 <td>{{user.userName}}</td>
-                <td><select ng-model="user.projectRole"
-                  ng-init="user.projectRole='AUTHOR'"
-                  ng-options="item for item in projectRoles"></select></td>
-                <td><a title="Add user to project with selected role."
-                    ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)">
-                    <i title="Add user to project with selected role."
-                      class="material-icons md-18">add</i>
-                  </a></td>
+                <td>
+                  <select ng-model="user.projectRole"
+                    ng-init="user.projectRole='AUTHOR'"
+                    ng-options="item for item in projectRoles"></select>
+                </td>
+                <td>
+
+                  <i
+                    ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)"
+                    title="Add user to project with selected role."
+                    class="noul material-icons md-18">add</i>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -262,14 +268,14 @@
         <span ng-show="selectedProject && assignedUsers.totalCount > 0">
 
           <span style="display: block;">
-            <pagination items-per-page="pageSize" max-size="5"
+            <uib-pagination items-per-page="pageSize" max-size="5"
               boundary-links="true" class="pagination-sm"
               previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
               last-text="&raquo;"
               ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
               total-items="assignedUsers.totalCount"
               ng-model="paging['assignedUser'].page"
-              ng-change="getAssignedUsers()"></pagination>
+              ng-change="getAssignedUsers()"></uib-pagination>
 
             <input class="input-filter" placeholder="Enter filter text"
               ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
@@ -299,10 +305,11 @@
                 <td>{{user.name}}</td>
                 <td>{{user.userName}}</td>
                 <td>{{user.projectRoleMap[selectedProject.id]}}</td>
-                <td><a title="Unassign"
-                    ng-click="unassignUserFromProject(selectedProject.id, user.userName);">
-                    <i title="Unassign user" class="material-icons md-18">remove</i>
-                  </a></td>
+                <td>
+                  <i
+                    ng-click="unassignUserFromProject(selectedProject.id, user.userName);"
+                    title="Unassign user" class="noul material-icons md-18">remove</i>
+                </td>
               </tr>
             </tbody>
           </table>

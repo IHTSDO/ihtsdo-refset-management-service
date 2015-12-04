@@ -49,6 +49,10 @@ a:hover {
 	cursor: wait;
 	background-color: #FFFFFF;
 }
+.top-layer-message {
+	z-index: 401;
+	width: 450px;
+}
 
 .pagination {
 	display: inline;
@@ -146,15 +150,17 @@ a:hover {
 /* Styles for member list */
 .exclusion {
 	text-decoration: line-through;
+	font-color: red;
 }
 
 .inclusion {
-	font-color: blue;
+	font-color: green;
 }
 
-.inactive {
-	opacity: 0.5;
+.retired {
+	color: grey;
 }
+
 
 .drop-box {
 	background: #F8F8F8;
@@ -168,4 +174,35 @@ a:hover {
 
 .dragover {
 	border: 5px dashed blue;
+}
+
+.noul {
+	color: #337ab7;
+	cursor: pointer;
+	text-decoration: none;
+}
+.noul:hover {
+	color: #00a6e5;
+}
+
+/* For vertical centering */
+.v-wrap{
+    height: 100%;
+    white-space: nowrap;
+    text-align: center;
+}
+.v-wrap:before{
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    /* adjust for white space between pseudo element and next sibling */
+    margin-right: -.25em;
+    /* stretch line height */
+    height: 100%; 
+}
+.v-box{
+    display: inline-block;
+    vertical-align: middle;
+    white-space: normal;
 }

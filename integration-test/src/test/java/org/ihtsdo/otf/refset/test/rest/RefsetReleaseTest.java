@@ -233,7 +233,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -256,7 +256,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -281,7 +281,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -309,7 +309,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 

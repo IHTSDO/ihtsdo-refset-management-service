@@ -5,7 +5,7 @@ tsApp
     [
       '$scope',
       '$http',
-      '$modal',
+      '$uibModal',
       '$location',
       '$anchorScroll',
       '$timeout',
@@ -14,8 +14,8 @@ tsApp
       'tabService',
       'securityService',
       'projectService',
-      function($scope, $http, $modal, $location, $anchorScroll, $timeout, gpService, utilService,
-        tabService, securityService, projectService) {
+      function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
+        utilService, tabService, securityService, projectService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -257,22 +257,8 @@ tsApp
 
         // sort mechanism 
         $scope.setSortField = function(table, field) {
-          $scope.paging[table].sortField = field;
-          // reset page number too
-          $scope.paging[table].page = 1;
-          // handles null case also
-          if (!$scope.paging[table].ascending) {
-            $scope.paging[table].ascending = true;
-          } else {
-            $scope.paging[table].ascending = false;
-          }
-          // reset the paging for the correct table
-          for ( var key in $scope.paging) {
-            if ($scope.paging.hasOwnProperty(key)) {
-              if (key == table)
-                $scope.paging[key].page = 1;
-            }
-          }
+          utilService.setSortField(table, field, $scope.paging);
+          
           // retrieve the correct table
           if (table === 'candidateProject') {
             $scope.getCandidateProjects();
@@ -290,15 +276,7 @@ tsApp
 
         // Return up or down sort chars if sorted
         $scope.getSortIndicator = function(table, field) {
-          if ($scope.paging[table].ascending == null) {
-            return "";
-          }
-          if ($scope.paging[table].sortField == field && $scope.paging[table].ascending) {
-            return "▴";
-          }
-          if ($scope.paging[table].sortField == field && !$scope.paging[table].ascending) {
-            return "▾";
-          }
+          return utilService.getSortIndicator(table, field, $scope.paging);
         }
 
         // assign user to project
@@ -354,7 +332,7 @@ tsApp
         // Add project modal
         $scope.openAddProjectModal = function() {
 
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl : 'app/page/admin/editProject.html',
             controller : AddProjectModalCtrl,
             resolve : {
@@ -373,7 +351,7 @@ tsApp
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $modalInstance, terminologies) {
+        var AddProjectModalCtrl = function($scope, $uibModalInstance, terminologies) {
 
           $scope.action = 'Add';
           $scope.terminologies = terminologies;
@@ -392,7 +370,7 @@ tsApp
             projectService.addProject(project).then(
             // Success
             function(data) {
-              $modalInstance.close(data);
+              $uibModalInstance.close(data);
             },
             // Error
             function(data) {
@@ -402,7 +380,7 @@ tsApp
           };
 
           $scope.cancel = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
 
         };
@@ -411,7 +389,7 @@ tsApp
         // this
         $scope.openEditProjectModal = function(lproject) {
 
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl : 'app/page/admin/editProject.html',
             controller : EditProjectModalCtrl,
             resolve : {
@@ -431,7 +409,7 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $modalInstance, project, terminologies) {
+        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, terminologies) {
 
           $scope.action = 'Edit';
           $scope.project = project;
@@ -447,7 +425,7 @@ tsApp
             projectService.updateProject(project).then(
             // Success
             function(data) {
-              $modalInstance.close();
+              $uibModalInstance.close();
             },
             // Error
             function(data) {
@@ -457,7 +435,7 @@ tsApp
           };
 
           $scope.cancel = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
 
         };
@@ -465,7 +443,7 @@ tsApp
         // Add user modal
         $scope.openAddUserModal = function(luser) {
 
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl : 'app/page/admin/editUser.html',
             controller : AddUserModalCtrl,
             resolve : {
@@ -487,7 +465,7 @@ tsApp
         };
 
         // Add user controller
-        var AddUserModalCtrl = function($scope, $modalInstance, user, applicationRoles) {
+        var AddUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
           $scope.action = 'Add';
           $scope.user = user;
           $scope.applicationRoles = applicationRoles
@@ -501,7 +479,7 @@ tsApp
             securityService.addUser(user).then(
             // Success
             function(data) {
-              $modalInstance.close();
+              $uibModalInstance.close();
             },
             // Error
             function(data) {
@@ -512,7 +490,7 @@ tsApp
           };
 
           $scope.cancel = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
 
         };
@@ -521,7 +499,7 @@ tsApp
         // this
         $scope.openEditUserModal = function(luser) {
 
-          var modalInstance = $modal.open({
+          var modalInstance = $uibModal.open({
             templateUrl : 'app/page/admin/editUser.html',
             controller : EditUserModalCtrl,
             resolve : {
@@ -542,7 +520,7 @@ tsApp
           });
         };
 
-        var EditUserModalCtrl = function($scope, $modalInstance, user, applicationRoles) {
+        var EditUserModalCtrl = function($scope, $uibModalInstance, user, applicationRoles) {
 
           $scope.action = 'Edit';
           $scope.user = user;
@@ -559,7 +537,7 @@ tsApp
             securityService.updateUser(user).then(
             // Success
             function(data) {
-              $modalInstance.close();
+              $uibModalInstance.close();
             },
             // Error
             function(data) {
@@ -569,7 +547,7 @@ tsApp
           };
 
           $scope.cancel = function() {
-            $modalInstance.dismiss('cancel');
+            $uibModalInstance.dismiss('cancel');
           };
 
         };

@@ -3,8 +3,10 @@
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
+import java.util.Iterator;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
@@ -29,7 +31,7 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
 
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(password);
-
+    Logger.getLogger(getClass()).info("");
     // e.g.
     // {
     // "login": "pgranvold",
@@ -59,7 +61,9 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
     user.setEmail(doc.get("email").asText());
     user.setApplicationRole(UserRole.VIEWER);
     // Not available user.setMobileEmail("");
-    for (JsonNode role : doc.findValues("roles")) {
+    Iterator<JsonNode> iter = doc.get("roles").elements();
+    while (iter.hasNext()) {
+      JsonNode role = iter.next();
       if (role.asText().equals("ROLE_refset-administrators")) {
         user.setApplicationRole(UserRole.ADMIN);
       }

@@ -64,8 +64,8 @@
       </tr>
       <tr>
         <td><b>Type</b></td>
-        <td><select ng-show="action != 'Edit'" ng-model="refset.type"
-          ng-options="item for item in metadata.refsetTypes"></select>&nbsp;<span
+        <td><select ng-show="action == 'Add'" ng-model="refset.type"
+          ng-options="item for item in metadata.refsetTypes"></select> &nbsp;<span
             refset-type-icon refset="refset"></span></td>
       </tr>
       <tr ng-show="refset.type == 'EXTERNAL'">

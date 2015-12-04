@@ -13,26 +13,25 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
-import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 
 /**
- * Implementation of an algorithm to begin a release process. This takes care of
- * some of the standard elements of performing a translation release.
+ * Implementation of an algorithm to begin {@link Translation} release process.
  * 
  * <pre>
- * 1. Creates a release info (with published=false) and links it to the translation
+ * 1. Creates a release info (with published=false) and links it to the refset
  * </pre>
  * 
  * This process is capable of generating notifications, warnings, or errors via
  * a {@link ValidationResult}
  */
-public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
-    Algorithm {
+public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
+    implements Algorithm {
 
   /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -47,14 +46,14 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   /** The release info. */
   private ReleaseInfo releaseInfo = null;
 
-  /** The translation. */
-  private Translation translation;
-
   /** The effective time. */
   private Date effectiveTime;
 
   /** The user name. */
   private String userName;
+
+  /** The translation. */
+  private Translation translation;
 
   /**
    * Instantiates an empty {@link BeginTranslationReleaseAlgorthm}.
@@ -66,21 +65,39 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
 
   /* see superclass */
   @Override
+  public void checkPreconditions() throws Exception {
+    // check translation release has not begun
+    ReleaseInfoList releaseInfoList =
+        findTranslationReleasesForQuery(translation.getId(), null, null);
+    if (releaseInfoList.getCount() != 0) {
+      releaseInfo = releaseInfoList.getObjects().get(0);
+      if (releaseInfo != null && releaseInfo.isPublished())
+        throw new Exception("translation release is already in progress "
+            + translation.getId());
+    }
+  }
+
+  /* see superclass */
+  @Override
   public void compute() throws Exception {
+    // Create and add a release info
     releaseInfo = new ReleaseInfoJpa();
     String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
     releaseInfo.setName(name);
     releaseInfo.setTranslation(translation);
     releaseInfo.setDescription("Description of release info " + name);
     releaseInfo.setEffectiveTime(effectiveTime);
-    releaseInfo.setLastModified(new Date());
     releaseInfo.setLastModifiedBy(userName);
     releaseInfo.setReleaseBeginDate(new Date());
     releaseInfo.setTerminology(translation.getTerminology());
     releaseInfo.setVersion(translation.getVersion());
     releaseInfo.setPlanned(true);
     releaseInfo.setPublished(false);
-    releaseInfo = new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
+    releaseInfo = addReleaseInfo(releaseInfo);
+
+    translation.setInPublicationProcess(true);
+    translation.setLastModifiedBy(userName);
+    updateTranslation(translation);
   }
 
   /* see superclass */
@@ -163,21 +180,21 @@ public class BeginTranslationReleaseAlgorthm extends RootServiceJpa implements
   }
 
   /**
-   * Returns the release info.
-   *
-   * @return the release info
-   */
-  public ReleaseInfo getReleaseInfo() {
-    return releaseInfo;
-  }
-
-  /**
    * Sets the translation.
    *
    * @param translation the translation
    */
   public void setTranslation(Translation translation) {
     this.translation = translation;
+  }
+
+  /**
+   * Returns the release info.
+   *
+   * @return the release info
+   */
+  public ReleaseInfo getReleaseInfo() {
+    return releaseInfo;
   }
 
 }

@@ -130,6 +130,56 @@ tsApp.service('workflowService', [
       return deferred.promise;
     }
 
+    // Find all available translation  work
+    this.findAllAvailableConcepts = function(projectId, translationId, pfs) {
+      console.debug("findAllAvailableConcepts");
+      var deferred = $q.defer();
+
+      // Find all available  work
+      gpService.increment()
+      $http.post(
+        workflowUrl + "translation/available/all" + "?projectId=" + projectId + "&translationId="
+          + translationId, pfs).then(
+      // success
+      function(response) {
+        console.debug("  work = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // Find all assigned translation work
+    this.findAllAssignedConcepts = function(projectId, translationId, pfs) {
+      console.debug("findAllAvailableConcepts");
+      var deferred = $q.defer();
+
+      // Find all assigned work
+      gpService.increment()
+      $http.post(
+        workflowUrl + "translation/assigned/all" + "?projectId=" + projectId + "&translationId="
+          + translationId, pfs).then(
+      // success
+      function(response) {
+        console.debug("  work = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Find assigned translation review work
     this.findAssignedReviewConcepts = function(projectId, translationId, userName, pfs) {
       console.debug("findAssignedReviewConcepts");
@@ -164,7 +214,7 @@ tsApp.service('workflowService', [
       $http.post(workflowUrl + "refset/release" + "?projectId=" + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug("  release refsets = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -198,7 +248,7 @@ tsApp.service('workflowService', [
       });
       return deferred.promise;
     }
-    
+
     // Find non release process translations
     this.findNonReleaseProcessTranslations = function(projectId, pfs) {
       console.debug("findReleaseProcessTranslations");
@@ -219,10 +269,10 @@ tsApp.service('workflowService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }    
-    
+    }
+
     // Perform workflow action on a translation
-    this.performWorkflowActionOnTranslation = function(projectId, translationId, userName, action,
+    this.performTranslationWorkflowAction = function(projectId, translationId, userName, action,
       concept) {
       console.debug("performWorkflowActionOnTranslation");
       var deferred = $q.defer();
@@ -414,4 +464,29 @@ tsApp.service('workflowService', [
       });
       return deferred.promise;
     }
+
+    this.getTrackingRecordForConcept = function(conceptId) {
+      console.debug("getTrackingRecordForRefset");
+      var deferred = $q.defer();
+
+      // Finds refsets available for review by the specified user
+      gpService.increment()
+      $http.get(workflowUrl + "record" + "?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  record = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
+    // end
+
   } ]);

@@ -1,59 +1,157 @@
 <div class="modal-header">
-  <h4>Release</h4>
+  <h4>Release Refset</h4>
 </div>
 
 <div class="modal-body">
-  <div>
+  <span
+    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'PREVIEW'"
+    class="alert alert-warning">Release of {{releaseInfo.name}} has been
+    started.</span>
+
+  <span
+    ng-show="validationResult && refset.stagingType != 'PREVIEW' &&
+    validationResult.comments.length == 0 && validationResult.warnings.length == 0 &&
+    validationResult.errors.length == 0"
+    class="alert alert-warning">Validation passed with no errors or
+    warnings.</span>
+
+  <span
+    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+    class="alert alert-warning">The PREVIEW release can be viewed in the
+    "Releases" section.</span>
+  <br>
+  <span
+    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+    class="alert alert-warning">Click 'Finish' to complete the release.</span>
+
+  <div ng-show="validationResult && refset.stagingType != 'PREVIEW'">
+    <h4 ng-show="validationResult.comments.length > 0">Comments</h4>
+    <table class="table">
+      <tr ng-repeat="comment in validationResult.comments">
+        <td>{{comment}}</td>
+      </tr>
+    </table>
+    <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>
+    <table class="table">
+      <tr ng-repeat="warning in validationResult.warnings">
+        <td>{{warning}}</td>
+      </tr>
+    </table>
+    <h4 ng-show="validationResult.errors.length > 0">Errors</h4>
+    <table class="table">
+      <tr ng-repeat="error in validationResult.errors">
+        <td>{{error}}</td>
+      </tr>
+    </table>
+  </div>
+  <div ng-show="!refset.inPublicationProcess">
     <table class="table">
       <tr>
-        <td><b>Id</b></td>
+        <td>
+          <b>Id</b>
+        </td>
         <td>{{refset.terminologyId}}</td>
       </tr>
       <tr>
-        <td><b>Name</b></td>
+        <td>
+          <b>Name</b>
+        </td>
         <td>{{refset.name}}</td>
       </tr>
       <tr>
-        <td><b>Description</b></td>
+        <td>
+          <b>Description</b>
+        </td>
         <td>{{refset.description}}</td>
       </tr>
       <tr>
-        <td><b>Definition</b></td>
+        <td>
+          <b>Definition</b>
+        </td>
         <td>{{refset.definition}}</td>
       </tr>
       <tr>
-        <td><b>Type</b></td>
-        <td><span refset-type-icon refset="refset"></span></td>
+        <td>
+          <b>Type</b>
+        </td>
+        <td>
+          <span refset-type-icon refset="refset"></span>
+        </td>
       </tr>
       <tr>
-        <td><b>Workflow Status</b></td>
+        <td>
+          <b>Workflow Status</b>
+        </td>
         <td>{{refset.workflowStatus}}</td>
       </tr>
       <tr>
-        <td>I/O Handler</td>
-        <td><span ng-show="ioHandlers.length>
+        <td>
+          <b>Release Date</b>
+        </td>
+        <td>
+          <p class="input-group">
+            <span class="input-group-btn">
+              <input style="width: 100px" type="text" class="form-control"
+                uib-datepicker-popup="yyyymmdd" ng-model="refset.effectiveTime"
+                is-open="status.opened" datepicker-options="dateOptions"
+                date-disabled="disabled(date, mode)" ng-required="true"
+                close-text="Close" />
+              <button type="button" class="btn btn-default"
+                ng-click="open($event)">
+                <i title="Calendar" class="glyphicon glyphicon-calendar"></i>
+              </button>
+            </span>
+          </p>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <b>I/O Handler</b>
+        </td>
+        <td>
+          <span ng-show="ioHandlers.length>
               1">
             <select ng-model="selectedIoHandler"
               ng-options="item.name for item in ioHandlers"></select>
-          </span> <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
+          </span>
+          <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
       <!-- Errors -->
       <tr ng-show="errors.length > 0">
         <td>&nbsp;</td>
-        <td><div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        <td>
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">
             {{error}}
             <!-- DO NOT SUPPORT clearing error <div
               style="cursor: pointer; display: inline; float: right; width: 3%;">
               <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
             </div> -->
-          </div></td>
+          </div>
+        </td>
       </tr>
     </table>
   </div>
 </div>
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="release(refset) 
+
+  <button class="btn btn-primary" ng-show="!refset.inPublicationProcess"
+    ng-click="beginRefsetRelease(refset) 
     ">Release</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-primary"
+    ng-show="refset.inPublicationProcess && refset.stagingType != 'PREVIEW' && stagedRefset.workflowStatus != 'PREVIEW'"
+    ng-click="validateRefsetRelease(refset) 
+    ">Validate</button>
+  <button class="btn btn-primary"
+    ng-show="validationResult && refset.stagingType != 'PREVIEW'"
+    ng-click="previewRefsetRelease(refset) 
+    ">Preview</button>
+  <button class="btn btn-primary"
+    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+    ng-click="finishRefsetRelease(refset) 
+    ">Finish</button>
+  <button class="btn btn-error" ng-show="refset.inPublicationProcess"
+    ng-click="cancel(refset)">Cancel</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

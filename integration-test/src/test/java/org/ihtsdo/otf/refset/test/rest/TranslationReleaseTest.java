@@ -234,7 +234,7 @@ public class TranslationReleaseTest {
 
     return refset;
   }
-  
+
   /**
    * Make translation.
    *
@@ -266,8 +266,6 @@ public class TranslationReleaseTest {
     translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
     translation.setVersion(refset.getVersion());
 
-    
-
     // Validate translation
     ValidationResult result =
         validationService.validateTranslation(translation, auth.getAuthToken());
@@ -276,12 +274,14 @@ public class TranslationReleaseTest {
       throw new Exception("translation does not pass validation.");
     }
     // Add translation
-    translation = (TranslationJpa)translationService.addTranslation(translation, auth.getAuthToken());
+    translation =
+        (TranslationJpa) translationService.addTranslation(translation,
+            auth.getAuthToken());
 
-    // Import members (from file) 
+    // Import members (from file)
     ValidationResult vr =
-        translationService.beginImportConcepts(translation.getId(),
-            "DEFAULT", auth.getAuthToken());
+        translationService.beginImportConcepts(translation.getId(), "DEFAULT",
+            auth.getAuthToken());
     if (!vr.isValid()) {
       throw new Exception("translation staging is not valid - " + vr);
     }
@@ -300,7 +300,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -308,13 +308,17 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
-    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation1 =
+        makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -325,7 +329,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -333,15 +337,20 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
-    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation1 =
+        makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -360,20 +369,26 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
-    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation1 =
+        makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Preview release
-    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    Translation stagedTranslation =
+        releaseService.previewTranslationRelease(translation1.getId(),
+            "DEFAULT", adminAuthToken);
     // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.cancelTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -382,7 +397,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  // @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -390,20 +405,28 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
-    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation1 =
+        makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Preview release
-    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    Translation stagedTranslation =
+        releaseService.previewTranslationRelease(translation1.getId(),
+            "DEFAULT", adminAuthToken);
     // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(),
+        adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -420,17 +443,23 @@ public class TranslationReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
-    TranslationJpa translation1 = makeTranslation("translation1", refset1, project2, admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation1 =
+        makeTranslation("translation1", refset1, project2, admin);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Preview release
-    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Add 5 members to refset
     ConceptRefsetMemberJpa member1 =
         makeConceptRefsetMember("member1", "123", refset1);
@@ -450,20 +479,22 @@ public class TranslationReleaseTest {
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.MONDAY, 1);
     // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(), ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
+    releaseService.beginTranslationRelease(translation1.getId(),
+        ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
     // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // Preview release
-    Translation stagedTranslation2 = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(), adminAuthToken);
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    // refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
-  
+
   /**
    * Make concept refset member.
    *

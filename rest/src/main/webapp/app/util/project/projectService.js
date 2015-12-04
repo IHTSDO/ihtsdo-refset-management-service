@@ -10,7 +10,7 @@ tsApp.service('projectService', [
 
     // Declare the model
     var userProjectsInfo = {
-      anyrole : null
+      anyrole : false
     };
 
     var iconConfig = {};
@@ -24,6 +24,7 @@ tsApp.service('projectService', [
     this.getUserProjectsInfo = function() {
       return userProjectsInfo;
     }
+
 
     this.getIconConfig = function() {
       console.debug("get icon config", iconConfig);
@@ -133,7 +134,7 @@ tsApp.service('projectService', [
 
     // update project
     this.updateProject = function(project) {
-      console.debug("updateProject");
+      console.debug();
       var deferred = $q.defer();
 
       // Add project
@@ -156,7 +157,7 @@ tsApp.service('projectService', [
 
     // remove project
     this.removeProject = function(project) {
-      console.debug("removeProject");
+      console.debug();
       var deferred = $q.defer();
 
       // Add project
@@ -339,6 +340,7 @@ tsApp.service('projectService', [
       $http.get(projectUrl + 'user/anyrole').then(
       // success
       function(response) {
+        console.debug("  anyrole = " + response.data);
         userProjectsInfo.anyRole = response.data;
         console.debug("getUserHasAnyRole", userProjectsInfo.anyRole);
         gpService.decrement();

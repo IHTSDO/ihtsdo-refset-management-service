@@ -18,6 +18,7 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -26,14 +27,17 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -924,5 +928,64 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // return connected copy with members attached
     return getTranslation(translationCopy.getId());
+  }
+
+  /* see superclass */
+  @Override
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
+    Long projectId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - get current release info for translation"
+            + terminologyId + ", " + projectId);
+
+    // Get all release info for this terminologyId and projectId
+    List<ReleaseInfo> results =
+        findTranslationReleasesForQuery(
+            null,
+            "translationTerminologyId:" + terminologyId + " AND projectId:"
+                + projectId, null).getObjects();
+
+    // Reverse sort releases by date
+    Collections.sort(results, new Comparator<ReleaseInfo>() {
+      @Override
+      public int compare(ReleaseInfo o1, ReleaseInfo o2) {
+        return o2.getEffectiveTime().compareTo(o1.getEffectiveTime());
+      }
+    });
+    // Find the max one that is published and not planned
+    for (ReleaseInfo info : results) {
+      if (info.isPublished() && !info.isPlanned()) {
+        return info;
+      }
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
+    String query, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Release Service - find translation release infos " + "/" + query
+            + " translationId " + translationId);
+
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (translationId == null) {
+      sb.append("translationId:[* TO *]");
+    } else {
+      sb.append("translationId:" + translationId);
+    }
+
+    int[] totalCt = new int[1];
+    List<ReleaseInfo> list =
+        (List<ReleaseInfo>) getQueryResults(sb.toString(),
+            ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+    ReleaseInfoList result = new ReleaseInfoListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 }

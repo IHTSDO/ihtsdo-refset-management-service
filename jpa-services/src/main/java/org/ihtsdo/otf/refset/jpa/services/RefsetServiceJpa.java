@@ -18,6 +18,7 @@ import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
@@ -26,13 +27,16 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -46,7 +50,7 @@ import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 /**
  * JPA enabled implementation of {@link RefsetService}.
  */
-public class RefsetServiceJpa extends ProjectServiceJpa implements
+public class RefsetServiceJpa extends ReleaseServiceJpa implements
     RefsetService {
 
   /** The import handlers. */
@@ -587,13 +591,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     refset.getNotes().size();
   }
 
-  /**
-   * Handle lazy init.
-   *
-   * @param member the member
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(ConceptRefsetMember member) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
   }
 
@@ -692,10 +692,13 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     // Clone the refset and call set it provisional
     Refset refsetCopy = new RefsetJpa(refset);
-    // only exist for staging purposes
-    // will become real if a finish operation is completed
-    // used to prevent retrieving with index
-    refsetCopy.setProvisional(true);
+
+    // Mark as provisional if staging type isn't preview
+    if (stagingType == Refset.StagingType.PREVIEW) {
+      refsetCopy.setProvisional(false);
+    } else {
+      refsetCopy.setProvisional(true);
+    }
 
     // null its id and all of its components ids
     // then call addXXX on each component
@@ -710,14 +713,9 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
 
     addRefset(refsetCopy);
 
-    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
-      // for (ConceptRefsetMember member : refset.getMembers()) {
-      /*
-       * member.setId(null); member.setRefset(refsetCopy); addMember(member);
-       */
-
-      // refsetCopy.addMember(member);
-
+    // Copy members for EXTENSIONAL staging, or for PREVIEW staging
+    if (refsetCopy.getType() == Refset.Type.EXTENSIONAL
+        || stagingType == Refset.StagingType.PREVIEW) {
       // without doing the copy constructor, we get the following errors:
       // identifier of an instance of
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
@@ -725,9 +723,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
       for (ConceptRefsetMember originMember : refset.getMembers()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member = new ConceptRefsetMemberJpa(originMember);
-        // member.setLastModifiedBy(userName);
-
-        // member.setPublishable(true);
         member.setRefset(refsetCopy);
         member.setTerminology(refsetCopy.getTerminology());
         member.setVersion(refsetCopy.getVersion());
@@ -735,7 +730,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
         refsetCopy.addMember(member);
         addMember(member);
       }
-      // }
     }
 
     // set staging parameters on the original refset
@@ -753,19 +747,6 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     return getRefset(refsetCopy.getId());
   }
 
-  /*
-   * @Override public void removeStagedRefset(Refset stagedRefset) throws
-   * Exception { Logger.getLogger(getClass()).debug(
-   * "Refset Service - remove staged refset " + stagedRefset.getId()); for
-   * (ConceptRefsetMember member : stagedRefset.getMembers()) {
-   * removeMember(member.getId()); }
-   * 
-   * removeRefset(stagedRefset.getId());
-   * 
-   * }
-   */
-
-  /* see superclass */
   /* see superclass */
   @Override
   public Note addNote(Note note) throws Exception {
@@ -786,5 +767,64 @@ public class RefsetServiceJpa extends ProjectServiceJpa implements
     // Remove the component
     removeHasLastModified(id, type);
     // Do not inform listeners
+  }
+
+  /* see superclass */
+  @Override
+  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+    Long projectId) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - get current release info for refset" + terminologyId
+            + ", " + projectId);
+
+    // Get all release info for this terminologyId and projectId
+    List<ReleaseInfo> results =
+        findRefsetReleasesForQuery(
+            null,
+            "refsetTerminologyId:" + terminologyId + " AND projectId:"
+                + projectId, null).getObjects();
+
+    // Reverse sort releases by date
+    Collections.sort(results, new Comparator<ReleaseInfo>() {
+      @Override
+      public int compare(ReleaseInfo o1, ReleaseInfo o2) {
+        return o2.getEffectiveTime().compareTo(o1.getEffectiveTime());
+      }
+    });
+    // Find the max one that is published and not planned
+    for (ReleaseInfo info : results) {
+      if (info.isPublished() && !info.isPlanned()) {
+        return info;
+      }
+    }
+    return null;
+  }
+
+  @SuppressWarnings("unchecked")
+  @Override
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Release Service - find refset release infos " + "/" + query
+            + " refsetId " + refsetId);
+
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (refsetId == null) {
+      sb.append("refsetId:[* TO *]");
+    } else {
+      sb.append("refsetId:" + refsetId);
+    }
+
+    int[] totalCt = new int[1];
+    List<ReleaseInfo> list =
+        (List<ReleaseInfo>) getQueryResults(sb.toString(),
+            ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
+    ReleaseInfoList result = new ReleaseInfoListJpa();
+    result.setTotalCount(totalCt[0]);
+    result.setObjects(list);
+    return result;
   }
 }

@@ -76,7 +76,10 @@ public interface Refset extends Component, Searchable {
     /** The exnclusion add. */
     EXCLUSION_ADD,
     /** The exnclusion remove. */
-    EXCLUSION_REMOVE;
+    EXCLUSION_REMOVE,
+
+    /** The workflow action. */
+    WORKFLOW_ACTION;
   }
 
   /**
@@ -380,5 +383,19 @@ public interface Refset extends Component, Searchable {
    * @param namespace the namespace
    */
   public void setNamespace(String namespace);
+
+  /**
+   * Indicates whether or not in publication process is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isInPublicationProcess();
+
+  /**
+   * Sets the in publication process.
+   *
+   * @param inPublicationProcess the in publication process
+   */
+  public void setInPublicationProcess(boolean inPublicationProcess);
 
 }

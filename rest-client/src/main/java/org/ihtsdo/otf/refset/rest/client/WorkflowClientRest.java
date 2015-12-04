@@ -15,13 +15,11 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
@@ -110,7 +108,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptRefsetMemberList findAvailableEditingConcepts(Long projectId,
+  public ConceptList findAvailableEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -143,8 +141,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptRefsetMemberList) ConfigUtility.getGraphForString(
-        resultString, ConceptRefsetMemberListJpa.class);
+    return (ConceptList) ConfigUtility.getGraphForString(resultString,
+        ConceptJpa.class);
   }
 
   /* see superclass */
@@ -540,8 +538,8 @@ public class WorkflowClientRest extends RootClientRest implements
   public TranslationList findNonReleaseProcessTranslations(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Client - find non release process translations - " + projectId
-            + ", " + pfs);
+        "Workflow Client - find non release process translations - "
+            + projectId + ", " + pfs);
 
     validateNotEmpty(projectId, "projectId");
 
@@ -567,5 +565,73 @@ public class WorkflowClientRest extends RootClientRest implements
     // converting to object
     return (TranslationList) ConfigUtility.getGraphForString(resultString,
         TranslationListJpa.class);
+  }
+
+  @Override
+  public ConceptList findAllAvailableConcepts(Long projectId,
+    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find all available concepts - " + translationId);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/translation/available/all" + "?projectId=" + projectId
+            + "?translationId=" + translationId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (ConceptList) ConfigUtility.getGraphForString(resultString,
+        ConceptJpa.class);
+  }
+
+  @Override
+  public ConceptList findAllAssignedConcepts(Long projectId,
+    Long translationId, PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find all assigned concepts - " + translationId);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(translationId, "translationId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/translation/assigned/all" + "?projectId=" + projectId
+            + "?translationId=" + translationId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (ConceptList) ConfigUtility.getGraphForString(resultString,
+        ConceptJpa.class);
   }
 }

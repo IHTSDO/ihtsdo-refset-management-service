@@ -1,14 +1,16 @@
+<!-- R1 -->
 <div class="row">
 
+  <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
 
     <span style="display: block;">
-      <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-        class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-        first-text="&laquo;" last-text="&raquo;"
+      <uib-pagination items-per-page="pageSize" max-size="5"
+        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
         total-items="translations.totalCount"
-        ng-model="paging['translation'].page" ng-change="getTranslations()"></pagination>
+        ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
       <input class="input-filter" placeholder="Enter filter text"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
@@ -22,13 +24,11 @@
 
       <h4 ng-show="value == 'EDITING'">
         <div style="float: right;">
-          <a title="Add refset" ng-click="openAddTranslationModal()">
-            <i title="Add refset" class="material-icons md-24">add</i>
-          </a>
+          <i ng-click="openAddTranslationModal()" title="Add refset"
+            class="noul material-icons md-24">add</i>
         </div>
       </h4>
     </span>
-
 
     <span ng-show="translations.totalCount == 0" style="display: block;"
       class="alert alert-warning">No translations.</span>
@@ -56,51 +56,68 @@
           ng-class="{selected: translation.id == selected.translation.id}"
           ng-click="selectTranslation(translation);" class="table-select-row">
           <td style="word-break: break-word;">{{translation.terminologyId}}</td>
-          <td>{{translation.name}}</td>
-          <td>{{translation.moduleId}}<!-- Mobile friendly line-break --> <br
-            class="visible-xs-inline" /> <span flag-icon obj="translation"></span>
-            <!-- Mobile friendly line-break --> <br class="visible-xs-inline" />
-            {{translation.organization}} <br /> {{translation.workflowStatus}}
+          <td>
+            {{translation.name}}
+            <span ng-show="refset.effectiveTime">
+              <br />{{toShortDate(refset.effectiveTime)}}
+            </span>
+          </td>
+          <td>
+            {{translation.moduleId}}
+            <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" />
+            <span flag-icon obj="translation"></span>
+            <!-- Mobile friendly line-break -->
+            <br class="visible-xs-inline" /> {{translation.organization}} <br />
+            {{translation.workflowStatus}}
           </td>
           <td>{{translation.language}}</td>
 
           <!-- EDITING actions -->
-          <td class="nobreak" ng-show="value == 'EDITING'"><a
-              class="toolicon" title="Edit"
-              ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
-            </a>&nbsp;<a title="Remove" class="toolicon"
-              ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
-            </a></td>
+          <td class="nobreak" ng-show="value == 'EDITING'">
+
+            <i
+              ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
+              title="Edit" class="noul material-icons md-18">edit</i>
+
+            <i
+              ng-click="removeTranslation(translation); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+
+          </td>
 
           <!-- EDITING_ALL actions -->
-          <td class="nobreak" ng-show="value == 'EDITING_ALL'"><a
-              class="toolicon" title="Edit"
-              ng-click="openEditTranslationModal(translation); $event.stopPropagation()">
-              <i title="Edit" class="material-icons md-18">edit</i>
-            </a> <a title="Remove" class="toolicon"
-              ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
-            </a></td>
+          <td class="nobreak" ng-show="value == 'EDITING_ALL'">
+
+            <i
+              ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
+              title="Edit" class="noul material-icons md-18">edit</i>
+
+            <i
+              ng-click="removeTranslation(translation); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+
+          </td>
           </td>
 
           <!-- RELEASE actions -->
-          <td class="nobreak" ng-show="value == 'RELEASE'"><a
-              title="Remove" class="toolicon"
-              ng-click="removeTranslation(translation); $event.stopPropagation()">
-              <i title="Remove" class="material-icons md-18">delete</i>
-            </a></td>
+          <td class="nobreak" ng-show="value == 'RELEASE'">
+
+            <i
+              ng-click="removeTranslation(translation); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
+          </td>
         </tr>
       </tbody>
     </table>
+
+    <!-- End R1C1 -->
   </div>
 
-
-
-  <!-- Translations list, Details panel -->
+  <!-- R1C2 -->
   <div class="col-md-6 col-xs-12">
 
+    <!-- Translations list, Details panel -->
     <span ng-show="!selected.translation && translations.length > 0"
       class="alert alert-warning">Select a translation to see details</span>
 
@@ -121,7 +138,9 @@
           </tr>
           <tr>
             <td>Module Id</td>
-            <td>{{selected.translation.moduleId}} <span flag-icon obj="selected.translation"></span>
+            <td>
+              {{selected.translation.moduleId}}
+              <span flag-icon obj="selected.translation"></span>
             </td>
           </tr>
           <tr ng-show="selected.translation.effectiveTime">
@@ -171,59 +190,178 @@
               ng-repeat="artifact in translationReleaseInfo.artifacts | orderBy:'artifact.name'">
               <td>{{artifact.name}}</td>
               <td>{{toShortDate(artifact.timestamp)}}</td>
-              <td><span>
-                  <a ng-click="exportReleaseArtifact(artifact)">
-                    <i title="Export {{artifact.name}}"
-                      class="material-icons md-18">file_download</i>
-                  </a>
-                </span></td>
+              <td>
+                <i ng-click="exportReleaseArtifact(artifact)"
+                  title="Export {{artifact.name}}"
+                  class="noul material-icons md-18">file_download</i>
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- End 2nd column -->
+    <!-- End R1C2 -->
   </div>
 
 
-  <!-- End row -->
+  <!-- R1-->
 </div>
 
-<!-- Second row (for "preview/published") -->
+<!-- R2 (for "preview/published") -->
 <div ng-show="value != 'PUBLISHED' && value != 'PREVIEW'" class="row">
-
-  <!-- Available Concepts -->
+  <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
+    <!-- Available Concepts -->
     <div class="col-md-12 col-xs-12"></div>
+    <h4 ng-show="selected.translation">
+      Available Concepts
+      <span ng-show="selected.translation.available.totalCount>0">
+        ({{selected.translation.available.totalCount}})</span>
+    </h4>
+    TODO: assign batch
+    <span style="display: block;">
+      <uib-pagination items-per-page="pageSize" max-size="5"
+        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        total-items="selected.translation.available.totalCount"
+        ng-model="paging['available'].page"
+        ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
+
+      <input class="input-filter" placeholder="Enter filter text"
+        ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
+        type="text" ng-model="paging['available'].filter"
+        ng-model-options="{ debounce: 300 }"
+        ng-change="getAvailableConcepts(selected.translation)">
+
+      <button class="btn btn-xs btn-warning"
+        ng-show="paging['available'].filter"
+        ng-click="paging['available'].filter = ''; getAvailableConcepts(selected.translation)"
+        title="Click to clear filter text">Clear</button>
+    </span>
+
+    <span ng-show="selected.translation.available.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No available
+      concepts.</span>
+    <table ng-show="selected.translation.available.totalCount > 0" class="table">
+      <thead>
+        <th class="col-md-4 col-xs-4"
+          ng-click="setSortField('available','terminologyId', null)">Concept
+          Id<span ng-bind="getSortIndicator('available','terminologyId')"></span>
+        </th>
+        <th class="col-md-5 col-xs-5"
+          ng-click="setSortField('available','name', null)">Name<span
+            ng-bind="getSortIndicator('available','name',null)"></span></th>
+        <th class="col-md-3 col-xs-3">Actions</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="concept in selected.translation.available">
+          <td style="word-break: break-word;">{{concept.terminologyId}}</td>
+          <td>{{concept.name}}</td>
+          <!-- Actions -->
+          <td class="nobreak">
+            <!-- Assign -->
+            <i ng-show="projects.role != 'ADMIN'"
+              ng-click="openAssignConceptModal(translation, concept, 'ASSIGN', user.userName); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment</i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- End R2C1 -->
   </div>
 
-
-  <!-- Assigned Concepts-->
+  <!-- R2C2 -->
   <div class="col-md-6 col-xs-12">
+    <!-- Assigned Concepts-->
     <div class="col-md-12 col-xs-12"></div>
+
+    <h4 ng-show="selected.translation">
+      Assigned Concepts
+      <span ng-show="selected.translation.assigned.totalCount>0">
+        ({{selected.translation.assigned.totalCount}})</span>
+    </h4>
+    TODO: return all assigned
+    <span style="display: block;">
+      <uib-pagination items-per-page="pageSize" max-size="5"
+        boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+        next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        total-items="selected.translation.assigned.totalCount"
+        ng-model="paging['assigned'].page"
+        ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
+
+      <input class="input-filter" placeholder="Enter filter text"
+        ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
+        type="text" ng-model="paging['assigned'].filter"
+        ng-model-options="{ debounce: 300 }"
+        ng-change="getAssignedConcepts(selected.translation)">
+
+      <button class="btn btn-xs btn-warning" ng-show="paging['assigned'].filter"
+        ng-click="paging['assigned'].filter = ''; getAssignedConcepts(selected.translation)"
+        title="Click to clear filter text">Clear</button>
+    </span>
+
+    <span ng-show="selected.translation.assigned.totalCount == 0"
+      style="display: block;" class="alert alert-warning">No assigned
+      concepts.</span>
+    <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
+      <thead>
+        <th class="col-md-4 col-xs-4"
+          ng-click="setSortField('assigned','terminologyId', null)">Concept
+          Id<span ng-bind="getSortIndicator('assigned','terminologyId')"></span>
+        </th>
+        <th class="col-md-5 col-xs-5"
+          ng-click="setSortField('assigned','name', null)">Name<span
+            ng-bind="getSortIndicator('assigned','name',null)"></span></th>
+        <th class="col-md-3 col-xs-3">Actions</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="concept in selected.translation.assigned">
+          <td style="word-break: break-word;">{{concept.terminologyId}}</td>
+          <td>{{concept.name}}</td>
+          <!-- Actions -->
+          <td class="nobreak">
+            <!-- Edit -->
+            <!-- Unassign -->
+            <!-- Finish -->
+            actions here
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+
+    <!-- End R2C2 -->
   </div>
 
+  <!-- End R2 -->
 </div>
 
-<!-- Third row - concept list and details panel -->
+<!-- R3 - concept list and details panel -->
 <div class="row">
 
-  <!-- Selected Concept Detail -->
+  <!-- R3C1 -->
   <div class="col-md-6 col-xs-12">
-
-    <span ng-show="!selected.concept && selected.translation.concepts.length > 0"
-      class="alert alert-warning">Select a concept to see details</span>
 
     <div class="col-md-12 col-xs-12" ng-show="selected.concept">
+      <!-- Selected Concept Detail -->
+      <span
+        ng-show="!selected.concept && selected.translation.concepts.length > 0"
+        class="alert alert-warning">Select a concept to see details</span>
       <div concept-info data="selected"></div>
     </div>
+    <!-- End R3C1 -->
   </div>
 
-  <!-- Translation Concepts -->
+  <!-- R3C2 -->
   <div class="col-md-6 col-xs-12">
 
+    <!-- Translation Concepts -->
     <div class="col-md-12 col-xs-12">
+
       <h4 ng-show="selected.translation">
         Translation Concepts
         <span ng-show="selected.translation.concepts.totalCount>0">
@@ -240,13 +378,13 @@
         ng-show="selected.translation.concepts.totalCount > 1 || paging['concept'].filter">
 
         <span style="display: block;">
-          <pagination items-per-page="pageSize" max-size="5"
+          <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
             total-items="selected.translation.concepts.totalCount"
             ng-model="paging['concept'].page"
-            ng-change="getConcepts(selected.translation)"></pagination>
+            ng-change="getConcepts(selected.translation)"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
             ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
@@ -274,10 +412,12 @@
           </thead>
           <tbody>
             <tr ng-repeat="concept in selected.translation.concepts"
-          ng-class="{selected: concept.id == selected.concept.id}"
+              ng-class="{selected: concept.id == selected.concept.id}"
               ng-click="selectConcept(concept);">
               <td>{{concept.terminologyId}}</td>
-              <td>{{concept.name}} <br /> <span
+              <td>
+                {{concept.name}} <br />
+                <span
                   ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
                   &bull;&nbsp;{{desc.term}} </span>
               </td>
@@ -293,6 +433,9 @@
       </span>
     </div>
 
+    <!-- EndR3C2 -->
   </div>
+
+  <!-- End R3 -->
 </div>
 

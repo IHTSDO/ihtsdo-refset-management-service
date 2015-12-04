@@ -1,8 +1,7 @@
 'use strict'
 
-var tsApp = angular.module('tsApp',
-  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload' ]).config(
-  function($rootScopeProvider) {
+var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload' ])
+  .config(function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
     // $rootScopeProvider.digestTtl(15);
@@ -23,10 +22,7 @@ tsApp.run(function($rootScope, $http, $window) {
 });
 
 // Route provider configuration
-tsApp.config([
-  '$routeProvider',
-  '$locationProvider',
-  '$logProvider',
+tsApp.config([ '$routeProvider', '$locationProvider', '$logProvider',
   function($routeProvider, $locationProvider, $logProvider) {
     console.debug('configure $routeProvider');
     $logProvider.debugEnabled(true);
@@ -53,14 +49,11 @@ tsApp.config([
       templateUrl : 'app/page/admin/admin.html',
       controller : 'AdminCtrl',
       reloadOnSearch : false
-    }).when(
-      '/help/:type',
-      {
-        templateUrl : function(params) {
-          return 'app/page/' + params.type + '/help/' + params.type
-            + 'Help.html';
-        }
-      }).otherwise({
+    }).when('/help/:type', {
+      templateUrl : function(params) {
+        return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
+      }
+    }).otherwise({
       redirectTo : '/'
     });
 
@@ -69,41 +62,33 @@ tsApp.config([
   } ]);
 
 // Simple glass pane controller
-tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService',
-  function($scope, gpService) {
-    console.debug('configure GlassPaneCtrl');
+tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
+  console.debug('configure GlassPaneCtrl');
 
-    $scope.glassPane = gpService.glassPane;
+  $scope.glassPane = gpService.glassPane;
 
-  } ]);
+} ]);
 
 // Simple error controller
-tsApp.controller('ErrorCtrl', [ '$scope', 'utilService',
-  function($scope, utilService) {
-    console.debug('configure ErrorCtrl');
+tsApp.controller('ErrorCtrl', [ '$scope', 'utilService', function($scope, utilService) {
+  console.debug('configure ErrorCtrl');
 
-    $scope.error = utilService.error;
+  $scope.error = utilService.error;
 
-    $scope.clearError = function() {
-      utilService.clearError();
-    }
+  $scope.clearError = function() {
+    utilService.clearError();
+  }
 
-    $scope.setError = function(message) {
-      utilService.setError(message);
-    }
+  $scope.setError = function(message) {
+    utilService.setError(message);
+  }
 
-  } ]);
+} ]);
 
 // Tab controller
-tsApp.controller('TabCtrl', [
-  '$scope',
-  '$interval',
-  '$timeout',
-  'securityService',
-  'tabService',
+tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityService', 'tabService',
   'projectService',
-  function($scope, $interval, $timeout, securityService, tabService,
-    projectService) {
+  function($scope, $interval, $timeout, securityService, tabService, projectService) {
     console.debug('configure TabCtrl');
 
     // Setup tabs
@@ -150,8 +135,8 @@ tsApp.controller('TabCtrl', [
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
-  function($scope, securityService, $location) {
+tsApp.controller('HeaderCtrl', [ '$scope', '$location', 'securityService',
+  function($scope, $location, securityService) {
     console.debug('configure HeaderCtrl');
 
     // Declare user
@@ -177,6 +162,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', 'securityService', '$location',
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
     }
+
   } ]);
 
 // Footer controller

@@ -7,11 +7,13 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -21,7 +23,7 @@ import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 /**
  * Generically represents a service for accessing {@link Refset} information.
  */
-public interface RefsetService extends ProjectService {
+public interface RefsetService extends ReleaseService {
 
   /**
    * Returns the refset.
@@ -304,4 +306,34 @@ public interface RefsetService extends ProjectService {
    * @throws Exception the exception
    */
   public void removeNote(Long id, Class<? extends Note> type) throws Exception;
+
+  /**
+   * Returns the current release info for refset.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @return the current release info for refset
+   * @throws Exception the exception
+   */
+  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+    Long projectId) throws Exception;
+
+  /**
+   * Returns the release history for refset.
+   *
+   * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the release history for refset
+   * @throws Exception the exception
+   */
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Handle lazy init.
+   *
+   * @param member the member
+   */
+  public void handleLazyInit(ConceptRefsetMember member);
 }

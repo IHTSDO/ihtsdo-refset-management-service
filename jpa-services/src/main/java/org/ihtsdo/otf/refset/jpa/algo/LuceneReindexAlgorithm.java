@@ -93,7 +93,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     // if no parameter specified, re-index all objects
     if (indexedObjects == null || indexedObjects.isEmpty()) {
 
-      objectsToReindex.add("ConceptJpa"); 
+      objectsToReindex.add("ConceptJpa");
       objectsToReindex.add("ProjectJpa");
       objectsToReindex.add("PhraseMemoryJpa");
       objectsToReindex.add("ReleaseInfoJpa");
@@ -147,7 +147,8 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
     }
 
     if (objectsToReindex.contains("ReleaseInfoJpa")) {
-      Logger.getLogger(getClass()).info("  Creating indexes for ReleaseInfoJpa");
+      Logger.getLogger(getClass())
+          .info("  Creating indexes for ReleaseInfoJpa");
       fullTextEntityManager.purgeAll(ReleaseInfoJpa.class);
       fullTextEntityManager.flushToIndexes();
       fullTextEntityManager.createIndexer(ReleaseInfoJpa.class)
@@ -202,9 +203,10 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
       objectsToReindex.remove("UserJpa");
     }
-    
+
     if (objectsToReindex.contains("ConceptRefsetMemberJpa")) {
-      Logger.getLogger(getClass()).info("  Creating indexes for ConceptRefsetMemberJpa");
+      Logger.getLogger(getClass()).info(
+          "  Creating indexes for ConceptRefsetMemberJpa");
       fullTextEntityManager.purgeAll(ConceptRefsetMemberJpa.class);
       fullTextEntityManager.flushToIndexes();
       fullTextEntityManager.createIndexer(ConceptRefsetMemberJpa.class)
@@ -213,7 +215,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
       objectsToReindex.remove("ConceptRefsetMemberJpa");
     }
-    
+
     if (objectsToReindex.contains("ConceptJpa")) {
       Logger.getLogger(getClass()).info("  Creating indexes for ConceptJpa");
       fullTextEntityManager.purgeAll(ConceptJpa.class);
@@ -224,7 +226,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
       objectsToReindex.remove("ConceptJpa");
     }
-    
+
     if (objectsToReindex.size() != 0) {
       throw new Exception(
           "The following objects were specified for re-indexing, but do not exist as indexed objects: "
@@ -286,6 +288,12 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
   /* see superclass */
   @Override
   public void refreshCaches() throws Exception {
+    // n/a
+  }
+
+  /* see superclass */
+  @Override
+  public void checkPreconditions() throws Exception {
     // n/a
   }
 }

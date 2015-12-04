@@ -19,6 +19,13 @@ public interface Algorithm extends ProgressReporter {
   public void reset() throws Exception;
 
   /**
+   * Check preconditions.
+   *
+   * @throws Exception the exception
+   */
+  public void checkPreconditions() throws Exception;
+
+  /**
    * Compute.
    *
    * @throws Exception the exception

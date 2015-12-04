@@ -196,16 +196,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
-    // Start by just getting first 50, then check how many remaining ones there
+    // Start by just getting first 200, then check how many remaining ones there
     // are
     // and make a second call if needed
-    final int initialMaxLimit = 50;
+    final int initialMaxLimit = 200;
 
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?escg="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "&offset=" + localPfs.getStartIndex());
+            + "&offset=" + localPfs.getStartIndex() + "&expand=pt()");
     Response response =
         target.request(accept).header("Authorization", authHeader).get();
     String resultString = response.readEntity(String.class);
@@ -218,14 +218,38 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     /**
      * <pre>
      * 
+     *  {
+     *   "items": [
      *     {
-     *       "total": 0,
-     *       "limit": 0,
-     *       "offset": 0,
-     *       "items": {
-     *         "empty": false
+     *       "id": "121560009",
+     *       "released": true,
+     *       "active": true,
+     *       "effectiveTime": "20020131",
+     *       "moduleId": "900000000000207008",
+     *       "definitionStatus": "FULLY_DEFINED",
+     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+     *       "pt": {
+     *         "id": "186509018",
+     *         "released": true,
+     *         "active": true,
+     *         "effectiveTime": "20020131",
+     *         "moduleId": "900000000000207008",
+     *         "conceptId": "121560009",
+     *         "typeId": "900000000000013009",
+     *         "term": "Doxycycline measurement",
+     *         "languageCode": "en",
+     *         "caseSignificance": "INITIAL_CHARACTER_CASE_INSENSITIVE",
+     *         "acceptabilityMap": {
+     *           "900000000000508004": "PREFERRED",
+     *           "900000000000509007": "PREFERRED"
+     *         }
      *       }
-     *     }
+     *     } 
+     *   ],
+     *   "offset": 0,
+     *   "limit": 50,
+     *   "total": 126 
+     * }
      * </pre>
      */
 
@@ -235,7 +259,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
     // get total amount
     final int total = doc.get("total").asInt();
-    // Get concepts returned in this call (up to 50)
+    // Get concepts returned in this call (up to 200)
     List<JsonNode> conceptNodes = doc.findValues("items");
     for (JsonNode cptNode : conceptNodes.iterator().next()) {
       final Concept concept = new ConceptJpa();
@@ -249,14 +273,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(cptNode.get("moduleId").asText());
       concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
-      // TODO: - no efficient way to compute this
-      // each member requires a call to the terminology server!
-      if (assignNames) {
-        concept.setName(getConcept(concept.getTerminologyId(), terminology,
-            version).getName());
-      } else {
-        concept.setName("TBD");
-      }
+
+      // pt.term is the name
+      concept.setName(cptNode.get("pt").get("term").asText());
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -284,7 +303,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
       // get total amount
-      // Get concepts returned in this call (up to 50)
+      // Get concepts returned in this call (up to 200)
       conceptNodes = doc.findValues("items");
       for (JsonNode cptNode : conceptNodes.iterator().next()) {
         final Concept concept = new ConceptJpa();
@@ -298,14 +317,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(cptNode.get("moduleId").asText());
         concept.setDefinitionStatusId(cptNode.get("definitionStatus").asText());
-        // TODO: - no efficient way to compute this
-        // each member requires a call to the terminology server!
-        if (assignNames) {
-          concept.setName(getConcept(concept.getTerminologyId(), terminology,
-              version).getName());
-        } else {
-          concept.setName("TBD");
-        }
+        // pt.term is the name
+        concept.setName(cptNode.get("pt").get("term").asText());
+
         concept.setPublishable(true);
         concept.setPublished(true);
 

@@ -8,7 +8,6 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -46,7 +45,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptRefsetMemberList findAvailableEditingConcepts(
+  public ConceptList findAvailableEditingConcepts(
     Translation translation, User user, PfsParameter pfs,
     WorkflowService service) throws Exception;
 

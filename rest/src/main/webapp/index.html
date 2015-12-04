@@ -6,7 +6,7 @@
 <title>IHTSDO Refset Management Service</title>
 <style type="text/css" media="all"></style>
 <!-- Favicon -->
-<link rel="icon" type="image/png" href="images/favicon.png" />
+<link rel="icon" type="image/png" href="images/favicon.ico" />
 
 <!-- Bootstrap CSS  -->
 <link rel="stylesheet"
@@ -19,13 +19,21 @@
 <!-- Angular core  -->
 <script type="text/javascript"
   src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
+
+<script
+  src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js"></script>
+
 <!-- Angular ngRoute -->
 <script type="text/javascript"
   src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.js"></script>
 
+<!-- Angular animate -->
+<script type="text/javascript"
+  src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.js"></script>
+
 <!-- Angular/Boostrap UI -->
 <script type="text/javascript"
-  src="ui/components/angular-bootstrap/ui-bootstrap-tpls-0.13.0.min.js"></script>
+  src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.14.3.js"></script>
 
 <!-- Angular UI Tree -->
 <script type="text/javascript"
@@ -52,6 +60,7 @@
 <script src="app/component/flag/flag.js"></script>
 <script src="app/component/refsetType/type.js"></script>
 <script src="app/component/conceptInfo/conceptInfo.js"></script>
+<script src="app/component/memberInfo/memberInfo.js"></script>
 <script src="app/component/report/reportDirective.js"></script>
 <script src="app/page/login/loginController.js"></script>
 <script src="app/page/admin/adminController.js"></script>
@@ -86,8 +95,9 @@
     <div ng-include src="'app/page/general/error.html'"></div>
     <ul ng-show="isShowing()" class="nav nav-tabs" ng-controller="TabCtrl">
       <li ng-class="tabClass(tab)" ng-repeat="tab in tabs"
-        ng-show="((tab.label == 'Admin' || tab.label == 'Directory') && isAdmin()) || userProjectsInfo.anyRole"><a href="{{tab.link}}"
-          ng-click="setSelectedTab(tab)"> {{tab.label}} </a></li>
+        ng-show="((tab.label == 'Admin' || tab.label == 'Directory') && isAdmin()) || userProjectsInfo.anyRole"><a
+          href="{{tab.link}}" ng-click="setSelectedTab(tab)"> {{tab.label}}
+        </a></li>
     </ul>
     <!-- Body -->
     <div ng-view=""></div>
@@ -98,7 +108,13 @@
 
   <!-- Glass Pane -->
   <div ng-controller="GlassPaneCtrl" ng-show="glassPane.counter > 0"
-    class="top-layer"></div>
+    class="top-layer">
+    <div class="v-wrap">
+      <div class="v-box top-layer-message">
+        <h5 ng-repeat="message in glassPane.messages" class="alert alert-success">{{message}}</h5>
+      </div>
+    </div>
+  </div>
 
   <!-- Analytics -->
   ${site.tracking.code}

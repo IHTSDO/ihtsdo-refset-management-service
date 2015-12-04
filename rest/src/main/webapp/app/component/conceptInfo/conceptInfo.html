@@ -42,12 +42,12 @@
 </h5>
 
 <span style="display: block;">
-  <pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+  <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
     class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
     first-text="&laquo;" last-text="&raquo;"
     ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
     total-items="pagedChildren.totalCount" ng-model="paging['children'].page"
-    ng-change="getPagedChildren()"></pagination>
+    ng-change="getPagedChildren()"></uib-pagination>
 
   <input class="input-filter" placeholder="Enter filter text"
     ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
@@ -74,11 +74,11 @@
 <table ng-show="pagedChildren.length > 0" class="table">
   <thead>
     <th class="col-md-3 col-xs-3"
-      ng-click="setSortField('children','terminologyId', null)">Concept Id
+      ng-click="setSortField('children','terminologyId')">Concept Id
       <span ng-bind="getSortIndicator('children','terminologyId')"></span>
     </th>
     <th class="col-md-9 col-xs-9"
-      ng-click="setSortField('children','name', null)">Name<span
+      ng-click="setSortField('children','name')">Name<span
         ng-bind="getSortIndicator('children','name',null)"></span></th>
   </thead>
   <tbody>
