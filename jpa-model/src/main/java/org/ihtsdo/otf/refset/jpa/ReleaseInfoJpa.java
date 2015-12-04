@@ -146,6 +146,7 @@ public class ReleaseInfoJpa implements ReleaseInfo {
     version = releaseInfo.getVersion();
     lastModified = releaseInfo.getLastModified();
     lastModifiedBy = releaseInfo.getLastModifiedBy();
+    effectiveTime = releaseInfo.getEffectiveTime();
     if(releaseInfo.getRefset() != null)
       refset = new RefsetJpa(releaseInfo.getRefset());
     if(releaseInfo.getTranslation() != null)
@@ -444,15 +445,6 @@ public class ReleaseInfoJpa implements ReleaseInfo {
   @Override
   public void setArtifacts(List<ReleaseArtifact> artifacts) {
     this.artifacts = artifacts;
-  }
-
-  /* see superclass */
-  @Override
-  public void addArtifact(ReleaseArtifact artifact) {
-    if (artifacts == null) {
-      artifacts = new ArrayList<>();
-    }
-    artifacts.add(artifact);
   }
 
   /* see superclass */

@@ -102,21 +102,6 @@ public interface Description extends Component {
     List<LanguageRefsetMember> languageRefsetMembers);
 
   /**
-   * Adds a LanguageRefsetMember to the set of LanguageRefsetMembers.
-   *
-   * @param languageRefsetMember the LanguageRefsetMembers to be added
-   */
-  public void addLanguageRefetMember(LanguageRefsetMember languageRefsetMember);
-
-  /**
-   * Removes a LanguageRefsetMember from the set of LanguageRefsetMembers.
-   *
-   * @param languageRefsetMember the LanguageRefsetMember to be removed
-   */
-  public void removeLanguageRefsetMember(
-    LanguageRefsetMember languageRefsetMember);
-
-  /**
    * Returns the translation of.
    *
    * @return the translation of

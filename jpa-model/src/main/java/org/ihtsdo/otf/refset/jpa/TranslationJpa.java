@@ -33,6 +33,7 @@ import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -54,7 +55,8 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 @Entity
 @Table(name = "translations", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "name", "description", "project_id", "provisional"
+    "terminologyId", "name", "description", "project_id", "provisional",
+    "effectiveTime"
 }))
 @Audited
 @Indexed
@@ -94,6 +96,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Column(nullable = false)
   private boolean provisional;
 
+  /** The in publication process. */
+  @Column(nullable = false)
+  private boolean inPublicationProcess;
+
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
   private Refset refset;
@@ -121,6 +127,11 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @OneToOne(mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
   private PhraseMemory phraseMemory = null;
 
+  /** The notes. */
+  @OneToMany(mappedBy = "translation", targetEntity = TranslationNoteJpa.class)
+  // @IndexedEmbedded - n/a
+  private List<Note> notes = new ArrayList<>();
+
   /**
    * Instantiates an empty {@link TranslationJpa}.
    */
@@ -139,6 +150,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     description = translation.getDescription();
     isPublic = translation.isPublic();
     provisional = translation.isProvisional();
+    inPublicationProcess = translation.isInPublicationProcess();
     stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
@@ -146,9 +158,11 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     refset = translation.getRefset();
     project = translation.getProject();
     for (DescriptionTypeRefsetMember member : translation.getDescriptionTypes()) {
-      addDescriptionType(new DescriptionTypeRefsetMemberJpa(member));
+      getDescriptionTypes().add(new DescriptionTypeRefsetMemberJpa(member));
     }
-    // DO not copy concepts
+    for (Note note : translation.getNotes()) {
+      getNotes().add(new TranslationNoteJpa((TranslationNoteJpa) note));
+    }
   }
 
   /* see superclass */
@@ -206,6 +220,18 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setProvisional(boolean provisional) {
     this.provisional = provisional;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isInPublicationProcess() {
+    return inPublicationProcess;
+  }
+
+  /* see superclass */
+  @Override
+  public void setInPublicationProcess(boolean inPublicationProcess) {
+    this.inPublicationProcess = inPublicationProcess;
   }
 
   /* see superclass */
@@ -338,24 +364,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  @Override
-  public void addDescriptionType(DescriptionTypeRefsetMember type) {
-    if (descriptionTypes == null) {
-      descriptionTypes = new ArrayList<DescriptionTypeRefsetMember>();
-    }
-    descriptionTypes.add(type);
-
-  }
-
-  /* see superclass */
-  @Override
-  public void removeDescriptionType(DescriptionTypeRefsetMember type) {
-    if (descriptionTypes != null) {
-      descriptionTypes.remove(type);
-    }
-  }
-
-  /* see superclass */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public WorkflowStatus getWorkflowStatus() {
@@ -397,24 +405,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.concepts = concepts;
   }
 
-  /* see superclass */
-  @Override
-  public void addConcept(Concept concept) {
-    if (concepts == null) {
-      concepts = new ArrayList<>();
-    }
-    concepts.add(concept);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeConcept(Concept concept) {
-    if (concepts != null) {
-      concepts.remove(concept);
-    }
-
-  }
-
   /**
    * Returns the user role map. For indexing.
    *
@@ -430,6 +420,22 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
+  @XmlElement(type = TranslationNoteJpa.class)
+  @Override
+  public List<Note> getNotes() {
+    if (notes == null) {
+      notes = new ArrayList<Note>();
+    }
+    return notes;
+  }
+
+  /* see superclass */
+  @Override
+  public void setNotes(List<Note> notes) {
+    this.notes = notes;
+  }
+
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -437,6 +443,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
+    result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
@@ -462,6 +469,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     if (isPublic != other.isPublic)
       return false;
     if (stagingType != other.stagingType)
+      return false;
+    if (inPublicationProcess != other.inPublicationProcess)
       return false;
     if (language == null) {
       if (other.language != null)

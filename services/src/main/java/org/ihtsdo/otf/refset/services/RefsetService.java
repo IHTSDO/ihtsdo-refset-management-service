@@ -5,12 +5,15 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
 
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -20,7 +23,7 @@ import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 /**
  * Generically represents a service for accessing {@link Refset} information.
  */
-public interface RefsetService extends ProjectService {
+public interface RefsetService extends ReleaseService {
 
   /**
    * Returns the refset.
@@ -64,7 +67,7 @@ public interface RefsetService extends ProjectService {
    * Removes the refset.
    *
    * @param id the id
-   * @param cascade 
+   * @param cascade the cascade
    * @throws Exception the exception
    */
   public void removeRefset(Long id, boolean cascade) throws Exception;
@@ -254,17 +257,20 @@ public interface RefsetService extends ProjectService {
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedRefsetChange getStagedRefsetChange(Long refsetId) throws Exception;
+  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+    throws Exception;
 
   /**
    * Stage refset.
    *
    * @param refset the refset
    * @param stagingType the staging type
+   * @param effectiveTime the effective time
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset stageRefset(Refset refset, Refset.StagingType stagingType) throws Exception;
+  public Refset stageRefset(Refset refset, Refset.StagingType stagingType,
+    Date effectiveTime) throws Exception;
 
   /**
    * Update member.
@@ -283,4 +289,51 @@ public interface RefsetService extends ProjectService {
    */
   public ConceptRefsetMember getMember(Long id) throws Exception;
 
+  /**
+   * Adds the note.
+   *
+   * @param note the note
+   * @return the note
+   * @throws Exception the exception
+   */
+  public Note addNote(Note note) throws Exception;
+
+  /**
+   * Removes the note.
+   *
+   * @param id the id
+   * @param type the type
+   * @throws Exception the exception
+   */
+  public void removeNote(Long id, Class<? extends Note> type) throws Exception;
+
+  /**
+   * Returns the current release info for refset.
+   *
+   * @param terminologyId the terminology id
+   * @param projectId the project id
+   * @return the current release info for refset
+   * @throws Exception the exception
+   */
+  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+    Long projectId) throws Exception;
+
+  /**
+   * Returns the release history for refset.
+   *
+   * @param refsetId the refset id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the release history for refset
+   * @throws Exception the exception
+   */
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
+    String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Handle lazy init.
+   *
+   * @param member the member
+   */
+  public void handleLazyInit(ConceptRefsetMember member);
 }

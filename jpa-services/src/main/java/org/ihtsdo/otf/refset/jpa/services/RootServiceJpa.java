@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa.services;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -241,7 +242,6 @@ public abstract class RootServiceJpa implements RootService {
     return query;
   }
 
-
   /**
    * Apply pfs to List.
    *
@@ -260,7 +260,7 @@ public abstract class RootServiceJpa implements RootService {
     if (pfs == null) {
       return list;
     }
-    
+
     // NOTE: does not handle active/inactive logic
 
     List<T> result = list;
@@ -277,7 +277,8 @@ public abstract class RootServiceJpa implements RootService {
           clazz.getMethod("get" + ConfigUtility.capitalize(pfs.getSortField()),
               new Class<?>[] {});
 
-      if (!sortMethod.getReturnType().equals(String.class)) {
+      if (!sortMethod.getReturnType().equals(String.class)
+          && !sortMethod.getReturnType().equals(Date.class)) {
         throw new Exception("Referenced sort field is not of type String");
       }
 

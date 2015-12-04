@@ -110,10 +110,10 @@ public interface ReleaseServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
-   * @return the validation result
+   * @return the refset
    * @throws Exception the exception
    */
-  public ValidationResult finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -166,10 +166,10 @@ public interface ReleaseServiceRest {
    *
    * @param translationId the translation id
    * @param authToken the auth token
-   * @return the validation result
+   * @return the translation
    * @throws Exception the exception
    */
-  public ValidationResult finishTranslationRelease(Long translationId,
+  public Translation finishTranslationRelease(Long translationId,
     String authToken) throws Exception;
 
   /**
@@ -216,4 +216,14 @@ public interface ReleaseServiceRest {
    */
   public InputStream exportReleaseArtifact(Long artifactId, String authToken)
     throws Exception;
+
+  /**
+   * Resume release.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset resumeRelease(Long refsetId, String authToken) throws Exception;
 }

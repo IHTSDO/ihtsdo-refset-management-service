@@ -1,36 +1,76 @@
 // Error service
-tsApp.service('utilService', [
-  '$location',
-  function($location) {
-    console.debug('configure utilService');
-    // declare the error
-    this.error = {
-      message : null
-    };
+tsApp.service('utilService', [ '$location', function($location) {
+  console.debug('configure utilService');
+  // declare the error
+  this.error = {
+    message : null
+  };
 
-    // Sets the error
-    this.setError = function(message) {
-      this.error.message = message;
-    }
+  // Sets the error
+  this.setError = function(message) {
+    this.error.message = message;
+  }
 
-    // Clears the error
-    this.clearError = function() {
-      this.error.message = null;
+  // Clears the error
+  this.clearError = function() {
+    this.error.message = null;
+  }
+  // Handle error message
+  this.handleError = function(response) {
+    console.debug("Handle error: ", response);
+    this.error.message = response.data;
+    // If authtoken expired, relogin
+    if (this.error.message && this.error.message.indexOf("AuthToken") != -1) {
+      // Reroute back to login page with "auth token has
+      // expired" message
+      $location.path("/");
     }
-    // Handle error message
-    this.handleError = function(response) {
-      console.debug("Handle error: ", response);
-      this.error.message = response.data.replace(/"/g, '');
-      // If authtoken expired, relogin
-      if (this.error.message.indexOf("AuthToken") != -1) {
-        // Reroute back to login page with "auth token has
-        // expired" message
-        $location.path("/");
-      }
-    }
+  }
 
-    // Convert date to a string
-    this.toDate = function(lastModified) {
+  // Convert date to a string
+  this.toDate = function(lastModified) {
+    var date = new Date(lastModified);
+    var year = "" + date.getFullYear();
+    var month = "" + (date.getMonth() + 1);
+    if (month.length == 1) {
+      month = "0" + month;
+    }
+    var day = "" + date.getDate();
+    if (day.length == 1) {
+      day = "0" + day;
+    }
+    var hour = "" + date.getHours();
+    if (hour.length == 1) {
+      hour = "0" + hour;
+    }
+    var minute = "" + date.getMinutes();
+    if (minute.length == 1) {
+      minute = "0" + minute;
+    }
+    var second = "" + date.getSeconds();
+    if (second.length == 1) {
+      second = "0" + second;
+    }
+    return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+  }
+
+  // Convert date to a short string
+  this.toShortDate = function(lastModified) {
+    var date = new Date(lastModified);
+    var year = "" + date.getFullYear();
+    var month = "" + (date.getMonth() + 1);
+    if (month.length == 1) {
+      month = "0" + month;
+    }
+    var day = "" + date.getDate();
+    if (day.length == 1) {
+      day = "0" + day;
+    }
+    return year + "-" + month + "-" + day;
+  }
+    
+    // Convert date to a simple string
+    this.toSimpleDate = function(lastModified) {
       var date = new Date(lastModified);
       var year = "" + date.getFullYear();
       var month = "" + (date.getMonth() + 1);
@@ -41,61 +81,67 @@ tsApp.service('utilService', [
       if (day.length == 1) {
         day = "0" + day;
       }
-      var hour = "" + date.getHours();
-      if (hour.length == 1) {
-        hour = "0" + hour;
-      }
-      var minute = "" + date.getMinutes();
-      if (minute.length == 1) {
-        minute = "0" + minute;
-      }
-      var second = "" + date.getSeconds();
-      if (second.length == 1) {
-        second = "0" + second;
-      }
-      return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":"
-        + second;
+      return year + month + day;
     }
 
-    // Convert date to a short string
-    this.toShortDate = function(lastModified) {
-      var date = new Date(lastModified);
-      var year = "" + date.getFullYear();
-      var month = "" + (date.getMonth() + 1);
-      if (month.length == 1) {
-        month = "0" + month;
-      }
-      var day = "" + date.getDate();
-      if (day.length == 1) {
-        day = "0" + day;
-      }
-      return year + "-" + month + "-" + day;
+  // Utility for cleaning a query
+  this.cleanQuery = function(queryStr) {
+    if (queryStr == null) {
+      return "";
     }
+    var cleanQuery = queryStr;
+    // Replace all slash characters
+    cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
+    // Remove brackets if not using a fielded query
+    if (queryStr.indexOf(':') == -1) {
+      cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
+    }
+    // console.debug(queryStr, " => ", cleanQuery);
+    return cleanQuery;
+  }
 
-    // Utility for cleaning a query
-    this.cleanQuery = function(queryStr) {
-      if (queryStr == null) {
-        return "";
-      }
-      var cleanQuery = queryStr;
-      // Replace all slash characters
-      cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
-      // Remove brackets if not using a fielded query
-      if (queryStr.indexOf(':') == -1) {
-        cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]',
-          'g'), ' ');
-      }
-      // console.debug(queryStr, " => ", cleanQuery);
-      return cleanQuery;
+  // Table sorting mechanism
+  this.setSortField = function(table, field, paging) {
+    paging[table].sortField = field;
+    // reset page number too
+    paging[table].page = 1;
+    // handles null case also
+    if (!paging[table].ascending) {
+      paging[table].ascending = true;
+    } else {
+      paging[table].ascending = false;
     }
-  } ]);
+    // reset the paging for the correct table
+    for ( var key in paging) {
+      if (paging.hasOwnProperty(key)) {
+        if (key == table)
+          paging[key].page = 1;
+      }
+    }
+  };
+
+  // Return up or down sort chars if sorted
+  this.getSortIndicator = function(table, field, paging) {
+    if (paging[table].ascending == null) {
+      return "";
+    }
+    if (paging[table].sortField == field && paging[table].ascending) {
+      return "▴";
+    }
+    if (paging[table].sortField == field && !paging[table].ascending) {
+      return "▾";
+    }
+  };
+
+} ]);
 
 // Glass pane service
 tsApp.service('gpService', function() {
   console.debug('configure gpService');
   // declare the glass pane counter
   this.glassPane = {
-    counter : 0
+    counter : 0,
+    messages : []
   };
 
   this.isGlassPaneSet = function() {
@@ -108,19 +154,28 @@ tsApp.service('gpService', function() {
 
   // Increments glass pane counter
   this.increment = function(message) {
+    if (message) {
+      this.glassPane.messages.push(message);
+    }
     this.glassPane.counter++;
   }
 
   // Decrements glass pane counter
-  this.decrement = function() {
+  this.decrement = function(message) {
+    if (message) {
+      var index = this.glassPane.messages.indexOf(message); // <-- Not supported in <IE9
+      if (index !== -1) {
+        this.glassPane.messages.splice(index, 1);
+      }
+    }
     this.glassPane.counter--;
   }
 
 });
 
 // Security service
-tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
-  'gpService', function($http, $location, $q, utilService, gpService) {
+tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'gpService',
+  function($http, $location, $q, utilService, gpService) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -131,14 +186,12 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       authToken : null,
       applicationRole : null
     };
-    
 
     // Search results
     var searchParams = {
       page : 1,
       query : null
     }
-
 
     // Gets the user
     this.getUser = function() {
@@ -193,9 +246,8 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
 
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
-        $location.path("/");
         gpService.decrement();
-
+        window.location.href = "${logout.url}";
       },
       // error
       function(response) {
@@ -204,12 +256,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       });
     }
 
-
     // Accessor for search params
     this.getSearchParams = function() {
       return searchParams;
     }
-
 
     // get all users
     this.getUsers = function() {
@@ -325,49 +375,37 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService',
       });
       return deferred.promise;
     }
-    
- // Finds users as a list
-    this.findUsersAsList = function(queryStr, 
-      pfs) {
-      console.debug("findUsersAsList", queryStr, 
-        pfs);
+
+    // Finds users as a list
+    this.findUsersAsList = function(queryStr, pfs) {
+      console.debug("findUsersAsList", queryStr, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(
-        securityUrl
-          + "user/find"
-          +  "?query=" + queryStr, pfs)
-          //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug("  output = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(securityUrl + "user/find" + "?query=" + queryStr, pfs)
+      //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
+      .then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
 
       return deferred.promise;
     }
   } ]);
 
-
-
-
 // Tab service
-tsApp.service('tabService', [
-  '$location',
-  'utilService',
-  'gpService',
-  'securityService',
+tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'securityService',
   function($location, utilService, gpService, securityService) {
     console.debug('configure tabService');
 
@@ -391,8 +429,7 @@ tsApp.service('tabService', [
     // Show admin tab for admins only
     this.showTab = function(tab) {
       console.debug("tab label", tab.label);
-      return tab.label != 'Admin'
-        || securityService.getUser().applicationRole == 'ADMIN';
+      return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
     }
 
     // Sets the selected tab

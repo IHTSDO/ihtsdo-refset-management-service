@@ -17,24 +17,46 @@
   <div class="row">
     <!--  Left hand side -->
     <div class="col-md-6 col-xs-12">
-      <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
-      <span ng-show="searchResults.length == 0" class="alert alert-warning">No
-        results</span>
 
-      <table ng-show="searchResults.length > 0" class="table">
-        <thead>
-          <th class="col-md-3 col-xs-3">Concept Id</th>
-          <th class="col-md-9 col-xs-9">Name</th>
-        </thead>
-        <tbody>
-          <tr ng-repeat="concept in searchResults"
-            ng-click="selectConcept(concept)"
-            ng-class="{selected: concept.terminologyId === selectedConcept.terminologyId}">
-            <td>{{concept.terminologyId}}</td>
-            <td>{{concept.name}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Errors -->
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        {{error}}
+        <div style="cursor: pointer; display: inline; float: right; width: 3%;">
+          <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+        </div>
+      </div>
+
+      <span ng-show="search && searchResults.length == 0"
+        class="alert alert-warning">No results</span>
+
+      <span ng-show="search && searchResults.length > 0">
+
+        <span style="display: block;">
+          <ul style="margin: 5px" class="pager uib-pagination-sm"
+            ng-show="search && (searchResults.length > 0 || paging['search'].page > 1)">
+            <li class="previous" ng-show="paging['search'].page > 1"
+              ng-click="getPreviousPage()"><a>&larr; Previous</a></li>
+            <span class="panel-title"> Page {{paging['search'].page}}</span>
+            <li ng-show="searchResults.length > 0" class="next"
+              ng-click="getNextPage()"><a>Next &rarr;</a></li>
+          </ul>
+        </span>
+
+        <table ng-show="searchResults.length > 0" class="table">
+          <thead class="table-select-row">
+            <th class="col-md-3 col-xs-3">Concept Id</th>
+            <th class="col-md-9 col-xs-9">Name</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="concept in searchResults"
+              ng-click="selectConcept(concept)"
+              ng-class="{selected: concept.terminologyId === data.concept.terminologyId}">
+              <td>{{concept.terminologyId}}</td>
+              <td>{{concept.name}}</td>
+            </tr>
+          </tbody>
+          </span>
+        </table>
     </div>
 
     <!--  Right hand side -->
@@ -43,7 +65,7 @@
         class="alert alert-warning">Select a concept to see details</span>
 
       <!-- Concept display -->
-      <div ng-show="data.concept" concept-info data="data" ></div>
+      <div ng-show="data.concept" concept-info data="data"></div>
 
     </div>
   </div>

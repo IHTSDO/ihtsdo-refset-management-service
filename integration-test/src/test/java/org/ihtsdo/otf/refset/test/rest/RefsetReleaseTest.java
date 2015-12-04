@@ -27,6 +27,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.ReleaseClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -232,7 +233,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -255,7 +256,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -280,7 +281,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -301,6 +302,7 @@ public class RefsetReleaseTest {
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
+
 
   /**
    * Test refset release including begin, validate, preview and finish.
@@ -328,4 +330,82 @@ public class RefsetReleaseTest {
     // clean up
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
+
+  /**
+   * Test refset release including begin, validate, preview, finish and delta.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRelease005() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration001");
+
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (intensional) and import definition
+    RefsetJpa refset1 =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
+            admin);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Preview release
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    // Add 5 members to refset
+    ConceptRefsetMemberJpa member1 =
+        makeConceptRefsetMember("member1", "123", refset1);
+    refsetService.addRefsetMember(member1, adminAuthToken);
+    ConceptRefsetMemberJpa member2 =
+        makeConceptRefsetMember("member2", "12344", refset1);
+    refsetService.addRefsetMember(member2, adminAuthToken);
+    ConceptRefsetMemberJpa member3 =
+        makeConceptRefsetMember("member3", "123333", refset1);
+    refsetService.addRefsetMember(member3, adminAuthToken);
+    ConceptRefsetMemberJpa member4 =
+        makeConceptRefsetMember("member4", "123223", refset1);
+    refsetService.addRefsetMember(member4, adminAuthToken);
+    ConceptRefsetMemberJpa member5 =
+        makeConceptRefsetMember("member5", "1234545", refset1);
+    refsetService.addRefsetMember(member5, adminAuthToken);
+    Calendar calendar = Calendar.getInstance();
+    calendar.add(Calendar.MONDAY, 1);
+    // Begin release
+    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
+    // Validate release
+    releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
+    // Preview release
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    // Finish release
+    releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
+    // clean up
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+  }
+  
+  /**
+   * Make concept refset member.
+   *
+   * @param name the name
+   * @param id the id
+   * @param refset the refset
+   * @return the concept refset member jpa
+   */
+  @SuppressWarnings("static-method")
+  protected ConceptRefsetMemberJpa makeConceptRefsetMember(String name,
+    String id, Refset refset) {
+    ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+    member.setActive(true);
+    member.setConceptId(id);
+    member.setConceptName(name);
+    member.setEffectiveTime(new Date());
+    member.setMemberType(Refset.MemberType.MEMBER);
+    member.setTerminology(refset.getTerminology());
+    member.setVersion(refset.getVersion());
+    member.setModuleId(refset.getModuleId());
+    member.setRefset(refset);
+    return member;
+  }
+
 }

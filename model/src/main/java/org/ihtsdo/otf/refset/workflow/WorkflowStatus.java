@@ -19,7 +19,7 @@ public enum WorkflowStatus {
 
   /** The review new status. */
   REVIEW_NEW,
-  
+
   /** The review in progress status. */
   REVIEW_IN_PROGRESS,
 

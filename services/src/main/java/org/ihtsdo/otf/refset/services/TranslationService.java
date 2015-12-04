@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -14,6 +15,7 @@ import org.ihtsdo.otf.refset.Translation.StagingType;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -437,10 +439,34 @@ public interface TranslationService extends RefsetService {
    *
    * @param translation the translation
    * @param stagingType the staging type
+   * @param effectiveTime 
    * @return the translation
    * @throws Exception the exception
    */
-  public Translation stageTranslation(Translation translation, StagingType stagingType)
+  public Translation stageTranslation(Translation translation, StagingType stagingType, Date effectiveTime)
     throws Exception;
 
+
+  /**
+   * Find translation releases for query.
+   *
+   * @param translationId the translations id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the release info list
+   * @throws Exception the exception
+   */
+  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
+    String query, PfsParameter pfs) throws Exception;
+
+  /**
+   * Returns the current release info for translation.
+   *
+   * @param terminologyId the translation terminology id
+   * @param projectId the project id
+   * @return the current release info for translation
+   * @throws Exception the exception
+   */
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
+    Long projectId) throws Exception;
 }

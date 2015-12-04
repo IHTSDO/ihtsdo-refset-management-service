@@ -26,7 +26,7 @@ public interface Translation extends Component, Searchable {
   public enum StagingType {
     /** The import. */
     IMPORT,
-    
+
     /** The migration. */
     MIGRATION,
 
@@ -175,20 +175,6 @@ public interface Translation extends Component, Searchable {
   public void setDescriptionTypes(List<DescriptionTypeRefsetMember> types);
 
   /**
-   * Adds the description types.
-   *
-   * @param type the type
-   */
-  public void addDescriptionType(DescriptionTypeRefsetMember type);
-
-  /**
-   * Removes the description types.
-   *
-   * @param type the type
-   */
-  public void removeDescriptionType(DescriptionTypeRefsetMember type);
-
-  /**
    * Returns the concepts.
    *
    * @return the concepts
@@ -201,20 +187,6 @@ public interface Translation extends Component, Searchable {
    * @param concepts the concepts
    */
   public void setConcepts(List<Concept> concepts);
-
-  /**
-   * Adds the concept.
-   *
-   * @param concept the concept
-   */
-  public void addConcept(Concept concept);
-
-  /**
-   * Removes the concept.
-   *
-   * @param concept the concept
-   */
-  public void removeConcept(Concept concept);
 
   /**
    * Returns the spelling dictionary.
@@ -257,5 +229,33 @@ public interface Translation extends Component, Searchable {
    * @param provisional the provisional
    */
   public void setProvisional(boolean provisional);
+
+  /**
+   * Returns the notes.
+   *
+   * @return the notes
+   */
+  public List<Note> getNotes();
+
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
+  public void setNotes(List<Note> notes);
+
+  /**
+   * Indicates whether or not in publication process is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isInPublicationProcess();
+
+  /**
+   * Sets the in publication process.
+   *
+   * @param inPublicationProcess the in publication process
+   */
+  public void setInPublicationProcess(boolean inPublicationProcess);
 
 }

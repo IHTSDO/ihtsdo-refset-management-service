@@ -139,10 +139,10 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     t2.setProject(p2);
     t1.setRefset(r1);
     t2.setRefset(r2);
-    r1.addTranslation(t1);
-    r2.addTranslation(t2);
-    t1.addConcept(c1);
-    t2.addConcept(c2);
+    r1.getTranslations().add(t1);
+    r2.getTranslations().add(t2);
+    t1.getConcepts().add(c1);
+    t2.getConcepts().add(c2);
   }
 
   /**
@@ -172,6 +172,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("concept");
     tester.include("forAuthoring");
     tester.include("forReview");
+    tester.include("revision");
     tester.include("translation");
     tester.include("authors");
     tester.include("reviewers");
@@ -263,6 +264,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("forAuthoring");
     tester.include("forReview");
+    tester.include("revision");
     assertTrue(tester.testNotNullFields());
   }
 
@@ -289,6 +291,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("translationid");
     tester.include("refsetId");
     tester.include("forReview");
+    tester.include("revision");
     tester.include("forAuthoring");
     tester.include("projectId");
     assertTrue(tester.testNotAnalyzedIndexedFields());

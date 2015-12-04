@@ -167,7 +167,8 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getStagedInclusions() {
     List<ConceptRefsetMember> stagedInclusions = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
-      if (member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION_STAGED ||
+          member.getMemberType() == Refset.MemberType.INCLUSION) {
         stagedInclusions.add(member);
       }
     }
@@ -175,21 +176,34 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   }
   
   /* see superclass */
+  @Override
+  public List<ConceptRefsetMember> getStagedExclusions() {
+    List<ConceptRefsetMember> stagedExclusions = new ArrayList<>();
+    for (ConceptRefsetMember member : newNotOld) {
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED ||
+          member.getMemberType() == Refset.MemberType.EXCLUSION) {
+        stagedExclusions.add(member);
+      }
+    }
+    return stagedExclusions;
+  }
+  
+  /* see superclass */
   @Override  
   public List<ConceptRefsetMember> getValidInclusions() {
     //oldNotNew members with type INCLUSION with concept ids not matching 
     //newNotOld members with type MEMBER or INCLUSION_STAGED
-    List<ConceptRefsetMember> alreadyIncluded = new ArrayList<>();
+    List<String> alreadyIncluded = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER ||
           member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
-        alreadyIncluded.add(member);
+        alreadyIncluded.add(member.getConceptId());
       }
     }
     List<ConceptRefsetMember> validInclusions = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION &&
-          !alreadyIncluded.contains(member)) {
+          !alreadyIncluded.contains(member.getConceptId())) {
         validInclusions.add(member);
       }
     }
@@ -201,16 +215,16 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getInvalidInclusions() {
     //oldNotNew members with type INCLUSION with concept ids 
     //matching newNotOld members with type MEMBER
-    List<ConceptRefsetMember> alreadyIncluded = new ArrayList<>();
+    List<String> alreadyIncluded = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER) {
-        alreadyIncluded.add(member);
+        alreadyIncluded.add(member.getConceptId());
       }
     }
     List<ConceptRefsetMember> invalidInclusions = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION &&
-          alreadyIncluded.contains(member)) {
+          alreadyIncluded.contains(member.getConceptId())) {
         invalidInclusions.add(member);
       }
     }   
@@ -223,22 +237,22 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     // oldNotNew members with type EXCLUSION with concept ids matching 
     // newNotOld members with type MEMBER and not matching newNotOld 
     // members with type EXCLUSION_STAGED
-    List<ConceptRefsetMember> alreadyExcluded = new ArrayList<>();
+    List<String> alreadyExcluded = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
-        alreadyExcluded.add(member);
+        alreadyExcluded.add(member.getConceptId());
       }
     }
-    List<ConceptRefsetMember> newMembers = new ArrayList<>();
+    List<String> newMembers = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER) {
-        newMembers.add(member);
+        newMembers.add(member.getConceptId());
       }
     }
     List<ConceptRefsetMember> validExclusions = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.EXCLUSION &&
-          newMembers.contains(member) && !alreadyExcluded.contains(member)) {
+          newMembers.contains(member.getConceptId()) && !alreadyExcluded.contains(member.getConceptId())) {
         validExclusions.add(member);
       }
     }
@@ -250,10 +264,10 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getInvalidExclusions() {
     // oldNotNew members with type EXCLUSION with concept ids 
     // not matching newNotOld members with type MEMBER
-    List<ConceptRefsetMember> nowNotExcluded = new ArrayList<>();
+    List<String> nowNotExcluded = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER) {
-        nowNotExcluded.add(member);
+        nowNotExcluded.add(member.getConceptId());
       }
     }
     List<ConceptRefsetMember> invalidExclusions = new ArrayList<>();
@@ -273,23 +287,24 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getNewRegularMembers() {
     // newNotOld members with type MEMBER not matching oldNotNew members 
     // with type MEMBER and not matching newNotOld members with type EXCLUSION_STAGED
-    List<ConceptRefsetMember> exclusionStaged = new ArrayList<>();
+    List<String> exclusionStaged = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
-        exclusionStaged.add(member);
+        exclusionStaged.add(member.getConceptId());
       }
     }
-    List<ConceptRefsetMember> oldRegularMembers = new ArrayList<>();
+    List<String> oldRegularMembers = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.MEMBER &&
           !exclusionStaged.contains(member)) {
-        oldRegularMembers.add(member);
+        oldRegularMembers.add(member.getConceptId());
       }
     }  
     List<ConceptRefsetMember> newRegularMembers = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER &&
-          !exclusionStaged.contains(member) && !oldRegularMembers.contains(member)) {
+          !exclusionStaged.contains(member.getConceptId()) && 
+          !oldRegularMembers.contains(member.getConceptId())) {
         newRegularMembers.add(member);
       }
     }   
@@ -302,17 +317,18 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   public List<ConceptRefsetMember> getOldRegularMembers() {
     // oldNotNew members with type MEMBER with concept ids not matching 
     // newNotOld members with type MEMBER or type INCLUSION_STAGED
-    List<ConceptRefsetMember> alreadyMember = new ArrayList<>();
+    List<String> alreadyMember = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
       if (member.getMemberType() == Refset.MemberType.MEMBER ||
+          member.getMemberType() == Refset.MemberType.INCLUSION ||
           member.getMemberType() == Refset.MemberType.INCLUSION_STAGED) {
-        alreadyMember.add(member);
+        alreadyMember.add(member.getConceptId());
       }
     }
     List<ConceptRefsetMember> oldRegularMembers = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.MEMBER &&
-          !alreadyMember.contains(member)) {
+          !alreadyMember.contains(member.getConceptId())) {
         oldRegularMembers.add(member);
       }
     }   

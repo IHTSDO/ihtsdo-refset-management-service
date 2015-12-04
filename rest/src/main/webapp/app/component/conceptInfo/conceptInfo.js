@@ -30,13 +30,13 @@ tsApp.directive('conceptInfo', [
           $scope.children = [];
           $scope.parents = [];
           $scope.parents = [];
-          $scope.errors = [];
+          $scope.error = null;
 
           // When concept changes, redo paging
           $scope.$watch('data.concept', function() {
             // When used by translation table, data.concept is null until selected
             // Clear error
-            $scope.errors = [];
+            $scope.error = null;
             if ($scope.data.concept) {
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptWithDescriptions($scope.data.concept);
@@ -49,6 +49,11 @@ tsApp.directive('conceptInfo', [
             $scope.getPagedChildren();
           });
 
+          // Clear error
+          $scope.clearError = function() {
+            $scope.error = null;
+          }
+          
           // get concept parents
           $scope.getConceptParents = function(concept) {
             console.debug("Getting concept parents", concept);
@@ -63,7 +68,7 @@ tsApp.directive('conceptInfo', [
             },
             // Error 
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             })
 
@@ -83,7 +88,7 @@ tsApp.directive('conceptInfo', [
             },
             // Error 
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             })
 
@@ -100,32 +105,17 @@ tsApp.directive('conceptInfo', [
             },
             // Error
             function(data) {
-              $scope.errors[0] = data;
+              $scope.error = data;
               utilService.clearError();
             });
 
           };
 
           // Table sorting mechanism
-          $scope.setSortField = function(table, field, object) {
-            $scope.paging[table].sortField = field;
-            // reset page number too
-            $scope.paging[table].page = 1;
-            // handles null case also
-            if (!$scope.paging[table].ascending) {
-              $scope.paging[table].ascending = true;
-            } else {
-              $scope.paging[table].ascending = false;
-            }
-            // reset the paging for the correct table
-            for ( var key in $scope.paging) {
-              if ($scope.paging.hasOwnProperty(key)) {
-                if (key == table)
-                  $scope.paging[key].page = 1;
-              }
-            }
+          $scope.setSortField = function(table, field) {
+            utilService.setSortField(table,field,$scope.paging);
             // re-page the children
-            if (table === 'children') {
+            if (table == 'children') {
               $scope.getPagedChildren();
             }
 
@@ -133,15 +123,7 @@ tsApp.directive('conceptInfo', [
 
           // Return up or down sort chars if sorted
           $scope.getSortIndicator = function(table, field) {
-            if ($scope.paging[table].ascending == null) {
-              return "";
-            }
-            if ($scope.paging[table].sortField == field && $scope.paging[table].ascending) {
-              return "▴";
-            }
-            if ($scope.paging[table].sortField == field && !$scope.paging[table].ascending) {
-              return "▾";
-            }
+            return utilService.getSortIndicator(table,field,$scope.paging);
           };
 
           // Get paged children (assume all are loaded)

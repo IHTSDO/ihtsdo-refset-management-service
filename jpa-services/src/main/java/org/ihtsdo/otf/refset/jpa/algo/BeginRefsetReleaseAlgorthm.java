@@ -13,16 +13,15 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
-import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 
 /**
- * Implementation of an algorithm to begin a release process. This takes care of
- * some of the standard elements of performing a refset release.
+ * Implementation of an algorithm to begin {@link Refset} release process.
  * 
  * <pre>
  * 1. Creates a release info (with published=false) and links it to the refset
@@ -31,7 +30,7 @@ import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
  * This process is capable of generating notifications, warnings, or errors via
  * a {@link ValidationResult}
  */
-public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
+public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
     Algorithm {
 
   /** Listeners. */
@@ -43,13 +42,13 @@ public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
 
   /** The result. */
   private ValidationResult result = new ValidationResultJpa();
-  
+
   /** The release info. */
-  private ReleaseInfo  releaseInfo = null;
+  private ReleaseInfo releaseInfo = null;
 
   /** The effective time. */
   private Date effectiveTime;
-  
+
   /** The user name. */
   private String userName;
 
@@ -66,21 +65,41 @@ public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
 
   /* see superclass */
   @Override
+  public void checkPreconditions() throws Exception {
+
+    // check refset release has not begun
+    ReleaseInfoList releaseInfoList =
+        findRefsetReleasesForQuery(refset.getId(), null, null);
+    if (releaseInfoList.getCount() != 0) {
+      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      if (releaseInfo != null && releaseInfo.isPublished())
+        throw new Exception("refset release is already in progress "
+            + refset.getId());
+    }
+  }
+
+  /* see superclass */
+  @Override
   public void compute() throws Exception {
+    // Create and add a release info
     releaseInfo = new ReleaseInfoJpa();
     String name = ConfigUtility.DATE_FORMAT.format(effectiveTime);
     releaseInfo.setName(name);
     releaseInfo.setRefset(refset);
     releaseInfo.setDescription("Description of release info " + name);
     releaseInfo.setEffectiveTime(effectiveTime);
-    releaseInfo.setLastModified(new Date());
     releaseInfo.setLastModifiedBy(userName);
     releaseInfo.setReleaseBeginDate(new Date());
     releaseInfo.setTerminology(refset.getTerminology());
     releaseInfo.setVersion(refset.getVersion());
     releaseInfo.setPlanned(true);
     releaseInfo.setPublished(false);
-    releaseInfo = new ReleaseServiceJpa().addReleaseInfo(releaseInfo);
+    releaseInfo = addReleaseInfo(releaseInfo);
+
+    refset.setInPublicationProcess(true);
+    refset.setLastModifiedBy(userName);
+    updateRefset(refset);
+
   }
 
   /* see superclass */
@@ -154,15 +173,6 @@ public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
   }
 
   /**
-   * Gets the release info.
-   *
-   * @return the release info
-   */
-  public ReleaseInfo getReleaseInfo() {
-    return releaseInfo;
-  }
-
-  /**
    * Sets the user name.
    *
    * @param userName the new user name
@@ -179,4 +189,14 @@ public class BeginRefsetReleaseAlgorthm extends RootServiceJpa implements
   public void setRefset(Refset refset) {
     this.refset = refset;
   }
+
+  /**
+   * Returns the release info.
+   *
+   * @return the release info
+   */
+  public ReleaseInfo getReleaseInfo() {
+    return releaseInfo;
+  }
+
 }

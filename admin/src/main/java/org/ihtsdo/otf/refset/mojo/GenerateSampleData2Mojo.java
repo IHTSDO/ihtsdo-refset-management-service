@@ -499,12 +499,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Add an inclusion for
       // "105058003 | Amdinocillin measurement (procedure) |"
       new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
-          "105058003", reviewer3.getAuthToken());
+          "105058003", null, false, true, reviewer3.getAuthToken());
 
       // Add an exclusion for
       // "313948006 | Serum ampicillin measurement (procedure) |"
       new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
-          "313948006", reviewer3.getAuthToken());
+          "313948006", null, false, true, reviewer3.getAuthToken());
 
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
@@ -667,7 +667,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     byte[] data = Files.readAllBytes(path);
     artifact.setData(data);
 
-    releaseInfo.addArtifact(artifact);
+    releaseInfo.getArtifacts().add(artifact);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
     artifact = service.addReleaseArtifact(artifact);
@@ -709,6 +709,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
+    refset.setInPublicationProcess(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
@@ -868,7 +869,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setDescription("Description of translation "
         + translation.getName());
     translation.setActive(true);
-    translation.setEffectiveTime(new Date());
+    translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
     translation.setLanguage("es");
     translation.setModuleId(refset.getModuleId());

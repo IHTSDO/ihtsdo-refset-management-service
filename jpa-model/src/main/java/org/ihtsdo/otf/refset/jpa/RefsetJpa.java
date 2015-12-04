@@ -37,6 +37,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -52,11 +53,17 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * JPA enabled implementation of {@link Refset}.
+ * JPA enabled implementation of {@link Refset}. This object extends
+ * {@link AbstractComponent} and uses effectiveTime in a special way. For
+ * refsets that are being edited the effectiveTime will always be null. During
+ * the release process, the effectiveTime is set when the staging of PREVIEW
+ * begins. Thus the unique key below works to allow multiple releases and an
+ * editing copy of the same refset with the same terminologyId to simultaneously
+ * exist.
  */
 @Entity
 @Table(name = "refsets", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "project_id", "provisional"
+    "terminologyId", "project_id", "provisional", "effectiveTime"
 }))
 @Audited
 @Indexed
@@ -106,6 +113,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean forTranslation;
 
+  /**  The in publication process. */
+  @Column(nullable = false)
+  private boolean inPublicationProcess;
+  
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
@@ -118,7 +129,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The workflow path. */
   @Column(nullable = false)
   private String workflowPath;
-  
+
   /** The namespace. */
   @Column(nullable = true)
   private String namespace;
@@ -158,6 +169,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Enumerated(EnumType.STRING)
   private Set<Refset.FeedbackEvent> enabledFeedbackEvents;
 
+  /** The notes. */
+  @OneToMany(mappedBy = "refset", targetEntity = RefsetNoteJpa.class)
+  // @IndexedEmbedded - n/a
+  private List<Note> notes = new ArrayList<>();
+
   /**
    * Instantiates an empty {@link RefsetJpa}.
    */
@@ -183,13 +199,17 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     namespace = refset.getNamespace();
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
+    inPublicationProcess = refset.isInPublicationProcess();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
     for (Translation translation : refset.getTranslations()) {
-      addTranslation(new TranslationJpa(translation));
+      getTranslations().add(new TranslationJpa(translation));
+    }
+    for (Note note : refset.getNotes()) {
+      getNotes().add(new RefsetNoteJpa((RefsetNoteJpa) note));
     }
     // make sure translations is not null
     getTranslations();
@@ -234,13 +254,13 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String getNamespace() {
     return namespace;
   }
-  
+
   /* see superclass */
   @Override
   public void setNamespace(String namespace) {
     this.namespace = namespace;
   }
-  
+
   /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
@@ -381,6 +401,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setForTranslation(boolean forTranslation) {
     this.forTranslation = forTranslation;
   }
+  
+  /* see superclass */
+  @Override
+  public boolean isInPublicationProcess() {
+    return inPublicationProcess;
+  }
+
+  /* see superclass */
+  @Override
+  public void setInPublicationProcess(boolean inPublicationProcess) {
+    this.inPublicationProcess = inPublicationProcess;
+  }  
 
   /* see superclass */
   @Override
@@ -411,21 +443,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @XmlElement(type = RefsetNoteJpa.class)
   @Override
-  public void addTranslation(Translation translation) {
-    if (translations == null) {
-      translations = new ArrayList<Translation>();
+  public List<Note> getNotes() {
+    if (notes == null) {
+      notes = new ArrayList<Note>();
     }
-    translations.add(translation);
+    return notes;
   }
 
   /* see superclass */
   @Override
-  public void removeTranslation(Translation translation) {
-    if (translations != null) {
-      translations.remove(translation);
-    }
-
+  public void setNotes(List<Note> notes) {
+    this.notes = notes;
   }
 
   /* see superclass */
@@ -556,7 +586,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     // When creating refset member project is null; only have projectId
     if (getProject() == null)
       return new HashMap<>();
-    else 
+    else
       return getProject().getUserRoleMap();
   }
 
@@ -575,6 +605,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         prime * result
             + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
     result = prime * result + (forTranslation ? 1231 : 1237);
+    result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
@@ -614,6 +645,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     } else if (!externalUrl.equals(other.externalUrl))
       return false;
     if (forTranslation != other.forTranslation)
+      return false;
+    if (inPublicationProcess != other.inPublicationProcess)
       return false;
     if (feedbackEmail == null) {
       if (other.feedbackEmail != null)
@@ -656,7 +689,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", forTranslation=" + forTranslation + ", workflowStatus="
         + workflowStatus + ", workflowPath=" + workflowPath + ", namespace=" + namespace
         + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
-        + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + "]";
+        + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + ", inPublicationProcess="
+        + inPublicationProcess + "]";
   }
 
 }

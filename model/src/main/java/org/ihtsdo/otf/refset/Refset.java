@@ -47,12 +47,11 @@ public interface Refset extends Component, Searchable {
     /** The inactive member. */
     INACTIVE_MEMBER,
     /** The inactive inclusion. */
-    INACTIVE_INCLUSION,   
-    /**  The inclusion staged. */
-    INCLUSION_STAGED,   
-    /**  The exclusion staged. */
-    EXCLUSION_STAGED
-    ;
+    INACTIVE_INCLUSION,
+    /** The inclusion staged. */
+    INCLUSION_STAGED,
+    /** The exclusion staged. */
+    EXCLUSION_STAGED;
   }
 
   /**
@@ -77,7 +76,10 @@ public interface Refset extends Component, Searchable {
     /** The exnclusion add. */
     EXCLUSION_ADD,
     /** The exnclusion remove. */
-    EXCLUSION_REMOVE;
+    EXCLUSION_REMOVE,
+
+    /** The workflow action. */
+    WORKFLOW_ACTION;
   }
 
   /**
@@ -264,18 +266,18 @@ public interface Refset extends Component, Searchable {
   public void setTranslations(List<Translation> translations);
 
   /**
-   * Adds the translation.
+   * Returns the notes.
    *
-   * @param translation the translation
+   * @return the notes
    */
-  public void addTranslation(Translation translation);
+  public List<Note> getNotes();
 
   /**
-   * Removes the translation.
+   * Sets the notes.
    *
-   * @param translation the translation
+   * @param notes the notes
    */
-  public void removeTranslation(Translation translation);
+  public void setNotes(List<Note> notes);
 
   /**
    * Returns the project.
@@ -381,5 +383,19 @@ public interface Refset extends Component, Searchable {
    * @param namespace the namespace
    */
   public void setNamespace(String namespace);
+
+  /**
+   * Indicates whether or not in publication process is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isInPublicationProcess();
+
+  /**
+   * Sets the in publication process.
+   *
+   * @param inPublicationProcess the in publication process
+   */
+  public void setInPublicationProcess(boolean inPublicationProcess);
 
 }

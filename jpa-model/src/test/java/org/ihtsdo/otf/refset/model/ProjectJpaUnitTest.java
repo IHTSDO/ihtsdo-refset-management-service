@@ -72,6 +72,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("name");
     tester.include("namespace");
+    tester.include("moduleId");
     tester.include("organization");
     tester.include("description");
     tester.include("terminology");
@@ -148,6 +149,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
     tester.include("namespace");
+    tester.include("moduleId");
     tester.include("organizationSort");
     tester.include("id");
     tester.include("lastModified");
