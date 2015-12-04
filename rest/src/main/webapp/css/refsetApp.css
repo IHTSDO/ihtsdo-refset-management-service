@@ -105,6 +105,7 @@ a:hover {
 /* TODO: renaming this table-small-font breaks all the other table styling */
 .table {
 	font-size: 12px;
+	margin-bottom: 0px;
 }
 
 /* Shades the background of the selected project cell */
