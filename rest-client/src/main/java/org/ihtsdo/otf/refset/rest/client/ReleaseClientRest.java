@@ -194,8 +194,8 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public Translation finishTranslationRelease(Long translationId, String authToken)
-    throws Exception {
+  public Translation finishTranslationRelease(Long translationId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Client - finish translation release");
     validateNotEmpty(translationId, "translationId");
@@ -221,6 +221,7 @@ public class ReleaseClientRest extends RootClientRest implements
     // converting to object
     return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
         TranslationJpa.class);
+
   }
 
   @Override
