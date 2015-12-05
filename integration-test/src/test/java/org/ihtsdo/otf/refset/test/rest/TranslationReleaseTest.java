@@ -381,6 +381,7 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
+    @SuppressWarnings("unused")
     Translation stagedTranslation =
         releaseService.previewTranslationRelease(translation1.getId(),
             "DEFAULT", adminAuthToken);

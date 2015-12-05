@@ -315,7 +315,7 @@ public interface RefsetService extends ReleaseService {
    * @return the current release info for refset
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+  public ReleaseInfo getCurrentRefsetReleaseInfo(String terminologyId,
     Long projectId) throws Exception;
 
   /**

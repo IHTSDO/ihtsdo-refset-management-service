@@ -207,7 +207,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "&offset=" + localPfs.getStartIndex() + "&expand=pt()");
     Response response =
-        target.request(accept).header("Authorization", authHeader).get();
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -289,9 +290,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
           client.target(url + "/" + branch + "/" + version + "/concepts?escg="
               + URLEncoder.encode(expr, "UTF-8") + "&limit="
               + (total - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + localPfs.getStartIndex()));
+              + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
       response =
-          target.request(accept).header("Authorization", authHeader).get();
+          target.request(accept).header("Authorization", authHeader)
+              .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -574,10 +576,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target:" + url + "browser/" + branch + "/" + version
-        + "/descriptions?query="
-        + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20") + "&offset="
-        + pfs.getStartIndex() + "&limit=" + pfs.getMaxResults());
     WebTarget target =
         client.target(url + "browser/" + branch + "/" + version
             + "/descriptions?query="
@@ -648,8 +646,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target: " + url + "browser/" + branch + "/concepts/"
-        + terminologyId + "/parents");
     WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId + "/parents");
@@ -712,8 +708,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
-    System.out.println("target: " + url + "browser/" + branch + "/" + version
-        + "/concepts/" + terminologyId + "/children");
     WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId + "/children");
