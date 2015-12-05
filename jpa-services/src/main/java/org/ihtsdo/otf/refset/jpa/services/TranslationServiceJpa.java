@@ -932,7 +932,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /* see superclass */
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
     Long projectId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - get current release info for translation"
@@ -954,7 +954,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     });
     // Find the max one that is published and not planned
     for (ReleaseInfo info : results) {
-      if (info.isPublished() && !info.isPlanned()) {
+      if (!info.isPlanned()) {
         return info;
       }
     }

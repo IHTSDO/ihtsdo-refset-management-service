@@ -467,6 +467,6 @@ public interface TranslationService extends RefsetService {
    * @return the current release info for translation
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(String terminologyId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
     Long projectId) throws Exception;
 }

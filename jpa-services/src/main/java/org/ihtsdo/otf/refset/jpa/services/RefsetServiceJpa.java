@@ -771,7 +771,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   /* see superclass */
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForRefset(String terminologyId,
+  public ReleaseInfo getCurrentRefsetReleaseInfo(String terminologyId,
     Long projectId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - get current release info for refset" + terminologyId
@@ -793,7 +793,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     });
     // Find the max one that is published and not planned
     for (ReleaseInfo info : results) {
-      if (info.isPublished() && !info.isPlanned()) {
+      if (!info.isPlanned()) {
         return info;
       }
     }

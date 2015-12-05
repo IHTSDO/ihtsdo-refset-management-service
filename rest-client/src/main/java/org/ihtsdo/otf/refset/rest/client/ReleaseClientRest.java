@@ -282,7 +282,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId,
+  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
@@ -296,7 +296,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationtId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(Long translationtId,
     String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
