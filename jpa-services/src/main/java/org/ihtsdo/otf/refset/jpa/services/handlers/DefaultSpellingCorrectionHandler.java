@@ -249,4 +249,38 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
         new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
     ptDict = new PlainTextDictionary(is);
   }
+
+  
+  
+  
+  
+  @Override
+  public InputStream exportEntries(Long translationId, List<String> entries) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public List<String> importEntries(InputStream is) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public void clearEntries() {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void addEntry(String entry) {
+    // TODO Auto-generated method stub
+    
+  }
+
+  @Override
+  public void removeEntry(String entry) {
+    // TODO Auto-generated method stub
+    
+  }
 }

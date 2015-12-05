@@ -153,4 +153,15 @@ public interface SpellingCorrectionHandler extends Configurable {
    * @throws Exception the exception
    */
   boolean exists(String term) throws Exception;
+
+  public InputStream exportEntries(Long translationId, List<String> entries);
+
+  public List<String> importEntries(InputStream is);
+
+  public void clearEntries();
+
+  public void addEntry(String entry);
+
+  public void removeEntry(String entry);
+
 }

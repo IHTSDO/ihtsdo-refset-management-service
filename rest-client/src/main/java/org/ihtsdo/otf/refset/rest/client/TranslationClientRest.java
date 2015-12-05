@@ -541,18 +541,23 @@ public class TranslationClientRest extends RootClientRest implements
 
     URI uri = target.getUri();
 
-    /*
-     * System.out.println("bbb-5 with WebTarget:  " + uri.getHost() +
-     * uri.getPath() + uri.getQuery());
-     */Response response =
+    
+    System.out.println("AAA-1 with WebTarget:  " + uri.getHost() +
+    uri.getPath() + uri.getQuery());
+
+    Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+     System.out.println("AAA-2");
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      System.out.println("AAA-Success");
       // n/a
     } else {
+      System.out.println("AAA-Fail");
       throw new Exception(response.toString());
     }
+    System.out.println("AAA-Out");
   }
 
   @Override
@@ -750,8 +755,17 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(is.toString(), "in");
 
-    Client client = ClientBuilder.newClient();
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", is, "filename.dat",
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
 
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
+    
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/translation/spelling/import" + "?translationId="
@@ -759,7 +773,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken)
+            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a

@@ -712,6 +712,57 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    this.exportSpellingDictionary = function(translationId, extension) {
+      console.debug("exportSpellingDictionary");
+      gpService.increment()
+      $http.get(refsetUrl + "spelling/export??translationId=" + translationId)
+        .then(
+        // Success
+        function(response) {
+          var blob = new Blob([ response.data ], {
+            type : ""
+          });
+
+          // fake a file URL and download it
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = "_blank";
+          a.download = "spelling." + terminologyId + "." + extension;
+          document.body.appendChild(a);
+          gpService.decrement();
+          a.click();
+
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+        });
+    };
+
+
+    // Begin import spelling Dictionary - if validation is result, OK to proceed.
+    this.importSpellingDictionary = function(translationId, is) {
+      console.debug("import spelling dictionary");
+      var deferred = $q.defer();
+      gpService.increment()
+      $http.get(refsetUrl + "spelling/import?translationId=" + translationId + "&is=" + is).then(
+      // success
+      function(response) {
+        console.debug("  validation result = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // end    
 
   } ]);

@@ -1063,6 +1063,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
+    System.out.println("BBB-1");
+
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Spelling Entry): /spelling/add/" + translationId
             + " " + entry);
@@ -1078,14 +1080,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
+      System.out.println("BBB-2");
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "add spelling dictionary entry",
           UserRole.AUTHOR);
-      System.out.println("ccc-6");
+
+      System.out.println("BBB-3");
+
+      translation.getSpellingDictionary().addEntry(entry);
+      
+      System.out.println("BBB-4");
 
       SpellingCorrectionHandler handler;
       if (!spellingHandlerMap.containsKey(translationId)) {
+        System.out.println("BBB-5");
+        
         String key = "spelling.handler";
         String handlerName = ConfigUtility.config.getProperty(key);
 
@@ -1093,30 +1104,25 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, SpellingCorrectionHandler.class);
         handler.setTranslationId(translationId);
-        handler.addEntries(translation.getSpellingDictionary().getEntries());
 
         spellingHandlerMap.put(translationId, handler);
       } else {
+        System.out.println("BBB-6");
         handler = spellingHandlerMap.get(translationId);
       }
 
-      List<String> entries = new ArrayList<String>();
-      entries.add(entry);
-      translation.getSpellingDictionary().addEntry(entry);
-      handler.addEntries(entries);
+      System.out.println("BBB-7");
+      handler.addEntry(entry);
 
-      /*
-       * SpellingDictionary spelling = translation.getSpellingDictionary();
-       * spelling.addEntry(entry); // Create service and configure transaction
-       * scope translationService.updateSpellingDictionary(spelling); // TODO:
-       * May need to reindex
-       */
+      System.out.println("BBB-Success");
     } catch (Exception e) {
+      System.out.println("BBB-FAIL");
       handleException(e, "trying to add a spelling entry");
     } finally {
       translationService.close();
       securityService.close();
     }
+    System.out.println("BBB-8");
   }
 
   /* see superclass */
@@ -1150,18 +1156,24 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove spelling dictionary entry",
           UserRole.AUTHOR);
 
-      // Get Spelling Handler
-      SpellingCorrectionHandler handler = spellingHandlerMap.get(translationId);
+      translation.getSpellingDictionary().removeEntry(entry);
+      
+      SpellingCorrectionHandler handler;
+      if (!spellingHandlerMap.containsKey(translationId)) {
+        String key = "spelling.handler";
+        String handlerName = ConfigUtility.config.getProperty(key);
 
-      if (handler == null) {
-        handler = new DefaultSpellingCorrectionHandler();
+        handler =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, SpellingCorrectionHandler.class);
         handler.setTranslationId(translationId);
+
         spellingHandlerMap.put(translationId, handler);
+      } else {
+        handler = spellingHandlerMap.get(translationId);
       }
 
-      List<String> entries = new ArrayList<String>();
-      entries.add(entry);
-      handler.removeEntries(entries);
+      handler.removeEntry(entry);
 
       /*
        * SpellingDictionary spelling = translation.getSpellingDictionary(); if
@@ -1213,6 +1225,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         spelling.setEntries(new ArrayList<String>());
         // Create service and configure transaction scope
         translationService.updateSpellingDictionary(spelling);
+
+        SpellingCorrectionHandler handler;
+        if (!spellingHandlerMap.containsKey(translationId)) {
+          String key = "spelling.handler";
+          String handlerName = ConfigUtility.config.getProperty(key);
+
+          handler =
+              ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                  handlerName, SpellingCorrectionHandler.class);
+          handler.setTranslationId(translationId);
+          handler.addEntries(translation.getSpellingDictionary().getEntries());
+
+          spellingHandlerMap.put(translationId, handler);
+        } else {
+          handler = spellingHandlerMap.get(translationId);
+        }
+        handler.clearEntries();
       }
     } catch (Exception e) {
       handleException(e, "trying to remove all spelling dictionary entries");
@@ -1458,7 +1487,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
           authorizeProject(translationService,
               translation.getProject().getId(), securityService, authToken,
               "import spelling entries", UserRole.AUTHOR);
@@ -1477,8 +1505,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         spellingHandlerMap.put(translationId, handler);
       }
 
-      // update handler without append
-      handler.updateDictionaryFromStream(is, false);
+      translation.getSpellingDictionary().setEntries(
+            handler.importEntries(is));
     } catch (Exception e) {
       handleException(e, "trying to import spelling entries");
     } finally {
@@ -1513,7 +1541,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
           authorizeProject(translationService,
               translation.getProject().getId(), securityService, authToken,
               "export spelling entries", UserRole.VIEWER);
@@ -1527,8 +1554,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         spellingHandlerMap.put(translationId, handler);
       }
 
-      // Return the dictionary's contents
-      return handler.getEntriesAsStream();
+      // Return the dictionary's contents as InputStream
+      return handler
+          .exportEntries(
+              translationId,
+              translation.getSpellingDictionary().getEntries());
+
+
     } catch (Exception e) {
       handleException(e, "trying to export spelling entries");
     } finally {
@@ -1602,6 +1634,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       } else {
         handler = spellingHandlerMap.get(translationId);
       }
+      
       List<String> results = handler.suggestSpelling(entry, 10);
 
       StringList retStrList = new StringList();

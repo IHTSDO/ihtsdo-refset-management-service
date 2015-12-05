@@ -295,12 +295,55 @@ public class SpellingCorrectionRestTest {
     return translation;
   }
 
+  @Test
+  public void testSpellingAdd() throws Exception {
+    System.out.println("YYY-01");
+
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+    System.out.println("YYY-02");
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    System.out.println("YYY-03");
+
+    // Create refset #1 (intensional) and import definition
+    // RefsetJpa refset1 =
+    // makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+    // .randomUUID().toString(), admin);
+    // TranslationJpa translation1 =
+    // makeTranslation("translation1", refset1, project2, admin);
+    //
+    // Obtain a translation
+    Long tid = new Long(5901);
+
+    System.out.println("YYY-1");
+
+    translationService.clearSpellingDictionary(tid, adminAuthToken);
+
+    System.out.println("YYY-2");
+
+    // Add a couple of entries.
+    translationService.addSpellingDictionaryEntry(tid, "Word3", adminAuthToken);
+
+    System.out.println("YYY-3");
+
+    translationService.addSpellingDictionaryEntry(tid, "Word4", adminAuthToken);
+
+    System.out.println("YYY-4");
+
+    translationService.addSpellingDictionaryEntry(tid, "Word5", adminAuthToken);
+
+    System.out.println("YYY-5");
+
+
+    // clean up
+    translationService.removeTranslation(tid, adminAuthToken);
+  }
+    
   /**
    * Test translation release including begin and cancel.
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testSpelling() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
