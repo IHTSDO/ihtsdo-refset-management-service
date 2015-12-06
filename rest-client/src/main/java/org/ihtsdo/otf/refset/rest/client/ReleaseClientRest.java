@@ -284,8 +284,27 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - get current release info for refset");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/refset/info"
+            + "?refsetId=" + refsetId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ReleaseInfoJpa) ConfigUtility.getGraphForString(resultString,
+        ReleaseInfoJpa.class);
   }
 
   @Override
@@ -296,10 +315,29 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationtId,
+  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug("Release Client - get current release info for translation");
+    validateNotEmpty(translationId, "translationtd");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/translation/info"
+            + "?translationId=" + translationId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+    return (ReleaseInfoJpa) ConfigUtility.getGraphForString(resultString,
+        ReleaseInfoJpa.class);
   }
 
   @Override
@@ -391,5 +429,27 @@ public class ReleaseClientRest extends RootClientRest implements
   public Refset resumeRelease(Long refsetId, String authToken) throws Exception {
     // TODO Auto-generated method stub
     return null;
+  }
+
+  @Override
+  public void removeReleaseInfo(Long releaseInfoId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove release info " + releaseInfoId);
+    validateNotEmpty(releaseInfoId, "releaseInfoId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/release/remove/"
+            + releaseInfoId );
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
   }
 }

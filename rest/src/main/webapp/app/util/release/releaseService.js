@@ -140,8 +140,8 @@ tsApp.service('releaseService', [
     }
 
     // Retrieves current refset release
-    this.getCurrentReleaseInfoForRefset = function(refsetId) {
-      console.debug("getCurrentReleaseInfoForRefset");
+    this.getCurrentRefsetReleaseInfo = function(refsetId) {
+      console.debug("getCurrentRefsetReleaseInfo");
       var deferred = $q.defer();
 
       gpService.increment()
@@ -162,8 +162,8 @@ tsApp.service('releaseService', [
     }
 
     // Retrieves current translation release info
-    this.getCurrentReleaseInfoForTranslation = function(translationId) {
-      console.debug("getCurrentReleaseInfoForTranslation");
+    this.getCurrentTranslationReleaseInfo = function(translationId) {
+      console.debug("getCurrentTranslationReleaseInfo");
       var deferred = $q.defer();
 
       gpService.increment()

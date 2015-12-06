@@ -111,6 +111,7 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
     InputStream inputStream =
         handler.exportConcepts(translation, translation.getConcepts());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
+    artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
     artifact.setName(handler.getFileName(translation.getProject()
         .getNamespace(), "Snapshot", releaseInfo.getName()));
@@ -121,7 +122,7 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
 
     // Generate the delta release artifact and add it
     releaseInfo =
-        getCurrentReleaseInfoForTranslation(translation.getTerminologyId(),
+        getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
             translation.getProject().getId());
     if (releaseInfo != null) {
       Set<Concept> delta =
@@ -142,6 +143,8 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
       inputStream =
           handler.exportConcepts(stagedTranslation, Lists.newArrayList(delta));
       artifact = new ReleaseArtifactJpa();
+      artifact.setReleaseInfo(stageReleaseInfo);
+      
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getFileName(translation.getProject()
           .getNamespace(), "Snapshot", releaseInfo.getName()));
@@ -158,7 +161,8 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
     stagedTranslation.setLastModifiedBy(userName);
     updateTranslation(stagedTranslation);
 
-    // Add the staged release info
+    // Add the staged release info - not published, not planned
+    stageReleaseInfo.setPlanned(false);
     addReleaseInfo(stageReleaseInfo);
   }
 

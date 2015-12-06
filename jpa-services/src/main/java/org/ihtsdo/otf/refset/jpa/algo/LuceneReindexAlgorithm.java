@@ -13,6 +13,7 @@ import org.hibernate.CacheMode;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -94,6 +95,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
 
       objectsToReindex.add("ConceptJpa");
       objectsToReindex.add("ProjectJpa");
+      objectsToReindex.add("PhraseMemoryJpa");
       objectsToReindex.add("ReleaseInfoJpa");
       objectsToReindex.add("RefsetJpa");
       objectsToReindex.add("TranslationJpa");
@@ -131,6 +133,17 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
           .threadsToLoadObjects(4).startAndWait();
 
       objectsToReindex.remove("ProjectJpa");
+    }
+
+    if (objectsToReindex.contains("PhraseMemoryJpa")) {
+      Logger.getLogger(getClass()).info("  Creating indexes for PhraseMemoryJpa");
+      fullTextEntityManager.purgeAll(PhraseMemoryJpa.class);
+      fullTextEntityManager.flushToIndexes();
+      fullTextEntityManager.createIndexer(PhraseMemoryJpa.class)
+          .batchSizeToLoadObjects(100).cacheMode(CacheMode.NORMAL)
+          .threadsToLoadObjects(4).startAndWait();
+
+      objectsToReindex.remove("PhraseMemoryJpa");
     }
 
     if (objectsToReindex.contains("ReleaseInfoJpa")) {
@@ -231,6 +244,7 @@ public class LuceneReindexAlgorithm extends RootServiceJpa implements Algorithm 
    */
   private void clearLuceneIndexes() throws Exception {
     fullTextEntityManager.purgeAll(ProjectJpa.class);
+    fullTextEntityManager.purgeAll(PhraseMemoryJpa.class);
     fullTextEntityManager.purgeAll(ReleaseInfoJpa.class);
     fullTextEntityManager.purgeAll(TranslationJpa.class);
     fullTextEntityManager.purgeAll(RefsetJpa.class);

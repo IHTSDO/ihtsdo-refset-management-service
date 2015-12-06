@@ -707,7 +707,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/refset/info")
   @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForRefset(
+  public ReleaseInfo getCurrentRefsetReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -727,7 +727,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "get current refset release info", UserRole.VIEWER);
 
       ReleaseInfo info =
-          refsetService.getCurrentReleaseInfoForRefset(
+          refsetService.getCurrentRefsetReleaseInfo(
               refset.getTerminologyId(), refset.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();
@@ -747,7 +747,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/translation/info")
   @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(
+  public ReleaseInfo getCurrentTranslationReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -767,7 +767,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfo info =
-          translationService.getCurrentReleaseInfoForTranslation(
+          translationService.getCurrentTranslationReleaseInfo(
               translation.getTerminologyId(), translation.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();
@@ -827,6 +827,47 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @Override
+  @DELETE
+  @Path("/remove/{releaseInfoId}")
+  @ApiOperation(value = "Remove release info", notes = "Removes the release info with the specified id")
+  public void removeReleaseInfo(
+    @ApiParam(value = "Release Info id, e.g. 3", required = true) @PathParam("releaseInfoId") Long releaseInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Release): /remove/" + releaseInfoId);
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      ReleaseInfo releaseInfo = releaseService.getReleaseInfo(releaseInfoId);
+
+      if (releaseInfo == null) {
+        throw new Exception("ReleaseInfo does not exist");
+      }
+
+      Project project = null;
+      if (releaseInfo.getRefset() != null) {
+        project = releaseInfo.getRefset().getProject();
+      } else {
+        project = releaseInfo.getTranslation().getProject();
+
+      }
+      authorizeProject(releaseService, project.getId(), securityService,
+          authToken, "remove release artifact", UserRole.AUTHOR);
+
+      // remove release
+      releaseService.removeReleaseInfo(releaseInfoId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a release info");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+
+  }
+  
   @Override
   @DELETE
   @Path("/remove/artifact/{artifactId}")

@@ -28,6 +28,7 @@
     <deploy.footer.copyright>(c) Copyright IHTSDO 2015</deploy.footer.copyright>
     <deploy.presented.by></deploy.presented.by>
     <base.url>http://localhost:8080</base.url>
+    <logout.url>http://localhost:8080/refset-rest/index.html</logout.url>
   </properties>
 
   <dependencies>

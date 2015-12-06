@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
@@ -381,8 +382,7 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    Translation stagedTranslation =
-        releaseService.previewTranslationRelease(translation1.getId(),
+    releaseService.previewTranslationRelease(translation1.getId(),
             "DEFAULT", adminAuthToken);
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(),
@@ -397,7 +397,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -424,6 +424,8 @@ public class TranslationReleaseTest {
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
+    ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation.getId(), adminAuthToken);
+    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     translationService.removeTranslation(stagedTranslation.getId(),
         adminAuthToken);
@@ -455,7 +457,7 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
@@ -485,14 +487,20 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+    Translation stagedTranslation2 = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
+    ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation.getId(), adminAuthToken);
+    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
+    releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation2.getId(), adminAuthToken);
+    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    // refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
   /**
