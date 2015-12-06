@@ -113,20 +113,21 @@ public class PerformRefsetPreviewAlgorithm extends RefsetServiceJpa implements
     ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
     InputStream inputStream =
         handler.exportMembers(refset, refset.getMembers());
-    ReleaseArtifactJpa releaseArtifact = new ReleaseArtifactJpa();
-    releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
-    releaseArtifact.setName(handler.getFileName(refset.getProject()
-        .getNamespace(), "Snapshot", releaseInfo.getName()));
-    releaseArtifact.setTimestamp(new Date());
-    releaseArtifact.setLastModified(new Date());
-    releaseArtifact.setLastModifiedBy(userName);
+    ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
+    artifact.setReleaseInfo(stageReleaseInfo);
+    artifact.setData(ByteStreams.toByteArray(inputStream));
+    artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
+        "Snapshot", releaseInfo.getName()));
+    artifact.setTimestamp(new Date());
+    artifact.setLastModified(new Date());
+    artifact.setLastModifiedBy(userName);
 
     // Add it to the staged release info
-    stageReleaseInfo.getArtifacts().add(releaseArtifact);
+    stageReleaseInfo.getArtifacts().add(artifact);
 
     // Generate the delta release artifact and add it
     releaseInfo =
-        getCurrentReleaseInfoForRefset(refset.getTerminologyId(), refset
+        getCurrentRefsetReleaseInfo(refset.getTerminologyId(), refset
             .getProject().getId());
     if (releaseInfo != null) {
       Set<ConceptRefsetMember> delta =
@@ -146,16 +147,17 @@ public class PerformRefsetPreviewAlgorithm extends RefsetServiceJpa implements
       delta.addAll(newMembers);
       inputStream =
           handler.exportMembers(stagedRefset, Lists.newArrayList(delta));
-      releaseArtifact = new ReleaseArtifactJpa();
-      releaseArtifact.setData(ByteStreams.toByteArray(inputStream));
-      releaseArtifact.setName(handler.getFileName(refset.getProject()
-          .getNamespace(), "Delta", releaseInfo.getName()));
-      releaseArtifact.setTimestamp(new Date());
-      releaseArtifact.setLastModified(new Date());
-      releaseArtifact.setLastModifiedBy(userName);
+      artifact = new ReleaseArtifactJpa();
+      artifact.setReleaseInfo(stageReleaseInfo);
+      artifact.setData(ByteStreams.toByteArray(inputStream));
+      artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
+          "Delta", releaseInfo.getName()));
+      artifact.setTimestamp(new Date());
+      artifact.setLastModified(new Date());
+      artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info
-      stageReleaseInfo.getArtifacts().add(releaseArtifact);
+      stageReleaseInfo.getArtifacts().add(artifact);
     }
 
     // Set aspects of staged refset
@@ -167,6 +169,9 @@ public class PerformRefsetPreviewAlgorithm extends RefsetServiceJpa implements
     updateRefset(refset);
     stagedRefset.setLastModifiedBy(userName);
     updateRefset(stagedRefset);
+    
+    // not planned anymore, but also not published yet
+    stageReleaseInfo.setPlanned(false);
     addReleaseInfo(stageReleaseInfo);
   }
 

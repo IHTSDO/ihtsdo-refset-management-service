@@ -707,7 +707,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/refset/info")
   @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForRefset(
+  public ReleaseInfo getCurrentRefsetReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -727,7 +727,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "get current refset release info", UserRole.VIEWER);
 
       ReleaseInfo info =
-          refsetService.getCurrentReleaseInfoForRefset(
+          refsetService.getCurrentRefsetReleaseInfo(
               refset.getTerminologyId(), refset.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();
@@ -747,7 +747,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/translation/info")
   @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(
+  public ReleaseInfo getCurrentTranslationReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -767,7 +767,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfo info =
-          translationService.getCurrentReleaseInfoForTranslation(
+          translationService.getCurrentTranslationReleaseInfo(
               translation.getTerminologyId(), translation.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();

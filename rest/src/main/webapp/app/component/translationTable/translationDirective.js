@@ -180,14 +180,14 @@ tsApp.directive('translationTable', [
             if ($scope.selected.translation) {
               for (var i = 0; i < $scope.translations.length; i++) {
                 if ($scope.selected.translation.id == $scope.translations[i].id) {
+                  $scope.selectTranslation($scope.selected.translation);
                   found = true;
                   break;
                 }
               }
             }
             if (found) {
-              $scope.getConcepts($scope.selected.translation);
-            } else {
+
               $scope.selected.translation = null;
             }
           };

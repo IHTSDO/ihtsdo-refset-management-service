@@ -203,14 +203,13 @@ tsApp
                 if ($scope.selected.refset) {
                   for (var i = 0; i < $scope.refsets.length; i++) {
                     if ($scope.selected.refset.id == $scope.refsets[i].id) {
+                      $scope.selectRefset($scope.selected.resfet);
                       found = true;
                       break;
                     }
                   }
                 }
-                if (found) {
-                  $scope.getMembers($scope.selected.refset);
-                } else {
+                if (!found) {
                   $scope.selected.refset = null;
                 }
               };
@@ -247,7 +246,7 @@ tsApp
               // Get $scope.refsetReleaseInfo
               $scope.getCurrentRefsetReleaseInfo = function(refset) {
                 $scope.refsetReleaseInfo = null;
-                releaseService.getCurrentReleaseInfoForRefset(refset.id).then(function(data) {
+                releaseService.getCurrentRefsetReleaseInfo(refset.id).then(function(data) {
                   $scope.refsetReleaseInfo = data;
                 })
 
