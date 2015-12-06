@@ -212,6 +212,36 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @Override
   @GET
+  @Path("/member/{memberId}")
+  @ApiOperation(value = "Get refset for id", notes = "Gets the refset for the specified id", response = RefsetJpa.class)
+  public ConceptRefsetMember getMember(
+    @ApiParam(value = "Refset member internal id, e.g. 2", required = true) @PathParam("memberId") Long memberId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): get refset member for id, memberId:" + memberId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      ConceptRefsetMember member = refsetService.getMember(memberId);
+      if (member.getRefset().isPublic()) {
+        authorizeApp(securityService, authToken, "get refset for id",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, member.getRefset().getProject().getId(),
+            securityService, authToken, "get refset for id", UserRole.AUTHOR);
+      }
+      return member;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a refset member");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+  @Override
+  @GET
   @Path("/refsets/{projectid}")
   @ApiOperation(value = "Finds refsets for project", notes = "Finds refsets based on projectId", response = RefsetListJpa.class)
   public RefsetList getRefsetsForProject(
