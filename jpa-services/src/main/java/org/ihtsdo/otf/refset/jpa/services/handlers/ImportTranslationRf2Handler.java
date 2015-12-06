@@ -4,8 +4,6 @@
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,11 +14,9 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -30,7 +26,6 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
-import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
 /**
  * Implementation of an algorithm to import a refset definition.
@@ -70,40 +65,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     return "Import RF2";
   }
 
-  @Override
-  public List<MemoryEntry> importPhraseMemory(Translation translation,
-    InputStream content) throws Exception {
-    List<MemoryEntry> list = new ArrayList<>();
-    String line = "";
-    Reader reader = new InputStreamReader(content, "UTF-8");
-    PushBackReader pbr = new PushBackReader(reader);
-    while ((line = pbr.readLine()) != null) {
-
-      // Strip \r and split lines
-      line = line.replace("\r", "");
-      final String fields[] = line.split("\t");
-
-      // Check field lengths
-      if (fields.length != 2) {
-        pbr.close();
-        Logger.getLogger(getClass()).error("line = " + line);
-        throw new Exception(
-            "Unexpected field count in phrase memory file "
-                + fields.length);
-      }
-
-      // Instantiate and populate members
-      final MemoryEntry member = new MemoryEntryJpa();
-      member.setName(fields[0]);
-      member.setTranslatedName(fields[1]);
-      // Add member
-      list.add(member);
-      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
-    }
-    pbr.close();
-    return list;
-  }
-  
   /* see superclass */
   @SuppressWarnings("resource")
   @Override
