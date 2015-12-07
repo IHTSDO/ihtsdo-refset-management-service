@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -14,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -979,5 +981,63 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+  
+  /**
+   * Sends a feedback message email.
+   *
+   * @param message the message
+   * @param authToken the auth token
+   * @return the string
+   * @throws Exception the exception
+   */
+  @POST
+  @Path("/message")
+  @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
+  @Consumes({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  @Produces({
+      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
+  })
+  public Response sendFeedbackEmail(
+    @ApiParam(value = "message", required = true) List<String>  message,
+    @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    // log call
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /message ");
+    
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    // Test preconditions
+    if (refsetId == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    Refset refset = refsetService.getRefset(refsetId);
+    
+    try {
+      // authorize call
+      authorizeApp(securityService, authToken, "send feedback email",
+          UserRole.VIEWER);
+
+      Logger.getLogger(WorkflowServiceRest.class).info(
+          "RESTful call (Workflow): /message msg: "
+              + message + ", " + refset.getFeedbackEmail());
+
+      workflowService.sendFeedbackEmail(message, refset.getFeedbackEmail());
+
+      return null;
+
+    } catch (Exception e) {
+      handleException(e, "send a message email");
+      return null;
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
   }
 }

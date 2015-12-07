@@ -322,7 +322,7 @@ tsApp
                 }
                 refsetService.removeRefset(refset.id).then(function() {
                   $scope.selected.refset = null;
-                  refsetService.fireRefsetChanged();
+                  refsetService.fireRefsetChanged(refset);
                 });
 
               };
@@ -2057,6 +2057,104 @@ tsApp
 
               }
 
+              //
+              // Modals
+              //
+              
+              // Feedback modal
+              $scope.openFeedbackModal = function(lrefset) {
+                console.debug("feedbackModal ", lrefset);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/feedback.html',
+                  controller : FeedbackModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    refset : function() {
+                      return lrefset;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  refsetService.fireRefsetChanged(data);
+                });
+
+              };
+
+              // Feedback controller
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, refset) {
+                console.debug("Entered feedback modal control", refset);
+
+                $scope.errors = [];
+                $scope.refset = JSON.parse(JSON.stringify(refset));
+
+                $scope.sendFeedback = function(refset, feedbackMessage, name, email) {
+                  console.debug("submit feedback", refset.id);
+                  
+                  if (feedbackMessage == null || feedbackMessage == undefined
+                    || feedbackMessage === '') {
+                    window.alert("The feedback field cannot be blank. ");
+                    return;
+                  }
+
+                  if (name == null || name == undefined || name === ''
+                      || email == null || email == undefined || email === '') {
+                    window.alert("Name and email must be provided.");
+                    return;
+                  }
+
+                  if (!validateEmail(email)) {
+                    window.alert("Invalid email address provided.");
+                    return;
+                  }
+                  
+                  workflowService.sendFeedback(refset, feedbackMessage, name, email).then(
+                  // Success - add refset
+                  function(data) {
+                    var newRefset = data;
+                    
+                   
+                  },
+                  // Error - add refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                };
+
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+              
+                function validateEmail(email) {
+                  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                  return re.test(email);
+                }
+
+                $scope.tinymceOptions = {
+
+                  menubar : false,
+                  statusbar : false,
+                  plugins : "autolink autoresize link image charmap searchreplace lists paste",
+                  toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+
+                  setup : function(ed) {
+
+                    // added to fake two-way binding from the html
+                    // element
+                    // noteInput is not accessible from this javascript
+                    // for some reason
+                    ed.on('keyup', function(e) {
+                      $scope.tinymceContent = ed.getContent();
+                      $scope.$apply();
+                    });
+                  }
+                };
+              };
+              
             } ]
         }
       } ]);
