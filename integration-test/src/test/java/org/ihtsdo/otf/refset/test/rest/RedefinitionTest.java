@@ -290,6 +290,7 @@ public class RedefinitionTest {
     // exception
     ConceptRefsetMember bogusExclusion = new ConceptRefsetMemberJpa();
     bogusExclusion.setActive(true);
+    bogusExclusion.setConceptActive(true);
     bogusExclusion.setConceptId("9999999");
     bogusExclusion.setConceptName("bogus exclusion");
     bogusExclusion.setEffectiveTime(new Date());

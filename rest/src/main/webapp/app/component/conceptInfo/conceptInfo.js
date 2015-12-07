@@ -39,7 +39,7 @@ tsApp.directive('conceptInfo', [
             $scope.error = null;
             if ($scope.data.concept) {
               $scope.getConceptParents($scope.data.concept);
-              $scope.getConceptWithDescriptions($scope.data.concept);
+              $scope.getFullConcept($scope.data.concept);
               $scope.getConceptChildren($scope.data.concept);
             }
           });
@@ -52,6 +52,13 @@ tsApp.directive('conceptInfo', [
           // Clear error
           $scope.clearError = function() {
             $scope.error = null;
+          }
+          
+          // Force a change to $scope.data.concept to reload the data
+          $scope.getConceptById = function(terminologyId) {
+            var copy = JSON.parse(JSON.stringify($scope.data.concept));
+            copy.terminologyId = terminologyId
+            $scope.data.concept = copy;            
           }
           
           // get concept parents
@@ -95,9 +102,9 @@ tsApp.directive('conceptInfo', [
           };
 
           // get concept with descriptions
-          $scope.getConceptWithDescriptions = function(concept) {
+          $scope.getFullConcept = function(concept) {
             console.debug("Getting concept with descriptions", concept);
-            projectService.getConceptWithDescriptions(concept.terminologyId, concept.terminology,
+            projectService.getFullConcept(concept.terminologyId, concept.terminology,
               concept.version).then(
             // Success
             function(data) {

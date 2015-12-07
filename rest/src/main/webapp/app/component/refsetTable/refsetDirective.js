@@ -35,7 +35,8 @@ tsApp
               $scope.user = securityService.getUser();
               $scope.userProjectsInfo = projectService.getUserProjectsInfo();
               $scope.selected = {
-                refset : null
+                refset : null,
+                member : null
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
@@ -43,8 +44,7 @@ tsApp
               // TODO: consider whether refset.members should just be "members"
 
               // Page metadata
-              $scope.memberTypes = [ "Member", "Exclusion", "Inclusion", "Inactive Member",
-                "Inactive Inclusion" ];
+              $scope.memberTypes = [ "Member", "Exclusion", "Inclusion" ];
 
               // Used for project admin to know what users are assigned to something.
               $scope.refsetIdToAuthorsMap = {};
@@ -63,8 +63,8 @@ tsApp
                 page : 1,
                 filter : "",
                 typeFilter : "",
-                sortField : 'memberType',
-                ascending : null
+                sortField : 'lastModified',
+                ascending : false
               }
               $scope.paging["membersInCommon"] = {
                 page : 1,
@@ -110,7 +110,6 @@ tsApp
               // Set $scope.project and reload
               // $scope.refsets
               $scope.setProject = function(project) {
-                console.debug("setProject", $scope.projects.role, project);
                 $scope.project = project;
                 $scope.getRefsets();
                 // $scope.projects.role already updated
@@ -134,6 +133,7 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.reselect();
                     })
                 }
 
@@ -142,6 +142,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.reselect();
                   });
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'REVIEWER') {
@@ -149,6 +150,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.reselect();
                   })
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'ADMIN') {
@@ -156,6 +158,7 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.reselect();
                     })
                 }
                 if ($scope.value == 'ASSIGNED_ALL' && $scope.projects.role == 'ADMIN') {
@@ -174,6 +177,7 @@ tsApp
                             $scope.refsetIdToReviewersMap[data.refsetId] = data.reviewers;
                           });
                       }
+                      $scope.reselect();
                     })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
@@ -181,6 +185,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.reselect();
                   })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
@@ -188,6 +193,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.reselect();
                   })
                 }
                 if ($scope.value == 'RELEASE') {
@@ -195,15 +201,23 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.reselect();
                     })
                 }
+              };
 
+              // Reselect selected refset to refresh
+              $scope.reselect = function() {
+                // Bail if nothing selected
+                if (!$scope.selected.refset) {
+                  return;
+                }
                 // If $scope.selected.refset is in the list, select it, if not clear $scope.selected.refset
                 var found = false;
                 if ($scope.selected.refset) {
                   for (var i = 0; i < $scope.refsets.length; i++) {
                     if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                      $scope.selectRefset($scope.selected.resfet);
+                      $scope.selectRefset($scope.selected.refset);
                       found = true;
                       break;
                     }
@@ -212,8 +226,8 @@ tsApp
                 if (!found) {
                   $scope.selected.refset = null;
                 }
-              };
-
+              }
+              
               // Get $scope.members
               $scope.getMembers = function(refset) {
 
@@ -285,7 +299,6 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
-                console.debug("  selected.refset = ", refset);
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
               };
@@ -296,17 +309,12 @@ tsApp
                 // Look up details of member
               };
 
-              // Get whether it is EXCLUSION, INCLUSION, or MEMBER
-              $scope.getBaseMemberType = function(member) {
-                return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
-              }
-
               // Member type style
               $scope.getMemberStyle = function(member) {
                 if (member.memberType == 'MEMBER') {
                   return "";
                 }
-                return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
+                return member.memberType.replace('_STAGED', '');
               }
 
               // Remove a refset
@@ -1220,7 +1228,6 @@ tsApp
                 };
 
                 $scope.submitRefset = function(refset) {
-                  console.debug("Submitting edit refset", refset);
 
                   if (!refset || !refset.name || !refset.description) {
                     $scope.error = "The name, description, and terminology fields cannot be blank. ";
@@ -1259,6 +1266,7 @@ tsApp
                   templateUrl : 'app/component/refsetTable/addMember.html',
                   controller : AddMemberModalCtrl,
                   backdrop : 'static',
+                  size : 'lg',
                   resolve : {
                     member : function() {
                       return lmember;
@@ -1306,11 +1314,12 @@ tsApp
                 }
 
                 $scope.addMember = function(concept) {
-                  console.debug("add member", concept);
 
                   var member = {
+                    active : true,
                     conceptId : concept.terminologyId,
                     conceptName : concept.name,
+                    conceptActive : concept.active,
                     memberType : $scope.memberType,
                     terminology : refset.terminology,
                     version : refset.version,
@@ -1348,20 +1357,14 @@ tsApp
 
                 };
 
-                // Page search results
-                $scope.getPreviousPage = function() {
-                  $scope.paging['search'].page--;
-                  $scope.getSearchResults($scope.search);
-                }
-                $scope.getNextPage = function() {
-                  $scope.paging['search'].page++;
-                  $scope.getSearchResults($scope.search);
-                }
 
                 // get search results
-                $scope.getSearchResults = function(search) {
-                  console.debug("Getting search results", search);
+                $scope.getSearchResults = function(search, clearPaging) {
 
+                  if (clearPaging) {
+                    $scope.paging["search"].page = 1;
+                  }
+                  
                   if (!search) {
                     $scope.errors[0] = "The search field cannot be blank. ";
                     return;
@@ -1416,6 +1419,7 @@ tsApp
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/refactor.html',
                   controller : RefactorModalCtrl,
+                  backdrop : 'static',
                   size : 'lg',
                   resolve : {
 
@@ -1466,12 +1470,10 @@ tsApp
                   refsetService.resumeRedefinition($scope.refset.id).then(
                   // Success
                   function(data) {
-                    console.debug("stagedRefset", data);
                     $scope.stagedRefset = data;
                     refsetService.compareRefsets($scope.refset.id, data.id).then(
                     // Success
                     function(data) {
-                      console.debug("reportToken", data);
                       $scope.reportToken = data;
                       $scope.getDiffReport();
                     },
@@ -1490,12 +1492,10 @@ tsApp
                   refsetService.resumeMigration($scope.refset.id).then(
                   // Success
                   function(data) {
-                    console.debug("stagedRefset", data);
                     $scope.stagedRefset = data;
                     refsetService.compareRefsets($scope.refset.id, data.id).then(
                     // Success
                     function(data) {
-                      console.debug("reportToken", data);
                       $scope.reportToken = data;
                       $scope.getDiffReport();
                     },
@@ -1517,7 +1517,6 @@ tsApp
                   refsetService.getDiffReport($scope.reportToken).then(
                   // Success
                   function(data) {
-                    console.debug("diffReport", data);
                     $scope.diffReport = data;
                     $scope.validInclusions = data.validInclusions;
                     $scope.validExclusions = data.validExclusions;
@@ -1548,7 +1547,6 @@ tsApp
                   refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
                   // Success
                   function(data) {
-                    console.debug("oldRegularMembers", data);
                     $scope.oldRegularMembers = data.members;
                     $scope.oldRegularMembers.totalCount = data.totalCount;
                   },
@@ -1571,7 +1569,6 @@ tsApp
                   refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
                   // Success
                   function(data) {
-                    console.debug("newRegularMembers", data);
                     $scope.newRegularMembers = data.members;
                     $scope.newRegularMembers.totalCount = data.totalCount;
                   },
@@ -1594,7 +1591,6 @@ tsApp
                   refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(
                   // Succcess
                   function(data) {
-                    console.debug("membersInCommon", data);
                     $scope.membersInCommon = data.members;
                     $scope.membersInCommon.totalCount = data.totalCount;
                   },
@@ -1607,18 +1603,15 @@ tsApp
 
                 // Begin redefinition and compare refsets and get diff report
                 $scope.beginRedefinition = function(newDefinition) {
-                  console.debug("Begin redefinition", newDefinition);
 
                   refsetService.beginRedefinition(refset.id, newDefinition).then(
                   // Success
                   function(data) {
-                    console.debug("stagedRefset", data);
                     $scope.stagedRefset = data;
                     $scope.refset.stagingType = 'DEFINITION';
                     refsetService.compareRefsets(refset.id, data.id).then(
                     // Success
                     function(data) {
-                      console.debug("reportToken", data);
                       $scope.reportToken = data;
                       $scope.getDiffReport();
                     },
@@ -1637,18 +1630,15 @@ tsApp
 
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
-                  console.debug("Begin migration", newTerminology, newVersion);
 
                   refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
                   // Success
                   function(data) {
-                    console.debug("stagedRefset", data);
                     $scope.stagedRefset = data;
                     $scope.refset.stagingType = 'MIGRATION';
                     refsetService.compareRefsets(refset.id, data.id).then(
                     // Success
                     function(data) {
-                      console.debug("reportToken", data);
                       $scope.reportToken = data;
                       $scope.getDiffReport();
                     },
@@ -1667,13 +1657,11 @@ tsApp
 
                 // Finish redefinition or migration
                 $scope.finish = function(refset) {
-                  console.debug("Finish ", $scope.type, refset.id);
 
                   if ($scope.type == 'Redefinition') {
                     refsetService.finishRedefinition(refset.id).then(
                     // Success
                     function(data) {
-                      console.debug("data", data);
                       $uibModalInstance.close(refset);
                     },
                     // Error
@@ -1685,7 +1673,6 @@ tsApp
                     refsetService.finishMigration(refset.id).then(
                     // Success
                     function(data) {
-                      console.debug("data", data);
                       $uibModalInstance.close(refset);
                     },
                     // Error
@@ -1698,7 +1685,6 @@ tsApp
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
-                  console.debug("Save for later ", $scope.type, refset.id);
                   // updates refset on close
                   $uibModalInstance.close(refset);
                 };
@@ -1712,11 +1698,9 @@ tsApp
                     refsetService.releaseReportToken($scope.reportToken).then(
                     // Success
                     function() {
-                      console.debug("Released report token");
                       refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
                       // Success
                       function(data) {
-                        console.debug("reportToken", data);
                         $scope.reportToken = data;
                         $scope.getDiffReport();
                       },
@@ -1748,11 +1732,9 @@ tsApp
                     refsetService.releaseReportToken($scope.reportToken).then(
                     // Success
                     function() {
-                      console.debug("Released report token");
                       refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
                       // Success
                       function(data) {
-                        console.debug("reportToken", data);
                         $scope.reportToken = data;
                         $scope.getDiffReport();
                       },
@@ -1805,11 +1787,9 @@ tsApp
                       refsetService.releaseReportToken($scope.reportToken).then(
                       // Success - release report token
                       function() {
-                        console.debug("Released report token");
                         refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
                         // Success - compare refsets
                         function(data) {
-                          console.debug("reportToken", data);
                           $scope.reportToken = data;
                           $scope.getDiffReport();
                         },
@@ -1838,11 +1818,9 @@ tsApp
                       refsetService.releaseReportToken($scope.reportToken).then(
                       // Success - release report token
                       function() {
-                        console.debug("Released report token");
                         refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
                         // Success - compare refsets
                         function(data) {
-                          console.debug("reportToken", data);
                           $scope.reportToken = data;
                           $scope.getDiffReport();
                         },
@@ -1871,7 +1849,7 @@ tsApp
                   if (member.memberType == 'MEMBER') {
                     return "";
                   }
-                  return member.memberType.replace('INACTIVE_', '').replace('_STAGED', '');
+                  return member.memberType.replace('_STAGED', '');
                 }
 
                 // Cancel redefinition or migration

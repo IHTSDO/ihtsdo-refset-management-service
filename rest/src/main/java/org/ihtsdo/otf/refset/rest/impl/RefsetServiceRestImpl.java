@@ -375,8 +375,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Refset): /clone " + refset.getId() + ", " + projectId
-            + ", " + refset);
+        "RESTful call PUT (Refset): /clone " + refset.getId() + ", "
+            + projectId + ", " + refset);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -760,11 +760,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setActive(true);
       inclusion.setConceptId(conceptId);
       if (refsetService.getTerminologyHandler().assignNames()) {
-        inclusion
-            .setConceptName(refsetService
-                .getTerminologyHandler()
-                .getConcept(conceptId, refset.getTerminology(),
-                    refset.getVersion()).getName());
+        final Concept concept =
+            refsetService.getTerminologyHandler().getConcept(conceptId,
+                refset.getTerminology(), refset.getVersion());
+        inclusion.setConceptName(concept.getName());
+        inclusion.setConceptActive(concept.isActive());
       } else {
         inclusion.setConceptName("TBD");
       }
@@ -825,8 +825,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member = c;
           break;
         } else if (conceptId.equals(c.getConceptId())
-            && (c.getMemberType() == Refset.MemberType.INACTIVE_MEMBER)) {
-          // An INACTIVE_MEMBER normally shouldn't exist in an intensional
+            && !c.isConceptActive()) {
+          // An inactive MEMBER normally shouldn't exist in an intensional
           // refset. And this can ONLY be added for an intensional refset
           throw new Exception("This should never happen.");
         }
@@ -1039,7 +1039,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           else {
             member = new ConceptRefsetMemberJpa();
             member.setModuleId(concept.getModuleId());
-            member.setActive(concept.isActive());
+            member.setActive(true);
+            member.setConceptActive(concept.isActive());
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
@@ -1082,11 +1083,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
-          if (!refsetService
-              .getTerminologyHandler()
-              .getConcept(member.getConceptId(), refsetCopy.getTerminology(),
-                  refsetCopy.getVersion()).isActive()) {
-            member.setMemberType(Refset.MemberType.INACTIVE_MEMBER);
+          final Concept concept =
+              refsetService.getTerminologyHandler().getConcept(member.getConceptId(), refsetCopy.getTerminology(),
+                  refsetCopy.getVersion());
+
+          if (!concept.isActive()) {
+            member.setConceptActive(false);
             refsetService.updateMember(member);
           }
         }
@@ -1355,7 +1357,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         } else {
           member = new ConceptRefsetMemberJpa();
           member.setModuleId(concept.getModuleId());
-          member.setActive(concept.isActive());
+          member.setActive(true);
+          member.setConceptActive(concept.isActive());
           member.setPublished(concept.isPublished());
           member.setConceptId(concept.getTerminologyId());
           member.setConceptName(concept.getName());
@@ -2155,6 +2158,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           continue;
         }
         ++objectCt;
+        member.setActive(true);
         member.setId(null);
         member.setLastModified(member.getEffectiveTime());
         member.setLastModifiedBy(userName);
@@ -2165,10 +2169,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // TODO: - no efficient way to compute this
         // each member requires a call to the terminology server!
         if (refsetService.getTerminologyHandler().assignNames()) {
-          member.setConceptName(refsetService
+          final Concept concept = refsetService
               .getTerminologyHandler()
               .getConcept(member.getConceptId(), refset.getTerminology(),
-                  refset.getVersion()).getName());
+                  refset.getVersion());
+          member.setConceptName(concept.getName());
+          member.setConceptActive(concept.isActive());
         } else {
           member.setConceptName("TBD");
         }

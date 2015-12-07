@@ -26,7 +26,9 @@ import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 
 /**
  * Client for connecting to a workflow REST service.
@@ -299,6 +301,45 @@ public class WorkflowClientRest extends RootClientRest implements
     // converting to object
     return (TrackingRecord) ConfigUtility.getGraphForString(resultString,
         TrackingRecordJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public TrackingRecordList performBatchWorkflowAction(Long projectId,
+    Long translationId, String userName, String action,
+    ConceptListJpa conceptList, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - perform workflow action " + translationId + ", "
+            + userName + ", " + action);
+
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(userName, "userName");
+    validateNotEmpty(action, "action");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/workflow/translation/"
+            + action + "/batch?projectId=" + projectId + "?translationId="
+            + translationId + "?userName=" + userName);
+
+    String conceptStr =
+        ConfigUtility.getStringForGraph(conceptList == null
+            ? new ConceptListJpa() : conceptList);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(conceptStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */

@@ -758,13 +758,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setPublishable(true);
         concept.setPublished(false);
         if (translationService.getTerminologyHandler().assignNames()) {
-          concept.setName(translationService
+          final Concept c2 = translationService
               .getTerminologyHandler()
               .getConcept(concept.getTerminologyId(),
-                  translation.getTerminology(), translation.getVersion())
-              .getName());
+                  translation.getTerminology(), translation.getVersion());
+          concept.setName(c2.getName());
+          concept.setActive(c2.isActive());
         } else {
           concept.setName("TBD");
+          concept.setActive(true);
         }
         translationService.addConcept(concept);
 
@@ -1485,10 +1487,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           conceptsToRemove.add(concept);
         }
       }
-      System.out.println("conceptsToremove " + conceptsToRemove.size());
       for (Concept cpt : conceptsToRemove) {
-        System.out.println("concept " + cpt.getTerminologyId() + " "
-            + cpt.getVersion());
         translationCopy.getConcepts().remove(cpt);
       }
 
@@ -1736,6 +1735,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // creates a "concepts in common" list (where reportToken is the key)
       List<Concept> conceptsInCommon = new ArrayList<>();
+
       // TODO: concepts in common not getting populated because terminologyIds
       // are different
       System.out.println("translation1= " + translation1.getConcepts());

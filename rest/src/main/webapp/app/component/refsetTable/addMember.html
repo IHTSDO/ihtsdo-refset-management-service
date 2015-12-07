@@ -1,16 +1,6 @@
 <div class="modal-header">
   <h4>Add Refset Member</h4>
 
-  <div>
-    <span>
-      <form ng-submit="getSearchResults(search)">
-        <input autofocus ng-model="search">
-        <button class="btn btn-primary"
-          ng-click="getSearchResults(search); 
-    ">Search</button>
-      </form>
-    </span>
-  </div>
 </div>
 
 <div class="modal-body">
@@ -26,12 +16,32 @@
         </div>
       </div>
 
+      <!-- Search widget -->
+      <div>
+        <form ng-submit="getSearchResults(search)">
+          <input autofocus ng-model="search" size="30">
+          <button class="btn btn-primary"
+            ng-click="getSearchResults(search, true);">Search</button>
+        </form>
+      </div>
+
+      <!-- Search results -->
+
       <span ng-show="search && searchResults.length == 0"
         class="alert alert-warning">No results</span>
 
       <span ng-show="search && searchResults.length > 0">
 
         <span style="display: block;">
+          <uib-pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="searchResults.totalCount > pageSize || paging['search'].filter"
+            total-items="searchResults.totalCount"
+            ng-model="paging['search'].page"
+            ng-change="getSearchResults(search);"></uib-pagination>
+
+          <!--  TODO: remove this when confirmed not needed
           <ul style="margin: 5px" class="pager uib-pagination-sm"
             ng-show="search && (searchResults.length > 0 || paging['search'].page > 1)">
             <li class="previous" ng-show="paging['search'].page > 1"
@@ -40,7 +50,9 @@
             <li ng-show="searchResults.length > 0" class="next"
               ng-click="getNextPage()"><a>Next &rarr;</a></li>
           </ul>
+          -->
         </span>
+
 
         <table ng-show="searchResults.length > 0" class="table">
           <thead class="table-select-row">
@@ -55,8 +67,8 @@
               <td>{{concept.name}}</td>
             </tr>
           </tbody>
-          </span>
         </table>
+      </span>
     </div>
 
     <!--  Right hand side -->

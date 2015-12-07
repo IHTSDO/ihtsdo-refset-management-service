@@ -126,7 +126,6 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       return validationService.validateRefset(refset, refsetService);
     } catch (Exception e) {
       e.printStackTrace();
-      System.out.println("4");
       handleException(e, "trying to validate refset");
       return null;
     } finally {

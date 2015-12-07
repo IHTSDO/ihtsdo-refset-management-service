@@ -43,6 +43,7 @@ import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -76,6 +77,10 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @OneToMany(mappedBy = "concept", targetEntity = DescriptionJpa.class)
   @IndexedEmbedded(targetElement = DescriptionJpa.class)
   private List<Description> descriptions = null;
+
+  /** The relationships - no JPA. */
+  @Transient
+  private List<Relationship> relationships = null;
 
   /** The child count. */
   @Transient
@@ -120,6 +125,12 @@ public class ConceptJpa extends AbstractComponent implements Concept {
         Description newDescription = new DescriptionJpa(description, deepCopy);
         newDescription.setConcept(this);
         descriptions.add(newDescription);
+      }
+      relationships = new ArrayList<>();
+      for (Relationship rel : concept.getRelationships()) {
+        Relationship newRel = new RelationshipJpa(rel);
+        newRel.setSourceConcept(this);
+        relationships.add(newRel);
       }
       for (Note note : concept.getNotes()) {
         getNotes().add(new ConceptNoteJpa((ConceptNoteJpa) note));
@@ -172,6 +183,27 @@ public class ConceptJpa extends AbstractComponent implements Concept {
         description.setConcept(this);
       }
       this.descriptions.addAll(descriptions);
+    }
+  }
+
+  @Override
+  @XmlElement(type = RelationshipJpa.class)
+  public List<Relationship> getRelationships() {
+    if (relationships == null) {
+      relationships = new ArrayList<>();
+    }
+    return relationships;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRelationships(List<Relationship> relationships) {
+    if (relationships != null) {
+      this.relationships = new ArrayList<>();
+      for (Relationship relationship : relationships) {
+        relationship.setSourceConcept(this);
+      }
+      this.relationships.addAll(relationships);
     }
   }
 

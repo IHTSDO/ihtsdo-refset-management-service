@@ -681,7 +681,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           "retrieve concept with description", UserRole.VIEWER);
 
       Concept concept =
-          projectService.getTerminologyHandler().getConceptWithDescriptions(
+          projectService.getTerminologyHandler().getFullConcept(
               terminologyId, terminology, version);
 
       return concept;

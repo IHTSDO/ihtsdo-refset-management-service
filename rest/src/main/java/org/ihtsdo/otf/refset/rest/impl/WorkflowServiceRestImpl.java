@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -328,7 +329,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecord performWorkflowAction(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Concept object", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -344,14 +345,67 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
+      String authName =
+          authorizeProject(workflowService, projectId, securityService,
+              authToken, "perform workflow action on translation",
+              UserRole.AUTHOR);
 
+      // Set last modified by
+      concept.setLastModifiedBy(authName);
       return workflowService.performWorkflowAction(translationId, userName,
           WorkflowAction.valueOf(action), concept);
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on translation");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/translation/{action}/batch")
+  @ApiOperation(value = "Perform multiple workflow action on a translation", notes = "Performs the specified action as the specified refset as the specified user", response = TrackingRecordListJpa.class)
+  public TrackingRecordList performBatchWorkflowAction(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
+    @ApiParam(value = "Concept list", required = true) ConceptListJpa conceptList,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/" + action + "/batch "
+            + translationId + ", " + userName);
+
+    // Test preconditions
+    if (projectId == null || translationId == null || userName == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      String authName =
+          authorizeProject(workflowService, projectId, securityService,
+              authToken, "perform workflow actions on translation",
+              UserRole.AUTHOR);
+
+      // Set last modified by
+      TrackingRecordList list = new TrackingRecordListJpa();
+      for (Concept concept : conceptList.getObjects()) {
+        concept.setLastModifiedBy(authName);
+        list.getObjects().add(
+            workflowService.performWorkflowAction(translationId, userName,
+                WorkflowAction.valueOf(action), concept));
+      }
+      list.setTotalCount(list.getCount());
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform workflow actions on translation");
     } finally {
       workflowService.close();
       securityService.close();

@@ -11,7 +11,6 @@ import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.Description;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -60,7 +59,9 @@ public interface TerminologyHandler extends Configurable {
     String version, PfsParameter pfs) throws Exception;
 
   /**
-   * Returns the concept with descriptions.
+   * Returns the concept with descriptions and relationships. Inactive
+   * descriptions are not included. Inactive, stated, and "Is a" relationships
+   * are not included.
    *
    * @param terminologyId the terminology id
    * @param terminology the terminology
@@ -68,8 +69,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept with descriptions
    * @throws Exception the exception
    */
-  public Concept getConceptWithDescriptions(String terminologyId,
-    String terminology, String version) throws Exception;
+  public Concept getFullConcept(String terminologyId, String terminology,
+    String version) throws Exception;
 
   /**
    * Returns the concept with terminologyId and name.
@@ -84,15 +85,15 @@ public interface TerminologyHandler extends Configurable {
     String version) throws Exception;
 
   /**
-   * Returns the description.
+   * Returns the concepts.
    *
-   * @param terminologyId the terminology id
+   * @param terminologyIds the terminology ids
    * @param terminology the terminology
    * @param version the version
-   * @return the description
+   * @return the concepts
    * @throws Exception the exception
    */
-  public Description getDescription(String terminologyId, String terminology,
+  public ConceptList getConcepts(List<String> terminologyIds, String terminology,
     String version) throws Exception;
 
   /**
@@ -135,8 +136,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept parents
    * @throws Exception the exception
    */
-  public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version) throws Exception;
+  public ConceptList getConceptParents(String terminologyId,
+    String terminology, String version) throws Exception;
 
   /**
    * Returns the concept children.
@@ -147,8 +148,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concept children
    * @throws Exception the exception
    */
-  public ConceptList getConceptChildren(String terminologyId, String terminology,
-    String version) throws Exception;
+  public ConceptList getConceptChildren(String terminologyId,
+    String terminology, String version) throws Exception;
 
   // TODO: other methods (if using term server storage)
   /**

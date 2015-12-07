@@ -297,6 +297,32 @@ tsApp.service('workflowService', [
       return deferred.promise;
     }
 
+    // Perform batch workflow action on a translation
+    this.performBatchTranslationWorkflowAction = function(projectId, translationId, userName,
+      action, conceptList) {
+      console.debug("performBatchWorkflowActionOnTranslation");
+      var deferred = $q.defer();
+
+      // Perform workflow action on a translation
+      gpService.increment()
+      $http.post(
+        workflowUrl + 'translation' + "/" + action + "/batch?translationId=" + translationId
+          + "&userName=" + userName + "&projectId=" + projectId, conceptList).then(
+      // success
+      function(response) {
+        console.debug("  work = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Finds refsets available for editing by the specified user
     this.findAvailableEditingRefsets = function(projectId, userName, pfs) {
       console.debug("findAvailableEditingRefsets");
@@ -486,7 +512,7 @@ tsApp.service('workflowService', [
       });
       return deferred.promise;
     }
-    
+
     // end
 
   } ]);

@@ -771,6 +771,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);
     member.setRefset(refset);
+    member.setActive(true);
+    member.setConceptActive(true);
     refset.addMember(member);
 
     return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl()

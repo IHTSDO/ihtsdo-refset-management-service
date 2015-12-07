@@ -340,6 +340,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new Exception("Illegal workflow action");
     }
 
+    refset.setLastModifiedBy(user.getUserName());
     service.updateRefset(refset);
     // After UNASSIGN and deleting the tracking record,
     // this would create a new tracking record to keep the
@@ -523,6 +524,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case ASSIGN:
         // Author case
         if (record == null) {
+          // Add the concept itself
+          concept.setTranslation(translation);
+          concept.setModuleId(translation.getModuleId());
+          concept.setEffectiveTime(null);
+          concept.setTerminology(translation.getTerminology());
+          concept.setVersion(translation.getVersion());          
+          concept.setDefinitionStatusId("UNKNOWN");
+          service.addConcept(concept);
+
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
           record2.getAuthors().add(user);
@@ -616,11 +626,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case PREVIEW:
         // Handled by release process. Simply set status to PREVIEW.
+        translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PREVIEW);
         break;
 
       case PUBLISH:
         // Handled by release process. Simply set status to PUBLISHED
+        translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
         break;
 
@@ -632,6 +644,17 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new Exception("Illegal workflow action");
     }
 
+    concept.setLastModifiedBy(user.getUserName());
+    service.updateConcept(concept);
+
+    // After UNASSIGN and deleting the tracking record,
+    // this would create a new tracking record to keep the
+    // concept assigned also for FINISH, this would persist the tracking record
+    // that was just supposed to have been deleted
+    if (action != WorkflowAction.UNASSIGN
+        && !(action == WorkflowAction.FINISH && concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+      service.updateTrackingRecord(record);
+    }
     return null;
   }
 
@@ -655,12 +678,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + " where c.refset = a AND d.translation = c)";
 
     Query ctQuery =
-        rootService.getEntityManager().createQuery(
-            "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
-                + "where b.id = :refsetId and a.refset = b "
-                + "and a.conceptId NOT IN "
-                + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-                + " where c.refset = a AND d.translation = c)");
+        rootService
+            .getEntityManager()
+            .createQuery(
+                "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
+                    + "where b.id = :refsetId and a.refset = b "
+                    + "and a.conceptId NOT IN "
+                    + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
+                    + " where c.refset = a AND d.translation = c)");
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 

@@ -220,7 +220,7 @@ public class TranslationTest {
         translationService.findConceptsInCommon(reportToken, null, null,
             adminAuthToken);
     //assertEquals(5, commonList.getObjects().size());
-    System.out.println(commonList.getObjects().size());*/
+  */
 
     // Finish migration
     translationService.finishMigration(janTranslation.getId(), adminAuthToken);

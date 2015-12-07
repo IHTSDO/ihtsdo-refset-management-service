@@ -234,7 +234,6 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     Refset refset = new RefsetJpa();
     refset.setId(1L);
     refset.setRefsetDescriptorUuid("UUID");
-    System.out.println(refset.getRefsetDescriptorUuid());
     Translation translation = new TranslationJpa();
     translation.setId(1L);
     Project project = new ProjectJpa();

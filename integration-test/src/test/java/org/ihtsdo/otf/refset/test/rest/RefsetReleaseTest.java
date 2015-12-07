@@ -397,6 +397,7 @@ public class RefsetReleaseTest {
     String id, Refset refset) {
     ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
     member.setActive(true);
+    member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
