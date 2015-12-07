@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -1405,7 +1406,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of phrase memory file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1437,8 +1437,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       // Load PhraseMemory
       List<MemoryEntry> memories = parsePhraseMemory(translation,in);
-      translation.getPhraseMemory().setEntries(memories);
-      translationService.updateTranslation(translation);
+      PhraseMemory phraseMemory = translation.getPhraseMemory();
+      for(MemoryEntry memoryEntry : memories) {
+        memoryEntry.setPhraseMemory(phraseMemory);
+        translationService.addMemoryEntry(memoryEntry);
+      }
     } catch (Exception e) {
       handleException(e, "trying to import translation phrase memory");
     } finally {
@@ -1449,10 +1452,46 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @GET
   @Override
-  public InputStream exportPhraseMemory(Long translationId, String authToken)
+  @Produces("application/octet-stream")
+  @Path("/export/phrasememory")
+  @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
+  public InputStream exportPhraseMemory(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /export/phrasememory " + translationId );
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation = translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+      if (translation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The translation must have an associated phrase memory: "
+                + translationId);
+      }
+      if (translation.getPhraseMemory().getEntries() == null) {
+        throw new Exception("The translation phrase memory entries is null"
+            + translation.getPhraseMemory().getId());
+      }
+      StringBuilder sb = new StringBuilder();
+      for(MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        sb.append(entry.getName()).append("|").append(entry.getTranslatedName()).append("\r\n");
+      }
+
+      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+    } catch (Exception e) {
+      handleException(e, "trying to export translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
@@ -2122,7 +2161,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Strip \r and split lines
         line = line.replace("\r", "");
-        final String fields[] = line.split("\t");
+        final String fields[] = line.split("\\|");
 
         // Check field lengths
         if (fields.length != 2) {

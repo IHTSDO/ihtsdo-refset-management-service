@@ -11,11 +11,17 @@ import static org.junit.Assert.assertEquals;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ConceptDiffReport;
+import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -24,6 +30,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -32,6 +39,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -239,7 +247,7 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  //@Test
+//  @Test
   public void testMigration003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration003");
 
@@ -459,4 +467,69 @@ public class TranslationTest {
 
     return refset;
   }
+  
+  /**
+   * Test Import Export PhraseMemory.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testImportExportPhraseMemory() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
+
+    Project project1 = projectService.getProject(1L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional) 
+    Refset janRefset =
+        makeRefset("refset1", null,
+            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
+    
+    
+    // Create translation 
+    TranslationJpa translation =
+        makeTranslation("translation99", janRefset,
+             project1,  admin);
+    InputStream in =
+        new FileInputStream(
+            new File(
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
+    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
+    InputStream inputStream = translationService.exportPhraseMemory(translation.getId(), adminAuthToken);
+    List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
+    assertEquals(2, entries.size());
+  }
+
+  private List<MemoryEntry> parsePhraseMemory(Translation translation,
+      InputStream content) throws Exception {
+      List<MemoryEntry> list = new ArrayList<>();
+      String line = "";
+      Reader reader = new InputStreamReader(content, "UTF-8");
+      PushBackReader pbr = new PushBackReader(reader);
+      while ((line = pbr.readLine()) != null) {
+
+        // Strip \r and split lines
+        line = line.replace("\r", "");
+        final String fields[] = line.split("\\|");
+
+        // Check field lengths
+        if (fields.length != 2) {
+          pbr.close();
+          Logger.getLogger(getClass()).error("line = " + line);
+          throw new Exception(
+              "Unexpected field count in phrase memory file "
+                  + fields.length);
+        }
+
+        // Instantiate and populate members
+        final MemoryEntry member = new MemoryEntryJpa();
+        member.setName(fields[0]);
+        member.setTranslatedName(fields[1]);
+        // Add member
+        list.add(member);
+        Logger.getLogger(getClass()).debug("  phrasememory = " + member);
+      }
+      pbr.close();
+      return list;
+    }
+
 }
