@@ -82,6 +82,28 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // get refset member for id
+    this.getMember = function(memberId) {
+      console.debug("getMember");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(refsetUrl + "/member/" + memberId).then(
+      // success
+      function(response) {
+        console.debug("  member = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    
     // get refsets for project
     this.getRefsetsForProject = function(projectId) {
       console.debug("getRefsetsForProject");
