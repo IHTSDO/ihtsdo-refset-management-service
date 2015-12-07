@@ -829,6 +829,47 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
+  @Path("/remove/{releaseInfoId}")
+  @ApiOperation(value = "Remove release info", notes = "Removes the release info with the specified id")
+  public void removeReleaseInfo(
+    @ApiParam(value = "Release Info id, e.g. 3", required = true) @PathParam("releaseInfoId") Long releaseInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Release): /remove/" + releaseInfoId);
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      ReleaseInfo releaseInfo = releaseService.getReleaseInfo(releaseInfoId);
+
+      if (releaseInfo == null) {
+        throw new Exception("ReleaseInfo does not exist");
+      }
+
+      Project project = null;
+      if (releaseInfo.getRefset() != null) {
+        project = releaseInfo.getRefset().getProject();
+      } else {
+        project = releaseInfo.getTranslation().getProject();
+
+      }
+      authorizeProject(releaseService, project.getId(), securityService,
+          authToken, "remove release artifact", UserRole.AUTHOR);
+
+      // remove release
+      releaseService.removeReleaseInfo(releaseInfoId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a release info");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+
+  }
+  
+  @Override
+  @DELETE
   @Path("/remove/artifact/{artifactId}")
   @ApiOperation(value = "Remove release artifact", notes = "Removes the release artifact with the specified id")
   public void removeReleaseArtifact(

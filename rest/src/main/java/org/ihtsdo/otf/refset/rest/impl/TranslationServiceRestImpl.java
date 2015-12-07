@@ -5,6 +5,8 @@ package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -73,6 +75,7 @@ import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
+import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -1514,19 +1517,106 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @POST
   @Override
+  @Path("/import/phrasememory")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of phrase memory file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/phrasememory "
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+      if (translation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The translation must have an associated phrase memory: "
+                + translation);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import translation definition",
+          UserRole.AUTHOR);
+
+      List<MemoryEntry> fromEntries =
+          translation.getPhraseMemory().getEntries();
+      if (fromEntries == null) {
+        throw new Exception("The phrase memory entries must be empty to import"
+            + translation.getPhraseMemory().getId());
+      }
+      // Load PhraseMemory
+      List<MemoryEntry> memories = parsePhraseMemory(translation, in);
+      PhraseMemory phraseMemory = translation.getPhraseMemory();
+      for (MemoryEntry memoryEntry : memories) {
+        memoryEntry.setPhraseMemory(phraseMemory);
+        translationService.addMemoryEntry(memoryEntry);
+      }
+    } catch (Exception e) {
+      handleException(e, "trying to import translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
   /* see superclass */
+  @GET
   @Override
-  public InputStream exportPhraseMemory(Long translationId, String authToken)
+  @Produces("application/octet-stream")
+  @Path("/export/phrasememory")
+  @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
+  public InputStream exportPhraseMemory(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /export/phrasememory "
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+      if (translation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The translation must have an associated phrase memory: "
+                + translationId);
+      }
+      if (translation.getPhraseMemory().getEntries() == null) {
+        throw new Exception("The translation phrase memory entries is null"
+            + translation.getPhraseMemory().getId());
+      }
+      StringBuilder sb = new StringBuilder();
+      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        sb.append(entry.getName()).append("|")
+            .append(entry.getTranslatedName()).append("\r\n");
+      }
+
+      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+    } catch (Exception e) {
+      handleException(e, "trying to export translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
@@ -2227,4 +2317,37 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+
+  private List<MemoryEntry> parsePhraseMemory(Translation translation,
+    InputStream content) throws Exception {
+    List<MemoryEntry> list = new ArrayList<>();
+    String line = "";
+    Reader reader = new InputStreamReader(content, "UTF-8");
+    PushBackReader pbr = new PushBackReader(reader);
+    while ((line = pbr.readLine()) != null) {
+
+      // Strip \r and split lines
+      line = line.replace("\r", "");
+      final String fields[] = line.split("\\|");
+
+      // Check field lengths
+      if (fields.length != 2) {
+        pbr.close();
+        Logger.getLogger(getClass()).error("line = " + line);
+        throw new Exception("Unexpected field count in phrase memory file "
+            + fields.length);
+      }
+
+      // Instantiate and populate members
+      final MemoryEntry member = new MemoryEntryJpa();
+      member.setName(fields[0]);
+      member.setTranslatedName(fields[1]);
+      // Add member
+      list.add(member);
+      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
+    }
+    pbr.close();
+    return list;
+  }
+
 }

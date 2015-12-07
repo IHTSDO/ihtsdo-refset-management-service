@@ -31,6 +31,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -62,7 +63,7 @@ public class IndexUtility {
           new Class<?>[] {
               RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
               ReleaseInfoJpa.class, TrackingRecordJpa.class, UserJpa.class,
-              ConceptRefsetMemberJpa.class, ConceptJpa.class
+              ConceptRefsetMemberJpa.class, ConceptJpa.class, PhraseMemoryJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,

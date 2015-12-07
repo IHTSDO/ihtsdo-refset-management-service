@@ -476,7 +476,6 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  refsetService.fireRefsetChanged(data);
                   $scope.selectRefset(data);
                 });
 
@@ -491,7 +490,110 @@ tsApp
                 $scope.object = object;
                 $scope.type = type;
                 $scope.newNote = null;
+                
+                // Paging parameters
+                $scope.pageSize = 5;
+                $scope.pagedNotes = [];
+                $scope.paging = {};
+                $scope.paging["notes"] = {
+                  page : 1,
+                  filter : "",
+                  typeFilter : "",
+                  sortField : "lastModified",
+                  ascending : true
+                }
+                               
+                // Get paged notes (assume all are loaded)
+                $scope.getPagedNotes = function() {
+                  $scope.pagedNotes = $scope.getPagedArray($scope.object.notes,
+                    $scope.paging['notes']);
+                }
 
+                // Helper to get a paged array with show/hide flags
+                // and filtered by query string
+                $scope.getPagedArray = function(array, paging) {
+                  console.debug("getPagedArray");
+                  var newArray = new Array();
+
+                  // if array blank or not an array, return blank list
+                  if (array == null || array == undefined || !Array.isArray(array)) {
+                    return newArray;
+                  }
+
+                  newArray = array;
+
+                  // apply sort if specified
+                  if (paging.sortField) {
+                    // if ascending specified, use that value, otherwise use false
+                    newArray.sort($scope.sort_by(paging.sortField, paging.ascending))
+                  }
+
+                  // apply filter
+                  if (paging.filter) {
+                    newArray = getArrayByFilter(newArray, paging.filter);
+                  }
+
+                  // get the page indices
+                  var fromIndex = (paging.page - 1) * $scope.pageSize;
+                  var toIndex = Math.min(fromIndex + $scope.pageSize, array.length);
+
+                  // slice the array
+                  var results = newArray.slice(fromIndex, toIndex);
+
+                  // add the total count before slicing
+                  results.totalCount = newArray.length;
+
+                  return results;
+                }
+                
+                // function for sorting an array by (string) field and direction
+                $scope.sort_by = function(field, reverse) {
+
+                  // key: function to return field value from object
+                  var key = function(x) {
+                    return x[field]
+                  };
+
+                  // convert reverse to integer (1 = ascending, -1 =
+                  // descending)
+                  reverse = !reverse ? 1 : -1;
+
+                  return function(a, b) {
+                    return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+                  }
+                }
+
+                // Get array by filter text matching terminologyId or name
+                function getArrayByFilter(array, filter) {
+                  var newArray = [];
+
+                  for ( var object in array) {
+
+                    if (objectContainsFilterText(array[object], filter)) {
+                      newArray.push(array[object]);
+                    }
+                  }
+                  return newArray;
+                }
+
+                // Returns true if any field on object contains filter text
+                function objectContainsFilterText(object, filter) {
+
+                  if (!filter || !object)
+                    return false;
+
+                  for ( var prop in object) {
+                    var value = object[prop];
+                    // check property for string, note this will cover child elements
+                    if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+                      return true;
+                    }
+                  }
+
+                  return false;
+                }
+                
+                // remove note
                 $scope.removeNote = function(object, note) {
                   console.debug("remove note", object.id, note.value);
                   if ($scope.type == 'Refset') {                   
@@ -499,6 +601,16 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
+                      refsetService.getRefset(object.id).then(
+                        function(data) {
+                          object.notes = data.notes;
+                          $scope.getPagedNotes();
+                        },
+                        // Error - add refset
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
                     },
                     // Error - add refset
                     function(data) {
@@ -510,6 +622,16 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
+                      refsetService.getMember(object.id).then(
+                        function(data) {
+                          object.notes = data.notes;
+                          $scope.getPagedNotes();
+                        },
+                        // Error - add refset
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
                     },
                     // Error - add refset
                     function(data) {
@@ -519,6 +641,7 @@ tsApp
                   }
                 }
                 
+                // add new note
                 $scope.submitNote = function(object, text) {
                   console.debug("submit note", object.id, text);
                   
@@ -527,7 +650,16 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      $uibModalInstance.close(object);
+                      refsetService.getRefset(object.id).then(
+                        function(data) {
+                          object.notes = data.notes;
+                          $scope.getPagedNotes();
+                        },
+                        // Error - add refset
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
                     },
                     // Error - add refset
                     function(data) {
@@ -539,7 +671,17 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      $uibModalInstance.close(refset);
+
+                      refsetService.getMember(object.id).then(
+                        function(data) {
+                          object.notes = data.notes;
+                          $scope.getPagedNotes();
+                        },
+                        // Error - add refset
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
                     },
                     // Error - add refset
                     function(data) {
@@ -549,14 +691,18 @@ tsApp
                   }
                 };
 
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                // Convert date to a string
+                $scope.toShortDate = function(lastModified) {
+                  return utilService.toShortDate(lastModified);
                 };
                 
+                // close the modal
                 $scope.close = function(refset) {
                   $uibModalInstance.close(refset);
                 }
 
+                // initialize modal
+                $scope.getPagedNotes();
               };
 
 

@@ -15,27 +15,55 @@
         </div>
       </div>
 
-      <span ng-show="object.notes.length > 0">
+      <span>
 
-        <!-- <span style="display: block;">
-          <ul style="margin: 5px" class="pager uib-pagination-sm"
-            ng-show="search && (searchResults.length > 0 || paging['search'].page > 1)">
-            <li class="previous" ng-show="paging['search'].page > 1"
-              ng-click="getPreviousPage()"><a>&larr; Previous</a></li>
-            <span class="panel-title"> Page {{paging['search'].page}}</span>
-            <li ng-show="searchResults.length > 0" class="next"
-              ng-click="getNextPage()"><a>Next &rarr;</a></li>
-          </ul>
-        </span> -->
+ <h5 ng-show="object.notes.length > 0">
+  <b>Notes<span ng-show="pagedNotes.length > 0">
+      ({{pagedNotes.totalCount}})</span></b>
+</h5>
 
-        <table ng-show="object.notes.length > 0" class="table">
+<span style="display: block;">
+  <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
+    class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
+    first-text="&laquo;" last-text="&raquo;"
+    ng-show="pagedNotes.totalCount > pageSize || paging['notes'].filter"
+    total-items="pagedNotes.totalCount" ng-model="paging['notes'].page"
+    ng-change="getPagedNotes()"></uib-pagination>
+
+  <input class="input-filter" placeholder="Enter filter text"
+    ng-show="pagedNotes.totalCount > pageSize || paging['notes'].filter"
+    type="text" ng-model="paging['notes'].filter"
+    ng-model-options="{ debounce: 300 }" ng-change="getPagedNotes()">
+
+  <button class="btn btn-xs btn-warning" ng-show="paging['notes'].filter"
+    ng-click="paging['notes'].filter = ''; getPagedNotes()"
+    title="Click to clear filter text">Clear</button>
+
+</span>
+
+<span
+  ng-show="pagedNotes.length == 0 && paging['notes'].filter"
+  class="alert alert-warning">
+  <br />No notes matching filter
+</span>
+<span
+  ng-show="pagedNotes.length == 0 && !paging['notes'].filter"
+  class="alert alert-warning">
+  <br />No notes
+</span>
+
+<table ng-show="pagedNotes.length > 0" class="table">
           <thead class="table-select-row">
-            <th class="col-md-10 col-xs-10">{{type}} Notes</th>
+            <th class="col-md-6 col-xs-6">{{type}} Notes</th>
+            <th class="col-md-2 col-xs-2">Date</th>
+            <th class="col-md-2 col-xs-2">Author</th>
             <th class="col-md-2 col-xs-2"></th>            
           </thead>
           <tbody>
-            <tr ng-repeat="note in object.notes">
+            <tr ng-repeat="note in pagedNotes">
               <td>{{note.value}}</td>
+              <td>{{toShortDate(note.lastModified)}}</td>
+              <td>{{note.lastModifiedBy}}</td>
               <td><a class="toolicon" title="Remove"
                   ng-click="removeNote(object, note); $event.stopPropagation()">
                   <i title="Remove note" class="noul material-icons md-18">delete</i>
