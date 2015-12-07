@@ -349,8 +349,9 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void importSpellingDictionary(InputStream is, Long translationId,
-    String authToken) throws Exception;
+  void importSpellingDictionary(
+    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    Long translationId, String authToken) throws Exception;
 
   /**
    * Export spelling dictionary.

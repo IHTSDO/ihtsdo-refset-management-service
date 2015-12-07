@@ -536,28 +536,17 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/add" + "?translationId=" + translationId
-            + "&entry=" + entry);
-
-    URI uri = target.getUri();
-
-    
-    System.out.println("AAA-1 with WebTarget:  " + uri.getHost() +
-    uri.getPath() + uri.getQuery());
+            + "/translation/spelling/add/" + translationId + "/" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
-     System.out.println("AAA-2");
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      System.out.println("AAA-Success");
       // n/a
     } else {
-      System.out.println("AAA-Fail");
       throw new Exception(response.toString());
     }
-    System.out.println("AAA-Out");
   }
 
   @Override
@@ -572,8 +561,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/remove" + "?translationId="
-            + translationId + "&entry=" + entry);
+            + "/translation/spelling/remove/" + translationId + "/" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -596,19 +584,17 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/clear");
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/clear/" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
     } else {
       throw new Exception(response.toString());
     }
-
   }
 
   @Override
@@ -747,8 +733,9 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void importSpellingDictionary(InputStream is, Long translationId,
-    String authToken) throws Exception {
+  public void importSpellingDictionary(
+    FormDataContentDisposition contentDispositionHeader, InputStream is,
+    Long translationId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - import Spelling Dictionary for translation "
             + translationId);
@@ -765,11 +752,10 @@ public class TranslationClientRest extends RootClientRest implements
     clientConfig.register(MultiPartFeature.class);
     Client client = ClientBuilder.newClient(clientConfig);
 
-    
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/translation/spelling/import" + "?translationId="
-            + translationId + "&is=" + is);
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -794,8 +780,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/export" + "?translationId="
-            + translationId);
+            + "/translation/spelling/export/" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)
@@ -830,26 +815,20 @@ public class TranslationClientRest extends RootClientRest implements
   public StringList suggestSpelling(Long translationId, String entry,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - export Spelling Dictionary for translation "
+        "Translation Client - suggest Spelling Dictionary for translation "
             + translationId);
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest" + "?translationId="
-            + translationId + "&entry=" + entry);
+            + "/translation/spelling/suggest/" + translationId + "/" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
     StringList suggestions = response.readEntity(StringList.class);
-
-    System.out.println("Total: " + suggestions.getCount());
-    for (String s : suggestions.getObjects()) {
-      System.out.println(s);
-    }
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a

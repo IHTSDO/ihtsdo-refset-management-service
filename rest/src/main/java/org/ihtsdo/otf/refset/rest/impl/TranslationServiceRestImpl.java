@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -96,9 +97,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The concepts in common map. */
   private static Map<String, List<Concept>> conceptsInCommonMap =
-      new HashMap<>();
-
-  private static Map<Long, SpellingCorrectionHandler> spellingHandlerMap =
       new HashMap<>();
 
   /** The concept diff report map. */
@@ -1012,41 +1010,50 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     try {
       Translation fromTranslation =
           translationService.getTranslation(fromTranslationId);
-      if (fromTranslation.getSpellingDictionary() == null) {
+      if (fromTranslation == null) {
+        throw new Exception("Invalid translation id " + fromTranslation);
+      }
+
+      SpellingDictionary fromSpelling = fromTranslation.getSpellingDictionary();
+      if (fromSpelling == null) {
         throw new Exception(
-            "The from translation must have an associated spelling dictionary: "
-                + fromTranslationId);
+            "translation must have an associated spelling dictionary.");
       }
 
       Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
-        throw new Exception("The to translation is not found: "
+        throw new Exception("The to-translation is not found: "
             + toTranslationId);
+      }
+
+      SpellingDictionary toSpelling = toTranslation.getSpellingDictionary();
+      if (toSpelling == null) {
+        throw new Exception(
+            "The from-translation must have an associated spelling dictionary: "
+                + fromTranslationId);
       }
 
       // Authorize call
       authorizeProject(translationService, toTranslation.getProject().getId(),
-          securityService, authToken, "copy translation spellchecker",
+          securityService, authToken, "copy translation spelling entries",
           UserRole.AUTHOR);
 
-      List<String> fromEntries =
-          fromTranslation.getSpellingDictionary().getEntries();
+      List<String> fromEntries = fromSpelling.getEntries();
       if (fromEntries == null) {
         throw new Exception("The from spelling dictionary entries is null: "
             + fromTranslation.getSpellingDictionary().getId());
       }
+
       // Get to spelling dictionary
-      SpellingDictionary toSpellingDictionary =
-          toTranslation.getSpellingDictionary();
-      List<String> toEntries = toSpellingDictionary.getEntries();
+      List<String> toEntries = toSpelling.getEntries();
       toEntries.addAll(fromEntries);
-      toSpellingDictionary.setEntries(toEntries);
+      toSpelling.setEntries(toEntries);
 
       // Create service and configure transaction scope
-      translationService.updateSpellingDictionary(toSpellingDictionary);
+      translationService.updateSpellingDictionary(toSpelling);
     } catch (Exception e) {
-      handleException(e, "trying to copy a translation");
+      handleException(e, "trying to copy a translation spelling entries");
     } finally {
       translationService.close();
       securityService.close();
@@ -1056,15 +1063,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/spelling/add")
+  @Path("/spelling/add/{translationId}/{entry}")
   @ApiOperation(value = "Add new entry to the spelling dictionary", notes = "Add new entry to the spelling dictionary")
   public void addSpellingDictionaryEntry(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    System.out.println("BBB-1");
-
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Spelling Entry): /spelling/add/" + translationId
             + " " + entry);
@@ -1072,7 +1077,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      // Load translation
       Translation translation =
           translationService.getTranslation(translationId);
 
@@ -1080,61 +1084,35 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
-      System.out.println("BBB-2");
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
 
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "add spelling dictionary entry",
+          securityService, authToken, "add entry from the spelling dictionary",
           UserRole.AUTHOR);
 
-      System.out.println("BBB-3");
-
-      translation.getSpellingDictionary().addEntry(entry);
-      
-      System.out.println("BBB-4");
-
-      SpellingCorrectionHandler handler;
-      if (!spellingHandlerMap.containsKey(translationId)) {
-        System.out.println("BBB-5");
-        
-        String key = "spelling.handler";
-        String handlerName = ConfigUtility.config.getProperty(key);
-
-        handler =
-            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
-                handlerName, SpellingCorrectionHandler.class);
-        handler.setTranslationId(translationId);
-
-        spellingHandlerMap.put(translationId, handler);
-      } else {
-        System.out.println("BBB-6");
-        handler = spellingHandlerMap.get(translationId);
-      }
-
-      System.out.println("BBB-7");
-      handler.addEntry(entry);
-
-      System.out.println("BBB-Success");
+      spelling.addEntry(entry);
+      translationService.updateSpellingDictionary(spelling);
     } catch (Exception e) {
-      System.out.println("BBB-FAIL");
       handleException(e, "trying to add a spelling entry");
     } finally {
       translationService.close();
       securityService.close();
     }
-    System.out.println("BBB-8");
   }
 
   /* see superclass */
-  // public void removeSpellingDictionaryEntry(Long translationId, String entry,
-  // String authToken)
   @Override
   @DELETE
-  @Path("/spelling/remove")
-  @ApiOperation(value = "Remove spelling dictionary entry", notes = "Removes the spelling dictionary entry for this translation")
+  @Path("/spelling/remove/{translationId}/{entry}")
+  @ApiOperation(value = "Remove entry from spelling dictionary", notes = "Removes an entry from translation's spelling dictionary")
   public void removeSpellingDictionaryEntry(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1151,40 +1129,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "remove spelling dictionary entry",
           UserRole.AUTHOR);
 
       translation.getSpellingDictionary().removeEntry(entry);
-      
-      SpellingCorrectionHandler handler;
-      if (!spellingHandlerMap.containsKey(translationId)) {
-        String key = "spelling.handler";
-        String handlerName = ConfigUtility.config.getProperty(key);
 
-        handler =
-            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
-                handlerName, SpellingCorrectionHandler.class);
-        handler.setTranslationId(translationId);
-
-        spellingHandlerMap.put(translationId, handler);
-      } else {
-        handler = spellingHandlerMap.get(translationId);
+      if (!spelling.getEntries().isEmpty()) {
+        spelling.removeEntry(entry);
+        translationService.updateSpellingDictionary(spelling);
       }
-
-      handler.removeEntry(entry);
-
-      /*
-       * SpellingDictionary spelling = translation.getSpellingDictionary(); if
-       * (spelling == null) { throw new Exception(
-       * "translation must have an associated spelling dictionary."); }
-       * 
-       * spelling.removeEntry(entry); // Create service and configure
-       * transaction scope
-       * translationService.updateSpellingDictionary(spelling); // TODO: May
-       * need to reindex
-       */
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1197,7 +1158,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
-  @Path("/spelling/clear")
+  @Path("/spelling/clear/{translationId}")
   @ApiOperation(value = "Clear spelling dictionary entries", notes = "Removes all spelling dictionary entries for this translation")
   public void clearSpellingDictionary(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
@@ -1211,11 +1172,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     try {
       Translation translation =
           translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
       SpellingDictionary spelling = translation.getSpellingDictionary();
       if (spelling == null) {
         throw new Exception(
             "translation must have an associated spelling dictionary.");
       }
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
@@ -1223,25 +1190,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
-        // Create service and configure transaction scope
         translationService.updateSpellingDictionary(spelling);
-
-        SpellingCorrectionHandler handler;
-        if (!spellingHandlerMap.containsKey(translationId)) {
-          String key = "spelling.handler";
-          String handlerName = ConfigUtility.config.getProperty(key);
-
-          handler =
-              ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
-                  handlerName, SpellingCorrectionHandler.class);
-          handler.setTranslationId(translationId);
-          handler.addEntries(translation.getSpellingDictionary().getEntries());
-
-          spellingHandlerMap.put(translationId, handler);
-        } else {
-          handler = spellingHandlerMap.get(translationId);
-        }
-        handler.clearEntries();
       }
     } catch (Exception e) {
       handleException(e, "trying to remove all spelling dictionary entries");
@@ -1461,19 +1410,19 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
-  @PUT
+  @POST
   @Override
   @Path("/spelling/import")
-  @ApiOperation(value = "Import a spelling", notes = "Imports a spelling onto a translation overriding existing one.")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import a spelling entries", notes = "Imports a spelling entries onto an empty translation.")
   public void importSpellingDictionary(
-    @ApiParam(value = "InputStream, e.g. 3", required = true) InputStream is,
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (SpellingEntries): /spelling/import" + translationId
-            + " with inputStream: " + is);
+        "RESTful call PUT (SpellingEntries): /spelling/import" + translationId);
 
     TranslationService translationService = new TranslationServiceJpa();
 
@@ -1486,27 +1435,26 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
-      // Authorize the call
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "import spelling entries", UserRole.AUTHOR);
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
 
-      if (!translation.getSpellingDictionary().getEntries().isEmpty()) {
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import spelling entries",
+          UserRole.AUTHOR);
+
+      if (!spelling.getEntries().isEmpty()) {
         throw new Exception(
             "First clear Spelling Dictionary's existing entries prior to importing new ones");
       }
 
-      // Get Spelling Handler
-      SpellingCorrectionHandler handler = spellingHandlerMap.get(translationId);
-
-      if (handler == null) {
-        handler = new DefaultSpellingCorrectionHandler();
-        handler.setTranslationId(translationId);
-        spellingHandlerMap.put(translationId, handler);
-      }
-
-      translation.getSpellingDictionary().setEntries(
-            handler.importEntries(is));
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      spelling.setEntries(handler.getEntriesAsList(in));
+      translationService.updateSpellingDictionary(spelling);
     } catch (Exception e) {
       handleException(e, "trying to import spelling entries");
     } finally {
@@ -1519,10 +1467,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Produces("application/octet-stream")
-  @Path("/spelling/export")
-  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts for the specified translation.", response = String.class)
+  @Path("/spelling/export/{translationId}")
+  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts as InputStream for the specified translation.", response = String.class)
   public InputStream exportSpellingDictionary(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1540,35 +1488,29 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
-      // Authorize the call
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "export spelling entries", UserRole.VIEWER);
-
-      // Get Spelling Handler
-      SpellingCorrectionHandler handler = spellingHandlerMap.get(translationId);
-
-      if (handler == null) {
-        handler = new DefaultSpellingCorrectionHandler();
-        handler.setTranslationId(translationId);
-        spellingHandlerMap.put(translationId, handler);
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
       }
 
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Export spelling entries as InputStream ", UserRole.VIEWER);
+
       // Return the dictionary's contents as InputStream
-      return handler
-          .exportEntries(
-              translationId,
-              translation.getSpellingDictionary().getEntries());
-
-
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      return handler.getEntriesAsStream(spelling.getEntries());
     } catch (Exception e) {
-      handleException(e, "trying to export spelling entries");
+      handleException(e, "Trying to export spelling entries as InputStream ");
     } finally {
       translationService.close();
       securityService.close();
     }
 
-    return null;
+    return new ByteArrayInputStream("".getBytes("UTF-8"));
   }
 
   /* see superclass */
@@ -1591,11 +1533,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @GET
   @Override
-  @Path("/spelling/suggest")
+  @Path("/spelling/suggest/{translationId}/{entry}")
   @ApiOperation(value = "Get spelling suggestions", notes = "Returns list of suggested replacements from dictionary", response = StringList.class)
   public StringList suggestSpelling(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1613,35 +1555,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + translationId);
       }
 
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
           "Suggest spellings based on term supplied", UserRole.VIEWER);
 
-      SpellingCorrectionHandler handler;
-
-      if (!spellingHandlerMap.containsKey(translationId)) {
-        String key = "spelling.handler";
-        String handlerName = ConfigUtility.config.getProperty(key);
-
-        handler =
-            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
-                handlerName, SpellingCorrectionHandler.class);
-        handler.setTranslationId(translationId);
-        handler.addEntries(translation.getSpellingDictionary().getEntries());
-
-        spellingHandlerMap.put(translationId, handler);
-      } else {
-        handler = spellingHandlerMap.get(translationId);
-      }
-      
-      List<String> results = handler.suggestSpelling(entry, 10);
-
-      StringList retStrList = new StringList();
-      retStrList.setTotalCount(results.size());
-      retStrList.setObjects(results);
-
-      return retStrList;
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      return handler.suggestSpelling(entry, spelling.getEntries(), 10,
+          translationId);
     } catch (Exception e) {
       handleException(e, "trying to suggest a spelling based on an entry");
     } finally {
@@ -1649,7 +1577,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
-    return null;
+    return new StringList();
   }
 
   /* see superclass */
