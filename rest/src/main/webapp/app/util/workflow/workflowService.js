@@ -513,6 +513,31 @@ tsApp.service('workflowService', [
       return deferred.promise;
     }
 
+    // send feedback email
+    this.sendFeedback = function(refset, feedbackMessage, name, email) {
+      console.debug("sendFeedbackEmail");
+      var deferred = $q.defer();
+
+      var sList = [ name, email, refset.id, refset.name,
+                    feedbackMessage ];
+      
+      // find members
+      gpService.increment()
+      $http.post(workflowUrl + "message" + "?refsetId=" + refset.id, sList).then(
+      // success
+      function(response) {
+        console.debug("  members = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // end
 
   } ]);

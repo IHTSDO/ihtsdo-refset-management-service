@@ -1306,6 +1306,13 @@ public class RefsetClientRest extends RootClientRest implements
     }
   }
 
+  @Override
+  public ConceptRefsetMember getMember(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
 
 }
