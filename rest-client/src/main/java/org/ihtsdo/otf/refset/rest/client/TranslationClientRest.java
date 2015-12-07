@@ -751,16 +751,49 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String ioHandlerInfoId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    Long translationId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - begin import phrasememory");
+    validateNotEmpty(translationId, "translationId");
 
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/import/phrasememory" + "?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   @Override
   public InputStream exportPhraseMemory(Long translationId, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - export phrase memory - " + translationId);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/export/phrasememory" + "?translationId=" + translationId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    InputStream in = response.readEntity(InputStream.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return in;
   }
 
   @Override
