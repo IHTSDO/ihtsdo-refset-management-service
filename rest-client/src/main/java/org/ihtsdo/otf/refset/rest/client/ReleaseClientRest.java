@@ -282,7 +282,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId,
+  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Release Client - get current release info for refset");
     validateNotEmpty(refsetId, "refsetId");
@@ -315,7 +315,7 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(Long translationId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Release Client - get current release info for translation");
     validateNotEmpty(translationId, "translationtd");

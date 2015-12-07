@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -136,6 +137,15 @@ public interface WorkflowService extends TranslationService {
    */
   public TrackingRecordList findTrackingRecordsForQuery(String query,
     PfsParameter pfs) throws Exception;
+
+  /**
+   * Send feedback email.
+   *
+   * @param message the message
+   * @param recipient the recipient
+   * @throws Exception the exception
+   */
+  public void sendFeedbackEmail(List<String> message, String recipient) throws Exception;
 
 
 }

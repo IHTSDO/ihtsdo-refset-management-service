@@ -82,10 +82,12 @@
           <td><span refset-type-icon refset="refset"></span></td>
 
           <!-- PUBLISHED/PREVIEW actions -->
-          <td class="nobreak"
-            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">                
+          <td class="nobreak" ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">                
               <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
+                 ng-show="userProjectsInfo.anyRole"
                  title="Clone" class="noul material-icons md-18">content_copy</i>
+              <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
+                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
           </td>
 
           <!-- AVAILABLE actions -->
@@ -207,7 +209,9 @@
          
             <i ng-click="openNotesModal(selected.refset, 'Refset')"
                ng-show="!selected.refset.notes || selected.refset.notes.length == 0" 
-               title="Refset Notes" class="md-grey material-icons md-18">assignment</i>        
+               title="Refset Notes" class="md-grey material-icons md-18">assignment</i>
+               
+                       
         </div>
       </h4>
       <br /> <b>Description: </b>{{selected.refset.description}}
