@@ -1437,8 +1437,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       // Load PhraseMemory
       List<MemoryEntry> memories = parsePhraseMemory(translation,in);
-      translation.getPhraseMemory().setEntries(memories);
-      translationService.updateTranslation(translation);
+      PhraseMemory phraseMemory = translation.getPhraseMemory();
+      for(MemoryEntry memoryEntry : memories) {
+        memoryEntry.setPhraseMemory(phraseMemory);
+        translationService.addMemoryEntry(memoryEntry);
+      }
     } catch (Exception e) {
       handleException(e, "trying to import translation phrase memory");
     } finally {
@@ -1454,7 +1457,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Produces("application/octet-stream")
   @Path("/export/phrasememory")
   @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
-  public InputStream exportPhraseMemory(Long translationId, String authToken)
+  public InputStream exportPhraseMemory(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /export/phrasememory " + translationId );
@@ -2156,7 +2161,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Strip \r and split lines
         line = line.replace("\r", "");
-        final String fields[] = line.split("|");
+        final String fields[] = line.split("\\|");
 
         // Check field lengths
         if (fields.length != 2) {

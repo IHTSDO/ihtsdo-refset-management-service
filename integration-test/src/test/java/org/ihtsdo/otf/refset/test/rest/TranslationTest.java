@@ -247,7 +247,7 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  //@Test
+//  @Test
   public void testMigration003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration003");
 
@@ -509,7 +509,7 @@ public class TranslationTest {
 
         // Strip \r and split lines
         line = line.replace("\r", "");
-        final String fields[] = line.split("|");
+        final String fields[] = line.split("\\|");
 
         // Check field lengths
         if (fields.length != 2) {

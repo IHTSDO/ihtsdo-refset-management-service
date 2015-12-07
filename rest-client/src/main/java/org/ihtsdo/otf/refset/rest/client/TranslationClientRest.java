@@ -274,7 +274,7 @@ public class TranslationClientRest extends RootClientRest implements
             + "/translation/export/members" + "?translationId=" + translationId
             + "&handlerId=" + ioHandlerInfoId);
     Response response =
-        target.request(MediaType.APPLICATION_XML)
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
 
     InputStream in = response.readEntity(InputStream.class);
@@ -756,7 +756,15 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - begin import phrasememory");
     validateNotEmpty(translationId, "translationId");
 
-    Client client = ClientBuilder.newClient();
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", in, "filename.dat",
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
+
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
 
     WebTarget target =
         client.target(config.getProperty("base.url")
@@ -764,7 +772,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken)
+            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -784,7 +793,7 @@ public class TranslationClientRest extends RootClientRest implements
         client.target(config.getProperty("base.url")
             + "/translation/export/phrasememory" + "?translationId=" + translationId);
     Response response =
-        target.request(MediaType.APPLICATION_XML)
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
 
     InputStream in = response.readEntity(InputStream.class);

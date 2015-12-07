@@ -424,7 +424,7 @@ public class TranslationReleaseTest {
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     translationService.removeTranslation(stagedTranslation.getId(),
@@ -493,9 +493,9 @@ public class TranslationReleaseTest {
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    releaseInfo = releaseService.getCurrentReleaseInfoForTranslation(stagedTranslation2.getId(), adminAuthToken);
+    releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
     translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
