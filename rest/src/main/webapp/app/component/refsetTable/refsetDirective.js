@@ -705,7 +705,7 @@ tsApp
                 };
                 
                 // close the modal
-                $scope.close = function(refset) {
+                $scope.cancel = function(refset) {
                   $uibModalInstance.close(refset);
                 }
 

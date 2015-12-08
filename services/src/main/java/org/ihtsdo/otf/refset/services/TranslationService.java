@@ -418,7 +418,7 @@ public interface TranslationService extends RefsetService {
   public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception;
 
   /**
-   * Get a list of translations
+   * Get a list of translations.
    *
    * @return list of translations
    * @throws Exception the Exception
@@ -426,7 +426,7 @@ public interface TranslationService extends RefsetService {
   public TranslationList getTranslations() throws Exception;
 
   /**
-   * Get a memory entry by id
+   * Get a memory entry by id.
    *
    * @param id the memory entry id
    * @return memory entry
@@ -439,13 +439,12 @@ public interface TranslationService extends RefsetService {
    *
    * @param translation the translation
    * @param stagingType the staging type
-   * @param effectiveTime 
+   * @param effectiveTime the effective time
    * @return the translation
    * @throws Exception the exception
    */
-  public Translation stageTranslation(Translation translation, StagingType stagingType, Date effectiveTime)
-    throws Exception;
-
+  public Translation stageTranslation(Translation translation,
+    StagingType stagingType, Date effectiveTime) throws Exception;
 
   /**
    * Find translation releases for query.
@@ -469,4 +468,19 @@ public interface TranslationService extends RefsetService {
    */
   public ReleaseInfo getCurrentTranslationReleaseInfo(String terminologyId,
     Long projectId) throws Exception;
+
+  /**
+   * Handle lazy initialization for a translation.
+   *
+   * @param translation the translation
+   */
+  public void handleLazyInit(Translation translation);
+
+  /**
+   * Handle lazy initialization for a concept.
+   *
+   * @param concept the concept
+   */
+  public void handleLazyInit(Concept concept);
+
 }

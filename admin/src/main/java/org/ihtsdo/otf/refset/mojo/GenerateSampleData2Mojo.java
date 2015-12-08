@@ -203,17 +203,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       security.addUser(makeUser("viewer5", "Viewer 5"), admin.getAuthToken());
       security.addUser(makeUser("viewer6", "Viewer 6"), admin.getAuthToken());
 
-      // 
+      //
       // Add some users for uat
       //
       Logger.getLogger(getClass()).info("Add uat users");
       UserJpa refsetadmin1 = makeUser("refsetadmin1", "RefsetAdmin1");
-      refsetadmin1 = (UserJpa) security.addUser(refsetadmin1, admin.getAuthToken());
+      refsetadmin1 =
+          (UserJpa) security.addUser(refsetadmin1, admin.getAuthToken());
       UserJpa refsetreviewer1 = makeUser("refsetreviewer1", "RefsetReviewer1");
-      refsetreviewer1 = (UserJpa) security.addUser(refsetreviewer1, admin.getAuthToken());
+      refsetreviewer1 =
+          (UserJpa) security.addUser(refsetreviewer1, admin.getAuthToken());
       UserJpa refsetauthor1 = makeUser("refsetauthor1", "RefsetAuthor1");
-      refsetauthor1 = (UserJpa) security.addUser(refsetauthor1, admin.getAuthToken());
-      
+      refsetauthor1 =
+          (UserJpa) security.addUser(refsetauthor1, admin.getAuthToken());
+
       /**
        * Add Projects
        * 
@@ -276,12 +279,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project1.getId(), refsetreviewer1.getUserName(),
-          UserRole.REVIEWER.toString(), admin.getAuthToken());
+      project.assignUserToProject(project1.getId(),
+          refsetreviewer1.getUserName(), UserRole.REVIEWER.toString(),
+          admin.getAuthToken());
       project = new ProjectServiceRestImpl();
-      project.assignUserToProject(project1.getId(), refsetauthor1.getUserName(),
-          UserRole.AUTHOR.toString(), admin.getAuthToken());
-      
+      project.assignUserToProject(project1.getId(),
+          refsetauthor1.getUserName(), UserRole.AUTHOR.toString(),
+          admin.getAuthToken());
+
       // Project 2
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project2.getId(), admin2.getUserName(),
@@ -469,7 +474,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make spanish translation
       makeTranslation(
           "conjunto de referencias de lenguaje castellano para América Latina",
-          "450828004", refset, project2, 2, "INT", reviewer2);
+          "450828004", refset, project2, 2, "INT", "es", reviewer2);
 
       // Swedish translation - new refsetid for scope refset
       refset =
@@ -479,7 +484,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make Swedish translation
       makeTranslation(
           "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, "INT", reviewer2);
+          "46011000052107", refset, project2, 3, "INT", "se", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -578,6 +583,17 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
+      // Make danish refset and translation
+      refset =
+          makeTranslationRefset("Danish Translation scope reference set", 20,
+              "INT", project2, "554471000005108", "554461000005103", reviewer3);
+
+      // Make Swedish translation
+      TranslationJpa translation = makeTranslation(
+          "Danish language reference set",
+          "46011000052107", refset, project2, 20, "INT", "da", reviewer2);
+      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      new TranslationServiceRestImpl().updateTranslation(translation, reviewer3.getAuthToken());
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -878,13 +894,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @param project the project
    * @param num the num
    * @param edition the edition
+   * @param lang the lang
    * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception
    */
   private TranslationJpa makeTranslation(String name, String terminologyId,
-    Refset refset, Project project, int num, String edition, User auth)
-    throws Exception {
+    Refset refset, Project project, int num, String edition, String lang,
+    User auth) throws Exception {
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
     translation.setDescription("Description of translation "
@@ -892,7 +909,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setActive(true);
     translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
-    translation.setLanguage("es");
+    translation.setLanguage(lang);
     translation.setModuleId(refset.getModuleId());
     translation.setProject(project);
     translation.setPublic(true);

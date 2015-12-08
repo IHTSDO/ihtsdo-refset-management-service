@@ -207,14 +207,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // and not for review
       String query =
           "projectId:" + projectId + " AND " + "authorUserNames:"
-              + user.getId() + " AND translationId:" + translationId
+              + user.getUserName() + " AND translationId:" + translationId
               + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       List<Concept> concepts = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        concepts.add(record.getConcept());
+        final Concept concept = record.getConcept();
+        workflowService.handleLazyInit(concept);
+        concepts.add(concept);
       }
 
       // Apply PFS to this list
@@ -300,7 +302,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Find tracking records "for review" for this translation and user
       String query =
           "projectId:" + projectId + " AND " + "reviewerUserNames:"
-              + user.getId() + " AND translationId:" + translationId
+              + user.getName() + " AND translationId:" + translationId
               + " AND forReview:true";
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
@@ -468,6 +470,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    * @return the list
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private List<Refset> findAvailableEditingRefsetsHelper(Long projectId,
     User user, WorkflowService workflowService) throws Exception {
 
@@ -478,27 +481,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService).getObjects());
     }
     for (Refset r : list) {
-      handleLazyInit(r);
+      workflowService.handleLazyInit(r);
     }
     return list;
 
-  }
-
-  /**
-   * Handle refset lazy initialization.
-   *
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Refset refset) {
-    // handle all lazy initializations
-    refset.getProject().getName();
-    for (Translation translation : refset.getTranslations()) {
-      translation.getDescriptionTypes().size();
-      translation.getWorkflowStatus().name();
-    }
-    refset.getEnabledFeedbackEvents().size();
-    refset.getNotes().size();
   }
 
   /* see superclass */
@@ -564,11 +550,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       if (userName != null && !userName.equals("")) {
         query =
             "projectId:" + projectId + " AND " + "authorUserNames:" + userName
-                + " AND refsetId:[* TO *]"
+                + " AND NOT refsetId:0"
                 + " AND forAuthoring:true AND forReview:false";
       } else {
-        query =
-            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
+        query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
       }
       // Perform this search without pfs
       TrackingRecordList records =
@@ -576,13 +561,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
-        // TODO: reuse the refset service algortihm instead of this
+        // Handle lazy initialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -591,7 +572,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.setTotalCount(records.getTotalCount());
 
       for (Refset r : list.getObjects()) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return list;
 
@@ -639,7 +620,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       result.setObjects(list);
 
       for (Refset r : list) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return result;
 
@@ -699,7 +680,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       if (userName != null && !userName.equals("")) {
         query =
             "projectId:" + projectId + " AND " + "reviewerUserNames:"
-                + userName + " AND refsetId:[* TO *]" + " AND forReview:true";
+                + userName + " AND NOT refsetId:0" + " AND forReview:true";
       } else {
         throw new Exception("UserName must always be set");
       }
@@ -708,12 +689,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy intialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -722,7 +699,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           .applyPfsToList(refsets, Refset.class, pfs));
 
       for (Refset r : list.getObjects()) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return list;
     } catch (Exception e) {
@@ -805,17 +782,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Get all assigned editing refsets
       String query =
-          "refsetId:[* TO *]" + " AND (forAuthoring:true OR forReview:true)";
+          "NOT refsetId:0" + " AND (forAuthoring:true OR forReview:true)";
       // Perform this search without pfs
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
 
@@ -865,8 +838,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (TrackingRecord record : records.getObjects()) {
         // handle lazy initialization
         Concept concept = record.getConcept();
-        concept.getTranslation().getName();
-        concept.getNotes().size();
+        workflowService.handleLazyInit(concept);
         concepts.add(concept);
       }
 
@@ -1036,11 +1008,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /**
    * Sends a feedback message email.
    *
    * @param message the message
+   * @param refsetId the refset id
    * @param authToken the auth token
    * @return the string
    * @throws Exception the exception
@@ -1055,15 +1028,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   public Response sendFeedbackEmail(
-    @ApiParam(value = "message", required = true) List<String>  message,
+    @ApiParam(value = "message", required = true) List<String> message,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     // log call
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /message ");
-    
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Workflow): /message ");
+
     WorkflowService workflowService = new WorkflowServiceJpa();
     // Test preconditions
     if (refsetId == null) {
@@ -1072,15 +1045,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     Refset refset = refsetService.getRefset(refsetId);
-    
+
     try {
       // authorize call
       authorizeApp(securityService, authToken, "send feedback email",
           UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: "
-              + message + ", " + refset.getFeedbackEmail());
+          "RESTful call (Workflow): /message msg: " + message + ", "
+              + refset.getFeedbackEmail());
 
       workflowService.sendFeedbackEmail(message, refset.getFeedbackEmail());
 

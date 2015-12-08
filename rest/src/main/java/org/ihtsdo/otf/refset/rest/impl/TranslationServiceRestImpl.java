@@ -781,7 +781,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               .setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
           for (LanguageRefsetMember member : members) {
             member.setId(null);
-            member.setTerminologyId(null);
             member.setLastModifiedBy(userName);
             member.setPublishable(true);
             member.setPublished(false);
@@ -2151,6 +2150,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
   
+  /**
+   * Parses the phrase memory.
+   *
+   * @param translation the translation
+   * @param content the content
+   * @return the list
+   * @throws Exception the exception
+   */
   private List<MemoryEntry> parsePhraseMemory(Translation translation,
       InputStream content) throws Exception {
       List<MemoryEntry> list = new ArrayList<>();

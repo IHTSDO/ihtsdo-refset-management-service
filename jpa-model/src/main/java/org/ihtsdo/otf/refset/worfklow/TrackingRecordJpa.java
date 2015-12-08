@@ -30,6 +30,7 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
@@ -323,7 +324,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlTransient
+  @XmlElement(type = ConceptJpa.class)
   @Override
   public Concept getConcept() {
     return concept;
@@ -336,26 +337,13 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Returns the concept id. For JAXB and index.
+   * Returns the concept id. For Indexing.
    *
    * @return the concept id
    */
-  @XmlElement
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public String getConceptId() {
-    return concept == null ? "" : concept.getTerminologyId();
-  }
-
-  /**
-   * Sets the concept id.
-   *
-   * @param conceptId the concept id
-   */
-  public void setConceptId(String conceptId) {
-    if (concept == null) {
-      concept = new ConceptJpa();
-    }
-    concept.setTerminologyId(conceptId);
+  private Long getConceptId() {
+    return concept == null ? 0L : concept.getId();
   }
 
   /* see superclass */

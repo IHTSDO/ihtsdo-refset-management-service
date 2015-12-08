@@ -313,13 +313,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return result;
   }
 
-  /**
-   * Handle translation lazy initialization.
-   *
-   * @param translation the translation
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Translation translation) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(Translation translation) {
     // handle all lazy initializations
     translation.getDescriptionTypes().size();
     translation.getRefset().getName();
@@ -328,13 +324,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getNotes().size();
   }
 
-  /**
-   * Handle lazy init.
-   *
-   * @param concept the concept
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Concept concept) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(Concept concept) {
+    concept.getDescriptions().size();
+    concept.getRelationships().size();
     concept.getNotes().size();
   }
 

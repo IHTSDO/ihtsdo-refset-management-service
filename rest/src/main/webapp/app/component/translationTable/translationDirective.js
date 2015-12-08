@@ -399,8 +399,8 @@ tsApp
                   return;
                 }
 
-                workflowService.performTranslationWorkflowAction($scope.project.id, translation.id,
-                  userName, "UNASSIGN", concept).then(
+                workflowService.performTranslationWorkflowAction($scope.project.id, $scope.selected.translation.id,
+                  $scope.user.userName, "UNASSIGN", concept).then(
                 // Success
                 function(data) {
                   $uibModalInstance.close(concept);
@@ -431,7 +431,7 @@ tsApp
 
                     // Unassign all concepts
                     workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                      translation.id, userName, "UNASSIGN", conceptList).then(
+                      translation.id, $scope.user.userName, "UNASSIGN", conceptList).then(
                     // Success
                     function(data) {
                       $uibModalInstance.close(concept);

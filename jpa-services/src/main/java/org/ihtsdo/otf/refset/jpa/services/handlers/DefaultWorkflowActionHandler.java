@@ -377,7 +377,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // Validate tracking record
     TrackingRecordList recordList =
         service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? "dummy" : concept.getTerminologyId()), null);
+            + (concept == null ? -1 : concept.getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -512,7 +512,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // Validate tracking record
     TrackingRecordList recordList =
         service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? "dummy" : concept.getTerminologyId()), null);
+            + (concept == null ? -1 : concept.getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -529,7 +529,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           concept.setModuleId(translation.getModuleId());
           concept.setEffectiveTime(null);
           concept.setTerminology(translation.getTerminology());
-          concept.setVersion(translation.getVersion());          
+          concept.setVersion(translation.getVersion());
           concept.setDefinitionStatusId("UNKNOWN");
           service.addConcept(concept);
 
@@ -556,6 +556,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setLastModifiedBy(user.getUserName());
           service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+          concept.setLastModifiedBy(user.getUserName());
+          service.updateConcept(concept);
         }
         break;
       case UNASSIGN:
@@ -571,6 +573,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             concept.setWorkflowStatus(WorkflowStatus.NEW);
           }
           service.removeTrackingRecord(record.getId());
+          concept.setLastModifiedBy(user.getUserName());
+          service.updateConcept(concept);
         }
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
@@ -582,6 +586,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setForReview(false);
           service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          concept.setLastModifiedBy(user.getUserName());
+          service.updateConcept(concept);
         }
         break;
 
@@ -601,6 +607,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         // all other cases, status remains the same
         // EDITING_IN_PROGRESS, EDITING_DONE, REVIEW_IN_PROGRESS, REVIEW_DONE
+        concept.setLastModifiedBy(user.getUserName());
+        service.updateConcept(concept);
         break;
 
       case FINISH:
@@ -621,6 +629,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.removeTrackingRecord(record.getId());
         }
 
+        concept.setLastModifiedBy(user.getUserName());
+        service.updateConcept(concept);
+
         // Otherwise status stays the same
         break;
 
@@ -628,12 +639,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // Handled by release process. Simply set status to PREVIEW.
         translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PREVIEW);
+        service.updateTranslation(translation);
         break;
 
       case PUBLISH:
         // Handled by release process. Simply set status to PUBLISHED
         translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+        service.updateTranslation(translation);
         break;
 
       case CANCEL:
@@ -643,9 +656,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       default:
         throw new Exception("Illegal workflow action");
     }
-
-    concept.setLastModifiedBy(user.getUserName());
-    service.updateConcept(concept);
 
     // After UNASSIGN and deleting the tracking record,
     // this would create a new tracking record to keep the

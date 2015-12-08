@@ -24,10 +24,10 @@ import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -56,8 +56,8 @@ public class TranslationTest {
 
   /** The admin auth token. */
   private static String adminAuthToken;
-  
-  /**  The refset service. */
+
+  /** The refset service. */
   protected static RefsetClientRest refsetService;
 
   /** The translation service. */
@@ -86,7 +86,7 @@ public class TranslationTest {
 
   /** The test admin password. */
   protected static String adminPassword;
-  
+
   /** The translation ct. */
   private int translationCt = 0;
 
@@ -147,44 +147,41 @@ public class TranslationTest {
 
   }
 
-
   /**
    * Test migration including begin, cancel, resume and finish.
    *
    * @throws Exception the exception
    */
-  //@Test
+  // @Test
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
-    
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional) 
+    // Create refset (extensional)
     Refset janRefset =
-        makeRefset("refset1", null,
-            Refset.Type.EXTENSIONAL, project1, null, admin);
-    
-    
-    // Create translation 
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
+            admin);
+
+    // Create translation
     TranslationJpa translation1 =
-        makeTranslation("translation99", janRefset,
-             project1,  admin);
+        makeTranslation("translation99", janRefset, project1, admin);
     // Begin migration
-    translationService.beginMigration(translation1.getId(), "SNOMEDCT", "2015-01-31 ",
-        adminAuthToken);
+    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
+        "2015-01-31 ", adminAuthToken);
     // Cancel migration
     translationService.cancelMigration(translation1.getId(), adminAuthToken);
     // Begin migration
-    translationService.beginMigration(translation1.getId(), "SNOMEDCT", "2015-01-31",
-        adminAuthToken);
+    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
+        "2015-01-31", adminAuthToken);
     // Resume migration
     translationService.resumeMigration(translation1.getId(), adminAuthToken);
     // Finish migration
     translationService.finishMigration(translation1.getId(), adminAuthToken);
 
     // clean up
-    //translationService.removeTranslation(translation1.getId(), true, adminAuthToken);
+    // translationService.removeTranslation(translation1.getId(), true,
+    // adminAuthToken);
   }
 
   /**
@@ -198,16 +195,14 @@ public class TranslationTest {
 
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional) 
+    // Create refset (extensional)
     Refset janRefset =
-        makeRefset("refset1", null,
-            Refset.Type.EXTENSIONAL, project1, null, admin);
-    
-    
-    // Create translation 
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
+            admin);
+
+    // Create translation
     TranslationJpa janTranslation =
-        makeTranslation("translation99", janRefset,
-             project1,  admin);
+        makeTranslation("translation99", janRefset, project1, admin);
 
     // Begin migration
     Translation julyStagedTranslation =
@@ -223,31 +218,32 @@ public class TranslationTest {
     assertEquals(0, diffReport.getOldNotNew().size());
     assertEquals(0, diffReport.getNewNotOld().size());
 
-    // TODO: put this back in - throws lazy initialization exception about concept.descriptions
-    /*ConceptList commonList =
-        translationService.findConceptsInCommon(reportToken, null, null,
-            adminAuthToken);
-    //assertEquals(5, commonList.getObjects().size());
-  */
+    // TODO: put this back in - throws lazy initialization exception about
+    // concept.descriptions
+    /*
+     * ConceptList commonList =
+     * translationService.findConceptsInCommon(reportToken, null, null,
+     * adminAuthToken); //assertEquals(5, commonList.getObjects().size());
+     */
 
     // Finish migration
     translationService.finishMigration(janTranslation.getId(), adminAuthToken);
 
     // cleanup
-    //translationService.removeTranslation(janTranslation.getId(), true, adminAuthToken);
+    // translationService.removeTranslation(janTranslation.getId(), true,
+    // adminAuthToken);
 
   }
 
-
   /**
-   * Test migration003.  Add concept 111269008 to the 
-   * der2_Refset_SimpleSnapshot_INT_20140731.txt file.
-   * This member becomes inactive in 2015-07-31, so this
-   * migration tests that it is removed from the migrated translation.
+   * Test migration003. Add concept 111269008 to the
+   * der2_Refset_SimpleSnapshot_INT_20140731.txt file. This member becomes
+   * inactive in 2015-07-31, so this migration tests that it is removed from the
+   * migrated translation.
    *
    * @throws Exception the exception
    */
-//  @Test
+  // @Test
   public void testMigration003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration003");
 
@@ -255,9 +251,8 @@ public class TranslationTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create translation (extensional) and import definition
     Translation janTranslation =
-        makeTranslation("translation1", null,
-            project1,  admin);
-    
+        makeTranslation("translation1", null, project1, admin);
+
     // Begin migration
     Translation julyStagedTranslation =
         translationService.beginMigration(janTranslation.getId(), "SNOMEDCT",
@@ -290,12 +285,12 @@ public class TranslationTest {
             .findTranslationConceptsForQuery(janTranslation.getId(), "",
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
-
     // cleanup
-    //translationService.removeTranslation(janTranslation.getId(), true, adminAuthToken);
+    // translationService.removeTranslation(janTranslation.getId(), true,
+    // adminAuthToken);
 
   }
-  
+
   /**
    * Teardown.
    *
@@ -342,8 +337,6 @@ public class TranslationTest {
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
 
-    
-
     // Validate translation
     ValidationResult result =
         validationService.validateTranslation(translation, auth.getAuthToken());
@@ -352,7 +345,9 @@ public class TranslationTest {
       throw new Exception("translation does not pass validation.");
     }
     // Add translation
-    translation = (TranslationJpa)translationService.addTranslation(translation, auth.getAuthToken());
+    translation =
+        (TranslationJpa) translationService.addTranslation(translation,
+            auth.getAuthToken());
 
     // Import members (from file) - switch file based on counter
     if (translationCt % 2 == 0) {
@@ -385,7 +380,7 @@ public class TranslationTest {
 
     return translation;
   }
-  
+
   /**
    * Make refset.
    *
@@ -467,7 +462,7 @@ public class TranslationTest {
 
     return refset;
   }
-  
+
   /**
    * Test Import Export PhraseMemory.
    *
@@ -479,57 +474,65 @@ public class TranslationTest {
 
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional) 
+    // Create refset (extensional)
     Refset janRefset =
-        makeRefset("refset1", null,
-            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
-    
-    
-    // Create translation 
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
     TranslationJpa translation =
-        makeTranslation("translation99", janRefset,
-             project1,  admin);
+        makeTranslation("translation99", janRefset, project1, admin);
     InputStream in =
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
-    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
-    InputStream inputStream = translationService.exportPhraseMemory(translation.getId(), adminAuthToken);
+    translationService.importPhraseMemory(null, in, translation.getId(),
+        adminAuthToken);
+    InputStream inputStream =
+        translationService.exportPhraseMemory(translation.getId(),
+            adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(2, entries.size());
   }
 
+  /**
+   * Parses the phrase memory.
+   *
+   * @param translation the translation
+   * @param content the content
+   * @return the list
+   * @throws Exception the exception
+   */
   private List<MemoryEntry> parsePhraseMemory(Translation translation,
-      InputStream content) throws Exception {
-      List<MemoryEntry> list = new ArrayList<>();
-      String line = "";
-      Reader reader = new InputStreamReader(content, "UTF-8");
-      PushBackReader pbr = new PushBackReader(reader);
-      while ((line = pbr.readLine()) != null) {
+    InputStream content) throws Exception {
+    List<MemoryEntry> list = new ArrayList<>();
+    String line = "";
+    Reader reader = new InputStreamReader(content, "UTF-8");
+    PushBackReader pbr = new PushBackReader(reader);
+    while ((line = pbr.readLine()) != null) {
 
-        // Strip \r and split lines
-        line = line.replace("\r", "");
-        final String fields[] = line.split("\\|");
+      // Strip \r and split lines
+      line = line.replace("\r", "");
+      final String fields[] = line.split("\\|");
 
-        // Check field lengths
-        if (fields.length != 2) {
-          pbr.close();
-          Logger.getLogger(getClass()).error("line = " + line);
-          throw new Exception(
-              "Unexpected field count in phrase memory file "
-                  + fields.length);
-        }
-
-        // Instantiate and populate members
-        final MemoryEntry member = new MemoryEntryJpa();
-        member.setName(fields[0]);
-        member.setTranslatedName(fields[1]);
-        // Add member
-        list.add(member);
-        Logger.getLogger(getClass()).debug("  phrasememory = " + member);
+      // Check field lengths
+      if (fields.length != 2) {
+        pbr.close();
+        Logger.getLogger(getClass()).error("line = " + line);
+        throw new Exception("Unexpected field count in phrase memory file "
+            + fields.length);
       }
-      pbr.close();
-      return list;
+
+      // Instantiate and populate members
+      final MemoryEntry member = new MemoryEntryJpa();
+      member.setName(fields[0]);
+      member.setTranslatedName(fields[1]);
+      // Add member
+      list.add(member);
+      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
     }
+    pbr.close();
+    return list;
+  }
 
 }
