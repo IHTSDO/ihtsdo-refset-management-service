@@ -376,8 +376,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate tracking record
     TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? -1 : concept.getId()), null);
+        service.findTrackingRecordsForQuery(
+            "conceptId:"
+                + ((concept == null || concept.getId() == null) ? -1 : concept
+                    .getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -511,8 +513,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
     // Validate tracking record
     TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? -1 : concept.getId()), null);
+        service.findTrackingRecordsForQuery(
+            "conceptId:"
+                + ((concept == null || concept.getId() == null) ? -1 : concept
+                    .getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -569,12 +573,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     concept.getWorkflowStatus())) {
           if (record.isRevision()) {
             concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+            service.removeTrackingRecord(record.getId());
           } else {
-            concept.setWorkflowStatus(WorkflowStatus.NEW);
+            service.removeTrackingRecord(record.getId());
+            service.removeConcept(concept.getId());
           }
-          service.removeTrackingRecord(record.getId());
-          concept.setLastModifiedBy(user.getUserName());
-          service.updateConcept(concept);
         }
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
@@ -685,7 +688,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + "where b.id = :refsetId and a.refset = b "
             + "and a.conceptId NOT IN "
             + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-            + " where c.refset = a AND d.translation = c)";
+            + " where c.refset = b AND d.translation = c)";
 
     Query ctQuery =
         rootService
@@ -695,7 +698,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     + "where b.id = :refsetId and a.refset = b "
                     + "and a.conceptId NOT IN "
                     + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-                    + " where c.refset = a AND d.translation = c)");
+                    + " where c.refset = b AND d.translation = c)");
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 

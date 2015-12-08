@@ -399,11 +399,11 @@ tsApp
                   return;
                 }
 
-                workflowService.performTranslationWorkflowAction($scope.project.id, $scope.selected.translation.id,
-                  $scope.user.userName, "UNASSIGN", concept).then(
+                workflowService.performTranslationWorkflowAction($scope.project.id,
+                  $scope.selected.translation.id, $scope.user.userName, "UNASSIGN", concept).then(
                 // Success
                 function(data) {
-                  $uibModalInstance.close(concept);
+                  translationService.fireTranslationChanged($scope.selected.translation);
                 });
 
               }
@@ -426,15 +426,15 @@ tsApp
                   function(data) {
                     // Make parameter
                     var conceptList = {
-                      objects : data.concepts
+                      concepts : data.concepts
                     };
 
                     // Unassign all concepts
                     workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                      translation.id, $scope.user.userName, "UNASSIGN", conceptList).then(
+                      $scope.selected.translation.id, $scope.user.userName, "UNASSIGN", conceptList).then(
                     // Success
                     function(data) {
-                      $uibModalInstance.close(concept);
+                      translationService.fireTranslationChanged($scope.selected.translation);
                     }
                     // Error is already handled by service
                     );
@@ -600,8 +600,7 @@ tsApp
 
               // Assign concept modal
               $scope.openAssignConceptModal = function(ltranslation, lconcept, luserName) {
-                console
-                  .debug("openAssignConceptModal ", ltranslation, lconcept, luserName);
+                console.debug("openAssignConceptModal ", ltranslation, lconcept, luserName);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/assignConcept.html',
@@ -635,8 +634,8 @@ tsApp
               };
 
               // Assign concept controller
-              var AssignConceptModalCtrl = function($scope, $uibModalInstance, concept,
-                translation, currentUserName, assignedUsers, project, $rootScope) {
+              var AssignConceptModalCtrl = function($scope, $uibModalInstance, $rootScope, concept,
+                translation, currentUserName, assignedUsers, project) {
 
                 console.debug("Entered assign concept modal control", assignedUsers, project.id);
 
@@ -700,6 +699,9 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
+                    },
+                    paging : function() {
+                      return $scope.paging
                     }
                   }
 
@@ -713,8 +715,8 @@ tsApp
               };
 
               // Batch assign concept controller
-              var BatchAssignConceptModalCtrl = function($scope, $uibModalInstance, translation,
-                currentUserName, assignedUsers, project, $rootScope) {
+              var BatchAssignConceptModalCtrl = function($scope, $uibModalInstance, $rootScope,
+                translation, currentUserName, assignedUsers, project, paging) {
 
                 console.debug("Entered assign concept modal control", assignedUsers, project.id);
 
@@ -741,37 +743,45 @@ tsApp
                   // and make sure it still matches (otherwise someone else
                   // may have assigned off this list first).  If successful, send the request
                   var pfs = {
-                    startIndex : ($scope.paging["concept"].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : $scope.paging["concept"].sortField,
-                    ascending : $scope.paging["concept"].ascending == null ? true
-                      : $scope.paging["concept"].ascending,
+                    startIndex : (paging["concept"].page - 1) * $scope.batchSize,
+                    maxResults : $scope.batchSize,
+                    sortField : paging["concept"].sortField,
+                    ascending : paging["concept"].ascending == null ? true
+                      : paging["concept"].ascending,
                     queryRestriction : null
                   };
 
-                  translationService
-                    .findTranslationConceptsForQuery(translation.id,
-                      $scope.paging["concept"].filter, pfs)
+                  workflowService
+                    .findAvailableEditingConcepts(project.id, translation.id, userName, pfs)
                     .then(
                       // Success
                       function(data) {
-                        if (!data.concepts === $scope.selected.translation.concepts) {
-                          $scope.errors[0] = "Some available concepts have been assigned, please try again.";
-                          // update concepts list
-                          $scope.selected.translation.concepts = data.concepts;
+
+                        // The first X entries of data.concepts should match translation.available
+                        var match = true;
+                        console.debug('look for match', data.concepts, translation.available);
+                        for (var i = 0; i < Math.min(data.concepts.length,
+                          translation.available.length); i++) {
+                          if (data.concepts[i].id !== translation.available[i].id) {
+                            match = false;
+                            break
+                          }
+                        }
+                        if (!match) {
+                          $scope.errors[0] = "Some available concepts have been assigned, please refresh the list and try again.";
                           return;
                         }
 
                         // Make parameter
                         var conceptList = {
-                          objects : $scope.selected.translation.concepts,
+                          concepts : data.concepts
                         };
 
                         workflowService.performBatchTranslationWorkflowAction($scope.project.id,
                           translation.id, userName, "ASSIGN", conceptList).then(
                         // Success
                         function(data) {
-                          $uibModalInstance.close(concept);
+                          $uibModalInstance.close();
                         },
                         // Error
                         function(data) {

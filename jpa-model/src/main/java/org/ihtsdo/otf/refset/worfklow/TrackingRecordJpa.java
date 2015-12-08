@@ -30,7 +30,6 @@ import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
@@ -341,9 +340,22 @@ public class TrackingRecordJpa implements TrackingRecord {
    *
    * @return the concept id
    */
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  private Long getConceptId() {
+  public Long getConceptId() {
     return concept == null ? 0L : concept.getId();
+  }
+
+  /**
+   * Sets the concept id. For Indexing.
+   *
+   * @param conceptId the concept id
+   */
+  public void setConceptId(Long conceptId) {
+    if (concept == null) {
+      concept = new ConceptJpa();
+    }
+    concept.setId(conceptId);
   }
 
   /* see superclass */

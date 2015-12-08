@@ -230,7 +230,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     User user = new UserJpa();
     user.setUserName("abc");
     Concept concept = new ConceptJpa();
-    concept.setTerminologyId("1");
+    concept.setId(1L);
     Refset refset = new RefsetJpa();
     refset.setId(1L);
     refset.setRefsetDescriptorUuid("UUID");
@@ -292,6 +292,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("revision");
     tester.include("forAuthoring");
     tester.include("projectId");
+    tester.include("conceptId");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

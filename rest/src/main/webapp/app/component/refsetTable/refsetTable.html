@@ -100,10 +100,10 @@
           <td class="nobreak"
             ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">
             <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
-                 ng-show="userProjectsInfo.anyRole"
-              title="Clone" class="noul material-icons md-18">content_copy</i>
-              <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
-                 title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+              ng-show="userProjectsInfo.anyRole" title="Clone"
+              class="noul material-icons md-18">content_copy</i>
+            <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
+              title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
           </td>
 
           <!-- AVAILABLE actions -->
@@ -230,10 +230,10 @@
         <div style="float: left;">{{selected.refset.name}}</div>
         <div style="float: right;">
           <i ng-click="openNotesModal(selected.refset, 'Refset')"
-               ng-show="!selected.refset.notes || selected.refset.notes.length == 0" 
-               title="Refset Notes" class="md-grey material-icons md-18">assignment</i>
-               
-                       
+            ng-show="!selected.refset.notes || selected.refset.notes.length == 0"
+            title="Refset Notes" class="md-grey material-icons md-18">assignment</i>
+
+
         </div>
       </h4>
       <br /> <b>Description: </b>{{selected.refset.description}}
@@ -343,6 +343,8 @@
   <!-- End R1 -->
 </div>
 
+<hr ng-show="selected.refset"
+  style="width: 100%; color: black; height: 1px; background-color: black;" />
 
 <!-- R2 -->
 <div class="row">
@@ -381,130 +383,127 @@
             ng-click="removeAllRefsetMembers(selected.refset)"
             title="Remove all members" class="noul material-icons md-18">delete</i>
         </div>
-        <span
-          ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
-          <br />
-          <span class="alert alert-warning">Refset has no members</span>
+      </h4>
+      <span
+        ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
+        <br />
+        <span class="alert alert-warning">Refset has no members</span>
+      </span>
+
+      <span>
+        <span style="display: block;">
+          <uib-pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="selected.refset.members.totalCount > pageSize"
+            total-items="selected.refset.members.totalCount"
+            ng-model="paging['member'].page"
+            ng-change="getMembers(selected.refset)"></uib-pagination>
+
+          <input class="input-filter" placeholder="Enter filter text"
+            ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter"
+            type="text" ng-model="paging['member'].filter"
+            ng-model-options="{ debounce: 300 }"
+            ng-change="getMembers(selected.refset)">
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="paging['member'].filter"
+            ng-click="paging['member'].filter = ''; getMembers(selected.refset)"
+            title="Click to clear filter text">Clear</button>
+
         </span>
 
-        <span>
-          <span style="display: block;">
-            <uib-pagination items-per-page="pageSize" max-size="5"
-              boundary-links="true" class="pagination-sm"
-              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
-              last-text="&raquo;"
-              ng-show="selected.refset.members.totalCount > pageSize"
-              total-items="selected.refset.members.totalCount"
-              ng-model="paging['member'].page"
-              ng-change="getMembers(selected.refset)"></uib-pagination>
-
-            <input class="input-filter" placeholder="Enter filter text"
-              ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter"
-              type="text" ng-model="paging['member'].filter"
-              ng-model-options="{ debounce: 300 }"
+        <table
+          ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
+          class="table">
+          <thead class="table-select-row">
+            <th class="col-md-3 col-xs-3"
+              ng-click="setSortField('member','conceptId', selected.refset)">Concept
+              Id<span ng-bind="getSortIndicator('member','conceptId')"></span>
+            </th>
+            <th class="col-md-5 col-xs-5"
+              ng-click="setSortField('member','conceptName', selected.refset)">Name<span
+                ng-bind="getSortIndicator('member','conceptName')"></span>
+            </th>
+            <th ng-show="value != 'PUBLISHED' && value != 'PREVIEW'"
+              class="col-md-2 col-xs-2"
+              ng-click="setSortField('member','lastModified', selected.refset)">Last
+              Modified<span ng-bind="getSortIndicator('member','lastModified')"></span>
+            </th>
+            <th ng-show="value == 'PUBLISHED' || value == 'PREVIEW'"
+              class="col-md-2 col-xs-2"
+              ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
+              Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>
+            </th>
+            <th class="col-md-2 col-xs-2"><select
+              title="Filter by member type" style="width: 80px;"
+              ng-model="paging['member'].typeFilter"
+              ng-options="item for item in memberTypes"
               ng-change="getMembers(selected.refset)">
+                <option value="">All</option>
+            </select></th>
+            <th ng-show="value == 'ASSIGNED' ">Actions</th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="member in selected.refset.members"
+              ng-click="selectMember(member);"
+              ng-class="{selected : member.id == selected.member.id}">
+              <td>{{member.conceptId}}</td>
+              <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
+              <td ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">{{toDate(member.lastModified)}}</td>
+              <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(member.effectiveTime)}}</td>
+              <td>
+                <button class="btn btn-xs btn-primary"
+                  ng-show="member.memberType == 'MEMBER'" uib-tooltip="Member">M</button>
+                <button class="btn btn-xs btn-danger"
+                  ng-show="member.memberType == 'EXCLUSION'"
+                  uib-tooltip="Exclusion">X</button>
+                <button class="btn btn-xs btn-success"
+                  ng-show="member.memberType == 'INCLUSION'"
+                  uib-tooltip="Inclusion">I</button>
+                <button class="btn btn-xs retired"
+                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+              </td>
+              <td class="nobreak"
+                ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
 
-            <button class="btn btn-xs btn-warning"
-              ng-show="paging['member'].filter"
-              ng-click="paging['member'].filter = ''; getMembers(selected.refset)"
-              title="Click to clear filter text">Clear</button>
+                <i
+                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType =='INCLUSION'"
+                  ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
+                  title="Remove inclusion" class="noul material-icons md-18">delete</i>
 
-          </span>
+                <i ng-show="selected.refset.type == 'EXTENSIONAL'"
+                  ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
+                  title="Remove" class="noul material-icons md-18">delete</i>
 
-          <table
-            ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
-            class="table">
-            <thead class="table-select-row">
-              <th class="col-md-3 col-xs-3"
-                ng-click="setSortField('member','conceptId', selected.refset)">Concept
-                Id<span ng-bind="getSortIndicator('member','conceptId')"></span>
-              </th>
-              <th class="col-md-5 col-xs-5"
-                ng-click="setSortField('member','conceptName', selected.refset)">Name<span
-                  ng-bind="getSortIndicator('member','conceptName')"></span>
-              </th>
-              <th ng-show="value != 'PUBLISHED' && value != 'PREVIEW'"
-                class="col-md-2 col-xs-2"
-                ng-click="setSortField('member','lastModified', selected.refset)">Last
-                Modified<span
-                  ng-bind="getSortIndicator('member','lastModified')"></span>
-              </th>
-              <th ng-show="value == 'PUBLISHED' || value == 'PREVIEW'"
-                class="col-md-2 col-xs-2"
-                ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
-                Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>
-              </th>
-              <th class="col-md-2 col-xs-2"><select
-                title="Filter by member type" style="width: 80px;"
-                ng-model="paging['member'].typeFilter"
-                ng-options="item for item in memberTypes"
-                ng-change="getMembers(selected.refset)">
-                  <option value="">All</option>
-              </select></th>
-              <th ng-show="value == 'ASSIGNED' ">Actions</th>
-            </thead>
-            <tbody>
-              <tr ng-repeat="member in selected.refset.members"
-                ng-click="selectMember(member);"
-                ng-class="{selected : member.id == selected.member.id}">
-                <td>{{member.conceptId}}</td>
-                <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
-                <td ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">{{toDate(member.lastModified)}}</td>
-                <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(member.effectiveTime)}}</td>
-                <td>
-                  <button class="btn btn-xs btn-primary"
-                    ng-show="member.memberType == 'MEMBER'" uib-tooltip="Member">M</button>
-                  <button class="btn btn-xs btn-danger"
-                    ng-show="member.memberType == 'EXCLUSION'"
-                    uib-tooltip="Exclusion">X</button>
-                  <button class="btn btn-xs btn-success"
-                    ng-show="member.memberType == 'INCLUSION'"
-                    uib-tooltip="Inclusion">I</button>
-                  <button class="btn btn-xs retired"
-                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
-                </td>
-                <td class="nobreak"
-                  ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
+                <i
+                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
+                  ng-click="removeRefsetExclusion(selected.refset,member); $event.stopPropagation()"
+                  title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
-                  <i
-                    ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType =='INCLUSION'"
-                    ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
-                    title="Remove inclusion" class="noul material-icons md-18">delete</i>
+                <i
+                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'MEMBER'"
+                  ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
+                  title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
 
-                  <i ng-show="selected.refset.type == 'EXTENSIONAL'"
-                    ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
-                    title="Remove" class="noul material-icons md-18">delete</i>
+                <i ng-click="openNotesModal(member, 'Member')"
+                  ng-show="member.notes.length > 0" title="Edit member Notes"
+                  class="noul material-icons md-18">assignment</i>
 
-                  <i
-                    ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
-                    ng-click="removeRefsetExclusion(selected.refset,member); $event.stopPropagation()"
-                    title="Remove exclusion" class="noul material-icons md-18">delete</i>
-
-                  <i
-                    ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'MEMBER'"
-                    ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
-                    title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
-
-                  <i ng-click="openNotesModal(member, 'Member')"
-                    ng-show="member.notes.length > 0"
-                    title="Refset Member Notes"
-                    class="noul material-icons md-18">assignment</i>
-
-                  <i ng-click="openNotesModal(member, 'Member')"
-                    ng-show="!member.notes || member.notes.length == 0"
-                    title="Add Refset Member Notes"
-                    class="md-grey material-icons md-18">assignment</i>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          <span
-            ng-show="paging['member'].filter && selected.refset.members.totalCount == 0"
-            class="alert alert-warning">
-            <br />No refset members matching filter
-          </span>
-
+                <i ng-click="openNotesModal(member, 'Member')"
+                  ng-show="!member.notes || member.notes.length == 0"
+                  title="Add member notes" class="md-grey material-icons md-18">assignment</i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <span
+          ng-show="paging['member'].filter && selected.refset.members.totalCount == 0"
+          class="alert alert-warning">
+          <br />No refset members matching filter
         </span>
+
+      </span>
     </div>
 
     <!-- End R2C2 -->
