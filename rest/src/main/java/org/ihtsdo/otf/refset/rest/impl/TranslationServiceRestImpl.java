@@ -708,6 +708,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + ", " + ioHandlerInfoId);
 
     TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
       // Load translation
       Translation translation =
@@ -810,7 +812,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
+      // close transaction
+      translationService.commit();
     } catch (Exception e) {
+      translationService.rollback();
       handleException(e, "trying to import translation concepts");
     } finally {
       translationService.close();

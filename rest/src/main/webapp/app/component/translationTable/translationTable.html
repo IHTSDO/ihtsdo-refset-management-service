@@ -84,9 +84,14 @@
             <i
               ng-click="removeTranslation(translation); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
-              
-            <!-- Mark ready for publication 
-            performs validadate and moves it when ready -->
+
+            <!-- Mark ready for publication -->
+            <i
+              ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
+              ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
+              title="Start release process - TODO"
+              class="noul material-icons md-18">open_in_new</i>
+
           </td>
 
           <!-- EDITING_ALL actions -->
@@ -207,7 +212,8 @@
   <!-- R1-->
 </div>
 
-<hr ng-show="selected.translation && value == 'EDITING'" style="width: 100%; color: black; height: 1px; background-color:black;" />
+<hr ng-show="selected.translation && value == 'EDITING'"
+  style="width: 100%; color: lightgrey; height: 1px; background-color: lightgrey;" />
 
 <!-- R2 (for "preview/published") -->
 <div ng-show="value == 'EDITING'" class="row">
@@ -330,14 +336,16 @@
           <!-- Actions -->
           <td class="nobreak">
             <!-- Edit -->
-            <!-- Delete -->
 
-            <!-- UnAssign -->
+            <!-- UnAssign (instead of delete) -->
             <i ng-show="projects.role != 'ADMIN'" ng-click="unassign(concept)"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
-<!-- Reassign - if REVIW -->
-            <!-- Save -->
-            <!-- Finish -->
+
+            <!-- Reassign - if REVIEW -->
+            <i ng-show="concept.workflowStatus != 'REVIEW_DONE'"
+              ng-click="performWorkflowAction(concept, 'FINISH'); $event.stopPropagation()"
+              title="Finish" class="noul material-icons md-18">done</i>
+
           </td>
         </tr>
       </tbody>
@@ -350,7 +358,8 @@
   <!-- End R2 -->
 </div>
 
-<hr ng-show="selected.translation" style="width: 100%; color: black; height: 1px; background-color:black;" />
+<hr ng-show="selected.translation"
+  style="width: 100%; color: lightgrey; height: 1px; background-color: lightgrey;" />
 
 <!-- R3 - concept list and details panel -->
 <div class="row">
@@ -447,9 +456,11 @@
               <td ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">{{toDate(concept.lastModified)}}</td>
               <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(concept.effectiveTime)}}</td>
               <td>
-                <i ng-show="concept.notes.length > 0" title="Edit concept Notes - todo"
+                <i ng-show="concept.notes.length > 0"
+                  title="Edit concept Notes - todo"
                   class="noul material-icons md-18">assignment</i>
-                <i ng-show="concept.notes.length == 0" title="Add Concept Notes - todo"
+                <i ng-show="concept.notes.length == 0"
+                  title="Add Concept Notes - todo"
                   class="md-grey material-icons md-18">assignment</i>
               </td>
             </tr>

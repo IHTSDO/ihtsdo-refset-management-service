@@ -2141,6 +2141,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + ioHandlerInfoId);
 
     RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     try {
       // Load refset
       Refset refset = refsetService.getRefset(refsetId);
@@ -2219,8 +2221,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-
+      
+      // End transaction
+      refsetService.commit();
     } catch (Exception e) {
+      refsetService.rollback();
       handleException(e, "trying to import refset members");
     } finally {
       refsetService.close();

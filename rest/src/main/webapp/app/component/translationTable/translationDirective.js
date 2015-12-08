@@ -81,6 +81,7 @@ tsApp
               $scope.$on('refset:translationChanged', function(event, data) {
                 console.debug('on refset:translationChanged', data);
                 // If the translation is set, refresh translation list
+                // This also reselects the translation
                 $scope.getTranslations();
               });
 
@@ -90,8 +91,6 @@ tsApp
                 // If the translation is set, refresh available/assigned lists
                 if ($scope.selected.translation) {
                   $scope.selectTranslation($scope.selected.translation);
-                  $scope.getAvailableConcepts($scope.selected.translation);
-                  $scope.getAssignedConcepts($scope.selected.translation);
                 }
               });
 
@@ -395,6 +394,11 @@ tsApp
 
               // Unassign the specified concept
               $scope.unassign = function(concept) {
+                // Confirm action
+                if (!confirm("Are you sure you want to unassign this concept ("
+                  + concept.terminologyId + ")")) {
+                  return;
+                }
                 if (!concept) {
                   return;
                 }
@@ -410,6 +414,10 @@ tsApp
 
               // Unassign all concepts assigned to this user
               $scope.unassignAll = function() {
+                // Confirm action
+                if (!confirm("Are you sure you want to unassign all concepts?")) {
+                  return;
+                }
 
                 // load all concepts assigned to the user
                 var pfs = {
@@ -430,20 +438,32 @@ tsApp
                     };
 
                     // Unassign all concepts
-                    workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                      $scope.selected.translation.id, $scope.user.userName, "UNASSIGN", conceptList).then(
-                    // Success
-                    function(data) {
-                      translationService.fireTranslationChanged($scope.selected.translation);
-                    }
-                    // Error is already handled by service
-                    );
+                    workflowService
+                      .performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, "UNASSIGN",
+                        conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
 
                   }
                 // Error is already handled by service
                 );
 
               }
+
+              // Performs a workflow action
+              $scope.performWorkflowAction = function(concept, action) {
+
+                workflowService.performTranslationWorkflowAction($scope.project.id,
+                  $scope.selected.translation.id, $scope.user.userName, action, concept).then(
+                  function(data) {
+                    translationService.fireConceptChanged(concept);
+                  })
+              };
 
               // 
               // MODALS
