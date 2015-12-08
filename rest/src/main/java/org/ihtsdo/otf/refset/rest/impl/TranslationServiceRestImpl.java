@@ -93,6 +93,9 @@ import com.wordnik.swagger.annotations.ApiParam;
 public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationServiceRest {
 
+  /** The commit ct. */
+  final int commitCt = 2000;
+
   /** The security service. */
   private SecurityService securityService;
 
@@ -764,10 +767,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setPublishable(true);
         concept.setPublished(false);
         if (translationService.getTerminologyHandler().assignNames()) {
-          final Concept c2 = translationService
-              .getTerminologyHandler()
-              .getConcept(concept.getTerminologyId(),
-                  translation.getTerminology(), translation.getVersion());
+          final Concept c2 =
+              translationService.getTerminologyHandler().getConcept(
+                  concept.getTerminologyId(), translation.getTerminology(),
+                  translation.getVersion());
           concept.setName(c2.getName());
           concept.setActive(c2.isActive());
         } else {
@@ -800,6 +803,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
 
         conceptIds.add(concept.getTerminologyId());
+
+        if (objectCt % commitCt == 0) {
+          translationService.commit();
+          translationService.clear();
+          translationService.beginTransaction();
+        }
+
       }
 
       Logger.getLogger(getClass()).info(
@@ -1415,12 +1425,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /import/phrasememory " + translationId );
+        "RESTful call POST (Translation): /import/phrasememory "
+            + translationId);
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
-      Translation translation = translationService.getTranslation(translationId);
+      Translation translation =
+          translationService.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
@@ -1442,9 +1454,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       // Load PhraseMemory
-      List<MemoryEntry> memories = parsePhraseMemory(translation,in);
+      List<MemoryEntry> memories = parsePhraseMemory(translation, in);
       PhraseMemory phraseMemory = translation.getPhraseMemory();
-      for(MemoryEntry memoryEntry : memories) {
+      for (MemoryEntry memoryEntry : memories) {
         memoryEntry.setPhraseMemory(phraseMemory);
         translationService.addMemoryEntry(memoryEntry);
       }
@@ -1468,12 +1480,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /export/phrasememory " + translationId );
+        "RESTful call POST (Translation): /export/phrasememory "
+            + translationId);
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
-      Translation translation = translationService.getTranslation(translationId);
+      Translation translation =
+          translationService.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
@@ -1487,8 +1501,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       StringBuilder sb = new StringBuilder();
-      for(MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-        sb.append(entry.getName()).append("|").append(entry.getTranslatedName()).append("\r\n");
+      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        sb.append(entry.getName()).append("|")
+            .append(entry.getTranslatedName()).append("\r\n");
       }
 
       return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
@@ -2154,7 +2169,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-  
+
   /**
    * Parses the phrase memory.
    *
@@ -2164,36 +2179,35 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
    * @throws Exception the exception
    */
   private List<MemoryEntry> parsePhraseMemory(Translation translation,
-      InputStream content) throws Exception {
-      List<MemoryEntry> list = new ArrayList<>();
-      String line = "";
-      Reader reader = new InputStreamReader(content, "UTF-8");
-      PushBackReader pbr = new PushBackReader(reader);
-      while ((line = pbr.readLine()) != null) {
+    InputStream content) throws Exception {
+    List<MemoryEntry> list = new ArrayList<>();
+    String line = "";
+    Reader reader = new InputStreamReader(content, "UTF-8");
+    PushBackReader pbr = new PushBackReader(reader);
+    while ((line = pbr.readLine()) != null) {
 
-        // Strip \r and split lines
-        line = line.replace("\r", "");
-        final String fields[] = line.split("\\|");
+      // Strip \r and split lines
+      line = line.replace("\r", "");
+      final String fields[] = line.split("\\|");
 
-        // Check field lengths
-        if (fields.length != 2) {
-          pbr.close();
-          Logger.getLogger(getClass()).error("line = " + line);
-          throw new Exception(
-              "Unexpected field count in phrase memory file "
-                  + fields.length);
-        }
-
-        // Instantiate and populate members
-        final MemoryEntry member = new MemoryEntryJpa();
-        member.setName(fields[0]);
-        member.setTranslatedName(fields[1]);
-        // Add member
-        list.add(member);
-        Logger.getLogger(getClass()).debug("  phrasememory = " + member);
+      // Check field lengths
+      if (fields.length != 2) {
+        pbr.close();
+        Logger.getLogger(getClass()).error("line = " + line);
+        throw new Exception("Unexpected field count in phrase memory file "
+            + fields.length);
       }
-      pbr.close();
-      return list;
+
+      // Instantiate and populate members
+      final MemoryEntry member = new MemoryEntryJpa();
+      member.setName(fields[0]);
+      member.setTranslatedName(fields[1]);
+      // Add member
+      list.add(member);
+      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
     }
+    pbr.close();
+    return list;
+  }
 
 }
