@@ -149,7 +149,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedEditingConcepts(Long projectId,
+  public TrackingRecordList findAssignedEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -182,8 +182,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */
@@ -227,7 +227,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ConceptList findAssignedReviewConcepts(Long projectId,
+  public TrackingRecordList findAssignedReviewConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -260,8 +260,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */

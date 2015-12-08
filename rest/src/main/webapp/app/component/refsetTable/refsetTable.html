@@ -24,7 +24,7 @@
 
       <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
         <div style="float: right;">
-          <i ng-click="openAddTranslationModal()" title="Add refset"
+          <i ng-click="openAddRefsetModal()" title="Add refset"
             class="noul material-icons md-24">add</i>
         </div>
       </h4>
@@ -122,13 +122,23 @@
 
             <i ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
-            <i
-              title="Assigned to {{refsetIdToAuthorsMap[refset.id][0].userName}} {{refsetIdToReviewersMap[refset.id][0].userName}}"
-              class="noul material-icons md-18">assignment_ind</i>
 
-            <i
-              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName); $event.stopPropagation()"
-              title="Unassign" class="noul material-icons md-18">assignment_return</i>
+            <span ng-repeat="author in refsetAuthorsMap[refset.id]">
+              <!-- Only unassign if there are no reviewers -->
+              <i ng-show="refsetReviewersMap[refset.id].length == 0"
+                uib-tooltip="Unassign author: {{author.userName}}"
+                ng-click="performWorkflowAction(refset, 'UNASSIGN', author.userName); $event.stopPropagation()"
+                class="noul material-icons md-18">assignment_return</i>
+              <i ng-show="refsetReviewersMap[refset.id].length > 0"
+                uib-tooltip="Unassign author: {{author.userName}}"
+                class="md-grey material-icons md-18">assignment_ind</i>
+            </span>
+            <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
+              <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
+                ng-click="performWorkflowAction(refset, 'UNASSIGN', reviewer.userName); $event.stopPropagation()"
+                class="noul material-icons md-18">assignment_return</i>
+            </span>
+
           </td>
 
           <!-- ASSIGNED actions -->

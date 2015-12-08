@@ -302,23 +302,35 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   }
 
   @Override
-  public void sendFeedbackEmail(List<String> message, String recipient) throws Exception {
+  public void sendFeedbackEmail(List<String> message, String recipient)
+    throws Exception {
     OtfEmailHandler emailHandler = new OtfEmailHandler();
     // get to address from config.properties
     Properties config = ConfigUtility.getConfigProperties();
-    
-    String baseUrlWebapp = 
-        config.getProperty("base.url.webapp");
-    /*String conceptUrl =
-        baseUrlWebapp + "/#/record/conceptId/" + message.get(2);*/
-    
+
+    String baseUrlWebapp = config.getProperty("base.url.webapp");
+    /*
+     * String conceptUrl = baseUrlWebapp + "/#/record/conceptId/" +
+     * message.get(2);
+     */
+
     emailHandler.sendSimpleEmail(recipient, message.get(1),
-      "Refset/Translation Tool User Feedback: " + message.get(2) + "-" + message.get(3), 
-      "User: " + message.get(0) + "<br>" + 
-      "Email: " + message.get(1) + "<br>" + 
-      /*"Concept: <a href=" + conceptUrl + ">" + message.get(2) + "- " + message.get(3) + "</a><br><br>" + */
-      message.get(4));
-    
+        "Refset/Translation Tool User Feedback: " + message.get(2) + "-"
+            + message.get(3), "User: " + message.get(0) + "<br>" + "Email: "
+            + message.get(1) + "<br>" +
+            /*
+             * "Concept: <a href=" + conceptUrl + ">" + message.get(2) + "- " +
+             * message.get(3) + "</a><br><br>" +
+             */
+            message.get(4));
+
   }
-  
+
+  /* see superclass */
+  @Override
+  public void handleLazyInit(TrackingRecord record) {
+    record.getAuthors().size();
+    record.getReviewers().size();
+  }
+
 }

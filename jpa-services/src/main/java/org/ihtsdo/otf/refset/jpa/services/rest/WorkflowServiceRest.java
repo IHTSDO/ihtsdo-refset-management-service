@@ -120,7 +120,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedEditingConcepts(Long projectId,
+  public TrackingRecordList findAssignedEditingConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 
@@ -150,7 +150,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAssignedReviewConcepts(Long projectId,
+  public TrackingRecordList findAssignedReviewConcepts(Long projectId,
     Long translationId, String userName, PfsParameterJpa pfs, String authToken)
     throws Exception;
 

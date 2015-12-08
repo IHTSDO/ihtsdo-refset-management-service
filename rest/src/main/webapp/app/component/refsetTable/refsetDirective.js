@@ -6,14 +6,15 @@ tsApp
     [
       '$uibModal',
       '$rootScope',
+      '$sce',
       'utilService',
       'securityService',
       'projectService',
       'refsetService',
       'releaseService',
       'workflowService',
-      function($uibModal, $rootScope, utilService, securityService, projectService, refsetService,
-        releaseService, workflowService) {
+      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
+        refsetService, releaseService, workflowService) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -47,8 +48,8 @@ tsApp
               $scope.memberTypes = [ "Member", "Exclusion", "Inclusion" ];
 
               // Used for project admin to know what users are assigned to something.
-              $scope.refsetIdToAuthorsMap = {};
-              $scope.refsetIdToReviewersMap = {};
+              $scope.refsetAuthorsMap = {};
+              $scope.refsetReviewersMap = {};
 
               // Paging variables
               $scope.pageSize = 10;
@@ -167,14 +168,19 @@ tsApp
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
 
-                      // get refset tracking records
-                      // in
-                      // order to get refset authors
+                      // get refset tracking records in order to get refset authors
                       for (var i = 0; i < $scope.refsets.length; i++) {
                         workflowService.getTrackingRecordForRefset($scope.refsets[i].id).then(
                           function(data) {
-                            $scope.refsetIdToAuthorsMap[data.refsetId] = data.authors;
-                            $scope.refsetIdToReviewersMap[data.refsetId] = data.reviewers;
+                            if (data.authors.length > 0) {
+                              $scope.refsetAuthorsMap[data.refsetId] = data.authors;
+                            }
+                            if (data.reviewers.length > 0) {
+                              $scope.refsetReviewersMap[data.refsetId] = data.reviewers;
+                            }
+                            console.debug(" ar map", data.refsetId,
+                              $scope.refsetAuthorsMap[data.refsetId],
+                              $scope.refsetReviewersMap[data.refsetId]);
                           });
                       }
                       $scope.reselect();
@@ -227,7 +233,7 @@ tsApp
                   $scope.selected.refset = null;
                 }
               }
-              
+
               // Get $scope.members
               $scope.getMembers = function(refset) {
 
@@ -398,14 +404,6 @@ tsApp
                 })
               };
 
-              // Used for ASSIGNED_ALL to know who refsets are assigned to
-              $scope.getAuthorsForRefsetId = function(refsetId) {
-                return $scope.refsetIdToAuthorsMap[refsetId];
-              }
-              $scope.getReviewersForRefsetId = function(refsetId) {
-                return $scope.refsetIdToReviewersMap[refsetId];
-              }
-
               // Exports a release artifact (and begins the
               // download)
               $scope.exportReleaseArtifact = function(artifact) {
@@ -461,7 +459,6 @@ tsApp
               //
               // MODALS
               //
-              
 
               // Notes modal
               $scope.openNotesModal = function(lobject, ltype) {
@@ -494,11 +491,11 @@ tsApp
                 console.debug("Entered notes modal control", object, type);
 
                 $scope.errors = [];
-                
+
                 $scope.object = object;
                 $scope.type = type;
                 $scope.newNote = null;
-                
+
                 // Paging parameters
                 $scope.pageSize = 5;
                 $scope.pagedNotes = [];
@@ -510,7 +507,7 @@ tsApp
                   sortField : "lastModified",
                   ascending : true
                 }
-                               
+
                 // Get paged notes (assume all are loaded)
                 $scope.getPagedNotes = function() {
                   $scope.pagedNotes = $scope.getPagedArray($scope.object.notes,
@@ -553,7 +550,7 @@ tsApp
 
                   return results;
                 }
-                
+
                 // function for sorting an array by (string) field and direction
                 $scope.sort_by = function(field, reverse) {
 
@@ -600,25 +597,24 @@ tsApp
 
                   return false;
                 }
-                
+
                 // remove note
                 $scope.removeNote = function(object, note) {
                   console.debug("remove note", object.id, note.value);
-                  if ($scope.type == 'Refset') {                   
+                  if ($scope.type == 'Refset') {
                     refsetService.removeRefsetNote(object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      refsetService.getRefset(object.id).then(
-                        function(data) {
-                          object.notes = data.notes;
-                          $scope.getPagedNotes();
-                        },
-                        // Error - add refset
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                      refsetService.getRefset(object.id).then(function(data) {
+                        object.notes = data.notes;
+                        $scope.getPagedNotes();
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
                     },
                     // Error - add refset
                     function(data) {
@@ -630,16 +626,15 @@ tsApp
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      refsetService.getMember(object.id).then(
-                        function(data) {
-                          object.notes = data.notes;
-                          $scope.getPagedNotes();
-                        },
-                        // Error - add refset
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                      refsetService.getMember(object.id).then(function(data) {
+                        object.notes = data.notes;
+                        $scope.getPagedNotes();
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
                     },
                     // Error - add refset
                     function(data) {
@@ -648,26 +643,25 @@ tsApp
                     })
                   }
                 }
-                
+
                 // add new note
                 $scope.submitNote = function(object, text) {
                   console.debug("submit note", object.id, text);
-                  
-                  if ($scope.type == 'Refset') {                   
+
+                  if ($scope.type == 'Refset') {
                     refsetService.addRefsetNote(object.id, text).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
-                      refsetService.getRefset(object.id).then(
-                        function(data) {
-                          object.notes = data.notes;
-                          $scope.getPagedNotes();
-                        },
-                        // Error - add refset
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                      refsetService.getRefset(object.id).then(function(data) {
+                        object.notes = data.notes;
+                        $scope.getPagedNotes();
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
                     },
                     // Error - add refset
                     function(data) {
@@ -680,16 +674,15 @@ tsApp
                     function(data) {
                       $scope.newNote = null;
 
-                      refsetService.getMember(object.id).then(
-                        function(data) {
-                          object.notes = data.notes;
-                          $scope.getPagedNotes();
-                        },
-                        // Error - add refset
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                      refsetService.getMember(object.id).then(function(data) {
+                        object.notes = data.notes;
+                        $scope.getPagedNotes();
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
                     },
                     // Error - add refset
                     function(data) {
@@ -703,7 +696,7 @@ tsApp
                 $scope.toShortDate = function(lastModified) {
                   return utilService.toShortDate(lastModified);
                 };
-                
+
                 // close the modal
                 $scope.cancel = function(refset) {
                   $uibModalInstance.close(refset);
@@ -712,7 +705,6 @@ tsApp
                 // initialize modal
                 $scope.getPagedNotes();
               };
-
 
               // Clone Refset modal
               $scope.openCloneRefsetModal = function(lrefset) {
@@ -1503,14 +1495,13 @@ tsApp
 
                 };
 
-
                 // get search results
                 $scope.getSearchResults = function(search, clearPaging) {
 
                   if (clearPaging) {
                     $scope.paging["search"].page = 1;
                   }
-                  
+
                   if (!search) {
                     $scope.errors[0] = "The search field cannot be blank. ";
                     return;
@@ -2038,7 +2029,7 @@ tsApp
               //
               // Modals
               //
-              
+
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
                 console.debug("feedbackModal ", lrefset);
@@ -2071,15 +2062,15 @@ tsApp
 
                 $scope.sendFeedback = function(refset, feedbackMessage, name, email) {
                   console.debug("submit feedback", refset.id);
-                  
+
                   if (feedbackMessage == null || feedbackMessage == undefined
                     || feedbackMessage === '') {
                     window.alert("The feedback field cannot be blank. ");
                     return;
                   }
 
-                  if (name == null || name == undefined || name === ''
-                      || email == null || email == undefined || email === '') {
+                  if (name == null || name == undefined || name === '' || email == null
+                    || email == undefined || email === '') {
                     window.alert("Name and email must be provided.");
                     return;
                   }
@@ -2088,13 +2079,12 @@ tsApp
                     window.alert("Invalid email address provided.");
                     return;
                   }
-                  
+
                   workflowService.sendFeedback(refset, feedbackMessage, name, email).then(
                   // Success - add refset
                   function(data) {
                     var newRefset = data;
-                    
-                   
+
                   },
                   // Error - add refset
                   function(data) {
@@ -2106,7 +2096,7 @@ tsApp
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');
                 };
-              
+
                 function validateEmail(email) {
                   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                   return re.test(email);
@@ -2132,7 +2122,7 @@ tsApp
                   }
                 };
               };
-              
+
             } ]
         }
       } ]);

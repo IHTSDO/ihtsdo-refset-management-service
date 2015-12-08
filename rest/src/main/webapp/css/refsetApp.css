@@ -191,6 +191,11 @@ a:hover {
 	cursor: pointer;
 	text-decoration: none;
 }
+.md-black {
+	color: black;
+	cursor: pointer;
+	text-decoration: none;
+}
 
 /* For vertical centering */
 .v-wrap{

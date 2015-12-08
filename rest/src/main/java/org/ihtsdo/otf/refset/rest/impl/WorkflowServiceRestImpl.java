@@ -184,8 +184,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/editing")
-  @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedEditingConcepts(
+  @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -211,21 +211,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-      List<Concept> concepts = new ArrayList<>();
+          workflowService.findTrackingRecordsForQuery(query, pfs);
       for (TrackingRecord record : records.getObjects()) {
-        final Concept concept = record.getConcept();
-        workflowService.handleLazyInit(concept);
-        concepts.add(concept);
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
       }
 
-      // Apply PFS to this list
-      ConceptList list = new ConceptListJpa();
-      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
-          pfs));
-      list.setTotalCount(records.getTotalCount());
-
-      return list;
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned editing work");
@@ -281,8 +273,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/review")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedReviewConcepts(
+  @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
@@ -305,16 +297,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               + user.getName() + " AND translationId:" + translationId
               + " AND forReview:true";
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-      List<Concept> concepts = new ArrayList<>();
+          workflowService.findTrackingRecordsForQuery(query, pfs);
       for (TrackingRecord record : records.getObjects()) {
-        concepts.add(record.getConcept());
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
       }
-      ConceptList list = new ConceptListJpa();
-      list.setTotalCount(records.getTotalCount());
-      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
-          pfs));
-      return list;
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");

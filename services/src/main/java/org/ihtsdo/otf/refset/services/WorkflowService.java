@@ -145,7 +145,13 @@ public interface WorkflowService extends TranslationService {
    * @param recipient the recipient
    * @throws Exception the exception
    */
-  public void sendFeedbackEmail(List<String> message, String recipient) throws Exception;
+  public void sendFeedbackEmail(List<String> message, String recipient)
+    throws Exception;
 
-
+  /**
+   * Handle lazy init.
+   *
+   * @param record the record
+   */
+  public void handleLazyInit(TrackingRecord record);
 }

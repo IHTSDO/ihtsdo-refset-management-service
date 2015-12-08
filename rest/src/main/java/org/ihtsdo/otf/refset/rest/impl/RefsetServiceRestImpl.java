@@ -1049,13 +1049,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
                 refsetCopy.getDefinition(), refsetCopy.getTerminology(),
                 refsetCopy.getVersion(), null);
 
-        // collect exclusions concept ids from origin refset
-        /*
-         * Set<String> exclusionConceptIds = new HashSet<>(); for
-         * (ConceptRefsetMember member : refset.getMembers()) { if
-         * (member.getMemberType() == Refset.MemberType.EXCLUSION) {
-         * exclusionConceptIds.add(member.getConceptId()); } }
-         */
         // do this to re-use the terminology id
         Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
         for (ConceptRefsetMember member : refset.getMembers()) {
@@ -1085,12 +1078,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           }
 
           // If origin refset has this as in exclusion, keep it that way.
-          /*
-           * if (exclusionConceptIds.contains(member.getConceptId())) {
-           * member.setMemberType(MemberType.EXCLUSION); } else {
-           */
           member.setMemberType(Refset.MemberType.MEMBER);
-          // }
           member.setPublishable(true);
           member.setRefset(refsetCopy);
           member.setTerminology(refsetCopy.getTerminology());
@@ -1100,22 +1088,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           // Add to in-memory data structure for later use
           refsetCopy.addMember(member);
         }
-        // add inclusions to the refsetCopy if they are not already in the
-        // member list
-        /*
-         * for (ConceptRefsetMember member : refset.getMembers()) { if
-         * (member.getMemberType() == Refset.MemberType.INCLUSION) { boolean
-         * found = false; for (Concept listConcept : conceptList.getObjects()) {
-         * if (listConcept.getTerminologyId().equals(member.getConceptId())) {
-         * found = true; break; } } if (!found) { member.setId(null);
-         * member.setRefset(refsetCopy); if (!refsetService
-         * .getTerminologyHandler() .getConcept(member.getConceptId(),
-         * refsetCopy.getTerminology(), refsetCopy.getVersion()) .isActive()) {
-         * member.setMemberType(Refset.MemberType.INACTIVE_INCLUSION); } else {
-         * member.setMemberType(Refset.MemberType.INCLUSION); }
-         * member.setLastModifiedBy(userName); refsetService.addMember(member);
-         * } } }
-         */
+
       } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
         for (ConceptRefsetMember member : refsetCopy.getMembers()) {
@@ -1371,13 +1344,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               .resolveExpression(newDefinition, refset.getTerminology(),
                   refset.getVersion(), null);
 
-      // collect exclusions concept ids from origin refset
-      /*
-       * Set<String> exclusionConceptIds = new HashSet<>(); for
-       * (ConceptRefsetMember member : refset.getMembers()) { if
-       * (member.getMemberType() == Refset.MemberType.EXCLUSION) {
-       * exclusionConceptIds.add(member.getConceptId()); } }
-       */
       // do this to re-use the terminology id
       Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
       for (ConceptRefsetMember member : refset.getMembers()) {
@@ -1405,12 +1371,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         }
 
-        /*
-         * if (exclusionConceptIds.contains(member.getConceptId())) {
-         * member.setMemberType(MemberType.EXCLUSION); } else {
-         */
         member.setMemberType(Refset.MemberType.MEMBER);
-        // }
         member.setPublishable(true);
         member.setRefset(refsetCopy);
         member.setTerminology(refsetCopy.getTerminology());
@@ -1499,13 +1460,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // rewire staged-not-origin members
       for (ConceptRefsetMember stagedMember : stagedMembers) {
-
-        // Originally, we were removing inactive inclusions, but there
-        // is a real use case for keeping them.
-        // if (stagedMember.getMemberType() ==
-        // Refset.MemberType.INACTIVE_INCLUSION) {
-        // refsetService.removeMember(stagedMember.getId());
-        // }
 
         // New member, rewire to origin
         if (!originMembers.contains(stagedMember)) {

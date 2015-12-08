@@ -484,7 +484,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make Swedish translation
       makeTranslation(
           "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, "INT", "se", reviewer2);
+          "46011000052107", refset, project2, 3, "INT", "sv", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -957,9 +957,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
         "../config/src/main/resources/data/translation" + num
             + "/translation.zip");
-    makeReleaseArtifact("sct2_Description_" + edition + "_20150131.txt", info,
+    makeReleaseArtifact("sct2_Description_Snapshot_" + edition + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
-            + "/sct2_Description_" + edition + "_20150131.txt");
+            + "/sct2_Description_Snapshot_" + edition + "_20150131.txt");
     makeReleaseArtifact("der2_cRefset_LanguageSnapshot_" + edition
         + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num

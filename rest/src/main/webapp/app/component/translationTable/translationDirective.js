@@ -281,7 +281,7 @@ tsApp
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
-                    translation.assigned = data.concepts;
+                    translation.assigned = data.records;
                     translation.assigned.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'REVIEWER') {
@@ -289,7 +289,7 @@ tsApp
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
-                    translation.assigned = data.concepts;
+                    translation.assigned = data.records;
                     translation.assigned.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'ADMIN') {
@@ -297,7 +297,7 @@ tsApp
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
-                    translation.assigned = data.concepts;
+                    translation.assigned = data.records;
                     translation.assigned.totalCount = data.totalCount;
                   });
 
@@ -432,9 +432,16 @@ tsApp
                   $scope.selected.translation.id, $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
+
+                    // Extract concepts from records
+                    var list = [];
+                    for (var i = 0; i < data.records.length; i++) {
+                      list.push(data.records[i].concept);
+                    }
+
                     // Make parameter
                     var conceptList = {
-                      concepts : data.concepts
+                      concepts : list
                     };
 
                     // Unassign all concepts
