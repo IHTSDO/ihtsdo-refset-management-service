@@ -110,6 +110,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "User name, e.g. admin", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -128,7 +129,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "perform workflow action on refset", UserRole.AUTHOR);
 
       return workflowService.performWorkflowAction(refsetId, userName,
-          WorkflowAction.valueOf(action));
+          UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
@@ -147,7 +148,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public ConceptList findAvailableEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -188,7 +189,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecordList findAssignedEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -236,7 +237,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public ConceptList findAvailableReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -277,7 +278,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecordList findAssignedReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -321,7 +322,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecord performWorkflowAction(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Concept object", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -345,6 +347,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Set last modified by
       concept.setLastModifiedBy(authName);
       return workflowService.performWorkflowAction(translationId, userName,
+          UserRole.valueOf(projectRole),
+
           WorkflowAction.valueOf(action), concept);
 
     } catch (Exception e) {
@@ -364,7 +368,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecordList performBatchWorkflowAction(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. admin1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Concept list", required = true) ConceptListJpa conceptList,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -391,7 +396,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         concept.setLastModifiedBy(authName);
         list.getObjects().add(
             workflowService.performWorkflowAction(translationId, userName,
-                WorkflowAction.valueOf(action), concept));
+                UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
+                concept));
       }
       list.setTotalCount(list.getCount());
       return list;
@@ -412,7 +418,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Find available editing work", notes = "Finds refsets available for editing by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAvailableEditingRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -580,7 +586,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAvailableReviewRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {

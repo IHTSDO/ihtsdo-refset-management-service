@@ -65,7 +65,7 @@ tsApp
                 filter : "",
                 typeFilter : "",
                 sortField : 'lastModified',
-                ascending : false
+                ascending : true
               }
               $scope.paging["membersInCommon"] = {
                 page : 1,
@@ -369,10 +369,9 @@ tsApp
               // Adds a refset exclusion and refreshes member
               // list with current PFS settings
               $scope.addRefsetExclusion = function(refset, member) {
-                refsetService.addRefsetExclusion(refset, member.conceptId, false, member.active)
-                  .then(function() {
-                    $scope.getMembers(refset);
-                  });
+                refsetService.addRefsetExclusion(refset, member.conceptId, false).then(function() {
+                  $scope.getMembers(refset);
+                });
 
               };
 
@@ -388,7 +387,7 @@ tsApp
               $scope.performWorkflowAction = function(refset, action, userName) {
 
                 workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                  action).then(function(data) {
+                  $scope.projects.role, action).then(function(data) {
                   refsetService.fireRefsetChanged(refset);
                 })
               };
@@ -416,10 +415,10 @@ tsApp
                 // first unassign, then assign to author who
                 // worked on it
                 workflowService.performWorkflowAction($scope.project.id, refset.id,
-                  $scope.user.userName, 'UNASSIGN').then(
+                  $scope.user.userName, $scope.projects.role, 'UNASSIGN').then(
                   function(data) {
                     workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      $scope.user.userName, 'REASSIGN').then(function(data) {
+                      $scope.user.userName, 'AUTHOR', 'REASSIGN').then(function(data) {
                       refsetService.fireRefsetChanged(refset);
                     })
                   })
@@ -481,7 +480,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  $scope.selectRefset(data);
+                  $scope.selectRefset($scope.selected.refset);
                 });
 
               };
@@ -693,13 +692,13 @@ tsApp
                 };
 
                 // Convert date to a string
-                $scope.toShortDate = function(lastModified) {
-                  return utilService.toShortDate(lastModified);
+                $scope.toDate = function(lastModified) {
+                  return utilService.toDate(lastModified);
                 };
 
                 // close the modal
-                $scope.cancel = function(refset) {
-                  $uibModalInstance.close(refset);
+                $scope.cancel = function() {
+                  $uibModalInstance.close();
                 }
 
                 // initialize modal
@@ -1154,7 +1153,10 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
-                    }
+                    },
+                    projects : function() {
+                      return $scope.projects;
+                    },
                   }
 
                 });
@@ -1167,15 +1169,17 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, refset, action,
-                currentUserName, assignedUsers, project, $rootScope) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $rootScope, refset,
+                action, currentUserName, assignedUsers, project, projects) {
 
                 console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
                 $scope.refset = refset;
                 $scope.project = project;
+                $scope.projects = projects;
                 $scope.assignedUserNames = [];
                 $scope.selectedUserName = currentUserName;
+                $scope.note;
                 $scope.errors = [];
 
                 // Prep userNames picklist
@@ -1193,19 +1197,36 @@ tsApp
 
                   $scope.selectedUserName = userName;
 
-                  if (action == 'ASSIGN') {
-                    workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                      "ASSIGN").then(
-                    // Success
-                    function(data) {
+                  workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
+                    $scope.projects.role, action).then(
+                  // Success
+                  function(data) {
+
+                    // Add a note as well
+                    if ($scope.note) {
+                      refsetService.addRefsetNote(refset.id, $scope.note).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    }
+                    // close dialog if no note
+                    else {
                       $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  }
+                    }
+
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+
                 };
 
                 $scope.cancel = function() {
@@ -1480,17 +1501,16 @@ tsApp
                   }
 
                   if (member.memberType == 'INCLUSION') {
-                    refsetService
-                      .addRefsetInclusion(refset, member.conceptId, false, member.active).then(
-                      // Success
-                      function(data) {
-                        $uibModalInstance.close(refset);
-                      },
-                      // Error
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      })
+                    refsetService.addRefsetInclusion(member, false).then(
+                    // Success
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
                   }
 
                 };
@@ -1827,19 +1847,25 @@ tsApp
                 };
 
                 // add exclusion
-                $scope.exclude = function(refset, member, staged, active) {
-                  refsetService.addRefsetExclusion($scope.stagedRefset, member.conceptId, staged,
-                    active).then(
-                  // Success
-                  function() {
-                    refsetService.releaseReportToken($scope.reportToken).then(
+                $scope.exclude = function(refset, member, staged) {
+                  refsetService.addRefsetExclusion($scope.stagedRefset, member.conceptId, staged)
+                    .then(
                     // Success
                     function() {
-                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                      refsetService.releaseReportToken($scope.reportToken).then(
                       // Success
-                      function(data) {
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
+                      function() {
+                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                        // Success
+                        function(data) {
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
                       },
                       // Error
                       function(data) {
@@ -1852,18 +1878,11 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
                 }
 
                 // add inclusion
-                $scope.include = function(refset, member, staged, active) {
-                  refsetService.addRefsetInclusion($scope.stagedRefset, member.conceptId, staged,
-                    active).then(
+                $scope.include = function(member, staged) {
+                  refsetService.addRefsetInclusion(member, staged).then(
                   // Success
                   function() {
                     refsetService.releaseReportToken($scope.reportToken).then(

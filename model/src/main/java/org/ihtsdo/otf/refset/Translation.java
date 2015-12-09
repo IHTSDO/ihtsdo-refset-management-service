@@ -5,10 +5,11 @@ package org.ihtsdo.otf.refset;
 
 import java.util.List;
 
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -165,14 +166,29 @@ public interface Translation extends Component, Searchable {
    *
    * @return the description types
    */
-  public List<DescriptionTypeRefsetMember> getDescriptionTypes();
+  public List<DescriptionType> getDescriptionTypes();
 
   /**
    * Sets the description types.
    *
    * @param types the description types
    */
-  public void setDescriptionTypes(List<DescriptionTypeRefsetMember> types);
+  public void setDescriptionTypes(List<DescriptionType> types);
+
+  /**
+   * Returns the case sensitive types.
+   *
+   * @return the case sensitive types
+   */
+  public KeyValuePairList getCaseSensitiveTypes();
+
+  /**
+   * Returns the case sensitive types.
+   *
+   * @param types the types
+   * @return the case sensitive types
+   */
+  public void setCaseSensitiveTypes(KeyValuePairList types);
 
   /**
    * Returns the concepts.

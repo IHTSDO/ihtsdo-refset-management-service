@@ -4,15 +4,18 @@
 package org.ihtsdo.otf.refset.jpa;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -41,13 +44,15 @@ import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.AbstractComponent;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
@@ -109,10 +114,15 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private Project project;
 
   /** The description types. */
-  @OneToMany(cascade = CascadeType.ALL, targetEntity = DescriptionTypeRefsetMemberJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, targetEntity = DescriptionTypeJpa.class)
   // @IndexedEmbedded - n/a
   @CollectionTable(name = "translation_description_types", joinColumns = @JoinColumn(name = "translation_id"))
-  private List<DescriptionTypeRefsetMember> descriptionTypes = null;
+  private List<DescriptionType> descriptionTypes = null;
+
+  /** The case sensitive types. */
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "translation_case_sensitive_types")
+  private Map<String, String> caseSensitiveTypes;
 
   /** The concepts. */
   @OneToMany(mappedBy = "translation", targetEntity = ConceptJpa.class)
@@ -157,8 +167,9 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     workflowPath = translation.getWorkflowPath();
     refset = translation.getRefset();
     project = translation.getProject();
-    for (DescriptionTypeRefsetMember member : translation.getDescriptionTypes()) {
-      getDescriptionTypes().add(new DescriptionTypeRefsetMemberJpa(member));
+    setCaseSensitiveTypes(translation.getCaseSensitiveTypes());
+    for (DescriptionType member : translation.getDescriptionTypes()) {
+      getDescriptionTypes().add(new DescriptionTypeJpa(member));
     }
     for (Note note : translation.getNotes()) {
       getNotes().add(new TranslationNoteJpa((TranslationNoteJpa) note));
@@ -348,19 +359,45 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
-  @XmlElement(type = DescriptionTypeRefsetMemberJpa.class)
+  @XmlElement(type = DescriptionTypeJpa.class)
   @Override
-  public List<DescriptionTypeRefsetMember> getDescriptionTypes() {
+  public List<DescriptionType> getDescriptionTypes() {
     if (descriptionTypes == null) {
-      descriptionTypes = new ArrayList<DescriptionTypeRefsetMember>();
+      descriptionTypes = new ArrayList<DescriptionType>();
     }
     return descriptionTypes;
   }
 
   /* see superclass */
   @Override
-  public void setDescriptionTypes(List<DescriptionTypeRefsetMember> types) {
+  public void setDescriptionTypes(List<DescriptionType> types) {
     this.descriptionTypes = types;
+  }
+
+  /* see superclass */
+  @Override
+  public KeyValuePairList getCaseSensitiveTypes() {
+    KeyValuePairList list = new KeyValuePairList();
+    if (caseSensitiveTypes == null) {
+      return list;
+    }
+    for (Map.Entry<String, String> entry : caseSensitiveTypes.entrySet()) {
+      final KeyValuePair pair = new KeyValuePair();
+      pair.setKey(entry.getKey());
+      pair.setValue(entry.getValue());
+      list.addKeyValuePair(pair);
+    }
+    list.setName("Case sensitive types");
+    return list;
+  }
+
+  /* see superclass */
+  @Override
+  public void setCaseSensitiveTypes(KeyValuePairList list) {
+    caseSensitiveTypes = new HashMap<>();
+    for (KeyValuePair pair : list.getKeyValuePairs()) {
+      caseSensitiveTypes.put(pair.getKey(), pair.getValue());
+    }
   }
 
   /* see superclass */

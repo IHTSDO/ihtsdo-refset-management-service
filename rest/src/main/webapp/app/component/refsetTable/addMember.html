@@ -41,16 +41,6 @@
             ng-model="paging['search'].page"
             ng-change="getSearchResults(search);"></uib-pagination>
 
-          <!--  TODO: remove this when confirmed not needed
-          <ul style="margin: 5px" class="pager uib-pagination-sm"
-            ng-show="search && (searchResults.length > 0 || paging['search'].page > 1)">
-            <li class="previous" ng-show="paging['search'].page > 1"
-              ng-click="getPreviousPage()"><a>&larr; Previous</a></li>
-            <span class="panel-title"> Page {{paging['search'].page}}</span>
-            <li ng-show="searchResults.length > 0" class="next"
-              ng-click="getNextPage()"><a>Next &rarr;</a></li>
-          </ul>
-          -->
         </span>
 
 

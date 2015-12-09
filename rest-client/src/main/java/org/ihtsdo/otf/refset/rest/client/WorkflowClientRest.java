@@ -76,7 +76,8 @@ public class WorkflowClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
-    String userName, String action, String authToken) throws Exception {
+    String userName, String projectRole, String action, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - perform workflow action " + refsetId + ", "
             + userName + ", " + action);
@@ -84,13 +85,14 @@ public class WorkflowClientRest extends RootClientRest implements
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(userName, "userName");
+    validateNotEmpty(userName, "projectRole");
     validateNotEmpty(action, "action");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/refset/"
             + action + "?projectId=" + projectId + "?refsetId=" + refsetId
-            + "?userName=" + userName);
+            + "?userName=" + userName + "&projectRole=" + projectRole);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -267,8 +269,8 @@ public class WorkflowClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long projectId,
-    Long translationId, String userName, String action, ConceptJpa concept,
-    String authToken) throws Exception {
+    Long translationId, String userName, String projectRole, String action,
+    ConceptJpa concept, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - perform workflow action " + translationId + ", "
             + userName + ", " + action);
@@ -276,13 +278,15 @@ public class WorkflowClientRest extends RootClientRest implements
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(userName, "userName");
+    validateNotEmpty(userName, "projectRole");
     validateNotEmpty(action, "action");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/translation/"
             + action + "?projectId=" + projectId + "?translationId="
-            + translationId + "?userName=" + userName);
+            + translationId + "?userName=" + userName + "&projectRole="
+            + projectRole);
 
     String conceptStr =
         ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
@@ -304,9 +308,22 @@ public class WorkflowClientRest extends RootClientRest implements
   }
 
   /* see superclass */
+  /**
+   * Perform batch workflow action.
+   *
+   * @param projectId the project id
+   * @param translationId the translation id
+   * @param userName the user name
+   * @param projectRole the project role
+   * @param action the action
+   * @param conceptList the concept list
+   * @param authToken the auth token
+   * @return the tracking record list
+   * @throws Exception the exception
+   */
   @Override
   public TrackingRecordList performBatchWorkflowAction(Long projectId,
-    Long translationId, String userName, String action,
+    Long translationId, String userName, String projectRole, String action,
     ConceptListJpa conceptList, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - perform workflow action " + translationId + ", "
@@ -315,13 +332,15 @@ public class WorkflowClientRest extends RootClientRest implements
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(userName, "userName");
+    validateNotEmpty(userName, "projectRole");
     validateNotEmpty(action, "action");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/translation/"
             + action + "/batch?projectId=" + projectId + "?translationId="
-            + translationId + "?userName=" + userName);
+            + translationId + "?userName=" + userName + "&projectRole="
+            + projectRole);
 
     String conceptStr =
         ConfigUtility.getStringForGraph(conceptList == null

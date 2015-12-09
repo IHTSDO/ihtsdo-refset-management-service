@@ -761,24 +761,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
-  @Path("/inclusion/add/{refsetId}")
+  @POST
+  @Path("/inclusion/add")
   @ApiOperation(value = "Add new refset inclusion", notes = "Add a new refset inclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetInclusion(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
-    @ApiParam(value = "Terminology id, e.g. 1234231018", required = false) @QueryParam("terminologyId") String terminologyId,
+    @ApiParam(value = "Member, e.g. newMember", required = true) ConceptRefsetMemberJpa inclusion,
     @ApiParam(value = "Staged, e.g. true", required = true) @QueryParam("staged") boolean staged,
-    @ApiParam(value = "Active, e.g. true", required = true) @QueryParam("active") boolean active,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call GET (inclusion): /inclusion/add " + conceptId);
+        "RESTful call GET (inclusion): /inclusion/add " + inclusion);
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      Refset refset = refsetService.getRefset(refsetId);
+      Refset refset = refsetService.getRefset(inclusion.getRefsetId());
 
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
@@ -786,37 +783,43 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       for (ConceptRefsetMember member : refset.getMembers()) {
-        if (conceptId.equals(member.getConceptId())) {
+        if (inclusion.getConceptId().equals(member.getConceptId())) {
           throw new LocalException(
               "Inclusion is redundant as the refset has a matching member "
-                  + member.getMemberType());
+                  + member);
         }
       }
 
-      ConceptRefsetMember inclusion = new ConceptRefsetMemberJpa();
-      inclusion.setActive(true);
-      inclusion.setConceptId(conceptId);
-      if (refsetService.getTerminologyHandler().assignNames()) {
-        final Concept concept =
-            refsetService.getTerminologyHandler().getConcept(conceptId,
-                refset.getTerminology(), refset.getVersion());
-        inclusion.setConceptName(concept.getName());
-        inclusion.setConceptActive(concept.isActive());
-      } else {
-        inclusion.setConceptName("TBD");
+      // Make sure ID is null
+      inclusion.setId(null);
+
+      // Lookup concept name and active if not already set
+      if (inclusion.getConceptName() == null) {
+        if (refsetService.getTerminologyHandler().assignNames()) {
+          final Concept concept =
+              refsetService.getTerminologyHandler().getConcept(
+                  inclusion.getConceptId(), refset.getTerminology(),
+                  refset.getVersion());
+          inclusion.setConceptName(concept.getName());
+          inclusion.setConceptActive(concept.isActive());
+        } else {
+          inclusion.setConceptName("TBD");
+        }
       }
+      // Ensure effective time is null
       inclusion.setEffectiveTime(null);
+      // Set inclusion type
       if (staged) {
         inclusion.setMemberType(Refset.MemberType.INCLUSION_STAGED);
       } else {
         inclusion.setMemberType(Refset.MemberType.INCLUSION);
       }
+      // Ensure other fields match refset
       inclusion.setModuleId(refset.getModuleId());
       inclusion.setPublishable(true);
       inclusion.setPublished(false);
       inclusion.setRefset(refset);
       inclusion.setTerminology(refset.getTerminology());
-      inclusion.setTerminologyId(terminologyId);
       inclusion.setVersion(refset.getVersion());
       inclusion.setLastModifiedBy(userName);
       return refsetService.addMember(inclusion);
@@ -839,9 +842,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public ConceptRefsetMember addRefsetExclusion(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @PathParam("refsetId") Long refsetId,
     @ApiParam(value = "Concept id, e.g. 1234231018", required = true) @QueryParam("conceptId") String conceptId,
-    @ApiParam(value = "Terminology id, e.g. 1234231018", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Staged, e.g. true", required = true) @QueryParam("staged") boolean staged,
-    @ApiParam(value = "Active, e.g. true", required = true) @QueryParam("active") boolean active,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 

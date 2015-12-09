@@ -125,7 +125,7 @@
               <tr ng-repeat="member in validInclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.name}}</td>
-                <td><a ng-click="include(refset, member, 'true', 'true')">
+                <td><a ng-click="include(member, true)">
                     <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
                   </a></td>
@@ -205,7 +205,7 @@
               <tr ng-repeat="member in validExclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.name}}</td>
-                <td><a ng-click="exclude(refset, member, 'true', 'true')">
+                <td><a ng-click="exclude(refset, member, 'true')">
                     <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
                   </a></td>
@@ -290,7 +290,7 @@
             ng-class="getMemberStyle(member)">
             <td>{{member.conceptId}}</td>
             <td>{{member.name}}</td>
-            <td><a ng-click="exclude(refset, member, 'false', 'true')">
+            <td><a ng-click="exclude(refset, member, 'false')">
                 <i uib-tooltip="Exclude new member."
                   class="noul material-icons md-18">remove_circle_outline</i>
               </a></td>
@@ -324,7 +324,7 @@
             <td>{{member.conceptId}}</td>
             <td>{{member.name}}</td>
             <td><a ng-show="member.memberType == 'MEMBER'"
-                ng-click="include(refset, member, 'false', 'true')">
+                ng-click="include(member, false)">
                 <i uib-tooltip="Include old member."
                   class="noul material-icons md-18">add_circle_outline</i>
               </a></td>

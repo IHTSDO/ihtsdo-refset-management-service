@@ -62,7 +62,7 @@
           <tbody>
             <tr ng-repeat="note in pagedNotes">
               <td>{{note.value}}</td>
-              <td>{{toShortDate(note.lastModified)}}</td>
+              <td>{{toDate(note.lastModified)}}</td>
               <td>{{note.lastModifiedBy}}</td>
               <td><a class="toolicon" title="Remove"
                   ng-click="removeNote(object, note); $event.stopPropagation()">

@@ -39,6 +39,16 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
+   * Returns the concept.
+   *
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept
+   * @throws Exception the exception
+   */
+  public Concept getConcept(Long conceptId, String authToken) throws Exception;
+
+  /**
    * Returns the translations for refset.
    *
    * @param refsetId the refset id

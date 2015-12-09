@@ -60,6 +60,7 @@ import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.ValidationServiceRestImpl;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -524,13 +525,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Add an inclusion for
       // "105058003 | Amdinocillin measurement (procedure) |"
-      new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
-          "105058003", null, false, true, reviewer3.getAuthToken());
+      ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
+      inclusion.setConceptId("105058003");
+      inclusion.setRefsetId(refset.getId());
+      new RefsetServiceRestImpl().addRefsetInclusion(inclusion, false,
+          reviewer3.getAuthToken());
 
       // Add an exclusion for
       // "313948006 | Serum ampicillin measurement (procedure) |"
       new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
-          "313948006", null, false, true, reviewer3.getAuthToken());
+          "313948006", false, reviewer3.getAuthToken());
 
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
@@ -586,14 +590,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make danish refset and translation
       refset =
           makeTranslationRefset("Danish Translation scope reference set", 20,
-              "INT", project2, "554471000005108", "554461000005103", reviewer3);
+              "INT", project3, "554461000005103", "554471000005108", reviewer3);
 
       // Make Swedish translation
-      TranslationJpa translation = makeTranslation(
-          "Danish language reference set",
-          "46011000052107", refset, project2, 20, "INT", "da", reviewer2);
+      TranslationJpa translation =
+          makeTranslation("Danish language reference set", "554461000005103",
+              refset, project3, 20, "INT", "da", reviewer3);
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-      new TranslationServiceRestImpl().updateTranslation(translation, reviewer3.getAuthToken());
+      new TranslationServiceRestImpl().updateTranslation(translation,
+          reviewer3.getAuthToken());
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -957,7 +962,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
         "../config/src/main/resources/data/translation" + num
             + "/translation.zip");
-    makeReleaseArtifact("sct2_Description_Snapshot_" + edition + "_20150131.txt", info,
+    makeReleaseArtifact("sct2_Description_Snapshot_" + edition
+        + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
             + "/sct2_Description_Snapshot_" + edition + "_20150131.txt");
     makeReleaseArtifact("der2_cRefset_LanguageSnapshot_" + edition

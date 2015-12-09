@@ -222,6 +222,39 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
+  @Path("/concept/{conceptId}")
+  @ApiOperation(value = "Get concept for id", notes = "Gets the concept for the specified id", response = ConceptJpa.class)
+  public Concept getConcept(
+    @ApiParam(value = "Concept internal id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Logger.getLogger(getClass()).info(
+          "RESTful call (Translation): get concept, conceptId:"
+              + conceptId);
+
+      authorizeApp(securityService, authToken, "retrieve the concept",
+          UserRole.VIEWER);
+
+      Concept concept =
+          translationService.getConcept(conceptId);
+
+      return concept;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a concept");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  
+  
+  /* see superclass */
+  @Override
+  @GET
   @Path("/translations/{refsetId}")
   public TranslationList getTranslationsForRefset(
     @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,

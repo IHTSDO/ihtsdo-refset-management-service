@@ -169,8 +169,7 @@ public class RedefinitionTest {
 
   // <<373482005 | Benzethonium (substance) |
   // <<418136008 | Gastro-intestinal stoma route (qualifier value) |
-  
-  
+
   /**
    * Test redefinition including begin, finish and then redefining a second time
    * with a broader definition.
@@ -280,7 +279,7 @@ public class RedefinitionTest {
     assertEquals(7, memberList.getObjects().size());
 
     refsetService.addRefsetExclusion(refset1.getId(),
-        memberToExclude.getConceptId(), null, false, true, adminAuthToken);
+        memberToExclude.getConceptId(), false, adminAuthToken);
     memberList =
         refsetService.findRefsetMembersForQuery(refset1.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
@@ -298,7 +297,7 @@ public class RedefinitionTest {
 
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          bogusExclusion.getConceptId(), null, false, true, adminAuthToken);
+          bogusExclusion.getConceptId(), false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -316,7 +315,7 @@ public class RedefinitionTest {
             "memberType:EXCLUSION", new PfsParameterJpa(), adminAuthToken);
     try {
       refsetService.addRefsetExclusion(refset1.getId(), exclusions.getObjects()
-          .get(0).getConceptId(), null, false, true, adminAuthToken);
+          .get(0).getConceptId(), false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -337,8 +336,10 @@ public class RedefinitionTest {
     assertEquals(6, memberList.getObjects().size());
 
     try {
-      refsetService.addRefsetInclusion(refset1.getId(),
-          memberToInclude.getConceptId(), null, false, true, adminAuthToken);
+      ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
+      inclusion.setRefsetId(refset1.getId());
+      inclusion.setConceptId(memberToInclude.getConceptId());
+      refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -365,8 +366,11 @@ public class RedefinitionTest {
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
     memberToInclude = testingMemberList.getObjects().get(0);
     memberToInclude.setMemberType(Refset.MemberType.INCLUSION);
-    refsetService.addRefsetInclusion(refset1.getId(),
-        memberToInclude.getConceptId(), null, false, true, adminAuthToken);
+
+    ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
+    inclusion.setRefsetId(refset1.getId());
+    inclusion.setConceptId(memberToInclude.getConceptId());
+    refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
     refset1 = refsetService.getRefset(refset1.getId(), adminAuthToken);
     assertEquals(
         6,
@@ -380,14 +384,14 @@ public class RedefinitionTest {
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // Add an exclusion matching an existing inclusion - expect exception
-    ConceptRefsetMember inclusion =
-        refsetService
+    inclusion =
+        (ConceptRefsetMemberJpa) refsetService
             .findRefsetMembersForQuery(refset1.getId(), "memberType:INCLUSION",
                 new PfsParameterJpa(), adminAuthToken).getObjects().get(0);
     inclusion.setMemberType(Refset.MemberType.EXCLUSION);
     try {
       refsetService.addRefsetExclusion(refset1.getId(),
-          inclusion.getConceptId(), null, false, true, adminAuthToken);
+          inclusion.getConceptId(), false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -400,8 +404,7 @@ public class RedefinitionTest {
     // Add an inclusion matching an existing inclusion - expect exception
     inclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
-      refsetService.addRefsetInclusion(refset1.getId(),
-          inclusion.getConceptId(), null, false, true, adminAuthToken);
+      refsetService.addRefsetInclusion(inclusion, false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a
@@ -412,14 +415,13 @@ public class RedefinitionTest {
     assertEquals(6, memberList.getObjects().size());
 
     // Add an inclusion matching an existing exclusion - expect exception
-    ConceptRefsetMember exclusion =
-        refsetService
+    ConceptRefsetMemberJpa exclusion =
+        (ConceptRefsetMemberJpa) refsetService
             .findRefsetMembersForQuery(refset1.getId(), "memberType:EXCLUSION",
                 new PfsParameterJpa(), adminAuthToken).getObjects().get(0);
     exclusion.setMemberType(Refset.MemberType.INCLUSION);
     try {
-      refsetService.addRefsetInclusion(refset1.getId(),
-          exclusion.getConceptId(), null, false, true, adminAuthToken);
+      refsetService.addRefsetInclusion(exclusion, false, adminAuthToken);
       fail("Expected exception");
     } catch (Exception e) {
       // n/a

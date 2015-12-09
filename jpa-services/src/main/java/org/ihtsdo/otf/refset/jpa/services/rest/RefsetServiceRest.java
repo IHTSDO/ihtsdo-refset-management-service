@@ -223,34 +223,28 @@ public interface RefsetServiceRest {
   /**
    * Adds the refset inclusion.
    *
-   * @param refsetId the refset id
-   * @param conceptId the concept id
-   * @param terminologyId the terminology id
+   * @param inclusion the inclusion
    * @param staged the staged
-   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
-  public ConceptRefsetMember addRefsetInclusion(Long refsetId,
-    String conceptId, String terminologyId, boolean staged, boolean active,
-    String authToken) throws Exception;
+  public ConceptRefsetMember addRefsetInclusion(
+    ConceptRefsetMemberJpa inclusion, boolean staged, String authToken)
+    throws Exception;
 
   /**
    * Adds the refset exclusion.
    *
    * @param refsetId the refset id
    * @param conceptId the concept id
-   * @param terminologyId the terminology id
    * @param staged the staged
-   * @param active the active
    * @param authToken the auth token
    * @return the concept refset member
    * @throws Exception the exception
    */
   public ConceptRefsetMember addRefsetExclusion(Long refsetId,
-    String conceptId, String terminologyId, boolean staged, boolean active,
-    String authToken) throws Exception;
+    String conceptId, boolean staged, String authToken) throws Exception;
 
   /**
    * Returns the import refset handlers.
@@ -558,8 +552,7 @@ public interface RefsetServiceRest {
    * @return the member
    * @throws Exception the exception
    */
-  public ConceptRefsetMember getMember(Long refsetId, String authToken) throws Exception;
-
-
+  public ConceptRefsetMember getMember(Long refsetId, String authToken)
+    throws Exception;
 
 }

@@ -31,7 +31,7 @@ tsApp.service('workflowService', [
     }
 
     // Perform workflow action on a refset
-    this.performWorkflowAction = function(projectId, refsetId, userName, action) {
+    this.performWorkflowAction = function(projectId, refsetId, userName, projectRole, action) {
       console.debug("performWorkflowAction");
       var deferred = $q.defer();
 
@@ -39,7 +39,7 @@ tsApp.service('workflowService', [
       gpService.increment()
       $http.get(
         workflowUrl + 'refset' + "/" + action + "?refsetId=" + refsetId + "&userName=" + userName
-          + "&projectId=" + projectId).then(
+          + "&projectId=" + projectId + "&projectRole=" + projectRole).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -272,8 +272,8 @@ tsApp.service('workflowService', [
     }
 
     // Perform workflow action on a translation
-    this.performTranslationWorkflowAction = function(projectId, translationId, userName, action,
-      concept) {
+    this.performTranslationWorkflowAction = function(projectId, translationId, userName,
+      projectRole, action, concept) {
       console.debug("performWorkflowActionOnTranslation");
       var deferred = $q.defer();
 
@@ -281,7 +281,8 @@ tsApp.service('workflowService', [
       gpService.increment()
       $http.post(
         workflowUrl + 'translation' + "/" + action + "?translationId=" + translationId
-          + "&userName=" + userName + "&projectId=" + projectId, concept).then(
+          + "&userName=" + userName + "&projectId=" + projectId + "&projectRole=" + projectRole,
+        concept).then(
       // success
       function(response) {
         console.debug("  work = ", response.data);
@@ -299,7 +300,7 @@ tsApp.service('workflowService', [
 
     // Perform batch workflow action on a translation
     this.performBatchTranslationWorkflowAction = function(projectId, translationId, userName,
-      action, conceptList) {
+      projectRole, action, conceptList) {
       console.debug("performBatchWorkflowActionOnTranslation");
       var deferred = $q.defer();
 
@@ -307,7 +308,8 @@ tsApp.service('workflowService', [
       gpService.increment()
       $http.post(
         workflowUrl + 'translation' + "/" + action + "/batch?translationId=" + translationId
-          + "&userName=" + userName + "&projectId=" + projectId, conceptList).then(
+          + "&userName=" + userName + "&projectId=" + projectId + "&projectRole=" + projectRole,
+        conceptList).then(
       // success
       function(response) {
         console.debug("  work = ", response.data);
@@ -518,9 +520,8 @@ tsApp.service('workflowService', [
       console.debug("sendFeedbackEmail");
       var deferred = $q.defer();
 
-      var sList = [ name, email, refset.id, refset.name,
-                    feedbackMessage ];
-      
+      var sList = [ name, email, refset.id, refset.name, feedbackMessage ];
+
       // find members
       gpService.increment()
       $http.post(workflowUrl + "message" + "?refsetId=" + refset.id, sList).then(

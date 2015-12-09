@@ -86,13 +86,15 @@ public interface WorkflowServiceRest {
    * @param projectId the project id
    * @param refsetId the refset id
    * @param userName the user name
+   * @param projectRole the project role
    * @param action the action
    * @param authToken the auth token
    * @return the tracking record
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Long projectId, Long refsetId,
-    String userName, String action, String authToken) throws Exception;
+    String userName, String projectRole, String action, String authToken)
+    throws Exception;
 
   /**
    * Find available editing work.
@@ -160,6 +162,7 @@ public interface WorkflowServiceRest {
    * @param projectId the project id
    * @param translationId the translation id
    * @param userName the user name
+   * @param projectRole the project role
    * @param action the action
    * @param concept the concept
    * @param authToken the auth token
@@ -167,8 +170,8 @@ public interface WorkflowServiceRest {
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Long projectId,
-    Long translationId, String userName, String action, ConceptJpa concept,
-    String authToken) throws Exception;
+    Long translationId, String userName, String projectRole, String action,
+    ConceptJpa concept, String authToken) throws Exception;
 
   /**
    * Perform batch workflow action.
@@ -176,6 +179,7 @@ public interface WorkflowServiceRest {
    * @param projectId the project id
    * @param translationId the translation id
    * @param userName the user name
+   * @param projectRole the project role
    * @param action the action
    * @param conceptList the concept list
    * @param authToken the auth token
@@ -183,7 +187,7 @@ public interface WorkflowServiceRest {
    * @throws Exception the exception
    */
   public TrackingRecordList performBatchWorkflowAction(Long projectId,
-    Long translationId, String userName, String action,
+    Long translationId, String userName, String projectRole, String action,
     ConceptListJpa conceptList, String authToken) throws Exception;
 
   /**

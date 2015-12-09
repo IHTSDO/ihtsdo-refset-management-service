@@ -8,7 +8,8 @@ import java.util.List;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
@@ -124,7 +125,18 @@ public interface TerminologyHandler extends Configurable {
    * @return the standard description types
    * @throws Exception the exception
    */
-  public DescriptionTypeRefsetMemberList getStandardDescriptionTypes(
+  public DescriptionTypeList getStandardDescriptionTypes(
+    String terminology, String version) throws Exception;
+
+  /**
+   * Returns the standard case sensitivity types.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the standard case sensitivity types
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getStandardCaseSensitivityTypes(
     String terminology, String version) throws Exception;
 
   /**

@@ -63,12 +63,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public ValidationResult validateWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception {
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception {
 
     ValidationResult result = new ValidationResultJpa();
 
-    // Validate actions that users are not allowed to perform.
-    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
     // An author cannot do review work
     if (projectRole == UserRole.AUTHOR
         && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
@@ -125,14 +124,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
-        // record must exist and a review "assigned" state must be present
-        // and it must be reassigned to an author
+        // record has been unassigned from reviewer and is in EDITING_DONE
+        // Should be set back to EDITING_IN_PROGRESS
         flag =
             projectRole == UserRole.AUTHOR
                 && record != null
-                && EnumSet.of(WorkflowStatus.REVIEW_NEW,
-                    WorkflowStatus.REVIEW_IN_PROGRESS,
-                    WorkflowStatus.REVIEW_DONE).contains(
+                && EnumSet.of(WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus());
         break;
       case SAVE:
@@ -206,9 +203,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception {
-
-    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception {
 
     // Validate tracking record
     TrackingRecordList recordList =
@@ -281,6 +277,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
+        // No need to set the author again because we've removed reference to the reviewer
         refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -358,12 +355,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public ValidationResult validateWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception {
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
-    // Validate actions that users are not allowed to perform.
-    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
     // An author cannot do review work
     if (projectRole == UserRole.AUTHOR
         && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
@@ -507,11 +502,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception {
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception {
 
-    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
-    // Validate tracking record
     TrackingRecordList recordList =
         service.findTrackingRecordsForQuery(
             "conceptId:"

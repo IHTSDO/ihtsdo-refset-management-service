@@ -21,21 +21,23 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.DescriptionTypeRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
@@ -879,10 +881,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   }
 
   @Override
-  public DescriptionTypeRefsetMemberList getStandardDescriptionTypes(
-    String terminology, String version) throws Exception {
-    DescriptionTypeRefsetMemberList list =
-        new DescriptionTypeRefsetMemberListJpa();
+  public DescriptionTypeList getStandardDescriptionTypes(String terminology,
+    String version) throws Exception {
+    DescriptionTypeList list = new DescriptionTypeListJpa();
     /**
      * <pre>
      * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
@@ -890,8 +891,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * 909a711e-b114-5543-841e-242aaa246363    20020131        1       900000000000207008      900000000000538005      900000000000013009      900000000000540000      255
      * </pre>
      */
-    for (int i = 0; i < 3; i++) {
-      DescriptionTypeRefsetMember member = new DescriptionTypeRefsetMemberJpa();
+    for (int i = 0; i < 4; i++) {
+      DescriptionType member = new DescriptionTypeJpa();
       member.setTerminology(terminology);
       member.setVersion(terminology);
       member.setPublishable(true);
@@ -903,18 +904,28 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       if (i == 0) {
         member.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
         member.setType("900000000000003001");
+        member.setAcceptability("900000000000548007");
         member.setName("Fully specified name");
         member.setDescriptionLength(255);
       }
       if (i == 1) {
         member.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
         member.setType("900000000000550004");
+        member.setAcceptability("900000000000548007");
         member.setName("Definition");
         member.setDescriptionLength(4096);
       }
       if (i == 2) {
         member.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
         member.setType("900000000000013009");
+        member.setAcceptability("900000000000548007");
+        member.setName("Preferred name");
+        member.setDescriptionLength(255);
+      }
+      if (i == 3) {
+        member.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
+        member.setType("900000000000013009");
+        member.setAcceptability("900000000000549004");
         member.setName("Synonym");
         member.setDescriptionLength(255);
       }
@@ -922,4 +933,25 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     }
     return list;
   }
+
+  /* see superclass */
+  @Override
+  public KeyValuePairList getStandardCaseSensitivityTypes(String terminology,
+    String version) throws Exception {
+    KeyValuePairList list = new KeyValuePairList();
+
+    // For now this is hard-coded but could be looked up if term server had an
+    // API
+    KeyValuePair pair = new KeyValuePair();
+    pair.setKey("900000000000017005");
+    pair.setValue("Case sensitive");
+    list.addKeyValuePair(pair);
+    pair = new KeyValuePair();
+    pair.setKey("900000000000448009");
+    pair.setValue("Case insensitive");
+    list.addKeyValuePair(pair);
+    return list;
+
+  }
+
 }
