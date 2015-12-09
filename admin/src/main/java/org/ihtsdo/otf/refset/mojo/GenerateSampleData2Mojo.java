@@ -852,7 +852,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
     // Validate refset
     ValidationResult result =
-        validation.validateRefset(refset, auth.getAuthToken());
+        validation.validateRefset(refset, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -932,7 +932,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     // Validate translation
     ValidationResult result =
-        validation.validateTranslation(translation, auth.getAuthToken());
+        validation.validateTranslation(translation, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");

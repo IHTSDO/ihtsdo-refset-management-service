@@ -13,8 +13,9 @@ tsApp
       'refsetService',
       'releaseService',
       'workflowService',
-      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
-        refsetService, releaseService, workflowService) {
+      'validationService',
+      function($uibModal, $rootScope, utilService, securityService, projectService, refsetService,
+        releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -1302,42 +1303,72 @@ tsApp
                   }
 
                   refset.projectId = project.id;
-                  refsetService.addRefset(refset).then(
-                  // Success - add refset
-                  function(data) {
-                    var newRefset = data;
-                    // IF intensional, apply the definition
-                    if (newRefset.type == 'INTENSIONAL') {
-                      refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
-                      // Success - begin redefinition
-                      function(data) {
 
-                        refsetService.finishRedefinition(newRefset.id).then(
-                        // Success - finish redefinition
-                        function(data) {
-                          $uibModalInstance.close(newRefset);
-                        },
-                        // Error - finish redefinition
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
-                      },
-                      // Error - begin redefinition
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      })
-                    } else {
-                      $uibModalInstance.close(newRefset);
-                    }
-                  },
-                  // Error - add refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
+                  // validate refset before adding it
+                  validationService.validateRefset(refset).then(
+                    function(data) {
+                      $scope.validationResult = data;
+                      if ($scope.validationResult.errors.length > 0) {
+                        $scope.errors = $scope.validationResult.errors;
+                      } else {
+                        $scope.errors = null;
+                      }
+                      if ($scope.validationResult.warnings.length > 0) {
+                        $scope.previousWarnings = $scope.warnings;
+                        $scope.warnings = $scope.validationResult.warnings;
+                      } else {
+                        $scope.warnings = null;
+                      }
+                      // perform the edit if there are no errors or if there are only warnings
+                      // and the user clicks through the warnings
+                      if ($scope.errors == null
+                        && ($scope.warnings == null || (JSON.stringify($scope.warnings) == JSON
+                          .stringify($scope.previousWarnings)))) {
+                        $scope.warnings = null;
+                        // Success - validate refset
+                        refsetService.addRefset(refset).then(
+                          // Success - add refset
+                          function(data) {
+                            var newRefset = data;
+                            // IF intensional, apply the definition
+                            if (newRefset.type == 'INTENSIONAL') {
+                              refsetService.beginRedefinition(newRefset.id, newRefset.definition)
+                                .then(
+                                // Success - begin redefinition
+                                function(data) {
 
+                                  refsetService.finishRedefinition(newRefset.id).then(
+                                  // Success - finish redefinition
+                                  function(data) {
+                                    $uibModalInstance.close(newRefset);
+                                  },
+                                  // Error - finish redefinition
+                                  function(data) {
+                                    $scope.errors[0] = data;
+                                    utilService.clearError();
+                                  })
+                                },
+                                // Error - begin redefinition
+                                function(data) {
+                                  $scope.errors[0] = data;
+                                  utilService.clearError();
+                                })
+                            } else {
+                              $uibModalInstance.close(newRefset);
+                            }
+                          },
+                          // Error - add refset
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
+                      }
+                    },
+                    // Error - validate refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
                 };
 
                 $scope.cancel = function() {
@@ -1399,20 +1430,49 @@ tsApp
                     $scope.error = "The name, description, and terminology fields cannot be blank. ";
                     return;
                   }
-                  refsetService.updateRefset(refset).then(
-                  // Success - update refset
-                  function(data) {
-                    if (refset.definition != $scope.originalDefinition) {
-                      $scope.error = "Definition is not allowed to change with refset edit.";
-                    } else {
-                      $uibModalInstance.close(refset);
-                    }
-                  },
-                  // Error - update refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
+
+                  validationService.validateRefset(refset).then(
+                    function(data) {
+                      $scope.validationResult = data;
+                      if ($scope.validationResult.errors.length > 0) {
+                        $scope.errors = $scope.validationResult.errors;
+                      } else {
+                        $scope.errors = null;
+                      }
+                      if ($scope.validationResult.warnings.length > 0) {
+                        $scope.previousWarnings = $scope.warnings;
+                        $scope.warnings = $scope.validationResult.warnings;
+                      } else {
+                        $scope.warnings = null;
+                      }
+                      // perform the edit if there are no errors or if there are only warnings
+                      // and the user clicks through the warnings
+                      if ($scope.errors == null
+                        && ($scope.warnings == null || (JSON.stringify($scope.warnings) == JSON
+                          .stringify($scope.previousWarnings)))) {
+                        $scope.warnings = null;
+                        // Success - validate refset
+                        refsetService.updateRefset(refset).then(
+                        // Success - update refset
+                        function(data) {
+                          if (refset.definition != $scope.originalDefinition) {
+                            $scope.error = "Definition is not allowed to change with refset edit.";
+                          } else {
+                            $uibModalInstance.close(refset);
+                          }
+                        },
+                        // Error - update refset
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
+                      }
+                    },
+                    // Error - validate refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
 
                 };
 
@@ -1493,6 +1553,29 @@ tsApp
                   };
                   member.refsetId = refset.id;
 
+                  // validate member before adding it
+                  validationService.validateMember(member, project.id).then(
+                    function(data) {
+                      $scope.validationResult = data;
+                      if ($scope.validationResult.errors.length > 0) {
+                        $scope.errors = $scope.validationResult.errors;
+                      } else {
+                        $scope.errors = null;
+                      }
+                      if ($scope.validationResult.warnings.length > 0) {
+                        $scope.previousWarnings = $scope.warnings;
+                        $scope.warnings = $scope.validationResult.warnings;
+                      } else {
+                        $scope.warnings = null;
+                      }
+                      // perform the edit if there are no errors or if there are only warnings
+                      // and the user clicks through the warnings
+                      if ($scope.errors == null
+                        && ($scope.warnings == null || (JSON.stringify($scope.warnings) == JSON
+                          .stringify($scope.previousWarnings)))) {
+                        $scope.warnings = null;
+                        // Success - validate refset
+                  
                   if (member.memberType == 'MEMBER') {
 
                     refsetService.addRefsetMember(member).then(
@@ -1519,6 +1602,13 @@ tsApp
                       utilService.clearError();
                     })
                   }
+                      }
+                    },
+                    // Error - validate refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
 
                 };
 

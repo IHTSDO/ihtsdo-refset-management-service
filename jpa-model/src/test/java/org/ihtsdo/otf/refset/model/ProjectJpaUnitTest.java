@@ -77,6 +77,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("description");
     tester.include("terminology");
     tester.include("version");
+    tester.include("validationChecks");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());

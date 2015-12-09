@@ -14,6 +14,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ConceptValidationResult;
 import org.ihtsdo.otf.refset.MemberValidationResult;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
@@ -21,6 +22,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.jpa.ConceptValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.MemberValidationResultJpa;
@@ -82,6 +84,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate Concept", notes = "Validates a concept", response = ValidationResult.class)
   public ValidationResult validateConcept(
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -90,10 +93,11 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeProject(projectService, concept.getTranslation().getProject().getId(), securityService, authToken,
+      authorizeProject(projectService, projectId, securityService, authToken,
           "validate concept", UserRole.AUTHOR);
 
-      return validationService.validateConcept(concept, translationService);
+      Project project = projectService.getProject(projectId);
+      return validationService.validateConcept(concept, project, translationService);
     } catch (Exception e) {
       handleException(e, "trying to validate concept");
       return null;
@@ -112,6 +116,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate Refset", notes = "Validates a refset", response = ValidationResult.class)
   public ValidationResult validateRefset(
     @ApiParam(value = "Refset", required = true) RefsetJpa refset,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -123,7 +128,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(projectService, refset.getProjectId(), securityService, authToken,
           "validate a refset", UserRole.AUTHOR);
 
-      return validationService.validateRefset(refset, refsetService);
+      Project project = projectService.getProject(projectId);
+      return validationService.validateRefset(refset, project, refsetService);
     } catch (Exception e) {
       e.printStackTrace();
       handleException(e, "trying to validate refset");
@@ -142,6 +148,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate Translation", notes = "Validates a translation", response = ValidationResult.class)
   public ValidationResult validateTranslation(
     @ApiParam(value = "Translation", required = true) TranslationJpa translation,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -151,11 +158,12 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      authorizeProject(projectService, translation.getProjectId(), securityService, authToken,
+      authorizeProject(projectService, projectId, securityService, authToken,
           "validate translation", UserRole.AUTHOR);
 
+      Project project = projectService.getProject(projectId);
       return validationService.validateTranslation(translation,
-          translationService);
+          project, translationService);
     } catch (Exception e) {
       handleException(e, "trying to validate translation");
       return null;
@@ -174,6 +182,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate refset member", notes = "Validates a refset member", response = ValidationResult.class)
   public ValidationResult validateMember(
     @ApiParam(value = "Refset member", required = true) ConceptRefsetMemberJpa member,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -182,10 +191,11 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeProject(projectService, member.getRefset().getProject().getId(), securityService, authToken,
+      authorizeProject(projectService, projectId, securityService, authToken,
           "validate member", UserRole.AUTHOR);
       
-      return validationService.validateMember(member, refsetService);
+      Project project = projectService.getProject(projectId);      
+      return validationService.validateMember(member, project, refsetService);
     } catch (Exception e) {
       handleException(e, "trying to validate refset member");
       return null;
@@ -226,7 +236,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
               null);
       for (Concept concept : concepts.getObjects()) {
         ValidationResult result =
-            validationService.validateConcept(concept, translationService);
+            validationService.validateConcept(concept, null, translationService);
         if (!result.isValid()) {
           ConceptValidationResult cvr = new ConceptValidationResultJpa(result);
           cvr.setConcept(concept);
@@ -269,7 +279,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
           refsetService.findMembersForRefset(refsetId, null, null);
       for (ConceptRefsetMember member : members.getObjects()) {
         ValidationResult result =
-            validationService.validateMember(member, refsetService);
+            validationService.validateMember(member, null, refsetService);
         if (!result.isValid()) {
           MemberValidationResult mvr = new MemberValidationResultJpa(result);
           mvr.setMember(member);
@@ -287,4 +297,33 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/checks")
+  @ApiOperation(value = "Gets all validation checks", notes = "Gets all validation checks", response = KeyValuePairList.class)
+  public KeyValuePairList getValidationChecks(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Validation): /checks ");
+
+    ValidationService validationService = new ValidationServiceJpa();
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get validation checks",
+          UserRole.VIEWER);
+      
+      KeyValuePairList list = validationService.getValidationCheckNames();
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to validate all concept");
+      return null;
+    } finally {
+      refsetService.close();
+      validationService.close();
+      securityService.close();
+    }
+  }
+
 }

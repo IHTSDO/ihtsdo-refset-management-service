@@ -1,6 +1,6 @@
 'use strict'
 
-var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload' ])
+var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce' ])
   .config(function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
@@ -14,7 +14,7 @@ var translationUrl = "translation/";
 var releaseUrl = "release/";
 var projectUrl = "project/";
 var workflowUrl = "workflow/";
-var validationUrl = "validation/";
+var validationUrl = "validate/";
 
 // Initialization of tsApp
 tsApp.run(function($rootScope, $http, $window) {

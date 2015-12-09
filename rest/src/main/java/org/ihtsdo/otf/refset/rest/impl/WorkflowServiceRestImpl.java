@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -1014,14 +1013,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    */
   @POST
   @Path("/message")
-  @ApiOperation(value = "Sends a feedback message email.", notes = "Sends a feedback message email.")
-  @Consumes({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  @Produces({
-      MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
-  })
-  public Response sendFeedbackEmail(
+  @ApiOperation(value = "Adds a feedback message.", notes = "Adds a feedback message.")
+  public Response addFeedback(
     @ApiParam(value = "message", required = true) List<String> message,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
@@ -1042,14 +1035,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     try {
       // authorize call
-      authorizeApp(securityService, authToken, "send feedback email",
+      authorizeApp(securityService, authToken, "add feedback",
           UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
           "RESTful call (Workflow): /message msg: " + message + ", "
               + refset.getFeedbackEmail());
 
-      workflowService.sendFeedbackEmail(message, refset.getFeedbackEmail());
+      workflowService.addFeedback(message, refset);
 
       return null;
 

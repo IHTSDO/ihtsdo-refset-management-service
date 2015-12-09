@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -20,11 +21,12 @@ public interface ValidationServiceRest {
    * Validates an individual translation concept.
    *
    * @param concept the concept
+   * @param projectId the project id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateConcept(ConceptJpa concept, String authToken)
+  public ValidationResult validateConcept(ConceptJpa concept, Long projectId, String authToken)
     throws Exception;
 
   /**
@@ -42,34 +44,37 @@ public interface ValidationServiceRest {
    * Validate a top level refset info or its metadata.
    *
    * @param refset the refset
+   * @param projectId the project id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateRefset(RefsetJpa refset, String authToken)
+  public ValidationResult validateRefset(RefsetJpa refset, Long projectId, String authToken)
     throws Exception;
 
   /**
    * Validate a top-level translation or its metadata.
    *
    * @param translation the translation
+   * @param projectId the project id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateTranslation(TranslationJpa translation,
-    String authToken) throws Exception;
+    Long projectId, String authToken) throws Exception;
 
   /**
    * Validate an individual simple ref set member.
    *
    * @param member the member
+   * @param projectId the project id
    * @param authToken the auth token
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateMember(ConceptRefsetMemberJpa member,
-    String authToken) throws Exception;
+    Long projectId, String authToken) throws Exception;
 
   /**
    * Validate all refset members.
@@ -81,4 +86,13 @@ public interface ValidationServiceRest {
    */
   public MemberValidationResultList validateAllMembers(Long refsetId,
     String authToken) throws Exception;
+
+  /**
+   * Returns the validation checks.
+   *
+   * @param authToken the auth token
+   * @return the validation checks
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getValidationChecks(String authToken) throws Exception;
 }

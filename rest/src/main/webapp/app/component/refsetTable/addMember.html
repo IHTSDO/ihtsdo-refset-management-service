@@ -15,6 +15,12 @@
           <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
         </div>
       </div>
+      <!-- Warnings -->
+      <div class="alert alert-warning" ng-repeat="warning in warnings">
+        {{warning}}
+        <div style="cursor: pointer; display: inline; float: right; width: 3%;">
+        </div>
+      </div>
 
       <!-- Search widget -->
       <div>
