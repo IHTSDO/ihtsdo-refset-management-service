@@ -5,6 +5,9 @@ package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
@@ -28,7 +31,10 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
   /** The model object to test. */
   private ProjectJpa object;
 
-
+  /** test fixture l1 */
+  private List<String> l1;
+  /** test fixture l2 */
+  private List<String> l2;
   /**
    * Setup class.
    */
@@ -44,7 +50,10 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
   @Before
   public void setup() throws Exception {
     object = new ProjectJpa();
-
+    l1 = new ArrayList<>();
+    l1.add("1");
+    l2 = new ArrayList<>();
+    l2.add("2");
   }
 
   /**
@@ -79,6 +88,8 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("version");
     tester.include("validationChecks");
 
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());

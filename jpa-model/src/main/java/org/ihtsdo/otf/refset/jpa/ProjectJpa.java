@@ -120,6 +120,7 @@ public class ProjectJpa implements Project {
   // @IndexedEmbedded - n/a
   private List<Refset> refsets = new ArrayList<>();
   
+  /**  The validation checks. */
   @Column(nullable = true)
   @ElementCollection(fetch = FetchType.EAGER)
   @CollectionTable(name = "project_validation_checks")
