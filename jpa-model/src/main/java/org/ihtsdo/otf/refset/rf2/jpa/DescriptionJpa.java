@@ -51,6 +51,10 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Column(nullable = false)
   private String typeId;
 
+  /** The acceptabilityId */
+  @Column(nullable = false)
+  private String acceptabilityId;
+
   /** The term. */
   @Column(nullable = false, length = 4000)
   private String term;
@@ -95,6 +99,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     languageCode = description.getLanguageCode();
     term = description.getTerm();
     typeId = description.getTypeId();
+    acceptabilityId = description.getAcceptabilityId();
 
     if (deepCopy) {
       languageRefsetMembers = new ArrayList<>();
@@ -139,6 +144,19 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Override
   public void setTypeId(String type) {
     this.typeId = type;
+  }
+
+  /* see superclass */
+  @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getAcceptabilityId() {
+    return acceptabilityId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setAcceptabilityId(String acceptability) {
+    this.acceptabilityId = acceptability;
   }
 
   /* see superclass */
@@ -291,9 +309,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Override
   public String toString() {
     return "DescriptionJpa [, languageCode=" + languageCode + ", typeId="
-        + typeId + ", term=" + term + ", caseSignificanceId="
-        + caseSignificanceId + ", translationOfId=" + translationOfId
-        + ", concept=" + concept + ", languageRefsetMembers="
+        + typeId + ", acceptabilityId=" + acceptabilityId + ", term=" + term
+        + ", caseSignificanceId=" + caseSignificanceId + ", translationOfId="
+        + translationOfId + ", concept=" + concept + ", languageRefsetMembers="
         + languageRefsetMembers + "]";
   }
 
@@ -318,6 +336,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
     result = prime * result + ((term == null) ? 0 : term.hashCode());
     result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+    result =
+        prime * result
+            + ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
     return result;
   }
 
@@ -365,6 +386,12 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         return false;
     } else if (!typeId.equals(other.typeId))
       return false;
+    if (acceptabilityId == null) {
+      if (other.acceptabilityId != null)
+        return false;
+    } else if (!acceptabilityId.equals(other.acceptabilityId))
+      return false;
+
     return true;
   }
 

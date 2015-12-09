@@ -238,7 +238,8 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             descLangMap.get(description.getTerminologyId());
         member.setDescriptionId(description.getTerminologyId());
         description.getLanguageRefsetMembers().add(member);
-
+        description.setAcceptabilityId(member.getAcceptabilityId());
+        
         // If a description is a synonym (e.g. typeId=)
         // and language is prefered (e.g. acceptabilityId=)
         // use as concept preferred name

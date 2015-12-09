@@ -39,6 +39,20 @@ public interface Description extends Component {
   public void setTypeId(String typeId);
 
   /**
+   * Returns the acceptability id.
+   *
+   * @return the acceptability id
+   */
+  public String getAcceptabilityId();
+
+  /**
+   * Sets the acceptability id.
+   *
+   * @param typeId the acceptability id
+   */
+  public void setAcceptabilityId(String typeId);
+
+  /**
    * Returns the term.
    * 
    * @return the term

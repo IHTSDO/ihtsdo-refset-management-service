@@ -127,7 +127,7 @@
               <!-- Only unassign if there are no reviewers -->
               <i ng-show="!refsetReviewersMap[refset.id]"
                 uib-tooltip="Unassign author: {{author.userName}}"
-                ng-click="performWorkflowAction(refset, 'UNASSIGN', author.userName);"
+                ng-click="unassign(refset, author.userName);"
                 class="noul material-icons md-18">assignment_return</i>
               <i ng-show="refsetReviewersMap[refset.id]"
                 uib-tooltip="Author: {{author.userName}}, unassign reviewer first"
@@ -135,7 +135,7 @@
             </span>
             <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
               <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
-                ng-click="performWorkflowAction(refset, 'UNASSIGN', reviewer.userName);"
+                ng-click="unassign(refset, reviewer.userName);"
                 class="noul material-icons md-18">assignment_return</i>
             </span>
 
@@ -148,7 +148,7 @@
             <i ng-click="removeRefset(refset);"
               title="Remove" class="noul material-icons md-18">delete</i>
             <i
-              ng-click="performWorkflowAction(refset, 'UNASSIGN', user.userName);"
+              ng-click="unassign(refset, user.userName);"
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
               ng-click="openAssignRefsetModal(refset, 'REASSIGN', user.userName); $event.stopPropagation()"

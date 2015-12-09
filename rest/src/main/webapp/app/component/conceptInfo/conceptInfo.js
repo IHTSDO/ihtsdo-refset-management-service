@@ -17,7 +17,7 @@ tsApp.directive('conceptInfo',
           function($scope) {
 
             // Paging parameters
-            $scope.pageSize = 10;
+            $scope.pageSize = 5;
             $scope.pagedChildren = [];
             $scope.paging = {};
             $scope.paging["children"] = {

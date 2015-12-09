@@ -673,7 +673,7 @@ tsApp
                     metadata : function() {
                       return $scope.metadata;
                     },
-                    refsets: function() {
+                    refsets : function() {
                       return $scope.refsets;
                     },
                     project : function() {
@@ -690,8 +690,8 @@ tsApp
               };
 
               // Add translation controller
-              var AddTranslationModalCtrl = function($scope, $uibModalInstance, metadata,
-                refsets, project) {
+              var AddTranslationModalCtrl = function($scope, $uibModalInstance, metadata, refsets,
+                project) {
 
                 console.debug("Entered add translation modal control", metadata);
 
@@ -1058,15 +1058,78 @@ tsApp
 
                 console.debug("Entered edit concept modal control");
 
-                $scope.action = 'Edit';
+                $scope.pageSize = 10;
+                $scope.paging["descriptions"] = {
+                  page : 1,
+                  filter : ""
+                }
                 $scope.errors = [];
-                $scope.data = { concept : null }
+                $scope.data = {
+                  concept : null
+                }
                 $scope.translation = translation;
+                $scope.conceptTranslated = JSON.parse(JSON.stringify(concept));
+                $scope.conceptTranslated.descriptions = [];
+                $scope.conceptTranslated.relationships = null;
+                $scope.newDescription = null;
+                //TODO: wire to user prefs
+                $scope.enableSpelling = true;
+                $scope.selectedWord = null;
+                $scope.enableMemory = true;
+                $scope.selectedEntry = null;
+
                 $scope.project = project;
+
+                $scope.getDescriptionWords = function() {
+                  // look through concdeptTranslated.descriptions and parse out words
+                  return [ "test", "todo", "fix", "this" ];
+                }
+
+                $scope.removeSpellingEntry = function(word) {
+                  // Make a call to translation sevice to remove the entry from spelling
+                  // dictionary
+                }
+                $scope.addSpellingEntry = function(word) {
+                  // Make a call to translation sevice to remove the entry from spelling
+                  // dictionary
+                }
+
+                $scope.getMemoryEntries = function() {
+                  // These are whatever memory entries have bene retrieved for the 
+                  // current set of descriptions
+                  return [ {
+                    name : "english",
+                    translatedName : "Ingles"
+                  }, {
+                    name : "question",
+                    translatedName : "parabla"
+                  } ];
+                }
+
+                $scope.removeMemoryEntry = function(name, translatedName) {
+                  // Make a call to translation sevice to remove the entry from spelling
+                  // dictionary
+                }
+                $scope.addMemoryEntry = function(name, translatedName) {
+                  // Make a call to translation sevice to remove the entry from spelling
+                  // dictionary
+                }
+
+                // Apply the type parameters to the description
+                $scope.applyDescriptionType = function(description, type) {
+                  description.typeId = type.type;
+                  description.acceptabilityId = type.acceptability;
+                }
+
+                // Get paged descriptions (assume all are loaded)
+                $scope.getPagedDescriptions = function() {
+                  return utilService.getPagedArray($scope.descriptions,
+                    $scope.paging['descriptions'], $scope.pageSize);
+                }
 
                 $scope.submitConcept = function(concept) {
                   // TODO: validate, then sumbit.
-                  
+
                   translationService.updateConcept(concept).then(
                   // Success - update refset
                   function(data) {
@@ -1083,7 +1146,7 @@ tsApp
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');
                 };
-                
+
                 // Initialize
                 $scope.data.concept = concept;
 

@@ -2185,7 +2185,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // End transaction
       refsetService.commit();
     } catch (Exception e) {
-      refsetService.rollback();
       handleException(e, "trying to import refset members");
     } finally {
       refsetService.close();

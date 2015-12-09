@@ -858,7 +858,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // close transaction
       translationService.commit();
     } catch (Exception e) {
-      translationService.rollback();
       handleException(e, "trying to import translation concepts");
     } finally {
       translationService.close();

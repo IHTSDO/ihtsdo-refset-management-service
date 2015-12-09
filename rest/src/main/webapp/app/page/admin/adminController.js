@@ -147,7 +147,7 @@ tsApp
             sortField : $scope.paging["candidateUser"].sortField,
             ascending : $scope.paging["candidateUser"].ascending == null ? true
               : $scope.paging["candidateUser"].ascending,
-            queryRestriction : null
+             : null
           };
 
           projectService.findUnassignedUsersForProject($scope.selectedProject.id,

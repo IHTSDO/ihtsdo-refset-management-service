@@ -90,6 +90,7 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("languageCode");
     tester.include("term");
     tester.include("typeId");
+    tester.include("acceptabilityId");
 
     tester.proxy(Concept.class, 1, c1);
     tester.proxy(Concept.class, 2, c2);
@@ -149,6 +150,7 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("languageCode");
     tester.include("term");
     tester.include("typeId");
+    tester.include("acceptabilityId");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -179,6 +181,7 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("languageCode");
     tester.include("typeId");
+    tester.include("acceptabilityId");
     tester.include("termSort");
     tester.include("caseSignificanceId");
     tester.include("translationOfId");

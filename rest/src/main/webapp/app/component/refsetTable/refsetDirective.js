@@ -383,6 +383,13 @@ tsApp
 
               };
 
+              $scope.unassign = function(refset, userName) {
+                if (!confirm("Are you sure you want to unassign the refset?")) {
+                  return;
+                }
+                $scope.performWorkflowAction(refset, "UNASSIGN", userName);
+              }
+
               // Performs a workflow action
               $scope.performWorkflowAction = function(refset, action, userName) {
 
