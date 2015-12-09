@@ -4,12 +4,12 @@
 package org.ihtsdo.otf.refset.services.handlers;
 
 import java.util.List;
+import java.util.Map;
 
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
@@ -136,7 +136,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the standard case sensitivity types
    * @throws Exception the exception
    */
-  public KeyValuePairList getStandardCaseSensitivityTypes(
+  public Map<String,String> getStandardCaseSensitivityTypes(
     String terminology, String version) throws Exception;
 
   /**

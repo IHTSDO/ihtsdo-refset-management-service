@@ -4,8 +4,8 @@
 package org.ihtsdo.otf.refset;
 
 import java.util.List;
+import java.util.Map;
 
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.Searchable;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -180,15 +180,14 @@ public interface Translation extends Component, Searchable {
    *
    * @return the case sensitive types
    */
-  public KeyValuePairList getCaseSensitiveTypes();
+  public Map<String, String> getCaseSensitiveTypes();
 
   /**
    * Returns the case sensitive types.
    *
    * @param types the types
-   * @return the case sensitive types
    */
-  public void setCaseSensitiveTypes(KeyValuePairList types);
+  public void setCaseSensitiveTypes(Map<String, String> types);
 
   /**
    * Returns the concepts.

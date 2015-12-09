@@ -162,6 +162,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         translation.getDescriptionTypes().add(member);
       }
     }
+
+    // Case sensitive types - start with standard ones
+    translation.setCaseSensitiveTypes(getTerminologyHandler()
+        .getStandardCaseSensitivityTypes(translation.getTerminology(),
+            translation.getVersion()));
+
     // Add component
     Translation newTranslation = addHasLastModified(translation);
 
@@ -899,10 +905,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       addConcept(concept);
     }
 
-    for (DescriptionType originType : translation
-        .getDescriptionTypes()) {
-      DescriptionType type =
-          new DescriptionTypeJpa(originType);
+    for (DescriptionType originType : translation.getDescriptionTypes()) {
+      DescriptionType type = new DescriptionTypeJpa(originType);
       type.setTerminology(translationCopy.getTerminology());
       type.setVersion(translationCopy.getVersion());
       type.setId(null);

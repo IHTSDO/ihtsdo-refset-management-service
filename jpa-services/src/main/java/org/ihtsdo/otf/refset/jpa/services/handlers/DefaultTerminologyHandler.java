@@ -7,8 +7,10 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -22,8 +24,6 @@ import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
-import org.ihtsdo.otf.refset.helpers.KeyValuePair;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -936,22 +936,15 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public KeyValuePairList getStandardCaseSensitivityTypes(String terminology,
-    String version) throws Exception {
-    KeyValuePairList list = new KeyValuePairList();
+  public Map<String, String> getStandardCaseSensitivityTypes(
+    String terminology, String version) throws Exception {
+    Map<String, String> map = new HashMap<>();
 
     // For now this is hard-coded but could be looked up if term server had an
     // API
-    KeyValuePair pair = new KeyValuePair();
-    pair.setKey("900000000000017005");
-    pair.setValue("Case sensitive");
-    list.addKeyValuePair(pair);
-    pair = new KeyValuePair();
-    pair.setKey("900000000000448009");
-    pair.setValue("Case insensitive");
-    list.addKeyValuePair(pair);
-    return list;
-
+    map.put("900000000000017005", "Case sensitive");
+    map.put("900000000000448009", "Case insensitive");
+    return map;
   }
 
 }

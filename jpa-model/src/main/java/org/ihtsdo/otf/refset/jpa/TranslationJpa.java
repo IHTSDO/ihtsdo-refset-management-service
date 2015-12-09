@@ -44,8 +44,6 @@ import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
-import org.ihtsdo.otf.refset.helpers.KeyValuePair;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -375,29 +373,19 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   }
 
   /* see superclass */
+  @XmlElement
   @Override
-  public KeyValuePairList getCaseSensitiveTypes() {
-    KeyValuePairList list = new KeyValuePairList();
+  public Map<String, String> getCaseSensitiveTypes() {
     if (caseSensitiveTypes == null) {
-      return list;
+      caseSensitiveTypes = new HashMap<>();
     }
-    for (Map.Entry<String, String> entry : caseSensitiveTypes.entrySet()) {
-      final KeyValuePair pair = new KeyValuePair();
-      pair.setKey(entry.getKey());
-      pair.setValue(entry.getValue());
-      list.addKeyValuePair(pair);
-    }
-    list.setName("Case sensitive types");
-    return list;
+    return caseSensitiveTypes;
   }
 
   /* see superclass */
   @Override
-  public void setCaseSensitiveTypes(KeyValuePairList list) {
-    caseSensitiveTypes = new HashMap<>();
-    for (KeyValuePair pair : list.getKeyValuePairs()) {
-      caseSensitiveTypes.put(pair.getKey(), pair.getValue());
-    }
+  public void setCaseSensitiveTypes(Map<String, String> caseSensitiveTypes) {
+    this.caseSensitiveTypes = caseSensitiveTypes;
   }
 
   /* see superclass */
@@ -529,7 +517,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType
         + ", language=" + language + ", workflowStatus=" + workflowStatus
         + ", workflowPath=" + workflowPath + ", refset=" + refset
-        + ", descriptionTypes=" + descriptionTypes + "]";
+        + ", descriptionTypes=" + descriptionTypes + ", caseSensitiveTypes="
+        + caseSensitiveTypes + "]";
   }
 
   /* see superclass */
