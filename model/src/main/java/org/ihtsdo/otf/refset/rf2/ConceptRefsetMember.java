@@ -56,6 +56,20 @@ public interface ConceptRefsetMember extends Component {
   public void setConceptName(String conceptName);
 
   /**
+   * Indicates whether or not concept active is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isConceptActive();
+
+  /**
+   * Sets the concept active.
+   *
+   * @param conceptActive the concept active
+   */
+  public void setConceptActive(boolean conceptActive);
+
+  /**
    * Returns the member type.
    *
    * @return the member type
@@ -68,7 +82,6 @@ public interface ConceptRefsetMember extends Component {
    * @param type the member type
    */
   public void setMemberType(Refset.MemberType type);
-
 
   /**
    * Returns the notes.

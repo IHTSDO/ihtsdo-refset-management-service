@@ -41,9 +41,6 @@ public class AbstractListUnit<T> extends ListUnitSupport {
     assertTrue(list.getCount() == 1);
     assertTrue(list.getTotalCount() == 0);
 
-    System.out.println("o1="+object1);
-    System.out.println("o2="+object2);
-    System.out.println("list="+list);
     assertFalse(list.contains(object2));
 
     list.addObject(object2);

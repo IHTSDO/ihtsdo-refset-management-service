@@ -88,7 +88,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(refsetUrl + "/member/" + memberId).then(
+      $http.get(refsetUrl + "member/" + memberId).then(
       // success
       function(response) {
         console.debug("  member = ", response.data);
@@ -103,7 +103,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     }
-    
+
     // get refsets for project
     this.getRefsetsForProject = function(projectId) {
       console.debug("getRefsetsForProject");
@@ -332,15 +332,13 @@ tsApp.service('refsetService', [
     }
 
     // add refset inclusion
-    this.addRefsetInclusion = function(refset, conceptId, staged, active) {
+    this.addRefsetInclusion = function(member, staged) {
       console.debug("addRefsetInclusion");
       var deferred = $q.defer();
 
       // Add refset inclusion
       gpService.increment()
-      $http.get(
-        refsetUrl + "inclusion/add/" + refset.id + "?conceptId=" + conceptId + "&terminologyId="
-          + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
+      $http.post(refsetUrl + "inclusion/add?staged=" + staged, member).then(
       // success
       function(response) {
         console.debug("  inclusion = ", response.data);
@@ -357,15 +355,15 @@ tsApp.service('refsetService', [
     }
 
     // add refset exclusion
-    this.addRefsetExclusion = function(refset, conceptId, staged, active) {
-      console.debug("addRefsetExclusion", refset, conceptId, staged, active);
+    this.addRefsetExclusion = function(refset, conceptId, staged) {
+      console.debug("addRefsetExclusion", refset, conceptId, staged);
       var deferred = $q.defer();
 
       // Add refset exclusion
       gpService.increment()
       $http.get(
-        refsetUrl + "exclusion/add/" + refset.id + "?conceptId=" + conceptId + "&terminologyId="
-          + refset.terminologyId + "&staged=" + staged + "&active=" + active).then(
+        refsetUrl + "exclusion/add/" + refset.id + "?conceptId=" + conceptId + "&refsetId="
+          + refset.id + "&staged=" + staged).then(
       // success
       function(response) {
         console.debug("  exclusion = ", response.data);
@@ -776,7 +774,7 @@ tsApp.service('refsetService', [
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
-          
+
         },
         // Error
         function(response) {

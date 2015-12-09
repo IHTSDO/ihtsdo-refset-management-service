@@ -4,19 +4,14 @@
 package org.ihtsdo.otf.refset.test.jpa;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultTerminologyHandler;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -51,41 +46,19 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
   }
 
   /**
-   * Test getting descriptions from Snow Owl.
-   *
-   * @throws Exception the exception
-   */
-  // @Test
-  public void testGetDescriptions() throws Exception {
-    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
-    ProjectService service = new ProjectServiceJpa();
-    List<Terminology> list =
-        service.getTerminologyHandler().getTerminologyVersions("SNOMEDCT");
-    assertTrue(list.size() >= 38);
-    service = new ProjectServiceJpa();
-    Description description =
-        service.getTerminologyHandler().getDescription("1215974010",
-            "SNOMEDCT", "latest");
-    assertEquals("Tumour of kidney", description.getTerm());
-    assertEquals(1, description.getLanguageRefsetMembers().size());
-
-    service.close();
-  }
-
-  /**
    * Test getting concepts from Snow Owl.
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testGetConcept() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
     Concept concept =
         service.getTerminologyHandler().getConcept("126880001", "SNOMEDCT",
-            "latest");
-    assertEquals("Neoplasm of kidney", concept.getName());
+            "2015-01-31");
+    assertEquals(concept.getName(), "Neoplasm of kidney");
     service.close();
   }
 
@@ -94,7 +67,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testResolveExpression() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -103,8 +76,9 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setStartIndex(5);
     ConceptList conceptList =
         service.getTerminologyHandler().resolveExpression(
-            "<<284009009|Route of administration|", "SNOMEDCT", "latest", pfs);
-    assertEquals(conceptList.getTotalCount(), 25);
+            "<<284009009|Route of administration|", "SNOMEDCT", "2015-01-31",
+            pfs);
+    assertEquals(143, conceptList.getTotalCount());
     service.close();
   }
 
@@ -114,15 +88,16 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    * @throws Exception the exception
    */
   @Test
-  public void testGetConceptWithDescriptions() throws Exception {
+  public void testGetFullConcept() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
     Concept concept =
-        service.getTerminologyHandler().getConceptWithDescriptions("126880001",
-            "SNOMEDCT", "latest");
-    assertEquals("Neoplasm of kidney", concept.getName());
+        service.getTerminologyHandler().getFullConcept("126880001", "SNOMEDCT",
+            "2015-01-31");
+    assertEquals(concept.getName(), "Neoplasm of kidney");
     assertEquals(6, concept.getDescriptions().size());
+    assertEquals(2, concept.getRelationships().size());
     service.close();
   }
 
@@ -138,10 +113,11 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList concepts =
         service.getTerminologyHandler().getConceptParents("108369006",
-            "SNOMEDCT", "latest");
+            "SNOMEDCT", "2015-01-31");
     assertEquals(1, concepts.getObjects().size());
-    assertEquals("Neoplasm and/or hamartoma (morphologic abnormality)",
-        concepts.getObjects().get(0).getName());
+    assertEquals(concepts.getObjects().get(0).getName(),
+        "Neoplasm and/or hamartoma (morphologic abnormality)");
+
     service.close();
   }
 
@@ -157,7 +133,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList concepts =
         service.getTerminologyHandler().getConceptChildren("108369006",
-            "SNOMEDCT", "latest");
+            "SNOMEDCT", "2015-01-31");
     assertEquals(40, concepts.getObjects().size());
 
     service.close();
@@ -168,7 +144,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testFindConceptsForQuery() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
@@ -178,8 +154,15 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setMaxResults(50);
     ConceptList concepts =
         service.getTerminologyHandler().findConceptsForQuery("tumor",
-            "SNOMEDCT", "latest", pfs);
-    assertEquals(concepts.getObjects().size(), 49);
+            "SNOMEDCT", "2015-01-31", pfs);
+    assertEquals(50, concepts.getObjects().size());
+    assertEquals(3871, concepts.getTotalCount());
+
+    // check someing with no results
+    concepts =
+        service.getTerminologyHandler().findConceptsForQuery("tmuor",
+            "SNOMEDCT", "2015-01-31", pfs);
+    assertEquals(0, concepts.getObjects().size());
     service.close();
   }
 

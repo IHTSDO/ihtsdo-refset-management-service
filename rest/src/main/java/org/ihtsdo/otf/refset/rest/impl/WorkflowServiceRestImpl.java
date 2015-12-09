@@ -41,6 +41,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -108,6 +109,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "User name, e.g. admin", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -126,7 +128,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "perform workflow action on refset", UserRole.AUTHOR);
 
       return workflowService.performWorkflowAction(refsetId, userName,
-          WorkflowAction.valueOf(action));
+          UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
@@ -145,7 +147,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public ConceptList findAvailableEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -182,11 +184,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/editing")
-  @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedEditingConcepts(
+  @ApiOperation(value = "Find assigned editing work", notes = "Finds concepts in the specified translation assigned for editing by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedEditingConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -205,23 +207,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // and not for review
       String query =
           "projectId:" + projectId + " AND " + "authorUserNames:"
-              + user.getId() + " AND translationId:" + translationId
+              + user.getUserName() + " AND translationId:" + translationId
               + " AND forAuthoring:true AND forReview:false";
 
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-      List<Concept> concepts = new ArrayList<>();
+          workflowService.findTrackingRecordsForQuery(query, pfs);
       for (TrackingRecord record : records.getObjects()) {
-        concepts.add(record.getConcept());
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
       }
 
-      // Apply PFS to this list
-      ConceptList list = new ConceptListJpa();
-      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
-          pfs));
-      list.setTotalCount(records.getTotalCount());
-
-      return list;
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned editing work");
@@ -240,7 +236,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public ConceptList findAvailableReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -277,11 +273,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/review")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user.", response = ConceptListJpa.class)
-  public ConceptList findAssignedReviewConcepts(
+  @ApiOperation(value = "Find assigned review work", notes = "Finds concepts in the specified translation assigned for review by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedReviewConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -298,19 +294,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Find tracking records "for review" for this translation and user
       String query =
           "projectId:" + projectId + " AND " + "reviewerUserNames:"
-              + user.getId() + " AND translationId:" + translationId
+              + user.getName() + " AND translationId:" + translationId
               + " AND forReview:true";
       TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
-      List<Concept> concepts = new ArrayList<>();
+          workflowService.findTrackingRecordsForQuery(query, pfs);
       for (TrackingRecord record : records.getObjects()) {
-        concepts.add(record.getConcept());
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
       }
-      ConceptList list = new ConceptListJpa();
-      list.setTotalCount(records.getTotalCount());
-      list.setObjects(workflowService.applyPfsToList(concepts, Concept.class,
-          pfs));
-      return list;
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
@@ -329,7 +321,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   public TrackingRecord performWorkflowAction(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
     @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
     @ApiParam(value = "Concept object", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -345,10 +338,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     WorkflowService workflowService = new WorkflowServiceJpa();
     try {
-      authorizeProject(workflowService, projectId, securityService, authToken,
-          "perform workflow action on translation", UserRole.AUTHOR);
+      String authName =
+          authorizeProject(workflowService, projectId, securityService,
+              authToken, "perform workflow action on translation",
+              UserRole.AUTHOR);
 
+      // Set last modified by
+      concept.setLastModifiedBy(authName);
       return workflowService.performWorkflowAction(translationId, userName,
+          UserRole.valueOf(projectRole),
+
           WorkflowAction.valueOf(action), concept);
 
     } catch (Exception e) {
@@ -363,11 +362,62 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
+  @Path("/translation/{action}/batch")
+  @ApiOperation(value = "Perform multiple workflow action on a translation", notes = "Performs the specified action as the specified refset as the specified user", response = TrackingRecordListJpa.class)
+  public TrackingRecordList performBatchWorkflowAction(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Translation id, e.g. 8", required = false) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "User name, e.g. admin1", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "Project role, e.g. AUTHOR", required = true) @QueryParam("projectRole") String projectRole,
+    @ApiParam(value = "Workflow action, e.g. 'SAVE'", required = true) @PathParam("action") String action,
+    @ApiParam(value = "Concept list", required = true) ConceptListJpa conceptList,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Workflow): /translation/" + action + "/batch "
+            + translationId + ", " + userName);
+
+    // Test preconditions
+    if (projectId == null || translationId == null || userName == null) {
+      handleException(new Exception("Required parameter has a null value"), "");
+    }
+
+    WorkflowService workflowService = new WorkflowServiceJpa();
+    try {
+      String authName =
+          authorizeProject(workflowService, projectId, securityService,
+              authToken, "perform workflow actions on translation",
+              UserRole.AUTHOR);
+
+      // Set last modified by
+      TrackingRecordList list = new TrackingRecordListJpa();
+      for (Concept concept : conceptList.getObjects()) {
+        concept.setLastModifiedBy(authName);
+        list.getObjects().add(
+            workflowService.performWorkflowAction(translationId, userName,
+                UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
+                concept));
+      }
+      list.setTotalCount(list.getCount());
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to perform workflow actions on translation");
+    } finally {
+      workflowService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
   @Path("/refset/available/editing")
   @ApiOperation(value = "Find available editing work", notes = "Finds refsets available for editing by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAvailableEditingRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -413,6 +463,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    * @return the list
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private List<Refset> findAvailableEditingRefsetsHelper(Long projectId,
     User user, WorkflowService workflowService) throws Exception {
 
@@ -423,27 +474,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService).getObjects());
     }
     for (Refset r : list) {
-      handleLazyInit(r);
+      workflowService.handleLazyInit(r);
     }
     return list;
 
-  }
-
-  /**
-   * Handle refset lazy initialization.
-   *
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Refset refset) {
-    // handle all lazy initializations
-    refset.getProject().getName();
-    for (Translation translation : refset.getTranslations()) {
-      translation.getDescriptionTypes().size();
-      translation.getWorkflowStatus().name();
-    }
-    refset.getEnabledFeedbackEvents().size();
-    refset.getNotes().size();
   }
 
   /* see superclass */
@@ -509,11 +543,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       if (userName != null && !userName.equals("")) {
         query =
             "projectId:" + projectId + " AND " + "authorUserNames:" + userName
-                + " AND refsetId:[* TO *]"
+                + " AND NOT refsetId:0"
                 + " AND forAuthoring:true AND forReview:false";
       } else {
-        query =
-            "refsetId:[* TO *]" + " AND forAuthoring:true AND forReview:false";
+        query = "NOT refsetId:0 AND forAuthoring:true AND forReview:false";
       }
       // Perform this search without pfs
       TrackingRecordList records =
@@ -521,13 +554,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
-        // TODO: reuse the refset service algortihm instead of this
+        // Handle lazy initialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -536,7 +565,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.setTotalCount(records.getTotalCount());
 
       for (Refset r : list.getObjects()) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return list;
 
@@ -556,7 +585,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user.", response = RefsetListJpa.class)
   public RefsetList findAvailableReviewRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "User id, e.g. 3", required = true) @QueryParam("userName") String userName,
+    @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -584,7 +613,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       result.setObjects(list);
 
       for (Refset r : list) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return result;
 
@@ -644,7 +673,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       if (userName != null && !userName.equals("")) {
         query =
             "projectId:" + projectId + " AND " + "reviewerUserNames:"
-                + userName + " AND refsetId:[* TO *]" + " AND forReview:true";
+                + userName + " AND NOT refsetId:0" + " AND forReview:true";
       } else {
         throw new Exception("UserName must always be set");
       }
@@ -653,12 +682,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       List<Refset> refsets = new ArrayList<>();
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy intialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
       RefsetList list = new RefsetListJpa();
@@ -667,7 +692,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           .applyPfsToList(refsets, Refset.class, pfs));
 
       for (Refset r : list.getObjects()) {
-        handleLazyInit(r);
+        workflowService.handleLazyInit(r);
       }
       return list;
     } catch (Exception e) {
@@ -750,17 +775,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Get all assigned editing refsets
       String query =
-          "refsetId:[* TO *]" + " AND (forAuthoring:true OR forReview:true)";
+          "NOT refsetId:0" + " AND (forAuthoring:true OR forReview:true)";
       // Perform this search without pfs
       TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
         Refset refset = record.getRefset();
-        refset.getEnabledFeedbackEvents().size();
-        // refset.getMembers().size();
-        refset.getTranslations().size();
-        refset.getNotes().size();
+        workflowService.handleLazyInit(refset);
         refsets.add(refset);
       }
 
@@ -810,8 +831,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (TrackingRecord record : records.getObjects()) {
         // handle lazy initialization
         Concept concept = record.getConcept();
-        concept.getTranslation().getName();
-        concept.getNotes().size();
+        workflowService.handleLazyInit(concept);
         concepts.add(concept);
       }
 
@@ -981,11 +1001,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
     return null;
   }
-  
+
   /**
    * Sends a feedback message email.
    *
    * @param message the message
+   * @param refsetId the refset id
    * @param authToken the auth token
    * @return the string
    * @throws Exception the exception
@@ -994,15 +1015,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Path("/message")
   @ApiOperation(value = "Adds a feedback message.", notes = "Adds a feedback message.")
   public Response addFeedback(
-    @ApiParam(value = "message", required = true) List<String>  message,
+    @ApiParam(value = "message", required = true) List<String> message,
     @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     // log call
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Workflow): /message ");
-    
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Workflow): /message ");
+
     WorkflowService workflowService = new WorkflowServiceJpa();
     // Test preconditions
     if (refsetId == null) {
@@ -1011,15 +1032,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     Refset refset = refsetService.getRefset(refsetId);
-    
+
     try {
       // authorize call
       authorizeApp(securityService, authToken, "add feedback",
           UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: "
-              + message + ", " + refset.getFeedbackEmail());
+          "RESTful call (Workflow): /message msg: " + message + ", "
+              + refset.getFeedbackEmail());
 
       workflowService.addFeedback(message, refset);
 

@@ -62,6 +62,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   @Column(nullable = false)
   private String conceptName;
 
+  /** The concept active. */
+  @Column(nullable = false)
+  private boolean conceptActive = true;
+
   /** The type. */
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
@@ -90,6 +94,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     refset = member.getRefset();
     conceptId = member.getConceptId();
     conceptName = member.getConceptName();
+    conceptActive = member.isConceptActive();
     memberType = member.getMemberType();
     for (Note note : refset.getNotes()) {
       getNotes().add(new RefsetNoteJpa((RefsetNoteJpa) note));
@@ -97,6 +102,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Returns the concept id.
+   *
+   * @return the concept id
+   */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getConceptId() {
@@ -104,12 +114,22 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Sets the concept id.
+   *
+   * @param conceptId the concept id
+   */
   @Override
   public void setConceptId(String conceptId) {
     this.conceptId = conceptId;
   }
 
   /* see superclass */
+  /**
+   * Returns the refset.
+   *
+   * @return the refset
+   */
   @XmlTransient
   @Override
   public Refset getRefset() {
@@ -117,6 +137,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Sets the refset.
+   *
+   * @param refset the refset
+   */
   @Override
   public void setRefset(Refset refset) {
     this.refset = refset;
@@ -147,6 +172,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Returns the concept name.
+   *
+   * @return the concept name
+   */
   @Fields({
       @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
       @Field(name = "conceptNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
@@ -157,12 +187,44 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Sets the concept name.
+   *
+   * @param conceptName the concept name
+   */
   @Override
   public void setConceptName(String conceptName) {
     this.conceptName = conceptName;
   }
 
   /* see superclass */
+  /**
+   * Indicates whether or not concept active is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  @Override
+  public boolean isConceptActive() {
+    return conceptActive;
+  }
+
+  /* see superclass */
+  /**
+   * Sets the concept active.
+   *
+   * @param conceptActive the concept active
+   */
+  @Override
+  public void setConceptActive(boolean conceptActive) {
+    this.conceptActive = conceptActive;
+  }
+
+  /* see superclass */
+  /**
+   * Returns the member type.
+   *
+   * @return the member type
+   */
   @Field(bridge = @FieldBridge(impl = EnumBridge.class), index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Refset.MemberType getMemberType() {
@@ -176,6 +238,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+
   @XmlElement(type = ConceptRefsetMemberNoteJpa.class)
   @Override
   public List<Note> getNotes() {
@@ -186,12 +249,22 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Sets the notes.
+   *
+   * @param notes the notes
+   */
   @Override
   public void setNotes(List<Note> notes) {
     this.notes = notes;
   }
 
   /* see superclass */
+  /**
+   * Hash code.
+   *
+   * @return the int
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -199,6 +272,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
     result =
         prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
+    result = prime * result + (conceptActive ? 1231 : 1237);
     /*
      * result = prime * result + ((memberType == null) ? 0 :
      * memberType.hashCode());
@@ -213,6 +287,12 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * Equals.
+   *
+   * @param obj the obj
+   * @return true, if successful
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -232,7 +312,10 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptName.equals(other.conceptName))
       return false;
-    // removed this to get member diff report to work with IN/EXCLUSION_STAGED
+    if (conceptActive != other.conceptActive)
+      return false;
+    // removed this to get member diff report to work with
+    // IN/EXCLUSION_STAGED
     /*
      * if (memberType == null) { if (other.memberType != null) return false; }
      * else if (memberType != other.memberType) return false;
@@ -250,11 +333,15 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
   }
 
   /* see superclass */
+  /**
+   * To string.
+   *
+   * @return the string
+   */
   @Override
   public String toString() {
     return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
         + conceptId + ", conceptName=" + conceptName + ", type=" + memberType
-        + "] " + super.toString();
+        + ", conceptActive=" + conceptActive + "] " + super.toString();
   }
-
 }

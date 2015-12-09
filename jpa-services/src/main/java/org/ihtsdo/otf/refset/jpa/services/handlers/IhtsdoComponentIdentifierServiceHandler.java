@@ -21,7 +21,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -151,7 +151,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(DescriptionTypeRefsetMember member)
+  public String getTerminologyId(DescriptionType member)
     throws Exception {
     if (member.getTerminologyId() != null
         && !member.getTerminologyId().isEmpty()) {

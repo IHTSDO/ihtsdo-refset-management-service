@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services.handlers;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
@@ -26,13 +27,15 @@ public interface WorkflowActionHandler extends Configurable {
    *
    * @param refset the refset
    * @param user the user
+   * @param projectRole the project role
    * @param action the action
    * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult validateWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception;
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception;
 
   /**
    * Find available editing work. Something like dual independent review would
@@ -45,9 +48,8 @@ public interface WorkflowActionHandler extends Configurable {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAvailableEditingConcepts(
-    Translation translation, User user, PfsParameter pfs,
-    WorkflowService service) throws Exception;
+  public ConceptList findAvailableEditingConcepts(Translation translation,
+    User user, PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available review work.
@@ -93,6 +95,7 @@ public interface WorkflowActionHandler extends Configurable {
    *
    * @param translation the translation
    * @param user the user
+   * @param projectRole the project role
    * @param action the action
    * @param concept the concept
    * @param service the service
@@ -100,27 +103,30 @@ public interface WorkflowActionHandler extends Configurable {
    * @throws Exception the exception
    */
   public ValidationResult validateWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception;
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param refset the refset
    * @param user the user
+   * @param projectRole the project role
    * @param action the action
    * @param service the service
    * @return the tracking record
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception;
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param translation the translation
    * @param user the user
+   * @param projectRole the project role
    * @param action the action
    * @param concept the concept
    * @param service the service
@@ -128,7 +134,7 @@ public interface WorkflowActionHandler extends Configurable {
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception;
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception;
 
 }

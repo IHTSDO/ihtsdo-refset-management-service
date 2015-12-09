@@ -574,13 +574,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return refset;
   }
 
-  /**
-   * Handle refset lazy initialization.
-   *
-   * @param refset the refset
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Refset refset) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
     for (Translation translation : refset.getTranslations()) {

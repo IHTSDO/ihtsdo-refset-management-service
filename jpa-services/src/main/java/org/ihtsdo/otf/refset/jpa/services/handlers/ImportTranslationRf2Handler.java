@@ -172,7 +172,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         String line = null;
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
-          // System.out.println(sc.nextLine());
           line = sc.nextLine();
           line = line.replace("\r", "");
           final String fields[] = line.split("\t");

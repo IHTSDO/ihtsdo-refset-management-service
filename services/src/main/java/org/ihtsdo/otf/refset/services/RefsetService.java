@@ -331,7 +331,14 @@ public interface RefsetService extends ReleaseService {
     String query, PfsParameter pfs) throws Exception;
 
   /**
-   * Handle lazy init.
+   * Handle lazy initialization for a refset.
+   *
+   * @param refset the refset
+   */
+  public void handleLazyInit(Refset refset);
+
+  /**
+   * Handle lazy initialization for a member.
    *
    * @param member the member
    */

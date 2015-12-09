@@ -9,7 +9,7 @@ import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -62,7 +62,7 @@ public interface IdentifierAssignmentHandler extends Configurable {
    * @return the string
    * @throws Exception the exception
    */
-  public String getTerminologyId(DescriptionTypeRefsetMember member)
+  public String getTerminologyId(DescriptionType member)
     throws Exception;
 
   /**

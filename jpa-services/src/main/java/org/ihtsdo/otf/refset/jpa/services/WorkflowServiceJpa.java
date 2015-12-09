@@ -19,6 +19,7 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -85,7 +86,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long refsetId, String userName,
-    WorkflowAction action) throws Exception {
+    UserRole projectRole, WorkflowAction action) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
             + refsetId);
@@ -96,14 +97,15 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         getWorkflowHandlerForPath(refset.getWorkflowPath());
     // Validate the action
     ValidationResult result =
-        handler.validateWorkflowAction(refset, user, action, this);
+        handler.validateWorkflowAction(refset, user, projectRole, action, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
       throw new Exception(
           "Unable to perform workflow action, invalid preconditions for this action.");
     }
     // Perform the action
-    return handler.performWorkflowAction(refset, user, action, this);
+    return handler.performWorkflowAction(refset, user, projectRole, action,
+        this);
   }
 
   /* see superclass */
@@ -161,7 +163,8 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Long translationId,
-    String userName, WorkflowAction action, Concept concept) throws Exception {
+    String userName, UserRole projectRole, WorkflowAction action,
+    Concept concept) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
             + concept.getTerminologyId() + ", " + translationId);
@@ -173,16 +176,16 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Validate the action
     ValidationResult result =
-        handler
-            .validateWorkflowAction(translation, user, action, concept, this);
+        handler.validateWorkflowAction(translation, user, projectRole, action,
+            concept, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
       throw new Exception(
           "Unable to perform workflow action, invalid preconditions for this action.");
     }
     // Perform the action
-    return handler.performWorkflowAction(translation, user, action, concept,
-        this);
+    return handler.performWorkflowAction(translation, user, projectRole,
+        action, concept, this);
   }
 
   /* see superclass */
@@ -300,6 +303,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     return new HashSet<>(workflowHandlerMap.values());
   }
 
+  /* see superclass */
   @Override
   public void addFeedback(List<String> message, Refset refset) throws Exception {
     
@@ -319,5 +323,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
           "true".equals(config.get("mail.smtp.auth")));
     }
   }
-  
+
+  /* see superclass */
+  @Override
+  public void handleLazyInit(TrackingRecord record) {
+    record.getAuthors().size();
+    record.getReviewers().size();
+  }
+
 }

@@ -61,9 +61,9 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // ASSIGN the refset to testUser
     TrackingRecord record =
-        workflowService
-            .performWorkflowAction(currentRefset.getProject().getId(),
-                currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "ASSIGN",
+            adminAuthToken);
 
     // Find the assigned refset
     currentRefset =
@@ -113,7 +113,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Use workflowService to SAVE the refset
     record =
         workflowService.performWorkflowAction(currentRefset.getProject()
-            .getId(), currentRefset.getId(), testUser, "SAVE", adminAuthToken);
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "SAVE",
+            adminAuthToken);
 
     // Validate the refset
     result =
@@ -129,9 +130,9 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Workflow - FINISH
     record =
-        workflowService
-            .performWorkflowAction(currentRefset.getProject().getId(),
-                currentRefset.getId(), testUser, "FINISH", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "FINISH",
+            adminAuthToken);
 
     // Find available review refset
     currentRefset =
@@ -146,9 +147,9 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Assign refset for review
     record =
-        workflowService
-            .performWorkflowAction(currentRefset.getProject().getId(),
-                currentRefset.getId(), testUser, "ASSIGN", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "ASSIGN",
+            adminAuthToken);
 
     // Find assigned review refset
     currentRefset =
@@ -161,7 +162,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Use workflowService to SAVE the refset
     record =
         workflowService.performWorkflowAction(currentRefset.getProject()
-            .getId(), currentRefset.getId(), testUser, "SAVE", adminAuthToken);
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "SAVE",
+            adminAuthToken);
 
     // Validate the refset
     result =
@@ -176,12 +178,12 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // FINISH - status
     record =
-        workflowService
-            .performWorkflowAction(currentRefset.getProject().getId(),
-                currentRefset.getId(), testUser, "FINISH", adminAuthToken);
+        workflowService.performWorkflowAction(currentRefset.getProject()
+            .getId(), currentRefset.getId(), testUser, "AUTHOR", "FINISH",
+            adminAuthToken);
 
     // TODO: Remove the line below later. Just for debugging
-    //WorkflowStatus status = record.getRefset().getWorkflowStatus();
+    // WorkflowStatus status = record.getRefset().getWorkflowStatus();
 
     // remove refset
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);

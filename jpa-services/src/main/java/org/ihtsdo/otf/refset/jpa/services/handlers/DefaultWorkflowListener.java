@@ -9,7 +9,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
@@ -66,7 +66,7 @@ public class DefaultWorkflowListener implements WorkflowListener {
 
   @Override
   public void descriptionTypeRefsetMemberChanged(
-    DescriptionTypeRefsetMember member, Action action) throws Exception {
+    DescriptionType member, Action action) throws Exception {
     // n/a
   }
 

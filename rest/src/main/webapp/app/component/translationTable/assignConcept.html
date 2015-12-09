@@ -6,21 +6,15 @@
   <table class="table">
     <tr>
       <td>
-        <b>Id</b>
+        <b>Concept Id</b>
       </td>
-      <td>{{refset.terminologyId}}</td>
+      <td>{{concept.terminologyId}}</td>
     </tr>
     <tr>
       <td>
         <b>Name</b>
       </td>
-      <td>{{refset.name}}</td>
-    </tr>
-    <tr>
-      <td>
-        <b>Description</b>
-      </td>
-      <td>{{refset.description}}</td>
+      <td>{{concept.name}}</td>
     </tr>
     <tr>
       <td>
@@ -42,7 +36,7 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary"
-    ng-click="assignRefset(selectedUserName); 
+    ng-click="assignConcept(selectedUserName); 
     ">Assign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

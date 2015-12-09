@@ -93,10 +93,11 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         if (fields[2].equals("0")) {
           continue;
         }
-        
+
         // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         setCommonFields(member, refset);
+        member.setConceptActive(true);
         member.setRefset(refset);
         member.setConceptId(fields[5]);
         member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
