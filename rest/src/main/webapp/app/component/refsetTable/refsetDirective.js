@@ -6,7 +6,6 @@ tsApp
     [
       '$uibModal',
       '$rootScope',
-      '$sce',
       'utilService',
       'securityService',
       'projectService',
@@ -1575,33 +1574,33 @@ tsApp
                           .stringify($scope.previousWarnings)))) {
                         $scope.warnings = null;
                         // Success - validate refset
-                  
-                  if (member.memberType == 'MEMBER') {
 
-                    refsetService.addRefsetMember(member).then(
-                    // Success
-                    function(data) {
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  }
+                        if (member.memberType == 'MEMBER') {
 
-                  if (member.memberType == 'INCLUSION') {
-                    refsetService.addRefsetInclusion(member, false).then(
-                    // Success
-                    function(data) {
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  }
+                          refsetService.addRefsetMember(member).then(
+                          // Success
+                          function(data) {
+                            $uibModalInstance.close(refset);
+                          },
+                          // Error
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
+                        }
+
+                        if (member.memberType == 'INCLUSION') {
+                          refsetService.addRefsetInclusion(member, false).then(
+                          // Success
+                          function(data) {
+                            $uibModalInstance.close(refset);
+                          },
+                          // Error
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
+                        }
                       }
                     },
                     // Error - validate refset

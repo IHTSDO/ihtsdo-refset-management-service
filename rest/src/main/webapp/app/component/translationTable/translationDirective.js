@@ -1117,8 +1117,15 @@ tsApp
 
                 // Apply the type parameters to the description
                 $scope.applyDescriptionType = function(description, type) {
+                  
+                  // assume at most one language entry
+                  if (description.languages && description.languages.length > 1) {
+                    alert('Unexpected number of language entries for description.');
+                  }
+
                   description.typeId = type.type;
-                  description.acceptabilityId = type.acceptability;
+                  description.languages[0].descriptionId = description.id;
+                  description.languages[0].acceptabilityId = type.acceptability;
                 }
 
                 // Get paged descriptions (assume all are loaded)

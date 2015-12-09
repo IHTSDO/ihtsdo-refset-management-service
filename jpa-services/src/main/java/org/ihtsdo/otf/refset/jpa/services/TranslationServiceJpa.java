@@ -333,7 +333,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void handleLazyInit(Concept concept) {
-    concept.getDescriptions().size();
+    for (Description d : concept.getDescriptions()) {
+      d.getLanguageRefsetMembers().size();
+    }
     concept.getRelationships().size();
     concept.getNotes().size();
   }

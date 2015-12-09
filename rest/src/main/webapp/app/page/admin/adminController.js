@@ -148,7 +148,7 @@ tsApp
             sortField : $scope.paging["candidateUser"].sortField,
             ascending : $scope.paging["candidateUser"].ascending == null ? true
               : $scope.paging["candidateUser"].ascending,
-             : null
+            queryRestriction : null
           };
 
           projectService.findUnassignedUsersForProject($scope.selectedProject.id,
@@ -259,7 +259,7 @@ tsApp
         // sort mechanism 
         $scope.setSortField = function(table, field) {
           utilService.setSortField(table, field, $scope.paging);
-          
+
           // retrieve the correct table
           if (table === 'candidateProject') {
             $scope.getCandidateProjects();
@@ -315,18 +315,18 @@ tsApp
           $scope.getAssignedUsers();
           $scope.getUnassignedUsers();
         }
-        
+
         $scope.getValidationChecks = function() {
           validationService.getValidationCheckNames().then(
-            // Success 
-            function(data) {
-              $scope.validationChecks = data.keyValuePairs;
-            },
-            // Error - update refset
-            function(data) {
-              $scope.errors[0] = data;
-              utilService.clearError();
-            })
+          // Success 
+          function(data) {
+            $scope.validationChecks = data.keyValuePairs;
+          },
+          // Error - update refset
+          function(data) {
+            $scope.errors[0] = data;
+            utilService.clearError();
+          })
         }
 
         //
@@ -437,7 +437,7 @@ tsApp
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.error = null;
-          
+
           for (var i = 0; i < $scope.validationChecks.length; i++) {
             if (project.validationChecks.indexOf($scope.validationChecks[i].key) > -1) {
               $scope.selectedChecks.push($scope.validationChecks[i].value);
@@ -451,33 +451,32 @@ tsApp
             var index = $scope.availableChecks.indexOf(check);
             $scope.availableChecks.splice(index, 1);
           }
-          
+
           $scope.removeValidationCheck = function(check) {
             $scope.availableChecks.push(check);
             var index = $scope.selectedChecks.indexOf(check);
-            $scope.selectedChecks.splice(index, 1);       
+            $scope.selectedChecks.splice(index, 1);
           }
-          
+
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
               window.alert("The name, description, and terminology fields cannot be blank. ");
               return;
             }
-            
+
             project.validationChecks = [];
             for (var i = 0; i < $scope.validationChecks.length; i++) {
               if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
             }
-            /*project.validationChecks = $scope.validationChecks;
-            for (var i = $scope.validationChecks.length -1; i >= 0; i--) {
-              var index = $scope.selectedChecks.indexOf($scope.validationChecks[i].value);
-              if (index == -1) {
-                project.validationChecks.splice(index, 1);
-              }
-            }*/
-            
+            /*
+                         * project.validationChecks = $scope.validationChecks; for (var i =
+                         * $scope.validationChecks.length -1; i >= 0; i--) { var index =
+                         * $scope.selectedChecks.indexOf($scope.validationChecks[i].value); if
+                         * (index == -1) { project.validationChecks.splice(index, 1); } }
+                         */
+
             projectService.updateProject(project).then(
             // Success
             function(data) {

@@ -231,14 +231,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService = new TranslationServiceJpa();
     try {
       Logger.getLogger(getClass()).info(
-          "RESTful call (Translation): get concept, conceptId:"
-              + conceptId);
+          "RESTful call (Translation): get concept, conceptId:" + conceptId);
 
       authorizeApp(securityService, authToken, "retrieve the concept",
           UserRole.VIEWER);
 
-      Concept concept =
-          translationService.getConcept(conceptId);
+      Concept concept = translationService.getConcept(conceptId);
 
       return concept;
     } catch (Exception e) {
@@ -250,8 +248,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
-  
-  
   /* see superclass */
   @Override
   @GET
@@ -528,9 +524,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               pfs);
       // Graph resolver - get descriptions and language refset entries
       for (Concept c : list.getObjects()) {
-        for (Description d : c.getDescriptions()) {
-          d.getLanguageRefsetMembers().size();
-        }
+        translationService.handleLazyInit(c);
       }
       return list;
     } catch (Exception e) {
