@@ -27,7 +27,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.WorkflowService;
-import org.ihtsdo.otf.refset.services.handlers.OtfEmailHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
@@ -302,23 +301,23 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   }
 
   @Override
-  public void sendFeedbackEmail(List<String> message, String recipient) throws Exception {
-    OtfEmailHandler emailHandler = new OtfEmailHandler();
-    // get to address from config.properties
+  public void addFeedback(List<String> message, Refset refset) throws Exception {
+    
+    /*var sList = [ name, email, refset.id, refset.name,
+                  feedbackMessage ];*/
+    
     Properties config = ConfigUtility.getConfigProperties();
-    
-    String baseUrlWebapp = 
-        config.getProperty("base.url.webapp");
-    /*String conceptUrl =
-        baseUrlWebapp + "/#/record/conceptId/" + message.get(2);*/
-    
-    emailHandler.sendSimpleEmail(recipient, message.get(1),
-      "Refset/Translation Tool User Feedback: " + message.get(2) + "-" + message.get(3), 
-      "User: " + message.get(0) + "<br>" + 
-      "Email: " + message.get(1) + "<br>" + 
-      /*"Concept: <a href=" + conceptUrl + ">" + message.get(2) + "- " + message.get(3) + "</a><br><br>" + */
-      message.get(4));
-    
+    if (config.getProperty("mail.enabled") != null
+        && config.getProperty("mail.enabled").equals("true")
+        && refset.getFeedbackEmail() != null) {
+      ConfigUtility.sendEmail("Refset Feedback: " + message.get(2) + "-" + message.get(3),
+          config.getProperty("mail.smtp.user"),
+          refset.getFeedbackEmail(), 
+          "User: " + message.get(0) + "<br>" + 
+              "Email: " + message.get(1) + "<br>" + message.get(4), 
+          config,
+          "true".equals(config.get("mail.smtp.auth")));
+    }
   }
   
 }

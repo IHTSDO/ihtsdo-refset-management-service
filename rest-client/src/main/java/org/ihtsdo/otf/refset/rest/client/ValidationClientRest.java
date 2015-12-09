@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptValidationResultList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.MemberValidationResultList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -47,7 +48,7 @@ public class ValidationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateConcept(ConceptJpa concept, String authToken)
+  public ValidationResult validateConcept(ConceptJpa concept, Long projectId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate concept " + concept);
@@ -79,7 +80,7 @@ public class ValidationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateRefset(RefsetJpa refset, String authToken)
+  public ValidationResult validateRefset(RefsetJpa refset, Long projectId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate refset " + refset);
@@ -112,7 +113,7 @@ public class ValidationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ValidationResult validateTranslation(TranslationJpa translation,
-    String authToken) throws Exception {
+    Long projectId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate translation " + translation);
 
@@ -146,7 +147,7 @@ public class ValidationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ValidationResult validateMember(ConceptRefsetMemberJpa member,
-    String authToken) throws Exception {
+    Long projectId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate member " + member);
 
@@ -243,6 +244,12 @@ public class ValidationClientRest extends RootClientRest implements
         (MemberValidationResultList) ConfigUtility.getGraphForString(
             resultString, MemberValidationResultListJpa.class);
     return result;
+  }
+
+  @Override
+  public KeyValuePairList getValidationChecks(String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 
 }

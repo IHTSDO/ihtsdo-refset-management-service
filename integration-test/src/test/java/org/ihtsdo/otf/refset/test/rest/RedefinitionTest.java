@@ -651,7 +651,7 @@ public class RedefinitionTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");

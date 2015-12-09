@@ -38,7 +38,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(newRefset, adminAuthToken);
+        validationService.validateRefset(newRefset, project2.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset did not pass validation.");
@@ -118,7 +118,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Validate the refset
     result =
         validationService.validateRefset((RefsetJpa) record.getRefset(),
-            adminAuthToken);
+            project2.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception(
@@ -166,7 +166,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Validate the refset
     result =
         validationService.validateRefset((RefsetJpa) record.getRefset(),
-            adminAuthToken);
+            project2.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception(
@@ -207,7 +207,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(newRefset, adminAuthToken);
+        validationService.validateRefset(newRefset, project2.getId(), adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");

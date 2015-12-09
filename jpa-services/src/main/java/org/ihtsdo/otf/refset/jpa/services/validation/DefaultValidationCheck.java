@@ -34,6 +34,16 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     Logger.getLogger(getClass()).debug("  Validate refset - " + refset);
     ValidationResult result = new ValidationResultJpa();
 
+    /*// FOR TESTING
+    if (!refset.getDescription().contains("Description")) {
+      result.addError("TESTING Error: Descriptions must include the word 'Description'.");
+    }
+    
+    // FOR TESTING
+    if (!refset.getDescription().contains("refset")) {
+      result.addWarning("TESTING Warning: Descriptions must include the word 'refset'.");
+    }    */
+    
     // Only an INTENSIONAL refset should have a definition
     if (refset.getType() != Refset.Type.INTENSIONAL
         && refset.getDefinition() != null) {
