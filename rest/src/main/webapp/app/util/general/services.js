@@ -136,7 +136,6 @@ tsApp.service('utilService', [ '$location', function($location) {
   // Helper to get a paged array with show/hide flags
   // and filtered by query string
   this.getPagedArray = function(array, paging, pageSize) {
-    console.debug("getPagedArray");
     var newArray = new Array();
 
     // if array blank or not an array, return blank list

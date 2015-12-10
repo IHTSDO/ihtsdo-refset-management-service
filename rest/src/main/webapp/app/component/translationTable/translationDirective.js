@@ -209,8 +209,11 @@ tsApp
                 };
 
                 // For editing pane, restrict to READY_FOR_PUBLICATION only
-                if ($scope.value == 'EDITING' || $scope.value == 'RELEASE') {
+                if ($scope.value == 'EDITING') {
                   pfs.queryRestriction = "workflowStatus:READY_FOR_PUBLICATION";
+                }
+                if ($scope.value == 'RELEASE') {
+                  // may not need a restriction here
                 }
 
                 translationService.findTranslationConceptsForQuery(translation.id,
@@ -517,7 +520,7 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, object, type) {
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type) {
                 console.debug("Entered notes modal control", object, type);
 
                 $scope.errors = [];
@@ -538,6 +541,10 @@ tsApp
                   ascending : true
                 }
 
+                $scope.getNoteValue = function(note) {
+                  console.debug("note.value",note.value);
+                  return $sce.trustAsHtml(note.value);
+                }
                 // Get paged notes (assume all are loaded)
                 $scope.getPagedNotes = function() {
                   $scope.pagedNotes = $scope.getPagedArray($scope.object.notes,
@@ -1174,30 +1181,21 @@ tsApp
 
                 $scope.submitConcept = function(concept) {
 
-                  if (concept.id) {
-                    translationService.updateConcept(concept).then(
-                    // Success - update refset
-                    function(data) {
-                      $uibModalInstance.close(concept);
-                    },
-                    // Error - update refset
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-                  } else {
-                    translationService.addConcept(concept).then(
-                    // Success - update refset
-                    function(data) {
-                      $uibModalInstance.close(concept);
-                    },
-                    // Error - update refset
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
+                  // TODO: validation/errors
 
-                  }
+                  translationService.updateConcept(concept).then(
+                  // Success - update refset
+                  function(data) {
+
+                    // TODO: workflow action to "SAVE"
+
+                    $uibModalInstance.close(concept);
+                  },
+                  // Error - update refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
 
                 };
 
