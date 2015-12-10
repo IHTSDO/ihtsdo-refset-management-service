@@ -64,7 +64,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The security service. */
   private SecurityService securityService;
-  
+
   /** The project service. */
   private ProjectService projectService;
 
@@ -98,7 +98,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
           "validate concept", UserRole.AUTHOR);
 
       Project project = projectService.getProject(projectId);
-      return validationService.validateConcept(concept, project, translationService);
+      return validationService.validateConcept(concept, project,
+          translationService);
     } catch (Exception e) {
       handleException(e, "trying to validate concept");
       return null;
@@ -121,13 +122,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Validation): /refset " + refset);
+        "RESTful call POST (Validation): /refset " + refset + "/" + projectId);
     ValidationService validationService = new ValidationServiceJpa();
     RefsetService refsetService = new RefsetServiceJpa();
 
     try {
-      authorizeProject(projectService, refset.getProjectId(), securityService, authToken,
-          "validate a refset", UserRole.AUTHOR);
+      authorizeProject(projectService, refset.getProjectId(), securityService,
+          authToken, "validate a refset", UserRole.AUTHOR);
 
       Project project = projectService.getProject(projectId);
       return validationService.validateRefset(refset, project, refsetService);
@@ -145,15 +146,16 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/translation")
+  @Path("/translation/{projectId}")
   @ApiOperation(value = "Validate Translation", notes = "Validates a translation", response = ValidationResult.class)
   public ValidationResult validateTranslation(
     @ApiParam(value = "Translation", required = true) TranslationJpa translation,
-    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Validation): /translation " + translation);
+        "RESTful call POST (Validation): /translation " + translation + "/"
+            + projectId);
 
     ValidationService validationService = new ValidationServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
@@ -163,8 +165,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
           "validate translation", UserRole.AUTHOR);
 
       Project project = projectService.getProject(projectId);
-      return validationService.validateTranslation(translation,
-          project, translationService);
+      return validationService.validateTranslation(translation, project,
+          translationService);
     } catch (Exception e) {
       handleException(e, "trying to validate translation");
       return null;
@@ -194,8 +196,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "validate member", UserRole.AUTHOR);
-      
-      Project project = projectService.getProject(projectId);      
+
+      Project project = projectService.getProject(projectId);
       return validationService.validateMember(member, project, refsetService);
     } catch (Exception e) {
       handleException(e, "trying to validate refset member");
@@ -224,10 +226,11 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     ValidationService validationService = new ValidationServiceJpa();
     TranslationService translationService = new TranslationServiceJpa();
     try {
-      Translation translation = translationService.getTranslation(translationId);
-      authorizeProject(projectService, translation.getProject().getId(), securityService, authToken,
-          "validate all concepts", UserRole.AUTHOR);
-      
+      Translation translation =
+          translationService.getTranslation(translationId);
+      authorizeProject(projectService, translation.getProject().getId(),
+          securityService, authToken, "validate all concepts", UserRole.AUTHOR);
+
       authorizeApp(securityService, authToken, "validate all concepts",
           UserRole.ADMIN);
 
@@ -237,7 +240,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
               null);
       for (Concept concept : concepts.getObjects()) {
         ValidationResult result =
-            validationService.validateConcept(concept, null, translationService);
+            validationService
+                .validateConcept(concept, null, translationService);
         if (!result.isValid()) {
           ConceptValidationResult cvr = new ConceptValidationResultJpa(result);
           cvr.setConcept(concept);
@@ -272,8 +276,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     RefsetService refsetService = new RefsetServiceJpa();
     try {
       Refset refset = refsetService.getRefset(refsetId);
-      authorizeProject(projectService, refset.getProject().getId(), securityService, authToken,
-          "validate all members", UserRole.AUTHOR);
+      authorizeProject(projectService, refset.getProject().getId(),
+          securityService, authToken, "validate all members", UserRole.AUTHOR);
 
       MemberValidationResultList list = new MemberValidationResultListJpa();
       ConceptRefsetMemberList members =
@@ -298,6 +302,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+
   /* see superclass */
   @Override
   @GET
@@ -314,7 +319,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     try {
       authorizeApp(securityService, authToken, "get validation checks",
           UserRole.VIEWER);
-      
+
       KeyValuePairList list = validationService.getValidationCheckNames();
       return list;
     } catch (Exception e) {
