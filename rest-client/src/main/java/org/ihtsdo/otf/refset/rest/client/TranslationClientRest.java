@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Properties;
 
@@ -558,12 +559,12 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/add/" + entry);
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/add/" + translationId + "/" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).put(Entity.xml(entry));
+            .header("Authorization", authToken).get();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -583,8 +584,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/remove/" + entry);
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/remove/" + translationId + "/" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -607,19 +608,17 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/spelling/clear");
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/clear/" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
     } else {
       throw new Exception(response.toString());
     }
-
   }
 
   @Override
@@ -759,17 +758,66 @@ public class TranslationClientRest extends RootClientRest implements
 
   @Override
   public void importSpellingDictionary(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
+    FormDataContentDisposition contentDispositionHeader, InputStream is,
     Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - import Spelling Dictionary for translation "
+            + translationId);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(is.toString(), "in");
 
+    StreamDataBodyPart fileDataBodyPart =
+        new StreamDataBodyPart("file", is, "filename.dat",
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.bodyPart(fileDataBodyPart);
+
+    ClientConfig clientConfig = new ClientConfig();
+    clientConfig.register(MultiPartFeature.class);
+    Client client = ClientBuilder.newClient(clientConfig);
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/import" + "?translationId="
+            + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   @Override
   public InputStream exportSpellingDictionary(Long translationId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - export Spelling Dictionary for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/export/" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_OCTET_STREAM)
+            .header("Authorization", authToken).get();
+
+    InputStream resultString = response.readEntity(InputStream.class);
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return resultString;
   }
 
   @Override
@@ -832,10 +880,30 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public StringList suggestSpelling(String term, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  public StringList suggestSpelling(Long translationId, String entry,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - suggest Spelling Dictionary for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/suggest/" + translationId + "/" + entry);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    StringList suggestions = response.readEntity(StringList.class);
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return suggestions;
   }
 
   @Override

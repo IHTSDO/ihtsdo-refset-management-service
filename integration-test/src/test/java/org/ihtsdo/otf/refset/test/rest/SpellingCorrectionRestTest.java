@@ -6,11 +6,13 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,20 +20,18 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
-import org.ihtsdo.otf.refset.ReleaseInfo;
-import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultSpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
-import org.ihtsdo.otf.refset.rest.client.ReleaseClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -41,7 +41,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class TranslationReleaseTest {
+public class SpellingCorrectionRestTest {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -54,9 +54,6 @@ public class TranslationReleaseTest {
 
   /** The translation service. */
   protected static TranslationClientRest translationService;
-
-  /** The release service. */
-  protected static ReleaseClientRest releaseService;
 
   /** The security service. */
   protected static SecurityClientRest securityService;
@@ -96,7 +93,6 @@ public class TranslationReleaseTest {
     // instantiate required services
     refsetService = new RefsetClientRest(properties);
     translationService = new TranslationClientRest(properties);
-    releaseService = new ReleaseClientRest(properties);
     securityService = new SecurityClientRest(properties);
     validationService = new ValidationClientRest(properties);
     projectService = new ProjectClientRest(properties);
@@ -198,7 +194,8 @@ public class TranslationReleaseTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -269,7 +266,8 @@ public class TranslationReleaseTest {
 
     // Validate translation
     ValidationResult result =
-        validationService.validateTranslation(translation, project.getId(), auth.getAuthToken());
+        validationService.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -296,236 +294,198 @@ public class TranslationReleaseTest {
     return translation;
   }
 
-  /**
-   * Test translation release including begin and cancel.
-   *
-   * @throws Exception the exception
-   */
   @Test
-  public void testRelease001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
+  public void testSpellingAddRemoveClearSuggest() throws Exception {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (intensional) and import definition
+
+    // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
             .randomUUID().toString(), admin);
     TranslationJpa translation1 =
         makeTranslation("translation1", refset1, project2, admin);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+
+    // Obtain a translation
+    Long tid = translation1.getId();
+
+    // Clear to setup process
+    translationService.clearSpellingDictionary(tid, adminAuthToken);
+
+    // Add a couple of entries.
+    translationService.addSpellingDictionaryEntry(tid, "Word3", adminAuthToken);
+    translationService.addSpellingDictionaryEntry(tid, "Word4", adminAuthToken);
+    translationService.addSpellingDictionaryEntry(tid, "Word5", adminAuthToken);
+
+    // Test SuggestSpelling with entry that resides in dictionary
+    StringList results =
+        translationService.suggestSpelling(tid, "Word3", adminAuthToken);
+
+    assertEquals(0, results.getTotalCount());
+
+    // Remove entry
+    translationService.removeSpellingDictionaryEntry(tid, "Word3",
         adminAuthToken);
-    // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(),
-        adminAuthToken);
+
+    // Test SuggestSpelling with entry that does not reside in dictionary
+    results = translationService.suggestSpelling(tid, "Word3", adminAuthToken);
+
+    assertEquals(2, results.getTotalCount());
+
+    // Clear contents
+    translationService.clearSpellingDictionary(tid, adminAuthToken);
+
+    // Test SuggestSpelling with empty dictionary
+    results = translationService.suggestSpelling(tid, "Word3", adminAuthToken);
+
+    assertEquals(0, results.getTotalCount());
+
     // clean up
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(tid, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
-  /**
-   * Test translation release including begin, validate and cancel.
-   *
-   * @throws Exception the exception
-   */
-//  @Test
-  public void testRelease002() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
-    Project project2 = projectService.getProject(2L, adminAuthToken);
+  @Test
+  public void testSpellingImportExport() throws Exception {
+    Project project1 = projectService.getProject(2L, adminAuthToken);
+    Project project2 = projectService.getProject(3L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (intensional) and import definition
+
+    // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
             .randomUUID().toString(), admin);
     TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project2, admin);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        makeTranslation("translation1", refset1, project1, admin);
+
+    // Create refset #2 (intensional) and import definition
+    RefsetJpa refset2 =
+        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
+    TranslationJpa translation2 =
+        makeTranslation("translation2", refset2, project2, admin);
+
+    // Obtain a translation
+    Long tidOrig = translation1.getId();
+    Long tidNew = translation2.getId();
+
+    // Clear to setup process
+    translationService.clearSpellingDictionary(tidOrig, adminAuthToken);
+    translationService.clearSpellingDictionary(tidNew, adminAuthToken);
+
+    // Add a couple of entrie to one of the dictionaries
+    translationService.addSpellingDictionaryEntry(tidOrig, "Word3",
         adminAuthToken);
-    // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(),
+    translationService.addSpellingDictionaryEntry(tidOrig, "Word4",
         adminAuthToken);
-    // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(),
+    translationService.addSpellingDictionaryEntry(tidOrig, "Word5",
         adminAuthToken);
+
+    // export contents from first dictionary
+    InputStream dictOrig =
+        translationService.exportSpellingDictionary(tidOrig, adminAuthToken);
+
+    // import contents to a second dictionary
+    translationService.importSpellingDictionary(null, dictOrig, tidNew,
+        adminAuthToken);
+
+    // export contents from second dictionary for testing purposes
+    InputStream dictNew =
+        translationService.exportSpellingDictionary(tidNew, adminAuthToken);
+
+    DefaultSpellingCorrectionHandler handler =
+        new DefaultSpellingCorrectionHandler();
+
+    // Setup handler
+    dictOrig =
+        translationService.exportSpellingDictionary(tidOrig, adminAuthToken);
+
+    dictNew =
+        translationService.exportSpellingDictionary(tidNew, adminAuthToken);
+
+    // Transform InputSreams into list of entries for comparison purposes
+    List<String> entriesOrig = handler.getEntriesAsList(dictOrig);
+    List<String> entriesNew = handler.getEntriesAsList(dictNew);
+
+    assertEquals(entriesOrig, entriesNew);
+
     // clean up
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(tidOrig, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+
+    translationService.removeTranslation(tidNew, adminAuthToken);
+    refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
-  /**
-   * Test translation release including begin, validate, preview and cancel.
-   *
-   * @throws Exception the exception
-   */
-//  @Test
-  public void testRelease003() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
-    Project project2 = projectService.getProject(2L, adminAuthToken);
+  @Test
+  public void testSpellingCopy() throws Exception {
+    Project project1 = projectService.getProject(2L, adminAuthToken);
+    Project project2 = projectService.getProject(3L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (intensional) and import definition
+
+    // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
             .randomUUID().toString(), admin);
     TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project2, admin);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-        adminAuthToken);
-    // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
-    // Cancel release
-    releaseService.cancelTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // clean up
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
-  }
+        makeTranslation("translation1", refset1, project1, admin);
 
-  /**
-   * Test translation release including begin, validate, preview and finish.
-   *
-   * @throws Exception the exception
-   */
-//   @Test
-  public void testRelease004() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
-    Project project2 = projectService.getProject(2L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+    // Create refset #2 (intensional) and import definition
+    RefsetJpa refset2 =
+        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project2, UUID
             .randomUUID().toString(), admin);
-    TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project2, admin);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+    TranslationJpa translation2 =
+        makeTranslation("translation2", refset2, project2, admin);
+
+    // Obtain a translation
+    Long tidFrom = translation1.getId();
+    Long tidTo = translation2.getId();
+
+    // Clear to setup process
+    translationService.clearSpellingDictionary(tidFrom, adminAuthToken);
+    translationService.clearSpellingDictionary(tidTo, adminAuthToken);
+
+    // Add a couple of entries to first dictionary.
+    translationService.addSpellingDictionaryEntry(tidFrom, "Word3",
         adminAuthToken);
-    // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(),
+    translationService.addSpellingDictionaryEntry(tidFrom, "Word4",
         adminAuthToken);
-    // Preview release
-    Translation stagedTranslation =
-        releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
-    // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(),
+    translationService.addSpellingDictionaryEntry(tidFrom, "Word5",
         adminAuthToken);
+
+    // Add a couple of different entries to second dictionary.
+    translationService.addSpellingDictionaryEntry(tidTo, "Word1",
+        adminAuthToken);
+    translationService.addSpellingDictionaryEntry(tidTo, "Word2",
+        adminAuthToken);
+
+    // Test SuggestSpelling on second dictionary with entry that does not reside
+    // in dictionary
+    StringList results =
+        translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
+    assertEquals(2, results.getTotalCount());
+
+    // Copy contgents of first dictionary to second dictionary. This does not
+    // replace but rather appends contents of second dictionary
+    translationService.copySpellingDictionary(tidFrom, tidTo, adminAuthToken);
+
+    // Test SuggestSpelling with same entry post-copy routine
+    results =
+        translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    // Verify original contents still reside in second dictionary by testing an
+    // original entry
+    results =
+        translationService.suggestSpelling(tidTo, "Word1", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
     // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
-    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(),
-        adminAuthToken);
+    translationService.removeTranslation(tidFrom, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
-  }
 
-  /**
-   * Test translation release including begin, validate, preview and finish.
-   *
-   * @throws Exception the exception
-   */
-//  @Test
-  public void testRelease005() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
-    Project project2 = projectService.getProject(2L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (intensional) and import definition
-    RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), admin);
-    TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project2, admin);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-        adminAuthToken);
-    // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // Preview release
-    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
-        adminAuthToken);
-    // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // Add 5 members to refset
-    ConceptRefsetMemberJpa member1 =
-        makeConceptRefsetMember("member1", "123", refset1);
-    refsetService.addRefsetMember(member1, adminAuthToken);
-    ConceptRefsetMemberJpa member2 =
-        makeConceptRefsetMember("member2", "12344", refset1);
-    refsetService.addRefsetMember(member2, adminAuthToken);
-    ConceptRefsetMemberJpa member3 =
-        makeConceptRefsetMember("member3", "123333", refset1);
-    refsetService.addRefsetMember(member3, adminAuthToken);
-    ConceptRefsetMemberJpa member4 =
-        makeConceptRefsetMember("member4", "123223", refset1);
-    refsetService.addRefsetMember(member4, adminAuthToken);
-    ConceptRefsetMemberJpa member5 =
-        makeConceptRefsetMember("member5", "1234545", refset1);
-    refsetService.addRefsetMember(member5, adminAuthToken);
-    Calendar calendar = Calendar.getInstance();
-    calendar.add(Calendar.MONDAY, 1);
-    // Begin release
-    releaseService.beginTranslationRelease(translation1.getId(),
-        ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
-    // Validate release
-    releaseService.validateTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // Preview release
-    Translation stagedTranslation2 = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
-        adminAuthToken);
-    // Finish release
-    releaseService.finishTranslationRelease(translation1.getId(),
-        adminAuthToken);
-    // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
-    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation2.getId(), adminAuthToken);
-    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
-  }
-
-  /**
-   * Make concept refset member.
-   *
-   * @param name the name
-   * @param id the id
-   * @param refset the refset
-   * @return the concept refset member jpa
-   */
-  @SuppressWarnings("static-method")
-  protected ConceptRefsetMemberJpa makeConceptRefsetMember(String name,
-    String id, Refset refset) {
-    ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
-    member.setActive(true);
-    member.setConceptActive(true);
-    member.setConceptId(id);
-    member.setConceptName(name);
-    member.setEffectiveTime(new Date());
-    member.setMemberType(Refset.MemberType.MEMBER);
-    member.setTerminology(refset.getTerminology());
-    member.setVersion(refset.getVersion());
-    member.setModuleId(refset.getModuleId());
-    member.setRefset(refset);
-    return member;
+    translationService.removeTranslation(tidTo, adminAuthToken);
+    refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
 }

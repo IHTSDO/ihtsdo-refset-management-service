@@ -398,7 +398,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.put(translationUrl + translationId + "/" + 'spelling' + "/" + 'add' + "/" + entry)
+      $http.get(translationUrl + 'spelling' + "/" + 'add' + "/" + translationId + "/" + entry)
         .then(
         // success
         function(response) {
@@ -421,7 +421,7 @@ tsApp.service('translationService', [
 
       gpService.increment()
       $http['delete'](
-        translationUrl + translationId + "/" + 'spelling' + "/" + 'remove' + "/" + entry).then(
+        translationUrl + 'spelling' + "/" + 'remove' + "/" + translationId + "/" + entry).then(
       // success
       function(response) {
         console.debug("  entry = ", response.data);
@@ -437,13 +437,36 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // get refset types
+    this.suggestSpelling = function(translationId, entry) {
+      console.debug("suggestSpelling");
+      var deferred = $q.defer();
+
+      // Get refset types
+      gpService.increment()
+      $http.get(translationUrl + 'spelling' + "/" + 'suggest' + "/" + translationId + "/" + entry)
+        .then(
+        // success
+        function(response) {
+          console.debug("  suggest = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+        });
+      return deferred.promise;
+    }
+
     // Clear spelling dictionary
     this.clearSpellingDictionary = function(translationId) {
       console.debug("clearSpellingDictionary");
       var deferred = $q.defer();
 
       gpService.increment()
-      $http['delete'](translationUrl + translationId + "/" + 'spelling' + "/" + 'clear').then(
+      $http['delete'](translationUrl + 'spelling' + "/" + 'clear' + "/" + translationId).then(
       // success
       function(response) {
         console.debug("  spelling = ", response.data);
@@ -754,6 +777,65 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     }
+
+    this.exportSpellingDictionary = function(translationId) {
+      console.debug("exportSpellingDictionary");
+      gpService.increment()
+      $http.get(refsetUrl + "spelling/export" + translationId).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : ""
+        });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = "_blank";
+        a.download = "spelling." + terminologyId + "." + extension;
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+    };
+
+    // Begin import spelling Dictionary - if validation is result, OK to proceed.
+    this.importSpellingDictionary = function(translationId, is) {
+      console.debug("import spelling dictionary");
+      var deferred = $q.defer();
+      gpService.increment()
+      Upload.upload({
+        url : refsetUrl + "spelling/import?translationId=" + translationId,
+        data : {
+          file : file
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  validation result = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
 
     // end    
 

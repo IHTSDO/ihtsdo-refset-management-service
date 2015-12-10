@@ -370,7 +370,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void importSpellingDictionary(
+  void importSpellingDictionary(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String authToken) throws Exception;
 
@@ -417,8 +417,8 @@ public interface TranslationServiceRest {
    * @return the string list
    * @throws Exception the exception
    */
-  public StringList suggestSpelling(String term, String authToken)
-    throws Exception;
+  public StringList suggestSpelling(Long translationId, String term,
+    String authToken) throws Exception;
 
   /**
    * Suggest translatio.

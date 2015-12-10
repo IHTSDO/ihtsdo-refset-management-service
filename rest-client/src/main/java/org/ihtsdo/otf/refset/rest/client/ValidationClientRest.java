@@ -48,8 +48,8 @@ public class ValidationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateConcept(ConceptJpa concept, Long projectId, String authToken)
-    throws Exception {
+  public ValidationResult validateConcept(ConceptJpa concept, Long projectId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate concept " + concept);
     Client client = ClientBuilder.newClient();
@@ -80,13 +80,14 @@ public class ValidationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateRefset(RefsetJpa refset, Long projectId, String authToken)
-    throws Exception {
+  public ValidationResult validateRefset(RefsetJpa refset, Long projectId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate refset " + refset);
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/refset");
+        client.target(config.getProperty("base.url") + "/validate/refset/"
+            + projectId);
 
     String refsetString =
         ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
@@ -119,7 +120,8 @@ public class ValidationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/translation");
+        client.target(config.getProperty("base.url") + "/validate/translation/"
+            + projectId);
 
     String translationString =
         ConfigUtility.getStringForGraph(translation == null
@@ -247,7 +249,8 @@ public class ValidationClientRest extends RootClientRest implements
   }
 
   @Override
-  public KeyValuePairList getValidationChecks(String authToken) throws Exception {
+  public KeyValuePairList getValidationChecks(String authToken)
+    throws Exception {
     // TODO Auto-generated method stub
     return null;
   }

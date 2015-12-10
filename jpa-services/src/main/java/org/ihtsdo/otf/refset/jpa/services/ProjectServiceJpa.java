@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
@@ -46,6 +47,9 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
 
   /** The terminology handler . */
   private static TerminologyHandler terminologyHandler;
+
+  /** The spelling correction handler . */
+  private static SpellingCorrectionHandler spellingCorrectionHandler;
 
   static {
     try {
@@ -70,6 +74,30 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       terminologyHandler = null;
     }
   }
+
+  static {
+	    try {
+	      if (config == null)
+	        config = ConfigUtility.getConfigProperties();
+	      String key = "spelling.handler";
+	      for (String handlerName : config.getProperty(key).split(",")) {
+	        if (handlerName.isEmpty())
+	          continue;
+	        if (!handlerName.equals(ConfigUtility.DEFAULT)) {
+	          throw new Exception("spelling.handler." + ConfigUtility.DEFAULT
+	              + " should be the only entry.");
+	        }
+	        // Add handlers to map
+	        SpellingCorrectionHandler handlerService =
+	            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+	                handlerName, SpellingCorrectionHandler.class);
+	        spellingCorrectionHandler = handlerService;
+	      }
+	    } catch (Exception e) {
+	      e.printStackTrace();
+	      spellingCorrectionHandler = null;
+	    }
+	  }
 
   /** The listener. */
   protected static List<WorkflowListener> workflowListeners = null;
@@ -145,6 +173,11 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       throw new Exception(
           "Terminology handler did not properly initialize, serious error.");
     }
+
+    if (spellingCorrectionHandler == null) {
+        throw new Exception(
+            "Spelling Correction handler did not properly initialize, serious error.");
+      }
 
   }
 
@@ -612,6 +645,17 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   public TerminologyHandler getTerminologyHandler() throws Exception {
     // Copy the template
     TerminologyHandler handler = terminologyHandler.copy();
+    // configure it with the entity manager
+    // return it
+    return handler;
+  }
+
+
+  /* see superclass */
+  @Override
+  public SpellingCorrectionHandler getSpellingCorrectionHandler() throws Exception {
+    // Copy the template
+	  SpellingCorrectionHandler handler = spellingCorrectionHandler.copy();
     // configure it with the entity manager
     // return it
     return handler;

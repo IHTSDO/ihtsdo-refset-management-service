@@ -7,6 +7,7 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
+import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 
 /**
@@ -125,5 +126,13 @@ public interface ProjectService extends RootService {
    * @throws Exception the exception
    */
   public TerminologyHandler getTerminologyHandler() throws Exception;
+
+  /**
+   * Returns the spelling correction handler.
+   *
+   * @return the spelling correction handler
+   * @throws Exception the exception
+   */
+  public SpellingCorrectionHandler getSpellingCorrectionHandler() throws Exception;
 
 }
