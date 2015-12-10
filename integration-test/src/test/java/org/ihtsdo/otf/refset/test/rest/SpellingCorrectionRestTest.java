@@ -194,7 +194,8 @@ public class SpellingCorrectionRestTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -265,7 +266,8 @@ public class SpellingCorrectionRestTest {
 
     // Validate translation
     ValidationResult result =
-        validationService.validateTranslation(translation, auth.getAuthToken());
+        validationService.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");

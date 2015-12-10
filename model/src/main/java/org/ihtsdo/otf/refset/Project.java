@@ -96,4 +96,32 @@ public interface Project extends Searchable {
    * @param moduleId the module id
    */
   public void setModuleId(String moduleId);
+  
+  /**
+   * Returns the validation checks.
+   *
+   * @return the validation checks
+   */
+  public List<String> getValidationChecks();
+  
+  /**
+   * Sets the validation checks.
+   *
+   * @param validationChecks the validation checks
+   */
+  public void setValidationChecks(List<String> validationChecks);
+
+  /**
+   * Adds the validation check.
+   *
+   * @param validationCheck the validation check
+   */
+  public void addValidationCheck(String validationCheck);
+
+  /**
+   * Removes the validation check.
+   *
+   * @param validationCheck the validation check
+   */
+  public void removeValidationCheck(String validationCheck);
 }

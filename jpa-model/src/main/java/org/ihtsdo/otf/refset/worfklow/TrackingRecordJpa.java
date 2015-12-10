@@ -323,7 +323,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlTransient
+  @XmlElement(type = ConceptJpa.class)
   @Override
   public Concept getConcept() {
     return concept;
@@ -336,26 +336,37 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Returns the concept id. For JAXB and index.
+   * Returns the concept id. For Indexing.
    *
    * @return the concept id
    */
-  @XmlElement
+  @XmlTransient
+  @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public String getConceptId() {
+  public Long getConceptId() {
+    return concept == null ? 0L : concept.getId();
+  }
+
+  /**
+   * Returns the concept terminology id.
+   *
+   * @return the concept terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getConceptTerminologyId() {
     return concept == null ? "" : concept.getTerminologyId();
   }
 
   /**
-   * Sets the concept id.
+   * Returns the concept name.
    *
-   * @param conceptId the concept id
+   * @return the concept name
    */
-  public void setConceptId(String conceptId) {
-    if (concept == null) {
-      concept = new ConceptJpa();
-    }
-    concept.setTerminologyId(conceptId);
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getConceptName() {
+    return concept == null ? "" : concept.getName();
   }
 
   /* see superclass */

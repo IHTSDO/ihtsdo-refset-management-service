@@ -264,10 +264,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Perform validation
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
-          validationService.validateRefset(refset, refsetService);
+          validationService.validateRefset(refset, refset.getProject(), refsetService);
       if (result.isValid()) {
         for (ConceptRefsetMember member : refset.getMembers()) {
-          result.merge(validationService.validateMember(member, refsetService));
+          result.merge(validationService.validateMember(member, refset.getProject(), refsetService));
         }
       }
 
@@ -535,11 +535,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
           validationService
-              .validateTranslation(translation, translationService);
+              .validateTranslation(translation, null, translationService);
       if (result.isValid()) {
         for (Concept member : translation.getConcepts()) {
           result.merge(validationService.validateConcept(member,
-              translationService));
+              null, translationService));
         }
       }
       return result;

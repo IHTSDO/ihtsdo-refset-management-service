@@ -93,9 +93,9 @@ tsApp.directive('memberInfo', [
           };
 
           // get concept with descriptions
-          $scope.getConceptWithDescriptions = function(concept) {
+          $scope.getFullConcept = function(concept) {
             console.debug("Getting concept with descriptions", concept);
-            projectService.getConceptWithDescriptions(concept.terminologyId, concept.terminology,
+            projectService.getFullConcept(concept.terminologyId, concept.terminology,
               concept.version).then(
             // Success
             function(data) {

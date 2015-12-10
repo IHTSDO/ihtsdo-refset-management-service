@@ -318,6 +318,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         prime * result + ((languageCode == null) ? 0 : languageCode.hashCode());
     result = prime * result + ((term == null) ? 0 : term.hashCode());
     result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
+
     return result;
   }
 
@@ -365,6 +366,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         return false;
     } else if (!typeId.equals(other.typeId))
       return false;
+
     return true;
   }
 

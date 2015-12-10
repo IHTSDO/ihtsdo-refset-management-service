@@ -41,12 +41,12 @@
 
 </span>
 
-<span
+<span style="display: block"
   ng-show="pagedNotes.length == 0 && paging['notes'].filter"
   class="alert alert-warning">
-  <br />No notes matching filter
+  No notes matching filter
 </span>
-<span
+<span style="display: block"
   ng-show="pagedNotes.length == 0 && !paging['notes'].filter"
   class="alert alert-warning">
   <br />No notes
@@ -62,7 +62,7 @@
           <tbody>
             <tr ng-repeat="note in pagedNotes">
               <td>{{note.value}}</td>
-              <td>{{toShortDate(note.lastModified)}}</td>
+              <td>{{toDate(note.lastModified)}}</td>
               <td>{{note.lastModifiedBy}}</td>
               <td><a class="toolicon" title="Remove"
                   ng-click="removeNote(object, note); $event.stopPropagation()">

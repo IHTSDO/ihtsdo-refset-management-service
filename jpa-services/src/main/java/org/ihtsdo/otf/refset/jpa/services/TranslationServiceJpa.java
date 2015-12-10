@@ -41,11 +41,11 @@ import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeRefsetMemberJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -155,13 +155,19 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // These will get added by CASCADE
     if (translation.getDescriptionTypes().size() == 0) {
-      for (DescriptionTypeRefsetMember member : getTerminologyHandler()
+      for (DescriptionType member : getTerminologyHandler()
           .getStandardDescriptionTypes(translation.getTerminology(),
               translation.getVersion()).getObjects()) {
         member.setLastModifiedBy(translation.getLastModifiedBy());
         translation.getDescriptionTypes().add(member);
       }
     }
+
+    // Case sensitive types - start with standard ones
+    translation.setCaseSensitiveTypes(getTerminologyHandler()
+        .getStandardCaseSensitivityTypes(translation.getTerminology(),
+            translation.getVersion()));
+
     // Add component
     Translation newTranslation = addHasLastModified(translation);
 
@@ -313,13 +319,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return result;
   }
 
-  /**
-   * Handle translation lazy initialization.
-   *
-   * @param translation the translation
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Translation translation) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(Translation translation) {
     // handle all lazy initializations
     translation.getDescriptionTypes().size();
     translation.getRefset().getName();
@@ -328,13 +330,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getNotes().size();
   }
 
-  /**
-   * Handle lazy init.
-   *
-   * @param concept the concept
-   */
-  @SuppressWarnings("static-method")
-  private void handleLazyInit(Concept concept) {
+  /* see superclass */
+  @Override
+  public void handleLazyInit(Concept concept) {
+    for (Description d : concept.getDescriptions()) {
+      d.getLanguageRefsetMembers().size();
+    }
+    concept.getRelationships().size();
     concept.getNotes().size();
   }
 
@@ -905,10 +907,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       addConcept(concept);
     }
 
-    for (DescriptionTypeRefsetMember originType : translation
-        .getDescriptionTypes()) {
-      DescriptionTypeRefsetMember type =
-          new DescriptionTypeRefsetMemberJpa(originType);
+    for (DescriptionType originType : translation.getDescriptionTypes()) {
+      DescriptionType type = new DescriptionTypeJpa(originType);
       type.setTerminology(translationCopy.getTerminology());
       type.setVersion(translationCopy.getVersion());
       type.setId(null);

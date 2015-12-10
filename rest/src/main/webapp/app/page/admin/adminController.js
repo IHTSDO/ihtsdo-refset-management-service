@@ -14,8 +14,9 @@ tsApp
       'tabService',
       'securityService',
       'projectService',
+      'validationService',
       function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, projectService) {
+        utilService, tabService, securityService, projectService, validationService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -258,7 +259,7 @@ tsApp
         // sort mechanism 
         $scope.setSortField = function(table, field) {
           utilService.setSortField(table, field, $scope.paging);
-          
+
           // retrieve the correct table
           if (table === 'candidateProject') {
             $scope.getCandidateProjects();
@@ -315,6 +316,19 @@ tsApp
           $scope.getUnassignedUsers();
         }
 
+        $scope.getValidationChecks = function() {
+          validationService.getValidationCheckNames().then(
+          // Success 
+          function(data) {
+            $scope.validationChecks = data.keyValuePairs;
+          },
+          // Error - update refset
+          function(data) {
+            $scope.errors[0] = data;
+            utilService.clearError();
+          })
+        }
+
         //
         // Initialize
         //
@@ -324,6 +338,7 @@ tsApp
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
         $scope.getTerminologies();
+        $scope.getValidationChecks();
 
         //
         // MODALS
@@ -398,6 +413,9 @@ tsApp
               },
               terminologies : function() {
                 return $scope.terminologies;
+              },
+              validationChecks : function() {
+                return $scope.validationChecks;
               }
             }
           });
@@ -409,18 +427,55 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, terminologies) {
+        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, terminologies,
+          validationChecks) {
 
           $scope.action = 'Edit';
           $scope.project = project;
           $scope.terminologies = terminologies;
+          $scope.validationChecks = validationChecks;
+          $scope.availableChecks = [];
+          $scope.selectedChecks = [];
           $scope.error = null;
+
+          for (var i = 0; i < $scope.validationChecks.length; i++) {
+            if (project.validationChecks.indexOf($scope.validationChecks[i].key) > -1) {
+              $scope.selectedChecks.push($scope.validationChecks[i].value);
+            } else {
+              $scope.availableChecks.push($scope.validationChecks[i].value);
+            }
+          }
+
+          $scope.selectValidationCheck = function(check) {
+            $scope.selectedChecks.push(check);
+            var index = $scope.availableChecks.indexOf(check);
+            $scope.availableChecks.splice(index, 1);
+          }
+
+          $scope.removeValidationCheck = function(check) {
+            $scope.availableChecks.push(check);
+            var index = $scope.selectedChecks.indexOf(check);
+            $scope.selectedChecks.splice(index, 1);
+          }
 
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
               window.alert("The name, description, and terminology fields cannot be blank. ");
               return;
             }
+
+            project.validationChecks = [];
+            for (var i = 0; i < $scope.validationChecks.length; i++) {
+              if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
+                project.validationChecks.push($scope.validationChecks[i].key);
+              }
+            }
+            /*
+                         * project.validationChecks = $scope.validationChecks; for (var i =
+                         * $scope.validationChecks.length -1; i >= 0; i--) { var index =
+                         * $scope.selectedChecks.indexOf($scope.validationChecks[i].value); if
+                         * (index == -1) { project.validationChecks.splice(index, 1); } }
+                         */
 
             projectService.updateProject(project).then(
             // Success

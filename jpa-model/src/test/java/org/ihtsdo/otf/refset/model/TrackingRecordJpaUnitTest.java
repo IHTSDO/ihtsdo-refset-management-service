@@ -230,11 +230,10 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     User user = new UserJpa();
     user.setUserName("abc");
     Concept concept = new ConceptJpa();
-    concept.setTerminologyId("1");
+    concept.setId(1L);
     Refset refset = new RefsetJpa();
     refset.setId(1L);
     refset.setRefsetDescriptorUuid("UUID");
-    System.out.println(refset.getRefsetDescriptorUuid());
     Translation translation = new TranslationJpa();
     translation.setId(1L);
     Project project = new ProjectJpa();
@@ -285,7 +284,6 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
 
     // Test non analyzed fields
     tester = new IndexedFieldTester(object);
-    tester.include("conceptId");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("translationid");
@@ -294,6 +292,9 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("revision");
     tester.include("forAuthoring");
     tester.include("projectId");
+    tester.include("conceptId");
+    tester.include("conceptTerminologyId");
+    tester.include("conceptName");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

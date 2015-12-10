@@ -439,9 +439,9 @@ tsApp.service('projectService', [
     };
 
     // get concept with descriptions
-    this.getConceptWithDescriptions = function(terminologyId, terminology, version) {
+    this.getFullConcept = function(terminologyId, terminology, version) {
 
-      console.debug("getConceptWithDescriptions", terminologyId);
+      console.debug("getFullConcept", terminologyId);
       // Setup deferred
       var deferred = $q.defer();
 

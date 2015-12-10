@@ -8,7 +8,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 
 /**
@@ -92,7 +92,7 @@ public interface WorkflowListener extends Configurable {
    * @throws Exception the exception
    */
   public void descriptionTypeRefsetMemberChanged(
-    DescriptionTypeRefsetMember member, Action action) throws Exception;
+    DescriptionType member, Action action) throws Exception;
 
   /**
    * Concept changed.

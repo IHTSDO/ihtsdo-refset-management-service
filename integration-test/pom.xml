@@ -74,7 +74,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org.ihtsdo.otf.refset/test/rest/Content*Test.java</include>
+                <include>**/org/ihtsdo/otf/refset/test/rest/SpellingCorrectionRestTest.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>

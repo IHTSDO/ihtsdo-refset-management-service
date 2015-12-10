@@ -256,6 +256,9 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     ProjectList result = new ProjectListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (Project project : result.getObjects()) {
+      handleLazyInitialization(project);
+    }
     return result;
   }
 
@@ -274,6 +277,9 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     }
     if (project.getUserRoleMap() != null) {
       project.getUserRoleMap().size();
+    }
+    if (project.getValidationChecks() != null) {
+      project.getValidationChecks().size();
     }
   }
 

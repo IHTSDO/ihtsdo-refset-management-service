@@ -84,6 +84,27 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // get translation concept for id
+    this.getConcept = function(conceptId) {
+      console.debug("getConcept");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(translationUrl + "concept/" + conceptId).then(
+      // success
+      function(response) {
+        console.debug("  concept = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // Get translation for refset
     this.getTranslationsForRefset = function(refsetId) {
       console.debug("getTranslationsForRefset");

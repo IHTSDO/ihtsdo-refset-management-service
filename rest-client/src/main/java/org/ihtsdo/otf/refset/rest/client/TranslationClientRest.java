@@ -816,7 +816,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/import/phrasememory" + "?translationId=" + translationId);
+            + "/translation/import/phrasememory" + "?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -839,7 +840,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/export/phrasememory" + "?translationId=" + translationId);
+            + "/translation/export/phrasememory" + "?translationId="
+            + translationId);
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
@@ -1342,5 +1344,32 @@ public class TranslationClientRest extends RootClientRest implements
     } else {
       throw new Exception("Unexpected status - " + response.getStatus());
     }
+  }
+
+  /* see superclass */
+  @Override
+  public Concept getConcept(Long conceptId, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - get concept for id " + conceptId);
+    validateNotEmpty(conceptId, "conceptId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/translation/concept/"
+            + conceptId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (ConceptJpa) ConfigUtility.getGraphForString(resultString,
+        ConceptJpa.class);
   }
 }

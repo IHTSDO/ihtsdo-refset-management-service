@@ -172,7 +172,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
         String line = null;
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
-          // System.out.println(sc.nextLine());
           line = sc.nextLine();
           line = line.replace("\r", "");
           final String fields[] = line.split("\t");
@@ -228,26 +227,13 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     // Connect descriptions and language refset member objects
     for (Description description : descriptions.values()) {
 
-      // assign an initial preferred name
-      // if (description.getConcept().getName() == null) {
-      // description.getConcept().setName(description.getTerm());
-      // }
 
       // Connect language and description
       if (descLangMap.containsKey(description.getTerminologyId())) {
         LanguageRefsetMember member =
             descLangMap.get(description.getTerminologyId());
         member.setDescriptionId(description.getTerminologyId());
-        description.getLanguageRefsetMembers().add(member);
-
-        // If a description is a synonym (e.g. typeId=)
-        // and language is prefered (e.g. acceptabilityId=)
-        // use as concept preferred name
-        // if (description.getTypeId().equals("900000000000013009")
-        // && descLangMap.get(description.getTerminologyId())
-        // .getAcceptabilityId().equals("900000000000548007")) {
-        // description.getConcept().setName(description.getTerm());
-        // }
+        description.getLanguageRefsetMembers().add(member);      
 
         descLangMap.remove(description.getTerminologyId());
       }

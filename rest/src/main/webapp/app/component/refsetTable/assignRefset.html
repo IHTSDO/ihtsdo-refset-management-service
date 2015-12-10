@@ -1,30 +1,49 @@
 <div class="modal-header">
-  <h4>Assign Refset to User</h4>
+  <h4>Assign Refset</h4>
 </div>
 
 <div class="modal-body">
   <table class="table">
     <tr>
-      <td><b>Id</b></td>
+      <td>
+        <b>Id</b>
+      </td>
       <td>{{refset.terminologyId}}</td>
     </tr>
     <tr>
-      <td><b>Name</b></td>
+      <td>
+        <b>Name</b>
+      </td>
       <td>{{refset.name}}</td>
     </tr>
     <tr>
-      <td><b>Description</b></td>
+      <td>
+        <b>Description</b>
+      </td>
       <td>{{refset.description}}</td>
     </tr>
     <tr>
-      <td><b>Select user</b></td>
-      <td><select ng-model="selectedUserName"
-        ng-options="item for item in assignedUserNames"></select></td>
+      <td>
+        <b>Select user</b>
+      </td>
+      <td>
+        <select ng-model="selectedUserName"
+          ng-options="item for item in assignedUserNames"></select>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <b>Note</b>
+      </td>
+      <td>
+        <textarea ui-tinymce ng-model="note"></textarea>
+      </td>
     </tr>
     <tr ng-show="errors.length > 0">
       <td>&nbsp;</td>
-      <td><div class="alert alert-danger alert-error"
-          ng-repeat="error in errors">{{error}}</div></td>
+      <td>
+        <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
+      </td>
     </tr>
   </table>
 </div>

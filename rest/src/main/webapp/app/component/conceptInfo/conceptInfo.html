@@ -8,21 +8,20 @@
   </h4>
 </div>
 
-<h5 ng-show="parents.length > 0">
+<h5>
   <b>Parents</b>
 </h5>
 <table ng-show="parents.length > 0" class="table">
-  <thead>
-    <th class="col-md-3 col-xs-3">Concept Id</th>
-    <th class="col-md-9 col-xs-9">Name</th>
-  </thead>
-  <tbody>
-    <tr ng-repeat="concept in parents | orderBy:'concept.name'">
-      <td>{{concept.terminologyId}}</td>
-      <td>{{concept.name}}</td>
-    </tr>
-  </tbody>
+  <tr ng-repeat="concept in parents | orderBy:'concept.name'">
+    <td>
+      <a ng-click="getConceptById(concept.terminologyId)">{{concept.terminologyId}}</a>
+    </td>
+    <td>{{concept.name}}</td>
+  </tr>
 </table>
+<span ng-show="parents.length == 0" class="alert alert-warning">No parent
+  concepts</span>
+
 
 <h5 ng-show="concept">
   <b>Concept</b> {{concept.terminologyId}}
@@ -30,13 +29,17 @@
 <table ng-show="concept.descriptions.length > 0" class="table">
   <tbody>
     <tr ng-repeat="description in concept.descriptions">
-      <td>{{description.terminologyId}}</td>
       <td>{{description.term}}</td>
+      <td>{{description.languageCode}}</td>
+      <td>{{description.typeId}}</td>
     </tr>
   </tbody>
 </table>
+<span ng-show="concept.descriptions.length==0" class="alert alert-warning">No
+  active descriptions</span>
 
-<h5 ng-show="children.length > 0">
+
+<h5>
   <b>Children<span ng-show="pagedChildren.length > 0">
       ({{pagedChildren.totalCount}})</span></b>
 </h5>
@@ -74,16 +77,17 @@
 <table ng-show="pagedChildren.length > 0" class="table">
   <thead>
     <th class="col-md-3 col-xs-3"
-      ng-click="setSortField('children','terminologyId')">Concept Id
-      <span ng-bind="getSortIndicator('children','terminologyId')"></span>
+      ng-click="setSortField('children','terminologyId')">Concept Id <span
+        ng-bind="getSortIndicator('children','terminologyId')"></span>
     </th>
-    <th class="col-md-9 col-xs-9"
-      ng-click="setSortField('children','name')">Name<span
+    <th class="col-md-9 col-xs-9" ng-click="setSortField('children','name')">Name<span
         ng-bind="getSortIndicator('children','name',null)"></span></th>
   </thead>
   <tbody>
     <tr class="table-select-row" ng-repeat="concept in pagedChildren">
-      <td>{{concept.terminologyId}}</td>
+      <td>
+        <a ng-click="getConceptById(concept.terminologyId)">{{concept.terminologyId}}</a>
+      </td>
       <td>{{concept.name}}</td>
     </tr>
   </tbody>

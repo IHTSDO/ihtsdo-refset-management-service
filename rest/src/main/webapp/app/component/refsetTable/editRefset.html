@@ -78,6 +78,15 @@
             ng-model="refset.definition"></textarea> <span
             ng-show="action != 'Add'">{{refset.definition}}</span></td>
       </tr>
+      <tr ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning"
+            ng-repeat="warning in warnings">
+            {{warning}}
+          </div>
+        </td>
+      </tr>
       <tr ng-show="errors.length > 0">
         <td>&nbsp;</td>
         <td>
