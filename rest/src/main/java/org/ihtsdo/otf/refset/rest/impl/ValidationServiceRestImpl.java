@@ -7,7 +7,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -114,11 +113,11 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/refset/{projectId}")
+  @Path("/refset")
   @ApiOperation(value = "Validate Refset", notes = "Validates a refset", response = ValidationResult.class)
   public ValidationResult validateRefset(
     @ApiParam(value = "Refset", required = true) RefsetJpa refset,
-    @ApiParam(value = "Project id, e.g. 8", required = false) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -146,11 +145,11 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/translation/{projectId}")
+  @Path("/translation")
   @ApiOperation(value = "Validate Translation", notes = "Validates a translation", response = ValidationResult.class)
   public ValidationResult validateTranslation(
     @ApiParam(value = "Translation", required = true) TranslationJpa translation,
-    @ApiParam(value = "Project id, e.g. 8", required = false) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(

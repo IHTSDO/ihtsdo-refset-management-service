@@ -756,7 +756,7 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
-    this.addTranslationConceptNote = function(translationId, noteId) {
+    this.removeTranslationConceptNote = function(translationId, noteId) {
       console.debug("remove concept note", translationId, noteId);
       var deferred = $q.defer();
 

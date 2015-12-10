@@ -6,6 +6,7 @@ tsApp
     [
       '$uibModal',
       '$rootScope',
+      '$sce',
       'utilService',
       'securityService',
       'projectService',
@@ -13,7 +14,7 @@ tsApp
       'refsetService',
       'releaseService',
       'workflowService',
-      function($uibModal, $rootScope, utilService, securityService, projectService,
+      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
         translationService, refsetService, releaseService, workflowService) {
         console.debug('configure translationTable directive');
         return {
@@ -378,11 +379,6 @@ tsApp
                 // Look up details of concept
               };
 
-              // Initialize if project setting isn't used
-              if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
-                $scope.getTranslations();
-              }
-
               // Remove a translation
               $scope.removeTranslation = function(translation) {
                 // Confirm action
@@ -488,6 +484,20 @@ tsApp
                 })
               };
 
+              // Get the most recent note for display
+              $scope.getLatestNote = function(refset) {
+                if (refset && refset.notes.length > 0) {
+                  return $sce.trustAsHtml(refset.notes
+                    .sort(utilService.sort_by('lastModified', -1))[0].value);
+                }
+                return $sce.trustAsHtml("");
+              }
+
+              // Initialize if project setting isn't used
+              if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
+                $scope.getTranslations();
+              }
+
               // 
               // MODALS
               //
@@ -507,6 +517,9 @@ tsApp
                     },
                     type : function() {
                       return ltype;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.getTinymceOptions();
                     }
                   }
                 });
@@ -520,13 +533,15 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type) {
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type,
+                tinymceOptions) {
                 console.debug("Entered notes modal control", object, type);
 
                 $scope.errors = [];
 
                 $scope.object = object;
                 $scope.type = type;
+                $scope.tinymceOptions = tinymceOptions;
                 $scope.newNote = null;
 
                 // Paging parameters
@@ -541,21 +556,14 @@ tsApp
                   ascending : true
                 }
 
-                $scope.getNoteValue = function(note) {
-                  console.debug("note.value",note.value);
-                  return $sce.trustAsHtml(note.value);
-                }
                 // Get paged notes (assume all are loaded)
                 $scope.getPagedNotes = function() {
-                  $scope.pagedNotes = $scope.getPagedArray($scope.object.notes,
-                    $scope.paging['notes']);
+                  $scope.pagedNotes = utilService.getPagedArray($scope.object.notes,
+                    $scope.paging['notes'], $scope.pageSize);
                 }
 
-                // Helper to get a paged array with show/hide flags
-                // and filtered by query string
-                $scope.getPagedArray = function(array, paging) {
-                  console.debug("getPagedArray");
-                  return utilService.getPagedArray(array, paging, $scope.pageSize);
+                $scope.getNoteValue = function(note) {
+                  return $sce.trustAsHtml(note.value);
                 }
 
                 // remove note
@@ -563,49 +571,48 @@ tsApp
                   console.debug("remove note", object.id, note.value);
                   if ($scope.type == 'Translation') {
                     translationService.removeTranslationNote(object.id, note.id).then(
-                    // Success - add translation
+                    // Success - add refset
                     function(data) {
                       $scope.newNote = null;
                       translationService.getTranslation(object.id).then(function(data) {
                         object.notes = data.notes;
                         $scope.getPagedNotes();
                       },
-                      // Error - add translation
+                      // Error - add refset
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       })
                     },
-                    // Error - add translation
+                    // Error - add refset
                     function(data) {
                       $scope.errors[0] = data;
                       utilService.clearError();
                     })
                   } else if ($scope.type == 'Concept') {
-                    translationService.removeTranslationConceptNote(object.translationId, note.id)
-                      .then(
-                      // Success - add translation
-                      function(data) {
-                        $scope.newNote = null;
-                        translationService.getConcept(object.id).then(function(data) {
-                          object.notes = data.notes;
-                          $scope.getPagedNotes();
-                        },
-                        // Error - add translation
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                    translationService.removeTranslationConceptNote(
+                      $scope.selected.translationn.id, object.refsetId, note.id).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newNote = null;
+                      translationService.getConcept(object.id).then(function(data) {
+                        object.notes = data.notes;
+                        $scope.getPagedNotes();
                       },
-                      // Error - add translation
+                      // Error - add refset
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       })
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
                   }
                 }
 
-                // add new note
                 $scope.submitNote = function(object, text) {
                   console.debug("submit note", object.id, text);
 
@@ -842,8 +849,8 @@ tsApp
                     project : function() {
                       return $scope.project;
                     },
-                    projects : function() {
-                      return $scope.projects;
+                    role : function() {
+                      return $scope.projects.role;
                     }
                   }
 
@@ -857,14 +864,15 @@ tsApp
               };
 
               // Assign concept controller
-              var AssignConceptModalCtrl = function($scope, $uibModalInstance, $rootScope, concept,
-                translation, currentUserName, assignedUsers, project, projects) {
+              var AssignConceptModalCtrl = function($scope, $uibModalInstance, $sce, concept,
+                translation, currentUserName, assignedUsers, project, role) {
 
                 console.debug("Entered assign concept modal control", assignedUsers, project.id);
 
+                $scope.note;
                 $scope.concept = concept;
                 $scope.project = project;
-                $scope.projects = projects;
+                $scope.role = role;
                 $scope.assignedUserNames = [];
                 $scope.selectedUserName = currentUserName;
                 $scope.errors = [];
@@ -875,6 +883,7 @@ tsApp
                 }
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
+                // Handle assigning a concept
                 $scope.assignConcept = function(userName) {
                   if (!userName) {
                     $scope.errors[0] = "The user must be selected. ";
@@ -884,10 +893,11 @@ tsApp
                   $scope.selectedUserName = userName;
 
                   workflowService.performTranslationWorkflowAction($scope.project.id,
-                    translation.id, userName, $scope.projects.role, "ASSIGN", concept).then(
+                    translation.id, userName, $scope.role, "ASSIGN", $scope.concept).then(
                   // Success
                   function(data) {
-                    $uibModalInstance.close(concept);
+                    // close modal
+                    $uibModalInstance.close(translation);
                   },
                   // Error
                   function(data) {
@@ -924,6 +934,9 @@ tsApp
                     project : function() {
                       return $scope.project;
                     },
+                    role : function() {
+                      return $scope.projects.role;
+                    },
                     paging : function() {
                       return $scope.paging
                     }
@@ -939,16 +952,18 @@ tsApp
               };
 
               // Batch assign concept controller
-              var BatchAssignConceptModalCtrl = function($scope, $uibModalInstance, $rootScope,
-                translation, currentUserName, assignedUsers, project, paging) {
+              var BatchAssignConceptModalCtrl = function($scope, $uibModalInstance, $sce,
+                translation, currentUserName, assignedUsers, project, role, paging) {
 
                 console.debug("Entered assign concept modal control", assignedUsers, project.id);
 
                 $scope.batchSize = 10;
                 $scope.project = project;
+                $scope.role = role;
                 $scope.assignedUserNames = [];
                 $scope.selectedUserName = currentUserName;
                 $scope.errors = [];
+                $scope.note = "";
 
                 // Prep userNames picklist
                 for (var i = 0; i < assignedUsers.length; i++) {
@@ -956,6 +971,7 @@ tsApp
                 }
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
+                // Handle assigning the batch
                 $scope.assignBatch = function(userName) {
                   if (!userName) {
                     $scope.errors[0] = "The user must be selected. ";
@@ -1002,17 +1018,17 @@ tsApp
                         };
 
                         workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                          translation.id, userName, $scope.projects.role, "ASSIGN", conceptList)
-                          .then(
-                          // Success
-                          function(data) {
-                            $uibModalInstance.close();
-                          },
-                          // Error
-                          function(data) {
-                            $scope.errors[0] = data;
-                            utilService.clearError();
-                          })
+                          translation.id, userName, $scope.role, "ASSIGN", conceptList).then(
+                        // Success
+                        function(data) {
+                          // close modal
+                          $uibModalInstance.close(translation);
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
 
                       },
                       // Error
@@ -1143,8 +1159,7 @@ tsApp
                     alert('Unexpected number of language entries for description.');
                   }
 
-                  description.type = type;
-                  description.typeId = type.type;
+                  //TODO: fix this                  description.typeId = type.type;
                   description.languages[0].descriptionId = description.terminologyId;
                   description.languages[0].acceptabilityId = type.acceptability;
                 }
@@ -1206,7 +1221,7 @@ tsApp
                 // Initialize
                 $scope.data.concept = concept;
                 // If editing from scratch, start with one description
-                if ($scope.conceptTranslation.descriptions.length == 0) {
+                if ($scope.conceptTranslated.descriptions.length == 0) {
                   $scope.newDescription();
                 }
 

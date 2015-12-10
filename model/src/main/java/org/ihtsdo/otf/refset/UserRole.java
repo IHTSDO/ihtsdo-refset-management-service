@@ -18,6 +18,9 @@ public enum UserRole {
   /** The lead. */
   REVIEWER("Reviewer"),
 
+  /**  The user. */
+  USER("User"),
+  
   /** The administrator. */
   ADMIN("Admin");
 

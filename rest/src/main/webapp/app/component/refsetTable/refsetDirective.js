@@ -6,6 +6,7 @@ tsApp
     [
       '$uibModal',
       '$rootScope',
+      '$sce',
       'utilService',
       'securityService',
       'projectService',
@@ -13,8 +14,8 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $rootScope, utilService, securityService, projectService, refsetService,
-        releaseService, workflowService, validationService) {
+      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
+        refsetService, releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
           restrict : 'A',
@@ -431,11 +432,6 @@ tsApp
                   })
               };
 
-              // Initialize if project setting isn't used
-              if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
-                $scope.getRefsets();
-              }
-
               // Cancel a staging operation
               $scope.cancelAction = function(refset) {
                 $scope.refset = refset;
@@ -462,6 +458,20 @@ tsApp
                 }
               };
 
+              // Get the most recent note for display
+              $scope.getLatestNote = function(refset) {
+                if (refset && refset.notes.length>0) {
+                  return $sce.trustAsHtml(refset.notes
+                    .sort(utilService.sort_by('lastModified', -1))[0].value);
+                }
+                return $sce.trustAsHtml("");
+              }
+
+              // Initialize if project setting isn't used
+              if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
+                $scope.getRefsets();
+              }
+
               //
               // MODALS
               //
@@ -480,6 +490,9 @@ tsApp
                     },
                     type : function() {
                       return ltype;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.getTinymceOptions();
                     }
                   }
                 });
@@ -493,13 +506,14 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, object, type) {
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type, tinymceOptions) {
                 console.debug("Entered notes modal control", object, type);
 
                 $scope.errors = [];
 
                 $scope.object = object;
                 $scope.type = type;
+                $scope.tinymceOptions = tinymceOptions;
                 $scope.newNote = null;
 
                 // Paging parameters
@@ -516,92 +530,12 @@ tsApp
 
                 // Get paged notes (assume all are loaded)
                 $scope.getPagedNotes = function() {
-                  $scope.pagedNotes = $scope.getPagedArray($scope.object.notes,
-                    $scope.paging['notes']);
+                  $scope.pagedNotes = utilService.getPagedArray($scope.object.notes,
+                    $scope.paging['notes'], $scope.pageSize);
                 }
 
-                // Helper to get a paged array with show/hide flags
-                // and filtered by query string
-                $scope.getPagedArray = function(array, paging) {
-                  console.debug("getPagedArray");
-                  var newArray = new Array();
-
-                  // if array blank or not an array, return blank list
-                  if (array == null || array == undefined || !Array.isArray(array)) {
-                    return newArray;
-                  }
-
-                  newArray = array;
-
-                  // apply sort if specified
-                  if (paging.sortField) {
-                    // if ascending specified, use that value, otherwise use false
-                    newArray.sort($scope.sort_by(paging.sortField, paging.ascending))
-                  }
-
-                  // apply filter
-                  if (paging.filter) {
-                    newArray = getArrayByFilter(newArray, paging.filter);
-                  }
-
-                  // get the page indices
-                  var fromIndex = (paging.page - 1) * $scope.pageSize;
-                  var toIndex = Math.min(fromIndex + $scope.pageSize, array.length);
-
-                  // slice the array
-                  var results = newArray.slice(fromIndex, toIndex);
-
-                  // add the total count before slicing
-                  results.totalCount = newArray.length;
-
-                  return results;
-                }
-
-                // function for sorting an array by (string) field and direction
-                $scope.sort_by = function(field, reverse) {
-
-                  // key: function to return field value from object
-                  var key = function(x) {
-                    return x[field]
-                  };
-
-                  // convert reverse to integer (1 = ascending, -1 =
-                  // descending)
-                  reverse = !reverse ? 1 : -1;
-
-                  return function(a, b) {
-                    return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-                  }
-                }
-
-                // Get array by filter text matching terminologyId or name
-                function getArrayByFilter(array, filter) {
-                  var newArray = [];
-
-                  for ( var object in array) {
-
-                    if (objectContainsFilterText(array[object], filter)) {
-                      newArray.push(array[object]);
-                    }
-                  }
-                  return newArray;
-                }
-
-                // Returns true if any field on object contains filter text
-                function objectContainsFilterText(object, filter) {
-
-                  if (!filter || !object)
-                    return false;
-
-                  for ( var prop in object) {
-                    var value = object[prop];
-                    // check property for string, note this will cover child elements
-                    if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
-                      return true;
-                    }
-                  }
-
-                  return false;
+                $scope.getNoteValue = function(note) {
+                  return $sce.trustAsHtml(note.value);
                 }
 
                 // remove note
@@ -727,9 +661,6 @@ tsApp
                     metadata : function() {
                       return $scope.metadata;
                     },
-                    project : function() {
-                      return $scope.project;
-                    },
                     projects : function() {
                       return $scope.projects;
                     }
@@ -746,12 +677,11 @@ tsApp
 
               // Clone Refset controller
               var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                project, projects) {
+                projects) {
                 console.debug("Entered clone refset modal control", refset, projects);
 
                 $scope.action = 'Clone';
                 $scope.errors = [];
-                $scope.project = project;
                 $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
@@ -761,7 +691,7 @@ tsApp
 
                 $scope.submitRefset = function(refset) {
                   console.debug("clone refset", refset.id);
-                  refsetService.cloneRefset($scope.project.id, refset).then(
+                  refsetService.cloneRefset(refset.project.id, refset).then(
                   // Success - add refset
                   function(data) {
                     var newRefset = data;
@@ -1161,9 +1091,12 @@ tsApp
                     project : function() {
                       return $scope.project;
                     },
-                    projects : function() {
-                      return $scope.projects;
+                    role : function() {
+                      return $scope.projects.role;
                     },
+                    tinymceOptions : function() {
+                      return utilService.getTinymceOptions()
+                    }
                   }
 
                 });
@@ -1176,14 +1109,15 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $rootScope, refset,
-                action, currentUserName, assignedUsers, project, projects) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,
+                action, currentUserName, assignedUsers, project, role, tinymceOptions) {
 
                 console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
                 $scope.refset = refset;
                 $scope.project = project;
-                $scope.projects = projects;
+                $scope.role = role;
+                $scope.tinymceOptions = tinymceOptions;
                 $scope.assignedUserNames = [];
                 $scope.selectedUserName = currentUserName;
                 $scope.note;
@@ -1205,7 +1139,7 @@ tsApp
                   $scope.selectedUserName = userName;
 
                   workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                    $scope.projects.role, action).then(
+                    $scope.role, action).then(
                   // Success
                   function(data) {
 
@@ -2156,6 +2090,9 @@ tsApp
                   resolve : {
                     refset : function() {
                       return lrefset;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.getTinymceOptions();
                     }
                   }
                 });
@@ -2169,11 +2106,12 @@ tsApp
               };
 
               // Feedback controller
-              var FeedbackModalCtrl = function($scope, $uibModalInstance, refset) {
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, refset, tinymceOptions) {
                 console.debug("Entered feedback modal control", refset);
 
                 $scope.errors = [];
                 $scope.refset = JSON.parse(JSON.stringify(refset));
+                $scope.tinymceOptions = tinymceOptions;
 
                 $scope.sendFeedback = function(refset, feedbackMessage, name, email) {
                   console.debug("submit feedback", refset.id);
@@ -2217,25 +2155,6 @@ tsApp
                   return re.test(email);
                 }
 
-                $scope.tinymceOptions = {
-
-                  menubar : false,
-                  statusbar : false,
-                  plugins : "autolink autoresize link image charmap searchreplace lists paste",
-                  toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
-
-                  setup : function(ed) {
-
-                    // added to fake two-way binding from the html
-                    // element
-                    // noteInput is not accessible from this javascript
-                    // for some reason
-                    ed.on('keyup', function(e) {
-                      $scope.tinymceContent = ed.getContent();
-                      $scope.$apply();
-                    });
-                  }
-                };
               };
 
             } ]

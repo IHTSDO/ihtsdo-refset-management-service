@@ -67,6 +67,9 @@ public class ImsSecurityServiceHandler implements SecurityServiceHandler {
       if (role.asText().equals("ROLE_refset-administrators")) {
         user.setApplicationRole(UserRole.ADMIN);
       }
+      if (role.asText().equals("ROLE_refset-users")) {
+        user.setApplicationRole(UserRole.USER);
+      }
     }
 
     return user;
