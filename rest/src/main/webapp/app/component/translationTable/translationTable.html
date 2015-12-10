@@ -304,7 +304,7 @@
             <!-- Assign -->
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openAssignConceptModal(selected.translation, concept, user.userName); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment</i>
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
           </td>
         </tr>
       </tbody>
@@ -518,9 +518,9 @@
               <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(concept.effectiveTime)}}</td>
               <td>
                 <!-- Assign (for error fixing) -->
-                <i ng-show="projects.role != 'ADMIN'"
+                <i ng-show="value != 'PUBLISHED' && value != 'PREVIEW' && projects.role != 'ADMIN'"
                   ng-click="openAssignConceptModal(selected.translation, concept, user.userName); $event.stopPropagation()"
-                  title="Assign" class="noul material-icons md-18">assignment</i>
+                  title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
                 <!-- Notes -->
                 <i ng-show="concept.notes.length > 0"

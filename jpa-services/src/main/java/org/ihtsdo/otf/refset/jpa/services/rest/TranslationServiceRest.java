@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 
 /**
  * Represents a translations available via a REST service.
@@ -230,8 +231,18 @@ public interface TranslationServiceRest {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept addTranslationConcept(Concept concept, String authToken)
-    throws Exception;
+  public Concept addTranslationConcept(ConceptJpa concept, String authToken)
+      throws Exception;
+  
+  /**
+   * Update translation concept.
+   *
+   * @param concept the concept
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void updateTranslationConcept(ConceptJpa concept, String authToken)
+      throws Exception;
 
   /**
    * Removes the translation concept.

@@ -304,6 +304,28 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // Update translation concept
+    this.updateTranslationConcept = function(concept) {
+      console.debug("updateTranslationConcept");
+      var deferred = $q.defer();
+
+      // Update concept
+      gpService.increment()
+      $http.post(conceptUrl + 'concept/update', concept).then(
+      // success
+      function(response) {
+        console.debug("  concept ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+      return deferred.promise;
+    }
+
     // Remove translation concept
     this.removeTranslationConcept = function(conceptId) {
       console.debug("removeTranslationConcept");

@@ -113,7 +113,7 @@
               class="noul material-icons md-18">delete</i>
             <i
               ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment</i>
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               title="Clone" class="noul material-icons md-18">content_copy</i>
@@ -152,7 +152,7 @@
               title="Unassign" class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
               ng-click="openAssignRefsetModal(refset, 'REASSIGN', user.userName); $event.stopPropagation()"
-              title="Reassign" class="noul material-icons md-18">assignment_returned</i>
+              title="Reassign" class="noul material-icons md-18">assignment_ind</i>
             <i
               ng-click="performWorkflowAction(refset, 'SAVE', user.userName);"
               title="Save" class="noul material-icons md-18">save</i>
@@ -198,7 +198,7 @@
             <i
               ng-show="projects.role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
-              title="Assign" class="noul material-icons md-18">assignment</i>
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
 

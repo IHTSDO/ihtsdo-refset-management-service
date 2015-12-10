@@ -916,7 +916,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/concept/add")
   @ApiOperation(value = "Add new translation concept", notes = "Creates a new translation concept", response = ConceptJpa.class)
   public Concept addTranslationConcept(
-    @ApiParam(value = "Concept, e.g. newConcept", required = true) Concept concept,
+    @ApiParam(value = "Concept, e.g. newConcept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -932,7 +932,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
+      String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "add translation concept",
           UserRole.AUTHOR);
 
@@ -946,10 +946,67 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Add translation concept
-      return translationService.addConcept(concept);
+      concept.setLastModifiedBy(userName);
+      Concept newConcept = translationService.addConcept(concept);
+
+      // Add descriptions
+      for (Description description : concept.getDescriptions()) {
+        description.setConcept(newConcept);
+        description.setLastModifiedBy(userName);
+        Description newDescription =
+            translationService.addDescription(description);
+        // Add language refset entries
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          member.setDescriptionId(newDescription.getTerminologyId());
+          member.setLastModifiedBy(userName);
+          translationService.addLanguageRefsetMember(member);
+        }
+      }
+
+      return translationService.getConcept(newConcept.getId());
     } catch (Exception e) {
       handleException(e, "trying to add a translation concept");
       return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/concept/update")
+  @ApiOperation(value = "Update concept", notes = "Updates the specified concept")
+  public void updateTranslationConcept(
+    @ApiParam(value = "Concept", required = true) ConceptJpa concept,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /concept/update " + concept);
+
+    // Create service and configure transaction scope
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Concept concept2 = translationService.getConcept(concept.getId());
+      authorizeProject(translationService, concept2.getTranslation()
+          .getProject().getId(), securityService, authToken, "update concept",
+          UserRole.AUTHOR);
+
+      // TODO:
+      
+      // Sync descriptions (add new ones, remove deleted ones (and language refset members), update changed ones)
+      // Sync language re
+      
+      
+      // Update concept
+      concept.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      translationService.updateConcept(concept);
+
+    } catch (Exception e) {
+      handleException(e, "trying to update a translation");
     } finally {
       translationService.close();
       securityService.close();
@@ -984,12 +1041,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove translation concept",
           UserRole.AUTHOR);
 
-      // Remove concept from translation
-      translation.getConcepts().remove(concept);
+      // Remove concept from translation - not needed
+
+      // Remove all descriptions
+      for (Description description : concept.getDescriptions()) {
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          translationService.removeLanguageRefsetMember(member.getId());
+        }
+        translationService.removeDescription(description.getId());
+      }
 
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId);
-      translationService.updateTranslation(translation);
+
+      // probably not necessary
+      // translationService.updateTranslation(translation);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation concept");

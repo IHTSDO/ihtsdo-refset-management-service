@@ -1037,7 +1037,7 @@ tsApp
                       return lconcept;
                     },
                     translation : function() {
-                      return $scope.translation;
+                      return $scope.selected.translation;
                     },
                     project : function() {
                       return $scope.project;
@@ -1058,23 +1058,33 @@ tsApp
 
                 console.debug("Entered edit concept modal control");
 
-                $scope.pageSize = 10;
+                $scope.pageSize = 5;
+                $scope.paging = {};
                 $scope.paging["descriptions"] = {
                   page : 1,
                   filter : ""
                 }
+                $scope.pagedDescriptions;
                 $scope.errors = [];
                 $scope.data = {
                   concept : null
                 }
                 $scope.translation = translation;
+                // Convert case sensitive types to an array
+                $scope.caseSensitiveTypes = [];
+                for ( var type in $scope.translation.caseSensitiveTypes) {
+                  $scope.caseSensitiveTypes.push({
+                    key : type,
+                    value : $scope.translation.caseSensitiveTypes[type]
+                  })
+                }
                 $scope.conceptTranslated = JSON.parse(JSON.stringify(concept));
                 $scope.conceptTranslated.descriptions = [];
                 $scope.conceptTranslated.relationships = null;
                 $scope.newDescription = null;
                 //TODO: wire to user prefs
                 $scope.enableSpelling = true;
-                $scope.selectedWord = null;
+                $scope.selectedWord = "_ALL_";
                 $scope.enableMemory = true;
                 $scope.selectedEntry = null;
 
@@ -1082,12 +1092,23 @@ tsApp
 
                 $scope.getDescriptionWords = function() {
                   // look through concdeptTranslated.descriptions and parse out words
-                  return [ "test", "todo", "fix", "this" ];
+                  return [ "todo", "fix", "this" ];
                 }
 
                 $scope.removeSpellingEntry = function(word) {
+                  // If none chosen, return
+                  if (!word) {
+                    return;
+                  }
+                  // If all chosen, confirm
+                  if (word == '_ALL_') {
+                    if (!confirm("Are you sure you want to remove these spelling dictionary entries?")) {
+                      return;
+                    }
+                    // Make a call to remove all of these entries
+                  }
+
                   // Make a call to translation sevice to remove the entry from spelling
-                  // dictionary
                 }
                 $scope.addSpellingEntry = function(word) {
                   // Make a call to translation sevice to remove the entry from spelling
@@ -1097,56 +1118,86 @@ tsApp
                 $scope.getMemoryEntries = function() {
                   // These are whatever memory entries have bene retrieved for the 
                   // current set of descriptions
-                  return [ {
-                    name : "english",
-                    translatedName : "Ingles"
-                  }, {
-                    name : "question",
-                    translatedName : "parabla"
-                  } ];
+                  return [];
                 }
 
                 $scope.removeMemoryEntry = function(name, translatedName) {
-                  // Make a call to translation sevice to remove the entry from spelling
-                  // dictionary
+                  // Make a call to translation sevice to remove the entry from memory
                 }
                 $scope.addMemoryEntry = function(name, translatedName) {
-                  // Make a call to translation sevice to remove the entry from spelling
-                  // dictionary
+                  // Make a call to translation sevice to add entry to memory
                 }
 
                 // Apply the type parameters to the description
                 $scope.applyDescriptionType = function(description, type) {
-                  
+
                   // assume at most one language entry
                   if (description.languages && description.languages.length > 1) {
                     alert('Unexpected number of language entries for description.');
                   }
 
+                  description.type = type;
                   description.typeId = type.type;
-                  description.languages[0].descriptionId = description.id;
+                  description.languages[0].descriptionId = description.terminologyId;
                   description.languages[0].acceptabilityId = type.acceptability;
                 }
 
                 // Get paged descriptions (assume all are loaded)
                 $scope.getPagedDescriptions = function() {
-                  return utilService.getPagedArray($scope.descriptions,
-                    $scope.paging['descriptions'], $scope.pageSize);
+                  $scope.pagedDescriptions = utilService.getPagedArray(
+                    $scope.conceptTranslated.descriptions, $scope.paging['descriptions'],
+                    $scope.pageSize);
+                  console.debug("pagedDescriptions", $scope.pagedDescriptions);
+                }
+
+                // Add a new blank description entry
+                $scope.newDescription = function() {
+                  var description = {};
+                  description.name = "";
+                  description.languages = [ {} ];
+                  description.caseSignificanceId = $scope.caseSensitiveTypes[0].key;
+                  // TODO: decide which one to pick (maybe just look for "Synonym"
+                  $scope
+                    .applyDescriptionType(
+                      description,
+                      $scope.translation.descriptionTypes[$scope.translation.descriptionTypes.length - 1]);
+
+                  $scope.conceptTranslated.descriptions.push(description);
+                  $scope.getPagedDescriptions();
+                }
+
+                // Remove description at specified index
+                $scope.removeDescription = function(index) {
+                  $scope.conceptTranslated.descriptions.splice(index, 1);
+                  $scope.getPagedDescriptions();
                 }
 
                 $scope.submitConcept = function(concept) {
-                  // TODO: validate, then sumbit.
 
-                  translationService.updateConcept(concept).then(
-                  // Success - update refset
-                  function(data) {
-                    $uibModalInstance.close(refset);
-                  },
-                  // Error - update refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
+                  if (concept.id) {
+                    translationService.updateConcept(concept).then(
+                    // Success - update refset
+                    function(data) {
+                      $uibModalInstance.close(concept);
+                    },
+                    // Error - update refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  } else {
+                    translationService.addConcept(concept).then(
+                    // Success - update refset
+                    function(data) {
+                      $uibModalInstance.close(concept);
+                    },
+                    // Error - update refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+
+                  }
 
                 };
 
@@ -1156,6 +1207,10 @@ tsApp
 
                 // Initialize
                 $scope.data.concept = concept;
+                // If editing from scratch, start with one description
+                if ($scope.conceptTranslation.descriptions.length == 0) {
+                  $scope.newDescription();
+                }
 
               };
 

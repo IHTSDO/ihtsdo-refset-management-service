@@ -417,7 +417,7 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public Concept addTranslationConcept(Concept concept, String authToken)
+  public Concept addTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - add translation concept " + " " + concept);
@@ -444,6 +444,30 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
     return (ConceptJpa) ConfigUtility.getGraphForString(resultString,
         ConceptJpa.class);
+  }
+
+  @Override
+  public void updateTranslationConcept(ConceptJpa concept, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - update concept " + " " + concept);
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/concept/update");
+    String conceptString =
+        ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
+            : concept);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(conceptString));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
   }
 
   @Override
