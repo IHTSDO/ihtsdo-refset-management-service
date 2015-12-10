@@ -27,6 +27,7 @@ import javax.persistence.TableGenerator;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
@@ -122,6 +123,12 @@ public class ProjectJpa implements Project {
   @OneToMany(mappedBy = "project", targetEntity = RefsetJpa.class)
   // @IndexedEmbedded - n/a
   private List<Refset> refsets = new ArrayList<>();
+  
+  /**  The validation checks. */
+  @Column(nullable = true)
+  @ElementCollection(fetch = FetchType.EAGER)
+  @CollectionTable(name = "project_validation_checks")
+  private List<String> validationChecks = new ArrayList<>();
 
   /**
    * Instantiates an empty {@link ProjectJpa}.
@@ -339,6 +346,7 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
+    result = prime * result + ((validationChecks == null) ? 0 : validationChecks.hashCode());
     return result;
   }
 
@@ -394,6 +402,11 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (validationChecks == null) {
+      if (other.validationChecks != null)
+        return false;
+    } else if (!validationChecks.equals(other.validationChecks))
+      return false;
     if (namespace == null) {
       if (other.namespace != null)
         return false;
@@ -445,7 +458,32 @@ public class ProjectJpa implements Project {
         + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
         + ", terminology=" + terminology + ", version=" + version
-        + ", userRoleMap=" + userRoleMap + "]";
+        + ", userRoleMap=" + userRoleMap + ", validationChecks=" + validationChecks + "]";
+  }
+
+  /* see superclass */
+  @XmlElement
+  @Override
+  public List<String> getValidationChecks() {
+    if (this.validationChecks == null) {
+      this.validationChecks = new ArrayList<String>();
+    }
+    return validationChecks;
+  }
+
+  @Override
+  public void setValidationChecks(List<String> validationChecks) {
+    this.validationChecks = validationChecks;
+  }
+  
+  @Override
+  public void addValidationCheck(String validationCheck) {
+    this.validationChecks.add(validationCheck);
+  }
+
+  @Override
+  public void removeValidationCheck(String validationCheck) {
+    this.validationChecks.remove(validationCheck);
   }
 
 }

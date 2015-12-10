@@ -43,6 +43,9 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
   /** The refset. */
   private Refset refset;
 
+  /** The staged refset. */
+  private Refset stagedRefset;
+
   /** The staged refset change. */
   private StagedRefsetChange stagedRefsetChange;
 
@@ -81,17 +84,17 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     updateRefset(refset);
 
     // Obtain and remove the origin refset release info
-    ReleaseInfoList releaseInfoList =
+    ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
-    if (releaseInfoList.getCount() != 1) {
+    if (list.getCount() != 1) {
       throw new Exception("Cannot find release info for refset "
           + refset.getId());
     }
-    ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+    ReleaseInfo releaseInfo = list.getObjects().get(0);
     removeReleaseInfo(releaseInfo.getId());
 
     // Get the staged refset and mark as published, and disable provisional flag
-    Refset stagedRefset = stagedRefsetChange.getStagedRefset();
+    stagedRefset = stagedRefsetChange.getStagedRefset();
     stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     stagedRefset.setLastModifiedBy(userName);
     stagedRefset.setProvisional(false);
@@ -99,13 +102,12 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     updateRefset(stagedRefset);
 
     // Update the PUBLISHED refset release info published/planned flags.
-    releaseInfoList =
-        findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
-    if (releaseInfoList.getCount() != 1) {
+    list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
+    if (list.getCount() != 1) {
       throw new Exception("Cannot find release info for refset "
           + refset.getId());
     }
-    releaseInfo = releaseInfoList.getObjects().get(0);
+    releaseInfo = list.getObjects().get(0);
     releaseInfo.setPublished(true);
     releaseInfo.setPlanned(false);
     releaseInfo.setLastModifiedBy(userName);
@@ -172,6 +174,15 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
    */
   public void setRefset(Refset refset) {
     this.refset = refset;
+  }
+
+  /**
+   * Returns the published refset.
+   *
+   * @return the published refset
+   */
+  public Refset getPublishedRefset() {
+    return stagedRefset;
   }
 
 }

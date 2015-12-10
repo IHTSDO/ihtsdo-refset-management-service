@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 
 /**
  * Represents a translations available via a REST service.
@@ -37,6 +38,16 @@ public interface TranslationServiceRest {
    */
   public Translation getTranslation(Long translationId, String authToken)
     throws Exception;
+
+  /**
+   * Returns the concept.
+   *
+   * @param conceptId the concept id
+   * @param authToken the auth token
+   * @return the concept
+   * @throws Exception the exception
+   */
+  public Concept getConcept(Long conceptId, String authToken) throws Exception;
 
   /**
    * Returns the translations for refset.
@@ -220,8 +231,18 @@ public interface TranslationServiceRest {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept addTranslationConcept(Concept concept, String authToken)
-    throws Exception;
+  public Concept addTranslationConcept(ConceptJpa concept, String authToken)
+      throws Exception;
+  
+  /**
+   * Update translation concept.
+   *
+   * @param concept the concept
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void updateTranslationConcept(ConceptJpa concept, String authToken)
+      throws Exception;
 
   /**
    * Removes the translation concept.
@@ -349,7 +370,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void importSpellingDictionary(
+  void importSpellingDictionary(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String authToken) throws Exception;
 
@@ -396,8 +417,8 @@ public interface TranslationServiceRest {
    * @return the string list
    * @throws Exception the exception
    */
-  public StringList suggestSpelling(String term, String authToken)
-    throws Exception;
+  public StringList suggestSpelling(Long translationId, String term,
+    String authToken) throws Exception;
 
   /**
    * Suggest translatio.

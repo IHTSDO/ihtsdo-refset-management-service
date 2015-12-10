@@ -18,6 +18,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Translation;
@@ -27,6 +29,7 @@ import org.ihtsdo.otf.refset.Translation;
  */
 @Entity
 @Table(name = "phrase_memories")
+@Indexed
 @XmlRootElement(name = "memory")
 public class PhraseMemoryJpa implements PhraseMemory {
 
@@ -38,6 +41,7 @@ public class PhraseMemoryJpa implements PhraseMemory {
 
   /** The entries. */
   @OneToMany(mappedBy = "phraseMemory", targetEntity = MemoryEntryJpa.class)
+  @IndexedEmbedded(targetElement = MemoryEntryJpa.class)
   private List<MemoryEntry> entries;
 
   /** The translation. */

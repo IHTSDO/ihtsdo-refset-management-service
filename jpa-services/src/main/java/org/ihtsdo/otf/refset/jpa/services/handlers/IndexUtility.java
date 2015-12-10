@@ -16,6 +16,7 @@ import javax.persistence.OneToMany;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -31,6 +32,7 @@ import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -62,7 +64,7 @@ public class IndexUtility {
           new Class<?>[] {
               RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
               ReleaseInfoJpa.class, TrackingRecordJpa.class, UserJpa.class,
-              ConceptRefsetMemberJpa.class, ConceptJpa.class
+              ConceptRefsetMemberJpa.class, ConceptJpa.class, PhraseMemoryJpa.class
           };
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
@@ -383,7 +385,7 @@ public class IndexUtility {
         new MultiFieldQueryParser(IndexUtility.getIndexedFieldNames(
             fieldNamesKey, true).toArray(new String[] {}),
             searchFactory.getAnalyzer(clazz));
-    System.out.println("  query = " + pfsQuery);
+    Logger.getLogger(IndexUtility.class).debug("  query = " + pfsQuery);
     luceneQuery = queryParser.parse(pfsQuery.toString());
 
     // Validate query terms

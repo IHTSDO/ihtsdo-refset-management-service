@@ -155,6 +155,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
 
     tester.include("conceptId");
     tester.include("conceptName");
+    tester.include("conceptActive");
     assertTrue(tester.testNotNullFields());
   }
 

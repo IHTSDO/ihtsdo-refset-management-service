@@ -3,7 +3,10 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -60,6 +63,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultSpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -70,6 +74,8 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
+import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -88,6 +94,9 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Api(value = "/translation", description = "Operations to retrieve translation info")
 public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationServiceRest {
+
+  /** The commit ct. */
+  final int commitCt = 2000;
 
   /** The security service. */
   private SecurityService securityService;
@@ -205,6 +214,35 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a translation");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/concept/{conceptId}")
+  @ApiOperation(value = "Get concept for id", notes = "Gets the concept for the specified id", response = ConceptJpa.class)
+  public Concept getConcept(
+    @ApiParam(value = "Concept internal id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Logger.getLogger(getClass()).info(
+          "RESTful call (Translation): get concept, conceptId:" + conceptId);
+
+      authorizeApp(securityService, authToken, "retrieve the concept",
+          UserRole.VIEWER);
+
+      Concept concept = translationService.getConcept(conceptId);
+
+      return concept;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a concept");
       return null;
     } finally {
       translationService.close();
@@ -488,9 +526,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               pfs);
       // Graph resolver - get descriptions and language refset entries
       for (Concept c : list.getObjects()) {
-        for (Description d : c.getDescriptions()) {
-          d.getLanguageRefsetMembers().size();
-        }
+        translationService.handleLazyInit(c);
       }
       return list;
     } catch (Exception e) {
@@ -704,6 +740,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + ", " + ioHandlerInfoId);
 
     TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
       // Load translation
       Translation translation =
@@ -758,13 +796,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setPublishable(true);
         concept.setPublished(false);
         if (translationService.getTerminologyHandler().assignNames()) {
-          concept.setName(translationService
-              .getTerminologyHandler()
-              .getConcept(concept.getTerminologyId(),
-                  translation.getTerminology(), translation.getVersion())
-              .getName());
+          final Concept c2 =
+              translationService.getTerminologyHandler().getConcept(
+                  concept.getTerminologyId(), translation.getTerminology(),
+                  translation.getVersion());
+          concept.setName(c2.getName());
+          concept.setActive(c2.isActive());
         } else {
           concept.setName("TBD");
+          concept.setActive(true);
         }
         translationService.addConcept(concept);
 
@@ -775,7 +815,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               .setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
           for (LanguageRefsetMember member : members) {
             member.setId(null);
-            member.setTerminologyId(null);
             member.setLastModifiedBy(userName);
             member.setPublishable(true);
             member.setPublished(false);
@@ -793,6 +832,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
 
         conceptIds.add(concept.getTerminologyId());
+
+        if (objectCt % commitCt == 0) {
+          translationService.commit();
+          translationService.clear();
+          translationService.beginTransaction();
+        }
+
       }
 
       Logger.getLogger(getClass()).info(
@@ -805,6 +851,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
+      // close transaction
+      translationService.commit();
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
     } finally {
@@ -870,7 +918,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/concept/add")
   @ApiOperation(value = "Add new translation concept", notes = "Creates a new translation concept", response = ConceptJpa.class)
   public Concept addTranslationConcept(
-    @ApiParam(value = "Concept, e.g. newConcept", required = true) Concept concept,
+    @ApiParam(value = "Concept, e.g. newConcept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -886,7 +934,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
+      String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "add translation concept",
           UserRole.AUTHOR);
 
@@ -900,10 +948,67 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Add translation concept
-      return translationService.addConcept(concept);
+      concept.setLastModifiedBy(userName);
+      Concept newConcept = translationService.addConcept(concept);
+
+      // Add descriptions
+      for (Description description : concept.getDescriptions()) {
+        description.setConcept(newConcept);
+        description.setLastModifiedBy(userName);
+        Description newDescription =
+            translationService.addDescription(description);
+        // Add language refset entries
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          member.setDescriptionId(newDescription.getTerminologyId());
+          member.setLastModifiedBy(userName);
+          translationService.addLanguageRefsetMember(member);
+        }
+      }
+
+      return translationService.getConcept(newConcept.getId());
     } catch (Exception e) {
       handleException(e, "trying to add a translation concept");
       return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/concept/update")
+  @ApiOperation(value = "Update concept", notes = "Updates the specified concept")
+  public void updateTranslationConcept(
+    @ApiParam(value = "Concept", required = true) ConceptJpa concept,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /concept/update " + concept);
+
+    // Create service and configure transaction scope
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      Concept concept2 = translationService.getConcept(concept.getId());
+      authorizeProject(translationService, concept2.getTranslation()
+          .getProject().getId(), securityService, authToken, "update concept",
+          UserRole.AUTHOR);
+
+      // TODO:
+      
+      // Sync descriptions (add new ones, remove deleted ones (and language refset members), update changed ones)
+      // Sync language re
+      
+      
+      // Update concept
+      concept.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      translationService.updateConcept(concept);
+
+    } catch (Exception e) {
+      handleException(e, "trying to update a translation");
     } finally {
       translationService.close();
       securityService.close();
@@ -938,12 +1043,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove translation concept",
           UserRole.AUTHOR);
 
-      // Remove concept from translation
-      translation.getConcepts().remove(concept);
+      // Remove concept from translation - not needed
+
+      // Remove all descriptions
+      for (Description description : concept.getDescriptions()) {
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          translationService.removeLanguageRefsetMember(member.getId());
+        }
+        translationService.removeDescription(description.getId());
+      }
 
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId);
-      translationService.updateTranslation(translation);
+
+      // probably not necessary
+      // translationService.updateTranslation(translation);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation concept");
@@ -1007,41 +1122,50 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     try {
       Translation fromTranslation =
           translationService.getTranslation(fromTranslationId);
-      if (fromTranslation.getSpellingDictionary() == null) {
+      if (fromTranslation == null) {
+        throw new Exception("Invalid translation id " + fromTranslation);
+      }
+
+      SpellingDictionary fromSpelling = fromTranslation.getSpellingDictionary();
+      if (fromSpelling == null) {
         throw new Exception(
-            "The from translation must have an associated spelling dictionary: "
-                + fromTranslationId);
+            "translation must have an associated spelling dictionary.");
       }
 
       Translation toTranslation =
           translationService.getTranslation(toTranslationId);
       if (toTranslation == null) {
-        throw new Exception("The to translation is not found: "
+        throw new Exception("The to-translation is not found: "
             + toTranslationId);
+      }
+
+      SpellingDictionary toSpelling = toTranslation.getSpellingDictionary();
+      if (toSpelling == null) {
+        throw new Exception(
+            "The from-translation must have an associated spelling dictionary: "
+                + fromTranslationId);
       }
 
       // Authorize call
       authorizeProject(translationService, toTranslation.getProject().getId(),
-          securityService, authToken, "copy translation spellchecker",
+          securityService, authToken, "copy translation spelling entries",
           UserRole.AUTHOR);
 
-      List<String> fromEntries =
-          fromTranslation.getSpellingDictionary().getEntries();
+      List<String> fromEntries = fromSpelling.getEntries();
       if (fromEntries == null) {
         throw new Exception("The from spelling dictionary entries is null: "
             + fromTranslation.getSpellingDictionary().getId());
       }
+
       // Get to spelling dictionary
-      SpellingDictionary toSpellingDictionary =
-          toTranslation.getSpellingDictionary();
-      List<String> toEntries = toSpellingDictionary.getEntries();
+      List<String> toEntries = toSpelling.getEntries();
       toEntries.addAll(fromEntries);
-      toSpellingDictionary.setEntries(toEntries);
+      toSpelling.setEntries(toEntries);
 
       // Create service and configure transaction scope
-      translationService.updateSpellingDictionary(toSpellingDictionary);
+      translationService.updateSpellingDictionary(toSpelling);
     } catch (Exception e) {
-      handleException(e, "trying to add a translation");
+      handleException(e, "trying to copy a translation spelling entries");
     } finally {
       translationService.close();
       securityService.close();
@@ -1050,8 +1174,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
-  @Path("/{translationId}/spelling/add/{entry}")
+  @GET
+  @Path("/spelling/add/{translationId}/{entry}")
   @ApiOperation(value = "Add new entry to the spelling dictionary", notes = "Add new entry to the spelling dictionary")
   public void addSpellingDictionaryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
@@ -1059,8 +1183,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Translation): /spelling/add/" + translationId + " "
-            + entry);
+        "RESTful call PUT (Spelling Entry): /spelling/add/" + translationId
+            + " " + entry);
 
     TranslationService translationService = new TranslationServiceJpa();
 
@@ -1068,16 +1192,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       Translation translation =
           translationService.getTranslation(translationId);
 
-      // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "add spelling dictionary entry",
-          UserRole.AUTHOR);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
 
       SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "add entry from the spelling dictionary",
+          UserRole.AUTHOR);
+
       spelling.addEntry(entry);
-      // Create service and configure transaction scope
       translationService.updateSpellingDictionary(spelling);
-      // TODO: May need to reindex
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");
     } finally {
@@ -1089,35 +1220,44 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
-  @Path("/{translationId}/spelling/remove/{entry}")
-  @ApiOperation(value = "Remove spelling dictionary entry", notes = "Removes the spelling dictionary entry for this translation")
+  @Path("/spelling/remove/{translationId}/{entry}")
+  @ApiOperation(value = "Remove entry from spelling dictionary", notes = "Removes an entry from translation's spelling dictionary")
   public void removeSpellingDictionaryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /spelling/remove/" + translationId
-            + " " + entry);
+        "RESTful call DELETE (Spelling Entry): /spelling/remove/"
+            + translationId + " " + entry);
 
     TranslationService translationService = new TranslationServiceJpa();
+
     try {
       Translation translation =
           translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
       SpellingDictionary spelling = translation.getSpellingDictionary();
       if (spelling == null) {
         throw new Exception(
             "translation must have an associated spelling dictionary.");
       }
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken,
-          "remove entry to the spelling dictionary", UserRole.AUTHOR);
+          securityService, authToken, "remove spelling dictionary entry",
+          UserRole.AUTHOR);
 
-      spelling.removeEntry(entry);
-      // Create service and configure transaction scope
-      translationService.updateSpellingDictionary(spelling);
-      // TODO: May need to reindex
+      translation.getSpellingDictionary().removeEntry(entry);
+
+      if (!spelling.getEntries().isEmpty()) {
+        spelling.removeEntry(entry);
+        translationService.updateSpellingDictionary(spelling);
+      }
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1130,7 +1270,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
-  @Path("/{translationId}/spelling/clear")
+  @Path("/spelling/clear/{translationId}")
   @ApiOperation(value = "Clear spelling dictionary entries", notes = "Removes all spelling dictionary entries for this translation")
   public void clearSpellingDictionary(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
@@ -1140,14 +1280,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call DELETE (Translation): /spelling/clear/" + translationId);
 
     TranslationService translationService = new TranslationServiceJpa();
+
     try {
       Translation translation =
           translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
       SpellingDictionary spelling = translation.getSpellingDictionary();
       if (spelling == null) {
         throw new Exception(
             "translation must have an associated spelling dictionary.");
       }
+
       // Authorize call
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
@@ -1155,7 +1302,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
-        // Create service and configure transaction scope
         translationService.updateSpellingDictionary(spelling);
       }
     } catch (Exception e) {
@@ -1376,45 +1522,261 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @POST
   @Override
+  @Path("/spelling/import")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import a spelling entries", notes = "Imports a spelling entries onto an empty translation.")
   public void importSpellingDictionary(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (SpellingEntries): /spelling/import" + translationId);
 
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import spelling entries",
+          UserRole.AUTHOR);
+
+      if (!spelling.getEntries().isEmpty()) {
+        throw new Exception(
+            "First clear Spelling Dictionary's existing entries prior to importing new ones");
+      }
+
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      spelling.setEntries(handler.getEntriesAsList(in));
+      translationService.updateSpellingDictionary(spelling);
+    } catch (Exception e) {
+      handleException(e, "trying to import spelling entries");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
+  @GET
   @Override
-  public InputStream exportSpellingDictionary(Long translationId,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  @Produces("application/octet-stream")
+  @Path("/spelling/export/{translationId}")
+  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts as InputStream for the specified translation.", response = String.class)
+  public InputStream exportSpellingDictionary(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Release):  /spelling/export/" + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Export spelling entries as InputStream ", UserRole.VIEWER);
+
+      // Return the dictionary's contents as InputStream
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      return handler.getEntriesAsStream(spelling.getEntries());
+    } catch (Exception e) {
+      handleException(e, "Trying to export spelling entries as InputStream ");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+    return new ByteArrayInputStream("".getBytes("UTF-8"));
   }
 
   /* see superclass */
+  @POST
   @Override
+  @Path("/import/phrasememory")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
-    FormDataContentDisposition contentDispositionHeader, InputStream in,
-    Long translationId, String authToken) throws Exception {
-    // TODO Auto-generated method stub
+    @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
+    @ApiParam(value = "Content of phrase memory file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /import/phrasememory "
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+      if (translation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The translation must have an associated phrase memory: "
+                + translation);
+      }
+
+      // Authorize the call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "import translation definition",
+          UserRole.AUTHOR);
+
+      List<MemoryEntry> fromEntries =
+          translation.getPhraseMemory().getEntries();
+      if (fromEntries == null) {
+        throw new Exception("The phrase memory entries must be empty to import"
+            + translation.getPhraseMemory().getId());
+      }
+      // Load PhraseMemory
+      List<MemoryEntry> memories = parsePhraseMemory(translation, in);
+      PhraseMemory phraseMemory = translation.getPhraseMemory();
+      for (MemoryEntry memoryEntry : memories) {
+        memoryEntry.setPhraseMemory(phraseMemory);
+        translationService.addMemoryEntry(memoryEntry);
+      }
+    } catch (Exception e) {
+      handleException(e, "trying to import translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
 
   }
 
   /* see superclass */
+  @GET
   @Override
-  public InputStream exportPhraseMemory(Long translationId, String authToken)
+  @Produces("application/octet-stream")
+  @Path("/export/phrasememory")
+  @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
+  public InputStream exportPhraseMemory(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Translation): /export/phrasememory "
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+      if (translation.getPhraseMemory() == null) {
+        throw new Exception(
+            "The translation must have an associated phrase memory: "
+                + translationId);
+      }
+      if (translation.getPhraseMemory().getEntries() == null) {
+        throw new Exception("The translation phrase memory entries is null"
+            + translation.getPhraseMemory().getId());
+      }
+      StringBuilder sb = new StringBuilder();
+      for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        sb.append(entry.getName()).append("|")
+            .append(entry.getTranslatedName()).append("\r\n");
+      }
+
+      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+    } catch (Exception e) {
+      handleException(e, "trying to export translation phrase memory");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
     return null;
   }
 
   /* see superclass */
+  @GET
   @Override
-  public StringList suggestSpelling(String term, String authToken)
+  @Path("/spelling/suggest/{translationId}/{entry}")
+  @ApiOperation(value = "Get spelling suggestions", notes = "Returns list of suggested replacements from dictionary", response = StringList.class)
+  public StringList suggestSpelling(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "entry, e.g. word", required = true) @PathParam("entry") String entry,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Spelling Entry): /spelling/suggest/" + translationId
+            + " " + entry);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Suggest spellings based on term supplied", UserRole.VIEWER);
+
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      return handler.suggestSpelling(entry, spelling.getEntries(), 10,
+          translationId);
+    } catch (Exception e) {
+      handleException(e, "trying to suggest a spelling based on an entry");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+    return new StringList();
   }
 
   /* see superclass */
@@ -1485,10 +1847,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           conceptsToRemove.add(concept);
         }
       }
-      System.out.println("conceptsToremove " + conceptsToRemove.size());
       for (Concept cpt : conceptsToRemove) {
-        System.out.println("concept " + cpt.getTerminologyId() + " "
-            + cpt.getVersion());
         translationCopy.getConcepts().remove(cpt);
       }
 
@@ -1736,6 +2095,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // creates a "concepts in common" list (where reportToken is the key)
       List<Concept> conceptsInCommon = new ArrayList<>();
+
       // TODO: concepts in common not getting populated because terminologyIds
       // are different
       System.out.println("translation1= " + translation1.getConcepts());
@@ -2064,4 +2424,45 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+
+  /**
+   * Parses the phrase memory.
+   *
+   * @param translation the translation
+   * @param content the content
+   * @return the list
+   * @throws Exception the exception
+   */
+  private List<MemoryEntry> parsePhraseMemory(Translation translation,
+    InputStream content) throws Exception {
+    List<MemoryEntry> list = new ArrayList<>();
+    String line = "";
+    Reader reader = new InputStreamReader(content, "UTF-8");
+    PushBackReader pbr = new PushBackReader(reader);
+    while ((line = pbr.readLine()) != null) {
+
+      // Strip \r and split lines
+      line = line.replace("\r", "");
+      final String fields[] = line.split("\\|");
+
+      // Check field lengths
+      if (fields.length != 2) {
+        pbr.close();
+        Logger.getLogger(getClass()).error("line = " + line);
+        throw new Exception("Unexpected field count in phrase memory file "
+            + fields.length);
+      }
+
+      // Instantiate and populate members
+      final MemoryEntry member = new MemoryEntryJpa();
+      member.setName(fields[0]);
+      member.setTranslatedName(fields[1]);
+      // Add member
+      list.add(member);
+      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
+    }
+    pbr.close();
+    return list;
+  }
+
 }

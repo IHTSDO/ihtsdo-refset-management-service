@@ -63,12 +63,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public ValidationResult validateWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception {
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception {
 
     ValidationResult result = new ValidationResultJpa();
 
-    // Validate actions that users are not allowed to perform.
-    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
     // An author cannot do review work
     if (projectRole == UserRole.AUTHOR
         && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
@@ -125,14 +124,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
-        // record must exist and a review "assigned" state must be present
-        // and it must be reassigned to an author
+        // record has been unassigned from reviewer and is in EDITING_DONE
+        // Should be set back to EDITING_IN_PROGRESS
         flag =
             projectRole == UserRole.AUTHOR
                 && record != null
-                && EnumSet.of(WorkflowStatus.REVIEW_NEW,
-                    WorkflowStatus.REVIEW_IN_PROGRESS,
-                    WorkflowStatus.REVIEW_DONE).contains(
+                && EnumSet.of(WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus());
         break;
       case SAVE:
@@ -206,9 +203,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Refset refset, User user,
-    WorkflowAction action, WorkflowService service) throws Exception {
-
-    UserRole projectRole = refset.getProject().getUserRoleMap().get(user);
+    UserRole projectRole, WorkflowAction action, WorkflowService service)
+    throws Exception {
 
     // Validate tracking record
     TrackingRecordList recordList =
@@ -281,6 +277,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
+        // No need to set the author again because we've removed reference to the reviewer
         refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -340,6 +337,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new Exception("Illegal workflow action");
     }
 
+    refset.setLastModifiedBy(user.getUserName());
     service.updateRefset(refset);
     // After UNASSIGN and deleting the tracking record,
     // this would create a new tracking record to keep the
@@ -357,12 +355,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public ValidationResult validateWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception {
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
-    // Validate actions that users are not allowed to perform.
-    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
     // An author cannot do review work
     if (projectRole == UserRole.AUTHOR
         && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
@@ -375,8 +371,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     // Validate tracking record
     TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? "dummy" : concept.getTerminologyId()), null);
+        service.findTrackingRecordsForQuery(
+            "conceptId:"
+                + ((concept == null || concept.getId() == null) ? -1 : concept
+                    .getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -504,14 +502,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @Override
   public TrackingRecord performWorkflowAction(Translation translation,
-    User user, WorkflowAction action, Concept concept, WorkflowService service)
-    throws Exception {
+    User user, UserRole projectRole, WorkflowAction action, Concept concept,
+    WorkflowService service) throws Exception {
 
-    UserRole projectRole = translation.getProject().getUserRoleMap().get(user);
-    // Validate tracking record
     TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery("conceptId:"
-            + (concept == null ? "dummy" : concept.getTerminologyId()), null);
+        service.findTrackingRecordsForQuery(
+            "conceptId:"
+                + ((concept == null || concept.getId() == null) ? -1 : concept
+                    .getId()), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -523,6 +521,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case ASSIGN:
         // Author case
         if (record == null) {
+          // Add the concept itself
+          concept.setTranslation(translation);
+          concept.setModuleId(translation.getModuleId());
+          concept.setEffectiveTime(null);
+          concept.setTerminology(translation.getTerminology());
+          concept.setVersion(translation.getVersion());
+          concept.setDefinitionStatusId("UNKNOWN");
+          service.addConcept(concept);
+
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
           record2.getAuthors().add(user);
@@ -546,6 +553,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setLastModifiedBy(user.getUserName());
           service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
+          concept.setLastModifiedBy(user.getUserName());
+          service.updateConcept(concept);
         }
         break;
       case UNASSIGN:
@@ -557,10 +566,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     concept.getWorkflowStatus())) {
           if (record.isRevision()) {
             concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+            service.removeTrackingRecord(record.getId());
           } else {
-            concept.setWorkflowStatus(WorkflowStatus.NEW);
+            service.removeTrackingRecord(record.getId());
+            service.removeConcept(concept.getId());
           }
-          service.removeTrackingRecord(record.getId());
         }
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
@@ -572,6 +582,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setForReview(false);
           service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          concept.setLastModifiedBy(user.getUserName());
+          service.updateConcept(concept);
         }
         break;
 
@@ -591,6 +603,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         // all other cases, status remains the same
         // EDITING_IN_PROGRESS, EDITING_DONE, REVIEW_IN_PROGRESS, REVIEW_DONE
+        concept.setLastModifiedBy(user.getUserName());
+        service.updateConcept(concept);
         break;
 
       case FINISH:
@@ -611,17 +625,24 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.removeTrackingRecord(record.getId());
         }
 
+        concept.setLastModifiedBy(user.getUserName());
+        service.updateConcept(concept);
+
         // Otherwise status stays the same
         break;
 
       case PREVIEW:
         // Handled by release process. Simply set status to PREVIEW.
+        translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PREVIEW);
+        service.updateTranslation(translation);
         break;
 
       case PUBLISH:
         // Handled by release process. Simply set status to PUBLISHED
+        translation.setLastModifiedBy(user.getUserName());
         translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+        service.updateTranslation(translation);
         break;
 
       case CANCEL:
@@ -632,6 +653,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new Exception("Illegal workflow action");
     }
 
+    // After UNASSIGN and deleting the tracking record,
+    // this would create a new tracking record to keep the
+    // concept assigned also for FINISH, this would persist the tracking record
+    // that was just supposed to have been deleted
+    if (action != WorkflowAction.UNASSIGN
+        && !(action == WorkflowAction.FINISH && concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+      service.updateTrackingRecord(record);
+    }
     return null;
   }
 
@@ -652,15 +681,17 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + "where b.id = :refsetId and a.refset = b "
             + "and a.conceptId NOT IN "
             + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-            + " where c.refset = a AND d.translation = c)";
+            + " where c.refset = b AND d.translation = c)";
 
     Query ctQuery =
-        rootService.getEntityManager().createQuery(
-            "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
-                + "where b.id = :refsetId and a.refset = b "
-                + "and a.conceptId NOT IN "
-                + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-                + " where c.refset = a AND d.translation = c)");
+        rootService
+            .getEntityManager()
+            .createQuery(
+                "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
+                    + "where b.id = :refsetId and a.refset = b "
+                    + "and a.conceptId NOT IN "
+                    + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
+                    + " where c.refset = b AND d.translation = c)");
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 

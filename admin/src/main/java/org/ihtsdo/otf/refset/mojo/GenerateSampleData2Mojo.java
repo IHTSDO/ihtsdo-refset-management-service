@@ -60,6 +60,7 @@ import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.ValidationServiceRestImpl;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -203,6 +204,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       security.addUser(makeUser("viewer5", "Viewer 5"), admin.getAuthToken());
       security.addUser(makeUser("viewer6", "Viewer 6"), admin.getAuthToken());
 
+      //
+      // Add some users for uat
+      //
+      Logger.getLogger(getClass()).info("Add uat users");
+      UserJpa refsetadmin1 = makeUser("refsetadmin1", "RefsetAdmin1");
+      refsetadmin1 =
+          (UserJpa) security.addUser(refsetadmin1, admin.getAuthToken());
+      UserJpa refsetreviewer1 = makeUser("refsetreviewer1", "RefsetReviewer1");
+      refsetreviewer1 =
+          (UserJpa) security.addUser(refsetreviewer1, admin.getAuthToken());
+      UserJpa refsetauthor1 = makeUser("refsetauthor1", "RefsetAuthor1");
+      refsetauthor1 =
+          (UserJpa) security.addUser(refsetauthor1, admin.getAuthToken());
+
       /**
        * Add Projects
        * 
@@ -248,6 +263,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project1.getId(), admin1.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(), refsetadmin1.getUserName(),
+          UserRole.ADMIN.toString(), admin.getAuthToken());
 
       // Project 1
       project = new ProjectServiceRestImpl();
@@ -260,6 +278,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project1.getId(), author2.getUserName(),
           UserRole.AUTHOR.toString(), admin.getAuthToken());
+
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(),
+          refsetreviewer1.getUserName(), UserRole.REVIEWER.toString(),
+          admin.getAuthToken());
+      project = new ProjectServiceRestImpl();
+      project.assignUserToProject(project1.getId(),
+          refsetauthor1.getUserName(), UserRole.AUTHOR.toString(),
+          admin.getAuthToken());
 
       // Project 2
       project = new ProjectServiceRestImpl();
@@ -448,7 +475,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make spanish translation
       makeTranslation(
           "conjunto de referencias de lenguaje castellano para América Latina",
-          "450828004", refset, project2, 2, "INT", reviewer2);
+          "450828004", refset, project2, 2, "INT", "es", reviewer2);
 
       // Swedish translation - new refsetid for scope refset
       refset =
@@ -458,7 +485,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make Swedish translation
       makeTranslation(
           "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, "INT", reviewer2);
+          "46011000052107", refset, project2, 3, "INT", "sv", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -498,13 +525,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Add an inclusion for
       // "105058003 | Amdinocillin measurement (procedure) |"
-      new RefsetServiceRestImpl().addRefsetInclusion(refset.getId(),
-          "105058003", null, false, true, reviewer3.getAuthToken());
+      ConceptRefsetMemberJpa inclusion = new ConceptRefsetMemberJpa();
+      inclusion.setConceptId("105058003");
+      inclusion.setRefsetId(refset.getId());
+      new RefsetServiceRestImpl().addRefsetInclusion(inclusion, false,
+          reviewer3.getAuthToken());
 
       // Add an exclusion for
       // "313948006 | Serum ampicillin measurement (procedure) |"
       new RefsetServiceRestImpl().addRefsetExclusion(refset.getId(),
-          "313948006", null, false, true, reviewer3.getAuthToken());
+          "313948006", false, reviewer3.getAuthToken());
 
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
@@ -557,6 +587,18 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
+      // Make danish refset and translation
+      refset =
+          makeTranslationRefset("Danish Translation scope reference set", 20,
+              "INT", project3, "554461000005103", "554471000005108", reviewer3);
+
+      // Make Swedish translation
+      TranslationJpa translation =
+          makeTranslation("Danish language reference set", "554461000005103",
+              refset, project3, 20, "INT", "da", reviewer3);
+      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      new TranslationServiceRestImpl().updateTranslation(translation,
+          reviewer3.getAuthToken());
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -810,7 +852,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
     // Validate refset
     ValidationResult result =
-        validation.validateRefset(refset, auth.getAuthToken());
+        validation.validateRefset(refset, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -857,13 +899,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @param project the project
    * @param num the num
    * @param edition the edition
+   * @param lang the lang
    * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception
    */
   private TranslationJpa makeTranslation(String name, String terminologyId,
-    Refset refset, Project project, int num, String edition, User auth)
-    throws Exception {
+    Refset refset, Project project, int num, String edition, String lang,
+    User auth) throws Exception {
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
     translation.setDescription("Description of translation "
@@ -871,7 +914,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setActive(true);
     translation.setEffectiveTime(null);
     translation.setLastModified(new Date());
-    translation.setLanguage("es");
+    translation.setLanguage(lang);
     translation.setModuleId(refset.getModuleId());
     translation.setProject(project);
     translation.setPublic(true);
@@ -889,7 +932,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     // Validate translation
     ValidationResult result =
-        validation.validateTranslation(translation, auth.getAuthToken());
+        validation.validateTranslation(translation, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -919,9 +962,10 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     makeReleaseArtifact("SnomedCT_" + edition + "_20150131.zip", info,
         "../config/src/main/resources/data/translation" + num
             + "/translation.zip");
-    makeReleaseArtifact("sct2_Description_" + edition + "_20150131.txt", info,
+    makeReleaseArtifact("sct2_Description_Snapshot_" + edition
+        + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num
-            + "/sct2_Description_" + edition + "_20150131.txt");
+            + "/sct2_Description_Snapshot_" + edition + "_20150131.txt");
     makeReleaseArtifact("der2_cRefset_LanguageSnapshot_" + edition
         + "_20150131.txt", info,
         "../config/src/main/resources/data/translation" + num

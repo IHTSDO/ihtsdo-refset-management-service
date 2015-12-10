@@ -12,7 +12,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
-import org.ihtsdo.otf.refset.rf2.DescriptionTypeRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.ModuleDependencyRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
@@ -27,7 +27,7 @@ public class DummyComponentIdentifierServiceHandler implements
     IdentifierAssignmentHandler {
 
   /** The ct. */
-  private int ct = 1;
+  private int ct = 111111;
 
   /* see superclass */
   @Override
@@ -38,6 +38,9 @@ public class DummyComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public String getTerminologyId(Concept concept) throws Exception {
+    if (concept.getTerminology() != null) {
+      return concept.getTerminologyId();
+    }
     ct++;
     return ct + "000";
   }
@@ -45,13 +48,16 @@ public class DummyComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public String getTerminologyId(Description description) throws Exception {
+    if (description.getTerminology() != null) {
+      return description.getTerminologyId();
+    }
     ct++;
     return ct + "011";
   }
 
   /* see superclass */
   @Override
-  public String getTerminologyId(DescriptionTypeRefsetMember member)
+  public String getTerminologyId(DescriptionType member)
     throws Exception {
     if (member.getTerminologyId() != null
         && !member.getTerminologyId().isEmpty()) {

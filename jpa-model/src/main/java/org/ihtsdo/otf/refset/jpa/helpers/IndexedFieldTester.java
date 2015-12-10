@@ -70,7 +70,6 @@ public class IndexedFieldTester extends ProxyTester {
         "Test not analyzed indexed fields - " + clazz.getName());
 
     Map<String, Boolean> analyzedFieldsMap = getAnalyzedFieldsMap(clazz);
-    System.out.println(analyzedFieldsMap);
     for (String field : includes) {
       boolean found = true;
       if (analyzedFieldsMap.containsKey(field)) {

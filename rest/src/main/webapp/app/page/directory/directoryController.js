@@ -97,7 +97,7 @@ tsApp.controller('DirectoryCtrl', [
       workflowService.getWorkflowPaths().then(function(data) {
         $scope.metadata.workflowPaths = data.strings;
       });
-    }
+    };
 
     // Initialize
     $scope.getRefsetTypes();
@@ -107,5 +107,4 @@ tsApp.controller('DirectoryCtrl', [
 
     // end
   }
-
 ]);

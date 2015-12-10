@@ -8,13 +8,13 @@ tsApp.service('validationService', [
     console.debug("configure validationService");
 
     // validate concept
-    this.validateConcept = function(concept) {
+    this.validateConcept = function(concept, projectId) {
       console.debug("validateConcept");
       var deferred = $q.defer();
 
       // validate concept
       gpService.increment()
-      $http.post(validationUrl + 'concept', concept).then(
+      $http.post(validationUrl + 'concept' + "?projectId=" + projectId, concept).then(
       // success
       function(response) {
         console.debug("  concept = ", response.data);
@@ -37,7 +37,7 @@ tsApp.service('validationService', [
 
       // Add refset
       gpService.increment()
-      $http.post(validationUrl + 'refset', refset).then(
+      $http.post(validationUrl + 'refset' + "?projectId=" + refset.projectId, refset).then(
       // success
       function(response) {
         console.debug("  refset = ", response.data);
@@ -54,13 +54,13 @@ tsApp.service('validationService', [
     }
 
     // validate translation
-    this.validateTranslation = function(translation) {
+    this.validateTranslation = function(translation, projectId) {
       console.debug("validateTranslation");
       var deferred = $q.defer();
 
       // Add translation
       gpService.increment()
-      $http.post(validationUrl + 'translation', translation).then(
+      $http.post(validationUrl + 'translation' + "?projectId=" + projectId, translation).then(
       // success
       function(response) {
         console.debug("  translation = ", response.data);
@@ -77,12 +77,12 @@ tsApp.service('validationService', [
     }
 
     // validate member
-    this.validateMember = function(member) {
+    this.validateMember = function(member, projectId) {
       console.debug("validateMember");
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(validationUrl + 'member', member).then(
+      $http.post(validationUrl + 'member' + "?projectId=" + projectId, member).then(
       // success
       function(response) {
         console.debug("  member = ", response.data);
@@ -143,4 +143,25 @@ tsApp.service('validationService', [
       return deferred.promise;
     }
 
+    // get all validation check names
+    this.getValidationCheckNames = function() {
+      console.debug("getValidationCheckNames");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(validationUrl + 'checks').then(
+      // success
+      function(response) {
+        console.debug("  validation checks = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
   } ]);

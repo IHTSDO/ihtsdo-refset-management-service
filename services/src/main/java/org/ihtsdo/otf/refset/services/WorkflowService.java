@@ -3,8 +3,11 @@
  */
 package org.ihtsdo.otf.refset.services;
 
+import java.util.List;
 import java.util.Set;
 
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -88,25 +91,28 @@ public interface WorkflowService extends TranslationService {
    *
    * @param refsetId the refset id
    * @param userName the user name
+   * @param projectRole the project role
    * @param action the action
    * @return the tracking record
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Long refsetId, String userName,
-    WorkflowAction action) throws Exception;
+    UserRole projectRole, WorkflowAction action) throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param translationId the translation id
    * @param userName the user name
+   * @param projectRole the project role
    * @param action the action
    * @param concept the concept
    * @return the tracking record
    * @throws Exception the exception
    */
   public TrackingRecord performWorkflowAction(Long translationId,
-    String userName, WorkflowAction action, Concept concept) throws Exception;
+    String userName, UserRole projectRole, WorkflowAction action,
+    Concept concept) throws Exception;
 
   /**
    * Returns the workflow handler for path.
@@ -137,5 +143,19 @@ public interface WorkflowService extends TranslationService {
   public TrackingRecordList findTrackingRecordsForQuery(String query,
     PfsParameter pfs) throws Exception;
 
+  /**
+   * Send feedback.
+   *
+   * @param message the message
+   * @param refset TODO
+   * @throws Exception the exception
+   */
+  public void addFeedback(List<String> message, Refset refset) throws Exception;
 
+  /**
+   * Handle lazy init.
+   *
+   * @param record the record
+   */
+  public void handleLazyInit(TrackingRecord record);
 }

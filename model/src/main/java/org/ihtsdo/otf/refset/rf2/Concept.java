@@ -57,6 +57,20 @@ public interface Concept extends Component {
   public void setDescriptions(List<Description> descriptions);
 
   /**
+   * Returns the relationships.
+   * 
+   * @return the relationships
+   */
+  public List<Relationship> getRelationships();
+
+  /**
+   * Sets the relationships.
+   * 
+   * @param relationships the relationships
+   */
+  public void setRelationships(List<Relationship> relationships);
+
+  /**
    * Gets the default preferred name.
    * 
    * @return the default preferred name

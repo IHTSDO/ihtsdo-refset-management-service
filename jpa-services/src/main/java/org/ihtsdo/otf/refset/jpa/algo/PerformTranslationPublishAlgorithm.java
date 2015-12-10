@@ -43,6 +43,9 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
   /** The translation. */
   private Translation translation;
 
+  /** The staged translation. */
+  private Translation stagedTranslation;
+
   /** The staged translation change. */
   private StagedTranslationChange stagedTranslationChange;
 
@@ -91,8 +94,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     removeReleaseInfo(releaseInfo.getId());
 
     // Mark the staged refset as PUBLISHED
-    Translation stagedTranslation =
-        stagedTranslationChange.getStagedTranslation();
+    stagedTranslation = stagedTranslationChange.getStagedTranslation();
     stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     stagedTranslation.setLastModifiedBy(userName);
     stagedTranslation.setProvisional(false);
@@ -170,4 +172,12 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     this.translation = translation;
   }
 
+  /**
+   * Returns the published translation.
+   *
+   * @return the published translation
+   */
+  public Translation getPublishedTranslation() {
+    return stagedTranslation;
+  }
 }

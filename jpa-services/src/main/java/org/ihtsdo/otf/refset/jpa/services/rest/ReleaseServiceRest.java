@@ -43,7 +43,7 @@ public interface ReleaseServiceRest {
    * @return the current refset release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentReleaseInfoForRefset(Long refsetId, String authToken)
+  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -67,7 +67,7 @@ public interface ReleaseServiceRest {
    * @return the current translation release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(Long translationtId,
+  public ReleaseInfo getCurrentTranslationReleaseInfo(Long translationtId,
     String authToken) throws Exception;
 
   /**
@@ -110,9 +110,10 @@ public interface ReleaseServiceRest {
    *
    * @param refsetId the refset id
    * @param authToken the auth token
+   * @return the refset
    * @throws Exception the exception
    */
-  public void finishRefsetRelease(Long refsetId, String authToken)
+  public Refset finishRefsetRelease(Long refsetId, String authToken)
     throws Exception;
 
   /**
@@ -165,9 +166,10 @@ public interface ReleaseServiceRest {
    *
    * @param translationId the translation id
    * @param authToken the auth token
+   * @return the translation
    * @throws Exception the exception
    */
-  public void finishTranslationRelease(Long translationId,
+  public Translation finishTranslationRelease(Long translationId,
     String authToken) throws Exception;
 
   /**
@@ -224,4 +226,13 @@ public interface ReleaseServiceRest {
    * @throws Exception the exception
    */
   public Refset resumeRelease(Long refsetId, String authToken) throws Exception;
+
+  /**
+   * Removes the release info.
+   *
+   * @param releaseInfoId the release info id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  void removeReleaseInfo(Long releaseInfoId, String authToken) throws Exception;
 }

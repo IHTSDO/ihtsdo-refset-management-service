@@ -83,7 +83,7 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
+    // tester.include("version");
     tester.include("caseSignificanceId");
     tester.include("translationOfId");
     tester.include("concept");

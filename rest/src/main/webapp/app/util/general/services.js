@@ -1,139 +1,241 @@
 // Error service
-tsApp.service('utilService', [ '$location', function($location) {
-  console.debug('configure utilService');
-  // declare the error
-  this.error = {
-    message : null
-  };
+tsApp
+  .service(
+    'utilService',
+    [
+      '$location',
+      function($location) {
+        console.debug('configure utilService');
+        // declare the error
+        this.error = {
+          message : null
+        };
 
-  // Sets the error
-  this.setError = function(message) {
-    this.error.message = message;
-  }
+        // tinymce options
+        var tinymceOptions = {
+          menubar : false,
+          statusbar : false,
+          plugins : "autolink autoresize link image charmap searchreplace lists paste",
+          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+          forced_root_block : ''
+        }
 
-  // Clears the error
-  this.clearError = function() {
-    this.error.message = null;
-  }
-  // Handle error message
-  this.handleError = function(response) {
-    console.debug("Handle error: ", response);
-    this.error.message = response.data;
-    // If authtoken expired, relogin
-    if (this.error.message && this.error.message.indexOf("AuthToken") != -1) {
-      // Reroute back to login page with "auth token has
-      // expired" message
-      $location.path("/");
-    }
-  }
+        // Get tinymce options
+        this.getTinymceOptions = function() {
+          return tinymceOptions;
+        }
 
-  // Convert date to a string
-  this.toDate = function(lastModified) {
-    var date = new Date(lastModified);
-    var year = "" + date.getFullYear();
-    var month = "" + (date.getMonth() + 1);
-    if (month.length == 1) {
-      month = "0" + month;
-    }
-    var day = "" + date.getDate();
-    if (day.length == 1) {
-      day = "0" + day;
-    }
-    var hour = "" + date.getHours();
-    if (hour.length == 1) {
-      hour = "0" + hour;
-    }
-    var minute = "" + date.getMinutes();
-    if (minute.length == 1) {
-      minute = "0" + minute;
-    }
-    var second = "" + date.getSeconds();
-    if (second.length == 1) {
-      second = "0" + second;
-    }
-    return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
-  }
+        // Sets the error
+        this.setError = function(message) {
+          this.error.message = message;
+        }
 
-  // Convert date to a short string
-  this.toShortDate = function(lastModified) {
-    var date = new Date(lastModified);
-    var year = "" + date.getFullYear();
-    var month = "" + (date.getMonth() + 1);
-    if (month.length == 1) {
-      month = "0" + month;
-    }
-    var day = "" + date.getDate();
-    if (day.length == 1) {
-      day = "0" + day;
-    }
-    return year + "-" + month + "-" + day;
-  }
-    
-    // Convert date to a simple string
-    this.toSimpleDate = function(lastModified) {
-      var date = new Date(lastModified);
-      var year = "" + date.getFullYear();
-      var month = "" + (date.getMonth() + 1);
-      if (month.length == 1) {
-        month = "0" + month;
-      }
-      var day = "" + date.getDate();
-      if (day.length == 1) {
-        day = "0" + day;
-      }
-      return year + month + day;
-    }
+        // Clears the error
+        this.clearError = function() {
+          this.error.message = null;
+        }
+        // Handle error message
+        this.handleError = function(response) {
+          console.debug("Handle error: ", response);
+          this.error.message = response.data;
+          // If authtoken expired, relogin
+          if (this.error.message && this.error.message.indexOf("AuthToken") != -1) {
+            // Reroute back to login page with "auth token has
+            // expired" message
+            $location.path("/");
+          }
+        }
 
-  // Utility for cleaning a query
-  this.cleanQuery = function(queryStr) {
-    if (queryStr == null) {
-      return "";
-    }
-    var cleanQuery = queryStr;
-    // Replace all slash characters
-    cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
-    // Remove brackets if not using a fielded query
-    if (queryStr.indexOf(':') == -1) {
-      cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
-    }
-    // console.debug(queryStr, " => ", cleanQuery);
-    return cleanQuery;
-  }
+        // Convert date to a string
+        this.toDate = function(lastModified) {
+          var date = new Date(lastModified);
+          var year = "" + date.getFullYear();
+          var month = "" + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = "0" + month;
+          }
+          var day = "" + date.getDate();
+          if (day.length == 1) {
+            day = "0" + day;
+          }
+          var hour = "" + date.getHours();
+          if (hour.length == 1) {
+            hour = "0" + hour;
+          }
+          var minute = "" + date.getMinutes();
+          if (minute.length == 1) {
+            minute = "0" + minute;
+          }
+          var second = "" + date.getSeconds();
+          if (second.length == 1) {
+            second = "0" + second;
+          }
+          return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+        }
 
-  // Table sorting mechanism
-  this.setSortField = function(table, field, paging) {
-    paging[table].sortField = field;
-    // reset page number too
-    paging[table].page = 1;
-    // handles null case also
-    if (!paging[table].ascending) {
-      paging[table].ascending = true;
-    } else {
-      paging[table].ascending = false;
-    }
-    // reset the paging for the correct table
-    for ( var key in paging) {
-      if (paging.hasOwnProperty(key)) {
-        if (key == table)
-          paging[key].page = 1;
-      }
-    }
-  };
+        // Convert date to a short string
+        this.toShortDate = function(lastModified) {
+          var date = new Date(lastModified);
+          var year = "" + date.getFullYear();
+          var month = "" + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = "0" + month;
+          }
+          var day = "" + date.getDate();
+          if (day.length == 1) {
+            day = "0" + day;
+          }
+          return year + "-" + month + "-" + day;
+        }
 
-  // Return up or down sort chars if sorted
-  this.getSortIndicator = function(table, field, paging) {
-    if (paging[table].ascending == null) {
-      return "";
-    }
-    if (paging[table].sortField == field && paging[table].ascending) {
-      return "▴";
-    }
-    if (paging[table].sortField == field && !paging[table].ascending) {
-      return "▾";
-    }
-  };
+        // Convert date to a simple string
+        this.toSimpleDate = function(lastModified) {
+          var date = new Date(lastModified);
+          var year = "" + date.getFullYear();
+          var month = "" + (date.getMonth() + 1);
+          if (month.length == 1) {
+            month = "0" + month;
+          }
+          var day = "" + date.getDate();
+          if (day.length == 1) {
+            day = "0" + day;
+          }
+          return year + month + day;
+        }
 
-} ]);
+        // Utility for cleaning a query
+        this.cleanQuery = function(queryStr) {
+          if (queryStr == null) {
+            return "";
+          }
+          var cleanQuery = queryStr;
+          // Replace all slash characters
+          cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
+          // Remove brackets if not using a fielded query
+          if (queryStr.indexOf(':') == -1) {
+            cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
+          }
+          // console.debug(queryStr, " => ", cleanQuery);
+          return cleanQuery;
+        }
+
+        // Table sorting mechanism
+        this.setSortField = function(table, field, paging) {
+          paging[table].sortField = field;
+          // reset page number too
+          paging[table].page = 1;
+          // handles null case also
+          if (!paging[table].ascending) {
+            paging[table].ascending = true;
+          } else {
+            paging[table].ascending = false;
+          }
+          // reset the paging for the correct table
+          for ( var key in paging) {
+            if (paging.hasOwnProperty(key)) {
+              if (key == table)
+                paging[key].page = 1;
+            }
+          }
+        };
+
+        // Return up or down sort chars if sorted
+        this.getSortIndicator = function(table, field, paging) {
+          if (paging[table].ascending == null) {
+            return "";
+          }
+          if (paging[table].sortField == field && paging[table].ascending) {
+            return "▴";
+          }
+          if (paging[table].sortField == field && !paging[table].ascending) {
+            return "▾";
+          }
+        };
+
+        // Helper to get a paged array with show/hide flags
+        // and filtered by query string
+        this.getPagedArray = function(array, paging, pageSize) {
+          var newArray = new Array();
+
+          // if array blank or not an array, return blank list
+          if (array == null || array == undefined || !Array.isArray(array)) {
+            return newArray;
+          }
+
+          newArray = array;
+
+          // apply sort if specified
+          if (paging.sortField) {
+            // if ascending specified, use that value, otherwise use false
+            newArray.sort(this.sort_by(paging.sortField, paging.ascending))
+          }
+
+          // apply filter
+          if (paging.filter) {
+            newArray = this.getArrayByFilter(newArray, paging.filter);
+          }
+
+          // get the page indices
+          var fromIndex = (paging.page - 1) * pageSize;
+          var toIndex = Math.min(fromIndex + pageSize, array.length);
+
+          // slice the array
+          var results = newArray.slice(fromIndex, toIndex);
+
+          // add the total count before slicing
+          results.totalCount = newArray.length;
+
+          return results;
+        }
+
+        // function for sorting an array by (string) field and direction
+        this.sort_by = function(field, reverse) {
+
+          // key: function to return field value from object
+          var key = function(x) {
+            return x[field]
+          };
+
+          // convert reverse to integer (1 = ascending, -1 =
+          // descending)
+          reverse = !reverse ? 1 : -1;
+
+          return function(a, b) {
+            return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+          }
+        }
+
+        // Get array by filter text matching terminologyId or name
+        this.getArrayByFilter = function(array, filter) {
+          var newArray = [];
+
+          for ( var object in array) {
+
+            if (this.objectContainsFilterText(array[object], filter)) {
+              newArray.push(array[object]);
+            }
+          }
+          return newArray;
+        }
+
+        // Returns true if any field on object contains filter text
+        this.objectContainsFilterText = function(object, filter) {
+
+          if (!filter || !object)
+            return false;
+
+          for ( var prop in object) {
+            var value = object[prop];
+            // check property for string, note this will cover child elements
+            if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
+              return true;
+            }
+          }
+
+          return false;
+        }
+
+      } ]);
 
 // Glass pane service
 tsApp.service('gpService', function() {

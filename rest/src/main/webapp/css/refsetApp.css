@@ -49,6 +49,7 @@ a:hover {
 	cursor: wait;
 	background-color: #FFFFFF;
 }
+
 .top-layer-message {
 	z-index: 401;
 	width: 450px;
@@ -162,7 +163,6 @@ a:hover {
 	color: grey;
 }
 
-
 .drop-box {
 	background: #F8F8F8;
 	border: 5px dashed #DDD;
@@ -182,28 +182,51 @@ a:hover {
 	cursor: pointer;
 	text-decoration: none;
 }
+
 .noul:hover {
 	color: #00a6e5;
 }
 
+.md-grey {
+	color: grey;
+	cursor: pointer;
+	text-decoration: none;
+}
+
+.md-black {
+	color: black;
+	cursor: pointer;
+	text-decoration: none;
+}
+
 /* For vertical centering */
-.v-wrap{
-    height: 100%;
-    white-space: nowrap;
-    text-align: center;
+.v-wrap {
+	height: 100%;
+	white-space: nowrap;
+	text-align: center;
 }
-.v-wrap:before{
-    content: "";
-    display: inline-block;
-    vertical-align: middle;
-    width: 0;
-    /* adjust for white space between pseudo element and next sibling */
-    margin-right: -.25em;
-    /* stretch line height */
-    height: 100%; 
+
+.v-wrap:before {
+	content: "";
+	display: inline-block;
+	vertical-align: middle;
+	width: 0;
+	/* adjust for white space between pseudo element and next sibling */
+	margin-right: -.25em;
+	/* stretch line height */
+	height: 100%;
 }
-.v-box{
-    display: inline-block;
-    vertical-align: middle;
-    white-space: normal;
+
+.v-box {
+	display: inline-block;
+	vertical-align: middle;
+	white-space: normal;
+}
+
+.truncate {
+	max-width: 250px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }

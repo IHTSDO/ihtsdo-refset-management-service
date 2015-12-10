@@ -156,6 +156,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/begin")
@@ -210,6 +211,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/validate")
@@ -262,10 +264,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Perform validation
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
-          validationService.validateRefset(refset, refsetService);
+          validationService.validateRefset(refset, refset.getProject(), refsetService);
       if (result.isValid()) {
         for (ConceptRefsetMember member : refset.getMembers()) {
-          result.merge(validationService.validateMember(member, refsetService));
+          result.merge(validationService.validateMember(member, refset.getProject(), refsetService));
         }
       }
 
@@ -281,6 +283,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/preview")
@@ -330,11 +333,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/finish")
   @ApiOperation(value = "Finish refset release", notes = "Finishes the release process by removing the staging release for refset.", response = ValidationResultJpa.class)
-  public void finishRefsetRelease(
+  public Refset finishRefsetRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -365,6 +369,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
+      return algo.getPublishedRefset();
     } catch (Exception e) {
       algo.rollback();
       handleException(e, "trying to finish release of refset");
@@ -372,6 +377,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.close();
       securityService.close();
     }
+    return null;
   }
 
   // preconditions: releaseInfo is still planned
@@ -382,6 +388,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   // - staged refset and it's release info (and the StagedRefsetChange)
   // releaseService.commit();
 
+  /* see superclass */
   @GET
   @Override
   @Path("/refset/cancel")
@@ -425,6 +432,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/translation/begin")
@@ -481,6 +489,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/translation/validate")
@@ -526,11 +535,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
           validationService
-              .validateTranslation(translation, translationService);
+              .validateTranslation(translation, null, translationService);
       if (result.isValid()) {
         for (Concept member : translation.getConcepts()) {
           result.merge(validationService.validateConcept(member,
-              translationService));
+              null, translationService));
         }
       }
       return result;
@@ -543,6 +552,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/translation/preview")
@@ -594,11 +604,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/translation/finish")
   @ApiOperation(value = "Finish translation release", notes = "Finishes the release process by removing the staging release for translation.", response = ValidationResultJpa.class)
-  public void finishTranslationRelease(
+  public Translation finishTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -633,6 +644,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
+      return algo.getPublishedTranslation();
     } catch (Exception e) {
       algo.rollback();
       handleException(e, "trying to finish release of translation");
@@ -640,8 +652,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.close();
       securityService.close();
     }
+    return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/translation/cancel")
@@ -688,11 +702,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/refset/info")
   @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForRefset(
+  public ReleaseInfo getCurrentRefsetReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -712,7 +727,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "get current refset release info", UserRole.VIEWER);
 
       ReleaseInfo info =
-          refsetService.getCurrentReleaseInfoForRefset(
+          refsetService.getCurrentRefsetReleaseInfo(
               refset.getTerminologyId(), refset.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();
@@ -727,11 +742,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/translation/info")
   @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
-  public ReleaseInfo getCurrentReleaseInfoForTranslation(
+  public ReleaseInfo getCurrentTranslationReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -751,7 +767,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           "retrieve the release history for the translation", UserRole.VIEWER);
 
       ReleaseInfo info =
-          translationService.getCurrentReleaseInfoForTranslation(
+          translationService.getCurrentTranslationReleaseInfo(
               translation.getTerminologyId(), translation.getProject().getId());
       if (info != null) {
         info.getArtifacts().size();
@@ -767,6 +783,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/release/resume")
@@ -809,6 +826,48 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/remove/{releaseInfoId}")
+  @ApiOperation(value = "Remove release info", notes = "Removes the release info with the specified id")
+  public void removeReleaseInfo(
+    @ApiParam(value = "Release Info id, e.g. 3", required = true) @PathParam("releaseInfoId") Long releaseInfoId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Release): /remove/" + releaseInfoId);
+
+    ReleaseService releaseService = new ReleaseServiceJpa();
+    try {
+      ReleaseInfo releaseInfo = releaseService.getReleaseInfo(releaseInfoId);
+
+      if (releaseInfo == null) {
+        throw new Exception("ReleaseInfo does not exist");
+      }
+
+      Project project = null;
+      if (releaseInfo.getRefset() != null) {
+        project = releaseInfo.getRefset().getProject();
+      } else {
+        project = releaseInfo.getTranslation().getProject();
+
+      }
+      authorizeProject(releaseService, project.getId(), securityService,
+          authToken, "remove release artifact", UserRole.AUTHOR);
+
+      // remove release
+      releaseService.removeReleaseInfo(releaseInfoId);
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove a release info");
+    } finally {
+      releaseService.close();
+      securityService.close();
+    }
+
+  }
+  
   @Override
   @DELETE
   @Path("/remove/artifact/{artifactId}")
@@ -850,6 +909,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @GET
   @Override
   @Path("/import/artifact")
@@ -904,6 +964,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @GET
   @Produces("application/octet-stream")

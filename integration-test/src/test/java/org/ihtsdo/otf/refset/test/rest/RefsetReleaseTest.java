@@ -190,7 +190,7 @@ public class RefsetReleaseTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -397,6 +397,7 @@ public class RefsetReleaseTest {
     String id, Refset refset) {
     ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
     member.setActive(true);
+    member.setConceptActive(true);
     member.setConceptId(id);
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
