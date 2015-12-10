@@ -113,10 +113,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean forTranslation;
 
-  /**  The in publication process. */
+  /** The in publication process. */
   @Column(nullable = false)
   private boolean inPublicationProcess;
-  
+
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
@@ -401,7 +401,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setForTranslation(boolean forTranslation) {
     this.forTranslation = forTranslation;
   }
-  
+
   /* see superclass */
   @Override
   public boolean isInPublicationProcess() {
@@ -412,7 +412,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setInPublicationProcess(boolean inPublicationProcess) {
     this.inPublicationProcess = inPublicationProcess;
-  }  
+  }
 
   /* see superclass */
   @Override
@@ -601,9 +601,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
         prime * result + ((externalUrl == null) ? 0 : externalUrl.hashCode());
-    result =
-        prime * result
-            + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
     result = prime * result + (forTranslation ? 1231 : 1237);
     result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
@@ -611,11 +608,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
     result = prime * result + ((type == null) ? 0 : type.hashCode());
-    result =
-        prime
-            * result
-            + ((enabledFeedbackEvents == null) ? 0 : enabledFeedbackEvents
-                .hashCode());
+
     return result;
   }
 
@@ -648,11 +641,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (inPublicationProcess != other.inPublicationProcess)
       return false;
-    if (feedbackEmail == null) {
-      if (other.feedbackEmail != null)
-        return false;
-    } else if (!feedbackEmail.equals(other.feedbackEmail))
-      return false;
     if (isPublic != other.isPublic)
       return false;
     if (name == null) {
@@ -670,11 +658,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!project.equals(other.project))
       return false;
-    if (enabledFeedbackEvents == null) {
-      if (other.enabledFeedbackEvents != null)
-        return false;
-    } else if (!enabledFeedbackEvents.equals(other.enabledFeedbackEvents))
-      return false;
+
     if (type != other.type)
       return false;
     return true;
@@ -687,9 +671,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
         + type + ", definition=" + definition + ", externalUrl=" + externalUrl
         + ", forTranslation=" + forTranslation + ", workflowStatus="
-        + workflowStatus + ", workflowPath=" + workflowPath + ", namespace=" + namespace
-        + ", refsetDescriptorUuid=" + refsetDescriptorUuid + ", project="
-        + project + ", enabledFeedbackEvents=" + enabledFeedbackEvents + ", inPublicationProcess="
+        + workflowStatus + ", workflowPath=" + workflowPath + ", namespace="
+        + namespace + ", refsetDescriptorUuid=" + refsetDescriptorUuid
+        + ", project=" + project + ", enabledFeedbackEvents="
+        + enabledFeedbackEvents + ", inPublicationProcess="
         + inPublicationProcess + "]";
   }
 

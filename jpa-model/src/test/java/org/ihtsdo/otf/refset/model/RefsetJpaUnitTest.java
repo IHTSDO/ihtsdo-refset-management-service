@@ -133,8 +133,6 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("project");
     tester.include("type");
-    tester.include("feedbackEmail");
-    tester.include("enabledFeedbackEvents");
     tester.include("inPublicationProcess");
 
     // Set up objects

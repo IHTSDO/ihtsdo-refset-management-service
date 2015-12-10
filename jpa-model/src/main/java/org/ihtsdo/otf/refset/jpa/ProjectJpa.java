@@ -105,6 +105,10 @@ public class ProjectJpa implements Project {
   @Column(nullable = false)
   private String version;
 
+  /** The feedback email. */
+  @Column(nullable = true)
+  private String feedbackEmail;
+
   /** The role map. */
   @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
   @MapKeyClass(value = UserJpa.class)
@@ -143,6 +147,7 @@ public class ProjectJpa implements Project {
     description = project.getDescription();
     terminology = project.getTerminology();
     version = project.getVersion();
+    feedbackEmail = project.getFeedbackEmail();
     userRoleMap = new HashMap<>(project.getUserRoleMap());
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
@@ -231,6 +236,18 @@ public class ProjectJpa implements Project {
   @Override
   public void setVersion(String version) {
     this.version = version;
+  }
+
+  /* see superclass */
+  @Override
+  public String getFeedbackEmail() {
+    return feedbackEmail;
+  }
+
+  /* see superclass */
+  @Override
+  public void setFeedbackEmail(String feedbackEmail) {
+    this.feedbackEmail = feedbackEmail;
   }
 
   /* see superclass */

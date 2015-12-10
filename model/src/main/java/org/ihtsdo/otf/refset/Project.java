@@ -96,4 +96,19 @@ public interface Project extends Searchable {
    * @param moduleId the module id
    */
   public void setModuleId(String moduleId);
+
+  /**
+   * Returns the feedback emails.
+   *
+   * @return the feedback emails
+   */
+  public String getFeedbackEmail();
+
+  /**
+   * Sets the feedback email.
+   *
+   * @param feedbackEmail the feedback email
+   */
+  public void setFeedbackEmail(String feedbackEmail);
+
 }

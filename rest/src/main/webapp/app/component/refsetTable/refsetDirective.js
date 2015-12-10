@@ -1108,7 +1108,7 @@ tsApp
                   moduleId : $scope.project.moduleId,
                   organization : $scope.project.organization,
                   terminology : $scope.project.terminology,
-                  version : $scope.project.version,
+                  feedbackEmail : $scope.project.feedbackEmail,
                   type : metadata.refsetTypes[0],
                 };
 
