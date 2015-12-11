@@ -42,7 +42,7 @@ import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
-import org.ihtsdo.otf.refset.jpa.helpers.SearchableMapIdBridge;
+import org.ihtsdo.otf.refset.jpa.helpers.MapIdBridge;
 
 /**
  * JPA enabled implementation of {@link User}.
@@ -212,7 +212,7 @@ public class UserJpa implements User {
   @XmlJavaTypeAdapter(ProjectRoleMapAdapter.class)
   @Fields({
       @Field(bridge = @FieldBridge(impl = ProjectRoleBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = SearchableMapIdBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
+      @Field(name = "projectAnyRole", bridge = @FieldBridge(impl = MapIdBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   })
   @Override
   public Map<Project, UserRole> getProjectRoleMap() {

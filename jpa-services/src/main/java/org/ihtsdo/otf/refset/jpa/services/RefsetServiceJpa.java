@@ -29,8 +29,10 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.helpers.SearchResultList;
+import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
@@ -203,8 +205,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void removeRefset(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - remove refset " + id);
 
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    Refset refset = getRefset(id);
     if (cascade) {
-      Refset refset = getRefset(id);
       // fail if there are translations
       if (refset.getTranslations().size() > 0) {
         throw new Exception(
@@ -215,8 +224,19 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
 
+    // Remove notes
+    for (Note note : refset.getNotes()) {
+      removeNote(note.getId(), RefsetNoteJpa.class);
+    }
+
     // Remove the component
-    Refset refset = removeHasLastModified(id, RefsetJpa.class);
+    refset = removeHasLastModified(id, RefsetJpa.class);
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
 
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
@@ -420,8 +440,29 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void removeMember(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - remove refset member " + id);
+
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    // Remove notes
+    ConceptRefsetMember member = getMember(id);
+    for (Note note : member.getNotes()) {
+      removeNote(note.getId(), ConceptRefsetMemberNoteJpa.class);
+    }
+
     // Remove the component
     removeHasLastModified(id, ConceptRefsetMemberJpa.class);
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
+
     // Do not inform listeners
   }
 

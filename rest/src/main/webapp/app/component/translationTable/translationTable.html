@@ -145,7 +145,7 @@
             <td>
               <div ng-show="selected.translation.notes.length > 0"
                 class="truncate">
-                {{selected.translation.notes[selected.translation.notes.length-1].value}}
+                <span ng-bind-html="getLatestNote(selected.translation)"></span>
                 <span ng-show="selected.translation.notes.length > 1">
                   <br />{{selected.translation.notes.length-1}} more...
                 </span>
@@ -292,7 +292,7 @@
         <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
             ng-show="projects.role != 'ADMIN' && selected.translation.available.totalCount > 0"
             ng-click="openBatchAssignConceptModal(selected.translation, user.userName); $event.stopPropagation()"
-            title="Assign batch" class="noul material-icons md-18">assignment</i></th>
+            title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
       </thead>
       <tbody>
         <tr ng-repeat="concept in selected.translation.available">
@@ -518,7 +518,7 @@
               <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(concept.effectiveTime)}}</td>
               <td>
                 <!-- Assign (for error fixing) -->
-                <i ng-show="value != 'PUBLISHED' && value != 'PREVIEW' && projects.role != 'ADMIN'"
+                <i ng-show="value == 'EDITING' && projects.role != 'ADMIN'"
                   ng-click="openAssignConceptModal(selected.translation, concept, user.userName); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
 

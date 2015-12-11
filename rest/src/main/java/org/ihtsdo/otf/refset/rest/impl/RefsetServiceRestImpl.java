@@ -1394,7 +1394,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refsetCopy;
 
     } catch (Exception e) {
-      refsetService.rollback();
       handleException(e, "trying to begin redefinition of refset");
     } finally {
       refsetService.close();

@@ -1,0 +1,156 @@
+<div class="modal-header">
+  <h4>Edit Concept</h4>
+
+</div>
+
+<div class="modal-body">
+
+  <!-- R1 -->
+  <div class="row">
+
+    <!-- Warnings -->
+    <div class="alert alert-danger alert-warning" ng-repeat="warning in warnings">
+      {{warning}}
+    </div>
+
+    <!-- Errors -->
+    <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+      {{error}}
+      <div style="cursor: pointer; display: inline; float: right; width: 3%;">
+        <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+      </div>
+    </div>
+    
+    <!-- R1C1 -->
+    <div class="col-md-5 col-xs-12">
+      <!-- Concept display -->
+      <div ng-show="data.concept" concept-info data="data"></div>
+      <!-- End R1C1 -->
+    </div>
+
+    <!-- R1C2 -->
+    <div class="col-md-7 col-xs-12">
+
+      <!-- Descriptions -->
+      <h5>Translation Descriptions</h5>
+      <div style="min-height: 200px;">
+        <!-- Existing descriptions -->
+
+        <!-- paging/sorting parameters -->
+        <span style="display: block;">
+          <uib-pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="conceptTranslated.descriptions.length > pageSize || paging['descriptions'].filter"
+            total-items="conceptTranslated.descriptions.length"
+            ng-model="paging['descriptions'].page"
+            ng-change="getPagedDescriptions()"></uib-pagination>
+
+          <input class="input-filter" placeholder="Enter filter text"
+            ng-show="conceptTranslated.descriptions.length > pageSize || paging['descriptions'].filter"
+            type="text" ng-model="paging['descriptions'].filter"
+            ng-model-options="{ debounce: 300 }"
+            ng-change="getPagedDescriptions()">
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="paging['descriptions'].filter"
+            ng-click="paging['descriptions'].filter = ''; getPagedDescriptions()"
+            title="Click to clear filter text">Clear</button>
+
+          <div style="float: right;">
+            <i ng-click="newDescription()" title="Add description"
+              class="noul material-icons md-18">add</i>
+          </div>
+        </span>
+
+
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Type/Case</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="description in pagedDescriptions">
+              <td>
+                <textarea title="Description term" cols="40" rows="3"
+                  ng-model="description.name"></textarea>
+              </td>
+              <td>
+                <select ng-model="description.type"
+                  ng-change="applyDescriptionType(description, description.type)"
+                  ng-options="type.name for type in translation.descriptionTypes | orderBy:'type.name'">
+                </select> <br /> <select style="margin-top: 5px;"
+                  ng-model="description.caseSignificanceId">
+                  <option
+                    ng-repeat="item in caseSensitiveTypes | orderBy:'item.key'"
+                    value="{{item.key}}">{{item.value}}</option>
+                </select>
+              </td>
+              <td>
+                <i ng-click="removeDescription($index)"
+                  title="Remove description" class="noul material-icons md-18">delete</i>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+      </div>
+
+
+      <h5>Spelling and Memory Controls</h5>
+      <div class="col-md-12 col-xs-12">
+        <table class="table">
+          <tbody>
+            <tr>
+              <td>
+                <input type="checkbox" ng-model="enableSpelling"
+                  name="Spelling Corrrection">Spelling Correction
+              </td>
+              <td>
+                <select title="Spelling dictionary entries that can be removed"
+                  style="width: 200px;" ng-model="selectedWord"
+                  ng-options="word for word in getDescriptionWords() | orderBy:'word'">
+                  <option value="_ALL_">All entries</option>
+                </select>
+                <button class="btn btn-xs btn-primary"
+                  ng-click="removeSpellingEntry(selectedWord)"
+                  uib-tooltip="Remove entry from spelling dictionary">Remove</button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>
+                <input type="checkbox" ng-model="enableMemory"
+                  name="Phrase Memory">Phrase Memory
+              </td>
+              <td>
+                <select title="Memory entries that can be removed"
+                  style="width: 200px;" ng-model="selectedEntry"
+                  ng-options="entry.name for entry in getMemoryEntries()">
+                </select>
+
+                <button class="btn btn-xs btn-primary"
+                  ng-click="removeMemoryEntry(selectedEntry)"
+                  uib-tooltip="Remove phrase from translation memory">Remove</button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+
+      </div>
+
+      <!-- end R1C2 -->
+    </div>
+    <!-- end R1 -->
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="submitConcept(conceptTranslated);"
+    title="Save work">Save</button>
+  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+</div>

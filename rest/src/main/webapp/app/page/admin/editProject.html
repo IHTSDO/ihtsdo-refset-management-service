@@ -50,15 +50,22 @@
         </td>
       </tr>
       <tr>
-        <td>
-          <b>Organization</b>
-        </td>
-        <td>
-          <input ng-model="project.organization" size="25"
-            placeholder="e.g. IHTSDO, NLM, UKTC" />
-        </td>
+        <td><b>Organization</b></td>
+        <td><input ng-model="project.organization" size="40"
+          placeholder="e.g. IHTSDO, NLM, UKTC" /></td>
       </tr>
       <tr>
+        <td><b>Feedback Email</b></td>
+        <td><input ng-model="project.feedbackEmail" size="40"
+          placeholder="e.g. FreshDesk or Siebel email" /></td>
+      </tr>
+      <tr>
+        <td><b>Terminology</b></td>
+        <td><select ng-model="project.terminology"
+          ng-options="item for item in terminologies"></select></td>
+      </tr>
+      <tr ng-show="error">
+        <td>&nbsp;</td>
         <td>
           <b>Terminology</b>
         </td>
@@ -68,7 +75,6 @@
             ng-options="item for item in metadata.terminologies"></select>
         </td>
       </tr>
-      <tr><td></td><td></td></tr>
     </table>
   </div>
   <div class="row">

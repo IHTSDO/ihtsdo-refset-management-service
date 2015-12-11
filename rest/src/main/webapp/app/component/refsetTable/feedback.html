@@ -1,21 +1,95 @@
 <div class="modal-header">
   <h4>Submit Feedback</h4>
-  <h4>{{refset.terminologyId}}: {{refset.name}}</h4>
 </div>
 
 <div class="modal-body">
 
   <div>
-    <div>
-      Enter your name:<br> <input ng-model="name"><br> Enter
-      your email address:<br> <input ng-model="email">
-    </div>
-    Enter a message to be submitted to the refset authors:<br>
-    <!--  tinymce text area -->
-    <form method="post" style="padding: 2px;">
-      <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-        style="width: 500px; height: 100px" ng-model="feedbackInput"></textarea>
-    </form>
+    <h4>{{refset.name}}</h4>
+    <table class="table">
+      <tbody>
+        <tr>
+          <td>
+            <b>Description</b>
+          </td>
+          <td>{{refset.description}}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Refset Id</b>
+          </td>
+          <td>{{refset.terminologyId}}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Module Id</b>
+          </td>
+          <td>
+            {{refset.moduleId}}
+            <span flag-icon obj="refset"></span>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>Organization</b>
+          </td>
+          <td>{{refset.organization}}</td>
+        </tr>
+        <tr ng-show="refset.effectiveTime">
+          <td>
+            <b>Effective Time</b>
+          </td>
+          <td>{{toShortDate(refset.effectiveTime)}}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Terminology</b>
+          </td>
+          <td>{{refset.terminology}} {{refset.version}}</td>
+        </tr>
+        <tr ng-show="refset.type == 'INTENSIONAL'">
+          <td>
+            <b>Definition</b>
+          </td>
+          <td>{{refset.definition}}</td>
+        </tr>
+        <tr ng-show="refset.type == 'EXTERNAL'">
+          <td>
+            <b>External Url</b>
+          </td>
+          <td>{{refset.externalUrl}}</td>
+        </tr>
+        <tr>
+          <td>
+            <b>Enter name:</b>
+          </td>
+          <td>
+            <input ng-model="name" size="40">
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <b>Enter email:</b>
+          </td>
+          <td>
+            <input ng-model="email" size="40">
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">Enter your message:</td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <!--  tinymce text area -->
+            <form method="post">
+              <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
+                cols="60" rows="10" ng-model="feedbackInput"></textarea>
+            </form>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
   </div>
 </div>
 

@@ -17,6 +17,7 @@ import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
@@ -35,6 +36,7 @@ import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
@@ -220,10 +222,17 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public void removeTranslation(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove translation " + id);
-    // Remove the component
 
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    // Remove the component
+    Translation translation = getTranslation(id);
     if (cascade) {
-      Translation translation = getTranslation(id);
 
       // Remove concepts/ descriptions/language refset members
       for (Concept c : translation.getConcepts()) {
@@ -250,9 +259,20 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       removePhraseMemory(translation.getPhraseMemory());
 
       // Remove description types - CASCADE
-
     }
-    Translation translation = removeHasLastModified(id, TranslationJpa.class);
+
+    // Remove notes
+    for (Note note : translation.getNotes()) {
+      removeNote(note.getId(), TranslationNoteJpa.class);
+    }
+
+    translation = removeHasLastModified(id, TranslationJpa.class);
+
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
 
     if (listenersEnabled) {
       for (WorkflowListener listener : workflowListeners) {
@@ -510,8 +530,29 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public void removeConcept(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove concept " + id);
+
+    // Manage transaction
+    boolean origTpo = getTransactionPerOperation();
+    if (origTpo) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    // Remove notes
+    Translation translation = getTranslation(id);
+    for (Note note : translation.getNotes()) {
+      removeNote(note.getId(), TranslationNoteJpa.class);
+    }
+
     // Remove the component
     removeHasLastModified(id, ConceptJpa.class);
+    // Manage transaction
+    if (origTpo) {
+      commit();
+      setTransactionPerOperation(origTpo);
+    }
+
+    // no workflow listener
   }
 
   @Override

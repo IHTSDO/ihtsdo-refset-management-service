@@ -925,6 +925,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call PUT (concept): /concept/add " + concept);
 
     TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
       // Load translation
       Translation translation = concept.getTranslation();
@@ -934,9 +936,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName = authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "add translation concept",
-          UserRole.AUTHOR);
+      String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add translation concept", UserRole.AUTHOR);
 
       // Check to see if the concept already exists
       for (Concept c : translation.getConcepts()) {
@@ -966,7 +969,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
       }
 
-      return translationService.getConcept(newConcept.getId());
+      newConcept = translationService.getConcept(newConcept.getId());
+      translationService.commit();
+      return newConcept;
     } catch (Exception e) {
       handleException(e, "trying to add a translation concept");
       return null;
@@ -991,22 +996,71 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     // Create service and configure transaction scope
     TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
-      Concept concept2 = translationService.getConcept(concept.getId());
-      authorizeProject(translationService, concept2.getTranslation()
-          .getProject().getId(), securityService, authToken, "update concept",
-          UserRole.AUTHOR);
+      Concept oldConcept = translationService.getConcept(concept.getId());
+      String userName =
+          authorizeProject(translationService, oldConcept.getTranslation()
+              .getProject().getId(), securityService, authToken,
+              "update concept", UserRole.AUTHOR);
 
-      // TODO:
-      
-      // Sync descriptions (add new ones, remove deleted ones (and language refset members), update changed ones)
-      // Sync language re
-      
-      
+      // Add descriptions/languages that haven't been added yet.
+      for (Description desc : concept.getDescriptions()) {
+        // new
+        if (desc.getId() == null) {
+          desc.setConcept(concept);
+          desc.setLastModifiedBy(userName);
+          translationService.addDescription(desc);
+          for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
+            member.setDescriptionId(desc.getTerminologyId());
+            member.setLastModifiedBy(userName);
+            translationService.addLanguageRefsetMember(member);
+          }
+        }
+      }
+
+      // Loop through both sets of descriptions
+      for (Description oldDesc : oldConcept.getDescriptions()) {
+        boolean found = false;
+        for (Description desc : concept.getDescriptions()) {
+          // Look for a match
+          if (oldDesc.getId() == desc.getId()) {
+
+            // add or update languages for matching descs
+            for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
+              member.setLastModifiedBy(userName);
+              if (member.getId() == null) {
+                translationService.addLanguageRefsetMember(member);
+              } else {
+                translationService.updateLanguageRefsetMember(member);
+              }
+            }
+            // update matching desc
+            desc.setLastModifiedBy(userName);
+            translationService.updateDescription(desc);
+            // found a match, move to the next one
+            found = true;
+            break;
+          }
+        }
+        // If no match was found, remove the old desc and its languages
+        if (!found) {
+          // remove languages
+          for (LanguageRefsetMember member : oldDesc.getLanguageRefsetMembers()) {
+            translationService.removeLanguageRefsetMember(member.getId());
+          }
+          // remove desc
+          translationService.removeDescription(oldDesc.getId());
+        }
+      }
+
       // Update concept
       concept.setLastModifiedBy(securityService.getUsernameForToken(authToken));
       translationService.updateConcept(concept);
 
+      // finish transaction
+      translationService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a translation");
     } finally {
@@ -1030,6 +1084,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + conceptId);
 
     TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
 
       // Get the Concept
@@ -1060,6 +1116,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // probably not necessary
       // translationService.updateTranslation(translation);
 
+      translationService.commit();
     } catch (Exception e) {
       handleException(e, "trying to remove a translation concept");
     } finally {

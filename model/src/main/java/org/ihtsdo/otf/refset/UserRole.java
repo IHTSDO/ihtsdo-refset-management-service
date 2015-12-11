@@ -21,6 +21,9 @@ public enum UserRole {
   /**  The user. */
   USER("User"),
 
+  /**  The user. */
+  USER("User"),
+  
   /** The administrator. */
   ADMIN("Admin");
 

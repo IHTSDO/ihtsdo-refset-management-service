@@ -36,6 +36,7 @@ public abstract class AbstractResultList<T> implements ResultList<T> {
   }
 
   /* see superclass */
+  @XmlTransient
   @Override
   public int getCount() {
     return objects.size();

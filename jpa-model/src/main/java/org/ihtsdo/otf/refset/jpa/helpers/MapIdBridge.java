@@ -6,12 +6,12 @@ package org.ihtsdo.otf.refset.jpa.helpers;
 import java.util.Map;
 
 import org.hibernate.search.bridge.StringBridge;
-import org.ihtsdo.otf.refset.helpers.Searchable;
+import org.ihtsdo.otf.refset.helpers.HasId;
 
 /**
- * Hibernate search field bridge for a map of {@link Searchable} -> anything.
+ * Hibernate search field bridge for a map of {@link HasId} -> anything.
  */
-public class SearchableMapIdBridge implements StringBridge {
+public class MapIdBridge implements StringBridge {
 
   /* see superclass */
   @SuppressWarnings("unchecked")
@@ -20,8 +20,8 @@ public class SearchableMapIdBridge implements StringBridge {
     if (value != null) {
       StringBuffer buf = new StringBuffer();
 
-      Map<Searchable, ?> map = (Map<Searchable, ?>) value;
-      for (Searchable item : map.keySet()) {
+      Map<HasId, ?> map = (Map<HasId, ?>) value;
+      for (HasId item : map.keySet()) {
         buf.append(item.getId()).append(" ");
       }
       return buf.toString();

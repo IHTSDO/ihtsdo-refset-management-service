@@ -4,27 +4,25 @@
 package org.ihtsdo.otf.refset.helpers;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 /**
- * Container for key value-list pairs.
+ * Container for key value-list pairs. Uses concrete collections classes to
+ * support JAXB.
  */
 @XmlRootElement(name = "keyValuesMap")
 public class KeyValuesMap {
 
   /** The map. */
-  private Map<String, Values> map;
+  private HashMap<String, StringList> map;
 
   /**
    * Instantiates an empty {@link KeyValuesMap}.
    */
   public KeyValuesMap() {
-    map = new HashMap<>();
+    //
   }
 
   /**
@@ -33,26 +31,7 @@ public class KeyValuesMap {
    * @param map the map
    */
   public KeyValuesMap(KeyValuesMap map) {
-    this.map = map.getMap();
-  }
-
-  /**
-   * Gets the map.
-   *
-   * @return the map
-   */
-  @XmlElement(name = "map")
-  public Map<String, Values> getMap() {
-    return map;
-  }
-
-  /**
-   * Sets the map.
-   *
-   * @param map the map
-   */
-  public void setMap(Map<String, Values> map) {
-    this.map = map;
+    this.map = new HashMap<String, StringList>(map.getMap());
   }
 
   /**
@@ -61,15 +40,39 @@ public class KeyValuesMap {
    * @param key the key
    * @param value the value
    */
-  public void put(String key, String value) {
-    if (!map.containsKey(key)) {
-      Values values = new Values();
-      map.put(key, values);
+  public void add(String key, String value) {
+    if (map == null) {
+      map = new HashMap<>();
     }
-    map.get(key).getSet().add(value);
+    if (!map.containsKey(key)) {
+      StringList list = new StringList();
+      map.put(key, list);
+    }
+    map.get(key).getObjects().add(value);
   }
 
-  /* see superclass */
+  /**
+   * Returns the map.
+   *
+   * @return the map
+   */
+  @XmlElement
+  public HashMap<String, StringList> getMap() {
+    if (map == null) {
+      map = new HashMap<>();
+    }
+    return map;
+  }
+
+  /**
+   * Sets the map.
+   *
+   * @param map the map
+   */
+  public void setMap(HashMap<String, StringList> map) {
+    this.map = map;
+  }
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -78,7 +81,6 @@ public class KeyValuesMap {
     return result;
   }
 
-  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -94,73 +96,6 @@ public class KeyValuesMap {
     } else if (!map.equals(other.map))
       return false;
     return true;
-  }
-
-  /* see superclass */
-  @Override
-  public String toString() {
-    return map.toString();
-  }
-
-  /**
-   * The values class, for JAXB serialization.
-   */
-  @XmlRootElement(name = "values")
-  public static class Values {
-
-    /** The set. */
-    protected Set<String> set;
-
-    /**
-     * Instantiates an empty {@link Values}.
-     */
-    public Values() {
-      set = new HashSet<String>();
-    }
-
-    /**
-     * Returns the sets the.
-     *
-     * @return the sets the
-     */
-    @XmlElement(name = "item")
-    public Set<String> getSet() {
-      return set;
-    }
-
-    /* see superclass */
-    @Override
-    public String toString() {
-      return set.toString();
-    }
-
-    /* see superclass */
-    @Override
-    public int hashCode() {
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((set == null) ? 0 : set.hashCode());
-      return result;
-    }
-
-    /* see superclass */
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj)
-        return true;
-      if (obj == null)
-        return false;
-      if (getClass() != obj.getClass())
-        return false;
-      Values other = (Values) obj;
-      if (set == null) {
-        if (other.set != null)
-          return false;
-      } else if (!set.equals(other.set))
-        return false;
-      return true;
-    }
-
   }
 
 }

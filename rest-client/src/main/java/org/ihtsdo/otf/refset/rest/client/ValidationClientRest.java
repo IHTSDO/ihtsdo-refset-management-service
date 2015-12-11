@@ -52,9 +52,11 @@ public class ValidationClientRest extends RootClientRest implements
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate concept " + concept);
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/concept");
+        client.target(config.getProperty("base.url")
+            + "/validate/concept?projectId" + projectId);
 
     String memberString =
         ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
@@ -84,10 +86,13 @@ public class ValidationClientRest extends RootClientRest implements
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate refset " + refset);
+
+    validateNotEmpty(projectId, "projectId");
+
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/refset/"
-            + projectId);
+        client.target(config.getProperty("base.url")
+            + "/validate/refset?projectId=" + projectId);
 
     String refsetString =
         ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
@@ -118,10 +123,11 @@ public class ValidationClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate translation " + translation);
 
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/translation/"
-            + projectId);
+        client.target(config.getProperty("base.url")
+            + "/validate/translation?projectId=" + projectId + projectId);
 
     String translationString =
         ConfigUtility.getStringForGraph(translation == null
@@ -153,9 +159,11 @@ public class ValidationClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Validation Client - validate member " + member);
 
+    validateNotEmpty(projectId, "projectId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/validate/member");
+        client.target(config.getProperty("base.url")
+            + "/validate/member?projectId=" + projectId);
 
     String memberString =
         ConfigUtility.getStringForGraph(member == null
@@ -251,8 +259,26 @@ public class ValidationClientRest extends RootClientRest implements
   @Override
   public KeyValuePairList getValidationChecks(String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Validation Client - get validation checks");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/validate/checks");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+        KeyValuePairList.class);
   }
 
 }
