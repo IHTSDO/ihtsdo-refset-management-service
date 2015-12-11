@@ -3,12 +3,11 @@
  */
 package org.ihtsdo.otf.refset.helpers;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
-import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -52,17 +51,16 @@ public class HelperUnit011Test {
 
     // Test equals
     KeyValuesMap map1 = new KeyValuesMap();
-    map1.put("1", "a");
-    assertTrue(map1.getMap().get("1").getSet().size() == 1);
-    assertTrue(map1.getMap().get("1").getSet().contains("a"));
-    map1.put("1", "b");
-    assertTrue(map1.getMap().get("1").getSet().size() == 2);
-    assertTrue(map1.getMap().get("1").getSet().contains("a"));
-    assertTrue(map1.getMap().get("1").getSet().contains("b"));
-
+    map1.add("1", "a");
+    assertTrue(map1.getMap().get("1").getObjects().size() == 1);
+    assertTrue(map1.getMap().get("1").contains("a"));
+    map1.add("1", "b");
+    assertTrue(map1.getMap().get("1").getObjects().size() == 2);
+    assertTrue(map1.getMap().get("1").contains("a"));
+    assertTrue(map1.getMap().get("1").contains("b"));
     KeyValuesMap map2 = new KeyValuesMap();
-    map2.put("1", "a");
-    map2.put("1", "b");
+    map2.add("1", "a");
+    map2.add("1", "b");
     assertTrue(map1.equals(map2));
     assertTrue(map1.hashCode() == map2.hashCode());
     assertTrue(map1.toString().equals(map2.toString()));
@@ -72,10 +70,14 @@ public class HelperUnit011Test {
     assertTrue(map1.hashCode() == map3.hashCode());
     assertTrue(map1.toString().equals(map3.toString()));
 
-    // XmlSerializationTester tester4 = new XmlSerializationTester(map1);
-    // assertTrue(tester4.testXmlSerialization());
+    // Test serialization
+    System.out.println(ConfigUtility.getStringForGraph(map1));
+    assertEquals(map1, ConfigUtility.getGraphForString(
+        ConfigUtility.getStringForGraph(map1), KeyValuesMap.class));
+    System.out.println(ConfigUtility.getJsonForGraph(map1));
+    assertEquals(map1, ConfigUtility.getGraphForJson(
+        ConfigUtility.getJsonForGraph(map1), KeyValuesMap.class));
 
-    map1.toString();
   }
 
   /**
@@ -105,21 +107,21 @@ public class HelperUnit011Test {
   @Test
   public void testHelperEdgeCases011() throws Exception {
     KeyValuesMap map1 = new KeyValuesMap();
-    map1.put("1", null);
-    map1.put("1", null);
+    map1.add("1", (String) null);
+    map1.add("1", (String) null);
     KeyValuesMap map2 = new KeyValuesMap();
-    map2.put("1", null);
-    map2.put("1", null);
+    map2.add("1", (String) null);
+    map2.add("1", (String) null);
     assertTrue(map1.equals(map2));
     assertTrue(map1.hashCode() == map2.hashCode());
     assertTrue(map1.toString().equals(map2.toString()));
 
     map1 = new KeyValuesMap();
-    map1.put(null, "1");
-    map1.put(null, "2");
+    map1.add(null, "1");
+    map1.add(null, "2");
     map2 = new KeyValuesMap();
-    map2.put(null, "1");
-    map2.put(null, "2");
+    map2.add(null, "1");
+    map2.add(null, "2");
     assertTrue(map1.equals(map2));
     assertTrue(map1.hashCode() == map2.hashCode());
     assertTrue(map1.toString().equals(map2.toString()));

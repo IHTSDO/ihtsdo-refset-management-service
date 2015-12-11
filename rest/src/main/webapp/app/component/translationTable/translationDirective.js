@@ -1089,6 +1089,7 @@ tsApp
                 }
                 $scope.pagedDescriptions;
                 $scope.errors = [];
+                $scope.warnings = [];
                 $scope.data = {
                   concept : null
                 }
@@ -1112,6 +1113,11 @@ tsApp
                 $scope.selectedEntry = null;
 
                 $scope.project = project;
+
+                //Clear errors
+                $scope.clearError = function() {
+                  $scope.errors = [];
+                }
 
                 $scope.getDescriptionWords = function() {
                   // look through concdeptTranslated.descriptions and parse out words

@@ -8,6 +8,11 @@
   <!-- R1 -->
   <div class="row">
 
+    <!-- Warnings -->
+    <div class="alert alert-danger alert-warning" ng-repeat="warning in warnings">
+      {{warning}}
+    </div>
+
     <!-- Errors -->
     <div class="alert alert-danger alert-error" ng-repeat="error in errors">
       {{error}}
@@ -15,7 +20,7 @@
         <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
       </div>
     </div>
-
+    
     <!-- R1C1 -->
     <div class="col-md-5 col-xs-12">
       <!-- Concept display -->
