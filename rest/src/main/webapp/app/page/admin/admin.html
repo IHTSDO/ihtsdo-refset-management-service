@@ -3,9 +3,9 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-    <h4 ng-show="user.applicationRole == 'ADMIN'">Application
+    <h4 ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">Application
       Administration</h4>
-    <uib-accordion ng-show="user.applicationRole == 'ADMIN'"> <uib-accordion-group
+    <uib-accordion ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'"> <uib-accordion-group
       heading="Application Administration" is-open="false">
     <!-- Projects --> <uib-accordion-heading>
     <h5>
