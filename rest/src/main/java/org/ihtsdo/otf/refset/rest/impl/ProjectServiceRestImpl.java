@@ -387,9 +387,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      // TODO: are we okay with this at the user level?
       authorizeApp(securityService, authToken, "remove project", UserRole.USER);
 
+      // unassign users from project before deleting it
+      Project project = projectService.getProject(projectId);
+      for (User user : project.getUserRoleMap().keySet()) {
+        unassignUserFromProject(projectId, user.getUserName(), authToken);
+      }
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
 

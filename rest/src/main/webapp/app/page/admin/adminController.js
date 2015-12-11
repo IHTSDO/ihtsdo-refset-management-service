@@ -40,8 +40,7 @@ tsApp
         
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
-          terminologies : [],
-          versions : {}
+          terminologies : []
         }
 
         // Paging variables
@@ -202,29 +201,14 @@ tsApp
           })
         };
 
-        // Get $scope.metadata.terminologies, also loads
-        // versions for the first edition in the list
+        // Get $scope.metadata.terminologies
         $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
             $scope.metadata.terminologies = data.strings;
-            // Look up all versions
-            for (var i = 0; i < data.strings.length; i++) {
-              $scope.getTerminologyVersions(data.strings[i]);
-            }
           })
 
         };
 
-        // Get $scope.metadata.versions
-        $scope.getTerminologyVersions = function(terminology) {
-          projectService.getTerminologyVersions(terminology).then(function(data) {
-            $scope.metadata.versions[terminology] = [];
-            for (var i = 0; i < data.translations.length; i++) {
-              $scope.metadata.versions[terminology].push(data.translations[i].version);
-              //.replace(/-/gi, ""));
-            }
-          })
-        };
 
         // Sets the selected project
         $scope.setProject = function(project) {
@@ -250,9 +234,9 @@ tsApp
           }
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
-            window
-              .alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
-            return;
+            if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project (" + project.name + ") and unassign all of its users?")) {
+              return;
+            }
           }
           projectService.removeProject(project).then(function() {
             // Refresh projects
@@ -407,16 +391,12 @@ tsApp
             terminology : metadata.terminologies[0]
           };
           $scope.metadata = metadata;
-          $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
           $scope.user = user;
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
           $scope.error = null;
 
-          $scope.terminologySelected = function(terminology) {
-            $scope.versions = metadata.versions[terminology].sort().reverse();
-          };
           
           for (var i = 0; i < $scope.validationChecks.length; i++) {      
             $scope.availableChecks.push($scope.validationChecks[i].value);
@@ -437,9 +417,8 @@ tsApp
 
           $scope.submitProject = function(project) {
 
-            if (!project || !project.name || !project.description || !project.terminology ||
-              !project.version) {
-              window.alert("The name, description, terminology and version fields cannot be blank. ");
+            if (!project || !project.name || !project.description || !project.terminology) {
+              window.alert("The name, description, and terminology fields cannot be blank. ");
               return;
             }
             // Add project
@@ -507,7 +486,6 @@ tsApp
           $scope.action = 'Edit';
           $scope.project = project;
           $scope.metadata = metadata;
-          $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];

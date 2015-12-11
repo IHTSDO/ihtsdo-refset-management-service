@@ -103,7 +103,7 @@ public class ProjectJpa implements Project {
   private String terminology;
 
   /** The version. */
-  @Column(nullable = false)
+  @Column(nullable = true)
   private String version;
 
   /** The role map. */
