@@ -132,7 +132,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private SpellingDictionary spellingDictionary = null;
 
   /** The phrase memory. */
-  @OneToOne(mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
+  @OneToOne(cascade = CascadeType.ALL, mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
   private PhraseMemory phraseMemory = null;
 
   /** The notes. */

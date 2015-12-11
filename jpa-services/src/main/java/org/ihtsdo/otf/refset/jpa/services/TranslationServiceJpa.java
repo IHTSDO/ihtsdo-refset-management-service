@@ -245,18 +245,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         removeConcept(c.getId());
       }
 
-      // Remove spelling dictionary
-      removeSpellingDictionary(translation.getSpellingDictionary());
-
-      // remove memory entry
-      if (translation.getPhraseMemory() != null) {
-        for (MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-          removeMemoryEntry(entry);
-        }
+      // Remove notes
+      for (Note note : translation.getNotes()) {
+        removeNote(note.getId(), TranslationNoteJpa.class);
       }
 
-      // remove phrase memory
-      removePhraseMemory(translation.getPhraseMemory());
+     // Remove spelling dictionary
+      removeSpellingDictionary(translation.getSpellingDictionary());
 
       // Remove description types - CASCADE
     }
@@ -343,7 +338,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void handleLazyInit(Translation translation) {
     // handle all lazy initializations
-    translation.getDescriptionTypes().size();
+    if(translation.getDescriptionTypes() != null)
+      translation.getDescriptionTypes().size();
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
@@ -536,12 +532,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     if (origTpo) {
       setTransactionPerOperation(false);
       beginTransaction();
-    }
-
-    // Remove notes
-    Translation translation = getTranslation(id);
-    for (Note note : translation.getNotes()) {
-      removeNote(note.getId(), TranslationNoteJpa.class);
     }
 
     // Remove the component
@@ -1029,4 +1019,28 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     result.setObjects(list);
     return result;
   }
+  
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<MemoryEntry> findMemoryEntryForTranslation(Long translationId,
+    String query, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Translation Service - find memory entry " + "/" + query
+            + " translationId " + translationId);
+    StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query).append(" AND ");
+    }
+    if (translationId == null) {
+      sb.append("translationId:[* TO *]");
+    } else {
+      sb.append("translationId:" + translationId);
+    }
+    int[] totalCt = new int[1];
+    List<MemoryEntry> list =
+        (List<MemoryEntry>) getQueryResults(sb.toString(), MemoryEntryJpa.class,
+            MemoryEntryJpa.class, pfs, totalCt);
+    return list;
+  }
+ 
 }

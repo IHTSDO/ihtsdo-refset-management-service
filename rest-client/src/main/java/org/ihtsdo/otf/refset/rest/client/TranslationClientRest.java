@@ -675,24 +675,23 @@ public class TranslationClientRest extends RootClientRest implements
 
   @Override
   public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    MemoryEntry entry, String authToken) throws Exception {
+    String name, String translatedName, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - add new entry to the spelling dictionary " + " "
-            + translationId + " " + entry);
+            + translationId + " " + name + " " + translatedName);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/add/" + entry);
-
-    String translationString =
-        ConfigUtility.getStringForGraph(entry == null ? new MemoryEntryJpa()
-            : entry);
+            + translationId + "/phrasememory/add/name?" + "translationId="
+                + translationId 
+                + "&translatedName=" + URLEncoder.encode(translatedName, "UTF-8")
+                .replaceAll("\\+", "%20"));    
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
-            .put(Entity.xml(translationString));
+            .put(Entity.text(name));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -707,18 +706,18 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void removePhraseMemoryEntry(Long translationId, Long entryId,
+  public void removePhraseMemoryEntry(Long translationId, String name,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - remove phrase memory entry " + translationId
-            + " " + entryId);
+            + " " + name);
     validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(entryId, "entryId");
+    validateNotEmpty(name, "name");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/remove/" + entryId);
+            + translationId + "/phrasememory/remove/" + name);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
