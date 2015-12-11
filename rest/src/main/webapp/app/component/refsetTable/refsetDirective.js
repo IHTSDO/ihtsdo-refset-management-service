@@ -524,86 +524,10 @@ tsApp
                 // and filtered by query string
                 $scope.getPagedArray = function(array, paging) {
                   console.debug("getPagedArray");
-                  var newArray = new Array();
 
-                  // if array blank or not an array, return blank list
-                  if (array == null || array == undefined || !Array.isArray(array)) {
-                    return newArray;
-                  }
-
-                  newArray = array;
-
-                  // apply sort if specified
-                  if (paging.sortField) {
-                    // if ascending specified, use that value, otherwise use false
-                    newArray.sort($scope.sort_by(paging.sortField, paging.ascending))
-                  }
-
-                  // apply filter
-                  if (paging.filter) {
-                    newArray = getArrayByFilter(newArray, paging.filter);
-                  }
-
-                  // get the page indices
-                  var fromIndex = (paging.page - 1) * $scope.pageSize;
-                  var toIndex = Math.min(fromIndex + $scope.pageSize, array.length);
-
-                  // slice the array
-                  var results = newArray.slice(fromIndex, toIndex);
-
-                  // add the total count before slicing
-                  results.totalCount = newArray.length;
-
-                  return results;
+                  return utilService.getPagedArray(array, paging, $scope.pageSize);
                 }
-
-                // function for sorting an array by (string) field and direction
-                $scope.sort_by = function(field, reverse) {
-
-                  // key: function to return field value from object
-                  var key = function(x) {
-                    return x[field]
-                  };
-
-                  // convert reverse to integer (1 = ascending, -1 =
-                  // descending)
-                  reverse = !reverse ? 1 : -1;
-
-                  return function(a, b) {
-                    return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
-                  }
-                }
-
-                // Get array by filter text matching terminologyId or name
-                function getArrayByFilter(array, filter) {
-                  var newArray = [];
-
-                  for ( var object in array) {
-
-                    if (objectContainsFilterText(array[object], filter)) {
-                      newArray.push(array[object]);
-                    }
-                  }
-                  return newArray;
-                }
-
-                // Returns true if any field on object contains filter text
-                function objectContainsFilterText(object, filter) {
-
-                  if (!filter || !object)
-                    return false;
-
-                  for ( var prop in object) {
-                    var value = object[prop];
-                    // check property for string, note this will cover child elements
-                    if (value && value.toString().toLowerCase().indexOf(filter.toLowerCase()) != -1) {
-                      return true;
-                    }
-                  }
-
-                  return false;
-                }
-
+              
                 // remove note
                 $scope.removeNote = function(object, note) {
                   console.debug("remove note", object.id, note.value);
