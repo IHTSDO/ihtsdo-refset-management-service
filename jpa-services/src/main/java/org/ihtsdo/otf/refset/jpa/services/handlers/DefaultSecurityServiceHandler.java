@@ -55,6 +55,15 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
       return user;
     }
 
+    if (getUserUsersFromConfigFile().contains(userName)) {
+      user.setApplicationRole(UserRole.USER);
+      user.setUserName(userName);
+      user.setName(userName.substring(0, 1).toUpperCase()
+          + userName.substring(1));
+      user.setEmail(userName + "@example.com");
+      return user;
+    }
+    
     if (getViewerUsersFromConfigFile().contains(userName)) {
       user.setApplicationRole(UserRole.VIEWER);
       user.setUserName(userName);
@@ -125,6 +134,31 @@ public class DefaultSecurityServiceHandler implements SecurityServiceHandler {
           .getLogger(getClass())
           .warn(
               "Could not retrieve config parameter users.admin for security handler DEFAULT");
+      return userSet;
+    }
+
+    for (String user : userList.split(","))
+      userSet.add(user);
+    return userSet;
+  }
+
+  /**
+   * Returns the user users from config file.
+   *
+   * @return the user users from config file
+   */
+  private Set<String> getUserUsersFromConfigFile() {
+
+    HashSet<String> userSet = new HashSet<>();
+    String userList = properties.getProperty("users.user");
+
+    Logger.getLogger(getClass()).info(properties.keySet());
+
+    if (userList == null) {
+      Logger
+          .getLogger(getClass())
+          .warn(
+              "Could not retrieve config parameter users.user for security handler DEFAULT");
       return userSet;
     }
 

@@ -329,7 +329,7 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
-    result = prime * result + ((validationChecks == null) ? 0 : validationChecks.hashCode());
+    //TODO result = prime * result + ((validationChecks == null) ? 0 : validationChecks.hashCode());
     return result;
   }
 
@@ -385,11 +385,12 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!name.equals(other.name))
       return false;
-    if (validationChecks == null) {
+    // TODO
+    /*if (validationChecks == null) {
       if (other.validationChecks != null)
         return false;
     } else if (!validationChecks.equals(other.validationChecks))
-      return false;
+      return false;*/
     if (namespace == null) {
       if (other.namespace != null)
         return false;

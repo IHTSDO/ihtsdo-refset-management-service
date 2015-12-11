@@ -14,9 +14,12 @@ public enum UserRole {
 
   /** The author. */
   AUTHOR("Author"),
-
+  
   /** The lead. */
   REVIEWER("Reviewer"),
+  
+  /**  The user. */
+  USER("User"),
 
   /** The administrator. */
   ADMIN("Admin");
@@ -55,7 +58,10 @@ public enum UserRole {
         && (role == UserRole.VIEWER || role == UserRole.AUTHOR))
       return true;
     else if (this == UserRole.REVIEWER
-        && (role == UserRole.VIEWER || role == UserRole.AUTHOR || role == UserRole.REVIEWER))
+        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR || role == UserRole.REVIEWER))
+      return true;
+    else if (this == UserRole.USER
+        && (role == UserRole.VIEWER || role == UserRole.USER || role == UserRole.AUTHOR))
       return true;
     else if (this == UserRole.ADMIN)
       return true;

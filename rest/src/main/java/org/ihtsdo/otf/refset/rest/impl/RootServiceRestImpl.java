@@ -113,7 +113,7 @@ public class RootServiceRestImpl {
 
     // Allow application admin to do anything
     UserRole appRole = securityService.getApplicationRoleForToken(authToken);
-    if (appRole == UserRole.ADMIN) {
+    if (appRole == UserRole.USER || appRole == UserRole.ADMIN) {
       return userName;
     }
 

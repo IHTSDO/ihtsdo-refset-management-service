@@ -37,6 +37,12 @@ tsApp
         $scope.users = null;
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
+        
+        // Metadata for refsets, projects, etc.
+        $scope.metadata = {
+          terminologies : [],
+          versions : {}
+        }
 
         // Paging variables
         $scope.pageSize = 10;
@@ -81,9 +87,12 @@ tsApp
             sortField : $scope.paging["project"].sortField,
             ascending : $scope.paging["project"].ascending == null ? true
               : $scope.paging["project"].ascending,
-            queryRestriction : null
+            queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
-
+          // clear queryRestriction for application admins
+          if ($scope.user.applicationRole == 'ADMIN') {
+            pfs.queryRestriction = null;
+          }
           projectService.findProjectsAsList($scope.paging["project"].filter, pfs).then(
             function(data) {
               $scope.projects = data.projects;
@@ -148,7 +157,7 @@ tsApp
             sortField : $scope.paging["candidateUser"].sortField,
             ascending : $scope.paging["candidateUser"].ascending == null ? true
               : $scope.paging["candidateUser"].ascending,
-            queryRestriction : null
+            queryRestriction : "(applicationRole:USER OR applicationRole:ADMIN)"
           };
 
           projectService.findUnassignedUsersForProject($scope.selectedProject.id,
@@ -193,10 +202,27 @@ tsApp
           })
         };
 
-        // Get $scope.terminologies
-        $scope.getTerminologies = function() {
+        // Get $scope.metadata.terminologies, also loads
+        // versions for the first edition in the list
+        $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
-            $scope.terminologies = data.strings;
+            $scope.metadata.terminologies = data.strings;
+            // Look up all versions
+            for (var i = 0; i < data.strings.length; i++) {
+              $scope.getTerminologyVersions(data.strings[i]);
+            }
+          })
+
+        };
+
+        // Get $scope.metadata.versions
+        $scope.getTerminologyVersions = function(terminology) {
+          projectService.getTerminologyVersions(terminology).then(function(data) {
+            $scope.metadata.versions[terminology] = [];
+            for (var i = 0; i < data.translations.length; i++) {
+              $scope.metadata.versions[terminology].push(data.translations[i].version);
+              //.replace(/-/gi, ""));
+            }
           })
         };
 
@@ -222,13 +248,13 @@ tsApp
           if (!confirm("Are you sure you want to remove the project (" + project.name + ")?")) {
             return;
           }
-          if (object.userRoleMap != null && object.userRoleMap != undefined
-            && Object.keys(object.userRoleMap).length > 0) {
+          if (project.userRoleMap != null && project.userRoleMap != undefined
+            && Object.keys(project.userRoleMap).length > 0) {
             window
               .alert("You can not delete a project that has users assigned to it. Remove the assigned users before deleting the project.");
             return;
           }
-          projectService.removeProject(object).then(function() {
+          projectService.removeProject(project).then(function() {
             // Refresh projects
             $scope.getProjects();
             $scope.getCandidateProjects();
@@ -245,7 +271,7 @@ tsApp
               + "Remove this user from all projects before deleting it.");
             return;
           }
-          securityService.removeUser(object).then(function() {
+          securityService.removeUser(user).then(function() {
             // Refresh users
             $scope.getUsers();
             if ($scope.selectedProject != null) {
@@ -337,7 +363,7 @@ tsApp
         $scope.getCandidateProjects();
         $scope.getApplicationRoles();
         $scope.getProjectRoles();
-        $scope.getTerminologies();
+        $scope.getTerminologyEditions();
         $scope.getValidationChecks();
 
         //
@@ -351,41 +377,89 @@ tsApp
             templateUrl : 'app/page/admin/editProject.html',
             controller : AddProjectModalCtrl,
             resolve : {
-              terminologies : function() {
-                return $scope.terminologies;
+              metadata : function() {
+                return $scope.metadata;
+              },
+              user : function() {
+                return $scope.user;
+              },
+              validationChecks : function() {
+                return $scope.validationChecks;
               }
             }
           });
 
           modalInstance.result.then(
           // Success
-          function() {
+          function(project) {
             projectService.fireProjectChanged(project);
+            $scope.getProjects();
             $scope.getCandidateProjects();
           });
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $uibModalInstance, terminologies) {
+        var AddProjectModalCtrl = function($scope, $uibModalInstance, metadata,
+          user, validationChecks) {
 
           $scope.action = 'Add';
-          $scope.terminologies = terminologies;
           $scope.project = {
-            terminology : terminologies[0]
+            terminology : metadata.terminologies[0]
           };
+          $scope.metadata = metadata;
+          $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+          $scope.user = user;
+          $scope.validationChecks = validationChecks;
+          $scope.availableChecks = [];
+          $scope.selectedChecks = [];
           $scope.error = null;
+
+          $scope.terminologySelected = function(terminology) {
+            $scope.versions = metadata.versions[terminology].sort().reverse();
+          };
+          
+          for (var i = 0; i < $scope.validationChecks.length; i++) {      
+            $scope.availableChecks.push($scope.validationChecks[i].value);
+          }
+
+          $scope.selectValidationCheck = function(check) {
+            $scope.selectedChecks.push(check);
+            var index = $scope.availableChecks.indexOf(check);
+            $scope.availableChecks.splice(index, 1);
+          }
+
+          $scope.removeValidationCheck = function(check) {
+            $scope.availableChecks.push(check);
+            var index = $scope.selectedChecks.indexOf(check);
+            $scope.selectedChecks.splice(index, 1);
+          }
+
 
           $scope.submitProject = function(project) {
 
-            if (!project || !project.name || !project.description) {
-              window.alert("The name and description fields cannot be blank. ");
+            if (!project || !project.name || !project.description || !project.terminology ||
+              !project.version) {
+              window.alert("The name, description, terminology and version fields cannot be blank. ");
               return;
             }
             // Add project
             projectService.addProject(project).then(
             // Success
             function(data) {
-              $uibModalInstance.close(data);
+              // if not an admin, add user as a project admin
+              if ($scope.user.applicationRole != 'ADMIN') {
+                projectService.assignUserToProject(data.id, $scope.user.name, 'ADMIN').then (
+                  function(data) {                    
+                    $uibModalInstance.close(data);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.error = data;
+                    utilService.clearError();
+                  })
+              } else {
+                $uibModalInstance.close(data);
+              }
             },
             // Error
             function(data) {
@@ -411,8 +485,8 @@ tsApp
               project : function() {
                 return lproject;
               },
-              terminologies : function() {
-                return $scope.terminologies;
+              metadata : function() {
+                return $scope.metadata;
               },
               validationChecks : function() {
                 return $scope.validationChecks;
@@ -427,12 +501,13 @@ tsApp
           });
         };
 
-        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, terminologies,
+        var EditProjectModalCtrl = function($scope, $uibModalInstance, project, metadata,
           validationChecks) {
 
           $scope.action = 'Edit';
           $scope.project = project;
-          $scope.terminologies = terminologies;
+          $scope.metadata = metadata;
+          $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
@@ -579,8 +654,15 @@ tsApp
 
           $scope.action = 'Edit';
           $scope.user = user;
-          $scope.applicationRoles = applicationRoles;
+          // copy data structure so it will be fresh each time modal is opened
+          $scope.applicationRoles = JSON.parse(JSON.stringify(applicationRoles));
           $scope.error = null;
+          
+          // those without application admin roles, can't give themselves admin roles
+          if (user.applicationRole != 'ADMIN') {
+            var index = $scope.applicationRoles.indexOf('ADMIN');
+            $scope.applicationRoles.splice(index, 1);
+          }
 
           $scope.submitUser = function(user) {
 
