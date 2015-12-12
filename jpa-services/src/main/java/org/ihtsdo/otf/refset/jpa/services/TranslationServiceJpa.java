@@ -301,6 +301,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     TranslationList result = new TranslationListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (Translation translation : result.getObjects()) {
+      handleLazyInit(translation);
+    }
     return result;
   }
 
@@ -348,6 +351,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
     translation.getNotes().size();
+    translation.getPhraseMemory().getEntries().size();
+    translation.getSpellingDictionary().getEntries().size();
   }
 
   /* see superclass */

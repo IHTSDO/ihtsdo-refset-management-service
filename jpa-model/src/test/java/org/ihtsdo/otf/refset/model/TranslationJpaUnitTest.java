@@ -6,16 +6,20 @@ package org.ihtsdo.otf.refset.model;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
@@ -79,6 +83,8 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     GetterSetterTester tester = new GetterSetterTester(object);
     tester.exclude("phraseMemoryMap");
     tester.exclude("spellingDictionary");
+    tester.exclude("spellingDictionarySize");
+    tester.exclude("phraseMemorySize");
     tester.exclude("staged");
     tester.test();
   }
@@ -153,7 +159,8 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     Project p = new ProjectJpa();
     p.setId(1L);
     tester.proxy(Project.class, 1, p);
-
+    tester.proxy(SpellingDictionary.class, 1, new SpellingDictionaryJpa());
+    tester.proxy(PhraseMemory.class, 1, new PhraseMemoryJpa());
     assertTrue(tester.testXmlSerialization());
   }
 

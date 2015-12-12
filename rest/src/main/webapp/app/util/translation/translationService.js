@@ -3,9 +3,10 @@ tsApp.service('translationService', [
   '$http',
   '$q',
   '$rootScope',
+  'Upload',
   'gpService',
   'utilService',
-  function($http, $q, $rootScope, gpService, utilService) {
+  function($http, $q, $rootScope, Upload, gpService, utilService) {
     console.debug("configure translationService");
 
     // broadcasts a refset change
@@ -24,7 +25,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Get translation for id and date
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + translationId + "/" + date).then(
       // success
       function(response) {
@@ -46,7 +47,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Finds concepts for translation revision
-      gpService.increment()
+      gpService.increment();
       $http.post(translationUrl + translationId + "/" + date + "/" + 'concepts', pfs).then(
       // success
       function(response) {
@@ -68,7 +69,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Get translation for id
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + translationId).then(
       // success
       function(response) {
@@ -89,7 +90,7 @@ tsApp.service('translationService', [
       console.debug("getConcept");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + "concept/" + conceptId).then(
       // success
       function(response) {
@@ -111,7 +112,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Get translation for id
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'translations' + "/" + refsetId).then(
       // success
       function(response) {
@@ -133,7 +134,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Finds translations
-      gpService.increment()
+      gpService.increment();
       $http.post(translationUrl + 'translations' + "?query=" + query, pfs).then(
       // success
       function(response) {
@@ -155,7 +156,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Add new translation
-      gpService.increment()
+      gpService.increment();
       $http.put(translationUrl + 'add', translation).then(
       // success
       function(response) {
@@ -177,7 +178,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Update translation
-      gpService.increment()
+      gpService.increment();
       $http.post(translationUrl + 'update', translation).then(
       // success
       function(response) {
@@ -199,7 +200,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Remove translation
-      gpService.increment()
+      gpService.increment();
       $http['delete'](translationUrl + 'remove' + "/" + translationId).then(
       // success
       function(response) {
@@ -222,7 +223,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // find concepts
-      gpService.increment()
+      gpService.increment();
       $http.post(
         translationUrl + "concepts" + "?query=" + query + "&translationId=" + translationId, pfs)
         .then(
@@ -246,7 +247,7 @@ tsApp.service('translationService', [
       console.debug("getImportTranslationHandlers");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'import' + "/" + 'handlers').then(
       // success
       function(response) {
@@ -267,7 +268,7 @@ tsApp.service('translationService', [
       console.debug("getExportTranslationHandlers");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'export' + "/" + 'handlers').then(
       // success
       function(response) {
@@ -288,7 +289,7 @@ tsApp.service('translationService', [
       console.debug("addTranslationConcept");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.put(translationUrl + 'concept' + "/" + 'add', concept).then(
       // success
       function(response) {
@@ -310,7 +311,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Update concept
-      gpService.increment()
+      gpService.increment();
       $http.post(conceptUrl + 'concept/update', concept).then(
       // success
       function(response) {
@@ -331,7 +332,7 @@ tsApp.service('translationService', [
       console.debug("removeTranslationConcept");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](translationUrl + 'concept' + "/" + 'remove' + "/" + conceptId).then(
       // success
       function(response) {
@@ -353,7 +354,7 @@ tsApp.service('translationService', [
       console.debug("getTranslationsWithSpellingDictionary");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'translations' + "/" + 'spellingdictionary').then(
       // success
       function(response) {
@@ -374,7 +375,7 @@ tsApp.service('translationService', [
       console.debug("copySpellingDictionary");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(
         translationUrl + 'spelling' + "/" + 'copy' + "/" + fromTranslationId + "/"
           + toTranslationId).then(
@@ -397,7 +398,7 @@ tsApp.service('translationService', [
       console.debug("addSpellingDictionaryEntry");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'spelling' + "/" + 'add' + "/" + translationId + "/" + entry)
         .then(
         // success
@@ -419,7 +420,7 @@ tsApp.service('translationService', [
       console.debug("removeSpellingDictionaryEntry");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](
         translationUrl + 'spelling' + "/" + 'remove' + "/" + translationId + "/" + entry).then(
       // success
@@ -443,7 +444,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Get refset types
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'spelling' + "/" + 'suggest' + "/" + translationId + "/" + entry)
         .then(
         // success
@@ -465,7 +466,7 @@ tsApp.service('translationService', [
       console.debug("clearSpellingDictionary");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](translationUrl + 'spelling' + "/" + 'clear' + "/" + translationId).then(
       // success
       function(response) {
@@ -487,7 +488,7 @@ tsApp.service('translationService', [
       console.debug("findTranslationsWithPhraseMemory");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + 'translations' + "/" + 'phrasememory').then(
       // success
       function(response) {
@@ -508,7 +509,7 @@ tsApp.service('translationService', [
       console.debug("copyPhraseMemory");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(
         translationUrl + 'phrasememory' + "/" + 'copy' + "/" + fromTranslationId + "/"
           + toTranslationId).then(
@@ -531,7 +532,7 @@ tsApp.service('translationService', [
       console.debug("addPhraseMemoryEntry");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.put(translationUrl + translationId + "/" + 'phrasememory' + "/" + 'add', entry).then(
       // success
       function(response) {
@@ -552,7 +553,7 @@ tsApp.service('translationService', [
       console.debug("removePhraseMemoryEntry");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](
         translationUrl + translationId + "/" + 'phrasememory' + "/" + 'remove' + "/" + entryId)
         .then(
@@ -576,7 +577,7 @@ tsApp.service('translationService', [
       console.debug("clearPhraseMemory");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](translationUrl + translationId + "/" + 'phraseMemory' + "/" + 'clear').then(
       // success
       function(response) {
@@ -598,7 +599,7 @@ tsApp.service('translationService', [
       console.debug("compareTranslations");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(
         translationUrl + 'compare' + "?translationId1=" + translationId1 + "&translationId2="
           + translationId2).then(
@@ -621,7 +622,7 @@ tsApp.service('translationService', [
       console.debug("findConceptsInCommon");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.post(
         translationUrl + 'common' + "/" + 'concepts' + "?reportToken=" + reportToken + "&query="
           + query, pfs).then(
@@ -644,7 +645,7 @@ tsApp.service('translationService', [
       console.debug("getDiffReport");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.get(translationUrl + "diff/concepts" + "?reportToken=" + reportToken).then(
       // success
       function(response) {
@@ -665,7 +666,7 @@ tsApp.service('translationService', [
       console.debug("releaseReportToken");
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http.post(translationUrl + "release/report" + "?reportToken=" + reportToken).then(
       // success
       function(response) {
@@ -686,7 +687,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Add translation
-      gpService.increment()
+      gpService.increment();
       $http.put(translationUrl + 'add/note?translationId=' + translationId, note, {
         headers : {
           "Content-type" : "text/plain"
@@ -711,7 +712,7 @@ tsApp.service('translationService', [
       console.debug("remove translation note", translationId, noteId);
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](
         translationUrl + "/remove/note?translationId=" + translationId + "&noteId=" + noteId).then(
       // success
@@ -733,7 +734,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // Add translation
-      gpService.increment()
+      gpService.increment();
       $http.put(
         translationUrl + 'concept/add/note?translationId=' + translationId + "&conceptId="
           + conceptId, note, {
@@ -760,7 +761,7 @@ tsApp.service('translationService', [
       console.debug("remove concept note", translationId, noteId);
       var deferred = $q.defer();
 
-      gpService.increment()
+      gpService.increment();
       $http['delete'](
         translationUrl + "/concept/remove/note?translationId=" + translationId + "&noteId="
           + noteId).then(
@@ -778,10 +779,11 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // Export spelling dictionary
     this.exportSpellingDictionary = function(translationId) {
       console.debug("exportSpellingDictionary");
-      gpService.increment()
-      $http.get(refsetUrl + "spelling/export" + translationId).then(
+      gpService.increment();
+      $http.get(translationUrl + "spelling/export/" + translationId).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {
@@ -793,7 +795,7 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = "_blank";
-        a.download = "spelling." + terminologyId + "." + extension;
+        a.download = "spelling." + translationId + ".txt";
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
@@ -807,12 +809,12 @@ tsApp.service('translationService', [
     };
 
     // Begin import spelling Dictionary - if validation is result, OK to proceed.
-    this.importSpellingDictionary = function(translationId, is) {
+    this.importSpellingDictionary = function(translationId, file) {
       console.debug("import spelling dictionary");
       var deferred = $q.defer();
-      gpService.increment()
+      gpService.increment();
       Upload.upload({
-        url : refsetUrl + "spelling/import?translationId=" + translationId,
+        url : translationUrl + "spelling/import?translationId=" + translationId,
         data : {
           file : file
         }
@@ -837,6 +839,65 @@ tsApp.service('translationService', [
       return deferred.promise;
     };
 
+    // Export phrase memory
+    this.exportPhraseMemory = function(translationId) {
+      console.debug("exportPhraseMemory");
+      gpService.increment();
+      $http.get(translationUrl + "phrasememory/export/" + translationId).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : ""
+        });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = "_blank";
+        a.download = "phraseMemory." + translationId + ".txt";
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
+    };
+
+    // Begin import phrase memory
+    this.importPhraseMemory = function(translationId, file) {
+      console.debug("import phrase memory");
+      var deferred = $q.defer();
+      gpService.increment();
+      Upload.upload({
+        url : translationUrl + "phrasememory/import?translationId=" + translationId,
+        data : {
+          file : file
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  validation result = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
     // end    
 
   } ]);

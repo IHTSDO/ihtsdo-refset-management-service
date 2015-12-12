@@ -294,6 +294,11 @@ public class SpellingCorrectionRestTest {
     return translation;
   }
 
+  /**
+   * Test spelling add remove clear suggest.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testSpellingAddRemoveClearSuggest() throws Exception {
     Project project2 = projectService.getProject(2L, adminAuthToken);
@@ -345,6 +350,11 @@ public class SpellingCorrectionRestTest {
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test spelling import export.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testSpellingImportExport() throws Exception {
     Project project1 = projectService.getProject(2L, adminAuthToken);
@@ -417,6 +427,11 @@ public class SpellingCorrectionRestTest {
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test spelling copy.
+   *
+   * @throws Exception the exception
+   */
   @Test
   public void testSpellingCopy() throws Exception {
     Project project1 = projectService.getProject(2L, adminAuthToken);

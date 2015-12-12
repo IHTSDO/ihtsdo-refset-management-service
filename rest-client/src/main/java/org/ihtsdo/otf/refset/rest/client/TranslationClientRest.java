@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Properties;
 
@@ -616,6 +615,7 @@ public class TranslationClientRest extends RootClientRest implements
             .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
     } else {
       throw new Exception(response.toString());
     }
@@ -840,7 +840,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/import/phrasememory" + "?translationId="
+            + "/translation/phrasememory/import" + "?translationId="
             + translationId);
 
     Response response =
@@ -864,7 +864,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/export/phrasememory" + "?translationId="
+            + "/translation/phrasememory/export" + "?translationId="
             + translationId);
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)

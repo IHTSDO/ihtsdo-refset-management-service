@@ -1685,7 +1685,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @POST
   @Override
-  @Path("/import/phrasememory")
+  @Path("/phrasememory/import")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
@@ -1743,7 +1743,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Produces("application/octet-stream")
-  @Path("/export/phrasememory")
+  @Path("/phrasememory/export")
   @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
   public InputStream exportPhraseMemory(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,

@@ -21,8 +21,11 @@ public interface SpellingCorrectionHandler extends Configurable {
    * in index, that item is not returned as part of suggested spelling.
    *
    * @param term The term queried for suggestions
+   * @param entries the entries
    * @param amt The number of terms returned
+   * @param tid the tid
    * @return List of Strings representing the suggested spellings
+   * @throws IOException Signals that an I/O exception has occurred.
    */
   StringList suggestSpelling(String term, List<String> entries, int amt,
     Long tid) throws IOException;
@@ -34,6 +37,7 @@ public interface SpellingCorrectionHandler extends Configurable {
    *          dictionary entries
    * @return List of strings containing entries found in the passed in
    *         InputStream
+   * @throws Exception the exception
    */
   public List<String> getEntriesAsList(InputStream is) throws Exception;
 
@@ -43,15 +47,17 @@ public interface SpellingCorrectionHandler extends Configurable {
    * @param l A List of strings representing spelling dictionary entries
    * @return An InputStream containing entries found in the passed in List of
    *         Strings
+   * @throws UnsupportedEncodingException the unsupported encoding exception
    */
   public InputStream getEntriesAsStream(List<String> l)
     throws UnsupportedEncodingException;
 
   /**
-   * Returns a copy of the handler
-   * 
+   * Returns a copy of the handler.
+   *
    * @return A SpellingCorrectionHandler that is identical to the current
    *         instance
+   * @throws Exception the exception
    */
   SpellingCorrectionHandler copy() throws Exception;
 }

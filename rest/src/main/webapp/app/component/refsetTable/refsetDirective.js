@@ -224,7 +224,7 @@ tsApp
                 if ($scope.selected.refset) {
                   for (var i = 0; i < $scope.refsets.length; i++) {
                     if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                      $scope.selectRefset($scope.selected.refset);
+                      $scope.selectRefset($scope.refsets[i]);
                       found = true;
                       break;
                     }
@@ -460,7 +460,7 @@ tsApp
 
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
-                if (refset && refset.notes.length>0) {
+                if (refset && refset.notes && refset.notes.length > 0) {
                   return $sce.trustAsHtml(refset.notes
                     .sort(utilService.sort_by('lastModified', -1))[0].value);
                 }
@@ -506,7 +506,8 @@ tsApp
               };
 
               // Notes controller
-              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type, tinymceOptions) {
+              var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type,
+                tinymceOptions) {
                 console.debug("Entered notes modal control", object, type);
 
                 $scope.errors = [];
@@ -735,7 +736,7 @@ tsApp
               };
 
               // Import/Export modal
-              $scope.openImportExportModal = function(lrefset, ldir, lcontentType) {
+              $scope.openImportExportModal = function(lrefset, loperation, ltype) {
                 console.debug("exportModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
@@ -746,14 +747,14 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
-                    dir : function() {
-                      return ldir;
+                    operation : function() {
+                      return loperation;
                     },
-                    contentType : function() {
-                      return lcontentType;
+                    type : function() {
+                      return ltype;
                     },
                     ioHandlers : function() {
-                      if (ldir == 'Import') {
+                      if (loperation == 'Import') {
                         return $scope.metadata.importHandlers;
                       } else {
                         return $scope.metadata.exportHandlers;
@@ -770,29 +771,29 @@ tsApp
               };
 
               // Import/Export controller
-              var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, dir,
-                contentType, ioHandlers) {
-                console.debug("Entered import export modal control", refset.id, ioHandlers, dir,
-                  contentType);
+              var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, operation,
+                type, ioHandlers) {
+                console.debug("Entered import export modal control", refset.id, ioHandlers,
+                  operation, type);
 
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
                 $scope.selectedIoHandler = $scope.ioHandlers[0];
-                $scope.contentType = contentType;
-                $scope.dir = dir;
+                $scope.type = type;
+                $scope.operation = operation;
                 $scope.errors = [];
 
                 // Handle export
                 $scope.export = function(file) {
                   console.debug("export", $scope.refset.id, file);
 
-                  if (contentType == 'Definition') {
+                  if (type == 'Definition') {
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
 
                   }
 
-                  if (contentType == 'Refset Members') {
+                  if (type == 'Refset Members') {
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
                   }
@@ -803,12 +804,12 @@ tsApp
                 $scope.import = function(file) {
                   console.debug("import", $scope.refset.id, file);
 
-                  if (contentType == 'Definition') {
+                  if (type == 'Definition') {
                     refsetService.importDefinition($scope.refset.id, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
                   }
 
-                  if (contentType == 'Refset Members') {
+                  if (type == 'Refset Members') {
                     refsetService.beginImportMembers($scope.refset.id, $scope.selectedIoHandler.id)
                       .then(
 
@@ -849,7 +850,7 @@ tsApp
                 $scope.continueImport = function(file) {
                   console.debug("continue import", $scope.refset.id, file);
 
-                  if (contentType == 'Refset Members') {
+                  if (type == 'Refset Members') {
                     refsetService.finishImportMembers($scope.refset.id,
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
@@ -1109,8 +1110,8 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,
-                action, currentUserName, assignedUsers, project, role, tinymceOptions) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset, action,
+                currentUserName, assignedUsers, project, role, tinymceOptions) {
 
                 console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
