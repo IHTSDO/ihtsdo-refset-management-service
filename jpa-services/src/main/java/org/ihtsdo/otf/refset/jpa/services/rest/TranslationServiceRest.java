@@ -232,8 +232,8 @@ public interface TranslationServiceRest {
    * @throws Exception the exception
    */
   public Concept addTranslationConcept(ConceptJpa concept, String authToken)
-      throws Exception;
-  
+    throws Exception;
+
   /**
    * Update translation concept.
    *
@@ -242,7 +242,7 @@ public interface TranslationServiceRest {
    * @throws Exception the exception
    */
   public void updateTranslationConcept(ConceptJpa concept, String authToken)
-      throws Exception;
+    throws Exception;
 
   /**
    * Removes the translation concept.
@@ -413,6 +413,7 @@ public interface TranslationServiceRest {
   /**
    * Suggest spelling.
    *
+   * @param translationId the translation id
    * @param term the term
    * @param authToken the auth token
    * @return the string list

@@ -218,6 +218,20 @@ public interface Translation extends Component, Searchable {
   public void setSpellingDictionary(SpellingDictionary dictionary);
 
   /**
+   * Returns the spelling dictionary entry count.
+   *
+   * @return the spelling dictionary entry count
+   */
+  public int getSpellingDictionarySize();
+  
+  /**
+   * Returns the phrase memory entry count.
+   *
+   * @return the phrase memory entry count
+   */
+  public int getPhraseMemorySize();
+
+  /**
    * Returns the phrase memory.
    *
    * @return the phrase memory
@@ -230,6 +244,7 @@ public interface Translation extends Component, Searchable {
    * @param phraseMemory the phrase memory
    */
   public void setPhraseMemory(PhraseMemory phraseMemory);
+
 
   /**
    * Indicates whether or not provisional is the case.

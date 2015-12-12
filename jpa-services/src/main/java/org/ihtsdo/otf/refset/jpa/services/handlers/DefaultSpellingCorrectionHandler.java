@@ -52,6 +52,7 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     return "Default SpellingCorrection handler";
   }
 
+  /* see superclass */
   @Override
   public ByteArrayInputStream getEntriesAsStream(List<String> entries)
     throws UnsupportedEncodingException {
@@ -59,12 +60,13 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
 
     for (String s : entries) {
       sb.append(s);
-      sb.append("\n");
+      sb.append(System.getProperty("line.separator"));
     }
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
   }
 
+  /* see superclass */
   @Override
   public List<String> getEntriesAsList(InputStream is) throws Exception {
     String line;
@@ -73,12 +75,19 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
     while ((line = reader.readLine()) != null) {
+      line = line.replace("\r", "");
+      // If the line contains any whitespace, reject the format
+      if (line.matches("\\s")) {
+        throw new Exception(
+            "Badly formatted spelling file, no whitespace allowed, words only.");
+      }
       entries.add(line);
     }
 
     return entries;
   }
 
+  /* see superclass */
   @Override
   public StringList suggestSpelling(String term, List<String> entries, int amt,
     Long tid) throws IOException {
@@ -106,13 +115,20 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
       tmpIndexFile.delete();
 
       String[] results = checker.suggestSimilar(term, amt);
-
+      checker.close();
       return convertResults(results);
     }
 
     return new StringList();
   }
 
+  /**
+   * Convert results.
+   *
+   * @param results the results
+   * @return the string list
+   */
+  @SuppressWarnings("static-method")
   private StringList convertResults(String[] results) {
 
     StringList retStrList = new StringList();
@@ -122,6 +138,7 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     return retStrList;
   }
 
+  /* see superclass */
   @Override
   public SpellingCorrectionHandler copy() throws Exception {
     // Nothing to do

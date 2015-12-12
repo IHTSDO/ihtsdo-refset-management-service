@@ -547,4 +547,37 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.phraseMemory = phraseMemory;
   }
 
+  /* see superclass */
+  @XmlElement
+  @Override
+  public int getSpellingDictionarySize() {
+    return spellingDictionary != null ? spellingDictionary.getEntries().size()
+        : 0;
+  }
+
+  /**
+   * Sets the spelling dictionary size.
+   *
+   * @param size the spelling dictionary size
+   */
+  public void setSpellingDictionarySize(int size) {
+    // n/a - only for JAXB conversion
+  }
+
+  /* see superclass */
+  @XmlElement
+  @Override
+  public int getPhraseMemorySize() {
+    return phraseMemory != null ? phraseMemory.getEntries().size() : 0;
+  }
+
+  /**
+   * Sets the phrase memory size.
+   *
+   * @param size the phrase memory size
+   */
+  public void setPhraseMemorySize(int size) {
+    // n/a - only for JAXB conversion
+  }
+
 }
