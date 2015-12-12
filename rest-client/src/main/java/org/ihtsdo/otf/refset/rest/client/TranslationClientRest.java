@@ -906,13 +906,6 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public StringList suggestTranslation(String phrase, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
   public Translation beginMigration(Long translationId, String newTerminology,
     String newVersion, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -1394,5 +1387,32 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
     return (ConceptJpa) ConfigUtility.getGraphForString(resultString,
         ConceptJpa.class);
+  }
+
+  @Override
+  public StringList suggestTranslation(Long translationId, String name,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - suggest translated name for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/suggest/" + translationId + "/" + name);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    StringList suggestions = response.readEntity(StringList.class);
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return suggestions;
   }
 }

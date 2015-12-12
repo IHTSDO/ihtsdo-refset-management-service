@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -525,6 +526,38 @@ public class TranslationTest {
     InputStream inputStream = translationService.exportPhraseMemory(translation.getId(), adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(1, entries.size());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test Suggest Translation.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testSuggestTranslation() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
+    Project project1 = projectService.getProject(1L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional) 
+    Refset janRefset =
+        makeRefset("refset1", null,
+            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
+    
+    
+    // Create translation 
+    TranslationJpa translation =
+        makeTranslation("translation99", janRefset,
+             project1,  admin);
+    InputStream in =
+        new FileInputStream(
+            new File(
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
+    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
+    translationService.addPhraseMemoryEntry(translation.getId(), "test1", "translated test2", adminAuthToken);
+    StringList suggestTranslation = translationService.suggestTranslation(translation.getId(), "test1", adminAuthToken);
+    assertEquals(2, suggestTranslation.getTotalCount());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
