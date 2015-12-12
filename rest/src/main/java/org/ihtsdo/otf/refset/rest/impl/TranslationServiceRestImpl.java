@@ -1469,16 +1469,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/{translationId}/phrasememory/add")
+  @Consumes("text/plain")
+  @Path("/{translationId}/phrasememory/add/name")
   @ApiOperation(value = "Add new entry to phrase memory", notes = "Add new entry to the phrase memory", response = MemoryEntryJpa.class)
   public MemoryEntry addPhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) MemoryEntry entry,
+    @ApiParam(value = "name, e.g. phrase", required = true) String name,
+    @ApiParam(value = "translated name, e.g. translation1", required = true) @QueryParam("translatedName") String translatedName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Translation): /phrasememory/add/" + translationId
-            + " " + entry);
+            + " " + name + " " + translatedName);
 
     TranslationService translationService = new TranslationServiceJpa();
 
@@ -1491,7 +1493,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "add new entry to the phrase memory",
           UserRole.AUTHOR);
-
+      MemoryEntry entry = new MemoryEntryJpa();
+      entry.setName(name);
+      entry.setTranslatedName(translatedName);
       entry.setPhraseMemory(translation.getPhraseMemory());
       // Create service and configure transaction scope
       return translationService.addMemoryEntry(entry);
@@ -1507,16 +1511,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
-  @Path("/{translationId}/phrasememory/remove/{entryId}")
+  @Path("/{translationId}/phrasememory/remove/{name}")
   @ApiOperation(value = "Remove phrase memory entry", notes = "Removes the phrase memory entry for this translation")
   public void removePhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "entry id, e.g. 3", required = true) @PathParam("entryId") Long entryId,
+    @ApiParam(value = "name, e.g. phrase", required = true) @PathParam("name") String name,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /phrasememory/remove/"
-            + translationId + " " + entryId);
+        "RESTful call DELETE (Translation): /phrasememory/remove/name "
+            + translationId + " " + name);
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1528,9 +1532,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove entry from the phrase memory",
           UserRole.AUTHOR);
 
-      MemoryEntry entry = translationService.getMemoryEntry(entryId);
+      String query = "name:" + name;
+      List<MemoryEntry> entries = translationService.findMemoryEntryForTranslation(translationId, query , null);
       // Create service and configure transaction scope
-      translationService.removeMemoryEntry(entry);
+      for(MemoryEntry entry: entries ) {
+        translationService.removeMemoryEntry(entry);
+      }
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
     } finally {

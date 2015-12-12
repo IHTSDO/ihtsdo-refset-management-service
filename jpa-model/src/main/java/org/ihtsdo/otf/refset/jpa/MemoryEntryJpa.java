@@ -15,6 +15,13 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.search.annotations.Analyze;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Index;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.Store;
+import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 
@@ -23,6 +30,7 @@ import org.ihtsdo.otf.refset.PhraseMemory;
  */
 @Entity
 @Table(name = "memory_entries")
+@Indexed
 @XmlRootElement(name = "entry")
 public class MemoryEntryJpa implements MemoryEntry {
 
@@ -68,6 +76,7 @@ public class MemoryEntryJpa implements MemoryEntry {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getName() {
     return name;
@@ -149,6 +158,13 @@ public class MemoryEntryJpa implements MemoryEntry {
       phraseMemory = new PhraseMemoryJpa();
     }
     phraseMemory.setId(phraseMemoryId);
+  }
+
+  @XmlTransient
+  @FieldBridge(impl = LongBridge.class)
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public Long getTranslationId() {
+    return (phraseMemory != null && phraseMemory.getTranslation() != null)  ? phraseMemory.getTranslation().getId() : 0;
   }
 
   /* see superclass */

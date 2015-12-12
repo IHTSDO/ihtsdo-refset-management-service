@@ -496,6 +496,40 @@ public class TranslationTest {
   }
 
   /**
+   * Test Import Export PhraseMemory.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testaddRemovePhraseMemory() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
+    Project project1 = projectService.getProject(1L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional) 
+    Refset janRefset =
+        makeRefset("refset1", null,
+            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
+    
+    
+    // Create translation 
+    TranslationJpa translation =
+        makeTranslation("translation99", janRefset,
+             project1,  admin);
+    InputStream in =
+        new FileInputStream(
+            new File(
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
+    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
+    translationService.addPhraseMemoryEntry(translation.getId(), "test1", "translated test2", adminAuthToken);
+    translationService.removePhraseMemoryEntry(translation.getId(), "test1", adminAuthToken);
+    InputStream inputStream = translationService.exportPhraseMemory(translation.getId(), adminAuthToken);
+    List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
+    assertEquals(1, entries.size());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
    * Parses the phrase memory.
    *
    * @param translation the translation

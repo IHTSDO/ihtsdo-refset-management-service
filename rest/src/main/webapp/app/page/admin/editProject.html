@@ -71,7 +71,8 @@
         </td>
         <td>
           <select ng-model="project.terminology"
-            ng-options="item for item in terminologies"></select>
+            ng-change="terminologySelected(project.terminology)"
+            ng-options="item for item in metadata.terminologies"></select>
         </td>
       </tr>
     </table>

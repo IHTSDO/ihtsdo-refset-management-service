@@ -86,10 +86,7 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("description");
     tester.include("terminology");
     tester.include("version");
-    tester.include("validationChecks");
 
-    tester.proxy(List.class, 1, l1);
-    tester.proxy(List.class, 2, l2);
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
     assertTrue(tester.testIdentityFieldNotEquals());
@@ -136,7 +133,6 @@ public class ProjectJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("description");
     tester.include("terminology");
-    tester.include("version");
     assertTrue(tester.testNotNullFields());
   }
 

@@ -724,7 +724,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     user.setUserName(userName);
     user.setName(name);
     user.setEmail(userName + "@example.com");
-    user.setApplicationRole(UserRole.VIEWER);
+    user.setApplicationRole(UserRole.USER);
     return user;
   }
 

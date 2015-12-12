@@ -170,7 +170,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       // Check if user is either an ADMIN overall or an AUTHOR on this project
       try {
         authorizeApp(securityService, authToken, "unassign user from project",
-            UserRole.ADMIN);
+            UserRole.USER);
       } catch (Exception e) {
         // now try to validate project role
         authorizeProject(projectService, projectId, securityService, authToken,
@@ -291,7 +291,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       final String userName =
           authorizeApp(securityService, authToken, "add project",
-              UserRole.ADMIN);
+              UserRole.USER);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -331,7 +331,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "update project", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "update project", UserRole.USER);
 
       // check to see if project already exists
       boolean found = false;
@@ -387,8 +387,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "remove project", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "remove project", UserRole.USER);
 
+      // unassign users from project before deleting it
+      Project project = projectService.getProject(projectId);
+      for (User user : project.getUserRoleMap().keySet()) {
+        unassignUserFromProject(projectId, user.getUserName(), authToken);
+      }
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
 

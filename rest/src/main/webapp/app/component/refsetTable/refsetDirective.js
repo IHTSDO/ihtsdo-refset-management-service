@@ -539,6 +539,7 @@ tsApp
                   return $sce.trustAsHtml(note.value);
                 }
 
+
                 // remove note
                 $scope.removeNote = function(object, note) {
                   console.debug("remove note", object.id, note.value);

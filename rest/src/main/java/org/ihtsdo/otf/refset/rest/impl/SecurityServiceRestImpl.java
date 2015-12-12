@@ -267,6 +267,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.VIEWER.toString());
+      list.getObjects().add(UserRole.USER.toString());
       list.getObjects().add(UserRole.ADMIN.toString());
       return list;
     } catch (Exception e) {

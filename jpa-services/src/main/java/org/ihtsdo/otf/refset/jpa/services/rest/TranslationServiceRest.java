@@ -332,23 +332,24 @@ public interface TranslationServiceRest {
    * Adds the phrase memory entry.
    *
    * @param translationId the translation id
-   * @param entry the entry
+   * @param name the name
+   * @param translatedName the translated name
    * @param authToken the auth token
    * @return the memory entry
    * @throws Exception the exception
    */
   public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    MemoryEntry entry, String authToken) throws Exception;
+    String name, String translatedName, String authToken) throws Exception;
 
   /**
    * Removes the spelling dictionary entry.
    *
    * @param translationId the translation id
-   * @param entryId the entry id
+   * @param name the name of the entry
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removePhraseMemoryEntry(Long translationId, Long entryId,
+  public void removePhraseMemoryEntry(Long translationId, String name,
     String authToken) throws Exception;
 
   /**
