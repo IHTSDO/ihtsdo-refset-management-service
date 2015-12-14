@@ -290,11 +290,11 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionJpa [, languageCode=" + languageCode + ", typeId="
+    return "DescriptionJpa [languageCode=" + languageCode + ", typeId="
         + typeId + ", term=" + term + ", caseSignificanceId="
         + caseSignificanceId + ", translationOfId=" + translationOfId
         + ", concept=" + concept + ", languageRefsetMembers="
-        + languageRefsetMembers + "]";
+        + languageRefsetMembers + "] " + super.toString();
   }
 
   /* see superclass */

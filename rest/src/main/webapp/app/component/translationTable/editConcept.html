@@ -58,7 +58,7 @@
             title="Click to clear filter text">Clear</button>
 
           <div style="float: right;">
-            <i ng-click="newDescription()" title="Add description"
+            <i ng-click="addDescription()" title="Add description"
               class="noul material-icons md-18">add</i>
           </div>
         </span>
@@ -76,12 +76,11 @@
             <tr ng-repeat="description in pagedDescriptions">
               <td>
                 <textarea title="Description term" cols="40" rows="3"
-                  ng-model="description.name"></textarea>
+                  ng-model="description.term"></textarea>
               </td>
               <td>
                 <select ng-model="description.type"
-                  ng-change="applyDescriptionType(description, description.type)"
-                  ng-options="type.name for type in translation.descriptionTypes | orderBy:'type.name'">
+                  ng-options="type.name for type in getDescriptionTypes()">
                 </select> <br /> <select style="margin-top: 5px;"
                   ng-model="description.caseSignificanceId">
                   <option

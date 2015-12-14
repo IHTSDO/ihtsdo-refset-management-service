@@ -89,8 +89,8 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
     // tester.include("version");
     tester.include("refsetId");
     tester.include("name");
-    tester.include("type");
-    tester.include("acceptability");
+    tester.include("typeId");
+    tester.include("acceptabilityId");
     tester.include("descriptionFormat");
     tester.include("descriptionLength");
 
@@ -166,8 +166,8 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
 
     tester.include("refsetId");
     tester.include("name");
-    tester.include("type");
-    tester.include("acceptability");
+    tester.include("typeId");
+    tester.include("acceptabilityId");
     tester.include("descriptionFormat");
     tester.include("descriptionLength");
 

@@ -903,29 +903,29 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       type.setDescriptionFormat("900000000000540000");
       if (i == 0) {
         type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
-        type.setType("900000000000003001");
-        type.setAcceptability("900000000000548007");
+        type.setTypeId("900000000000003001");
+        type.setAcceptabilityId("900000000000548007");
         type.setName("Fully specified name");
         type.setDescriptionLength(255);
       }
       if (i == 1) {
         type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
-        type.setType("900000000000550004");
-        type.setAcceptability("900000000000548007");
+        type.setTypeId("900000000000550004");
+        type.setAcceptabilityId("900000000000548007");
         type.setName("Definition");
         type.setDescriptionLength(4096);
       }
       if (i == 2) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
-        type.setType("900000000000013009");
-        type.setAcceptability("900000000000548007");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000548007");
         type.setName("Preferred name");
         type.setDescriptionLength(255);
       }
       if (i == 3) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
-        type.setType("900000000000013009");
-        type.setAcceptability("900000000000549004");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000549004");
         type.setName("Synonym");
         type.setDescriptionLength(255);
       }

@@ -23,11 +23,11 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
 
   /** The type. */
   @Column(nullable = false)
-  private String type;
+  private String typeId;
 
   /** the acceptability. */
   @Column(nullable = false)
-  private String acceptability;
+  private String acceptabilityId;
 
   /** The name. */
   @Column(nullable = false)
@@ -55,8 +55,8 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
    */
   public DescriptionTypeJpa(DescriptionType member) {
     super(member);
-    type = member.getType();
-    acceptability = member.getAcceptability();
+    typeId = member.getTypeId();
+    acceptabilityId = member.getAcceptabilityId();
     name = member.getName();
     descriptionFormat = member.getDescriptionFormat();
     descriptionLength = member.getDescriptionLength();
@@ -100,26 +100,26 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
 
   /* see superclass */
   @Override
-  public String getType() {
-    return type;
+  public String getTypeId() {
+    return typeId;
   }
 
   /* see superclass */
   @Override
-  public void setType(String type) {
-    this.type = type;
+  public void setTypeId(String typeId) {
+    this.typeId = typeId;
   }
 
   /* see superclass */
   @Override
-  public String getAcceptability() {
-    return acceptability;
+  public String getAcceptabilityId() {
+    return acceptabilityId;
   }
 
   /* see superclass */
   @Override
-  public void setAcceptability(String acceptability) {
-    this.acceptability = acceptability;
+  public void setAcceptabilityId(String acceptabilityId) {
+    this.acceptabilityId = acceptabilityId;
   }
 
   /* see superclass */
@@ -128,10 +128,10 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((name == null) ? 0 : name.hashCode());
-    result = prime * result + ((type == null) ? 0 : type.hashCode());
+    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
     result =
         prime * result
-            + ((acceptability == null) ? 0 : acceptability.hashCode());
+            + ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
     result =
         prime * result
             + ((descriptionFormat == null) ? 0 : descriptionFormat.hashCode());
@@ -154,15 +154,15 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
         return false;
     } else if (!name.equals(other.name))
       return false;
-    if (type == null) {
-      if (other.type != null)
+    if (typeId == null) {
+      if (other.typeId != null)
         return false;
-    } else if (!type.equals(other.type))
+    } else if (!typeId.equals(other.typeId))
       return false;
-    if (acceptability == null) {
-      if (other.acceptability != null)
+    if (acceptabilityId == null) {
+      if (other.acceptabilityId != null)
         return false;
-    } else if (!acceptability.equals(other.acceptability))
+    } else if (!acceptabilityId.equals(other.acceptabilityId))
       return false;
     if (descriptionFormat == null) {
       if (other.descriptionFormat != null)
@@ -177,8 +177,8 @@ public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionTypeRefsetMemberJpa [type=" + type + ", acceptability="
-        + acceptability + " name=" + name + ", descriptionFormat="
+    return "DescriptionTypeRefsetMemberJpa [typeId=" + typeId + ", acceptabilityId="
+        + acceptabilityId + " name=" + name + ", descriptionFormat="
         + descriptionFormat + ", descriptionLength=" + descriptionLength + "]";
   }
 

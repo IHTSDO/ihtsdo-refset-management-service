@@ -533,8 +533,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/copy/" + fromTranslationId + "/"
-            + toTranslationId);
+            + "/translation/spelling/copy?toTranslationId=" + toTranslationId
+            + "&fromTranslationId=" + fromTranslationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -559,11 +559,11 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/add/" + translationId + "/" + entry);
+            + "/translation/spelling/add?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken).put(Entity.text(entry));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -584,7 +584,9 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/remove/" + translationId + "/" + entry);
+            + "/translation/spelling/remove?translationId=" + translationId
+            + "&entry="
+            + URLEncoder.encode(entry, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -608,7 +610,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/clear/" + translationId);
+            + "/translation/spelling/clear?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -659,8 +661,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/phrasememory/copy/" + fromTranslationId + "/"
-            + toTranslationId);
+            + "/translation/phrasememory/copy?fromTranslationId="
+            + fromTranslationId + "&toTranslationId=" + toTranslationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -674,8 +676,8 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    String name, String translatedName, String authToken) throws Exception {
+  public MemoryEntry addPhraseMemoryEntry(Long translationId, String name,
+    String translatedName, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - add new entry to the spelling dictionary " + " "
             + translationId + " " + name + " " + translatedName);
@@ -684,14 +686,13 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/add/name?" + "translationId="
-                + translationId 
-                + "&translatedName=" + URLEncoder.encode(translatedName, "UTF-8")
-                .replaceAll("\\+", "%20"));    
+            + translationId + "/phrasememory/add?" + "translationId="
+            + translationId + "&name="
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
-            .put(Entity.text(name));
+            .put(Entity.text(translatedName));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -716,8 +717,10 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/remove/" + name);
+        client.target(config.getProperty("base.url")
+            + "/translation/phrasememory/remove?translationId" + translationId
+            + "&name="
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -740,8 +743,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phraseMemory/clear");
+        client.target(config.getProperty("base.url")
+            + "/translation/phrasememory/clear?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -798,12 +801,13 @@ public class TranslationClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Translation Client - export Spelling Dictionary for translation "
             + translationId);
+    validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/export/" + translationId);
+            + "/translation/spelling/export?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)

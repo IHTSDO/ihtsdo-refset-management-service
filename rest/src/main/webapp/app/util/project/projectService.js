@@ -25,7 +25,6 @@ tsApp.service('projectService', [
       return userProjectsInfo;
     }
 
-
     this.getIconConfig = function() {
       console.debug("get icon config", iconConfig);
       return iconConfig;
@@ -326,6 +325,7 @@ tsApp.service('projectService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -350,6 +350,7 @@ tsApp.service('projectService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -393,8 +394,8 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology="
-          + terminology + "&version=" + version).then(
+        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
+          + "&version=" + version).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
