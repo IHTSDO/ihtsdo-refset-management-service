@@ -42,6 +42,7 @@ tsApp
               $scope.translationReleaseInfo = null;
               $scope.project = null;
               $scope.refsets = [];
+              $scope.showLatest = true;
 
               // Used for project admin to know what users are assigned to something.
               $scope.conceptIdToAuthorsMap = {};
@@ -138,6 +139,7 @@ tsApp
 
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
+                  pfs.latestOnly = $scope.showLatest;  
                   translationService.findTranslationsForQuery($scope.paging["translation"].filter,
                     pfs).then(function(data) {
                     $scope.translations = data.translations;
@@ -166,7 +168,9 @@ tsApp
                 }
 
                 if ($scope.value == 'RELEASE') {
-                  workflowService.findReleaseProcessTranslations($scope.project.id, pfs).then(
+                  pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
+                  pfs.latestOnly = $scope.showLatest;  
+                  translationService.findTranslationsForQuery($scope.project.id, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;

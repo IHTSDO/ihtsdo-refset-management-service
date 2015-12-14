@@ -27,6 +27,13 @@
             title="Add translation" class="noul material-icons md-24">add</i>
         </div>
       </h4>
+      
+      <button type="button" class="btn btn-xs btn-primary" ng-show="translations.totalCount > 0 &&
+        (value == 'RELEASE' || value == 'PREVIEW' || value == 'PUBLISHED')" 
+        ng-model="showLatest" ng-change="getTranslations()"
+        uib-btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+        <span ng-show="showLatest" title="Click to show all">Latest</span>
+        <span ng-hide="showLatest" title="Click to show only most recent">All</span></button>
     </span>
 
     <span ng-show="translations.totalCount == 0" style="display: block;"

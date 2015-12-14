@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Properties;
 
@@ -41,6 +42,7 @@ import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.jpa.services.rest.ValidationServiceRest;
 import org.ihtsdo.otf.refset.rest.impl.ProjectServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.RefsetServiceRestImpl;
+import org.ihtsdo.otf.refset.rest.impl.ReleaseServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.SecurityServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.TranslationServiceRestImpl;
 import org.ihtsdo.otf.refset.rest.impl.ValidationServiceRestImpl;
@@ -532,7 +534,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test6: clone of test3
       // test7: same as test1 advanced in workflow to review new
       // test8: same as test2 advanced in workflow to review new
-      // test9: same as test3 advanced in workflow to review new
+      // test9: same as test3 advanced in workflow through review and publication stages
       // test10: same as test 2 advanced in workflow to review new and then
       // reassign
       //
@@ -673,7 +675,39 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "author1", "AUTHOR", "FINISH", author1.getAuthToken());
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test9.getId(), "reviewer1", "REVIEWER", "ASSIGN",
-          author1.getAuthToken());
+          reviewer1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test9.getId(), "reviewer1", "REVIEWER", "SAVE",
+          reviewer1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test9.getId(), "reviewer1", "REVIEWER", "FINISH",
+          reviewer1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test9.getId(), "reviewer1", "REVIEWER", "FINISH",
+          reviewer1.getAuthToken());
+      
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(), 
+          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), 
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(), 
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
+      
+      // calculate date for tomorrow to ensure different release date than above
+      Calendar c = Calendar.getInstance();
+      c.add(Calendar.DATE, 1);
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(), 
+          ConfigUtility.DATE_FORMAT.format(c.getTime()), 
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(), 
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
 
       // test 10
       test2Copy.setTerminologyId("101010101010");

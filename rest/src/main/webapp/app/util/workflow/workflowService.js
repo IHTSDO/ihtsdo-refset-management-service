@@ -205,50 +205,6 @@ tsApp.service('workflowService', [
       return deferred.promise;
     }
 
-    // Find release process refsets
-    this.findReleaseProcessRefsets = function(projectId, pfs) {
-      console.debug("findReleaseProcessRefsets");
-      var deferred = $q.defer();
-
-      gpService.increment()
-      $http.post(workflowUrl + "refset/release" + "?projectId=" + projectId, pfs).then(
-      // success
-      function(response) {
-        console.debug("  release refsets = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    }
-
-    // Find release process translations
-    this.findReleaseProcessTranslations = function(projectId, pfs) {
-      console.debug("findReleaseProcessTranslations");
-      var deferred = $q.defer();
-
-      gpService.increment()
-      $http.post(workflowUrl + "translation/release" + "?projectId=" + projectId, pfs).then(
-      // success
-      function(response) {
-        console.debug("  work = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    }
-
     // Find non release process translations
     this.findNonReleaseProcessTranslations = function(projectId, pfs) {
       console.debug("findReleaseProcessTranslations");
