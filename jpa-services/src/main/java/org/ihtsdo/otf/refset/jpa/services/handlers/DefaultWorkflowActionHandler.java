@@ -77,6 +77,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               + action + ", " + user);
       return result;
     }
+    
+
 
     // Validate tracking record
     TrackingRecordList recordList =
@@ -89,6 +91,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + refset.getId());
     }
 
+    if (projectRole == UserRole.REVIEWER
+        && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+        && action == WorkflowAction.ASSIGN &&
+        record.getAuthors().contains(user)) {
+      result
+      .addError("Reviewer cannot review work that was authored by him/her - "
+          + action + ", " + user);
+      return result;
+    }
+    
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {
@@ -383,6 +395,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + concept.getTerminologyId());
     }
 
+    if (projectRole == UserRole.REVIEWER
+        && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+        && action == WorkflowAction.ASSIGN &&
+        record.getAuthors().contains(user)) {
+      result
+      .addError("Reviewer cannot review work that was authored by him/her - "
+          + action + ", " + user);
+      return result;
+    }
+    
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {

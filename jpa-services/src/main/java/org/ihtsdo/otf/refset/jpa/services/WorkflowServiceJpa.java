@@ -100,8 +100,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         handler.validateWorkflowAction(refset, user, projectRole, action, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
-      throw new Exception(
-          "Unable to perform workflow action, invalid preconditions for this action.");
+      throw new Exception(result.getErrors().iterator().next());
     }
     // Perform the action
     return handler.performWorkflowAction(refset, user, projectRole, action,
@@ -180,8 +179,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
             concept, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
-      throw new Exception(
-          "Unable to perform workflow action, invalid preconditions for this action.");
+      throw new Exception(result.getErrors().iterator().next());
     }
     // Perform the action
     return handler.performWorkflowAction(translation, user, projectRole,

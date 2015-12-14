@@ -18,7 +18,10 @@
           </tr>
           <tr>
             <td>Role:</td>
-            <td>{{projects.role}}</td>
+            <td><select ng-model="projects.role" ng-show="roleOptions.length > 1"
+              ng-options="item for item in roleOptions" 
+              ng-change="updateRole();"></select>
+              <span ng-show="roleOptions.length == 1">{{projects.role}}</span></td>
           </tr>
         </tbody>
       </table>
