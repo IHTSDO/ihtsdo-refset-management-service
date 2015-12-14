@@ -77,6 +77,8 @@ import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -1469,16 +1471,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Path("/{translationId}/phrasememory/add")
+  @Consumes("text/plain")
+  @Path("/{translationId}/phrasememory/add/name")
   @ApiOperation(value = "Add new entry to phrase memory", notes = "Add new entry to the phrase memory", response = MemoryEntryJpa.class)
   public MemoryEntry addPhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "entry, e.g. word", required = true) MemoryEntry entry,
+    @ApiParam(value = "name, e.g. phrase", required = true) String name,
+    @ApiParam(value = "translated name, e.g. translation1", required = true) @QueryParam("translatedName") String translatedName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Translation): /phrasememory/add/" + translationId
-            + " " + entry);
+            + " " + name + " " + translatedName);
 
     TranslationService translationService = new TranslationServiceJpa();
 
@@ -1491,7 +1495,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "add new entry to the phrase memory",
           UserRole.AUTHOR);
-
+      MemoryEntry entry = new MemoryEntryJpa();
+      entry.setName(name);
+      entry.setTranslatedName(translatedName);
       entry.setPhraseMemory(translation.getPhraseMemory());
       // Create service and configure transaction scope
       return translationService.addMemoryEntry(entry);
@@ -1507,16 +1513,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @DELETE
-  @Path("/{translationId}/phrasememory/remove/{entryId}")
+  @Path("/{translationId}/phrasememory/remove/{name}")
   @ApiOperation(value = "Remove phrase memory entry", notes = "Removes the phrase memory entry for this translation")
   public void removePhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "entry id, e.g. 3", required = true) @PathParam("entryId") Long entryId,
+    @ApiParam(value = "name, e.g. phrase", required = true) @PathParam("name") String name,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Translation): /phrasememory/remove/"
-            + translationId + " " + entryId);
+        "RESTful call DELETE (Translation): /phrasememory/remove/name "
+            + translationId + " " + name);
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1528,9 +1534,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove entry from the phrase memory",
           UserRole.AUTHOR);
 
-      MemoryEntry entry = translationService.getMemoryEntry(entryId);
+      String query = "name:" + name;
+      List<MemoryEntry> entries = translationService.findMemoryEntryForTranslation(translationId, query , null);
       // Create service and configure transaction scope
-      translationService.removeMemoryEntry(entry);
+      for(MemoryEntry entry: entries ) {
+        translationService.removeMemoryEntry(entry);
+      }
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
     } finally {
@@ -1538,6 +1547,62 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
 
+  }
+  
+  /* see superclass */
+  /* see superclass */
+  @GET
+  @Override
+  @Path("/suggest/{translationId}/{name}")
+  @ApiOperation(value = "Get translation suggestions", notes = "Returns list of suggested translated name", response = StringList.class)
+  public StringList suggestTranslation(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "name, e.g. name", required = true) @PathParam("name") String name,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Spelling Entry): /translation/suggest/" + translationId
+            + " " + name);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Suggest translation based on name supplied", UserRole.VIEWER);
+      
+      String query = "name:" + name;
+      List<MemoryEntry> entries = translationService.findMemoryEntryForTranslation(translationId, query , null);
+      List<String> results =
+          Lists.transform(entries, new Function<MemoryEntry, String>() {
+
+            @Override
+            public String apply(MemoryEntry arg0) {
+              return arg0.getTranslatedName();
+            }
+
+          });
+      StringList strList = new StringList();
+      strList.setTotalCount(results.size());
+      strList.setObjects(results);
+      return strList;
+    } catch (Exception e) {
+      handleException(e, "trying to suggest a translation based on name");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+    return new StringList();
   }
 
   /* see superclass */
@@ -1685,7 +1750,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @POST
   @Override
-  @Path("/import/phrasememory")
+  @Path("/phrasememory/import")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
@@ -1743,7 +1808,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Produces("application/octet-stream")
-  @Path("/export/phrasememory")
+  @Path("/phrasememory/export")
   @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
   public InputStream exportPhraseMemory(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
@@ -1834,14 +1899,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
 
     return new StringList();
-  }
-
-  /* see superclass */
-  @Override
-  public StringList suggestTranslation(String phrase, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   @GET

@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.rest.client;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Properties;
 
@@ -616,6 +615,7 @@ public class TranslationClientRest extends RootClientRest implements
             .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
     } else {
       throw new Exception(response.toString());
     }
@@ -675,24 +675,23 @@ public class TranslationClientRest extends RootClientRest implements
 
   @Override
   public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    MemoryEntry entry, String authToken) throws Exception {
+    String name, String translatedName, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - add new entry to the spelling dictionary " + " "
-            + translationId + " " + entry);
+            + translationId + " " + name + " " + translatedName);
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/add/" + entry);
-
-    String translationString =
-        ConfigUtility.getStringForGraph(entry == null ? new MemoryEntryJpa()
-            : entry);
+            + translationId + "/phrasememory/add/name?" + "translationId="
+                + translationId 
+                + "&translatedName=" + URLEncoder.encode(translatedName, "UTF-8")
+                .replaceAll("\\+", "%20"));    
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
-            .put(Entity.xml(translationString));
+            .put(Entity.text(name));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -707,18 +706,18 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void removePhraseMemoryEntry(Long translationId, Long entryId,
+  public void removePhraseMemoryEntry(Long translationId, String name,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - remove phrase memory entry " + translationId
-            + " " + entryId);
+            + " " + name);
     validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(entryId, "entryId");
+    validateNotEmpty(name, "name");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/remove/" + entryId);
+            + translationId + "/phrasememory/remove/" + name);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -840,7 +839,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/import/phrasememory" + "?translationId="
+            + "/translation/phrasememory/import" + "?translationId="
             + translationId);
 
     Response response =
@@ -864,7 +863,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/export/phrasememory" + "?translationId="
+            + "/translation/phrasememory/export" + "?translationId="
             + translationId);
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)
@@ -904,13 +903,6 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     return suggestions;
-  }
-
-  @Override
-  public StringList suggestTranslation(String phrase, String authToken)
-    throws Exception {
-    // TODO Auto-generated method stub
-    return null;
   }
 
   @Override
@@ -1395,5 +1387,32 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
     return (ConceptJpa) ConfigUtility.getGraphForString(resultString,
         ConceptJpa.class);
+  }
+
+  @Override
+  public StringList suggestTranslation(Long translationId, String name,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - suggest translated name for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/suggest/" + translationId + "/" + name);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    StringList suggestions = response.readEntity(StringList.class);
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    return suggestions;
   }
 }

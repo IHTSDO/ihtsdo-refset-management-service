@@ -10,8 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.xml.bind.annotation.XmlElement;
@@ -19,7 +19,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Translation;
@@ -41,11 +40,10 @@ public class PhraseMemoryJpa implements PhraseMemory {
 
   /** The entries. */
   @OneToMany(mappedBy = "phraseMemory", targetEntity = MemoryEntryJpa.class)
-  @IndexedEmbedded(targetElement = MemoryEntryJpa.class)
   private List<MemoryEntry> entries;
 
   /** The translation. */
-  @ManyToOne(targetEntity = TranslationJpa.class, optional = false)
+  @OneToOne(targetEntity = TranslationJpa.class, optional = false)
   private Translation translation;
 
   /**

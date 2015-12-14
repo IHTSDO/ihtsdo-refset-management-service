@@ -191,7 +191,7 @@ tsApp
                 if ($scope.selected.translation) {
                   for (var i = 0; i < $scope.translations.length; i++) {
                     if ($scope.selected.translation.id == $scope.translations[i].id) {
-                      $scope.selectTranslation($scope.selected.translation);
+                      $scope.selectTranslation($scope.translations[i]);
                       found = true;
                       break;
                     }
@@ -489,12 +489,35 @@ tsApp
               };
 
               // Get the most recent note for display
-              $scope.getLatestNote = function(refset) {
-                if (refset && refset.notes.length > 0) {
-                  return $sce.trustAsHtml(refset.notes
+              $scope.getLatestNote = function(translation) {
+                if (translation && translation.notes && translation.notes.length > 0) {
+                  return $sce.trustAsHtml(translation.notes
                     .sort(utilService.sort_by('lastModified', -1))[0].value);
                 }
                 return $sce.trustAsHtml("");
+              }
+
+              // Save user preferences // TODO: should use security service
+              $scope.saveUserPreferences = function() {
+                console.debug("save user prefs", $scope.user.userPreferences);
+                window.alert("need to implement save user prefs");
+                // Saves $scope.user.userPreferences, probably just saves the user
+              }
+
+              // Clear spelling dictionary
+              $scope.clearSpellingDictionary = function(translation) {
+                translationService.clearSpellingDictionary(translation.id).then(function(data) {
+                  translationService.fireTranslationChanged(translation);
+                });
+
+              }
+
+              // Clear phrase memory 
+              $scope.clearPhraseMemory = function(translation) {
+                translationService.clearPhraseMemory(translation.id).then(function(data) {
+                  translationService.fireConceptChanged(data);
+                });
+
               }
 
               // Initialize if project setting isn't used
@@ -681,7 +704,7 @@ tsApp
 
               // Add translation modal
               $scope.openAddTranslationModal = function() {
-                console.debug("openAddTranslationMzodal ");
+                console.debug("openAddTranslationModal ");
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/editTranslation.html',
@@ -1209,14 +1232,14 @@ tsApp
                   // TODO: validation/errors
 
                   translationService.updateConcept(concept).then(
-                  // Success - update refset
+                  // Success - update concept
                   function(data) {
 
                     // TODO: workflow action to "SAVE"
 
                     $uibModalInstance.close(concept);
                   },
-                  // Error - update refset
+                  // Error - update concept
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
@@ -1234,6 +1257,178 @@ tsApp
                 if ($scope.conceptTranslated.descriptions.length == 0) {
                   $scope.newDescription();
                 }
+
+              };
+
+              // Import/Export modal
+              $scope.openImportExportModal = function(ltranslation, loperation, ltype) {
+                console.debug("exportModal ", ltranslation);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/importExport.html',
+                  controller : ImportExportModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    translation : function() {
+                      return ltranslation;
+                    },
+                    operation : function() {
+                      return loperation;
+                    },
+                    type : function() {
+                      return ltype;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                });
+              };
+
+              // Import/Export controller
+              var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
+                operation, type) {
+                console.debug("Entered import export modal control");
+
+                $scope.translation = translation;
+                $scope.type = type;
+                $scope.operation = operation;
+                $scope.errors = [];
+
+                // Handle export
+                $scope.export = function() {
+                  console.debug("export", $scope.translation.id);
+                  if (type == 'Spelling Dictionary') {
+                    translationService.exportSpellingDictionary($scope.translation.id);
+                  }
+                  if (type == 'Phrase Memory') {
+                    translationService.exportPhraseMemory($scope.translation.id);
+                  }
+                  $uibModalInstance.close();
+                };
+
+                // Handle import
+                $scope.import = function(file) {
+                  console.debug("import", $scope.translation.id, file);
+
+                  if (type == 'Spelling Dictionary') {
+                    translationService.importSpellingDictionary($scope.translation.id, file).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close($scope.translation);
+                      },
+                      // Error 
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                  }
+                  if (type == 'Phrase Memory') {
+                    translationService.importPhraseMemory($scope.translation.id, file).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close($scope.translation);
+                      },
+                      // Error 
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                  }
+
+                };
+
+                $scope.cancel = function() {
+                  // dismiss the dialog
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+              };
+
+              // Copy modal
+              $scope.openCopyModal = function(ltranslation, ltype) {
+                console.debug("copyModal ", ltranslation, ltype);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/copy.html',
+                  controller : CopyModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    toTranslation : function() {
+                      return ltranslation;
+                    },
+                    type : function() {
+                      return ltype;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                });
+              };
+
+              // Copy controller
+              var CopyModalCtrl = function($scope, $uibModalInstance, toTranslation, type) {
+                console.debug("Entered copymodal control");
+
+                $scope.translations = [];
+                $scope.toTranslation = toTranslation;
+                $scope.translation = null;
+                $scope.type = type;
+                $scope.errors = [];
+
+                // Initialize by looking up all translations
+                translationService.findTranslationsForQuery("", {}).then(
+                // Success
+                function(data) {
+                  var list = [];
+                  for (var t in data.translations) {
+                    if (type == 'Spelling Dictionary' && t.spellingDictionarySize > 0) {
+                      list.push(t);
+                    }
+                    if (type == 'Phrase Memory' && t.phraseMemorySize > 0) {
+                      list.push(t);
+                    }
+                  }
+                  $scope.translations = list.sort(utilService.sort_by('name'));
+                  if ($scope.translations.length == 0) {
+                    $scope.errors[0] = "No translations with " + type + " entries were found.";
+                  }
+                },
+                // Error
+                function(data) {
+                  $scope.errors[0] = data;
+                  utilService.clearError();
+                });
+
+                // Select translation
+                $scope.selectTranslation = function(translation) {
+                  $scope.translation = translation;
+                }
+
+                // Handle export
+                $scope.copy = function() {
+                  if (type == 'Spelling Dictionary') {
+                    translationService.copySpellingDictionary($scope.translation.id,
+                      $scope.toTranslation.id);
+                  }
+                  if (type == 'Phrase Memory') {
+                    translationService.copyPhraseMemory($scope.translation.id,
+                      $scope.toTranslation.id);
+                  }
+                  $uibModalInstance.close(refset);
+                };
+
+                $scope.cancel = function() {
+                  // dismiss the dialog
+                  $uibModalInstance.dismiss('cancel');
+                };
 
               };
 

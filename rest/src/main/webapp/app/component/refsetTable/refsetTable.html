@@ -436,8 +436,8 @@
           <i ng-show="value == 'ASSIGNED'"
             ng-click="openAddMemberModal(lmember, selected.refset); $event.stopPropagation()"
             title="Add refset member" class="noul material-icons md-18">add</i>
-          <i ng-show="value == 'ASSIGNED'"
-            ng-show="selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
+          <i
+            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
             ng-click="removeAllRefsetMembers(selected.refset)"
             title="Remove all members" class="noul material-icons md-18">delete</i>
         </div>

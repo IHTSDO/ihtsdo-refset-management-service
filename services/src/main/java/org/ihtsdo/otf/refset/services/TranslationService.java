@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
+import java.util.List;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
@@ -455,7 +456,8 @@ public interface TranslationService extends RefsetService {
    * @return the release info list
    * @throws Exception the exception
    */
-  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
+  public ReleaseInfoList 
+  findTranslationReleasesForQuery(Long translationId,
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -470,6 +472,18 @@ public interface TranslationService extends RefsetService {
     Long projectId) throws Exception;
 
   /**
+   * Find memory entry for translation.
+   *
+   * @param translationId the translation id
+   * @param query the query
+   * @param pfs the pfs
+   * @return the memory entry list
+   * @throws Exception the exception
+   */
+  List<MemoryEntry> findMemoryEntryForTranslation(Long translationId, String query,
+    PfsParameter pfs) throws Exception;
+
+/**
    * Handle lazy initialization for a translation.
    *
    * @param translation the translation
