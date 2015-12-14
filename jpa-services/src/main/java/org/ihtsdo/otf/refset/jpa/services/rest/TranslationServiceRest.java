@@ -423,17 +423,6 @@ public interface TranslationServiceRest {
     String authToken) throws Exception;
 
   /**
-   * Suggest translatio.
-   *
-   * @param phrase the phrase
-   * @param authToken the auth token
-   * @return the string list
-   * @throws Exception the exception
-   */
-  public StringList suggestTranslation(String phrase, String authToken)
-    throws Exception;
-
-  /**
    * Begin migration.
    *
    * @param translationId the translation id
@@ -569,6 +558,16 @@ public interface TranslationServiceRest {
    * @throws Exception the exception
    */
   public void removeTranslationConceptNote(Long translationId, Long noteId,
+    String authToken) throws Exception;
+
+  /**
+   * @param translationId
+   * @param name
+   * @param authToken
+   * @return
+   * @throws Exception
+   */
+  StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception;
 
 }
