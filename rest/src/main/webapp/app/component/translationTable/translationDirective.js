@@ -14,8 +14,9 @@ tsApp
       'refsetService',
       'releaseService',
       'workflowService',
+      'validationService',
       function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
-        translationService, refsetService, releaseService, workflowService) {
+        translationService, refsetService, releaseService, workflowService, validationService) {
         console.debug('configure translationTable directive');
         return {
           restrict : 'A',
@@ -36,7 +37,8 @@ tsApp
               $scope.user = securityService.getUser();
               $scope.selected = {
                 concept : null,
-                translation : null
+                translation : null,
+                descriptionTypes : []
               };
               $scope.translations = null;
               $scope.translationReleaseInfo = null;
@@ -322,6 +324,13 @@ tsApp
                 })
               };
 
+              // Save user preferences // TODO: should use security service
+              $scope.saveUserPreferences = function() {
+                console.debug("save user prefs", $scope.user.userPreferences);
+                window.alert("need to implement save user prefs");
+                // Saves $scope.user.userPreferences, probably just saves the user
+              }
+
               // export release artifact
               $scope.exportReleaseArtifact = function(artifact) {
                 releaseService.exportReleaseArtifact(artifact);
@@ -367,6 +376,7 @@ tsApp
               // Looks up current release info and concepts.
               $scope.selectTranslation = function(translation) {
                 $scope.selected.translation = translation;
+                $scope.selected.descriptionTypes = translation.descriptionTypes;
                 $scope.getTranslationReleaseInfo(translation);
                 $scope.getConcepts(translation);
                 $scope.getAvailableConcepts(translation);
@@ -1084,6 +1094,12 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
+                    },
+                    user : function() {
+                      return $scope.user;
+                    },
+                    role : function() {
+                      return $scope.projects.role;
                     }
                   }
                 });
@@ -1097,7 +1113,7 @@ tsApp
 
               // Edit concept controller
               var EditConceptModalCtrl = function($scope, $uibModalInstance, concept, translation,
-                project) {
+                project, user, role) {
 
                 console.debug("Entered edit concept modal control");
                 // Paging params
@@ -1105,7 +1121,9 @@ tsApp
                 $scope.paging = {};
                 $scope.paging["descriptions"] = {
                   page : 1,
-                  filter : ""
+                  filter : "",
+                  sortField : 'lastModified',
+                  ascending : null
                 }
                 $scope.pagedDescriptions;
 
@@ -1115,7 +1133,8 @@ tsApp
 
                 // data structure for report - setting this causes the frame to load
                 $scope.data = {
-                  concept : null
+                  concept : null,
+                  descriptionTypes : translation.descriptionTypes
                 }
 
                 // scope variables
@@ -1123,6 +1142,9 @@ tsApp
                 $scope.conceptTranslated = JSON.parse(JSON.stringify(concept));
                 $scope.conceptTranslated.relationships = null;
                 $scope.newDescription = null;
+                $scope.project = project;
+                $scope.user = user;
+                $scope.role = role;
 
                 // Data structure for case sensitivity - we just need the id/name
                 $scope.caseSensitiveTypes = [];
@@ -1133,23 +1155,43 @@ tsApp
                   })
                 }
 
-                //TODO: wire to user prefs
-                $scope.enableSpelling = true;
-                $scope.selectedWord = "_ALL_";
-                $scope.enableMemory = true;
+                // spelling/memory scope vars
+                $scope.selectedWord = null;
                 $scope.selectedEntry = null;
-
-                $scope.project = project;
 
                 //Clear errors
                 $scope.clearError = function() {
                   $scope.errors = [];
                 }
 
+                // Table sorting mechanism
+                $scope.setSortField = function(field, object) {
+                  utilService.setSortField('descriptions', field, $scope.paging);
+                  $scope.getPagedDescriptions();
+                };
+
+                // Return up or down sort chars if sorted
+                $scope.getSortIndicator = function(field) {
+                  return utilService.getSortIndicator('descriptions', field, $scope.paging);
+                };
+
                 // Get the words of the descriptions
                 $scope.getDescriptionWords = function() {
-                  // look through concdeptTranslated.descriptions and parse out words
-                  return [ "todo", "fix", "this" ];
+                  var allWords = {};
+                  for (var i = 0; i < $scope.conceptTranslated.descriptions.length; i++) {
+                    var words = $scope.conceptTranslated.descriptions[i].term.split(" ");
+                    for (var j = 0; j < words.length; j++) {
+                      if (words[j]) {
+                        allWords[words[j].toLowerCase()] = 1;
+                      }
+                    }
+                  }
+                  var retval = [];
+                  for ( var word in allWords) {
+                    // TODO: subtract out known correct spellings.
+                    retval.push(word);
+                  }
+                  return retval.sort();
                 }
 
                 // Remove a spelling entry
@@ -1158,15 +1200,10 @@ tsApp
                   if (!word) {
                     return;
                   }
-                  // If all chosen, confirm
-                  if (word == '_ALL_') {
-                    if (!confirm("Are you sure you want to remove these spelling dictionary entries?")) {
-                      return;
-                    }
-                    // Make a call to remove all of these entries
-                  }
 
                   // Make a call to translation sevice to remove the entry from spelling
+
+                  // remove it from the list too with splice(idx,1)
                 }
 
                 // Add a spelling entry
@@ -1179,6 +1216,10 @@ tsApp
                 $scope.getMemoryEntries = function() {
                   // These are whatever memory entries have been retrieved for the 
                   // current set of descriptions
+                  //                  return [ {
+                  //                    name : "abc",
+                  //                    translatedName : "def"
+                  //                  } ];
                   return [];
                 }
 
@@ -1212,7 +1253,7 @@ tsApp
                   // TODO: decide which one to pick (maybe just look for "Synonym"
                   description.type = $scope.translation.descriptionTypes[$scope.translation.descriptionTypes.length - 1];
 
-                  $scope.conceptTranslated.descriptions.push(description);
+                  $scope.conceptTranslated.descriptions.unshift(description);
                   $scope.getPagedDescriptions();
                 }
 
@@ -1223,9 +1264,6 @@ tsApp
                 }
 
                 $scope.submitConcept = function(concept) {
-
-                  // TODO: validation/errors
-
                   // Iterate through concept, set description types and languages
                   var copy = JSON.parse(JSON.stringify(concept));
                   for (var i = 0; i < copy.descriptions.length; i++) {
@@ -1236,21 +1274,66 @@ tsApp
                     desc.languages[0].acceptabilityId = desc.type.acceptabilityId;
                     desc.type = undefined;
                   }
+                  $scope.validateConcept(copy);
+                }
 
-                  translationService.updateTranslationConcept(copy).then(
-                  // Success - update concept
+                $scope.validateConcept = function(concept) {
+                  // Validate the concept
+                  validationService.validateConcept(concept, $scope.project.id).then(
+                  // Success
                   function(data) {
-                    console.debug("updated concept", data);
+                    console.debug("data", data);
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    }
 
-                    // TODO: workflow action to "SAVE"
+                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
+                    if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    }
 
-                    $uibModalInstance.close(copy);
+                    // Otherwise, there are no errors and either no warnings
+                    // or the user has clicked through warnings.  Proceed
+                    $scope.submitConceptHelper(concept);
+
                   },
-                  // Error - update concept
+                  // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
-                  })
+                  });
+                }
+
+                $scope.submitConceptHelper = function(concept) {
+
+                  translationService.updateTranslationConcept(concept).then(
+                    // Success - update concept
+                    function(data) {
+                      console.debug("updated concept", data);
+
+                      // Perform a workflow "save" operation
+                      workflowService.performTranslationWorkflowAction($scope.project.id,
+                        $scope.translation.id, $scope.user.userName, $scope.role, "SAVE", concept)
+                        .then(
+                        // Success
+                        function(data) {
+                          // finished.
+                          $uibModalInstance.close(concept);
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                    },
+                    // Error - update concept
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
 
                 };
 

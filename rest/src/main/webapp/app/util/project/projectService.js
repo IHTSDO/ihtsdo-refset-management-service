@@ -508,4 +508,28 @@ tsApp.service('projectService', [
       });
       return deferred.promise;
     }
+
+    // Get standard description types
+    this.getStandardDescriptionTypes = function(terminology, version) {
+      console.debug("getStandardDescriptionTypes",terminology,version);
+      var deferred = $q.defer();
+
+      // Get projects
+      gpService.increment()
+      $http.get(projectUrl + 'terminology/' + terminology + 
+        '/descriptiontypes?version=' + version)
+        .then(
+        // success
+        function(response) {
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
   } ]);

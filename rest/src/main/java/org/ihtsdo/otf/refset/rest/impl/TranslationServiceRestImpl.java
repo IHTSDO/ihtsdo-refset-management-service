@@ -1051,18 +1051,25 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         boolean found = false;
         for (Description desc : concept.getDescriptions()) {
           // Look for a match
-          if (oldDesc.getId() == desc.getId()) {
+          if (oldDesc.getId().equals(desc.getId())) {
 
-            // add or update languages for matching descs
-            for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
-              member.setLastModifiedBy(userName);
-              if (member.getId() == null) {
-                translationService.addLanguageRefsetMember(member);
-              } else {
-                translationService.updateLanguageRefsetMember(member);
-              }
+            // Update language refset member - assume each description has exactly one
+            if (oldDesc.getLanguageRefsetMembers().size() != 1) {
+              throw new Exception("Unexpected number of language refset members for old description.");
             }
-            // update matching desc
+            if (desc.getLanguageRefsetMembers().size() != 1) {
+              throw new Exception("Unexpected number of language refset members for description.");
+            }
+            LanguageRefsetMember oldMember = oldDesc.getLanguageRefsetMembers().get(0);
+            LanguageRefsetMember member = oldDesc.getLanguageRefsetMembers().get(0);
+            if (!oldMember.getAcceptabilityId().equals(member.getAcceptabilityId())) {
+              oldMember.setAcceptabilityId(member.getAcceptabilityId());
+              oldMember.setLastModifiedBy(userName);
+              translationService.updateLanguageRefsetMember(member);
+            }
+
+            // update the description in case other fields changed
+            desc.setLanguageRefsetMembers(oldDesc.getLanguageRefsetMembers());
             desc.setLastModifiedBy(userName);
             translationService.updateDescription(desc);
             // found a match, move to the next one
@@ -1580,7 +1587,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
 
   }
-  
+
   /* see superclass */
   /* see superclass */
   @GET
@@ -1593,8 +1600,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Spelling Entry): /translation/suggest/" + translationId
-            + " " + name);
+        "RESTful call PUT (Spelling Entry): /translation/suggest/"
+            + translationId + " " + name);
 
     TranslationService translationService = new TranslationServiceJpa();
 
@@ -1611,9 +1618,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
           "Suggest translation based on name supplied", UserRole.VIEWER);
-      
+
       String query = "name:" + name;
-      List<MemoryEntry> entries = translationService.findMemoryEntryForTranslation(translationId, query , null);
+      List<MemoryEntry> entries =
+          translationService.findMemoryEntryForTranslation(translationId,
+              query, null);
       List<String> results =
           Lists.transform(entries, new Function<MemoryEntry, String>() {
 

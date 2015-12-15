@@ -9,8 +9,11 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 
 /**
  * Default checks that apply to all refsets/translations.
@@ -23,6 +26,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     // n/a
   }
 
+  /* see superclass */
   @Override
   public String getName() {
     return "Default validation check";
@@ -34,16 +38,17 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     Logger.getLogger(getClass()).debug("  Validate refset - " + refset);
     ValidationResult result = new ValidationResultJpa();
 
-    /*// FOR TESTING
-    if (!refset.getDescription().contains("Description")) {
-      result.addError("TESTING Error: Descriptions must include the word 'Description'.");
-    }
-    
-    // FOR TESTING
-    if (!refset.getDescription().contains("refset")) {
-      result.addWarning("TESTING Warning: Descriptions must include the word 'refset'.");
-    }    */
-    
+    /*
+     * // FOR TESTING if (!refset.getDescription().contains("Description")) {
+     * result
+     * .addError("TESTING Error: Descriptions must include the word 'Description'."
+     * ); }
+     * 
+     * // FOR TESTING if (!refset.getDescription().contains("refset")) {
+     * result.addWarning
+     * ("TESTING Warning: Descriptions must include the word 'refset'."); }
+     */
+
     // Only an INTENSIONAL refset should have a definition
     if (refset.getType() != Refset.Type.INTENSIONAL
         && refset.getDefinition() != null) {
@@ -102,6 +107,32 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("Non-exclusion members should be publishable");
     }
 
+    return result;
+  }
+
+  /**
+   * Validate.
+   *
+   * @param concept the concept
+   * @param service the service
+   * @return the validation result
+   */
+  @Override
+  public ValidationResult validate(Concept concept, TranslationService service) {
+    ValidationResult result = new ValidationResultJpa();
+
+    // Fail for leading whitespace
+    for (Description desc : concept.getDescriptions()) {
+      if (desc.getTerm().matches("^\\s.*")) {
+        result.addWarning("Description with leading whitespace");
+      }
+      if (desc.getTerm().matches(".*\\s$")) {
+        result.addWarning("Description with trailing whitespace");
+      }
+      if (desc.getTerm().matches(".*\\s\\s.*")) {
+        result.addWarning("Description with duplicate whitespace");
+      }
+    }
     return result;
   }
 

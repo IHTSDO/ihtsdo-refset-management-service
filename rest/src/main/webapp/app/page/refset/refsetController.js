@@ -147,6 +147,7 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
+        
       }
 
     ]);

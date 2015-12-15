@@ -25,6 +25,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
@@ -34,6 +35,7 @@ import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
@@ -43,6 +45,7 @@ import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -54,6 +57,11 @@ import com.wordnik.swagger.annotations.ApiParam;
 
 /**
  * REST implementation for {@link ProjectServiceRest}..
+ */
+
+/**
+ * Reference implementation of {@link ProjectServiceRest}. Includes hibernate
+ * tags for MEME database.
  */
 @Path("/project")
 @Consumes({
@@ -290,8 +298,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     try {
 
       final String userName =
-          authorizeApp(securityService, authToken, "add project",
-              UserRole.USER);
+          authorizeApp(securityService, authToken, "add project", UserRole.USER);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -347,7 +354,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       // The map adapter for UserRoleMap only loads usernames and we need the
       // ids This method also shouldn't be used to change user role map so we
-      // reload it from the persisted object and reuse it.  A similar thing
+      // reload it from the persisted object and reuse it. A similar thing
       // is NOT needed for the user object because the role map persists
       // only project ids.
       project.setUserRoleMap(projectService.getProject(project.getId())
@@ -596,6 +603,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/icons")
@@ -665,6 +673,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/concept")
@@ -686,8 +695,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           "retrieve concept with description", UserRole.VIEWER);
 
       Concept concept =
-          projectService.getTerminologyHandler().getFullConcept(
-              terminologyId, terminology, version);
+          projectService.getTerminologyHandler().getFullConcept(terminologyId,
+              terminology, version);
 
       return concept;
     } catch (Exception e) {
@@ -779,5 +788,41 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
     }
 
+  }
+
+  /* see superclass */
+
+  @Override
+  @GET
+  @Path("/terminology/{terminology}/descriptiontypes")
+  @ApiOperation(value = "Get standard description types", notes = "Returns standard description types for the specified terminology and version.", response = DescriptionTypeListJpa.class)
+  public DescriptionTypeList getStandardDescriptionTypes(
+    @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/" + terminology
+            + "/descriptiontypes - " + version);
+
+    ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
+
+      List<DescriptionType> types =
+          projectService.getTerminologyHandler().getStandardDescriptionTypes(
+              terminology, version);
+
+      DescriptionTypeList list = new DescriptionTypeListJpa();
+      list.setObjects(types);
+      list.setTotalCount(types.size());
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get versions");
+    } finally {
+      securityService.close();
+    }
+    return null;
   }
 }
