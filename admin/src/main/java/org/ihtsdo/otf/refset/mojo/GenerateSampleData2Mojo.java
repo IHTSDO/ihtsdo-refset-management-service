@@ -747,6 +747,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
+    refset.setLookupInProgress(false);
     refset.setModuleId(moduleId);
     refset.setProject(project);
     refset.setPublishable(true);
