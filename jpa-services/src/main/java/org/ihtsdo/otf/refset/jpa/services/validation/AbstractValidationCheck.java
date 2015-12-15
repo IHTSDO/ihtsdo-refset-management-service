@@ -32,7 +32,8 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Concept concept, TranslationService service) {
+  public ValidationResult validate(Concept concept, TranslationService service)
+    throws Exception {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -41,7 +42,7 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
   /* see superclass */
   @Override
   public ValidationResult validate(ConceptRefsetMember members,
-    RefsetService service) {
+    RefsetService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -50,7 +51,7 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
   /* see superclass */
   @Override
   public ValidationResult validate(Translation translation,
-    TranslationService service) {
+    TranslationService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
@@ -58,7 +59,8 @@ public abstract class AbstractValidationCheck implements ValidationCheck {
 
   /* see superclass */
   @Override
-  public ValidationResult validate(Refset refset, RefsetService service) {
+  public ValidationResult validate(Refset refset, RefsetService service)
+    throws Exception {
     ValidationResult result = new ValidationResultJpa();
     // no checks
     return result;
