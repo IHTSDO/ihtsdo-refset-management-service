@@ -55,6 +55,20 @@ public interface PfsParameter {
   public void setActiveOnly(boolean activeOnly);
 
   /**
+   * Returns the latest only.
+   *
+   * @return the latest only
+   */
+  public boolean getLatestOnly();
+  
+  /**
+   * Sets the latest only.
+   *
+   * @param latestOnly the latest only
+   */
+  public void setLatestOnly(boolean latestOnly);
+  
+  /**
    * Indicates whether to find only inactive content.
    *
    * @return the find inactive only

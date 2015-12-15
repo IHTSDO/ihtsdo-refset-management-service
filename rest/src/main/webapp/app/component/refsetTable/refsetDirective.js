@@ -44,7 +44,8 @@ tsApp
               $scope.refsets = null;
               $scope.project = null;
               // TODO: consider whether refset.members should just be "members"
-
+              $scope.showLatest = true;
+              
               // Page metadata
               $scope.memberTypes = [ "Member", "Exclusion", "Inclusion" ];
 
@@ -126,11 +127,13 @@ tsApp
                   sortField : $scope.paging["refset"].sortField,
                   ascending : $scope.paging["refset"].ascending == null ? true
                     : $scope.paging["refset"].ascending,
-                  queryRestriction : null
+                  queryRestriction : null,
+                  latestOnly : false
                 };
 
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
+                  pfs.latestOnly = $scope.showLatest; 
                   refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
@@ -204,12 +207,14 @@ tsApp
                   })
                 }
                 if ($scope.value == 'RELEASE') {
-                  workflowService.findReleaseProcessRefsets($scope.project.id, pfs).then(
-                    function(data) {
-                      $scope.refsets = data.refsets;
-                      $scope.refsets.totalCount = data.totalCount;
-                      $scope.reselect();
-                    })
+                  pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
+                  pfs.latestOnly = $scope.showLatest;  
+                  refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
+                      function(data) {
+                        $scope.refsets = data.refsets;
+                        $scope.refsets.totalCount = data.totalCount;
+                        $scope.reselect();
+                      })
                 }
               };
 

@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -253,15 +254,46 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).info("Refset Service - find refsets " + query);
     int[] totalCt = new int[1];
     // NOTE: this method ignores provisional refsets
+    int origStartIndex = pfs.getStartIndex();    
+    if (pfs.getLatestOnly()) {
+      pfs.setStartIndex(-1);
+    }
+    // this will do filtering and sorting, but not paging
     List<Refset> list =
         (List<Refset>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *] AND provisional:false" : query
                 + " AND provisional:false", RefsetJpa.class, RefsetJpa.class,
             pfs, totalCt);
 
+
     RefsetList result = new RefsetListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
+    
+    if (pfs.getLatestOnly()) {
+      List<Refset> resultList = new ArrayList<>();
+      
+      Map<String, Refset> latestList = new HashMap<>();
+      for (Refset refset : list) {
+        if (refset.getEffectiveTime() == null) {
+          resultList.add(refset);
+        }
+        else if (!latestList.containsKey(refset.getName())) {
+          latestList.put(refset.getName(), refset);
+        } else {
+          Date effectiveTime = latestList.get(refset.getName()).getEffectiveTime();
+          if (refset.getEffectiveTime().after(effectiveTime)) {
+            latestList.put(refset.getName(), refset);
+          }
+        }
+      }
+      list = new ArrayList<Refset>(latestList.values());
+      list.addAll(resultList);
+      pfs.setStartIndex(origStartIndex);
+      result.setObjects(applyPfsToList(list, Refset.class, pfs));
+      result.setTotalCount(list.size());
+    } else {    
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+    }
     for (Refset refset : result.getObjects()) {
       handleLazyInit(refset);
     }

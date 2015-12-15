@@ -71,6 +71,7 @@ public class PfsParameterJpaUnitTest extends ModelUnitSupport {
     tester.include("branch");
     tester.include("activeOnly");
     tester.include("inactiveOnly");
+    tester.include("latestOnly");
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());

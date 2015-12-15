@@ -22,6 +22,12 @@
         ng-click="paging['refset'].filter = ''; getRefsets()"
         title="Click to clear filter text">Clear</button>
 
+      <button type="button" class="btn btn-xs btn-primary" ng-show="refsets.totalCount > 0 &&
+        (value == 'RELEASE' || value == 'PREVIEW' || value == 'PUBLISHED')" ng-model="showLatest" ng-change="getRefsets()"
+        uib-btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+        <span ng-show="showLatest" title="Click to show all">Latest</span>
+        <span ng-hide="showLatest" title="Click to show only most recent">All</span></button>
+  
       <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
         <div style="float: right;">
           <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
