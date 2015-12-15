@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.NoResultException;
 
@@ -22,6 +23,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -40,6 +42,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -63,6 +66,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   /** The export refset handlers. */
   private static Map<String, ExportRefsetHandler> exportRefsetHandlers =
       new HashMap<>();
+
+  /**
+   * To populate progress (percentage) of looking up refset names & active
+   * statuses.
+   */
+  private static Map<Long, Integer> refsetLookupProgressMap =
+      new ConcurrentHashMap<>();
 
   static {
     try {
@@ -895,5 +905,98 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
+  }
+
+  @Override
+  public void lookupNames(final Long refsetId) {
+    // Only launch process if refset not already looked-up
+    if (!refsetLookupProgressMap.containsKey(refsetId)) {
+      // Initialize lookup with zero progress
+      refsetLookupProgressMap.put(refsetId, 0);
+
+      // TODO: flag refset, update refset Refset.setLookupInProgress (new model
+      // field)
+
+      // Create new thread
+      Thread lookup = new Thread(new Runnable() {
+        public void run() {
+          // TODO: Changet to findMembersForRefsetRevision once implemented?
+          try {
+            ConceptRefsetMemberList members =
+                findMembersForRefset(refsetId, null, null);
+
+            if (members.getTotalCount() > 0) {
+              Refset refset = getRefset(refsetId);
+              refset.setLookupInProgress(true);
+
+              String terminology = members.getObjects().get(0).getTerminology();
+              String version = members.getObjects().get(0).getVersion();
+
+              // Do 10 at time
+              // FOR NOT DOING ONLY ONE
+              int numberOfMembers = members.getTotalCount();
+
+              for (int i = 0; i < numberOfMembers;) {
+                // Get list of conceptIds for all members (up to 10 at a time)
+                List<String> termIds = new ArrayList<>();
+                for (int j = i; ((j % 10 == 0) && j < numberOfMembers); j++, i++) {
+                  termIds.add(members.getObjects().get(j).getConceptId());
+
+                  // Get concepts based on members list
+                  ConceptList cons =
+                      getTerminologyHandler().getConcepts(termIds, terminology,
+                          version);
+
+                  // Populate member's names/statuses from results of Term
+                  // Server
+                  for (Concept con : cons.getObjects()) {
+                    for (ConceptRefsetMember member : members.getObjects()) {
+                      if (member.getConceptId().equalsIgnoreCase(
+                          con.getId().toString())) {
+                        member.setConceptName(con.getName());
+                        member.setConceptActive(con.isActive());
+                        updateMember(member);
+                        commit();
+                        break;
+                      }
+                    }
+                  }
+                }
+
+                // Update Progess
+                refsetLookupProgressMap.put(refsetId,
+                    (int) ((100.0 * i) / numberOfMembers));
+              }
+
+              // Set progess to completed
+              refset.setLookupInProgress(false);
+              updateRefset(refset);
+              commit();
+              refsetLookupProgressMap.remove(refsetId);
+            }
+          } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          }
+        }
+      });
+
+      lookup.start();
+    }
+  }
+
+  @Override
+  public int getLookupProgress(Long refsetId) throws Exception {
+    Refset refset = getRefset(refsetId);
+
+    if (refset.isLookupInProgress()) {
+      if (refsetLookupProgressMap.containsKey(refsetId)) {
+        return refsetLookupProgressMap.get(refsetId);
+      } else {
+        return -1;
+      }
+    }
+
+    return 100;
   }
 }

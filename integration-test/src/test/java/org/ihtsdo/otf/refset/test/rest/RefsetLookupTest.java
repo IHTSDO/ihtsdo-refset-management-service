@@ -124,9 +124,8 @@ public class RefsetLookupTest extends RestIntegrationSupport {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  private RefsetJpa makeRefset(String name, String definition,
-    Project project, String refsetId, User auth, File f)
-    throws Exception {
+  private RefsetJpa makeRefset(String name, String definition, Project project,
+    String refsetId, User auth, File f) throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(Refset.Type.EXTENSIONAL);
@@ -172,14 +171,14 @@ public class RefsetLookupTest extends RestIntegrationSupport {
       throw new Exception("import staging is invalid - " + vr);
     }
     InputStream in = new FileInputStream(f);
-    
+
     refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
         auth.getAuthToken());
     in.close();
 
     return refset;
   }
-  
+
   /**
    * Test refset member note.
    *
@@ -188,8 +187,9 @@ public class RefsetLookupTest extends RestIntegrationSupport {
   @Test
   public void testIdentifyingNoProcessForRefset() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
-    
-    assertEquals(refsetService.getLookupProgress(new Long(123), authToken).intValue(), -1);
+
+    assertEquals(refsetService.getLookupProgress(new Long(123), authToken)
+        .intValue(), -1);
   }
 
   /**
@@ -207,11 +207,12 @@ public class RefsetLookupTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("Get refset");
 
     // Create extensional refset and import contents with one member
-    File refsetImportFile = new File(
-        "../config/src/main/resources/data/lookup/OneMemberRefset.txt");
+    File refsetImportFile =
+        new File("../config/src/main/resources/data/lookup/OneMemberRefset.txt");
 
     RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(), admin, refsetImportFile);
+        makeRefset("refset", null, project, UUID.randomUUID().toString(),
+            admin, refsetImportFile);
 
     refsetService.startLookupNames(refset.getId(), authToken);
 
@@ -219,11 +220,12 @@ public class RefsetLookupTest extends RestIntegrationSupport {
     while (completed < 100) {
       assertFalse(completed < 0);
       assertTrue(completed < 100);
-      completed = refsetService.getLookupProgress(refset.getId(), authToken).intValue();
+      completed =
+          refsetService.getLookupProgress(refset.getId(), authToken).intValue();
     }
-    
+
     assertEquals(completed, 100);
-    
+
     ConceptRefsetMember member = refset.getMembers().get(0);
     assertEquals(member.getConceptName(), "CONCEPT NAME");
     assertEquals(member.isConceptActive(), true);
@@ -244,11 +246,12 @@ public class RefsetLookupTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("Get refset");
 
     // Create extensional refset and import contents with two members
-    File refsetImportFile = new File(
-        "../config/src/main/resources/data/lookup/TwoMemberRefset.txt");
+    File refsetImportFile =
+        new File("../config/src/main/resources/data/lookup/TwoMemberRefset.txt");
 
     RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(), admin, refsetImportFile);
+        makeRefset("refset", null, project, UUID.randomUUID().toString(),
+            admin, refsetImportFile);
 
     refsetService.startLookupNames(refset.getId(), authToken);
 
@@ -256,11 +259,12 @@ public class RefsetLookupTest extends RestIntegrationSupport {
     while (completed < 100) {
       assertFalse(completed < 0);
       assertTrue(completed < 100);
-      completed = refsetService.getLookupProgress(refset.getId(), authToken).intValue();
+      completed =
+          refsetService.getLookupProgress(refset.getId(), authToken).intValue();
     }
-    
+
     assertEquals(completed, 100);
-    
+
     for (ConceptRefsetMember member : refset.getMembers()) {
       if (member.getConceptId().equals("123456")) {
         assertEquals(member.getConceptName(), "CONCEPT NAME1");
@@ -282,18 +286,20 @@ public class RefsetLookupTest extends RestIntegrationSupport {
   @Test
   public void testLaunchingCompletingLookupTwentyFiveMembers() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
- 
+
     Project project = projectService.getProject(2L, authToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     Logger.getLogger(getClass()).debug("Get refset");
 
     // Create extensional refset and import contents with twenty five members
-    File refsetImportFile = new File(
-        "../config/src/main/resources/data/lookup/TwentyFiveMemberRefset.txt");
+    File refsetImportFile =
+        new File(
+            "../config/src/main/resources/data/lookup/TwentyFiveMemberRefset.txt");
 
     RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(), admin, refsetImportFile);
+        makeRefset("refset", null, project, UUID.randomUUID().toString(),
+            admin, refsetImportFile);
 
     refsetService.startLookupNames(refset.getId(), authToken);
 
@@ -301,11 +307,12 @@ public class RefsetLookupTest extends RestIntegrationSupport {
     while (completed < 100) {
       assertFalse(completed < 0);
       assertTrue(completed < 100);
-      completed = refsetService.getLookupProgress(refset.getId(), authToken).intValue();
+      completed =
+          refsetService.getLookupProgress(refset.getId(), authToken).intValue();
     }
-    
+
     assertEquals(completed, 100);
-    
+
     for (ConceptRefsetMember member : refset.getMembers()) {
       assertFalse(member.getConceptName() == null);
       assertFalse(member.getConceptName().isEmpty());

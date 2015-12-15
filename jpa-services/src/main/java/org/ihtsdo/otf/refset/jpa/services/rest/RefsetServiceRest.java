@@ -555,4 +555,26 @@ public interface RefsetServiceRest {
   public ConceptRefsetMember getMember(Long refsetId, String authToken)
     throws Exception;
 
+  /**
+   * Returns the status of identifying the name and active states for all
+   * members of the refset
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return lookup status
+   * @throws Exception
+   */
+  public Integer getLookupProgress(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
+   * Launches the lookup process of identifying the name and active states for
+   * all members of the refset
+   * 
+   * @param refsetId
+   * @param authToken
+   * @throws Exception
+   */
+  public void startLookupNames(Long refsetId, String authToken)
+    throws Exception;
 }

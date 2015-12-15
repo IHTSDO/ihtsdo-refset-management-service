@@ -343,4 +343,22 @@ public interface RefsetService extends ReleaseService {
    * @param member the member
    */
   public void handleLazyInit(ConceptRefsetMember member);
+
+  /**
+   * Launches thread to populate DB with name and active-status of refset
+   * members
+   * 
+   * @param refsetId the refset
+   */
+  public void lookupNames(Long refsetId);
+
+  /**
+   * Returns the percentage of concepts within the refset whose lookup has been
+   * completed
+   * 
+   * @param refsetId the refset
+   * @return percentage completed
+   * @throws Exception
+   */
+  public int getLookupProgress(Long refsetId) throws Exception;
 }

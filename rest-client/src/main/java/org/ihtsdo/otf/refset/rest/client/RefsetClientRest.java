@@ -1312,4 +1312,53 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  @Override
+  public Integer getLookupProgress(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - get status for lookup of names and statuses of refset members "
+            + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/lookup/status?"
+            + "refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
+
+    Integer resultInteger = response.readEntity(Integer.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+
+    return resultInteger;
+  }
+
+  @Override
+  public void startLookupNames(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - start lookup of names and statuses of refset members "
+            + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/lookup/start?"
+            + "refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
 }
