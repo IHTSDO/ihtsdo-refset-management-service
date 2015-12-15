@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -264,7 +265,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).info("Refset Service - find refsets " + query);
     int[] totalCt = new int[1];
     // NOTE: this method ignores provisional refsets
-    int origStartIndex = pfs.getStartIndex();    
+    int origStartIndex = pfs.getStartIndex();
     if (pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
@@ -275,21 +276,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                 + " AND provisional:false", RefsetJpa.class, RefsetJpa.class,
             pfs, totalCt);
 
-
     RefsetList result = new RefsetListJpa();
-    
+
     if (pfs.getLatestOnly()) {
       List<Refset> resultList = new ArrayList<>();
-      
+
       Map<String, Refset> latestList = new HashMap<>();
       for (Refset refset : list) {
         if (refset.getEffectiveTime() == null) {
           resultList.add(refset);
-        }
-        else if (!latestList.containsKey(refset.getName())) {
+        } else if (!latestList.containsKey(refset.getName())) {
           latestList.put(refset.getName(), refset);
         } else {
-          Date effectiveTime = latestList.get(refset.getName()).getEffectiveTime();
+          Date effectiveTime =
+              latestList.get(refset.getName()).getEffectiveTime();
           if (refset.getEffectiveTime().after(effectiveTime)) {
             latestList.put(refset.getName(), refset);
           }
@@ -300,7 +300,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       pfs.setStartIndex(origStartIndex);
       result.setObjects(applyPfsToList(list, Refset.class, pfs));
       result.setTotalCount(list.size());
-    } else {    
+    } else {
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
     }
@@ -908,80 +908,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   }
 
   @Override
-  public void lookupNames(final Long refsetId) {
+  public void lookupNames(final Long refsetId) throws Exception {
     // Only launch process if refset not already looked-up
     if (!refsetLookupProgressMap.containsKey(refsetId)) {
-      // Initialize lookup with zero progress
-      refsetLookupProgressMap.put(refsetId, 0);
-
-      // TODO: flag refset, update refset Refset.setLookupInProgress (new model
-      // field)
-
       // Create new thread
-      Thread lookup = new Thread(new Runnable() {
-        public void run() {
-          // TODO: Changet to findMembersForRefsetRevision once implemented?
-          try {
-            ConceptRefsetMemberList members =
-                findMembersForRefset(refsetId, null, null);
-
-            if (members.getTotalCount() > 0) {
-              Refset refset = getRefset(refsetId);
-              refset.setLookupInProgress(true);
-
-              String terminology = members.getObjects().get(0).getTerminology();
-              String version = members.getObjects().get(0).getVersion();
-
-              // Do 10 at time
-              // FOR NOT DOING ONLY ONE
-              int numberOfMembers = members.getTotalCount();
-
-              for (int i = 0; i < numberOfMembers;) {
-                // Get list of conceptIds for all members (up to 10 at a time)
-                List<String> termIds = new ArrayList<>();
-                for (int j = i; ((j % 10 == 0) && j < numberOfMembers); j++, i++) {
-                  termIds.add(members.getObjects().get(j).getConceptId());
-
-                  // Get concepts based on members list
-                  ConceptList cons =
-                      getTerminologyHandler().getConcepts(termIds, terminology,
-                          version);
-
-                  // Populate member's names/statuses from results of Term
-                  // Server
-                  for (Concept con : cons.getObjects()) {
-                    for (ConceptRefsetMember member : members.getObjects()) {
-                      if (member.getConceptId().equalsIgnoreCase(
-                          con.getId().toString())) {
-                        member.setConceptName(con.getName());
-                        member.setConceptActive(con.isActive());
-                        updateMember(member);
-                        commit();
-                        break;
-                      }
-                    }
-                  }
-                }
-
-                // Update Progess
-                refsetLookupProgressMap.put(refsetId,
-                    (int) ((100.0 * i) / numberOfMembers));
-              }
-
-              // Set progess to completed
-              refset.setLookupInProgress(false);
-              updateRefset(refset);
-              commit();
-              refsetLookupProgressMap.remove(refsetId);
-            }
-          } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-          }
-        }
-      });
-
-      lookup.start();
+      Runnable lookup = new LookupNamesThread(refsetId);
+      Thread t = new Thread(lookup);
+      t.start();
     }
   }
 
@@ -998,5 +931,80 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     return 100;
+  }
+
+  public class LookupNamesThread implements Runnable {
+    private Long refsetId;
+
+    public LookupNamesThread(Long id) throws Exception {
+      refsetId = id;
+
+      RefsetServiceJpa refsetService = new RefsetServiceJpa();
+      Refset refset = refsetService.getRefset(refsetId);
+
+      refsetLookupProgressMap.put(refsetId, 0);
+      refset.setLookupInProgress(true);
+      refsetService.updateRefset(refset);
+    }
+
+    public void run() {
+      // TODO: Changet to findMembersForRefsetRevision once implemented?
+      try {
+        RefsetServiceJpa refsetService = new RefsetServiceJpa();
+        ConceptRefsetMemberList members =
+            refsetService.findMembersForRefset(refsetId, "",
+                new PfsParameterJpa());
+
+        if (members.getTotalCount() > 0) {
+          Refset refset = refsetService.getRefset(refsetId);
+
+          String terminology = members.getObjects().get(0).getTerminology();
+          String version = members.getObjects().get(0).getVersion();
+
+          // Do 10 at time
+          // FOR NOT DOING ONLY ONE
+          int numberOfMembers = members.getTotalCount();
+
+          int i = 0;
+          while (i < numberOfMembers) {
+            // Get list of conceptIds for all members (up to 10 at a time)
+            List<String> termIds = new ArrayList<>();
+            for (int j = 0; (j < 10 && i < numberOfMembers); j++, i++) {
+              termIds.add(members.getObjects().get(j).getConceptId());
+            }
+            // Get concepts based on members list
+            ConceptList cons =
+                getTerminologyHandler().getConcepts(termIds, terminology,
+                    version);
+
+            // Populate member's names/statuses from results of Term
+            // Server
+            for (Concept con : cons.getObjects()) {
+              for (ConceptRefsetMember member : members.getObjects()) {
+                if (member.getConceptId().equalsIgnoreCase(
+                    con.getTerminologyId())) {
+                  member.setConceptName(con.getName());
+                  member.setConceptActive(con.isActive());
+                  refsetService.updateMember(member);
+                  break;
+                }
+              }
+            }
+
+            // Update Progess
+            refsetLookupProgressMap.put(refsetId,
+                (int) ((100.0 * i) / numberOfMembers));
+          }
+
+          // Set progess to completed
+          refset.setLookupInProgress(false);
+          refsetService.updateRefset(refset);
+          refsetLookupProgressMap.remove(refsetId);
+        }
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+    }
   }
 }

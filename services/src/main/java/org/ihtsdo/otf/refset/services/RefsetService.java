@@ -349,8 +349,9 @@ public interface RefsetService extends ReleaseService {
    * members
    * 
    * @param refsetId the refset
+   * @throws Exception
    */
-  public void lookupNames(Long refsetId);
+  public void lookupNames(Long refsetId) throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been

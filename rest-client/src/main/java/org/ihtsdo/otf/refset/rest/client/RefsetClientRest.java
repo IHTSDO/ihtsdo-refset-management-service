@@ -1321,8 +1321,8 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/lookup/status?"
-            + "refsetId=" + refsetId);
+        client.target(config.getProperty("base.url") + "/refset/lookup/status"
+            + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)

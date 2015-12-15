@@ -2435,7 +2435,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Produces("text/plain")
-  @Path("/refset/lookup/status")
+  @Path("/lookup/status")
   @ApiOperation(value = "Compares two refsets", notes = "Returns the percentage completed of the refset lookup process.", response = Integer.class)
   public Integer getLookupProgress(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -2446,11 +2446,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
+      if (refsetService.getRefset(refsetId) == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
       authorizeApp(securityService, authToken, "get lookup status",
           UserRole.VIEWER);
 
       return refsetService.getLookupProgress(refsetId);
-
     } catch (Exception e) {
       handleException(e,
           "trying to find the status of the lookup of member names and statues");
@@ -2463,7 +2466,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   @GET
   @Override
-  @Path("/refset/lookup/start")
+  @Path("/lookup/start")
   @ApiOperation(value = "Cancel refset migration", notes = "Start the lookup process to obtain the names and status of refset members.")
   public void startLookupNames(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
