@@ -4,9 +4,11 @@
 package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 
 /**
@@ -108,6 +110,36 @@ public interface SecurityServiceRest {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findUsersForQuery(String query, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+  public UserList findUsersForQuery(String query, PfsParameterJpa pfs,
+    String authToken) throws Exception;
+
+  /**
+   * Adds the user preferences.
+   *
+   * @param userPreferences the user preferences
+   * @param authToken the auth token
+   * @return the user preferences
+   * @throws Exception the exception
+   */
+  public UserPreferences addUserPreferences(UserPreferencesJpa userPreferences,
+    String authToken) throws Exception;
+
+  /**
+   * Removes the user preferences.
+   *
+   * @param id the id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeUserPreferences(Long id, String authToken) throws Exception;
+
+  /**
+   * Update user preferences.
+   *
+   * @param userPreferences the user preferences
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void updateUserPreferences(UserPreferencesJpa userPreferences,
+    String authToken) throws Exception;
 }

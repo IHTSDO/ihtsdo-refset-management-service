@@ -17,11 +17,13 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
@@ -115,7 +117,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Security): /user/" + id);
-    final  SecurityService securityService = new SecurityServiceJpa();
+    final SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the user",
           UserRole.VIEWER);
@@ -263,7 +265,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get application roles", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get application roles",
+          UserRole.VIEWER);
       final StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.VIEWER.toString());
@@ -277,7 +280,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-  
+
   @POST
   @Path("/user/find")
   @ApiOperation(value = "Find user", notes = "Gets a list of all users for the specified query", response = UserListJpa.class)
@@ -295,7 +298,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     final SecurityService security = new SecurityServiceJpa();
     try {
       authorizeApp(security, authToken, "find users", UserRole.VIEWER);
-      
+
       return security.findUsersForQuery(query, pfs);
     } catch (Exception e) {
       handleException(e, "trying to find users");
@@ -303,5 +306,87 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       security.close();
     }
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  @PUT
+  @Path("/user/preferences/add")
+  @ApiOperation(value = "Add new user preferences", notes = "Creates a new user preferences", response = UserPreferencesJpa.class)
+  public UserPreferences addUserPreferences(
+    @ApiParam(value = "UserPreferencesJpa, e.g. update", required = true) UserPreferencesJpa userPreferences,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info(
+            "RESTful call PUT (Security): /user/preferences/add "
+                + userPreferences);
+
+    SecurityService securityService = new SecurityServiceJpa();
+    try {
+
+      authorizeApp(securityService, authToken, "add new user preferences",
+          UserRole.ADMIN);
+
+      // Create service and configure transaction scope
+      UserPreferences newUserPreferences =
+          securityService.addUserPreferences(userPreferences);
+      return newUserPreferences;
+    } catch (Exception e) {
+      handleException(e, "trying to add a user");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/user/preferences/remove/{id}")
+  @ApiOperation(value = "Remove user preferences by id", notes = "Removes the user preferences for the specified id")
+  public void removeUserPreferences(
+    @ApiParam(value = "User internal id, e.g. 2", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Security): /user/preferences/remove/" + id);
+
+    SecurityService securityService = new SecurityServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "remove user preferences",
+          UserRole.ADMIN);
+
+      securityService.removeUserPreferences(id);
+    } catch (Exception e) {
+      handleException(e, "trying to remove user preferences");
+    } finally {
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @POST
+  @Path("/user/preferences/update")
+  @ApiOperation(value = "Update user preferences", notes = "Updates the specified user preferences")
+  public void updateUserPreferences(
+    @ApiParam(value = "UserPreferencesJpa, e.g. update", required = true) UserPreferencesJpa userPreferences,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Security): /user/preferences/update "
+            + userPreferences);
+    SecurityService securityService = new SecurityServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "update user preferences",
+          UserRole.ADMIN);
+
+      securityService.updateUserPreferences(userPreferences);
+    } catch (Exception e) {
+      handleException(e, "trying to update a concept");
+    } finally {
+      securityService.close();
+    }
   }
 }
