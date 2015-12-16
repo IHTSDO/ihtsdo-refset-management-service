@@ -1225,6 +1225,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.commit();
 
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(stagedRefset.getId(), authToken);
+
       return refset;
 
     } catch (Exception e) {
@@ -1496,6 +1499,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(stagedRefset.getId(), authToken);
 
       return refset;
 
@@ -2176,18 +2182,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setPublished(false);
         member.setMemberType(Refset.MemberType.MEMBER);
 
-        // TODO: - no efficient way to compute this
-        // each member requires a call to the terminology server!
-        if (refsetService.getTerminologyHandler().assignNames()) {
-          final Concept concept =
-              refsetService.getTerminologyHandler().getConcept(
-                  member.getConceptId(), refset.getTerminology(),
-                  refset.getVersion());
-          member.setConceptName(concept.getName());
-          member.setConceptActive(concept.isActive());
-        } else {
-          member.setConceptName("TBD");
-        }
+        // Initialize values to be overridden by lookupNames routine
+        member.setConceptActive(true);
+        member.setConceptName("TBD");
+
         refsetService.addMember(member);
 
         conceptIds.add(member.getConceptId());
@@ -2208,6 +2206,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // End transaction
       refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(refsetId, authToken);
     } catch (Exception e) {
       handleException(e, "trying to import refset members");
     } finally {
@@ -2483,6 +2484,66 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     } catch (Exception e) {
       handleException(e, "trying to remove a member note");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/lookup/status")
+  @ApiOperation(value = "Compares two refsets", notes = "Returns the percentage completed of the refset lookup process.", response = Integer.class)
+  public Integer getLookupProgress(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Refset): /refset/lookup/status " + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      if (refsetService.getRefset(refsetId) == null) {
+        throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      authorizeApp(securityService, authToken, "get lookup status",
+          UserRole.VIEWER);
+
+      return refsetService.getLookupProgress(refsetId);
+    } catch (Exception e) {
+      handleException(e,
+          "trying to find the status of the lookup of member names and statues");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @GET
+  @Override
+  @Path("/lookup/start")
+  @ApiOperation(value = "Cancel refset migration", notes = "Start the lookup process to obtain the names and status of refset members.")
+  public void startLookupNames(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Refset): /refset/lookup/start " + refsetId);
+
+    RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      // Authorize the call
+      authorizeApp(securityService, authToken, "start lookup process",
+          UserRole.VIEWER);
+
+      // Launch lookup process in background thread
+      refsetService.lookupNames(refsetId);
+    } catch (Exception e) {
+      handleException(e,
+          "trying to start the lookup of member names and statues");
     } finally {
       refsetService.close();
       securityService.close();

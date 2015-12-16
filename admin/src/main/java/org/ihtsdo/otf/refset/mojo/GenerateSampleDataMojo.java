@@ -11,7 +11,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -69,6 +71,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   @SuppressWarnings("unused")
   private int refsetCt = 0;
 
+  private Boolean assignNames;
+
+  private Set<Long> createdRefsets = new HashSet<>();
+
   /** The translation ct. */
   private int translationCt = 0;
 
@@ -111,6 +117,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           service.authenticate(properties.getProperty("admin.user"),
               properties.getProperty("admin.password")).getAuthToken();
       service.close();
+
+      // The assign names property
+      assignNames =
+          Boolean.valueOf(properties
+              .getProperty("terminology.handler.DEFAULT.assignNames"));
 
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
@@ -534,7 +545,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // test6: clone of test3
       // test7: same as test1 advanced in workflow to review new
       // test8: same as test2 advanced in workflow to review new
-      // test9: same as test3 advanced in workflow through review and publication stages
+      // test9: same as test3 advanced in workflow through review and
+      // publication stages
       // test10: same as test 2 advanced in workflow to review new and then
       // reassign
       //
@@ -685,27 +697,27 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test9.getId(), "reviewer1", "REVIEWER", "FINISH",
           reviewer1.getAuthToken());
-      
-      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(), 
-          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), 
+
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(), 
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(), "DEFAULT",
-          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(),
+          "DEFAULT", reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      
+
       // calculate date for tomorrow to ensure different release date than above
       Calendar c = Calendar.getInstance();
       c.add(Calendar.DATE, 1);
-      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(), 
-          ConfigUtility.DATE_FORMAT.format(c.getTime()), 
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+          ConfigUtility.DATE_FORMAT.format(c.getTime()),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(), 
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(), "DEFAULT",
-          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(),
+          "DEFAULT", reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
 
@@ -737,6 +749,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "author1", "AUTHOR", "REASSIGN",
           reviewer1.getAuthToken());
+
+      if (assignNames) {
+        // Ensure that all lookupNames routines completed
+        boolean completed = false;
+        while (!completed) {
+          // Assume process has completed
+          completed = true;
+
+          for (Long refsetId : createdRefsets) {
+            Refset r =
+                new RefsetServiceRestImpl().getRefset(refsetId,
+                    admin.getAuthToken());
+
+            if (r.isLookupInProgress()) {
+              // lookupNames still running on refset
+              completed = false;
+              Thread.sleep(250);
+              break;
+            }
+          }
+        }
+      }
 
       getLog().info("Done ...");
     } catch (Exception e) {
@@ -922,6 +956,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
+    refset.setLookupInProgress(false);
     refset.setModuleId("731000124108");
     refset.setProject(project);
     refset.setPublishable(true);
@@ -993,6 +1028,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           auth.getAuthToken());
     }
 
+    if (assignNames) {
+      // Identify new refsets to ensure that lookupName process complets
+      createdRefsets.add(refset.getId());
+    }
+
     return refset;
   }
 
@@ -1034,7 +1074,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
     // Validate translation
     ValidationResult result =
-        validation.validateTranslation(translation, project.getId(), auth.getAuthToken());
+        validation.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");

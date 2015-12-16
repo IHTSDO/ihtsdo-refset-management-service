@@ -668,7 +668,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       query.append(terminologyId);
     }
 
-    return findConceptsForQuery(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null);
   }
 
   /* see superclass */
@@ -678,11 +678,24 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
+    }
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?term="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&offset=" + pfs.getStartIndex() + "&limit="
-            + pfs.getMaxResults() + "&expand=pt()");
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + localPfs.getMaxResults() + "&expand=pt()");
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
