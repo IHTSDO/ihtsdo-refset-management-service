@@ -23,6 +23,7 @@ tsApp
         // Initialize
         projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        $scope.user.userPreferences.lastTab = '/refset';   
         // Wrap in a json object so we can pass to the directive effectively
         $scope.projects = {
           data : [],
@@ -159,7 +160,7 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        
+        securityService.updateUserPreferences($scope.user.userPreferences);
       }
 
     ]);

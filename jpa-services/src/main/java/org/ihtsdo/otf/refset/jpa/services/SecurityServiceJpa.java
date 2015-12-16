@@ -127,9 +127,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       newUser.setUserName(authUser.getUserName());
       newUser.setApplicationRole(authUser.getApplicationRole());
       addUser(newUser);
-      UserPreferences newUserPreferences = new UserPreferencesJpa();
-      newUserPreferences.setUser(newUser);
-      addUserPreferences(newUserPreferences);
+      if (newUser.getUserPreferences() == null) {
+        UserPreferences newUserPreferences = new UserPreferencesJpa();
+        newUserPreferences.setUser(newUser);
+        addUserPreferences(newUserPreferences);
+      }  
       clear();
     }
 
@@ -140,6 +142,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     Logger.getLogger(getClass()).debug("User = " + authUser.getUserName());
 
+    //Reload the user to populate UserPreferences
+    authUser = getUser(authUser.getUserName());
     authUser.setAuthToken(token);
     return authUser;
   }
