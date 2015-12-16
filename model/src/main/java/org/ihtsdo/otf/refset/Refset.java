@@ -396,9 +396,9 @@ public interface Refset extends Component, Searchable {
 
   /**
    * Updates whether a lookup of member concepts names and statuses is in
-   * progress
-   * 
-   * @param inProgress the lookup in progress process
+   * progress.
+   *
+   * @param lookupInProgress the lookup in progress
    */
   public void setLookupInProgress(boolean lookupInProgress);
 

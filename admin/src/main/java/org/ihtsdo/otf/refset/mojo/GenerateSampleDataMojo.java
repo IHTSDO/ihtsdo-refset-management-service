@@ -71,8 +71,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
   @SuppressWarnings("unused")
   private int refsetCt = 0;
 
+  /** The assign names. */
   private Boolean assignNames;
 
+  /** The created refsets. */
   private Set<Long> createdRefsets = new HashSet<>();
 
   /** The translation ct. */

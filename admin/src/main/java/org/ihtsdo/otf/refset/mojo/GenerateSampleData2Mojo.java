@@ -79,8 +79,11 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * @phase package
  */
 public class GenerateSampleData2Mojo extends AbstractMojo {
+
+  /** The assign names. */
   private Boolean assignNames;
 
+  /** The created refsets. */
   private Set<Long> createdRefsets = new HashSet<>();
 
   /**

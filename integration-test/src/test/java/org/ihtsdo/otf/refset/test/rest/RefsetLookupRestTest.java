@@ -149,13 +149,12 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
    *
    * @param name the name
    * @param definition the definition
-   * @param type the type
    * @param project the project
    * @param refsetId the refset id
-   * @param auth the auth
    * @return the refset jpa
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   private RefsetJpa makeRefset(String name, String definition, Project project,
     String refsetId) throws Exception {
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -190,6 +189,14 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     return (RefsetJpa) refsetService.addRefset(refset, authToken);
   }
 
+  /**
+   * Import member file.
+   *
+   * @param refsetId the refset id
+   * @param f the f
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   public void importMemberFile(Long refsetId, File f) throws Exception {
     User admin = securityService.authenticate(adminUser, adminPassword);
     String authToken = admin.getAuthToken();
@@ -246,8 +253,6 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
         new File("../config/src/main/resources/data/lookup/OneMemberRefset.txt");
     importMemberFile(refset.getId(), refsetImportFile);
 
-    // Sleep until progess indicator states process complete
-    int count = 0;
     int completed = 0;
     while (completed < 100) {
       Thread.sleep(1000);

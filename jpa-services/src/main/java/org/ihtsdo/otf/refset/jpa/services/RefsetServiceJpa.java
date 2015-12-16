@@ -40,7 +40,6 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -49,6 +48,7 @@ import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
@@ -72,8 +72,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    * To populate progress (percentage) of looking up refset names & active
    * statuses.
    */
-  private static Map<Long, Integer> refsetLookupProgressMap =
-      new ConcurrentHashMap<>();
+  static Map<Long, Integer> refsetLookupProgressMap = new ConcurrentHashMap<>();
+
+  /** The Constant LOOKUP_ERROR_CODE. */
+  final static int LOOKUP_ERROR_CODE = -100;
 
   static {
     try {
@@ -879,6 +881,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return null;
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
@@ -907,6 +910,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return result;
   }
 
+  /* see superclass */
   @Override
   public void lookupNames(final Long refsetId) throws Exception {
     // Only launch process if refset not already looked-up
@@ -917,16 +921,22 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         Thread t = new Thread(lookup);
         t.start();
       }
+      // else it is already running
     }
   }
 
+  /* see superclass */
   @Override
   public int getLookupProgress(Long refsetId) throws Exception {
     Refset refset = getRefset(refsetId);
 
     if (refset.isLookupInProgress()) {
       if (refsetLookupProgressMap.containsKey(refsetId)) {
-        return refsetLookupProgressMap.get(refsetId);
+        if (refsetLookupProgressMap.get(refsetId).intValue() == LOOKUP_ERROR_CODE) {
+          throw new Exception("The lookup process unexpectedly failed");
+        } else {
+          return refsetLookupProgressMap.get(refsetId);
+        }
       } else {
         return -1;
       }
@@ -935,13 +945,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return 100;
   }
 
+  /**
+   * Class for threaded operation of lookupNames.
+   */
   public class LookupNamesThread implements Runnable {
+
+    /** The refset id. */
     private Long refsetId;
 
+    /**
+     * Instantiates a {@link LookupNamesThread} from the specified parameters.
+     *
+     * @param id the id
+     * @throws Exception the exception
+     */
     public LookupNamesThread(Long id) throws Exception {
       refsetId = id;
     }
 
+    /* see superclass */
+    @Override
     public void run() {
       try {
         // Initialize Process
@@ -1000,8 +1023,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         refsetService.updateRefset(refset);
         refsetLookupProgressMap.remove(refsetId);
       } catch (Exception e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        try {
+          ExceptionHandler.handleException(e, "looking up names", null);
+        } catch (Exception e1) {
+          // n/a
+        }
+        refsetLookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
       }
     }
   }

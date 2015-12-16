@@ -1125,6 +1125,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.updateRefset(refsetCopy);
       refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      refsetService.lookupNames(refsetCopy.getId());
+      
       return refsetCopy;
 
     } catch (Exception e) {
@@ -1224,9 +1228,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
-
-      // With contents committed, can now lookup Names/Statuses of members
-      startLookupNames(stagedRefset.getId(), authToken);
 
       return refset;
 
@@ -1501,7 +1502,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      startLookupNames(stagedRefset.getId(), authToken);
+      refsetService.lookupNames(stagedRefset.getId());
 
       return refset;
 
@@ -2208,7 +2209,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      startLookupNames(refsetId, authToken);
+      refsetService.lookupNames(refsetId);
     } catch (Exception e) {
       handleException(e, "trying to import refset members");
     } finally {
