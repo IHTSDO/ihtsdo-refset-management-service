@@ -23,6 +23,7 @@ tsApp
         // Initialize
         projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        $scope.user.userPreferences.lastTab = '/translation';   
         // Wrap in a json object so we can pass to the directive effectively
         $scope.projects = {
           data : [],
@@ -122,6 +123,7 @@ tsApp
         // Initialize some metadata first time
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
+        securityService.updateUserPreferences($scope.user.userPreferences);
       }
 
     ]);

@@ -49,7 +49,11 @@ tsApp.controller('LoginCtrl', [
         $http.defaults.headers.common.Authorization = response.data.authToken;
         projectService.getUserHasAnyRole();
 
-        $location.path("/directory");
+        if (response.data.userPreferences.lastTab) {
+          $location.path(response.data.userPreferences.lastTab);
+        } else {
+          $location.path("/directory");
+        }
         gpService.decrement();
       },
 

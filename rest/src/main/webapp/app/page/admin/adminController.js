@@ -28,6 +28,8 @@ tsApp
         // Scope Variables
         //
         $scope.user = securityService.getUser();
+        $scope.user.userPreferences.lastTab = '/admin';
+        
         $scope.selectedProject = null;
         $scope.projectRoles = [];
 
@@ -668,6 +670,7 @@ tsApp
           };
 
         };
+        securityService.updateUserPreferences($scope.user.userPreferences);
       }
 
     ]);
