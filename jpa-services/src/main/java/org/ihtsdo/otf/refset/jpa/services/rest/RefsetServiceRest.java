@@ -129,12 +129,12 @@ public interface RefsetServiceRest {
   /**
    * Removes the concept refset member note.
    *
-   * @param refsetId the refset id
+   * @param memberId the member id
    * @param noteId the note id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+  public void removeRefsetMemberNote(Long memberId, Long noteId,
     String authToken) throws Exception;
 
   /**

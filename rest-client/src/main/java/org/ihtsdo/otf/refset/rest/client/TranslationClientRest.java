@@ -1343,17 +1343,17 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public void removeTranslationConceptNote(Long translationId, Long noteId,
+  public void removeTranslationConceptNote(Long conceptId, Long noteId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Rest Client - remove concept note " + translationId + ", " + noteId);
-    validateNotEmpty(translationId, "translationId");
+        "Rest Client - remove concept note " + conceptId + ", " + noteId);
+    validateNotEmpty(conceptId, "conceptId");
     validateNotEmpty(noteId, "noteId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/concept/remove/note?" + "translationId="
-            + translationId + "&noteId=" + noteId);
+            + "/translation/concept/remove/note?" + "conceptId="
+            + conceptId + "&noteId=" + noteId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

@@ -14,7 +14,7 @@ tsApp.service('validationService', [
 
       // validate concept
       gpService.increment()
-      $http.post(validationUrl + 'concept' + "?projectId=" + projectId, concept).then(
+      $http.post(validationUrl + 'concept?projectId=' + projectId, concept).then(
       // success
       function(response) {
         console.debug("  result = ", response.data);
@@ -37,7 +37,7 @@ tsApp.service('validationService', [
 
       // Add refset
       gpService.increment()
-      $http.post(validationUrl + 'refset/'  + refset.projectId, refset).then(
+      $http.post(validationUrl + 'refset?projectId='  + refset.projectId, refset).then(
       // success
       function(response) {
         console.debug("  result = ", response.data);
@@ -60,7 +60,7 @@ tsApp.service('validationService', [
 
       // Add translation
       gpService.increment()
-      $http.post(validationUrl + 'translation/' + projectId, translation).then(
+      $http.post(validationUrl + 'translation?projectId=' + projectId, translation).then(
       // success
       function(response) {
         console.debug("  result = ", response.data);

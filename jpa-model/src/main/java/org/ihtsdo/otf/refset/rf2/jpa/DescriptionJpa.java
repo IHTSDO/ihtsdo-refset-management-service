@@ -26,7 +26,6 @@ import org.hibernate.search.annotations.ContainedIn;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -71,7 +70,7 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   /** The language Refset members. */
   @OneToMany(fetch = FetchType.EAGER, targetEntity = LanguageRefsetMemberJpa.class)
   @CollectionTable(name = "description_language_refset_members", joinColumns = @JoinColumn(name = "description_id"))
-  @IndexedEmbedded(targetElement = LanguageRefsetMemberJpa.class)
+  // @IndexedEmbedded(targetElement = LanguageRefsetMemberJpa.class)
   private List<LanguageRefsetMember> languageRefsetMembers = null;
 
   /**

@@ -33,6 +33,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -137,7 +138,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The notes. */
   @OneToMany(mappedBy = "translation", targetEntity = TranslationNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = TranslationNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**

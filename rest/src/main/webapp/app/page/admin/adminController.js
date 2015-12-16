@@ -37,7 +37,7 @@ tsApp
         $scope.users = null;
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
-        
+
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
           terminologies : []
@@ -209,7 +209,6 @@ tsApp
 
         };
 
-
         // Sets the selected project
         $scope.setProject = function(project) {
           if (!project) {
@@ -234,7 +233,8 @@ tsApp
           }
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
-            if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project (" + project.name + ") and unassign all of its users?")) {
+            if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project ("
+              + project.name + ") and unassign all of its users?")) {
               return;
             }
           }
@@ -383,22 +383,22 @@ tsApp
         };
 
         // Add project controller
-        var AddProjectModalCtrl = function($scope, $uibModalInstance, metadata,
-          user, validationChecks) {
+        var AddProjectModalCtrl = function($scope, $uibModalInstance, metadata, user,
+          validationChecks) {
 
           $scope.action = 'Add';
           $scope.project = {
             terminology : metadata.terminologies[0]
           };
+          $scope.terminologies = metadata.terminologies;
           $scope.metadata = metadata;
           $scope.user = user;
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
-          $scope.error = null;
+          $scope.errors = [];
 
-          
-          for (var i = 0; i < $scope.validationChecks.length; i++) {      
+          for (var i = 0; i < $scope.validationChecks.length; i++) {
             $scope.availableChecks.push($scope.validationChecks[i].value);
           }
 
@@ -414,37 +414,44 @@ tsApp
             $scope.selectedChecks.splice(index, 1);
           }
 
-
           $scope.submitProject = function(project) {
 
             if (!project || !project.name || !project.description || !project.terminology) {
               window.alert("The name, description, and terminology fields cannot be blank. ");
               return;
             }
+
+            project.validationChecks = [];
+            for (var i = 0; i < $scope.validationChecks.length; i++) {
+              if ($scope.selectedChecks.indexOf($scope.validationChecks[i].value) != -1) {
+                project.validationChecks.push($scope.validationChecks[i].key);
+              }
+            }
+
             // Add project
             projectService.addProject(project).then(
-            // Success
-            function(data) {
-              // if not an admin, add user as a project admin
-              if ($scope.user.applicationRole != 'ADMIN') {
-                projectService.assignUserToProject(data.id, $scope.user.name, 'ADMIN').then (
-                  function(data) {                    
-                    $uibModalInstance.close(data);
-                  },
-                  // Error
-                  function(data) {
-                    $scope.error = data;
-                    utilService.clearError();
-                  })
-              } else {
-                $uibModalInstance.close(data);
-              }
-            },
-            // Error
-            function(data) {
-              $scope.error = data;
-              utilService.clearError();
-            })
+              // Success
+              function(data) {
+                // if not an admin, add user as a project admin
+                if ($scope.user.applicationRole != 'ADMIN') {
+                  projectService.assignUserToProject(data.id, $scope.user.name, 'ADMIN').then(
+                    function(data) {
+                      $uibModalInstance.close(data);
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                } else {
+                  $uibModalInstance.close(data);
+                }
+              },
+              // Error
+              function(data) {
+                $scope.errors[0] = data;
+                utilService.clearError();
+              })
           };
 
           $scope.cancel = function() {
@@ -486,6 +493,7 @@ tsApp
           $scope.action = 'Edit';
           $scope.project = project;
           $scope.metadata = metadata;
+          $scope.terminologies = metadata.terminologies;
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
@@ -523,12 +531,6 @@ tsApp
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
             }
-            /*
-                         * project.validationChecks = $scope.validationChecks; for (var i =
-                         * $scope.validationChecks.length -1; i >= 0; i--) { var index =
-                         * $scope.selectedChecks.indexOf($scope.validationChecks[i].value); if
-                         * (index == -1) { project.validationChecks.splice(index, 1); } }
-                         */
 
             projectService.updateProject(project).then(
             // Success
@@ -635,7 +637,7 @@ tsApp
           // copy data structure so it will be fresh each time modal is opened
           $scope.applicationRoles = JSON.parse(JSON.stringify(applicationRoles));
           $scope.error = null;
-          
+
           // those without application admin roles, can't give themselves admin roles
           if (user.applicationRole != 'ADMIN') {
             var index = $scope.applicationRoles.indexOf('ADMIN');

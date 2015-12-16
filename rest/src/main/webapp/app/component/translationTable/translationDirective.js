@@ -627,7 +627,7 @@ tsApp
                     })
                   } else if ($scope.type == 'Concept') {
                     translationService.removeTranslationConceptNote(
-                      $scope.selected.translationn.id, object.refsetId, note.id).then(
+                      object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
@@ -1268,6 +1268,9 @@ tsApp
                 }
 
                 $scope.submitConcept = function(concept) {
+                  // Clear errors/warnings
+                  $scope.warnings = [];
+                  $scope.errors = [];
                   // Iterate through concept, set description types and languages
                   var copy = JSON.parse(JSON.stringify(concept));
                   for (var i = 0; i < copy.descriptions.length; i++) {

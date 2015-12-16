@@ -451,7 +451,7 @@
       <span>
         <span style="display: block;">
           <uib-pagination items-per-page="pageSize" max-size="5"
-            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            boundary-links="true" class="pagination-xs" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="selected.refset.members.totalCount > pageSize"
             total-items="selected.refset.members.totalCount"
@@ -500,7 +500,7 @@
               ng-change="getMembers(selected.refset)">
                 <option value="">All</option>
             </select></th>
-            <th ng-show="value == 'ASSIGNED' ">Actions</th>
+            <th ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">Actions</th>
           </thead>
           <tbody>
             <tr ng-repeat="member in selected.refset.members"

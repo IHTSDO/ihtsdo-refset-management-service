@@ -3,18 +3,33 @@
 </div>
 
 <div class="modal-body">
-  <h4>{{object.name}}</h4>
+  <table class="table">
+    <tr>
+      <td>
+        <b>Name</b>
+      </td>
+      <td>{{object.name}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>{{type}} Id</b>
+      </td>
+      <td>{{object.terminologyId}}</td>
+    </tr>
+    <tr ng-show="object.description">
+      <td>
+        <b>Description</b>
+      </td>
+      <td>{{object.description}}</td>
+    </tr>
+  </table>
   <div class="row">
     <!--  Left hand side -->
     <div class="col-md-12 col-xs-12">
 
       <!-- Errors -->
       <div class="alert alert-danger alert-error" ng-repeat="error in errors">
-        {{error}}
-        <div style="cursor: pointer; display: inline; float: right; width: 3%;">
-          <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-        </div>
-      </div>
+        {{error}}</div>
 
       <span>
 

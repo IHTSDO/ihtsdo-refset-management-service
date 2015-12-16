@@ -1282,16 +1282,16 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+  public void removeRefsetMemberNote(Long memberId, Long noteId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Rest Client - remove member note " + refsetId + ", " + noteId);
-    validateNotEmpty(refsetId, "refsetId");
+        "Rest Client - remove member note " + memberId + ", " + noteId);
+    validateNotEmpty(memberId, "memberId");
     validateNotEmpty(noteId, "noteId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/refset/member/remove/note?" + "refsetId=" + refsetId
+            + "/refset/member/remove/note?" + "memberId=" + memberId
             + "&noteId=" + noteId);
 
     Response response =

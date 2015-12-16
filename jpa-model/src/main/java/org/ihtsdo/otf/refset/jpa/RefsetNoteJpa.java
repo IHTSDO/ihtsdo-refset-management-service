@@ -71,7 +71,6 @@ public class RefsetNoteJpa extends AbstractNote {
   public void setRefset(Refset refset) {
     this.refset = refset;
   }
-  
 
   /**
    * Returns the refset id.

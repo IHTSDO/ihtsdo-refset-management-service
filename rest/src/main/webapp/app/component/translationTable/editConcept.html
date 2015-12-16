@@ -8,15 +8,6 @@
   <!-- R1 -->
   <div class="row">
 
-    <div ng-show="errors.length> 0" class="col-md-10 col-xs-12">
-      <!-- Errors -->
-      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
-        {{error}}
-        <div style="cursor: pointer; display: inline; float: right; width: 3%;">
-          <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-        </div>
-      </div>
-    </div>
     <!-- R1C1 -->
     <div class="col-md-5 col-xs-12">
       <!-- Concept display -->
@@ -144,7 +135,16 @@
 
       </div>
 
-      <div ng-show="warnings.length> 0" class="col-md-10 col-xs-12">
+      <div ng-show="errors.length > 0 || warnings.length> 0"
+        class="col-md-10 col-xs-12">
+        <!-- Errors -->
+        <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+          {{error}}
+          <div
+            style="cursor: pointer; display: inline; float: right; width: 3%;">
+            <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+          </div>
+        </div>
         <!-- Warnings -->
         <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
       </div>

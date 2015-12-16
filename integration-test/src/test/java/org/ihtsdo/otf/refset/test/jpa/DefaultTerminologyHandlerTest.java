@@ -4,6 +4,10 @@
 package org.ihtsdo.otf.refset.test.jpa;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -164,6 +168,80 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
             "SNOMEDCT", "2015-01-31", pfs);
     assertEquals(0, concepts.getObjects().size());
     service.close();
+  }
+
+  /**
+   * Test edge cases.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testEdgeCases() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+    ProjectService service = new ProjectServiceJpa();
+
+    // Bogus ids, term server produces failures
+    try {
+      service.getTerminologyHandler().getConcept("12345", "abc", "2015-01-31");
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+
+    ConceptList list =
+        service.getTerminologyHandler().getConceptChildren("12345", "abc",
+            "2015-01-31");
+    assertEquals(0, list.getCount());
+
+    list =
+        service.getTerminologyHandler().getConceptParents("12345", "abc",
+            "2015-01-31");
+    assertEquals(0, list.getCount());
+
+    try {
+      List<String> ids = new ArrayList<>();
+      ids.add("1234");
+      ids.add("5679");
+      list =
+          service.getTerminologyHandler().getConcepts(ids, "abc", "2015-01-31");
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+
+  }
+
+  /**
+   * Test degenerate use.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testDegenerateUse() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
+    ProjectService service = new ProjectServiceJpa();
+    try {
+      service.getTerminologyHandler().getConcept(null, "abc", "def");
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+
+    try {
+      service.getTerminologyHandler().getConcept("abc", null, "def");
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+
+    try {
+      service.getTerminologyHandler().getConcept("abc", "abc", null);
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+
   }
 
   /**
