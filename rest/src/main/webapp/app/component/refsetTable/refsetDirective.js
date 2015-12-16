@@ -580,7 +580,7 @@ tsApp
                       utilService.clearError();
                     })
                   } else if ($scope.type == 'Member') {
-                    refsetService.removeRefsetMemberNote(object.refsetId, note.id).then(
+                    refsetService.removeRefsetMemberNote(object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;

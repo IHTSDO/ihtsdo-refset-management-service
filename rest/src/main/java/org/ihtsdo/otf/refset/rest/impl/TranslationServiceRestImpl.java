@@ -1043,7 +1043,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             member.setDescriptionId(desc.getTerminologyId());
             member.setLastModifiedBy(userName);
             translationService.addLanguageRefsetMember(member);
-            desc.getLanguageRefsetMembers().add(member);
           }
         }
       }
