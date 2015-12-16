@@ -160,6 +160,11 @@ public class MemoryEntryJpa implements MemoryEntry {
     phraseMemory.setId(phraseMemoryId);
   }
 
+  /**
+   * Returns the translation id.
+   *
+   * @return the translation id
+   */
   @XmlTransient
   @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)

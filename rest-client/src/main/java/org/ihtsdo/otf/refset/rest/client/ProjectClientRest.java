@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -25,6 +26,7 @@ import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
@@ -434,6 +436,7 @@ public class ProjectClientRest extends RootClientRest implements
   public TerminologyList getTerminologyVersions(String terminology,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+    validateNotEmpty(terminology, "terminology");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
@@ -634,5 +637,33 @@ public class ProjectClientRest extends RootClientRest implements
         (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
             ConceptListJpa.class);
     return list;
+  }
+
+  @Override
+  public DescriptionTypeList getStandardDescriptionTypes(String terminology,
+    String version, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/terminology/"
+            + terminology + "/descriptiontypes?" + "version=" + version);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (DescriptionTypeListJpa) ConfigUtility.getGraphForString(
+        resultString, DescriptionTypeListJpa.class);
+
   }
 }

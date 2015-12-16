@@ -151,6 +151,7 @@ tsApp
             return "▾";
           }
         };
+        
 
         // Helper to get a paged array with show/hide flags
         // and filtered by query string

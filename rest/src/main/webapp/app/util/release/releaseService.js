@@ -25,6 +25,7 @@ tsApp.service('releaseService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -46,6 +47,7 @@ tsApp.service('releaseService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -67,6 +69,7 @@ tsApp.service('releaseService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -90,6 +93,7 @@ tsApp.service('releaseService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -112,6 +116,7 @@ tsApp.service('releaseService', [
         function(response) {
           utilService.handleError(response);
           gpService.decrement();
+          deferred.reject(response.data);
         });
       return deferred.promise;
     }
@@ -135,6 +140,7 @@ tsApp.service('releaseService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }

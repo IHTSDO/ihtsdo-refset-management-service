@@ -9,9 +9,9 @@ import java.util.Map;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -125,7 +125,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the standard description types
    * @throws Exception the exception
    */
-  public DescriptionTypeList getStandardDescriptionTypes(
+  public List<DescriptionType> getStandardDescriptionTypes(
     String terminology, String version) throws Exception;
 
   /**

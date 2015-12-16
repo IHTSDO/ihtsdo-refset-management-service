@@ -157,11 +157,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // These will get added by CASCADE
     if (translation.getDescriptionTypes().size() == 0) {
-      for (DescriptionType member : getTerminologyHandler()
+      for (DescriptionType d : getTerminologyHandler()
           .getStandardDescriptionTypes(translation.getTerminology(),
-              translation.getVersion()).getObjects()) {
-        member.setLastModifiedBy(translation.getLastModifiedBy());
-        translation.getDescriptionTypes().add(member);
+              translation.getVersion())) {
+        d.setLastModifiedBy(translation.getLastModifiedBy());
+        translation.getDescriptionTypes().add(d);
       }
     }
 
@@ -250,7 +250,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         removeNote(note.getId(), TranslationNoteJpa.class);
       }
 
-     // Remove spelling dictionary
+      // Remove spelling dictionary
       removeSpellingDictionary(translation.getSpellingDictionary());
 
       // Remove description types - CASCADE
@@ -341,7 +341,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void handleLazyInit(Translation translation) {
     // handle all lazy initializations
-    if(translation.getDescriptionTypes() != null)
+    if (translation.getDescriptionTypes() != null)
       translation.getDescriptionTypes().size();
     translation.getRefset().getName();
     translation.getWorkflowStatus().name();
@@ -552,8 +552,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   @Override
   public Concept getConcept(Long id) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Translation Service - get concept" + id);
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get concept " + id);
     Concept concept = getHasLastModified(id, ConceptJpa.class);
     handleLazyInit(concept);
     return concept;
@@ -1024,7 +1024,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     result.setObjects(list);
     return result;
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   public List<MemoryEntry> findMemoryEntryForTranslation(Long translationId,
@@ -1043,9 +1043,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
     int[] totalCt = new int[1];
     List<MemoryEntry> list =
-        (List<MemoryEntry>) getQueryResults(sb.toString(), MemoryEntryJpa.class,
-            MemoryEntryJpa.class, pfs, totalCt);
+        (List<MemoryEntry>) getQueryResults(sb.toString(),
+            MemoryEntryJpa.class, MemoryEntryJpa.class, pfs, totalCt);
     return list;
   }
- 
+
 }

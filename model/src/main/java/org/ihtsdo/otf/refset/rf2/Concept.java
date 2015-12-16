@@ -111,4 +111,19 @@ public interface Concept extends Component {
    * @param notes the notes
    */
   public void setNotes(List<Note> notes);
+
+  /**
+   * Indicates whether or not leaf is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isLeaf();
+
+  /**
+   * Sets the leaf.
+   *
+   * @param leaf the leaf
+   */
+  public void setLeaf(boolean leaf);
+
 }

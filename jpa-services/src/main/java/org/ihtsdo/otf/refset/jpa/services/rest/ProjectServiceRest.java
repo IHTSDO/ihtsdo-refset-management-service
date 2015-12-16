@@ -8,6 +8,7 @@ package org.ihtsdo.otf.refset.jpa.services.rest;
 
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -30,7 +31,7 @@ public interface ProjectServiceRest {
    * @throws Exception the exception
    */
   public KeyValuePairList getIconConfig(String authToken) throws Exception;
-  
+
   /**
    * Returns the project roles.
    *
@@ -170,8 +171,8 @@ public interface ProjectServiceRest {
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public StringList getTerminologyEditions(String authToken)throws Exception;
-  
+  public StringList getTerminologyEditions(String authToken) throws Exception;
+
   /**
    * Returns the terminology versions.
    *
@@ -180,7 +181,8 @@ public interface ProjectServiceRest {
    * @return the terminology versions
    * @throws Exception the exception
    */
-  public TerminologyList getTerminologyVersions(String terminology, String authToken)throws Exception;
+  public TerminologyList getTerminologyVersions(String terminology,
+    String authToken) throws Exception;
 
   /**
    * Find concepts for query.
@@ -206,8 +208,8 @@ public interface ProjectServiceRest {
    * @return the concept with descriptions
    * @throws Exception the exception
    */
-  public Concept getConceptWithDescriptions(String terminologyId, String terminology,
-    String version, String authToken) throws Exception;
+  public Concept getConceptWithDescriptions(String terminologyId,
+    String terminology, String version, String authToken) throws Exception;
 
   /**
    * Returns the concept children.
@@ -220,8 +222,9 @@ public interface ProjectServiceRest {
    * @return the concept children
    * @throws Exception the exception
    */
-  public ConceptList getConceptChildren(String terminologyId, String terminology,
-    String version, PfsParameterJpa pfs, String authToken) throws Exception;
+  public ConceptList getConceptChildren(String terminologyId,
+    String terminology, String version, PfsParameterJpa pfs, String authToken)
+    throws Exception;
 
   /**
    * Returns the concept parents.
@@ -233,8 +236,18 @@ public interface ProjectServiceRest {
    * @return the concept parents
    * @throws Exception the exception
    */
-  public ConceptList getConceptParents(String terminologyId, String terminology,
+  public ConceptList getConceptParents(String terminologyId,
+    String terminology, String version, String authToken) throws Exception;
+
+  /**
+   * Returns the standard description types.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the standard description types
+   * @throws Exception the exception
+   */
+  public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception;
-  
-  
 }

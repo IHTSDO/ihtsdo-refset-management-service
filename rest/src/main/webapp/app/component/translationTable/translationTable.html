@@ -212,7 +212,7 @@
                 title="Import spelling dictionary"
                 class="noul material-icons md-18">file_upload</i>
               <i ng-show="selected.translation.spellingDictionarySize == 0"
-                ng-click="openCopyModal(translation,'Spelling Dictionary'); $event.stopPropagation()"
+                ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"
                 title="Copy spelling dictionary from another translation"
                 class="noul material-icons md-18">content_copy</i>
               <i ng-show="selected.translation.spellingDictionarySize > 0"
@@ -235,7 +235,7 @@
                 ng-click="openImportExportModal(selected.translation,'Import', 'Phrase Memory'); $event.stopPropagation()"
                 title="Import phrase memory" class="noul material-icons md-18">file_upload</i>
               <i ng-show="selected.translation.phraseMemorySize == 0"
-                ng-click="openCopyModal(translation,'Phrase Memory'); $event.stopPropagation()"
+                ng-click="openCopyModal(selected.translation,'Phrase Memory'); $event.stopPropagation()"
                 title="Copy phrase memory from another translation"
                 class="noul material-icons md-18">content_copy</i>
               <i ng-show="selected.translation.phraseMemorySize > 0"

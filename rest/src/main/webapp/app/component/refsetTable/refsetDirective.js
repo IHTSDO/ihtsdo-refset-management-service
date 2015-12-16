@@ -240,7 +240,16 @@ tsApp
                 }
               }
 
-              // Get $scope.members
+              // Get $scope.metadata.descriptionTypes
+              $scope.getStandardDescriptionTypes = function(terminology,version) {
+                projectService.getStandardDescriptionTypes(terminology,version).then(
+                  // Success
+                  function(data) {
+                    $scope.metadata.descriptionTypes = data.types;
+                  });
+              }
+
+                // Get $scope.members
               $scope.getMembers = function(refset) {
 
                 var pfs = {
@@ -268,6 +277,7 @@ tsApp
                 })
 
               };
+
 
               // Get $scope.refsetReleaseInfo
               $scope.getCurrentRefsetReleaseInfo = function(refset) {
@@ -313,6 +323,7 @@ tsApp
                 $scope.selected.refset = refset;
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
+                $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
               };
 
               // Selects a member (setting $scope.selected.member)
@@ -1424,7 +1435,7 @@ tsApp
 
               // Add member modal
 
-              $scope.openAddMemberModal = function(lmember, lrefset) {
+              $scope.openAddMemberModal = function(lrefset) {
 
                 console.debug("openAddMemberModal ", lrefset);
 
@@ -1434,8 +1445,8 @@ tsApp
                   backdrop : 'static',
                   size : 'lg',
                   resolve : {
-                    member : function() {
-                      return lmember;
+                    metadata : function() {
+                      return $scope.metadata;
                     },
                     refset : function() {
                       return lrefset;
@@ -1454,14 +1465,15 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $uibModalInstance, member, refset, project) {
+              var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset, project) {
 
                 console.debug("Entered add member modal control");
                 $scope.pageSize = 10;
                 $scope.errors = [];
                 $scope.searchResults = null;
                 $scope.data = {
-                  concept : null
+                  concept : null,
+                  descriptionTypes : metadata.descriptionTypes
                 };
                 $scope.pageSize = 10;
                 $scope.paging = {};
