@@ -29,7 +29,7 @@
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="pagedDescriptions.totalCount > pageSize"
-            total-items="pagedDescriptions.length"
+            total-items="conceptTranslated.descriptions.length"
             ng-model="paging['descriptions'].page"
             ng-change="getPagedDescriptions()"></uib-pagination>
 

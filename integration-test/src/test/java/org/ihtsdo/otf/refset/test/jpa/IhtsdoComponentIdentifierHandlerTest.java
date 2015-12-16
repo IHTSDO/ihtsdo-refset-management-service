@@ -56,7 +56,7 @@ public class IhtsdoComponentIdentifierHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testGetAssignIds() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();

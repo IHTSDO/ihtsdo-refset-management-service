@@ -1030,7 +1030,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           desc.setConcept(concept);
           desc.setLastModifiedBy(userName);
           translationService.addDescription(desc);
-          concept.getDescriptions().add(desc);
           for (final LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
             member.setActive(true);
             member.setEffectiveTime(null);
