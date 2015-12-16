@@ -16,10 +16,12 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.SecurityServiceRest;
@@ -264,8 +266,8 @@ public class SecurityClientRest extends RootClientRest implements
   }
 
   @Override
-  public UserList findUsersForQuery(String query, PfsParameterJpa pfs, String authToken)
-    throws Exception {
+  public UserList findUsersForQuery(String query, PfsParameterJpa pfs,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Security Client - find users " + query + ", " + pfs);
     validateNotEmpty(query, "query");
@@ -297,5 +299,86 @@ public class SecurityClientRest extends RootClientRest implements
             UserListJpa.class);
     return list;
 
+  }
+
+  /* see superclass */
+  @Override
+  public UserPreferences addUserPreferences(UserPreferencesJpa userPreferences,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Security Client - add user preferences " + userPreferences);
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/security/user/preferences/add");
+
+    String userPreferencesString =
+        (userPreferences != null ? ConfigUtility
+            .getStringForGraph(userPreferences) : "");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .put(Entity.xml(userPreferencesString));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    UserPreferencesJpa result =
+        (UserPreferencesJpa) ConfigUtility.getGraphForString(resultString,
+            UserPreferencesJpa.class);
+
+    return result;
+  }
+
+  /* see superclass */
+  @Override
+  public void removeUserPreferences(Long id, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Security Client - remove user preferences " + id);
+    validateNotEmpty(id, "id");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/security/user/preferences/remove/" + id);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
+
+  /* see superclass */
+  @Override
+  public void updateUserPreferences(UserPreferencesJpa userPreferences,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Security Client - update user preferences " + userPreferences);
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/security/user/preferences/update");
+
+    String userPreferencesString =
+        (userPreferences != null ? ConfigUtility
+            .getStringForGraph(userPreferences) : "");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.xml(userPreferencesString));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 }
