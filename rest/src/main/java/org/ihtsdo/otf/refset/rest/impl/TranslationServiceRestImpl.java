@@ -433,7 +433,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // remove memory entry
       if (translation.getPhraseMemory() != null) {
-        for (final MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
+        for (final MemoryEntry entry : translation.getPhraseMemory()
+            .getEntries()) {
           translationService.removeMemoryEntry(entry);
         }
 
@@ -577,7 +578,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): get export translation handlers:");
-    final  TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "get export translation handlers", UserRole.VIEWER);
@@ -746,7 +747,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     translationService.beginTransaction();
     try {
       // Load translation
-      final  Translation translation =
+      final Translation translation =
           translationService.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
@@ -797,17 +798,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setLastModifiedBy(userName);
         concept.setPublishable(true);
         concept.setPublished(false);
-        if (translationService.getTerminologyHandler().assignNames()) {
-          final Concept c2 =
-              translationService.getTerminologyHandler().getConcept(
-                  concept.getTerminologyId(), translation.getTerminology(),
-                  translation.getVersion());
-          concept.setName(c2.getName());
-          concept.setActive(c2.isActive());
-        } else {
-          concept.setName("TBD");
-          concept.setActive(true);
-        }
+        concept.setName("TBD");
+        concept.setActive(true);
         translationService.addConcept(concept);
 
         for (final Description description : concept.getDescriptions()) {
@@ -854,6 +846,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // close transaction
       translationService.commit();
+
+      // Lookup names and active status of concepts
+      translationService.lookupConceptNames(translationId,
+          "finish import concepts", false);
+
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
     } finally {
@@ -1030,7 +1027,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           desc.setConcept(concept);
           desc.setLastModifiedBy(userName);
           translationService.addDescription(desc);
-          for (final LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
+          for (final LanguageRefsetMember member : desc
+              .getLanguageRefsetMembers()) {
             member.setActive(true);
             member.setEffectiveTime(null);
             member.setModuleId(translation.getModuleId());
@@ -1086,7 +1084,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         // If no match was found, remove the old desc and its languages
         if (!found) {
           // remove languages
-          for (final LanguageRefsetMember member : oldDesc.getLanguageRefsetMembers()) {
+          for (final LanguageRefsetMember member : oldDesc
+              .getLanguageRefsetMembers()) {
             translationService.removeLanguageRefsetMember(member.getId());
           }
           // remove desc
@@ -1122,7 +1121,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call DELETE (Translation concept): /concept/remove/"
             + conceptId);
 
-    final  TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1178,7 +1177,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken,
           "get translations with spelling dictionary", UserRole.VIEWER);
 
-      final TranslationList allTranslations = translationService.getTranslations();
+      final TranslationList allTranslations =
+          translationService.getTranslations();
       final TranslationList translationsWithSpellingDictionary =
           new TranslationListJpa();
       for (final Translation translation : allTranslations.getObjects()) {
@@ -1221,7 +1221,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid translation id " + fromTranslation);
       }
 
-      final SpellingDictionary fromSpelling = fromTranslation.getSpellingDictionary();
+      final SpellingDictionary fromSpelling =
+          fromTranslation.getSpellingDictionary();
       if (fromSpelling == null) {
         throw new Exception(
             "translation must have an associated spelling dictionary.");
@@ -1234,7 +1235,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + toTranslationId);
       }
 
-      final  SpellingDictionary toSpelling = toTranslation.getSpellingDictionary();
+      final SpellingDictionary toSpelling =
+          toTranslation.getSpellingDictionary();
       if (toSpelling == null) {
         throw new Exception(
             "The from-translation must have an associated spelling dictionary: "
@@ -1427,8 +1429,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken,
           "get translations with spelling dictionary", UserRole.VIEWER);
 
-      final TranslationList allTranslations = translationService.getTranslations();
-      final TranslationList translationsWithPhraseMemory = new TranslationListJpa();
+      final TranslationList allTranslations =
+          translationService.getTranslations();
+      final TranslationList translationsWithPhraseMemory =
+          new TranslationListJpa();
       for (final Translation translation : allTranslations.getObjects()) {
         if (!translation.getPhraseMemory().getEntries().isEmpty()) {
           translationsWithPhraseMemory.addObject(translation);
@@ -1489,7 +1493,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + fromTranslation.getPhraseMemory().getId());
       }
       // Get Phrase Memory
-      final  PhraseMemory toPhraseMemory = toTranslation.getPhraseMemory();
+      final PhraseMemory toPhraseMemory = toTranslation.getPhraseMemory();
       for (final MemoryEntry entry : fromEntries) {
         MemoryEntry newEntry = new MemoryEntryJpa(entry);
         newEntry.setId(null);
@@ -1759,7 +1763,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     try {
       // Load translation
-      final  Translation translation =
+      final Translation translation =
           translationService.getTranslation(translationId);
 
       if (translation == null) {
@@ -1932,7 +1936,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken,
           "Suggest spellings based on term supplied", UserRole.VIEWER);
 
-      final  SpellingCorrectionHandler handler =
+      final SpellingCorrectionHandler handler =
           new DefaultSpellingCorrectionHandler();
       return handler.suggestSpelling(entry, spelling.getEntries(), 10,
           translationId);
@@ -2038,7 +2042,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
-      final  Translation translation =
+      final Translation translation =
           translationService.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
@@ -2062,7 +2066,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.beginTransaction();
 
       // get the staged change tracking object
-      final  StagedTranslationChange change =
+      final StagedTranslationChange change =
           translationService.getStagedTranslationChange(translation.getId());
 
       // Get origin and staged concepts
@@ -2070,7 +2074,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation originTranslation = change.getOriginTranslation();
       final Set<Concept> originConcepts =
           new HashSet<>(originTranslation.getConcepts());
-      final  Set<Concept> stagedConcepts =
+      final Set<Concept> stagedConcepts =
           new HashSet<>(stagedTranslation.getConcepts());
 
       // Remove origin-not-staged concepts
@@ -2311,7 +2315,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find concepts in common",
           UserRole.VIEWER);
 
-      final List<Concept> commonConceptsList = conceptsInCommonMap.get(reportToken);
+      final List<Concept> commonConceptsList =
+          conceptsInCommonMap.get(reportToken);
 
       // if the value is null, throw an exception
       if (commonConceptsList == null) {
@@ -2384,7 +2389,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): release/report");
 
-    final  TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "releases a report",
           UserRole.VIEWER);
@@ -2437,7 +2442,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Add and return the note
       final Note newNote = translationService.addNote(translationNote);
-      
+
       // For indexing
       translation.getNotes().add(newNote);
       translationService.updateTranslation(translation);
@@ -2516,7 +2521,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final  Translation translation =
+      final Translation translation =
           translationService.getTranslation(translationId);
       if (translation.getProject() == null
           || translation.getProject().getId() == null) {
@@ -2596,7 +2601,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       translationService.updateConcept(concept);
-      
+
     } catch (Exception e) {
       handleException(e, "trying to remove a concept note");
     } finally {
@@ -2645,4 +2650,67 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return list;
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/lookup/status")
+  @ApiOperation(value = "Get translation lookup progress", notes = "Returns the percentage completed of the translation lookup process.", response = Integer.class)
+  public Integer getLookupProgress(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /lookup/status " + translationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      if (translationService.getTranslation(translationId) == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      authorizeApp(securityService, authToken, "get lookup status",
+          UserRole.VIEWER);
+
+      return translationService.getLookupProgress(translationId);
+    } catch (Exception e) {
+      handleException(e,
+          "trying to find the status of the lookup of member names and statues");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @GET
+  @Override
+  @Path("/lookup/start")
+  @ApiOperation(value = "Start lookup of concept names", notes = "Starts a process for looking up concept names and concept active status.")
+  public void startLookupConceptNames(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /lookup/start " + translationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      // Authorize the call
+      final String userName =
+          authorizeApp(securityService, authToken, "start lookup process",
+              UserRole.VIEWER);
+
+      // Launch lookup process in background thread
+      translationService.lookupConceptNames(translationId,
+          "request from client " + userName, true);
+    } catch (Exception e) {
+      handleException(e,
+          "trying to start the lookup of member names and statues");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
 }

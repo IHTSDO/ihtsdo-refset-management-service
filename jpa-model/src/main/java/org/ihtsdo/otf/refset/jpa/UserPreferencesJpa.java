@@ -148,37 +148,41 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /**
-   * Returns the last tab accessed
-   * 
+   * Returns the last tab accessed.
+   *
    * @return the lastTab
    */
+  @Override
   public String getLastTab() {
     return lastTab;
   }
 
   /**
-   * Sets the last tab accessed
-   * 
+   * Sets the last tab accessed.
+   *
    * @param lastTab the last tab accessed
    */
+  @Override
   public void setLastTab(String lastTab) {
     this.lastTab = lastTab;
   }
 
   /**
-   * Sets the last accordion accessed
-   * 
+   * Sets the last accordion accessed.
+   *
    * @param lastAccordion the last accordion accessed
    */
+  @Override
   public void setLastAccordion(String lastAccordion) {
     this.lastAccordion = lastAccordion;
   }
 
   /**
-   * Returns the last accordion accessed
-   * 
+   * Returns the last accordion accessed.
+   *
    * @return the lastAccordion
    */
+  @Override
   public String getLastAccordion() {
     return lastAccordion;
   }

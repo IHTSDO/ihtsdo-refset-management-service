@@ -109,6 +109,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("name");
     tester.include("stagingType");
     tester.include("inPublicationProcess");
+    tester.include("lookupInProgress");
     // Set up objects
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);
@@ -190,6 +191,7 @@ public class TranslationJpaUnitTest extends ModelUnitSupport {
     tester.include("workflowPath");
     tester.include("provisional");
     tester.include("inPublicationProcess");
+    tester.include("lookupInProgress");
 
     assertTrue(tester.testNotNullFields());
   }

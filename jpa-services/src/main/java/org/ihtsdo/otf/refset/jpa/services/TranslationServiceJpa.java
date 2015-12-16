@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.jpa.services;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -50,6 +51,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
@@ -1046,6 +1048,143 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         (List<MemoryEntry>) getQueryResults(sb.toString(),
             MemoryEntryJpa.class, MemoryEntryJpa.class, pfs, totalCt);
     return list;
+  }
+
+  /* see superclass */
+  @Override
+  public void lookupConceptNames(Long translationId, String label,
+    boolean background) throws Exception {
+    // Only launch process if refset not already looked-up
+    if (getTerminologyHandler().assignNames()) {
+      if (!lookupProgressMap.containsKey(translationId)) {
+        // Create new thread
+        Runnable lookup = new LookupConceptNamesThread(translationId, label);
+        Thread t = new Thread(lookup);
+        t.start();
+        // Handle non-background
+        if (!background) {
+          t.join();
+        }
+      }
+      // else it is already running
+    }
+  }
+
+  /**
+   * Class for threaded operation of lookupNames.
+   */
+  public class LookupConceptNamesThread implements Runnable {
+
+    /** The translation id. */
+    private Long translationId;
+
+    /** The label. */
+    private String label;
+
+    /**
+     * Instantiates a {@link LookupConceptNamesThread} from the specified
+     * parameters.
+     *
+     * @param id the id
+     * @param label the label
+     * @throws Exception the exception
+     */
+    public LookupConceptNamesThread(Long id, String label) throws Exception {
+      translationId = id;
+      this.label = label;
+    }
+
+    /* see superclass */
+    @Override
+    public void run() {
+      try {
+        Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
+            "Starting lookupConceptNamesThread - " + translationId);
+        // Initialize Process
+        lookupProgressMap.put(translationId, 0);
+
+        TranslationServiceJpa translationService = new TranslationServiceJpa();
+
+        // Translation may not be ready yet in DB, wait for 250ms until ready
+        Translation translation =
+            translationService.getTranslation(translationId);
+        translation.setLookupInProgress(true);
+        translationService.updateTranslation(translation);
+
+        // Get the concepts
+        List<Concept> concepts = translation.getConcepts();
+
+        // Put into a map by concept id (for easy retrieval)
+        final Map<String, Concept> conceptMap = new HashMap<>();
+        for (final Concept concept : concepts) {
+          conceptMap.put(concept.getTerminologyId(), concept);
+        }
+
+        int numberOfConcepts = concepts.size();
+
+        // If no concepts, go directly to concluding process
+        if (numberOfConcepts > 0) {
+          int i = 0;
+          final String terminology = translation.getTerminology();
+          final String version = translation.getVersion();
+
+          // Execute for all concepts
+          while (i < numberOfConcepts) {
+            final List<String> termIds = new ArrayList<>();
+
+            // Create list of conceptIds for all concepts (up to 10 at a time)
+            for (int j = 0; (j < 15 && i < numberOfConcepts); j++, i++) {
+              termIds.add(concepts.get(i).getTerminologyId());
+            }
+            // Get concepts from Term Server based on list
+            ConceptList cons =
+                getTerminologyHandler().getConcepts(termIds, terminology,
+                    version);
+
+            // IF the number of concepts returned doesn't match
+            // the size of termIds, there was a problem
+            if (cons.getTotalCount() != termIds.size()) {
+              // log and email an exception and continue
+              ExceptionHandler.handleException(
+                  new Exception("Missing concepts"), "looking up names", null);
+            }
+
+            // Populate concept's names/statuses from results of Term
+            // Server
+            for (Concept con : cons.getObjects()) {
+              // Reread the concept as we don't know if it has changed
+              final Concept concept =
+                  translationService.getConcept(conceptMap.get(
+                      con.getTerminologyId()).getId());
+              concept.setName(con.getName());
+              concept.setActive(con.isActive());
+              Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
+                  "  set concept name = " + concept);
+              translationService.updateConcept(concept);
+            }
+
+            // Update Progess
+            lookupProgressMap.put(translationId,
+                (int) ((100.0 * i) / numberOfConcepts));
+          }
+        }
+
+        // Conclude process
+        translation = translationService.getTranslation(translationId);
+        translation.setLookupInProgress(false);
+        translationService.updateTranslation(translation);
+        lookupProgressMap.remove(translationId);
+        Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
+            "Finished lookupConceptNamesThread - " + translationId);
+      } catch (Exception e) {
+        try {
+          ExceptionHandler.handleException(e, label, null);
+        } catch (Exception e1) {
+          // n/a
+        }
+        lookupProgressMap.put(translationId, LOOKUP_ERROR_CODE);
+      }
+    }
   }
 
 }

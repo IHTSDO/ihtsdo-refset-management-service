@@ -141,7 +141,7 @@ public interface SecurityService extends RootService {
   /**
    * Update user preferences.
    *
-   * @param userFreferences the user preferences
+   * @param userPreferences the user preferences
    */
   void updateUserPreferences(UserPreferences userPreferences);
 

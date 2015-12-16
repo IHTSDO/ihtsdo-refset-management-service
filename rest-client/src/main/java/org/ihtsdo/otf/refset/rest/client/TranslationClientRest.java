@@ -97,6 +97,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Translation getTranslation(Long translationId, String authToken)
     throws Exception {
@@ -124,6 +125,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public TranslationList getTranslationsForRefset(Long refsetId,
     String authToken) throws Exception {
@@ -151,6 +153,7 @@ public class TranslationClientRest extends RootClientRest implements
     return translationList;
   }
 
+  /* see superclass */
   @Override
   public TranslationList findTranslationsForQuery(String query,
     PfsParameterJpa pfs, String authToken) throws Exception {
@@ -185,6 +188,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Translation addTranslation(TranslationJpa translation, String authToken)
     throws Exception {
@@ -214,6 +218,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void updateTranslation(TranslationJpa translation, String authToken)
     throws Exception {
@@ -238,6 +243,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void removeTranslation(Long translationId, String authToken)
     throws Exception {
@@ -261,6 +267,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public InputStream exportConcepts(Long translationId, String ioHandlerInfoId,
     String authToken) throws Exception {
@@ -286,6 +293,7 @@ public class TranslationClientRest extends RootClientRest implements
     return in;
   }
 
+  /* see superclass */
   @Override
   public ConceptList findTranslationRevisionConceptsForQuery(
     Long translationId, String date, PfsParameterJpa pfs, String authToken)
@@ -326,6 +334,7 @@ public class TranslationClientRest extends RootClientRest implements
         ConceptListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public ConceptList findTranslationConceptsForQuery(Long translationId,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -364,6 +373,7 @@ public class TranslationClientRest extends RootClientRest implements
         ConceptListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getImportTranslationHandlers(String authToken)
     throws Exception {
@@ -390,6 +400,7 @@ public class TranslationClientRest extends RootClientRest implements
         IoHandlerInfoListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public IoHandlerInfoList getExportTranslationHandlers(String authToken)
     throws Exception {
@@ -416,6 +427,7 @@ public class TranslationClientRest extends RootClientRest implements
         IoHandlerInfoListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Concept addTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
@@ -446,6 +458,7 @@ public class TranslationClientRest extends RootClientRest implements
         ConceptJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void updateTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
@@ -470,6 +483,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void removeTranslationConcept(Long conceptId, String authToken)
     throws Exception {
@@ -493,6 +507,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public TranslationList getTranslationsWithSpellingDictionary(String authToken)
     throws Exception {
@@ -519,6 +534,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void copySpellingDictionary(Long fromTranslationId,
     Long toTranslationId, String authToken) throws Exception {
@@ -547,6 +563,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void addSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
@@ -572,6 +589,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
@@ -599,6 +617,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void clearSpellingDictionary(Long translationId, String authToken)
     throws Exception {
@@ -623,6 +642,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public TranslationList findTranslationsWithPhraseMemory(String authToken)
     throws Exception {
@@ -649,6 +669,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationListJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void copyPhraseMemory(Long fromTranslationId, Long toTranslationId,
     String authToken) throws Exception {
@@ -675,6 +696,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public MemoryEntry addPhraseMemoryEntry(Long translationId, String name,
     String translatedName, String authToken) throws Exception {
@@ -706,6 +728,7 @@ public class TranslationClientRest extends RootClientRest implements
         MemoryEntryJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void removePhraseMemoryEntry(Long translationId, String name,
     String authToken) throws Exception {
@@ -733,6 +756,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public void clearPhraseMemory(Long translationId, String authToken)
     throws Exception {
@@ -758,6 +782,7 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public void importSpellingDictionary(
     FormDataContentDisposition contentDispositionHeader, InputStream is,
@@ -795,6 +820,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public InputStream exportSpellingDictionary(Long translationId,
     String authToken) throws Exception {
@@ -823,6 +849,7 @@ public class TranslationClientRest extends RootClientRest implements
     return resultString;
   }
 
+  /* see superclass */
   @Override
   public void importPhraseMemory(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
@@ -858,6 +885,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public InputStream exportPhraseMemory(Long translationId, String authToken)
     throws Exception {
@@ -882,6 +910,7 @@ public class TranslationClientRest extends RootClientRest implements
     return in;
   }
 
+  /* see superclass */
   @Override
   public StringList suggestSpelling(Long translationId, String entry,
     String authToken) throws Exception {
@@ -909,6 +938,7 @@ public class TranslationClientRest extends RootClientRest implements
     return suggestions;
   }
 
+  /* see superclass */
   @Override
   public Translation beginMigration(Long translationId, String newTerminology,
     String newVersion, String authToken) throws Exception {
@@ -945,6 +975,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Translation finishMigration(Long translationId, String authToken)
     throws Exception {
@@ -974,6 +1005,7 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public void cancelMigration(Long translationId, String authToken)
     throws Exception {
@@ -1098,6 +1130,7 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception {
@@ -1233,6 +1266,7 @@ public class TranslationClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public Translation resumeMigration(Long translationId, String authToken)
     throws Exception {
@@ -1262,6 +1296,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Note addTranslationNote(Long translationId, String note,
     String authToken) throws Exception {
@@ -1288,6 +1323,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationNoteJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void removeTranslationNote(Long translationId, Long noteId,
     String authToken) throws Exception {
@@ -1312,6 +1348,7 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public Note addTranslationConceptNote(Long translationId, Long conceptId,
     String note, String authToken) throws Exception {
@@ -1342,6 +1379,7 @@ public class TranslationClientRest extends RootClientRest implements
         TranslationNoteJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void removeTranslationConceptNote(Long conceptId, Long noteId,
     String authToken) throws Exception {
@@ -1352,8 +1390,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/concept/remove/note?" + "conceptId="
-            + conceptId + "&noteId=" + noteId);
+            + "/translation/concept/remove/note?" + "conceptId=" + conceptId
+            + "&noteId=" + noteId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1393,6 +1431,7 @@ public class TranslationClientRest extends RootClientRest implements
         ConceptJpa.class);
   }
 
+  /* see superclass */
   @Override
   public StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception {
@@ -1403,8 +1442,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/suggest/" + translationId + "/" + name);
+        client.target(config.getProperty("base.url") + "/translation/suggest/"
+            + translationId + "/" + name);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1418,5 +1457,59 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     return suggestions;
+  }
+
+  /* see superclass */
+  @Override
+  public Integer getLookupProgress(Long translationId, String authToken)
+    throws Exception {
+    Logger
+        .getLogger(getClass())
+        .debug(
+            "Rest Client - get status for lookup of names and statuses of translation concepts "
+                + translationId);
+    validateNotEmpty(translationId, "translationId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/lookup/status" + "?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
+
+    Integer resultInteger = response.readEntity(Integer.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+
+    return resultInteger;
+  }
+
+  /* see superclass */
+  @Override
+  public void startLookupConceptNames(Long translationId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - start lookup of names and statuses of translation concepts "
+            + translationId);
+    validateNotEmpty(translationId, "translationId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/lookup/start?" + "translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 }

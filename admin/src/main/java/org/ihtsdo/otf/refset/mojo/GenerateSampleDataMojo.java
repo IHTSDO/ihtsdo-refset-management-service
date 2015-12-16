@@ -76,6 +76,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The created refsets. */
   private Set<Long> createdRefsets = new HashSet<>();
+  
+  /**  The created translations. */
+  private Set<Long> createdTranslations = new HashSet<>();
 
   /** The translation ct. */
   private int translationCt = 0;
@@ -753,7 +756,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
 
       if (assignNames) {
-        // Ensure that all lookupNames routines completed
+        // Ensure that all lookupMemberNames routines completed
         boolean completed = false;
         while (!completed) {
           // Assume process has completed
@@ -765,14 +768,34 @@ public class GenerateSampleDataMojo extends AbstractMojo {
                     admin.getAuthToken());
 
             if (r.isLookupInProgress()) {
-              // lookupNames still running on refset
+              // lookupMemberNames still running on refset
               completed = false;
               Thread.sleep(250);
               break;
             }
           }
         }
-      }
+
+        // Ensure that all lookupConceptNames routines completed
+        completed = false;
+        while (!completed) {
+          // Assume process has completed
+          completed = true;
+
+          for (Long translationId : createdTranslations) {
+            Translation t =
+                new TranslationServiceRestImpl().getTranslation(translationId,
+                    admin.getAuthToken());
+
+            if (t.isLookupInProgress()) {
+              // lookupConceptNames still running on translation
+              completed = false;
+              Thread.sleep(250);
+              break;
+            }
+          }
+        }
+}
 
       getLog().info("Done ...");
     } catch (Exception e) {
@@ -1031,7 +1054,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     }
 
     if (assignNames) {
-      // Identify new refsets to ensure that lookupName process complets
+      // Identify new refsets to ensure that lookupMemberName process completes
       createdRefsets.add(refset.getId());
     }
 
@@ -1115,6 +1138,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       translationService.finishImportConcepts(null, in, translation.getId(),
           "DEFAULT", auth.getAuthToken());
       in.close();
+    }
+    if (assignNames) {
+      // Identify new translations to ensure that lookupName process completes
+      createdTranslations.add(translation.getId());
     }
 
     return translation;

@@ -575,6 +575,6 @@ public interface RefsetServiceRest {
    * @param authToken
    * @throws Exception
    */
-  public void startLookupNames(Long refsetId, String authToken)
+  public void startLookupMemberNames(Long refsetId, String authToken)
     throws Exception;
 }

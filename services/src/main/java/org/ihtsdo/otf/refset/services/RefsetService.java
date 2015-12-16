@@ -346,12 +346,14 @@ public interface RefsetService extends ReleaseService {
 
   /**
    * Launches thread to populate DB with name and active-status of refset
-   * members
-   * 
+   * members.
+   *
    * @param refsetId the refset
-   * @throws Exception
+   * @param label the label
+   * @param background the background
+   * @throws Exception the exception
    */
-  public void lookupNames(Long refsetId) throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background) throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been

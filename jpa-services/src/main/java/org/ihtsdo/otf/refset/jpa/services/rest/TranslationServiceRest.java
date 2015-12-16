@@ -572,4 +572,26 @@ public interface TranslationServiceRest {
   public StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception;
 
+  /**
+   * Returns the status of identifying the name and active states for all
+   * concepts of the translation.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return lookup status
+   * @throws Exception
+   */
+  public Integer getLookupProgress(Long translationId, String authToken)
+    throws Exception;
+
+  /**
+   * Launches the lookup process of identifying the name and active states for
+   * all concepts of the translation.
+   * 
+   * @param translationId
+   * @param authToken
+   * @throws Exception
+   */
+  public void startLookupConceptNames(Long translationId, String authToken)
+    throws Exception;
 }

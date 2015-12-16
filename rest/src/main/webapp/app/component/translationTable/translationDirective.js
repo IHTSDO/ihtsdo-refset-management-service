@@ -1268,9 +1268,6 @@ tsApp
                 }
 
                 $scope.submitConcept = function(concept) {
-                  // Clear errors/warnings
-                  $scope.warnings = [];
-                  $scope.errors = [];
                   // Iterate through concept, set description types and languages
                   var copy = JSON.parse(JSON.stringify(concept));
                   for (var i = 0; i < copy.descriptions.length; i++) {
@@ -1294,12 +1291,16 @@ tsApp
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
                       return;
+                    } else {
+                      $scope.errors = [];
                     }
 
                     // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
                     if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
                       $scope.warnings = data.warnings;
                       return;
+                    } else {
+                      $scope.warnings = [];
                     }
 
                     // Otherwise, there are no errors and either no warnings
