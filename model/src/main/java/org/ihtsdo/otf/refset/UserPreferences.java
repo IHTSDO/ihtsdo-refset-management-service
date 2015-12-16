@@ -36,4 +36,32 @@ public interface UserPreferences {
    */
   public void setUser(User user);
 
+  /**
+   * Returns the last tab accessed
+   * 
+   * @return the lastTab
+   */
+  public String getLastTab();
+
+  /**
+   * Sets the last tab accessed
+   * 
+   * @param lastTab the last tab accessed
+   */
+  public void setLastTab(String lastTab);
+
+  /**
+   * Sets the last accordion accessed
+   * 
+   * @param lastAccordion the last accordion accessed
+   */
+  public void setLastAccordion(String lastAccordion);
+
+  /**
+   * Returns the last accordion accessed
+   * 
+   * @return the lastAccordion
+   */
+  public String getLastAccordion();
+
 }
