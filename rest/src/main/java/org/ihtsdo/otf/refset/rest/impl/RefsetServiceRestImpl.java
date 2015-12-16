@@ -1219,6 +1219,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.commit();
 
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(stagedRefset.getId(), authToken);
+
       return refset;
 
     } catch (Exception e) {
@@ -1488,6 +1491,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeRefset(stagedRefset.getId(), false);
 
       refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(stagedRefset.getId(), authToken);
 
       return refset;
 
@@ -2152,18 +2158,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setPublished(false);
         member.setMemberType(Refset.MemberType.MEMBER);
 
-        // TODO: - no efficient way to compute this
-        // each member requires a call to the terminology server!
-        if (refsetService.getTerminologyHandler().assignNames()) {
-          final Concept concept =
-              refsetService.getTerminologyHandler().getConcept(
-                  member.getConceptId(), refset.getTerminology(),
-                  refset.getVersion());
-          member.setConceptName(concept.getName());
-          member.setConceptActive(concept.isActive());
-        } else {
-          member.setConceptName("TBD");
-        }
+        // Initialize values to be overridden by lookupNames routine
+        member.setConceptActive(true);
+        member.setConceptName("TBD");
+
         refsetService.addMember(member);
         conceptIds.add(member.getConceptId());
         if (objectCt % commitCt == 0) {
@@ -2183,6 +2181,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // End transaction
       refsetService.commit();
+
+      // With contents committed, can now lookup Names/Statuses of members
+      startLookupNames(refsetId, authToken);
     } catch (Exception e) {
       handleException(e, "trying to import refset members");
     } finally {

@@ -8,13 +8,11 @@ package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -28,7 +26,6 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.refset.jpa.services.handlers.ImportRefsetRf2Handler;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
@@ -160,7 +157,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
    * @throws Exception the exception
    */
   private RefsetJpa makeRefset(String name, String definition, Project project,
-    String refsetId, File f) throws Exception {
+    String refsetId) throws Exception {
     User admin = securityService.authenticate(adminUser, adminPassword);
     String authToken = admin.getAuthToken();
 
@@ -190,48 +187,48 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
     refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
 
-    refset = (RefsetJpa) refsetService.addRefset(refset, authToken);
+    return (RefsetJpa) refsetService.addRefset(refset, authToken);
+  }
+
+  public void importMemberFile(Long refsetId, File f) throws Exception {
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    String authToken = admin.getAuthToken();
 
     // Import members (from file)
     ValidationResult vr =
-        refsetService.beginImportMembers(refset.getId(), "DEFAULT", authToken);
+        refsetService.beginImportMembers(refsetId, "DEFAULT", authToken);
     if (!vr.isValid()) {
       throw new Exception("import staging is invalid - " + vr);
     }
 
     InputStream in = new FileInputStream(f);
-    refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
-        authToken);
+
+    refsetService.finishImportMembers(null, in, refsetId, "DEFAULT", authToken);
 
     in.close();
-
-    return refset;
   }
 
   /**
-   * Test refset member note.
+   * Test querying of progress when process never launched.
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testIdentifyingNoProcessForRefset() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     Project project = projectService.getProject(3L, adminAuthToken);
 
-    File refsetImportFile =
-        new File("../config/src/main/resources/data/lookup/OneMemberRefset.txt");
-
     RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(),
-            refsetImportFile);
+        makeRefset("refset", null, project, UUID.randomUUID().toString());
 
-    assertEquals(refsetService
-        .getLookupProgress(refset.getId(), adminAuthToken).intValue(), 100);
+    assertEquals(100,
+        refsetService.getLookupProgress(refset.getId(), adminAuthToken)
+            .intValue());
   }
 
   /**
-   * Test refset note.
+   * Test running process with single member.
    *
    * @throws Exception the exception
    */
@@ -239,51 +236,38 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
   public void testLaunchingCompletingLookupOneMember() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
+    // Setup Project & Refset
     Project project = projectService.getProject(3L, adminAuthToken);
+    RefsetJpa refset =
+        makeRefset("refset", null, project, UUID.randomUUID().toString());
 
-    Logger.getLogger(getClass()).debug("Get refset");
-
-    // Create extensional refset and import contents with one member
+    // Import 1-member extensional refset from file
     File refsetImportFile =
         new File("../config/src/main/resources/data/lookup/OneMemberRefset.txt");
+    importMemberFile(refset.getId(), refsetImportFile);
 
-    RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(),
-            refsetImportFile);
-
-    ConceptRefsetMemberList members =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken);
-
-    for (ConceptRefsetMember member : members.getObjects()) {
-      assertEquals(member.getConceptName(), "TBD");
-    }
-
-    refsetService.startLookupNames(refset.getId(), adminAuthToken);
-
+    // Sleep until progess indicator states process complete
+    int count = 0;
     int completed = 0;
     while (completed < 100) {
-      assertFalse(completed < 0);
-      assertTrue(completed < 100);
       Thread.sleep(1000);
       completed =
           refsetService.getLookupProgress(refset.getId(), adminAuthToken)
               .intValue();
     }
 
-    assertEquals(completed, 100);
-
-    members =
+    ConceptRefsetMemberList members =
         refsetService.findRefsetMembersForQuery(refset.getId(), "",
             new PfsParameterJpa(), adminAuthToken);
-    ConceptRefsetMember member = members.getObjects().get(0);
 
-    assertEquals(member.getConceptName(), "Neoplasm of kidney");
-    assertEquals(member.isConceptActive(), true);
+    // Verify proper name & statues set
+    assertEquals("Neoplasm of kidney", members.getObjects().get(0)
+        .getConceptName());
+    assertEquals(true, members.getObjects().get(0).isConceptActive());
   }
 
   /**
-   * Test refset note.
+   * Test running process with multiple members.
    *
    * @throws Exception the exception
    */
@@ -291,55 +275,39 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
   public void testLaunchingCompletingLookupTwoMembers() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project = projectService.getProject(2L, adminAuthToken);
+    // Setup Project & Refset
+    Project project = projectService.getProject(3L, adminAuthToken);
+    RefsetJpa refset =
+        makeRefset("refset", null, project, UUID.randomUUID().toString());
 
-    Logger.getLogger(getClass()).debug("Get refset");
-
-    // Create extensional refset and import contents with two members
+    // Import 2-member extensional refset from file
     File refsetImportFile =
         new File("../config/src/main/resources/data/lookup/TwoMemberRefset.txt");
+    importMemberFile(refset.getId(), refsetImportFile);
 
-    RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(),
-            refsetImportFile);
-
-    ConceptRefsetMemberList members =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken);
-
-    for (ConceptRefsetMember member : members.getObjects()) {
-      assertEquals(member.getConceptName(), "TBD");
-    }
-
-    refsetService.startLookupNames(refset.getId(), adminAuthToken);
-
-    int completed = 0;
-    while (completed < 100) {
-      assertFalse(completed < 0);
-      assertTrue(completed < 100);
+    // Sleep until progess indicator states process complete
+    while (refsetService.getLookupProgress(refset.getId(), adminAuthToken)
+        .intValue() < 100) {
       Thread.sleep(1000);
-      completed =
-          refsetService.getLookupProgress(refset.getId(), adminAuthToken)
-              .intValue();
     }
 
-    assertEquals(completed, 100);
-
+    // Verify proper name & statues set for both members
     for (ConceptRefsetMember member : refset.getMembers()) {
       if (member.getConceptId().equals("126880001")) {
-        assertEquals(member.getConceptName(), "Neoplasm of kidney");
-        assertEquals(member.isConceptActive(), true);
+        assertEquals("Neoplasm of kidney", member.getConceptName());
+        assertEquals(true, member.isConceptActive());
       } else if (member.getConceptId().equals("415296001")) {
-        assertEquals(member.getConceptName(), "Retained spectacle");
-        assertEquals(member.isConceptActive(), false);
+        assertEquals("Retained spectacle", member.getConceptName());
+        assertEquals(false, member.isConceptActive());
       } else {
-        assertFalse(true);
+        throw new Exception(
+            "File should contain two members with Ids: 126880001 & 415296001");
       }
     }
   }
 
   /**
-   * Test refset note.
+   * Test running process with twenty five members.
    *
    * @throws Exception the exception
    */
@@ -347,41 +315,23 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
   public void testLaunchingCompletingLookupTwentyFiveMembers() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project = projectService.getProject(2L, adminAuthToken);
-
-    Logger.getLogger(getClass()).debug("Get refset");
-
-    // Create extensional refset and import contents with twenty five members
+    // Setup Project & Refset
+    Project project = projectService.getProject(3L, adminAuthToken);
+    RefsetJpa refset =
+        makeRefset("refset", null, project, UUID.randomUUID().toString());
+    // Import 2-member extensional refset from file
     File refsetImportFile =
         new File(
             "../config/src/main/resources/data/lookup/TwentyFiveMemberRefset.txt");
+    importMemberFile(refset.getId(), refsetImportFile);
 
-    RefsetJpa refset =
-        makeRefset("refset", null, project, UUID.randomUUID().toString(),
-            refsetImportFile);
-
-    ConceptRefsetMemberList members =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken);
-
-    for (ConceptRefsetMember member : members.getObjects()) {
-      assertEquals(member.getConceptName(), "TBD");
-    }
-
-    refsetService.startLookupNames(refset.getId(), adminAuthToken);
-
-    int completed = 0;
-    while (completed < 100) {
-      assertFalse(completed < 0);
-      assertTrue(completed < 100);
+    // Sleep until progess indicator states process complete
+    while (refsetService.getLookupProgress(refset.getId(), adminAuthToken)
+        .intValue() < 100) {
       Thread.sleep(1000);
-      completed =
-          refsetService.getLookupProgress(refset.getId(), adminAuthToken)
-              .intValue();
     }
 
-    assertEquals(completed, 100);
-
+    // Verify name set for all members
     for (ConceptRefsetMember member : refset.getMembers()) {
       assertFalse(member.getConceptName().equals("TBD"));
       assertFalse(member.getConceptName().isEmpty());
