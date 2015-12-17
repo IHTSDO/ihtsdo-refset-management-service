@@ -336,8 +336,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
 
-      // compute definition
-      refsetService.resolveRefsetDefinition(newRefset);
+      // compute definition if intensional and not empty
+      if (refset.getType() == Refset.Type.INTENSIONAL
+          && !refset.getDefinitionClauses().isEmpty()) {
+        refsetService.resolveRefsetDefinition(newRefset);
+      }
       refsetService.commit();
 
       return newRefset;
@@ -370,15 +373,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "update refset", UserRole.AUTHOR);
 
-      // Update refset
-      refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
-
-      // recompute definition
-      Refset dbRefset = refsetService.getRefset(refset.getId());
-      if (refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())) {
+      // recompute definition if the definition has changed.
+      Refset origRefset = refsetService.getRefset(refset.getId());
+      if (!refset.getDefinitionClauses().equals(
+          origRefset.getDefinitionClauses())) {
         refsetService.resolveRefsetDefinition(refset);
       }
 
+      // Update refset
+      refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
       refsetService.updateRefset(refset);
 
       refsetService.commit();
@@ -1066,8 +1069,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // STAGE REFSET
       final Refset refsetCopy =
-          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION,
-              null);
+          refsetService.stageRefset(refset, Refset.StagingType.MIGRATION, null);
       refsetCopy.setTerminology(newTerminology);
       refsetCopy.setVersion(newVersion);
 
@@ -1146,7 +1148,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // With contents committed, can now lookup Names/Statuses of members
       refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
-          false);
+          ConfigUtility.isBackgroundLookup());
 
       return refsetCopy;
 
@@ -1954,7 +1956,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      refsetService.lookupMemberNames(refsetId, "finish import members", false);
+      refsetService.lookupMemberNames(refsetId, "finish import members",
+          ConfigUtility.isBackgroundLookup());
     } catch (Exception e) {
       handleException(e, "trying to import refset members");
     } finally {
@@ -2290,7 +2293,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId, "requested from client "
-          + userName, true);
+          + userName, ConfigUtility.isBackgroundLookup());
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

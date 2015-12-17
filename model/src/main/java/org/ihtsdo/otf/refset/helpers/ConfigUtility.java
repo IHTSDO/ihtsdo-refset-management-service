@@ -225,7 +225,7 @@ public class ConfigUtility {
     }
     throw new Exception("Handler is not assignable from " + type.getName());
   }
-  
+
   /**
    * Instantiates a handler using standard setup and configures it with
    * properties.
@@ -270,7 +270,7 @@ public class ConfigUtility {
     }
     handler.setProperties(handlerProperties);
     return handler;
-  }  
+  }
 
   /**
    * Returns the graph for string.
@@ -755,5 +755,20 @@ public class ConfigUtility {
       return value;
     }
     return value.substring(0, 1).toUpperCase() + value.substring(1);
+  }
+
+  /**
+   * Indicates whether or not background lookup is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public static boolean isBackgroundLookup() throws Exception {
+    String property = getConfigProperties().getProperty("lookup.background");
+    boolean background = true;
+    if (property != null && property.equals("false")) {
+      background = false;
+    }
+    return background;
   }
 }

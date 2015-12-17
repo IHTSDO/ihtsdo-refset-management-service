@@ -850,7 +850,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Lookup names and active status of concepts
       translationService.lookupConceptNames(translationId,
-          "finish import concepts", false);
+          "finish import concepts", ConfigUtility.isBackgroundLookup());
 
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
@@ -2797,8 +2797,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               UserRole.VIEWER);
 
       // Launch lookup process in background thread
+      String property = ConfigUtility.getConfigProperties().getProperty("lookup.background");
+      boolean background = true;
+      if (property != null && property.equals("false")) {
+        background = false;
+      }
       translationService.lookupConceptNames(translationId,
-          "request from client " + userName, true);
+          "request from client " + userName, ConfigUtility.isBackgroundLookup());
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");
