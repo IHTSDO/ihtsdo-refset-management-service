@@ -28,6 +28,7 @@ import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.StringList;
 
 /**
  * JPA enabled implementation of {@link SpellingDictionary}.
@@ -107,6 +108,15 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
       this.entries = new ArrayList<String>();
     }
     this.entries.add(entry);
+  }
+
+  /* see superclass */
+  @Override
+  public void addEntries(StringList newEntries) {
+    if (this.entries == null) {
+      this.entries = new ArrayList<String>();
+    }
+    this.entries.addAll(newEntries.getObjects());
   }
 
   /* see superclass */

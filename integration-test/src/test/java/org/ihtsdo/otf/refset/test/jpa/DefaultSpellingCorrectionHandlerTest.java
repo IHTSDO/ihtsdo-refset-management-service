@@ -13,8 +13,10 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultSpellingCorrectionHandler;
@@ -279,6 +281,109 @@ public class DefaultSpellingCorrectionHandlerTest extends JpaSupport {
 
     // Assert
     assertEquals(origVals, convertedVals);
+    service.close();
+  }
+
+  /**
+   * Testing results if term not in suggestion list on Batch lookup.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testSuggestBatchSpellingNoMatch() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
+    ProjectService service = new ProjectServiceJpa();
+    SpellingCorrectionHandler handler = service.getSpellingCorrectionHandler();
+
+    List<String> origVals = new ArrayList<String>();
+    origVals.add("Word1");
+    origVals.add("Word2");
+    origVals.add("Word3");
+
+    StringList sl = new StringList();
+    sl.addObject("Word");
+    sl.addObject("Wordd");
+
+    KeyValuesMap results =
+        handler.suggestBatchSpelling(sl, origVals, 10, new Long(1));
+
+    assertEquals(2, results.getMap().keySet().size());
+
+    for (String s : results.getMap().keySet()) {
+      assertEquals(3, results.getMap().get(s).getTotalCount());
+      assertTrue(results.getMap().get(s).getObjects().contains("Word1"));
+      assertTrue(results.getMap().get(s).getObjects().contains("Word2"));
+      assertTrue(results.getMap().get(s).getObjects().contains("Word3"));
+    }
+
+    service.close();
+  }
+
+  /**
+   * Testing results if term is in suggestion list on Batch lookup.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testSuggestBatchSpellingWithPartialMatch() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
+    ProjectService service = new ProjectServiceJpa();
+    SpellingCorrectionHandler handler = service.getSpellingCorrectionHandler();
+
+    List<String> origVals = new ArrayList<String>();
+    origVals.add("Word1");
+    origVals.add("Word2");
+    origVals.add("Word3");
+
+    StringList sl = new StringList();
+    sl.addObject("Word");
+    sl.addObject("Word3");
+
+    KeyValuesMap results =
+        handler.suggestBatchSpelling(sl, origVals, 10, new Long(1));
+
+    Set<String> keySet = results.getMap().keySet();
+    assertEquals(1, keySet.size());
+
+    String key = keySet.iterator().next();
+
+    assertEquals(3, results.getMap().get(key).getTotalCount());
+    assertTrue(results.getMap().get(key).getObjects().contains("Word1"));
+    assertTrue(results.getMap().get(key).getObjects().contains("Word2"));
+    assertTrue(results.getMap().get(key).getObjects().contains("Word3"));
+
+    service.close();
+  }
+
+  /**
+   * Testing results if term is in suggestion list on Batch lookup.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testSuggestBatchSpellingWithAllMatch() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
+    ProjectService service = new ProjectServiceJpa();
+    SpellingCorrectionHandler handler = service.getSpellingCorrectionHandler();
+
+    List<String> origVals = new ArrayList<String>();
+    origVals.add("Word1");
+    origVals.add("Word2");
+    origVals.add("Word3");
+
+    StringList sl = new StringList();
+    sl.addObject("Word1");
+    sl.addObject("Word2");
+
+    KeyValuesMap results =
+        handler.suggestBatchSpelling(sl, origVals, 10, new Long(1));
+
+    Set<String> keySet = results.getMap().keySet();
+    assertEquals(0, keySet.size());
+
     service.close();
   }
 

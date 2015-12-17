@@ -12,6 +12,7 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -21,6 +22,7 @@ import org.apache.lucene.search.spell.PlainTextDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
@@ -120,6 +122,70 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     }
 
     return new StringList();
+  }
+
+  @Override
+  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms,
+    List<String> dictionaryEntries, int amt, Long tid) throws IOException {
+    KeyValuesMap retMap = new KeyValuesMap();
+
+    // Only process if lookupTerms need suggestions, so idenify if case
+    boolean termsToProcess = false;
+    for (String termToSearch : lookupTerms.getObjects()) {
+      if (!dictionaryEntries.contains(termToSearch)) {
+        termsToProcess = true;
+        break;
+      }
+    }
+
+    if (termsToProcess) {
+      HashMap<String, StringList> resultHashMap = new HashMap<>();
+
+      // Create input stream for Dictionary
+      StringBuilder builder = new StringBuilder();
+      for (String s : dictionaryEntries) {
+        builder.append(s);
+        builder.append("\n");
+      }
+
+      InputStream is =
+          new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+
+      // Create Index Writer
+      PlainTextDictionary ptDict = new PlainTextDictionary(is);
+      IndexWriterConfig iwConfig =
+          new IndexWriterConfig(Version.LATEST, new StandardAnalyzer());
+
+      // Create tmp file for SpellChecker
+      File tmpIndexFile =
+          new File(Long.toString(System.currentTimeMillis()),
+              Long.toString(tid));
+      FSDirectory indexDir = FSDirectory.open(tmpIndexFile);
+
+      // Create SpellChecker
+      SpellChecker checker = new SpellChecker(indexDir);
+
+      // Index Checker and delete tmp file
+      checker.indexDictionary(ptDict, iwConfig, true);
+      tmpIndexFile.delete();
+
+      // Iterate through lookup terms and store their collections in map
+      for (String termToSearch : lookupTerms.getObjects()) {
+        if (!dictionaryEntries.contains(termToSearch)) {
+          String[] results = checker.suggestSimilar(termToSearch, amt);
+          StringList resultsForTerm = convertResults(results);
+
+          resultHashMap.put(termToSearch, resultsForTerm);
+        }
+      }
+
+      checker.close();
+
+      // Convert Map to proper return type
+      retMap.setMap(resultHashMap);
+    }
+
+    return retMap;
   }
 
   /**
