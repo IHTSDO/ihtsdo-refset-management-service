@@ -94,9 +94,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       return null;
 
     // check if authenticated user matches one of our users
-    UserList userList = getUsers();
+    final UserList userList = getUsers();
     User userFound = null;
-    for (User user : userList.getObjects()) {
+    for (final User user : userList.getObjects()) {
       if (user.getUserName().equals(authUser.getUserName())) {
         userFound = user;
         break;
@@ -116,12 +116,12 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         UserPreferences newUserPreferences = new UserPreferencesJpa();
         newUserPreferences.setUser(userFound);
         addUserPreferences(newUserPreferences);
-      }  
+      }
     }
     // if User not found, create one for our use
     else {
       Logger.getLogger(getClass()).info("Add user = " + authUser.getUserName());
-      User newUser = new UserJpa();
+      final User newUser = new UserJpa();
       newUser.setEmail(authUser.getEmail());
       newUser.setName(authUser.getName());
       newUser.setUserName(authUser.getUserName());
@@ -131,7 +131,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         UserPreferences newUserPreferences = new UserPreferencesJpa();
         newUserPreferences.setUser(newUser);
         addUserPreferences(newUserPreferences);
-      }  
+      }
       clear();
     }
 
@@ -142,10 +142,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     Logger.getLogger(getClass()).debug("User = " + authUser.getUserName());
 
-    //Reload the user to populate UserPreferences
-    authUser = getUser(authUser.getUserName());
-    authUser.setAuthToken(token);
-    return authUser;
+    // Reload the user to populate UserPreferences
+    final User result = getUser(authUser.getUserName());
+    result.setAuthToken(token);
+    return result;
   }
 
   /* see superclass */

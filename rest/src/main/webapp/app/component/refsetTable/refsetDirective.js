@@ -446,7 +446,7 @@ tsApp
               // process
               $scope.performReassign = function(refset) {
                 // first unassign, then assign to author who
-                // worked on it
+                // worked on it (TODO: what if >1 authors?), need picklist
                 workflowService.performWorkflowAction($scope.project.id, refset.id,
                   $scope.user.userName, $scope.projects.role, 'UNASSIGN').then(
                   function(data) {
@@ -1094,8 +1094,8 @@ tsApp
               }
 
               // Assign refset modal
-              $scope.openAssignRefsetModal = function(lrefset, laction, luserName) {
-                console.debug("openAssignRefsetModal ", lrefset, laction, luserName);
+              $scope.openAssignRefsetModal = function(lrefset) {
+                console.debug("openAssignRefsetModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/assignRefset.html',
@@ -1105,11 +1105,8 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
-                    action : function() {
-                      return laction;
-                    },
                     currentUserName : function() {
-                      return luserName;
+                      return $scope.user.userName;
                     },
                     assignedUsers : function() {
                       return $scope.projects.assignedUsers;
@@ -1135,8 +1132,7 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset, action,
-                currentUserName, assignedUsers, project, role, tinymceOptions) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,                 currentUserName, assignedUsers, project, role, tinymceOptions) {
 
                 console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
@@ -1165,7 +1161,7 @@ tsApp
                   $scope.selectedUserName = userName;
 
                   workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                    $scope.role, action).then(
+                    $scope.role, 'ASSIGN').then(
                   // Success
                   function(data) {
 
@@ -2141,12 +2137,11 @@ tsApp
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.tinymceOptions = tinymceOptions;
 
-                $scope.sendFeedback = function(refset, feedbackMessage, name, email) {
-                  console.debug("submit feedback", refset.id);
+                $scope.addFeedback = function(refset, name, email, message) {
+                  console.debug("add feeback", refset, name, email, message);
 
-                  if (feedbackMessage == null || feedbackMessage == undefined
-                    || feedbackMessage === '') {
-                    window.alert("The feedback field cannot be blank. ");
+                  if (message == null || message == undefined || message === '') {
+                    window.alert("The message cannot be blank. ");
                     return;
                   }
 
@@ -2157,17 +2152,17 @@ tsApp
                   }
 
                   if (!validateEmail(email)) {
-                    window.alert("Invalid email address provided.");
+                    window
+                      .alert("Invalid email address provided (e.g. should be like someone@example.com)");
                     return;
                   }
 
-                  workflowService.sendFeedback(refset, feedbackMessage, name, email).then(
-                  // Success - add refset
+                  workflowService.addFeedback(refset, name, email, message).then(
+                  // Success
                   function(data) {
-                    var newRefset = data;
-
+                    $uibModalInstance.dismiss('cancel');
                   },
-                  // Error - add refset
+                  // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
@@ -2178,6 +2173,7 @@ tsApp
                   $uibModalInstance.dismiss('cancel');
                 };
 
+                // email validation via regex
                 function validateEmail(email) {
                   var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                   return re.test(email);

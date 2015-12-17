@@ -1104,6 +1104,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         lookupProgressMap.put(translationId, 0);
 
         TranslationServiceJpa translationService = new TranslationServiceJpa();
+        translationService.setTransactionPerOperation(false);
+        translationService.beginTransaction();
 
         // Translation may not be ready yet in DB, wait for 250ms until ready
         Translation translation =
@@ -1133,7 +1135,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             final List<String> termIds = new ArrayList<>();
 
             // Create list of conceptIds for all concepts (up to 10 at a time)
-            for (int j = 0; (j < 15 && i < numberOfConcepts); j++, i++) {
+            for (int j = 0; (j < 30 && i < numberOfConcepts); j++, i++) {
               termIds.add(concepts.get(i).getTerminologyId());
             }
             // Get concepts from Term Server based on list
@@ -1158,14 +1160,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
                       con.getTerminologyId()).getId());
               concept.setName(con.getName());
               concept.setActive(con.isActive());
-              Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
-                  "  set concept name = " + concept);
               translationService.updateConcept(concept);
             }
-
             // Update Progess
             lookupProgressMap.put(translationId,
                 (int) ((100.0 * i) / numberOfConcepts));
+            translationService.commit();
+            translationService.clear();
+            translationService.beginTransaction();
           }
         }
 
@@ -1173,6 +1175,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         translation = translationService.getTranslation(translationId);
         translation.setLookupInProgress(false);
         translationService.updateTranslation(translation);
+        translationService.commit();
         lookupProgressMap.remove(translationId);
         Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
             "Finished lookupConceptNamesThread - " + translationId);

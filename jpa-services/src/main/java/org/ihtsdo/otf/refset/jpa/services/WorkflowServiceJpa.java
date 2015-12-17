@@ -304,22 +304,18 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public void addFeedback(List<String> message, Refset refset) throws Exception {
-    
-    /*var sList = [ name, email, refset.id, refset.name,
-                  feedbackMessage ];*/
-    
+  public void addFeedback(Refset refset, String name, String email,
+    String message) throws Exception {
+
     Properties config = ConfigUtility.getConfigProperties();
     if (config.getProperty("mail.enabled") != null
         && config.getProperty("mail.enabled").equals("true")
         && refset.getFeedbackEmail() != null) {
-      ConfigUtility.sendEmail("Refset Feedback: " + message.get(2) + "-" + message.get(3),
-          config.getProperty("mail.smtp.user"),
-          refset.getFeedbackEmail(), 
-          "User: " + message.get(0) + "<br>" + 
-              "Email: " + message.get(1) + "<br>" + message.get(4), 
-          config,
-          "true".equals(config.get("mail.smtp.auth")));
+      ConfigUtility.sendEmail("Refset Feedback: " + refset.getTerminologyId()
+          + "-" + refset.getName(), config.getProperty("mail.smtp.user"),
+          refset.getFeedbackEmail(), "<html><body><p>Name: " + name
+              + "</p><p>Email: " + email + "</p><div>" + message + "</div>",
+          config, "true".equals(config.get("mail.smtp.auth")));
     }
   }
 

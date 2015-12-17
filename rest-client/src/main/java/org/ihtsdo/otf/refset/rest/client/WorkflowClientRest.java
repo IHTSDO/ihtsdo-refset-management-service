@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.client;
 
+import java.net.URLEncoder;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -525,7 +526,6 @@ public class WorkflowClientRest extends RootClientRest implements
     return null;
   }
 
-
   /* see superclass */
   @Override
   public TranslationList findNonReleaseProcessTranslations(Long projectId,
@@ -626,5 +626,36 @@ public class WorkflowClientRest extends RootClientRest implements
     // converting to object
     return (ConceptList) ConfigUtility.getGraphForString(resultString,
         ConceptJpa.class);
+  }
+
+  @Override
+  public void addFeedback(Long refsetId, String name, String email,
+    String message, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - add feedback " + refsetId + ", " + name + ", "
+            + email);
+
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(name, "name");
+    validateNotEmpty(email, "email");
+    validateNotEmpty(message, "message");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/message?name="
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
+            + "&email="
+            + URLEncoder.encode(email, "UTF-8").replaceAll("\\+", "%20")
+            + "&refsetId=" + refsetId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.text(message));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.getStatusInfo().toString());
+    }
   }
 }

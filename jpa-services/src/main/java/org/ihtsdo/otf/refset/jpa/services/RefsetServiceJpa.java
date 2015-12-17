@@ -984,6 +984,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         lookupProgressMap.put(refsetId, 0);
 
         RefsetServiceJpa refsetService = new RefsetServiceJpa();
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
 
         // Refset may not be ready yet in DB, wait for 250ms until ready
         Refset refset = refsetService.getRefset(refsetId);
@@ -1012,7 +1014,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             final List<String> termIds = new ArrayList<>();
 
             // Create list of conceptIds for all members (up to 10 at a time)
-            for (int j = 0; (j < 15 && i < numberOfMembers); j++, i++) {
+            for (int j = 0; (j < 30 && i < numberOfMembers); j++, i++) {
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
@@ -1037,14 +1039,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                       .getId());
               member.setConceptName(con.getName());
               member.setConceptActive(con.isActive());
-              Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
-                  "  set member name = " + member);
               refsetService.updateMember(member);
             }
 
             // Update Progess
             lookupProgressMap.put(refsetId,
                 (int) ((100.0 * i) / numberOfMembers));
+            refsetService.commit();
+            refsetService.clear();
+            refsetService.beginTransaction();
           }
         }
 
@@ -1052,6 +1055,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(false);
         refsetService.updateRefset(refset);
+        refsetService.commit();
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);

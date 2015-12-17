@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -14,7 +15,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
@@ -161,7 +161,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "perform workflow action on translation", UserRole.AUTHOR);
 
       // Get object references
-      final Translation translation = workflowService.getTranslation(translationId);
+      final Translation translation =
+          workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
       // Obtain the handler
       final WorkflowActionHandler handler =
@@ -250,7 +251,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "perform workflow action on translation", UserRole.AUTHOR);
 
       // Get object references
-      final Translation translation = workflowService.getTranslation(translationId);
+      final Translation translation =
+          workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
       // Obtain the handler
       final WorkflowActionHandler handler =
@@ -336,7 +338,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final  WorkflowService workflowService = new WorkflowServiceJpa();
+    final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       final String authName =
           authorizeProject(workflowService, projectId, securityService,
@@ -430,7 +432,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "perform workflow action on refset", UserRole.AUTHOR);
 
       // Get object references
-      final  User user = securityService.getUser(userName);
+      final User user = securityService.getUser(userName);
 
       // Call helper
       List<Refset> list =
@@ -469,7 +471,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     // Combine results from all workflow action handlers
     final List<Refset> list = new ArrayList<>();
-    for (final WorkflowActionHandler handler : workflowService.getWorkflowHandlers()) {
+    for (final WorkflowActionHandler handler : workflowService
+        .getWorkflowHandlers()) {
       list.addAll(handler.findAvailableEditingRefsets(projectId, user, null,
           workflowService).getObjects());
     }
@@ -602,7 +605,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final User user = securityService.getUser(userName);
 
       // Call helper
-       List<Refset> list =
+      List<Refset> list =
           findAvailableReviewRefsetsHelper(projectId, user, workflowService);
 
       // Apply pfs
@@ -642,7 +645,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     // Combine results from all workflow action handlers
     final List<Refset> list = new ArrayList<>();
-    for (final WorkflowActionHandler handler : workflowService.getWorkflowHandlers()) {
+    for (final WorkflowActionHandler handler : workflowService
+        .getWorkflowHandlers()) {
       list.addAll(handler.findAvailableReviewRefsets(projectId, user, null,
           workflowService).getObjects());
     }
@@ -827,7 +831,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "translationId:" + translationId
               + " AND (forAuthoring:true OR forReview:true)";
       // Perform this search without pfs
-      final  TrackingRecordList records =
+      final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (final TrackingRecord record : records.getObjects()) {
         // handle lazy initialization
@@ -872,7 +876,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Get the project
       final Project project = workflowService.getProject(projectId);
-      final Translation translation = workflowService.getTranslation(translationId);
+      final Translation translation =
+          workflowService.getTranslation(translationId);
 
       // Obtain the handler
       final WorkflowActionHandler handler =
@@ -938,21 +943,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  /**
-   * Sends a feedback message email.
-   *
-   * @param message the message
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the string
-   * @throws Exception the exception
-   */
+  /* see superclass */
+  @Override
   @POST
   @Path("/message")
+  @Consumes("text/plain")
   @ApiOperation(value = "Adds a feedback message.", notes = "Adds a feedback message.")
-  public Response addFeedback(
-    @ApiParam(value = "message", required = true) List<String> message,
-    @ApiParam(value = "Refset id, e.g. 8", required = false) @QueryParam("refsetId") Long refsetId,
+  public void addFeedback(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Name", required = true) @QueryParam("name") String name,
+    @ApiParam(value = "Email", required = true) @QueryParam("email") String email,
+    @ApiParam(value = "message", required = true) String message,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -971,20 +972,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       // authorize call
-      authorizeApp(securityService, authToken, "add feedback",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "add feedback", UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
           "RESTful call (Workflow): /message msg: " + message + ", "
               + refset.getFeedbackEmail());
 
-      workflowService.addFeedback(message, refset);
-
-      return null;
+      workflowService.addFeedback(refset, name, email, message);
 
     } catch (Exception e) {
       handleException(e, "send a message email");
-      return null;
     } finally {
       workflowService.close();
       securityService.close();

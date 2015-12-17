@@ -3,7 +3,6 @@
  */
 package org.ihtsdo.otf.refset.services;
 
-import java.util.List;
 import java.util.Set;
 
 import org.ihtsdo.otf.refset.Refset;
@@ -146,11 +145,14 @@ public interface WorkflowService extends TranslationService {
   /**
    * Send feedback.
    *
+   * @param refset the refset
+   * @param name the name
+   * @param email the email
    * @param message the message
-   * @param refset TODO
    * @throws Exception the exception
    */
-  public void addFeedback(List<String> message, Refset refset) throws Exception;
+  public void addFeedback(Refset refset, String name, String email,
+    String message) throws Exception;
 
   /**
    * Handle lazy init.

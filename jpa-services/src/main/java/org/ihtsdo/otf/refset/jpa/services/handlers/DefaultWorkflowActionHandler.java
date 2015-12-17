@@ -77,8 +77,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
               + action + ", " + user);
       return result;
     }
-    
-
 
     // Validate tracking record
     TrackingRecordList recordList =
@@ -93,14 +91,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     if (projectRole == UserRole.REVIEWER
         && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-        && action == WorkflowAction.ASSIGN &&
-        record.getAuthors().contains(user)) {
+        && action == WorkflowAction.ASSIGN
+        && record.getAuthors().contains(user)) {
       result
-      .addError("Reviewer cannot review work that was authored by him/her - "
-          + action + ", " + user);
+          .addError("Reviewer cannot review work that was authored by him/her - "
+              + action + ", " + user);
       return result;
     }
-    
+
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {
@@ -151,7 +149,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 && record != null
                 && EnumSet.of(WorkflowStatus.NEW,
                     WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE).contains(
+                    WorkflowStatus.EDITING_DONE,
+                    // allowed for fixing errors
+                    WorkflowStatus.READY_FOR_PUBLICATION).contains(
                     refset.getWorkflowStatus());
         reviewerFlag =
             projectRole == UserRole.REVIEWER
@@ -289,7 +289,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case REASSIGN:
-        // No need to set the author again because we've removed reference to the reviewer
+        // No need to set the author again because we've removed reference to
+        // the reviewer
         refset.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
@@ -397,14 +398,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     if (projectRole == UserRole.REVIEWER
         && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-        && action == WorkflowAction.ASSIGN &&
-        record.getAuthors().contains(user)) {
+        && action == WorkflowAction.ASSIGN
+        && record.getAuthors().contains(user)) {
       result
-      .addError("Reviewer cannot review work that was authored by him/her - "
-          + action + ", " + user);
+          .addError("Reviewer cannot review work that was authored by him/her - "
+              + action + ", " + user);
       return result;
     }
-    
+
     // Validate actions that workflow status will allow
     boolean flag = false;
     switch (action) {
@@ -456,7 +457,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 && record != null
                 && EnumSet.of(WorkflowStatus.NEW,
                     WorkflowStatus.EDITING_IN_PROGRESS,
-                    WorkflowStatus.EDITING_DONE).contains(
+                    WorkflowStatus.EDITING_DONE,
+                    // allowed for fixing errors
+                    WorkflowStatus.READY_FOR_PUBLICATION).contains(
                     concept.getWorkflowStatus());
         reviewerFlag =
             projectRole == UserRole.REVIEWER
@@ -512,7 +515,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     if (!flag) {
-      result.addError("Invalid action for refset workflow status: "
+      result.addError("Invalid action for translation workflow status: "
           + user.getUserName() + ", " + action + ", "
           + concept.getTerminologyId() + ", " + concept.getWorkflowStatus()
           + ", " + translation);
@@ -543,15 +546,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case ASSIGN:
         // Author case
         if (record == null) {
-          // Add the concept itself
-          concept.setTranslation(translation);
-          concept.setModuleId(translation.getModuleId());
-          concept.setEffectiveTime(null);
-          concept.setTerminology(translation.getTerminology());
-          concept.setVersion(translation.getVersion());
-          concept.setDefinitionStatusId("UNKNOWN");
-          service.addConcept(concept);
-
+          // Add the concept itself (if not already exists)
+          if (concept.getId() == null) {
+            concept.setTranslation(translation);
+            concept.setModuleId(translation.getModuleId());
+            concept.setEffectiveTime(null);
+            concept.setTerminology(translation.getTerminology());
+            concept.setVersion(translation.getVersion());
+            concept.setDefinitionStatusId("UNKNOWN");
+            service.addConcept(concept);
+          }
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
           record2.getAuthors().add(user);
@@ -607,6 +611,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           concept.setLastModifiedBy(user.getUserName());
           service.updateConcept(concept);
         }
+        break;
+
+      case REASSIGN:
+        // No need to set the author again because we've removed reference to
+        // the reviewer
+        concept.setWorkflowStatus(WorkflowStatus.EDITING_IN_PROGRESS);
         break;
 
       case SAVE:

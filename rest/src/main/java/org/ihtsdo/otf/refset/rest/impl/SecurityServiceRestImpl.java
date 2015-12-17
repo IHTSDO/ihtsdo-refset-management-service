@@ -380,7 +380,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "update user preferences",
-          UserRole.ADMIN);
+          UserRole.USER);
 
       securityService.updateUserPreferences(userPreferences);
     } catch (Exception e) {

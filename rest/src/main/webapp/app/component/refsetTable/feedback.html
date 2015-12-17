@@ -83,7 +83,7 @@
             <!--  tinymce text area -->
             <form method="post">
               <textarea id="tinymce-feedback" ui-tinymce="tinymceOptions"
-                cols="60" rows="10" ng-model="feedbackInput"></textarea>
+                cols="60" rows="10" ng-model="message"></textarea>
             </form>
           </td>
         </tr>
@@ -95,8 +95,6 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary"
-    ng-click="sendFeedback(refset, feedbackInput, name, email); 
-    feedbackInput = ''">Send
-    Feedback</button>
+    ng-click="addFeedback(refset, name, email, message);">Send Feedback</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

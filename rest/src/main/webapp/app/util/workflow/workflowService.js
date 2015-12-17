@@ -472,18 +472,21 @@ tsApp.service('workflowService', [
     }
 
     // send feedback email
-    this.sendFeedback = function(refset, feedbackMessage, name, email) {
-      console.debug("sendFeedbackEmail");
+    this.addFeedback = function(refset, name, email, message) {
+      console.debug("add feedback", name, email, message, refset);
       var deferred = $q.defer();
-
-      var sList = [ name, email, refset.id, refset.name, feedbackMessage ];
-
       // find members
       gpService.increment()
-      $http.post(workflowUrl + "message" + "?refsetId=" + refset.id, sList).then(
+      $http.post(
+        workflowUrl + "message" + "?refsetId=" + refset.id + "&name=" + encodeURIComponent(name)
+          + "&email=" + encodeURIComponent(email), message, {
+          headers : {
+            "Content-type" : "text/plain"
+          }
+        }).then(
+
       // success
       function(response) {
-        console.debug("  members = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },

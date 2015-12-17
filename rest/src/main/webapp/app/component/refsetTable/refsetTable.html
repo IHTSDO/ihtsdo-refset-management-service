@@ -22,12 +22,15 @@
         ng-click="paging['refset'].filter = ''; getRefsets()"
         title="Click to clear filter text">Clear</button>
 
-      <button type="button" class="btn btn-xs btn-primary" ng-show="refsets.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'PREVIEW' || value == 'PUBLISHED')" ng-model="showLatest" ng-change="getRefsets()"
-        uib-btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+      <button type="button" class="btn btn-xs btn-primary"
+        ng-show="refsets.totalCount > 0 &&
+        (value == 'RELEASE' || value == 'PREVIEW' || value == 'PUBLISHED')"
+        ng-model="showLatest" ng-change="getRefsets()" uib-btn-checkbox
+        btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
-        <span ng-hide="showLatest" title="Click to show only most recent">All</span></button>
-  
+        <span ng-hide="showLatest" title="Click to show only most recent">All</span>
+      </button>
+
       <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
         <div style="float: right;">
           <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
@@ -118,7 +121,7 @@
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
             <i
-              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
+              ng-click="openAssignRefsetModal(refset); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
@@ -156,15 +159,15 @@
             <i ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
-              ng-click="openAssignRefsetModal(refset, 'REASSIGN', user.userName); $event.stopPropagation()"
-              title="Reassign" class="noul material-icons md-18">assignment_ind</i>
-            <i ng-click="performWorkflowAction(refset, 'SAVE', user.userName);"
+              ng-click="performReassign(refset)" title="Reassign"
+              class="noul material-icons md-18">assignment_ind</i>
+            <i ng-click="performWorkflowAction(refset, 'SAVE', user.userName)"
               title="Save" class="noul material-icons md-18">save</i>
             <i ng-show="refset.workflowStatus != 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(refset, 'FINISH', user.userName);"
+              ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
-              ng-click="performWorkflowAction(refset, 'FINISH', user.userName);"
+              ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
 
@@ -201,7 +204,7 @@
 
             <i
               ng-show="projects.role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignRefsetModal(refset, 'ASSIGN', user.userName); $event.stopPropagation()"
+              ng-click="openAssignRefsetModal(refset); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
@@ -290,9 +293,7 @@
             <td>
               <b>Namespace</b>
             </td>
-            <td>
-              {{selected.refset.namespace}}
-            </td>
+            <td>{{selected.refset.namespace}}</td>
           </tr>
           <tr>
             <td>

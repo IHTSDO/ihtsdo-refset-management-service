@@ -146,6 +146,7 @@
           </div>
         </div>
         <!-- Warnings -->
+        <span ng-show="warnings.length > 0">Click "Save" again to override warnings</span>
         <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
       </div>
       <!-- end R1C2 -->

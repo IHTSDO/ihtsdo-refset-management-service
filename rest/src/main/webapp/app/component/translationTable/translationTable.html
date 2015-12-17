@@ -93,7 +93,7 @@
             <i ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
 
-            <!-- Mark ready for publication -->
+            <!-- Start release -->
             <i
               ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
@@ -458,21 +458,29 @@
               </span>
             </span>
 
+            <!-- Reassign -->
+            <i ng-show="projects.role == 'REVIEWER'"
+              ng-click="openAssignConceptModal(record.cocnept, 'REASSIGN', user.userName); $event.stopPropagation()"
+              title="Reassign" class="noul material-icons md-18">assignment_ind</i>
 
-            <!-- Reassign - if REVIEW -->
+            <!-- Finish -->
             <i ng-show="record.concept.workflowStatus != 'REVIEW_DONE'"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
+            <!-- Mark ready for publication -->
+            <i ng-show="record.concept.workflowStatus == 'REVIEW_DONE'"
+              ng-click="performWorkflowAction(record.concept, 'FINISH')"
+              title="Mark ready for publication"
+              class="noul material-icons md-18">open_in_new</i>
+
             <!-- Notes -->
             <i ng-show="record.concept.notes.length > 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
-              title="Edit concept Notes"
-              class="noul material-icons md-18">assignment</i>
+              title="Edit concept Notes" class="noul material-icons md-18">assignment</i>
             <i ng-show="record.concept.notes.length == 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
-              title="Add Concept Notes"
-              class="md-grey material-icons md-18">assignment</i>
+              title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
           </td>
         </tr>
       </tbody>
@@ -591,12 +599,10 @@
                 <!-- Notes -->
                 <i ng-show="concept.notes.length > 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Edit concept Notes"
-                  class="noul material-icons md-18">assignment</i>
+                  title="Edit concept Notes" class="noul material-icons md-18">assignment</i>
                 <i ng-show="concept.notes.length == 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Add Concept Notes"
-                  class="md-grey material-icons md-18">assignment</i>
+                  title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
               </td>
             </tr>
           </tbody>

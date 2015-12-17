@@ -251,7 +251,6 @@ public interface WorkflowServiceRest {
   public ConceptList findAllAssignedConcepts(Long projectId,
     Long translationId, PfsParameterJpa pfs, String authToken) throws Exception;
 
-
   /**
    * Find non release process translations.
    *
@@ -264,4 +263,16 @@ public interface WorkflowServiceRest {
   public TranslationList findNonReleaseProcessTranslations(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception;
 
+  /**
+   * Adds the feedback.
+   *
+   * @param refsetId the refset id
+   * @param name the name
+   * @param email the email
+   * @param message the message
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void addFeedback(Long refsetId, String name, String email,
+    String message, String authToken) throws Exception;
 }

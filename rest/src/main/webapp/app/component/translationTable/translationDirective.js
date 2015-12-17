@@ -141,7 +141,7 @@ tsApp
 
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
-                  pfs.latestOnly = $scope.showLatest;  
+                  pfs.latestOnly = $scope.showLatest;
                   translationService.findTranslationsForQuery($scope.paging["translation"].filter,
                     pfs).then(function(data) {
                     $scope.translations = data.translations;
@@ -171,7 +171,7 @@ tsApp
 
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
-                  pfs.latestOnly = $scope.showLatest;  
+                  pfs.latestOnly = $scope.showLatest;
                   translationService.findTranslationsForQuery($scope.project.id, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
@@ -498,6 +498,21 @@ tsApp
                 })
               };
 
+              // reassign to author from concept.
+              $scope.performReassign = function(concept) {
+                // first unassign
+                workflowService.performTranslationWorkflowAction($scope.project.id,
+                  $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                  'UNASSIGN').then(
+                  function(data) {
+                    workflowService.performTranslationWorkflowAction($scope.project.id,
+                      $scope.selected.translation.id, $scope.user.userName, 'AUTHOR', 'REASSIGN')
+                      .then(function(data) {
+                        translationService.fireTranslationChanged(translation);
+                      })
+                  })
+              };
+
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
                 if (translation && translation.notes && translation.notes.length > 0) {
@@ -626,8 +641,7 @@ tsApp
                       utilService.clearError();
                     })
                   } else if ($scope.type == 'Concept') {
-                    translationService.removeTranslationConceptNote(
-                      object.id, note.id).then(
+                    translationService.removeTranslationConceptNote(object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
@@ -910,6 +924,7 @@ tsApp
                 $scope.role = role;
                 $scope.assignedUserNames = [];
                 $scope.selectedUserName = currentUserName;
+                $scope.note;
                 $scope.errors = [];
 
                 // Prep userNames picklist
@@ -929,16 +944,34 @@ tsApp
 
                   workflowService.performTranslationWorkflowAction($scope.project.id,
                     translation.id, userName, $scope.role, "ASSIGN", $scope.concept).then(
-                  // Success
-                  function(data) {
-                    // close modal
-                    $uibModalInstance.close(translation);
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
+                    // Success
+                    function(data) {
+
+                      // Add a note as well
+                      if ($scope.note) {
+                        translationService.addTranslationConceptNote(translation.id, concept.id,
+                          $scope.note).then(
+                        // Success
+                        function(data) {
+                          $uibModalInstance.close(translation);
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      }
+                      // close dialog if no note
+                      else {
+                        $uibModalInstance.close(translation);
+                      }
+
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
 
                 };
 
@@ -1269,6 +1302,7 @@ tsApp
 
                 $scope.submitConcept = function(concept) {
                   // Iterate through concept, set description types and languages
+                  var spliceIndexes = [];
                   var copy = JSON.parse(JSON.stringify(concept));
                   for (var i = 0; i < copy.descriptions.length; i++) {
                     var desc = copy.descriptions[i];
@@ -1277,7 +1311,21 @@ tsApp
                     desc.languages[0].descriptionId = desc.terminologyId;
                     desc.languages[0].acceptabilityId = desc.type.acceptabilityId;
                     desc.type = undefined;
+                    if (!desc.term) {
+                      spliceIndexes.push(i);
+                    }
                   }
+                  // Remove blank descriptions
+                  for (var i = 0; i < spliceIndexes.length; i++) {
+                    copy.descriptions.splice(spliceIndexes[i], 1);
+                  }
+
+                  if (copy.descriptions.length == 0) {
+                    $scope.errors = [];
+                    $scope.errors[0] = "Enter at least one description";
+                    return;
+                  }
+
                   $scope.validateConcept(copy);
                 }
 

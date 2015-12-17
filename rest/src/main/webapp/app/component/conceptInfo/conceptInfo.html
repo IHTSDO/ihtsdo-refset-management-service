@@ -15,8 +15,11 @@
       <b>Concept</b> {{concept.terminologyId}}
     </h4>
 
-    <p ng-show="parents.length > 0"><b>Parents</b></p>
-    <div ui-tree ng-show="parents.length > 0">
+    <p ng-show="parents.length > 0">
+      <b>Parents</b>
+    </p>
+    <div ui-tree ng-show="parents.length > 0"
+      style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
         <li ng-repeat="tree in parents" ui-tree-node data-nodrag
           ng-include="'app/component/tree/parentTree.html'"></li>
@@ -25,7 +28,8 @@
     <p ng-show="concept" style="margin-top: 5px;">
       <b>Descriptions</b>
     </p>
-    <table ng-show="concept.descriptions.length > 0" class="table">
+    <table ng-show="concept.descriptions.length > 0" class="table"
+      style="max-height: 150px; overflow-y: scroll;">
       <tbody>
         <!-- terminology server doesn't return inactive descriptions -->
         <tr ng-repeat="description in getOrderedDescriptions(concept)">
@@ -67,7 +71,8 @@
       <b>Children<span ng-show="pagedChildren.length > 0">
           ({{pagedChildren.totalCount}})</span></b>
     </p>
-    <div ui-tree ng-show="children.length > 0">
+    <div ui-tree ng-show="children.length > 0"
+      style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="children" data-nodrop-enabled="true">
         <li ng-repeat="tree in children" ui-tree-node data-nodrag
           ng-include="'app/component/tree/childTree.html'"></li>
