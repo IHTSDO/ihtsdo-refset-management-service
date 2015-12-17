@@ -753,21 +753,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     String queryStr =
         "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
             + "where a.translation = b and c.translation = b "
-            + "and a = c.concept " + "and a.workflowStatus = :editingDone "
-            + "and b.translationId = :translationId";
+            + "and a = c.concept and a.workflowStatus = :editingDone "
+            + "and b.id = :translationId";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(
             "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
                 + "where a.translation = b and c.translation = b "
-                + "and a = c.concept " + "and a.workflowStatus = :editingDone "
-                + "and b.translationId = :translationId");
+                + "and a = c.concept and a.workflowStatus = :editingDone "
+                + "and b.id = :translationId");
 
-    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     ctQuery.setParameter("translationId", translation.getId());
 
     Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
-    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE.toString());
+    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     query.setParameter("translationId", translation.getId());
     List<Concept> results = query.getResultList();
     ConceptListJpa list = new ConceptListJpa();

@@ -14,12 +14,14 @@ import javax.persistence.NoResultException;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
+import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -110,7 +112,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       userFound.setUserName(authUser.getUserName());
       userFound.setApplicationRole(authUser.getApplicationRole());
       updateUser(userFound);
-
+      if (userFound.getUserPreferences() == null) {
+        UserPreferences newUserPreferences = new UserPreferencesJpa();
+        newUserPreferences.setUser(userFound);
+        addUserPreferences(newUserPreferences);
+      }  
     }
     // if User not found, create one for our use
     else {
@@ -121,6 +127,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       newUser.setUserName(authUser.getUserName());
       newUser.setApplicationRole(authUser.getApplicationRole());
       addUser(newUser);
+      if (newUser.getUserPreferences() == null) {
+        UserPreferences newUserPreferences = new UserPreferencesJpa();
+        newUserPreferences.setUser(newUser);
+        addUserPreferences(newUserPreferences);
+      }  
       clear();
     }
 
@@ -131,6 +142,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
 
     Logger.getLogger(getClass()).debug("User = " + authUser.getUserName());
 
+    //Reload the user to populate UserPreferences
+    authUser = getUser(authUser.getUserName());
     authUser.setAuthToken(token);
     return authUser;
   }
@@ -352,6 +365,86 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
+  }
+
+  /* see superclass */
+  @Override
+  public UserPreferences addUserPreferences(UserPreferences userPreferences) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - add user preferences " + userPreferences);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.persist(userPreferences);
+        tx.commit();
+      } else {
+        manager.persist(userPreferences);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+    return userPreferences;
+  }
+
+  /* see superclass */
+  @Override
+  public void removeUserPreferences(Long id) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - remove user preferences " + id);
+    tx = manager.getTransaction();
+    // retrieve this user
+    UserPreferences mu = manager.find(UserPreferencesJpa.class, id);
+    try {
+      if (getTransactionPerOperation()) {
+        tx.begin();
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+        tx.commit();
+
+      } else {
+        if (manager.contains(mu)) {
+          manager.remove(mu);
+        } else {
+          manager.remove(manager.merge(mu));
+        }
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
+
+  }
+
+  /* see superclass */
+  @Override
+  public void updateUserPreferences(UserPreferences userPreferences) {
+    Logger.getLogger(getClass()).debug(
+        "Security Service - update user preferences " + userPreferences);
+    try {
+      if (getTransactionPerOperation()) {
+        tx = manager.getTransaction();
+        tx.begin();
+        manager.merge(userPreferences);
+        tx.commit();
+      } else {
+        manager.merge(userPreferences);
+      }
+    } catch (Exception e) {
+      if (tx.isActive()) {
+        tx.rollback();
+      }
+      throw e;
+    }
   }
 
 }

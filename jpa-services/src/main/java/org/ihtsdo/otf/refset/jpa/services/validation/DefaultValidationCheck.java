@@ -7,11 +7,13 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 
@@ -116,11 +118,14 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
    * @param concept the concept
    * @param service the service
    * @return the validation result
+   * @throws Exception 
    */
   @Override
-  public ValidationResult validate(Concept concept, TranslationService service) {
+  public ValidationResult validate(Concept concept, TranslationService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
+    Translation translation =
+        service.getTranslation(concept.getTranslation().getId());
     // Fail for leading whitespace
     for (Description desc : concept.getDescriptions()) {
       if (desc.getTerm().matches("^\\s.*")) {
@@ -131,6 +136,15 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       }
       if (desc.getTerm().matches(".*\\s\\s.*")) {
         result.addWarning("Description with duplicate whitespace");
+      }
+
+      // Validate descriptionType length
+      for (DescriptionType type : translation.getDescriptionTypes()) {
+        if (type.getTypeId().equals(desc.getTypeId())
+            && desc.getTerm().length() > type.getDescriptionLength()) {
+          result.addError("Description exceeds length limit for its type ("
+              + type.getName() + ", " + type.getDescriptionLength());
+        }
       }
     }
     return result;

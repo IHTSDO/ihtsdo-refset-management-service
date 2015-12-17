@@ -98,7 +98,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     try {
       authorizeApp(securityService, authToken, "get roles", UserRole.VIEWER);
-      StringList list = new StringList();
+      final StringList list = new StringList();
       list.setTotalCount(3);
       list.getObjects().add(UserRole.AUTHOR.toString());
       list.getObjects().add(UserRole.REVIEWER.toString());
@@ -132,13 +132,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "add user to project", UserRole.AUTHOR);
 
-      Project project = projectService.getProject(projectId);
-      User user = securityService.getUser(userName);
+      final Project project = projectService.getProject(projectId);
+      final User user = securityService.getUser(userName);
       project.getUserRoleMap().put(user, UserRole.valueOf(role));
       user.getProjectRoleMap().put(project, UserRole.valueOf(role));
       securityService.updateUser(user);
@@ -173,7 +173,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       // Check if user is either an ADMIN overall or an AUTHOR on this project
       try {
@@ -185,8 +185,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             "unassign user from project", UserRole.AUTHOR);
       }
 
-      Project project = projectService.getProject(projectId);
-      User user = securityService.getUser(userName);
+      final Project project = projectService.getProject(projectId);
+      final User user = securityService.getUser(userName);
       project.getUserRoleMap().remove(user);
       user.getProjectRoleMap().remove(project);
       securityService.updateUser(user);
@@ -217,7 +217,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call PUT (Project): /users/ " + projectId + ", " + query
             + ", " + pfs);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "find users assigned to project", UserRole.AUTHOR);
@@ -231,7 +231,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             + " AND projectAnyRole:" + projectId);
 
       }
-      UserList list = securityService.findUsersForQuery(query, pfs);
+      final UserList list = securityService.findUsersForQuery(query, pfs);
 
       return list;
     } catch (Exception e) {
@@ -258,7 +258,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call PUT (Project): /users/ " + projectId + "/unassigned, "
             + query + ", " + pfs);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "find candidate users for project", UserRole.AUTHOR);
@@ -270,7 +270,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       } else {
         pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
       }
-      UserList list = securityService.findUsersForQuery(query, pfs);
+      final UserList list = securityService.findUsersForQuery(query, pfs);
 
       return list;
     } catch (Exception e) {
@@ -294,7 +294,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Project): /add " + project);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
 
       final String userName =
@@ -336,7 +336,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Project): /update " + project);
 
     // Create service and configure transaction scope
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "update project", UserRole.USER);
 
@@ -392,13 +392,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Project): /remove/" + projectId);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "remove project", UserRole.USER);
 
       // unassign users from project before deleting it
-      Project project = projectService.getProject(projectId);
-      for (User user : project.getUserRoleMap().keySet()) {
+      final Project project = projectService.getProject(projectId);
+      for (final User user : project.getUserRoleMap().keySet()) {
         unassignUserFromProject(projectId, user.getUserName(), authToken);
       }
       // Create service and configure transaction scope
@@ -424,12 +424,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Project): /" + projectId);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the project",
           UserRole.VIEWER);
 
-      Project project = projectService.getProject(projectId);
+      final Project project = projectService.getProject(projectId);
 
       return project;
     } catch (Exception e) {
@@ -456,7 +456,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (Project): find projects for query, " + pfs);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find projects", UserRole.VIEWER);
 
@@ -487,7 +487,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     // Track system level information
     long startTimeOrig = System.nanoTime();
-    LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
+    final LuceneReindexAlgorithm algo = new LuceneReindexAlgorithm();
     try {
       authorizeApp(securityService, authToken, "reindex", UserRole.ADMIN);
       algo.setIndexedObjects(indexedObjects);
@@ -517,18 +517,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /user/anyrole");
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
-      String user =
+      final String user =
           authorizeApp(securityService, authToken,
               "check for any project role", UserRole.VIEWER);
 
-      StringBuilder sb = new StringBuilder();
+      final StringBuilder sb = new StringBuilder();
       sb.append("(");
       sb.append("userRoleMap:" + user + UserRole.ADMIN).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.REVIEWER).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.AUTHOR).append(")");
-      ProjectList list =
+      final ProjectList list =
           projectService.findProjectsForQuery(sb.toString(),
               new PfsParameterJpa());
       return list.getTotalCount() != 0;
@@ -552,14 +552,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/all");
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get all terminologies",
           UserRole.VIEWER);
 
-      List<String> editions =
+      final List<String> editions =
           projectService.getTerminologyHandler().getTerminologyEditions();
-      StringList list = new StringList();
+      final StringList list = new StringList();
       list.setObjects(editions);
       list.setTotalCount(list.getCount());
       return list;
@@ -583,14 +583,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/" + terminology + "/all");
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
 
-      List<Terminology> versions =
+      final List<Terminology> versions =
           projectService.getTerminologyHandler().getTerminologyVersions(
               terminology);
-      TerminologyList list = new TerminologyListJpa();
+      final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
       return list;
@@ -654,11 +654,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Project): find concepts for query, " + query + ", "
             + terminology + ", " + version + ", " + pfs);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "find concepts", UserRole.VIEWER);
 
-      ConceptList concepts =
+      final ConceptList concepts =
           projectService.getTerminologyHandler().findConceptsForQuery(query,
               terminology, version, pfs);
 
@@ -689,12 +689,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Project): get concept with description, "
             + terminologyId + ", " + terminology + ", " + version);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "retrieve concept with description", UserRole.VIEWER);
 
-      Concept concept =
+      final Concept concept =
           projectService.getTerminologyHandler().getFullConcept(terminologyId,
               terminology, version);
 
@@ -725,12 +725,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Project): retrieves concept's parents, " + terminologyId
             + ", " + terminology + ", " + version);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get concept parents",
           UserRole.VIEWER);
 
-      ConceptList concepts =
+      final ConceptList concepts =
           projectService.getTerminologyHandler().getConceptParents(
               terminologyId, terminology, version);
 
@@ -762,18 +762,17 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Project): retrieves concept's children, "
             + terminologyId + ", " + terminology + ", " + version);
 
-    ProjectService projectService = new ProjectServiceJpa();
-    RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get concept children",
           UserRole.VIEWER);
 
-      ConceptList children =
-          projectService.getTerminologyHandler().getConceptChildren(
+      final ConceptList children =
+          refsetService.getTerminologyHandler().getConceptChildren(
               terminologyId, terminology, version);
 
       // apply pfs to add paging/sorting
-      ConceptList list = new ConceptListJpa();
+      final ConceptList list = new ConceptListJpa();
       list.setTotalCount(children.getObjects().size());
       list.setObjects(refsetService.applyPfsToList(children.getObjects(),
           Concept.class, pfs));
@@ -783,7 +782,6 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to retrieve concept children ");
       return null;
     } finally {
-      projectService.close();
       securityService.close();
       refsetService.close();
     }
@@ -805,15 +803,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         "RESTful POST call (Project): /terminology/" + terminology
             + "/descriptiontypes - " + version);
 
-    ProjectService projectService = new ProjectServiceJpa();
+    final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
 
-      List<DescriptionType> types =
+      final List<DescriptionType> types =
           projectService.getTerminologyHandler().getStandardDescriptionTypes(
               terminology, version);
 
-      DescriptionTypeList list = new DescriptionTypeListJpa();
+      final DescriptionTypeList list = new DescriptionTypeListJpa();
       list.setObjects(types);
       list.setTotalCount(types.size());
       return list;

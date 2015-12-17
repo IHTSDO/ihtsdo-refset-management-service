@@ -784,13 +784,13 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
-    this.removeTranslationConceptNote = function(translationId, noteId) {
-      console.debug("remove concept note", translationId, noteId);
+    this.removeTranslationConceptNote = function(conceptId, noteId) {
+      console.debug("remove concept note", conceptId, noteId);
       var deferred = $q.defer();
 
       gpService.increment();
       $http['delete'](
-        translationUrl + "/concept/remove/note?translationId=" + translationId + "&noteId="
+        translationUrl + "/concept/remove/note?conceptId=" + conceptId + "&noteId="
           + noteId).then(
       // success
       function(response) {

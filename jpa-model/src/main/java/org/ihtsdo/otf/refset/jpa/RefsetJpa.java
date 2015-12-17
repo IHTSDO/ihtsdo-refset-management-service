@@ -164,7 +164,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The refset members. */
   @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
-  @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
+  // @IndexedEmbedded - n/a (no need for this)
   private List<ConceptRefsetMember> members = null;
 
   /** The enabled feedback events. */
@@ -175,7 +175,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The notes. */
   @OneToMany(mappedBy = "refset", targetEntity = RefsetNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**

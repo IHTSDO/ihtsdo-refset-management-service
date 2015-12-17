@@ -175,9 +175,10 @@ public class ImportExportRf2HandlerTest {
         importHandler.importMembers(refset, membersInputStream);
 
     // Verify the member count
-    Assert.assertEquals(members.size(), 35);
+    Assert.assertEquals(members.size(), 21);
     String definition = importHandler.importDefinition(definitionInputStream);
-    Assert.assertEquals("<<410675002|Route of administration|", definition);
+    System.out.println("defintiion="+definition);
+    Assert.assertEquals("<<284009009|Route of administration|", definition);
 
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
     BufferedReader reader =
@@ -188,7 +189,7 @@ public class ImportExportRf2HandlerTest {
       ct++;
     }
     // Verify the member count plus 1 for the header
-    Assert.assertEquals(36, ct);
+    Assert.assertEquals(22, ct);
   }
 
   /**

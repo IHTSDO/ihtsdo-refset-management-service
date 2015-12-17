@@ -22,6 +22,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -100,7 +101,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         handler.validateWorkflowAction(refset, user, projectRole, action, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
-      throw new Exception(result.getErrors().iterator().next());
+      throw new LocalException(result.getErrors().iterator().next());
     }
     // Perform the action
     return handler.performWorkflowAction(refset, user, projectRole, action,

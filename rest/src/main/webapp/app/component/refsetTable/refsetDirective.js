@@ -38,14 +38,15 @@ tsApp
               $scope.userProjectsInfo = projectService.getUserProjectsInfo();
               $scope.selected = {
                 refset : null,
-                member : null
+                member : null,
+                concept : null
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
               $scope.project = null;
               // TODO: consider whether refset.members should just be "members"
               $scope.showLatest = true;
-              
+
               // Page metadata
               $scope.memberTypes = [ "Member", "Exclusion", "Inclusion" ];
 
@@ -133,7 +134,7 @@ tsApp
 
                 if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
-                  pfs.latestOnly = $scope.showLatest; 
+                  pfs.latestOnly = $scope.showLatest;
                   refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
@@ -208,13 +209,13 @@ tsApp
                 }
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
-                  pfs.latestOnly = $scope.showLatest;  
+                  pfs.latestOnly = $scope.showLatest;
                   refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
-                      function(data) {
-                        $scope.refsets = data.refsets;
-                        $scope.refsets.totalCount = data.totalCount;
-                        $scope.reselect();
-                      })
+                    function(data) {
+                      $scope.refsets = data.refsets;
+                      $scope.refsets.totalCount = data.totalCount;
+                      $scope.reselect();
+                    })
                 }
               };
 
@@ -241,15 +242,18 @@ tsApp
               }
 
               // Get $scope.metadata.descriptionTypes
-              $scope.getStandardDescriptionTypes = function(terminology,version) {
-                projectService.getStandardDescriptionTypes(terminology,version).then(
-                  // Success
-                  function(data) {
-                    $scope.metadata.descriptionTypes = data.types;
-                  });
+              $scope.getStandardDescriptionTypes = function(terminology, version) {
+                projectService.getStandardDescriptionTypes(terminology, version).then(
+                // Success
+                function(data) {
+                  // Populate "selected" for refsetTable.html
+                  // and metadata for addMember.html
+                  $scope.selected.descriptionTypes = data.types;
+                  $scope.metadata.descriptionTypes = data.types;
+                });
               }
 
-                // Get $scope.members
+              // Get $scope.members
               $scope.getMembers = function(refset) {
 
                 var pfs = {
@@ -277,7 +281,6 @@ tsApp
                 })
 
               };
-
 
               // Get $scope.refsetReleaseInfo
               $scope.getCurrentRefsetReleaseInfo = function(refset) {
@@ -329,7 +332,13 @@ tsApp
               // Selects a member (setting $scope.selected.member)
               $scope.selectMember = function(member) {
                 $scope.selected.member = member
-                // Look up details of member
+                // Set the concept for display in concept-info
+                $scope.selected.concept = {
+                  terminologyId : member.conceptId,
+                  terminology : member.terminology,
+                  version : member.version
+                }
+
               };
 
               // Member type style
@@ -555,7 +564,6 @@ tsApp
                   return $sce.trustAsHtml(note.value);
                 }
 
-
                 // remove note
                 $scope.removeNote = function(object, note) {
                   console.debug("remove note", object.id, note.value);
@@ -580,7 +588,7 @@ tsApp
                       utilService.clearError();
                     })
                   } else if ($scope.type == 'Member') {
-                    refsetService.removeRefsetMemberNote(object.refsetId, note.id).then(
+                    refsetService.removeRefsetMemberNote(object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
@@ -1465,7 +1473,8 @@ tsApp
               };
 
               // Add member controller
-              var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset, project) {
+              var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset,
+                project) {
 
                 console.debug("Entered add member modal control");
                 $scope.pageSize = 10;

@@ -16,7 +16,8 @@
   <i ng-show="tree.leaf" class="glyphicon glyphicon-leaf"></i>
 
   <!-- if not the component viewed, render with hyperlink -->
-  <span ng-show="tree.terminologyId != concept.terminologyId">
+  <span ng-show="tree.terminologyId != concept.terminologyId"
+    style="font-size: 12px">
     <a ng-click="getConceptById(tree.terminologyId)"> {{tree.terminologyId}}</a>
     : {{tree.name}}
   </span>

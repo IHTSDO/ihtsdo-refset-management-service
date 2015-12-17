@@ -576,22 +576,46 @@ public interface TranslationServiceRest {
   /**
    * Removes the concept translation concept note.
    *
-   * @param translationId the translation id
+   * @param conceptId the concept id
    * @param noteId the note id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeTranslationConceptNote(Long translationId, Long noteId,
+  public void removeTranslationConceptNote(Long conceptId, Long noteId,
     String authToken) throws Exception;
 
   /**
-   * @param translationId
-   * @param name
-   * @param authToken
-   * @return
-   * @throws Exception
+   * Suggest translation.
+   *
+   * @param translationId the translation id
+   * @param name the name
+   * @param authToken the auth token
+   * @return the string list
+   * @throws Exception the exception
    */
-  StringList suggestTranslation(Long translationId, String name,
+  public StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception;
 
+  /**
+   * Returns the status of identifying the name and active states for all
+   * concepts of the translation.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return lookup status
+   * @throws Exception
+   */
+  public Integer getLookupProgress(Long translationId, String authToken)
+    throws Exception;
+
+  /**
+   * Launches the lookup process of identifying the name and active states for
+   * all concepts of the translation.
+   * 
+   * @param translationId
+   * @param authToken
+   * @throws Exception
+   */
+  public void startLookupConceptNames(Long translationId, String authToken)
+    throws Exception;
 }

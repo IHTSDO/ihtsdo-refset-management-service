@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -143,7 +144,15 @@ public class TranslationNoteJpaUnitTest extends ModelUnitSupport {
   public void testModelIndexedFields003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // n/a
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("value");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    tester = new IndexedFieldTester(object);
+    tester.include("translationId");
+    assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
 

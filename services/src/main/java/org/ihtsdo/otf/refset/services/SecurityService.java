@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.services;
 
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.UserList;
@@ -119,6 +120,29 @@ public interface SecurityService extends RootService {
    * @return the user list
    * @throws Exception the exception
    */
-  public UserList findUsersForQuery(String query, PfsParameter pfs) throws Exception;
+  public UserList findUsersForQuery(String query, PfsParameter pfs)
+    throws Exception;
+
+  /**
+   * Adds the user preferences.
+   *
+   * @param userPreferences the user preferences
+   * @return the userPreferences
+   */
+  UserPreferences addUserPreferences(UserPreferences userPreferences);
+
+  /**
+   * Removes user preferences.
+   *
+   * @param id the id
+   */
+  void removeUserPreferences(Long id);
+
+  /**
+   * Update user preferences.
+   *
+   * @param userPreferences the user preferences
+   */
+  void updateUserPreferences(UserPreferences userPreferences);
 
 }

@@ -1047,12 +1047,12 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.removeRefsetMemberNote = function(refsetId, noteId) {
-      console.debug("remove member note", refsetId, noteId);
+    this.removeRefsetMemberNote = function(memberId, noteId) {
+      console.debug("remove member note", memberId, noteId);
       var deferred = $q.defer();
 
       gpService.increment()
-      $http['delete'](refsetUrl + "/member/remove/note?refsetId=" + refsetId + "&noteId=" + noteId)
+      $http['delete'](refsetUrl + "/member/remove/note?memberId=" + memberId + "&noteId=" + noteId)
         .then(
         // success
         function(response) {

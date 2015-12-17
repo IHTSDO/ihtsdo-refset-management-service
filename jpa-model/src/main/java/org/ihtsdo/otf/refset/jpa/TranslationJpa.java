@@ -33,6 +33,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -103,6 +104,10 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Column(nullable = false)
   private boolean inPublicationProcess;
 
+  /** The lookup in progress. */
+  @Column(nullable = false)
+  private boolean lookupInProgress;
+
   /** The refset. */
   @ManyToOne(targetEntity = RefsetJpa.class, optional = false)
   private Refset refset;
@@ -137,7 +142,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The notes. */
   @OneToMany(mappedBy = "translation", targetEntity = TranslationNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = TranslationNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**
@@ -159,6 +164,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     isPublic = translation.isPublic();
     provisional = translation.isProvisional();
     inPublicationProcess = translation.isInPublicationProcess();
+    lookupInProgress = translation.isLookupInProgress();
     stagingType = translation.getStagingType();
     language = translation.getLanguage();
     workflowStatus = translation.getWorkflowStatus();
@@ -241,6 +247,18 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setInPublicationProcess(boolean inPublicationProcess) {
     this.inPublicationProcess = inPublicationProcess;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isLookupInProgress() {
+    return lookupInProgress;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLookupInProgress(boolean lookupInProgress) {
+    this.lookupInProgress = lookupInProgress;
   }
 
   /* see superclass */
@@ -469,6 +487,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         prime * result + ((description == null) ? 0 : description.hashCode());
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + (inPublicationProcess ? 1231 : 1237);
+    result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result =
@@ -496,6 +515,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     if (stagingType != other.stagingType)
       return false;
     if (inPublicationProcess != other.inPublicationProcess)
+      return false;
+    if (lookupInProgress != other.lookupInProgress)
       return false;
     if (language == null) {
       if (other.language != null)

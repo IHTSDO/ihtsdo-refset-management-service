@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -50,10 +51,10 @@ public class RefsetNoteJpaUnitTest extends ModelUnitSupport {
   @Before
   public void setup() throws Exception {
     object = new RefsetNoteJpa();
-    
+
     ProxyTester tester = new ProxyTester(new RefsetJpa());
-    r1 = (RefsetJpa)tester.createObject(1);
-    r2 = (RefsetJpa)tester.createObject(2);
+    r1 = (RefsetJpa) tester.createObject(1);
+    r2 = (RefsetJpa) tester.createObject(2);
   }
 
   /**
@@ -143,7 +144,15 @@ public class RefsetNoteJpaUnitTest extends ModelUnitSupport {
   public void testModelIndexedFields003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // n/a
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("value");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    tester = new IndexedFieldTester(object);
+    tester.include("refsetId");
+    assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
 

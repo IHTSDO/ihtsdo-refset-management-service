@@ -40,7 +40,6 @@ import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -49,6 +48,7 @@ import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
@@ -72,8 +72,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    * To populate progress (percentage) of looking up refset names & active
    * statuses.
    */
-  private static Map<Long, Integer> refsetLookupProgressMap =
-      new ConcurrentHashMap<>();
+  static Map<Long, Integer> lookupProgressMap = new ConcurrentHashMap<>();
+
+  /** The Constant LOOKUP_ERROR_CODE. */
+  final static int LOOKUP_ERROR_CODE = -100;
 
   static {
     try {
@@ -879,6 +881,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return null;
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
@@ -907,26 +910,38 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return result;
   }
 
+  /* see superclass */
   @Override
-  public void lookupNames(final Long refsetId) throws Exception {
+  public void lookupMemberNames(Long refsetId, String label, boolean background)
+    throws Exception {
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
-      if (!refsetLookupProgressMap.containsKey(refsetId)) {
+      if (!lookupProgressMap.containsKey(refsetId)) {
         // Create new thread
-        Runnable lookup = new LookupNamesThread(refsetId);
+        Runnable lookup = new LookupMemberNamesThread(refsetId, label);
         Thread t = new Thread(lookup);
         t.start();
+        // Handle non-background
+        if (!background) {
+          t.join();
+        }
       }
+      // else it is already running
     }
   }
 
+  /* see superclass */
   @Override
   public int getLookupProgress(Long refsetId) throws Exception {
     Refset refset = getRefset(refsetId);
 
     if (refset.isLookupInProgress()) {
-      if (refsetLookupProgressMap.containsKey(refsetId)) {
-        return refsetLookupProgressMap.get(refsetId);
+      if (lookupProgressMap.containsKey(refsetId)) {
+        if (lookupProgressMap.get(refsetId).intValue() == LOOKUP_ERROR_CODE) {
+          throw new Exception("The lookup process unexpectedly failed");
+        } else {
+          return lookupProgressMap.get(refsetId);
+        }
       } else {
         return -1;
       }
@@ -935,73 +950,118 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return 100;
   }
 
-  public class LookupNamesThread implements Runnable {
+  /**
+   * Class for threaded operation of lookupNames.
+   */
+  public class LookupMemberNamesThread implements Runnable {
+
+    /** The refset id. */
     private Long refsetId;
 
-    public LookupNamesThread(Long id) throws Exception {
+    /** The label. */
+    private String label;
+
+    /**
+     * Instantiates a {@link LookupMemberNamesThread} from the specified
+     * parameters.
+     *
+     * @param id the id
+     * @param label the label
+     * @throws Exception the exception
+     */
+    public LookupMemberNamesThread(Long id, String label) throws Exception {
       refsetId = id;
+      this.label = label;
     }
 
+    /* see superclass */
+    @Override
     public void run() {
       try {
+        Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+            "Starting lookupMemberNamesThread - " + refsetId);
         // Initialize Process
-        refsetLookupProgressMap.put(refsetId, 0);
+        lookupProgressMap.put(refsetId, 0);
 
         RefsetServiceJpa refsetService = new RefsetServiceJpa();
+
+        // Refset may not be ready yet in DB, wait for 250ms until ready
         Refset refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(true);
         refsetService.updateRefset(refset);
 
         // Get the members
         List<ConceptRefsetMember> members = refset.getMembers();
+
+        // Put into a map by concept id (for easy retrieval)
+        final Map<String, ConceptRefsetMember> memberMap = new HashMap<>();
+        for (final ConceptRefsetMember member : members) {
+          memberMap.put(member.getConceptId(), member);
+        }
+
         int numberOfMembers = members.size();
 
         // If no members, go directly to concluding process
         if (numberOfMembers > 0) {
           int i = 0;
-          String terminology = members.get(0).getTerminology();
-          String version = members.get(0).getVersion();
+          final String terminology = refset.getTerminology();
+          final String version = refset.getVersion();
 
           // Execute for all members
           while (i < numberOfMembers) {
-            List<String> termIds = new ArrayList<>();
+            final List<String> termIds = new ArrayList<>();
 
             // Create list of conceptIds for all members (up to 10 at a time)
-            for (int j = 0; (j < 10 && i < numberOfMembers); j++, i++) {
-              termIds.add(members.get(j).getConceptId());
+            for (int j = 0; (j < 15 && i < numberOfMembers); j++, i++) {
+              termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
             ConceptList cons =
                 getTerminologyHandler().getConcepts(termIds, terminology,
                     version);
 
+            // IF the number of concepts returned doesn't match
+            // the size of termIds, there was a problem
+            if (cons.getTotalCount() != termIds.size()) {
+              // log and email an exception and continue
+              ExceptionHandler.handleException(
+                  new Exception("Missing concepts"), "looking up names", null);
+            }
+
             // Populate member's names/statuses from results of Term
             // Server
             for (Concept con : cons.getObjects()) {
-              for (ConceptRefsetMember member : members) {
-                if (member.getConceptId().equalsIgnoreCase(
-                    con.getTerminologyId())) {
-                  member.setConceptName(con.getName());
-                  member.setConceptActive(con.isActive());
-                  refsetService.updateMember(member);
-                  break;
-                }
-              }
+              // Reread the member as we don't know if it has changed
+              final ConceptRefsetMember member =
+                  refsetService.getMember(memberMap.get(con.getTerminologyId())
+                      .getId());
+              member.setConceptName(con.getName());
+              member.setConceptActive(con.isActive());
+              Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+                  "  set member name = " + member);
+              refsetService.updateMember(member);
             }
 
             // Update Progess
-            refsetLookupProgressMap.put(refsetId,
+            lookupProgressMap.put(refsetId,
                 (int) ((100.0 * i) / numberOfMembers));
           }
         }
 
-        // Conclude process
+        // Conclude process (reread refset)
+        refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(false);
         refsetService.updateRefset(refset);
-        refsetLookupProgressMap.remove(refsetId);
+        lookupProgressMap.remove(refsetId);
+        Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+            "Finished lookupMemberNamesThread - " + refsetId);
       } catch (Exception e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+        try {
+          ExceptionHandler.handleException(e, label, null);
+        } catch (Exception e1) {
+          // n/a
+        }
+        lookupProgressMap.put(refsetId, LOOKUP_ERROR_CODE);
       }
     }
   }

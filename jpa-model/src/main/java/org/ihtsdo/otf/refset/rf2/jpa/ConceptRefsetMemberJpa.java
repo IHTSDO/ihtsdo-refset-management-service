@@ -26,6 +26,7 @@ import org.hibernate.search.annotations.FieldBridge;
 import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
@@ -73,7 +74,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
 
   /** The notes. */
   @OneToMany(mappedBy = "member", targetEntity = ConceptRefsetMemberNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = ConceptRefsetMemberNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**

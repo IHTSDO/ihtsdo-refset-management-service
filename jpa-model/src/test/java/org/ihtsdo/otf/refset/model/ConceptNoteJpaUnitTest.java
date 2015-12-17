@@ -12,6 +12,7 @@ import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.ConceptNoteJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -143,7 +144,15 @@ public class ConceptNoteJpaUnitTest extends ModelUnitSupport {
   public void testModelIndexedFields003() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    // n/a
+    // Test analyzed fields
+    IndexedFieldTester tester = new IndexedFieldTester(object);
+    tester.include("value");
+    assertTrue(tester.testAnalyzedIndexedFields());
+
+    // Test non analyzed fields
+    tester = new IndexedFieldTester(object);
+    tester.include("conceptId");
+    assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
 

@@ -287,7 +287,8 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       password : null,
       name : null,
       authToken : null,
-      applicationRole : null
+      applicationRole : null,
+      userPreferences : null
     };
 
     // Search results
@@ -308,6 +309,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       user.authToken = data.authToken;
       user.password = "";
       user.applicationRole = data.applicationRole;
+      user.userPreferences = data.userPreferences;
     }
 
     // Clears the user
@@ -317,6 +319,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       user.authToken = null;
       user.password = null;
       user.applicationRole = null;
+      user.userPreferences = null;
     }
 
     var httpClearUser = this.clearUser;
@@ -503,6 +506,71 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
         deferred.reject(response.data);
       });
 
+      return deferred.promise;
+    }
+    // add user preferences
+    this.addUserPreferences = function(userPreferences) {
+      console.debug("addUserPreferences");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.put(securityUrl + 'user/preferences/add', userPreferences).then(
+      // success
+      function(response) {
+        console.debug("  userPreferences = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // update user preferences
+    this.updateUserPreferences = function(userPreferences) {
+      console.debug("updateUserPreferences");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.post(securityUrl + 'user/preferences/update', userPreferences).then(
+      // success
+      function(response) {
+        console.debug("  userPreferences = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // remove user preferences
+    this.removeUserPreferences = function(userPreferences) {
+      console.debug("removeUserPreferences");
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http['delete'](securityUrl + 'user/preferences/remove' + "/" + userPreferences.id).then(
+      // success
+      function(response) {
+        console.debug("  userPreferences = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
   } ]);

@@ -627,7 +627,7 @@ tsApp
                     })
                   } else if ($scope.type == 'Concept') {
                     translationService.removeTranslationConceptNote(
-                      $scope.selected.translationn.id, object.refsetId, note.id).then(
+                      object.id, note.id).then(
                     // Success - add refset
                     function(data) {
                       $scope.newNote = null;
@@ -1291,12 +1291,16 @@ tsApp
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
                       return;
+                    } else {
+                      $scope.errors = [];
                     }
 
                     // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
                     if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
                       $scope.warnings = data.warnings;
                       return;
+                    } else {
+                      $scope.warnings = [];
                     }
 
                     // Otherwise, there are no errors and either no warnings

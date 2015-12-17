@@ -456,8 +456,7 @@ public interface TranslationService extends RefsetService {
    * @return the release info list
    * @throws Exception the exception
    */
-  public ReleaseInfoList 
-  findTranslationReleasesForQuery(Long translationId,
+  public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
     String query, PfsParameter pfs) throws Exception;
 
   /**
@@ -480,10 +479,21 @@ public interface TranslationService extends RefsetService {
    * @return the memory entry list
    * @throws Exception the exception
    */
-  List<MemoryEntry> findMemoryEntryForTranslation(Long translationId, String query,
-    PfsParameter pfs) throws Exception;
+  public List<MemoryEntry> findMemoryEntryForTranslation(Long translationId,
+    String query, PfsParameter pfs) throws Exception;
 
-/**
+  /**
+   * Lookup concept names.
+   *
+   * @param translationId the translation id
+   * @param label the label
+   * @param background the background
+   * @throws Exception the exception
+   */
+  public void lookupConceptNames(Long translationId, String label,
+    boolean background) throws Exception;
+
+  /**
    * Handle lazy initialization for a translation.
    *
    * @param translation the translation
