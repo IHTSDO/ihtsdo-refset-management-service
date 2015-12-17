@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
@@ -176,8 +177,8 @@ public class ImportExportRf2HandlerTest {
 
     // Verify the member count
     Assert.assertEquals(members.size(), 35);
-    String definition = importHandler.importDefinition(definitionInputStream);
-    Assert.assertEquals("<<410675002|Route of administration|", definition);
+    List<DefinitionClause> definitionClauses = importHandler.importDefinition(definitionInputStream);
+    Assert.assertEquals("<<410675002|Route of administration|", definitionClauses.get(0));
 
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
     BufferedReader reader =

@@ -331,21 +331,22 @@
               <b>Definition</b>
             </td>
             <td>
-              {{selected.refset.definition}}
-
+              <i
+                ng-click="addDefinitionClause(selected.refset);$event.stopPropagation()"
+                title="Add definition clause" class="noul material-icons md-18">add</i>
+              <i
+                ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
+                title="Import definition" class="noul material-icons md-18">file_upload</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
-                title="Export definition" class="noul material-icons md-18">file_download</i>
-
-              <i
-                ng-click="openRefactorModal(selected.refset, 'Redefinition'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == null"
-                title="Redefinition" class="noul material-icons md-18">find_replace</i>
-
-              <i
-                ng-click="openRefactorModal(selected.refset, 'Redefinition'); $event.stopPropagation()"
-                ng-show="selected.refset.stagingType == 'DEFINITION'"
-                title="Resume redefinition" class="noul material-icons md-18">play_arrow</i>
+                title="Export definition" class="noul material-icons md-18">file_download</i>             
+              <table>
+                <tbody>
+                  <tr ng-repeat="clause in selected.refset.definitionClauses">
+                  <td>*<div definition clause="clause"></div></td>
+                  </tr> 
+                </tbody>
+              </table>
             </td>
           </tr>
           <tr ng-show="selected.refset.type == 'EXTERNAL'">
@@ -366,6 +367,12 @@
           </tr>
         </tbody>
       </table>
+      <table>
+        <tbody>
+               <tr ng-repeat="clause in selected.refset.definitionClauses">
+                <td>*<div definition clause="clause"></div></td>
+               </tr> 
+      </tbody></table>
     </div>
 
     <!-- release info -->

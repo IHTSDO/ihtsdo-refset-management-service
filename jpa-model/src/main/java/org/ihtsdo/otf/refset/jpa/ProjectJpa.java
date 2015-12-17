@@ -109,6 +109,10 @@ public class ProjectJpa implements Project {
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
+  
+  /**  The exclusion clause. */
+  @Column(nullable = true)
+  private String exclusionClause;
 
   /** The role map. */
   @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
@@ -155,6 +159,7 @@ public class ProjectJpa implements Project {
     terminology = project.getTerminology();
     version = project.getVersion();
     feedbackEmail = project.getFeedbackEmail();
+    exclusionClause = project.getExclusionClause();
     userRoleMap = new HashMap<>(project.getUserRoleMap());
     refsets = new ArrayList<Refset>();
     for (Refset refset : project.getRefsets()) {
@@ -212,6 +217,16 @@ public class ProjectJpa implements Project {
   public String getLastModifiedBy() {
     return lastModifiedBy;
   }
+  
+  @Override
+  public void setExclusionClause(String exclusionClause) {
+    this.exclusionClause = exclusionClause;
+  }
+  
+  @Override
+  public String getExclusionClause() {
+    return exclusionClause;
+  }  
 
   /* see superclass */
   @Override
@@ -346,6 +361,7 @@ public class ProjectJpa implements Project {
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
+    result = prime * result + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
     //TODO result = prime * result + ((validationChecks == null) ? 0 : validationChecks.hashCode());
     return result;
   }
@@ -423,6 +439,11 @@ public class ProjectJpa implements Project {
         return false;
     } else if (!organization.equals(other.organization))
       return false;
+    if (exclusionClause == null) {
+      if (other.exclusionClause != null)
+        return false;
+    } else if (!exclusionClause.equals(other.exclusionClause))
+      return false;
     if (terminology == null) {
       if (other.terminology != null)
         return false;
@@ -458,7 +479,8 @@ public class ProjectJpa implements Project {
         + ", lastModifiedBy=" + lastModifiedBy + ", name=" + name
         + ", namespace=" + namespace + ", moduleId=" + moduleId
         + ", organization=" + organization + ", description=" + description
-        + ", terminology=" + terminology + ", version=" + version
+        + ", terminology=" + terminology + ", version=" + version 
+        + ", exclusionClause=" + exclusionClause
         + ", userRoleMap=" + userRoleMap + ", validationChecks=" + validationChecks + "]";
   }
 

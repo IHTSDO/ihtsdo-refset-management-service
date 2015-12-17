@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.services.handlers;
 import java.io.InputStream;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -52,9 +53,9 @@ public interface ImportRefsetHandler extends Configurable {
    * Import definition.
    *
    * @param content the content
-   * @return the string
+   * @return the list
    * @throws Exception the exception
    */
-  public String importDefinition(InputStream content) throws Exception;
+  public List<DefinitionClause> importDefinition(InputStream content) throws Exception;
 
 }

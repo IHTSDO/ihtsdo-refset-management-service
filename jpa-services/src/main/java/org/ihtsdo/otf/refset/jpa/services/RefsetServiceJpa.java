@@ -17,11 +17,13 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -40,6 +42,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -126,6 +129,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
     Refset refset = getHasLastModified(id, RefsetJpa.class);
     handleLazyInit(refset);
+    System.out.println("refset " + refset.getName() + ": " + refset);
     return refset;
   }
 
@@ -658,6 +662,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
     refset.getEnabledFeedbackEvents().size();
     refset.getNotes().size();
+    refset.getDefinitionClauses().size();
   }
 
   /* see superclass */
@@ -772,6 +777,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // null its id and all of its components ids
     // then call addXXX on each component
     refsetCopy.setId(null);
+    /*for (DefinitionClause clause : refsetCopy.getDefinitionClauses()) {
+      clause.setId(null);
+    }*/
+    // TODO:
+    refsetCopy.getDefinitionClauses().clear();
     refsetCopy.setEffectiveTime(effectiveTime);
 
     // translations and refset descriptor not relevant for staging
@@ -895,5 +905,67 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
+  }
+  
+  @Override
+  public void resolveRefsetDefinition(Refset refset) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Release Service - resolve refset definition " 
+            + " refsetId " + refset.getId());
+    Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
+    Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
+    List<String> resolvedConcepts = new ArrayList<>();
+    for (ConceptRefsetMember member : refset.getMembers()) {
+      if (member.getMemberType() == Refset.MemberType.INCLUSION){
+        beforeInclusions.put(member.getConceptId(), member);
+      }
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION ||
+          member.getMemberType() == Refset.MemberType.MEMBER){
+        beforeMembersExclusions.put(member.getConceptId(), member);
+      }      
+    }
+    String definition = refset.computeDefinition();
+    if (definition.equals("")) {
+      return;
+    }
+    ConceptList resolvedFromExpression = getTerminologyHandler().resolveExpression(definition, 
+        refset.getTerminology(), refset.getVersion(), null);
+    
+    for (Concept concept : resolvedFromExpression.getObjects()) {
+      resolvedConcepts.add(concept.getTerminologyId());
+    }
+    
+    Date startDate = new Date();
+    for (Concept concept : resolvedFromExpression.getObjects()) {
+      if (!beforeMembersExclusions.keySet().contains(concept.getTerminologyId())) {
+        ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+        member.setModuleId(concept.getModuleId());
+        member.setActive(true);
+        member.setConceptActive(concept.isActive());
+        member.setPublished(concept.isPublished());
+        member.setConceptId(concept.getTerminologyId());
+        member.setConceptName(concept.getName());
+        member.setLastModified(startDate);
+        member.setLastModifiedBy(refset.getLastModifiedBy());
+        member.setTerminology(concept.getTerminology());
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setModuleId(concept.getModuleId());
+        member.setRefset(refset);
+        member.setTerminologyId(concept.getTerminologyId());
+        member.setVersion(concept.getVersion());
+        member.setId(null);
+        refset.addMember(member);
+        addMember(member);
+      }
+    }
+    beforeInclusions.keySet().removeAll(resolvedConcepts);
+    for (ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
+       removeMember(beforeInclusion.getId());
+    }
+    beforeMembersExclusions.keySet().removeAll(resolvedConcepts);
+    for (ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions.values()) {
+      removeMember(beforeMemberExclusion.getId());
+    }
+
   }
 }

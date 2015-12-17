@@ -9,13 +9,16 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
@@ -26,6 +29,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -391,7 +395,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       RefsetJpa refset2 =
           makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
               "222222912342013", reviewer2, true);
-
+      // TODO: set importMembers back to true to test importDefinition
       RefsetJpa refset3 =
           makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
               "33333912342013", reviewer2, true);
@@ -584,6 +588,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           new RefsetServiceRestImpl().getRefset(test1Copy.getId(),
               author1.getAuthToken());
       test4.setName("test4");
+      System.out.println("test4 " + test4);
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test4,
           author1.getAuthToken());
 
@@ -915,7 +920,16 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(definition);
+    if (type == Refset.Type.INTENSIONAL) {
+      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      DefinitionClause clause = new DefinitionClauseJpa();
+      clause.setValue(definition);
+      clause.setNegated(false);
+      definitionClauses.add(clause);
+      refset.setDefinitionClauses(definitionClauses);
+    } else {
+      refset.setDefinitionClauses(null);
+    }
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -939,7 +953,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     }
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {
-      refset.setDefinition("needs definition");
+      refset.setDefinitionClauses(new ArrayList<DefinitionClause>());
     } else if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
@@ -987,10 +1001,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
         in.close();
       }
     } else if (type == Refset.Type.INTENSIONAL && definition != null) {
-      new RefsetServiceRestImpl().beginRedefinition(refset.getId(), definition,
+      /*new RefsetServiceRestImpl().beginRedefinition(refset.getId(), definition,
           auth.getAuthToken());
       new RefsetServiceRestImpl().finishRedefinition(refset.getId(),
-          auth.getAuthToken());
+          auth.getAuthToken());*/
+      //new RefsetServiceRestImpl().updateRefset(refset, auth.getAuthToken());
     }
 
     return refset;

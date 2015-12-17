@@ -9,6 +9,7 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -343,4 +344,12 @@ public interface RefsetService extends ReleaseService {
    * @param member the member
    */
   public void handleLazyInit(ConceptRefsetMember member);
+
+  /**
+   * Resolve refset definition.
+   *
+   * @param refset the refset
+   * @throws Exception the exception
+   */
+  public void resolveRefsetDefinition(Refset refset) throws Exception;
 }

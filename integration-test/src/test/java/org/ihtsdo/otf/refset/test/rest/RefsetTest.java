@@ -6,13 +6,17 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
@@ -161,7 +165,16 @@ public class RefsetTest {
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(definition);
+    if (type == Refset.Type.INTENSIONAL) {
+      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      DefinitionClause clause = new DefinitionClauseJpa();
+      clause.setValue(definition);
+      clause.setNegated(false);
+      definitionClauses.add(clause);
+      refset.setDefinitionClauses(definitionClauses);
+    } else {
+      refset.setDefinitionClauses(null);
+    }
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);

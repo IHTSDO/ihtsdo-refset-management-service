@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
+import org.ihtsdo.otf.refset.helpers.DefinitionClauseList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -148,7 +149,7 @@ public interface RefsetServiceRest {
    * @return the string definition
    * @throws Exception the exception
    */
-  public String importDefinition(
+  public void importDefinition(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
@@ -374,38 +375,7 @@ public interface RefsetServiceRest {
    */
   public void cancelMigration(Long refsetId, String authToken) throws Exception;
 
-  /**
-   * Begin redefinition.
-   *
-   * @param refsetId the refset id
-   * @param newDefinition the new definition
-   * @param authToken the auth token
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset beginRedefinition(Long refsetId, String newDefinition,
-    String authToken) throws Exception;
 
-  /**
-   * Finish redefinition.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset finishRedefinition(Long refsetId, String authToken)
-    throws Exception;
-
-  /**
-   * Cancel redefintion.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void cancelRedefinition(Long refsetId, String authToken)
-    throws Exception;
 
   /**
    * Compare refsets.
@@ -464,16 +434,6 @@ public interface RefsetServiceRest {
   public String extrapolateDefinition(Long refsetId, String authToken)
     throws Exception;
 
-  /**
-   * Resume redefinition.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the validation result
-   * @throws Exception the exception
-   */
-  public Refset resumeRedefinition(Long refsetId, String authToken)
-    throws Exception;
 
   /**
    * Resume migration.

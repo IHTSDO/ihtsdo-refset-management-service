@@ -139,4 +139,18 @@ public interface Project extends Searchable {
    * @param validationCheck the validation check
    */
   public void removeValidationCheck(String validationCheck);
+
+  /**
+   * Returns the exclusion clause.
+   *
+   * @return the exclusion clause
+   */
+  public String getExclusionClause();
+
+  /**
+   * Sets the exclusion clause.
+   *
+   * @param exclusionClause the exclusion clause
+   */
+  public void setExclusionClause(String exclusionClause);
 }

@@ -110,7 +110,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
   public InputStream exportDefinition(Refset refset) throws Exception {
     Logger.getLogger(getClass()).info(
         "Export refset definition - " + refset.getTerminologyId() + ", "
-            + refset.getName() + ", " + refset.getDefinition());
+            + refset.getName() + ", " + refset.getDefinitionClauses());
 
     // Write RF2 refset definition pattern to an input stream
     StringBuilder sb = new StringBuilder();
@@ -135,7 +135,7 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append(refset.getTerminologyId()).append("\t");
     // fake id for now
     sb.append(refset.getTerminologyId()).append("\t");
-    sb.append(refset.getDefinition()).append("\t");
+    sb.append(refset.computeDefinition()).append("\t");
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
