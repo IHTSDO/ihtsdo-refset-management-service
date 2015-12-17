@@ -84,8 +84,6 @@ public interface Refset extends Component, Searchable {
   public enum StagingType {
     /** The import. */
     IMPORT,
-    /** The definition. */
-    DEFINITION,
     /** The migration. */
     MIGRATION,
 
@@ -176,20 +174,6 @@ public interface Refset extends Component, Searchable {
    * @param type the type
    */
   public void setType(Type type);
-
-  /**
-   * Returns the definition.
-   *
-   * @return the definition
-   */
-  public String getDefinition();
-
-  /**
-   * Sets the definition.
-   *
-   * @param definition the definition
-   */
-  public void setDefinition(String definition);
 
   /**
    * Returns the external url.
@@ -393,6 +377,27 @@ public interface Refset extends Component, Searchable {
    * @param inPublicationProcess the in publication process
    */
   public void setInPublicationProcess(boolean inPublicationProcess);
+
+  /**
+   * Returns the definition clauses.
+   *
+   * @return the definition clauses
+   */
+  public List<DefinitionClause> getDefinitionClauses();
+
+  /**
+   * Sets the definition clauses.
+   *
+   * @param definitionClauses the definition clauses
+   */
+  public void setDefinitionClauses(List<DefinitionClause> definitionClauses);
+
+  /**
+   * Compute definition.
+   *
+   * @return the string
+   */
+  public String computeDefinition();
 
   /**
    * Updates whether a lookup of member concepts names and statuses is in

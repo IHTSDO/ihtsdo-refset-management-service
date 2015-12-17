@@ -28,6 +28,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
@@ -37,6 +38,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.DefinitionClauseList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -48,6 +50,7 @@ import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.DefinitionClauseListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -324,6 +327,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
 
     final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     try {
       final String userName =
           authorizeProject(refsetService, refset.getProjectId(),
@@ -332,6 +337,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Add refset - if the project is invalid, this will fail
       refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
+      
+      // compute definition
+      refsetService.resolveRefsetDefinition(newRefset);      
+      refsetService.commit();
+      
+      
       return newRefset;
     } catch (Exception e) {
       handleException(e, "trying to add a refset");
@@ -356,14 +367,24 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     // Create service and configure transaction scope
     final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     try {
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "update refset", UserRole.AUTHOR);
 
       // Update refset
       refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      
+      // recompute definition
+      Refset dbRefset = refsetService.getRefset(refset.getId());
+      if (refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())) {        
+        refsetService.resolveRefsetDefinition(refset); 
+      }
+      
       refsetService.updateRefset(refset);
-
+      
+      refsetService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
     } finally {
@@ -438,6 +459,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refset.setId(null);
       refset.setWorkflowStatus(WorkflowStatus.NEW);
+      for (DefinitionClause clause : refset.getDefinitionClauses()) {
+        clause.setId(null);
+      }
       refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
 
@@ -481,7 +505,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Path("/import/definition")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @ApiOperation(value = "Import refset definition", notes = "Imports the refset definition into the specified refset")
-  public String importDefinition(
+  public void importDefinition(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -511,17 +535,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (handler == null) {
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
+      // Load definition
+      List<DefinitionClause> definitionClauses = handler.importDefinition(in);
 
-      // return definition
-      return handler.importDefinition(in);
-
+      return;
     } catch (Exception e) {
       handleException(e, "trying to import refset definition");
     } finally {
       refsetService.close();
       securityService.close();
     }
-    return null;
+    return;
 
   }
 
@@ -1062,7 +1086,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // add members from expression results
         ConceptList conceptList =
             refsetService.getTerminologyHandler().resolveExpression(
-                refsetCopy.getDefinition(), refsetCopy.getTerminology(),
+                refsetCopy.computeDefinition(), refsetCopy.getTerminology(),
                 refsetCopy.getVersion(), null);
 
         // do this to re-use the terminology id
@@ -1215,7 +1239,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
 
       // copy definition from staged to origin refset
-      refset.setDefinition(stagedRefset.getDefinition());
+      refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
 
       // Remove the staged refset change and set staging type back to null
       refset.setStagingType(null);
@@ -1298,8 +1322,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
-  /* see superclass */
-  @GET
+/*  @GET
   @Override
   @Path("/redefinition/begin")
   @ApiOperation(value = "Begin refset redefinition", notes = "Begins the redefinition process by validating the refset for redefinition and marking the refset as staged.", response = RefsetJpa.class)
@@ -1349,7 +1372,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Refset refsetCopy =
           refsetService.stageRefset(refset, Refset.StagingType.DEFINITION,
               startDate);
-      refsetCopy.setDefinition(newDefinition);
+      // TODO: refsetCopy.setDefinition(newDefinition);
 
       // Compute the expression
       // add members from expression results
@@ -1493,7 +1516,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
 
       // copy definition from staged to origin refset
-      refset.setDefinition(stagedRefset.getDefinition());
+      refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
 
       // Remove the staged refset change and set staging type back to null
       refset.setStagingType(null);
@@ -1575,7 +1598,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-
+*/
   /* see superclass */
   @Override
   @GET
@@ -1880,7 +1903,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "get definition for refset id",
           UserRole.AUTHOR);
 
-      return refset.getDefinition();
+      // TODO:?
+      return refset.computeDefinition();
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
       return null;
@@ -1970,8 +1994,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
-  /* see superclass */
-  @GET
+/*  @GET
   @Override
   @Path("/redefinition/resume")
   @ApiOperation(value = "Resume refset redefinition", notes = "Resumes the redefinition process by re-validating the refset.", response = RefsetJpa.class)
@@ -2012,7 +2035,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
-  }
+  }*/
 
   /* see superclass */
   @GET

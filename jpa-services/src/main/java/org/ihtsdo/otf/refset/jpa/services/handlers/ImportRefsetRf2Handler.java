@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -113,10 +115,11 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
-  public String importDefinition(InputStream content) throws Exception {
+  public List<DefinitionClause> importDefinition(InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import refset definition");
 
     String line = "";
+    List<DefinitionClause> definitionClauses = new ArrayList<>();
 
     // Read from input stream
     Reader reader = new InputStreamReader(content, "UTF-8");
@@ -136,14 +139,42 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       // skip header
       if (!fields[0].equals("id")) {
 
-        // Return fields[6]
-        pbr.close();
         Logger.getLogger(getClass()).debug("  definition = " + fields[6]);
-        return fields[6];
+        
+        // parse into definition clauses
+        String part1 = "";
+        String part2 = "";
+        if (fields[6].contains(" AND !")) {
+          part1 = fields[6].substring(0, fields[6].indexOf(" AND !"));
+          part2 = fields[6].substring(fields[6].indexOf(" AND !") + 5);
+          System.out.println("*" + part1 + "*");
+          System.out.println("*" + part2 + "*");
+        } else {
+          part1 = fields[6];
+        }
+        String[] positiveClauses = part1.split(" UNION ");
+        for (String clause : positiveClauses) {
+          DefinitionClause defClause = new DefinitionClauseJpa();
+          defClause.setNegated(false);
+          defClause.setValue(clause);
+          definitionClauses.add(defClause);
+        }
+        if (part2.contains(" AND !")) {
+          String[] negativeClauses = part2.split(" AND !");
+          for (String clause : negativeClauses) {
+            // TODO: determine if this is a project level exclusion clause
+            // if so, don't add it to the negative refset level clauses
+            DefinitionClause defClause = new DefinitionClauseJpa();
+            defClause.setNegated(false);
+            defClause.setValue(clause);
+            definitionClauses.add(defClause);
+          }
+        }
+        
       }
     }
     pbr.close();
-    return null;
+    return definitionClauses;
   }
 
   /* see superclass */

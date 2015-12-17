@@ -124,7 +124,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("terminology");
     tester.include("terminologyId");
     //tester.include("version");
-    tester.include("definition");
+    tester.include("definitionClauses");
     tester.include("description");
     tester.include("externalUrl");
     tester.include("forTranslation");
@@ -238,7 +238,6 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("name");
     tester.include("description");
-    tester.include("definition");
     tester.include("userRoleMap");
     tester.include("userAnyRole");
     tester.include("organization");
@@ -259,10 +258,9 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("workflowStatus");
     tester.include("organizationSort");
     tester.include("nameSort");
-    tester.include("descriptionSort");
-    tester.include("definitionSort");
     tester.include("public");
     tester.include("provisional");
+    tester.include("descriptionsort");
 
     tester.include("type");
     tester.include("workflowStatus");

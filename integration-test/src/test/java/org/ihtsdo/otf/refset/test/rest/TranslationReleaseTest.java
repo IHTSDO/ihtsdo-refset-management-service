@@ -9,8 +9,10 @@ package org.ihtsdo.otf.refset.test.rest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
@@ -18,11 +20,13 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -174,7 +178,16 @@ public class TranslationReleaseTest {
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(definition);
+    if (type == Refset.Type.INTENSIONAL) {
+      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      DefinitionClause clause = new DefinitionClauseJpa();
+      clause.setValue(definition);
+      clause.setNegated(false);
+      definitionClauses.add(clause);
+      refset.setDefinitionClauses(definitionClauses);
+    } else {
+      refset.setDefinitionClauses(null);
+    }
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);

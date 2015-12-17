@@ -25,7 +25,9 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
@@ -36,6 +38,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
@@ -43,6 +46,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -797,7 +801,16 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(definition);
+    if (type == Refset.Type.INTENSIONAL) {
+      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      DefinitionClause clause = new DefinitionClauseJpa();
+      clause.setValue(definition);
+      clause.setNegated(false);
+      definitionClauses.add(clause);
+      refset.setDefinitionClauses(definitionClauses);
+    } else {
+      refset.setDefinitionClauses(null);
+    }
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -895,7 +908,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setType(Refset.Type.EXTENSIONAL);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(null);
+    refset.setDefinitionClauses(null);
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -1062,11 +1075,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   public Refset redefine(Refset refset, String definition, User auth)
     throws Exception {
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    refsetService.beginRedefinition(refset.getId(), definition,
+    /*refsetService.beginRedefinition(refset.getId(), definition,
         auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
     refsetService.finishRedefinition(refset.getId(), auth.getAuthToken());
-    refsetService = new RefsetServiceRestImpl();
+    refsetService = new RefsetServiceRestImpl();*/
+    refsetService.updateRefset((RefsetJpa)refset, auth.getAuthToken());
     return refsetService.getRefset(refset.getId(), auth.getAuthToken());
   }
 

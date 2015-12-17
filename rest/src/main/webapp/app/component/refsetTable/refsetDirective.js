@@ -349,6 +349,10 @@ tsApp
                 return member.memberType.replace('_STAGED', '');
               }
 
+              $scope.addDefinitionClause = function(refset) {
+                
+              }
+              
               // Remove a refset
               $scope.removeRefset = function(refset) {
                 if (!confirm("Are you sure you want to remove the refset (" + refset.name + ")?")) {

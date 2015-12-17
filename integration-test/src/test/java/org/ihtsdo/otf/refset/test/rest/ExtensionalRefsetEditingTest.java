@@ -108,7 +108,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Check it out when I step through the code
 
     // Change Refset Definition
-    currentRefset.setDefinition("new definition");
+    currentRefset.setDefinitionClauses(null);
 
     // Use workflowService to SAVE the refset
     record =

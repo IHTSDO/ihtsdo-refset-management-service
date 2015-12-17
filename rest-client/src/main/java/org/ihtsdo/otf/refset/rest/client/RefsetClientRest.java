@@ -27,6 +27,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.DefinitionClauseList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -35,6 +36,7 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.DefinitionClauseListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -259,7 +261,7 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public String importDefinition(
+  public void importDefinition(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Client - import definition");
@@ -285,14 +287,16 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
             .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
-
+    
+    String resultString = response.readEntity(String.class);
+    
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception(response.toString());
     }
 
-    return response.readEntity(String.class);
+    return;
   }
 
   /* see superclass */
@@ -714,93 +718,6 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Refset beginRedefinition(Long refsetId, String newDefinition,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - begin refset redefinition");
-    validateNotEmpty(refsetId, "refsetId");
-    validateNotEmpty(newDefinition, "newDefinition");
-
-    Client client = ClientBuilder.newClient();
-    String encodedDefinition =
-        URLEncoder.encode(newDefinition, "UTF-8").replaceAll("\\+", "%20");
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/redefinition/begin" + "?refsetId=" + refsetId
-            + "&newDefinition=" + encodedDefinition);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
-        RefsetJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public Refset finishRedefinition(Long refsetId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Client - finish redefinition");
-    validateNotEmpty(refsetId, "refsetId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/redefinition/finish" + "?refsetId=" + refsetId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
-        RefsetJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public void cancelRedefinition(Long refsetId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - cancel refset redefinition");
-    validateNotEmpty(refsetId, "refsetId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/redefinition/cancel" + "?refsetId=" + refsetId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-  }
-
-  /* see superclass */
-  @Override
   public String compareRefsets(Long refsetId1, Long refsetId2, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug("Refset Client - compare refsets");
@@ -1069,34 +986,6 @@ public class RefsetClientRest extends RootClientRest implements
 
   }
 
-  /* see superclass */
-  @Override
-  public Refset resumeRedefinition(Long refsetId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - resume refset redefinition");
-    validateNotEmpty(refsetId, "refsetId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/redefinition/resume" + "?refsetId=" + refsetId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
-        RefsetJpa.class);
-  }
 
   /* see superclass */
   @Override

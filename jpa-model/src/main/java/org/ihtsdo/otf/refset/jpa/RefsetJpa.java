@@ -11,12 +11,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -37,6 +39,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.EnumBridge;
 import org.hibernate.search.bridge.builtin.LongBridge;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -97,10 +100,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = true)
   private StagingType stagingType;
 
-  /** The definition. */
-  @Column(nullable = true, length = 4000)
-  private String definition;
-
   /** The external url. */
   @Column(nullable = true, length = 1000)
   private String externalUrl;
@@ -157,6 +156,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   // @IndexedEmbedded - don't embed up the indexing tree
   private Project project;
 
+  /**  The definition clauses. */
+  @OneToMany(cascade = CascadeType.ALL, targetEntity = DefinitionClauseJpa.class)
+  private List<DefinitionClause> definitionClauses = new ArrayList<>();
+  
   /** The translations. */
   @OneToMany(mappedBy = "refset", targetEntity = TranslationJpa.class)
   // @IndexedEmbedded - n/a
@@ -198,7 +201,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     provisional = refset.isProvisional();
     stagingType = refset.getStagingType();
     type = refset.getType();
-    definition = refset.getDefinition();
+    for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
+      getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
+    }
+    definitionClauses = refset.getDefinitionClauses();
     externalUrl = refset.getExternalUrl();
     namespace = refset.getNamespace();
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
@@ -327,22 +333,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setStagingType(StagingType type) {
     this.stagingType = type;
-  }
-
-  /* see superclass */
-  @Fields({
-      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-      @Field(name = "definitionSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  })
-  @Override
-  public String getDefinition() {
-    return definition;
-  }
-
-  /* see superclass */
-  @Override
-  public void setDefinition(String definition) {
-    this.definition = definition;
   }
 
   /* see superclass */
@@ -572,6 +562,50 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   /* see superclass */
+  @XmlElement(type = DefinitionClauseJpa.class)
+  @Override
+  public List<DefinitionClause> getDefinitionClauses() {
+    if (definitionClauses == null) {
+      definitionClauses = new ArrayList<>();
+    }
+    return definitionClauses;
+  }
+
+  /* see superclass */
+  @Override
+  public void setDefinitionClauses(List<DefinitionClause> definitionClauses) {
+    this.definitionClauses = definitionClauses;
+  }
+  
+  @Override
+  public String computeDefinition() {
+    List<DefinitionClause> positiveClauses = new ArrayList<>();
+    List<DefinitionClause> negativeClauses = new ArrayList<>();
+    for (DefinitionClause clause : definitionClauses) {
+      if (clause.isNegated()) {
+        negativeClauses.add(clause);
+      } else {
+        positiveClauses.add(clause);
+      }
+    }
+    StringBuffer computedDefinition = new StringBuffer();
+    if (positiveClauses.size() > 0) {
+      computedDefinition.append(positiveClauses.get(0).getValue());
+      for (int i = 1; i < positiveClauses.size(); i++) {
+        computedDefinition.append(" UNION ").append(positiveClauses.get(i).getValue());
+      }
+      for (DefinitionClause negClause : negativeClauses) {
+        computedDefinition.append(" AND !").append(negClause.getValue());
+      }
+      if (project.getExclusionClause() != null && 
+        !project.getExclusionClause().equals("")) {
+        computedDefinition.append(" AND !").append(project.getExclusionClause());
+      }
+    }
+    return computedDefinition.toString();
+  }
+  
+  /* see superclass */
   @Override
   public void addMember(ConceptRefsetMember member) {
     if (members == null) {
@@ -613,7 +647,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     final int prime = 31;
     int result = super.hashCode();
     result =
-        prime * result + ((definition == null) ? 0 : definition.hashCode());
+        prime * result + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
@@ -640,10 +674,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     if (getClass() != obj.getClass())
       return false;
     RefsetJpa other = (RefsetJpa) obj;
-    if (definition == null) {
-      if (other.definition != null)
+    if (definitionClauses == null) {
+      if (other.definitionClauses != null)
         return false;
-    } else if (!definition.equals(other.definition))
+    } else if (!definitionClauses.equals(other.definitionClauses))
       return false;
     if (description == null) {
       if (other.description != null)
@@ -689,7 +723,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definition=" + definition + ", externalUrl=" + externalUrl
+        + type + ", definitionClauses=" + definitionClauses + ", externalUrl=" + externalUrl
         + ", forTranslation=" + forTranslation + ", workflowStatus="
         + workflowStatus + ", workflowPath=" + workflowPath + ", namespace="
         + namespace + ", refsetDescriptorUuid=" + refsetDescriptorUuid
