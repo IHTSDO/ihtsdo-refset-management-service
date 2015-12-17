@@ -25,7 +25,6 @@ tsApp.service('projectService', [
       return userProjectsInfo;
     }
 
-
     this.getIconConfig = function() {
       console.debug("get icon config", iconConfig);
       return iconConfig;
@@ -326,6 +325,7 @@ tsApp.service('projectService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -350,6 +350,7 @@ tsApp.service('projectService', [
       function(response) {
         utilService.handleError(response);
         gpService.decrement();
+        deferred.reject(response.data);
       });
       return deferred.promise;
     }
@@ -393,8 +394,8 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology="
-          + terminology + "&version=" + version).then(
+        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
+          + "&version=" + version).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
@@ -505,6 +506,30 @@ tsApp.service('projectService', [
         gpService.decrement();
         deferred.reject(response.data);
       });
+      return deferred.promise;
+    }
+
+    // Get standard description types
+    this.getStandardDescriptionTypes = function(terminology, version) {
+      console.debug("getStandardDescriptionTypes",terminology,version);
+      var deferred = $q.defer();
+
+      // Get projects
+      gpService.increment()
+      $http.get(projectUrl + 'terminology/' + terminology + 
+        '/descriptiontypes?version=' + version)
+        .then(
+        // success
+        function(response) {
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
   } ]);

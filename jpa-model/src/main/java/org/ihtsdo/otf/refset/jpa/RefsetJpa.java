@@ -116,6 +116,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Column(nullable = false)
   private boolean inPublicationProcess;
 
+  /** The lookup in progress. */
+  @Column(nullable = false)
+  private boolean lookupInProgress;
+
   /** The feedback email. */
   @Column(nullable = true)
   private String feedbackEmail;
@@ -163,7 +167,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The refset members. */
   @OneToMany(mappedBy = "refset", targetEntity = ConceptRefsetMemberJpa.class)
-  @IndexedEmbedded(targetElement = ConceptRefsetMemberJpa.class)
+  // @IndexedEmbedded - n/a (no need for this)
   private List<ConceptRefsetMember> members = null;
 
   /** The enabled feedback events. */
@@ -174,7 +178,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /** The notes. */
   @OneToMany(mappedBy = "refset", targetEntity = RefsetNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = RefsetNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**
@@ -206,6 +210,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
     forTranslation = refset.isForTranslation();
     inPublicationProcess = refset.isInPublicationProcess();
+    lookupInProgress = refset.isLookupInProgress();
     feedbackEmail = refset.getFeedbackEmail();
     workflowStatus = refset.getWorkflowStatus();
     workflowPath = refset.getWorkflowPath();
@@ -402,6 +407,18 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   @Override
   public void setInPublicationProcess(boolean inPublicationProcess) {
     this.inPublicationProcess = inPublicationProcess;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isLookupInProgress() {
+    return lookupInProgress;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLookupInProgress(boolean lookupInProgress) {
+    this.lookupInProgress = lookupInProgress;
   }
 
   /* see superclass */
@@ -637,6 +654,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         prime * result + ((externalUrl == null) ? 0 : externalUrl.hashCode());
     result = prime * result + (forTranslation ? 1231 : 1237);
     result = prime * result + (inPublicationProcess ? 1231 : 1237);
+    result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
@@ -675,6 +693,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (inPublicationProcess != other.inPublicationProcess)
       return false;
+    if (lookupInProgress != other.lookupInProgress)
+      return false;
     if (isPublic != other.isPublic)
       return false;
     if (name == null) {
@@ -709,7 +729,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + namespace + ", refsetDescriptorUuid=" + refsetDescriptorUuid
         + ", project=" + project + ", enabledFeedbackEvents="
         + enabledFeedbackEvents + ", inPublicationProcess="
-        + inPublicationProcess + "]";
+        + inPublicationProcess + ", lookupInProgress=" + lookupInProgress + "]";
   }
 
 }

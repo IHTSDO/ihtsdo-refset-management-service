@@ -176,7 +176,7 @@ public class ImportExportRf2HandlerTest {
         importHandler.importMembers(refset, membersInputStream);
 
     // Verify the member count
-    Assert.assertEquals(members.size(), 35);
+    Assert.assertEquals(members.size(), 21);
     List<DefinitionClause> definitionClauses = importHandler.importDefinition(definitionInputStream);
     Assert.assertEquals("<<410675002|Route of administration|", definitionClauses.get(0));
 
@@ -189,7 +189,7 @@ public class ImportExportRf2HandlerTest {
       ct++;
     }
     // Verify the member count plus 1 for the header
-    Assert.assertEquals(36, ct);
+    Assert.assertEquals(22, ct);
   }
 
   /**

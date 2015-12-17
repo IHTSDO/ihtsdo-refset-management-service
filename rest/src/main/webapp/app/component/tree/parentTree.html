@@ -1,0 +1,25 @@
+
+<div ui-tree-handle>
+
+  <!-- recursive display of next level of tree -->
+  <ol ui-tree-nodes="" ng-model="tree.inner" ng-class="{hidden: collapsed}">
+    <!--  render the parents -->
+    <li ng-repeat="tree in tree.inner" ui-tree-node
+      ng-include="'app/component/tree/parentTree.html'"></li>
+  </ol>
+
+
+  <a ng-click="getParentTrees(tree, this)">
+    <span class="glyphicon" ng-class="getTreeNodeIcon(tree, collapsed)"></span>
+  </a>
+
+  <i ng-show="tree.leaf" class="glyphicon glyphicon-leaf"></i>
+
+  <!-- if not the component viewed, render with hyperlink -->
+  <span ng-show="tree.terminologyId != concept.terminologyId"
+    style="font-size: 12px">
+    <a ng-click="getConceptById(tree.terminologyId)"> {{tree.terminologyId}}</a>
+    : {{tree.name}}
+  </span>
+
+</div>

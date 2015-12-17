@@ -8,19 +8,6 @@
   <!-- R1 -->
   <div class="row">
 
-    <!-- Warnings -->
-    <div class="alert alert-danger alert-warning" ng-repeat="warning in warnings">
-      {{warning}}
-    </div>
-
-    <!-- Errors -->
-    <div class="alert alert-danger alert-error" ng-repeat="error in errors">
-      {{error}}
-      <div style="cursor: pointer; display: inline; float: right; width: 3%;">
-        <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-      </div>
-    </div>
-    
     <!-- R1C1 -->
     <div class="col-md-5 col-xs-12">
       <!-- Concept display -->
@@ -41,16 +28,16 @@
           <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-            ng-show="conceptTranslated.descriptions.length > pageSize || paging['descriptions'].filter"
+            ng-show="pagedDescriptions.totalCount > pageSize"
             total-items="conceptTranslated.descriptions.length"
             ng-model="paging['descriptions'].page"
             ng-change="getPagedDescriptions()"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
-            ng-show="conceptTranslated.descriptions.length > pageSize || paging['descriptions'].filter"
+            ng-show="pagedDescriptions.totalCount > pageSize || paging['descriptions'].filter"
             type="text" ng-model="paging['descriptions'].filter"
             ng-model-options="{ debounce: 300 }"
-            ng-change="getPagedDescriptions()">
+            ng-change="paging['descriptions'].page = 1; getPagedDescriptions()">
 
           <button class="btn btn-xs btn-warning"
             ng-show="paging['descriptions'].filter"
@@ -58,7 +45,7 @@
             title="Click to clear filter text">Clear</button>
 
           <div style="float: right;">
-            <i ng-click="newDescription()" title="Add description"
+            <i ng-click="addDescription()" title="Add description"
               class="noul material-icons md-18">add</i>
           </div>
         </span>
@@ -67,8 +54,12 @@
         <table class="table">
           <thead>
             <tr>
-              <th>Name</th>
-              <th>Type/Case</th>
+              <th ng-click="setSortField('term', null)">Name<span
+                  ng-bind="getSortIndicator('term')"></span></th>
+              <th><span ng-click="setSortField('typeId', null)">Type</span>
+                <span ng-bind="getSortIndicator('typeId')"></span> /<span
+                  ng-click="setSortField('term', null)">Case</span> <span
+                  ng-bind="getSortIndicator('caseSignificanceId')"></span></th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -76,12 +67,11 @@
             <tr ng-repeat="description in pagedDescriptions">
               <td>
                 <textarea title="Description term" cols="40" rows="3"
-                  ng-model="description.name"></textarea>
+                  ng-model="description.term"></textarea>
               </td>
               <td>
                 <select ng-model="description.type"
-                  ng-change="applyDescriptionType(description, description.type)"
-                  ng-options="type.name for type in translation.descriptionTypes | orderBy:'type.name'">
+                  ng-options="type.name for type in getDescriptionTypes()">
                 </select> <br /> <select style="margin-top: 5px;"
                   ng-model="description.caseSignificanceId">
                   <option
@@ -106,7 +96,8 @@
           <tbody>
             <tr>
               <td>
-                <input type="checkbox" ng-model="enableSpelling"
+                <input type="checkbox"
+                  ng-model="user.userPreferences.spellingEnabled"
                   name="Spelling Corrrection">Spelling Correction
               </td>
               <td>
@@ -123,13 +114,14 @@
 
             <tr>
               <td>
-                <input type="checkbox" ng-model="enableMemory"
+                <input type="checkbox"
+                  ng-model="user.userPreferences.memoryEnabled"
                   name="Phrase Memory">Phrase Memory
               </td>
               <td>
                 <select title="Memory entries that can be removed"
                   style="width: 200px;" ng-model="selectedEntry"
-                  ng-options="entry.name for entry in getMemoryEntries()">
+                  ng-options="concat(entry.name,' -> ',entry.translatedName) for entry in getMemoryEntries()">
                 </select>
 
                 <button class="btn btn-xs btn-primary"
@@ -143,6 +135,19 @@
 
       </div>
 
+      <div ng-show="errors.length > 0 || warnings.length> 0"
+        class="col-md-10 col-xs-12">
+        <!-- Errors -->
+        <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+          {{error}}
+          <div
+            style="cursor: pointer; display: inline; float: right; width: 3%;">
+            <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+          </div>
+        </div>
+        <!-- Warnings -->
+        <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+      </div>
       <!-- end R1C2 -->
     </div>
     <!-- end R1 -->

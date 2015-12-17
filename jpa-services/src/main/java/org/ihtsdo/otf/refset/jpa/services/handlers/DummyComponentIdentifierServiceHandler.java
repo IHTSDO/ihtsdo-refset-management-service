@@ -38,7 +38,7 @@ public class DummyComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public String getTerminologyId(Concept concept) throws Exception {
-    if (concept.getTerminology() != null) {
+    if (concept.getTerminologyId() != null) {
       return concept.getTerminologyId();
     }
     ct++;
@@ -48,7 +48,7 @@ public class DummyComponentIdentifierServiceHandler implements
   /* see superclass */
   @Override
   public String getTerminologyId(Description description) throws Exception {
-    if (description.getTerminology() != null) {
+    if (description.getTerminologyId() != null) {
       return description.getTerminologyId();
     }
     ct++;
@@ -57,8 +57,7 @@ public class DummyComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(DescriptionType member)
-    throws Exception {
+  public String getTerminologyId(DescriptionType member) throws Exception {
     if (member.getTerminologyId() != null
         && !member.getTerminologyId().isEmpty()) {
       return member.getTerminologyId();

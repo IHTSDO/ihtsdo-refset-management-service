@@ -1047,12 +1047,12 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.removeRefsetMemberNote = function(refsetId, noteId) {
-      console.debug("remove member note", refsetId, noteId);
+    this.removeRefsetMemberNote = function(memberId, noteId) {
+      console.debug("remove member note", memberId, noteId);
       var deferred = $q.defer();
 
       gpService.increment()
-      $http['delete'](refsetUrl + "/member/remove/note?refsetId=" + refsetId + "&noteId=" + noteId)
+      $http['delete'](refsetUrl + "/member/remove/note?memberId=" + memberId + "&noteId=" + noteId)
         .then(
         // success
         function(response) {
@@ -1068,6 +1068,51 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    // end
+    // get the progress of the name/status member lookup process
+    this.getLookupProgress = function(refsetId) {
+      console.debug("getLookupProgress");
+      // Setup deferred
+      var deferred = $q.defer();
 
-  } ]);
+      gpService.increment();
+      $http.get(refsetUrl + "lookup/status?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // start lookup of member names/statuses
+    this.startLookupNames = function(refsetId) {
+      console.debug("startLookupNames");
+      var deferred = $q.defer();
+
+      // get refset revision
+      gpService.increment()
+      $http.get(refsetUrl + "lookup/start?refsetId=" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  start lookup names = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // end
+} ]);

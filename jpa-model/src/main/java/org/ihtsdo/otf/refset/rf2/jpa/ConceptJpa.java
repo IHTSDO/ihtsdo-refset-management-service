@@ -82,9 +82,9 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Transient
   private List<Relationship> relationships = null;
 
-  /** The child count. */
+  /** The leaf flag. */
   @Transient
-  private int childCount = -1;
+  private boolean leaf;
 
   /** The name. */
   @Column(nullable = false, length = 256)
@@ -96,7 +96,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /** The notes. */
   @OneToMany(mappedBy = "concept", targetEntity = ConceptNoteJpa.class)
-  // @IndexedEmbedded - n/a
+  @IndexedEmbedded(targetElement = ConceptNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
   /**
@@ -186,6 +186,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     }
   }
 
+  /* see superclass */
   @Override
   @XmlElement(type = RelationshipJpa.class)
   public List<Relationship> getRelationships() {
@@ -264,6 +265,18 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /* see superclass */
   @Override
+  public boolean isLeaf() {
+    return leaf;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLeaf(boolean leaf) {
+    this.leaf = leaf;
+  }
+
+  /* see superclass */
+  @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
@@ -313,8 +326,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @Override
   public String toString() {
     return "ConceptJpa [workflowStatus=" + workflowStatus
-        + ", definitionStatusId=" + definitionStatusId + ", childCount="
-        + childCount + ", name=" + name + ", translation=" + translation + "]";
+        + ", definitionStatusId=" + definitionStatusId + ", leaf=" + leaf
+        + ", name=" + name + ", translation=" + translation + "]";
   }
 
 }

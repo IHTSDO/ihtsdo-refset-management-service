@@ -23,18 +23,18 @@ public interface DescriptionType extends RefsetMember {
   public void setName(String name);
 
   /**
-   * Returns the type. For example 900000000000013009.
+   * Returns the type id. For example 900000000000013009.
    *
-   * @return the type
+   * @return the type id
    */
-  public String getType();
+  public String getTypeId();
 
   /**
-   * Sets the type.
+   * Sets the type id.
    *
-   * @param type the type
+   * @param typeId the type id
    */
-  public void setType(String type);
+  public void setTypeId(String typeId);
 
   /**
    * Returns the description format.
@@ -65,16 +65,16 @@ public interface DescriptionType extends RefsetMember {
   public void setDescriptionLength(int descriptionLength);
 
   /**
-   * Returns the acceptability.
+   * Returns the acceptability id.
    *
-   * @return the acceptability
+   * @return the acceptability id
    */
-  public String getAcceptability();
+  public String getAcceptabilityId();
 
   /**
-   * Sets the acceptability.
+   * Sets the acceptability id.
    *
-   * @param acceptability the acceptability
+   * @param acceptabilityId the acceptability id
    */
-  public void setAcceptability(String acceptability);
+  public void setAcceptabilityId(String acceptabilityId);
 }

@@ -50,12 +50,12 @@ public class DescriptionTypeListUnitTest extends
     o1.setId(1L);
     o1.setTerminologyId("1");
     o1.setName("1");
-    o1.setType("1");
+    o1.setTypeId("1");
     o2 = new DescriptionTypeJpa();
     o2.setId(2L);
     o2.setTerminologyId("2");
     o2.setName("2");
-    o2.setType("2");
+    o2.setTypeId("2");
   }
 
   /**

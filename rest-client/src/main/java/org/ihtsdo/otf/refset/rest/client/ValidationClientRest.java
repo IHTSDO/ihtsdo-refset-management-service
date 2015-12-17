@@ -127,7 +127,7 @@ public class ValidationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/validate/translation?projectId=" + projectId + projectId);
+            + "/validate/translation?projectId=" + projectId);
 
     String translationString =
         ConfigUtility.getStringForGraph(translation == null

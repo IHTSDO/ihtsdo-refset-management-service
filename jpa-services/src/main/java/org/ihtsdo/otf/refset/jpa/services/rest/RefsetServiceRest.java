@@ -130,12 +130,12 @@ public interface RefsetServiceRest {
   /**
    * Removes the concept refset member note.
    *
-   * @param refsetId the refset id
+   * @param memberId the member id
    * @param noteId the note id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+  public void removeRefsetMemberNote(Long memberId, Long noteId,
     String authToken) throws Exception;
 
   /**
@@ -515,4 +515,26 @@ public interface RefsetServiceRest {
   public ConceptRefsetMember getMember(Long refsetId, String authToken)
     throws Exception;
 
+  /**
+   * Returns the status of identifying the name and active states for all
+   * members of the refset
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return lookup status
+   * @throws Exception
+   */
+  public Integer getLookupProgress(Long refsetId, String authToken)
+    throws Exception;
+
+  /**
+   * Launches the lookup process of identifying the name and active states for
+   * all members of the refset
+   * 
+   * @param refsetId
+   * @param authToken
+   * @throws Exception
+   */
+  public void startLookupMemberNames(Long refsetId, String authToken)
+    throws Exception;
 }

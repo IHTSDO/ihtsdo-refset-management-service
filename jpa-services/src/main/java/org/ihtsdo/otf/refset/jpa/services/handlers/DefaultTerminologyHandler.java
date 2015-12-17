@@ -23,11 +23,9 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -361,7 +359,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId);
     Response response =
-        target.request("*/*").header("Authorization", authHeader).get();
+        target.request("*/*").header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -479,8 +478,13 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         description.setTerminologyId(desc.get("descriptionId").asText());
         description.setVersion(version);
         description.setTypeId(desc.get("type").asText());
+        // Hardcoded SNOMED CT ID - due to terminology server values returned
+        if (description.getTypeId().equals("FSN")) {
+          description.setTypeId("900000000000003001");
+        } else if (description.getTypeId().equals("SYNONYM")) {
+          description.setTypeId("900000000000013009");
+        }
         Logger.getLogger(getClass()).debug("  description = " + description);
-
         for (JsonNode language : desc.findValues("acceptabilityMap")) {
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
           member.setActive(true);
@@ -488,6 +492,11 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
           String key = language.fieldNames().next();
           member.setRefsetId(key);
           member.setAcceptabilityId(language.get(key).asText());
+          if (member.getAcceptabilityId().equals("PREFERRED")) {
+            member.setAcceptabilityId("900000000000548007");
+          } else if (member.getAcceptabilityId().equals("ACCEPTABLE")) {
+            member.setAcceptabilityId("900000000000549004");
+          }
           description.getLanguageRefsetMembers().add(member);
           Logger.getLogger(getClass()).debug("    member = " + member);
         }
@@ -508,7 +517,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
         rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
         // Only keep INFERRED_RELATIONSHIP rels
-        if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
+        // TODO: terminology server is not returning inferred role rels, only isa
+        // if (rel.getCharacteristicTypeId().equals( "STATED_RELATIONSHIP")) {
+          if (rel.getCharacteristicTypeId().equals( "INFERRED_RELATIONSHIP")) {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
@@ -517,7 +528,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
             "effectiveTime").asText()));
         rel.setModuleId(relNode.get("moduleId").asText());
-
         rel.setTypeId(relNode.get("type").get("fsn").asText());
         // Skip "isa" rels
         if (rel.getTypeId().equals("Is a (attribute)")) {
@@ -658,7 +668,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       query.append(terminologyId);
     }
 
-    return findConceptsForQuery(query.toString(), terminology, version, null);
+    return resolveExpression(query.toString(), terminology, version, null);
   }
 
   /* see superclass */
@@ -668,11 +678,24 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
+    }
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?term="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-            + "&offset=" + pfs.getStartIndex() + "&limit="
-            + pfs.getMaxResults() + "&expand=pt()");
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + localPfs.getMaxResults() + "&expand=pt()");
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -821,7 +844,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId + "/children");
+            + terminologyId + "/children?form=inferred");
     Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -835,10 +858,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     /**
      * <pre>
      * [
+     * [
      *   {
+     *     "characteristicType": "",
      *     "conceptId": "",
      *     "fsn": "",
-     *     "definitionStatus": ""
+     *     "definitionStatus": "",
+     *     "moduleId": "",
+     *     "active": false,
+     *     "isLeafInferred": false,
+     *     "isLeafStated": false
      *   }
      * ]
      * </pre>
@@ -852,7 +881,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       Concept concept = new ConceptJpa();
 
       // Assuming active
-      concept.setActive(true);
+      concept.setActive(entry.get("active").asText().equals("true"));
       concept.setTerminology(terminology);
       concept.setVersion(version);
       concept.setTerminologyId(entry.get("conceptId").asText());
@@ -861,9 +890,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       concept.setLastModified(concept.getEffectiveTime());
       concept.setLastModifiedBy(terminology);
       // no moduleId supplied
-      concept.setModuleId(null);
+      concept.setModuleId(entry.get("moduleId").asText());
       concept.setDefinitionStatusId(entry.get("definitionStatus").asText());
       concept.setName(entry.get("fsn").asText());
+      concept.setLeaf(entry.get("isLeafInferred").asText().equals("true"));
 
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -881,9 +911,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   }
 
   @Override
-  public DescriptionTypeList getStandardDescriptionTypes(String terminology,
+  public List<DescriptionType> getStandardDescriptionTypes(String terminology,
     String version) throws Exception {
-    DescriptionTypeList list = new DescriptionTypeListJpa();
+    List<DescriptionType> list = new ArrayList<>();
     /**
      * <pre>
      * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
@@ -903,33 +933,33 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       type.setDescriptionFormat("900000000000540000");
       if (i == 0) {
         type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
-        type.setType("900000000000003001");
-        type.setAcceptability("900000000000548007");
-        type.setName("Fully specified name");
+        type.setTypeId("900000000000003001");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("FSN");
         type.setDescriptionLength(255);
       }
       if (i == 1) {
         type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
-        type.setType("900000000000550004");
-        type.setAcceptability("900000000000548007");
-        type.setName("Definition");
+        type.setTypeId("900000000000550004");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("DEF");
         type.setDescriptionLength(4096);
       }
       if (i == 2) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
-        type.setType("900000000000013009");
-        type.setAcceptability("900000000000548007");
-        type.setName("Preferred name");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("PN");
         type.setDescriptionLength(255);
       }
       if (i == 3) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
-        type.setType("900000000000013009");
-        type.setAcceptability("900000000000549004");
-        type.setName("Synonym");
+        type.setTypeId("900000000000013009");
+        type.setAcceptabilityId("900000000000549004");
+        type.setName("SY");
         type.setDescriptionLength(255);
       }
-      list.addObject(type);
+      list.add(type);
     }
     return list;
   }

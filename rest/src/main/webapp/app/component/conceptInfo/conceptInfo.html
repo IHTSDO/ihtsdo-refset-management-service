@@ -1,94 +1,77 @@
 
-<div ng-show="error">
-  <h4 class="alert alert-danger alert-error">
-    {{error}}
+<div class="row">
+
+
+  <div class="col-md-12 col-xs-12" ng-show="error">
+    <p class="alert alert-danger alert-error">{{error}}
     <div style="cursor: pointer; display: inline; float: right; width: 3%;">
       <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
     </div>
-  </h4>
+    </p>
+  </div>
+
+  <div class="col-md-12 col-xs-12">
+    <h4 ng-show="concept">
+      <b>Concept</b> {{concept.terminologyId}}
+    </h4>
+
+    <p ng-show="parents.length > 0"><b>Parents</b></p>
+    <div ui-tree ng-show="parents.length > 0">
+      <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
+        <li ng-repeat="tree in parents" ui-tree-node data-nodrag
+          ng-include="'app/component/tree/parentTree.html'"></li>
+      </ol>
+    </div>
+    <p ng-show="concept" style="margin-top: 5px;">
+      <b>Descriptions</b>
+    </p>
+    <table ng-show="concept.descriptions.length > 0" class="table">
+      <tbody>
+        <!-- terminology server doesn't return inactive descriptions -->
+        <tr ng-repeat="description in getOrderedDescriptions(concept)">
+          <td>{{description.term}}</td>
+          <td>{{description.languageCode}}</td>
+          <td>{{getDescriptionType(description)}}</td>
+        </tr>
+      </tbody>
+    </table>
+    <span ng-show="concept.descriptions.length==0" class="alert alert-warning">No
+      active descriptions</span>
+
+
+    <p ng-show="concept.relationships.length > 0">
+      <b>Attributes</b>
+    </p>
+    <table ng-show="concept.relationships.length > 0" class="table">
+      <tbody>
+        <!-- terminology server doesn't return inactive descriptions -->
+        <tr ng-repeat="rel in getOrderedRelationships(concept)">
+          <td>
+            <span ng-show="rel.relationshipGroup > 0">
+              <span class="label label-success"
+                uib-tooltip="Relationship group {{rel.relationshipGroup}}">{{rel.relationshipGroup}}</span>
+              &nbsp;
+            </span>
+            {{rel.typeId}}
+          </td>
+          <td>
+            <a ng-click="getConceptById(rel.destinationId)">
+              {{rel.destinationId}}</a>
+          </td>
+          <td>{{rel.destinationPreferredName}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p ng-show="children.length > 0">
+      <b>Children<span ng-show="pagedChildren.length > 0">
+          ({{pagedChildren.totalCount}})</span></b>
+    </p>
+    <div ui-tree ng-show="children.length > 0">
+      <ol ui-tree-nodes="" ng-model="children" data-nodrop-enabled="true">
+        <li ng-repeat="tree in children" ui-tree-node data-nodrag
+          ng-include="'app/component/tree/childTree.html'"></li>
+      </ol>
+    </div>
+  </div>
 </div>
-
-<h5>
-  <b>Parents</b>
-</h5>
-<table ng-show="parents.length > 0" class="table">
-  <tr ng-repeat="concept in parents | orderBy:'concept.name'">
-    <td>
-      <a ng-click="getConceptById(concept.terminologyId)">{{concept.terminologyId}}</a>
-    </td>
-    <td>{{concept.name}}</td>
-  </tr>
-</table>
-<span ng-show="parents.length == 0" class="alert alert-warning">No parent
-  concepts</span>
-
-
-<h5 ng-show="concept">
-  <b>Concept</b> {{concept.terminologyId}}
-</h5>
-<table ng-show="concept.descriptions.length > 0" class="table">
-  <tbody>
-    <tr ng-repeat="description in concept.descriptions">
-      <td>{{description.term}}</td>
-      <td>{{description.languageCode}}</td>
-      <td>{{description.typeId}}</td>
-    </tr>
-  </tbody>
-</table>
-<span ng-show="concept.descriptions.length==0" class="alert alert-warning">No
-  active descriptions</span>
-
-
-<h5>
-  <b>Children<span ng-show="pagedChildren.length > 0">
-      ({{pagedChildren.totalCount}})</span></b>
-</h5>
-
-<span style="display: block;">
-  <uib-pagination items-per-page="pageSize" max-size="5" boundary-links="true"
-    class="pagination-sm" previous-text="&lsaquo;" next-text="&rsaquo;"
-    first-text="&laquo;" last-text="&raquo;"
-    ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
-    total-items="pagedChildren.totalCount" ng-model="paging['children'].page"
-    ng-change="getPagedChildren()"></uib-pagination>
-
-  <input class="input-filter" placeholder="Enter filter text"
-    ng-show="pagedChildren.totalCount > pageSize || paging['children'].filter"
-    type="text" ng-model="paging['children'].filter"
-    ng-model-options="{ debounce: 300 }" ng-change="getPagedChildren()">
-
-  <button class="btn btn-xs btn-warning" ng-show="paging['children'].filter"
-    ng-click="paging['children'].filter = ''; getPagedChildren()"
-    title="Click to clear filter text">Clear</button>
-
-</span>
-
-<span
-  ng-show="concept && pagedChildren.length == 0 && paging['children'].filter"
-  class="alert alert-warning">
-  <br />No children matching filter
-</span>
-<span
-  ng-show="concept && pagedChildren.length == 0 && !paging['children'].filter"
-  class="alert alert-warning">
-  <br />No child concepts
-</span>
-
-<table ng-show="pagedChildren.length > 0" class="table">
-  <thead>
-    <th class="col-md-3 col-xs-3"
-      ng-click="setSortField('children','terminologyId')">Concept Id <span
-        ng-bind="getSortIndicator('children','terminologyId')"></span>
-    </th>
-    <th class="col-md-9 col-xs-9" ng-click="setSortField('children','name')">Name<span
-        ng-bind="getSortIndicator('children','name',null)"></span></th>
-  </thead>
-  <tbody>
-    <tr class="table-select-row" ng-repeat="concept in pagedChildren">
-      <td>
-        <a ng-click="getConceptById(concept.terminologyId)">{{concept.terminologyId}}</a>
-      </td>
-      <td>{{concept.name}}</td>
-    </tr>
-  </tbody>
-</table>

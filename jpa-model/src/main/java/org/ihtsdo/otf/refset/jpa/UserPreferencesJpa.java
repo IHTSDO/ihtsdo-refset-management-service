@@ -32,9 +32,16 @@ public class UserPreferencesJpa implements UserPreferences {
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
+
   /** The user name. */
   @OneToOne(targetEntity = UserJpa.class)
   private User user;
+
+  /** The lastTab. */
+  private String lastTab;
+
+  /** The lastAccordion. */
+  private String lastAccordion;
 
   /**
    * The default constructor.
@@ -52,6 +59,8 @@ public class UserPreferencesJpa implements UserPreferences {
     super();
     id = userPreferences.getId();
     user = userPreferences.getUser();
+    lastTab = userPreferences.getLastTab();
+    lastAccordion = userPreferences.getLastAccordion();
   }
 
   /**
@@ -73,8 +82,6 @@ public class UserPreferencesJpa implements UserPreferences {
   public void setId(Long id) {
     this.id = id;
   }
-
- 
 
   /**
    * Returns the user.
@@ -140,11 +147,56 @@ public class UserPreferencesJpa implements UserPreferences {
     user.setUserName(userName);
   }
 
+  /**
+   * Returns the last tab accessed.
+   *
+   * @return the lastTab
+   */
+  @Override
+  public String getLastTab() {
+    return lastTab;
+  }
+
+  /**
+   * Sets the last tab accessed.
+   *
+   * @param lastTab the last tab accessed
+   */
+  @Override
+  public void setLastTab(String lastTab) {
+    this.lastTab = lastTab;
+  }
+
+  /**
+   * Sets the last accordion accessed.
+   *
+   * @param lastAccordion the last accordion accessed
+   */
+  @Override
+  public void setLastAccordion(String lastAccordion) {
+    this.lastAccordion = lastAccordion;
+  }
+
+  /**
+   * Returns the last accordion accessed.
+   *
+   * @return the lastAccordion
+   */
+  @Override
+  public String getLastAccordion() {
+    return lastAccordion;
+  }
+
   /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
+    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result =
+        prime * result
+            + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
+    result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
     result = prime * result + ((user == null) ? 0 : user.hashCode());
     return result;
   }
@@ -159,10 +211,25 @@ public class UserPreferencesJpa implements UserPreferences {
     if (getClass() != obj.getClass())
       return false;
     UserPreferencesJpa other = (UserPreferencesJpa) obj;
+    if (id == null) {
+      if (other.id != null)
+        return false;
+    } else if (!id.equals(other.id))
+      return false;
+    if (lastAccordion == null) {
+      if (other.lastAccordion != null)
+        return false;
+    } else if (!lastAccordion.equals(other.lastAccordion))
+      return false;
+    if (lastTab == null) {
+      if (other.lastTab != null)
+        return false;
+    } else if (!lastTab.equals(other.lastTab))
+      return false;
     if (user == null) {
       if (other.user != null)
         return false;
-    } else if (!user.getUserName().equals(other.user.getUserName()))
+    } else if (!user.equals(other.user))
       return false;
     return true;
   }
@@ -170,7 +237,8 @@ public class UserPreferencesJpa implements UserPreferences {
   /* see superclass */
   @Override
   public String toString() {
-    return "UserPreferencesJpa [id=" + id + ", user=" + user + "]";
+    return "UserPreferencesJpa [id=" + id + ", user=" + user + ", lastTab="
+        + lastTab + ", lastAccordion=" + lastAccordion + "]";
   }
 
 }

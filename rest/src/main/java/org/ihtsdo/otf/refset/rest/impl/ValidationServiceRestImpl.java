@@ -90,13 +90,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /concept " + concept);
 
-    ValidationService validationService = new ValidationServiceJpa();
-    TranslationService translationService = new TranslationServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "validate concept", UserRole.AUTHOR);
 
-      Project project = projectService.getProject(projectId);
+      final Project project = projectService.getProject(projectId);
       return validationService.validateConcept(concept, project,
           translationService);
     } catch (Exception e) {
@@ -122,14 +122,14 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /refset " + refset + "/" + projectId);
-    ValidationService validationService = new ValidationServiceJpa();
-    RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
 
     try {
       authorizeProject(projectService, refset.getProjectId(), securityService,
           authToken, "validate a refset", UserRole.AUTHOR);
 
-      Project project = projectService.getProject(projectId);
+      final Project project = projectService.getProject(projectId);
       return validationService.validateRefset(refset, project, refsetService);
     } catch (Exception e) {
       e.printStackTrace();
@@ -156,14 +156,14 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Validation): /translation " + translation + "/"
             + projectId);
 
-    ValidationService validationService = new ValidationServiceJpa();
-    TranslationService translationService = new TranslationServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
 
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "validate translation", UserRole.AUTHOR);
 
-      Project project = projectService.getProject(projectId);
+      final Project project = projectService.getProject(projectId);
       return validationService.validateTranslation(translation, project,
           translationService);
     } catch (Exception e) {
@@ -190,13 +190,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /member " + member);
 
-    ValidationService validationService = new ValidationServiceJpa();
-    RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeProject(projectService, projectId, securityService, authToken,
           "validate member", UserRole.AUTHOR);
 
-      Project project = projectService.getProject(projectId);
+      final Project project = projectService.getProject(projectId);
       return validationService.validateMember(member, project, refsetService);
     } catch (Exception e) {
       handleException(e, "trying to validate refset member");
@@ -222,8 +222,8 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /concepts " + translationId);
 
-    ValidationService validationService = new ValidationServiceJpa();
-    TranslationService translationService = new TranslationServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       Translation translation =
           translationService.getTranslation(translationId);
@@ -233,12 +233,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "validate all concepts",
           UserRole.ADMIN);
 
-      ConceptValidationResultList list = new ConceptValidationResultListJpa();
-      ConceptList concepts =
+      final ConceptValidationResultList list =
+          new ConceptValidationResultListJpa();
+      final ConceptList concepts =
           translationService.findConceptsForTranslation(translationId, null,
               null);
-      for (Concept concept : concepts.getObjects()) {
-        ValidationResult result =
+      for (final Concept concept : concepts.getObjects()) {
+        final ValidationResult result =
             validationService
                 .validateConcept(concept, null, translationService);
         if (!result.isValid()) {
@@ -271,18 +272,19 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /members " + refsetId);
 
-    ValidationService validationService = new ValidationServiceJpa();
-    RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = refsetService.getRefset(refsetId);
       authorizeProject(projectService, refset.getProject().getId(),
           securityService, authToken, "validate all members", UserRole.AUTHOR);
 
-      MemberValidationResultList list = new MemberValidationResultListJpa();
-      ConceptRefsetMemberList members =
+      final MemberValidationResultList list =
+          new MemberValidationResultListJpa();
+      final ConceptRefsetMemberList members =
           refsetService.findMembersForRefset(refsetId, null, null);
-      for (ConceptRefsetMember member : members.getObjects()) {
-        ValidationResult result =
+      for (final ConceptRefsetMember member : members.getObjects()) {
+        final ValidationResult result =
             validationService.validateMember(member, null, refsetService);
         if (!result.isValid()) {
           MemberValidationResult mvr = new MemberValidationResultJpa(result);
@@ -313,13 +315,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /checks ");
 
-    ValidationService validationService = new ValidationServiceJpa();
-    RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationService validationService = new ValidationServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get validation checks",
           UserRole.VIEWER);
 
-      KeyValuePairList list = validationService.getValidationCheckNames();
+      final KeyValuePairList list = validationService.getValidationCheckNames();
       return list;
     } catch (Exception e) {
       handleException(e, "trying to validate all concept");

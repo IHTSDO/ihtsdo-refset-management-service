@@ -50,19 +50,31 @@
         </td>
       </tr>
       <tr>
-        <td><b>Organization</b></td>
-        <td><input ng-model="project.organization" size="40"
-          placeholder="e.g. IHTSDO, NLM, UKTC" /></td>
+        <td>
+          <b>Organization</b>
+        </td>
+        <td>
+          <input ng-model="project.organization" size="40"
+            placeholder="e.g. IHTSDO, NLM, UKTC" />
+        </td>
       </tr>
       <tr>
-        <td><b>Feedback Email</b></td>
-        <td><input ng-model="project.feedbackEmail" size="40"
-          placeholder="e.g. FreshDesk or Siebel email" /></td>
+        <td>
+          <b>Feedback Email</b>
+        </td>
+        <td>
+          <input ng-model="project.feedbackEmail" size="40"
+            placeholder="e.g. FreshDesk or Siebel email" />
+        </td>
       </tr>
       <tr>
-        <td><b>Terminology</b></td>
-        <td><select ng-model="project.terminology"
-          ng-options="item for item in terminologies"></select></td>
+        <td>
+          <b>Terminology</b>
+        </td>
+        <td>
+          <select ng-model="project.terminology"
+            ng-options="item for item in terminologies"></select>
+        </td>
       </tr>
       <tr ng-show="error">
         <td>&nbsp;</td>
@@ -80,48 +92,54 @@
   <div class="row">
     <div class="col-md-6 col-xs-12">
       <table class="table">
-      <thead>
-        <th class="col-md-9 col-xs-9">Available Validation Checks</th>
-        <th class="col-md-3 col-xs-3"></th>
-      </thead>
-      <tbody>
-        <tr ng-repeat="check in availableChecks">
-          <td>{{check}}</td>
-          <td>
-            <i ng-click="selectValidationCheck(check)" title="Select validation check for project"
-              class="noul material-icons md-18">add</i>
-          </td>
-        </tr>
+        <thead>
+          <th class="col-md-9 col-xs-9">Available Validation Checks</th>
+          <th class="col-md-3 col-xs-3"></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="check in availableChecks">
+            <td>{{check}}</td>
+            <td>
+              <i ng-click="selectValidationCheck(check)"
+                title="Select validation check for project"
+                class="noul material-icons md-18">add</i>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
     <div class="col-md-6 col-xs-12">
       <table class="table">
-      <thead>
-        <th class="col-md-9 col-xs-9">Selected Validation Checks</th>
-        <th class="col-md-3 col-xs-3"></th>
-      </thead>
-      <tbody>
-        <tr ng-repeat="check in selectedChecks">
-          <td>{{check}}</td>
-          <td>
-            <i ng-click="removeValidationCheck(check)" title="Remove validation check from project"
-              class="noul material-icons md-18">remove</i>
-          </td>
-        </tr>
-      </tbody>
+        <thead>
+          <th class="col-md-9 col-xs-9">Selected Validation Checks</th>
+          <th class="col-md-3 col-xs-3"></th>
+        </thead>
+        <tbody>
+          <tr ng-repeat="check in selectedChecks">
+            <td>{{check}}</td>
+            <td>
+              <i ng-click="removeValidationCheck(check)"
+                title="Remove validation check from project"
+                class="noul material-icons md-18">remove</i>
+            </td>
+          </tr>
+          <tr ng-show="errors.length > 0">
+            <td>&nbsp;</td>
+            <td>
+              <div class="alert alert-danger alert-error"
+                ng-repeat="error in errors">
+                {{error}}
+                <!-- DO NOT SUPPORT clearing error <div
+              style="cursor: pointer; display: inline; float: right; width: 3%;">
+              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+            </div> -->
+              </div>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
   </div>
-
-
-
-
-  <div class="alert alert-danger alert-error" ng-show="error">{{error}}</div>
-
-
-
-
 </div>
 
 <div class="modal-footer">

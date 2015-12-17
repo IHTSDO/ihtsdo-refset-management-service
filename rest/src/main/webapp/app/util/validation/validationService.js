@@ -14,10 +14,10 @@ tsApp.service('validationService', [
 
       // validate concept
       gpService.increment()
-      $http.post(validationUrl + 'concept' + "?projectId=" + projectId, concept).then(
+      $http.post(validationUrl + 'concept?projectId=' + projectId, concept).then(
       // success
       function(response) {
-        console.debug("  concept = ", response.data);
+        console.debug("  result = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -37,10 +37,10 @@ tsApp.service('validationService', [
 
       // Add refset
       gpService.increment()
-      $http.post(validationUrl + 'refset/'  + refset.projectId, refset).then(
+      $http.post(validationUrl + 'refset?projectId='  + refset.projectId, refset).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug("  result = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -60,10 +60,10 @@ tsApp.service('validationService', [
 
       // Add translation
       gpService.increment()
-      $http.post(validationUrl + 'translation/' + projectId, translation).then(
+      $http.post(validationUrl + 'translation?projectId=' + projectId, translation).then(
       // success
       function(response) {
-        console.debug("  translation = ", response.data);
+        console.debug("  result = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -85,7 +85,7 @@ tsApp.service('validationService', [
       $http.post(validationUrl + 'member' + "?projectId=" + projectId, member).then(
       // success
       function(response) {
-        console.debug("  member = ", response.data);
+        console.debug("  result = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -108,7 +108,7 @@ tsApp.service('validationService', [
         .then(
         // success
         function(response) {
-          console.debug("  concepts = ", response.data);
+          console.debug("  result = ", response.data);
           gpService.decrement();
           deferred.resolve(response.data);
         },
@@ -130,7 +130,7 @@ tsApp.service('validationService', [
       $http.get(validationUrl + 'members' + "?refsetId=" + refsetId).then(
       // success
       function(response) {
-        console.debug("  concepts = ", response.data);
+        console.debug("  resulta = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },

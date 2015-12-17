@@ -189,6 +189,7 @@ public class SpellingCorrectionRestTest {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
+    refset.setLookupInProgress(false);
     refset.setModuleId("900000000000445007");
     refset.setProject(project);
     refset.setPublishable(true);

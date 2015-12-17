@@ -404,6 +404,7 @@ public class RefsetClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public void removeAllRefsetMembers(Long refsetId, String authToken)
     throws Exception {
@@ -986,6 +987,7 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
 
+  /* see superclass */
   @Override
   public Refset resumeMigration(Long refsetId, String authToken)
     throws Exception {
@@ -1014,6 +1016,7 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetJpa.class);
   }
 
+  /* see superclass */
   @Override
   public StringList getRefsetTypes(String authToken) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Client - get refset types");
@@ -1070,6 +1073,7 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetJpa.class);
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -1077,6 +1081,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
     String query, PfsParameterJpa pfs, String authToken) throws Exception {
@@ -1084,6 +1089,7 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMember removeRefsetExclusion(Long memberId,
     String authToken) throws Exception {
@@ -1118,6 +1124,7 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetNoteJpa.class);
   }
 
+  /* see superclass */
   @Override
   public void removeRefsetNote(Long refsetId, Long noteId, String authToken)
     throws Exception {
@@ -1141,6 +1148,7 @@ public class RefsetClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public Note addRefsetMemberNote(Long refsetId, Long memberId, String note,
     String authToken) throws Exception {
@@ -1171,17 +1179,18 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetNoteJpa.class);
   }
 
+  /* see superclass */
   @Override
-  public void removeRefsetMemberNote(Long refsetId, Long noteId,
+  public void removeRefsetMemberNote(Long memberId, Long noteId,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Rest Client - remove member note " + refsetId + ", " + noteId);
-    validateNotEmpty(refsetId, "refsetId");
+        "Rest Client - remove member note " + memberId + ", " + noteId);
+    validateNotEmpty(memberId, "memberId");
     validateNotEmpty(noteId, "noteId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/refset/member/remove/note?" + "refsetId=" + refsetId
+            + "/refset/member/remove/note?" + "memberId=" + memberId
             + "&noteId=" + noteId);
 
     Response response =
@@ -1195,6 +1204,7 @@ public class RefsetClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public ConceptRefsetMember getMember(Long refsetId, String authToken)
     throws Exception {
@@ -1202,5 +1212,55 @@ public class RefsetClientRest extends RootClientRest implements
     return null;
   }
 
+  /* see superclass */
+  @Override
+  public Integer getLookupProgress(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - get status for lookup of names and statuses of refset members "
+            + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/lookup/status"
+            + "?refsetId=" + refsetId);
 
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
+
+    Integer resultInteger = response.readEntity(Integer.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+
+    return resultInteger;
+  }
+
+  /* see superclass */
+  @Override
+  public void startLookupMemberNames(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - start lookup of names and statuses of refset members "
+            + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/lookup/start?"
+            + "refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
 }

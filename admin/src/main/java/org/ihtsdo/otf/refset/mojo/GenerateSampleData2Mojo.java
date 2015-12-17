@@ -28,7 +28,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
@@ -82,6 +84,15 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  */
 public class GenerateSampleData2Mojo extends AbstractMojo {
 
+  /** The assign names. */
+  private Boolean assignNames;
+
+  /** The created refsets. */
+  private Set<Long> createdRefsets = new HashSet<>();
+
+  /** The created translations. */
+  private Set<Long> createdTranslations = new HashSet<>();
+
   /**
    * Mode - for recreating db.
    *
@@ -121,6 +132,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           service.authenticate(properties.getProperty("admin.user"),
               properties.getProperty("admin.password")).getAuthToken();
       service.close();
+
+      // The assign names property
+      assignNames =
+          Boolean.valueOf(properties
+              .getProperty("terminology.handler.DEFAULT.assignNames"));
 
       // Handle reindexing database if mode is set
       if (mode != null && mode.equals("create")) {
@@ -603,6 +619,47 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
       new TranslationServiceRestImpl().updateTranslation(translation,
           reviewer3.getAuthToken());
+
+      if (assignNames) {
+        // Ensure that all lookup names routines completed
+        boolean completed = false;
+        while (!completed) {
+          // Assume process has completed
+          completed = true;
+
+          for (Long refsetId : createdRefsets) {
+            Refset r =
+                new RefsetServiceRestImpl().getRefset(refsetId,
+                    admin.getAuthToken());
+
+            if (r.isLookupInProgress()) {
+              // lookupMemberNames still running on refset
+              completed = false;
+              Thread.sleep(250);
+              break;
+            }
+          }
+        }
+        completed = false;
+        while (!completed) {
+          // Assume process has completed
+          completed = true;
+
+          for (Long translationId : createdTranslations) {
+            Translation t =
+                new TranslationServiceRestImpl().getTranslation(translationId,
+                    admin.getAuthToken());
+
+            if (t.isLookupInProgress()) {
+              // lookupConceptNames still running on translation
+              completed = false;
+              Thread.sleep(250);
+              break;
+            }
+          }
+        }
+      }
+
       getLog().info("Done ...");
     } catch (Exception e) {
       e.printStackTrace();
@@ -760,6 +817,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
+    refset.setLookupInProgress(false);
     refset.setModuleId(moduleId);
     refset.setProject(project);
     refset.setPublishable(true);
@@ -820,6 +878,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "../config/src/main/resources/data/refset" + num
               + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
     }
+
+    if (assignNames) {
+      // Identify new refsets to ensure that lookupMemberName process completes
+      createdRefsets.add(refset.getId());
+    }
+
     return refset;
   }
 
@@ -900,6 +964,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     makeReleaseArtifact("der2_Refset_SimpleDelta_" + edition + "_20150131.txt",
         info, "../config/src/main/resources/data/translation" + num
             + "/der2_Refset_SimpleSnapshot_" + edition + "_20150131.txt");
+
+    if (assignNames) {
+      // Identify new refsets to ensure that lookupName process completes
+      createdRefsets.add(refset.getId());
+    }    
     return refset;
   }
 
@@ -945,7 +1014,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
     // Validate translation
     ValidationResult result =
-        validation.validateTranslation(translation, project.getId(), auth.getAuthToken());
+        validation.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -984,6 +1054,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
         "../config/src/main/resources/data/translation" + num
             + "/der2_cRefset_LanguageSnapshot_" + edition + "_20150131.txt");
 
+    if (assignNames) {
+      // Identify new translations to ensure that lookupConceptName process
+      // completes
+      createdTranslations.add(translation.getId());
+    }
     return translation;
   }
 

@@ -399,4 +399,20 @@ public interface Refset extends Component, Searchable {
    */
   public String computeDefinition();
 
+  /**
+   * Updates whether a lookup of member concepts names and statuses is in
+   * progress.
+   *
+   * @param lookupInProgress the lookup in progress
+   */
+  public void setLookupInProgress(boolean lookupInProgress);
+
+  /**
+   * Indicates whether or not lookup of member concepts names and statuses
+   * process is the case.
+   * 
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isLookupInProgress();
+
 }

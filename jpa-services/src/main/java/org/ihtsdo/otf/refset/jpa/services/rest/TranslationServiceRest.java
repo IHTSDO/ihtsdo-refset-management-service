@@ -16,6 +16,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -287,6 +288,17 @@ public interface TranslationServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Adds multiple spelling dictionary entries at once.
+   *
+   * @param translationId the translation id
+   * @param entries the entries
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void addBatchSpellingDictionaryEntries(Long translationId,
+    StringList entries, String authToken) throws Exception;
+
+  /**
    * Removes the spelling dictionary entry.
    *
    * @param translationId the translation id
@@ -338,8 +350,8 @@ public interface TranslationServiceRest {
    * @return the memory entry
    * @throws Exception the exception
    */
-  public MemoryEntry addPhraseMemoryEntry(Long translationId,
-    String name, String translatedName, String authToken) throws Exception;
+  public MemoryEntry addPhraseMemoryEntry(Long translationId, String name,
+    String translatedName, String authToken) throws Exception;
 
   /**
    * Removes the spelling dictionary entry.
@@ -421,6 +433,18 @@ public interface TranslationServiceRest {
    */
   public StringList suggestSpelling(Long translationId, String term,
     String authToken) throws Exception;
+
+  /**
+   * Suggest spelling for multiple lookupTerms at once.
+   *
+   * @param translationId the translation id
+   * @param lookupTerms the term
+   * @param authToken the auth token
+   * @return the string list
+   * @throws Exception the exception
+   */
+  public KeyValuesMap suggestBatchSpelling(Long translationId,
+    StringList lookupTerms, String authToken) throws Exception;
 
   /**
    * Begin migration.
@@ -552,22 +576,46 @@ public interface TranslationServiceRest {
   /**
    * Removes the concept translation concept note.
    *
-   * @param translationId the translation id
+   * @param conceptId the concept id
    * @param noteId the note id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeTranslationConceptNote(Long translationId, Long noteId,
+  public void removeTranslationConceptNote(Long conceptId, Long noteId,
     String authToken) throws Exception;
 
   /**
-   * @param translationId
-   * @param name
-   * @param authToken
-   * @return
-   * @throws Exception
+   * Suggest translation.
+   *
+   * @param translationId the translation id
+   * @param name the name
+   * @param authToken the auth token
+   * @return the string list
+   * @throws Exception the exception
    */
-  StringList suggestTranslation(Long translationId, String name,
+  public StringList suggestTranslation(Long translationId, String name,
     String authToken) throws Exception;
 
+  /**
+   * Returns the status of identifying the name and active states for all
+   * concepts of the translation.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return lookup status
+   * @throws Exception
+   */
+  public Integer getLookupProgress(Long translationId, String authToken)
+    throws Exception;
+
+  /**
+   * Launches the lookup process of identifying the name and active states for
+   * all concepts of the translation.
+   * 
+   * @param translationId
+   * @param authToken
+   * @throws Exception
+   */
+  public void startLookupConceptNames(Long translationId, String authToken)
+    throws Exception;
 }
