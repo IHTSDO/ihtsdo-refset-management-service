@@ -27,7 +27,6 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.DefinitionClauseList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -36,7 +35,6 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.DefinitionClauseListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
@@ -287,9 +285,9 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
             .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
-    
+
     String resultString = response.readEntity(String.class);
-    
+
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -985,7 +983,6 @@ public class RefsetClientRest extends RootClientRest implements
     }
 
   }
-
 
   /* see superclass */
   @Override

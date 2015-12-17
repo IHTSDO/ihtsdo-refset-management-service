@@ -17,6 +17,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
@@ -24,6 +25,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
@@ -165,7 +167,10 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     refset.setType(Refset.Type.EXTENSIONAL);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    refset.setDefinition(definition);
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue(definition);
+    clause.setNegated(false);
+    refset.getDefinitionClauses().add(clause);  
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
