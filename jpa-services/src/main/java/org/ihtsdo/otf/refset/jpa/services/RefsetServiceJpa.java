@@ -140,7 +140,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
     Refset refset = getHasLastModified(id, RefsetJpa.class);
     handleLazyInit(refset);
-    System.out.println("refset " + refset.getName() + ": " + refset);
     return refset;
   }
 
@@ -779,6 +778,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     // Mark as provisional if staging type isn't preview
     if (stagingType == Refset.StagingType.PREVIEW) {
+      refsetCopy.setEffectiveTime(effectiveTime);
       refsetCopy.setProvisional(false);
     } else {
       refsetCopy.setProvisional(true);
@@ -787,18 +787,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // null its id and all of its components ids
     // then call addXXX on each component
     refsetCopy.setId(null);
-    /*for (DefinitionClause clause : refsetCopy.getDefinitionClauses()) {
+    for (DefinitionClause clause : refsetCopy.getDefinitionClauses()) {
       clause.setId(null);
-    }*/
-    // TODO:
-    refsetCopy.getDefinitionClauses().clear();
-    refsetCopy.setEffectiveTime(effectiveTime);
+    }
 
     // translations and refset descriptor not relevant for staging
     // staging only affects members
     // when finalized (finished) the members will be copied back to the
     // original refset
     refsetCopy.getTranslations().clear();
+
+    // TODO: copy notes? - yes for MIGRATION, not for PREVIEW
 
     addRefset(refsetCopy);
 
@@ -810,13 +809,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
       // 6901 to null
       for (ConceptRefsetMember originMember : refset.getMembers()) {
-        ConceptRefsetMember member = new ConceptRefsetMemberJpa();
-        member = new ConceptRefsetMemberJpa(originMember);
+        ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
         member.setRefset(refsetCopy);
         member.setTerminology(refsetCopy.getTerminology());
         member.setVersion(refsetCopy.getVersion());
         member.setId(null);
-        refsetCopy.addMember(member);
         addMember(member);
       }
     }
@@ -1077,38 +1074,40 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
   }
-  
+
   @Override
   public void resolveRefsetDefinition(Refset refset) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Release Service - resolve refset definition " 
-            + " refsetId " + refset.getId());
+        "Release Service - resolve refset definition " + " refsetId "
+            + refset.getId());
     Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
     Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
     List<String> resolvedConcepts = new ArrayList<>();
     for (ConceptRefsetMember member : refset.getMembers()) {
-      if (member.getMemberType() == Refset.MemberType.INCLUSION){
+      if (member.getMemberType() == Refset.MemberType.INCLUSION) {
         beforeInclusions.put(member.getConceptId(), member);
       }
-      if (member.getMemberType() == Refset.MemberType.EXCLUSION ||
-          member.getMemberType() == Refset.MemberType.MEMBER){
+      if (member.getMemberType() == Refset.MemberType.EXCLUSION
+          || member.getMemberType() == Refset.MemberType.MEMBER) {
         beforeMembersExclusions.put(member.getConceptId(), member);
-      }      
+      }
     }
     String definition = refset.computeDefinition();
     if (definition.equals("")) {
       return;
     }
-    ConceptList resolvedFromExpression = getTerminologyHandler().resolveExpression(definition, 
-        refset.getTerminology(), refset.getVersion(), null);
-    
+    ConceptList resolvedFromExpression =
+        getTerminologyHandler().resolveExpression(definition,
+            refset.getTerminology(), refset.getVersion(), null);
+
     for (Concept concept : resolvedFromExpression.getObjects()) {
       resolvedConcepts.add(concept.getTerminologyId());
     }
-    
+
     Date startDate = new Date();
     for (Concept concept : resolvedFromExpression.getObjects()) {
-      if (!beforeMembersExclusions.keySet().contains(concept.getTerminologyId())) {
+      if (!beforeMembersExclusions.keySet()
+          .contains(concept.getTerminologyId())) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member.setModuleId(concept.getModuleId());
         member.setActive(true);
@@ -1131,10 +1130,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
     beforeInclusions.keySet().removeAll(resolvedConcepts);
     for (ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
-       removeMember(beforeInclusion.getId());
+      removeMember(beforeInclusion.getId());
     }
     beforeMembersExclusions.keySet().removeAll(resolvedConcepts);
-    for (ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions.values()) {
+    for (ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions
+        .values()) {
       removeMember(beforeMemberExclusion.getId());
     }
 

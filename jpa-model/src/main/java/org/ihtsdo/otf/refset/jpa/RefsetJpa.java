@@ -18,7 +18,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
@@ -156,10 +155,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   // @IndexedEmbedded - don't embed up the indexing tree
   private Project project;
 
-  /**  The definition clauses. */
+  /** The definition clauses. */
   @OneToMany(cascade = CascadeType.ALL, targetEntity = DefinitionClauseJpa.class)
   private List<DefinitionClause> definitionClauses = new ArrayList<>();
-  
+
   /** The translations. */
   @OneToMany(mappedBy = "refset", targetEntity = TranslationJpa.class)
   // @IndexedEmbedded - n/a
@@ -201,10 +200,6 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     provisional = refset.isProvisional();
     stagingType = refset.getStagingType();
     type = refset.getType();
-    for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
-      getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
-    }
-    definitionClauses = refset.getDefinitionClauses();
     externalUrl = refset.getExternalUrl();
     namespace = refset.getNamespace();
     refsetDescriptorUuid = refset.getRefsetDescriptorUuid();
@@ -216,6 +211,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     workflowPath = refset.getWorkflowPath();
     project = refset.getProject();
     enabledFeedbackEvents = new HashSet<>(refset.getEnabledFeedbackEvents());
+    for (DefinitionClause definitionClause : refset.getDefinitionClauses()) {
+      getDefinitionClauses().add(new DefinitionClauseJpa(definitionClause));
+    }
     for (Translation translation : refset.getTranslations()) {
       getTranslations().add(new TranslationJpa(translation));
     }
@@ -576,7 +574,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setDefinitionClauses(List<DefinitionClause> definitionClauses) {
     this.definitionClauses = definitionClauses;
   }
-  
+
   @Override
   public String computeDefinition() {
     List<DefinitionClause> positiveClauses = new ArrayList<>();
@@ -592,19 +590,21 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     if (positiveClauses.size() > 0) {
       computedDefinition.append(positiveClauses.get(0).getValue());
       for (int i = 1; i < positiveClauses.size(); i++) {
-        computedDefinition.append(" UNION ").append(positiveClauses.get(i).getValue());
+        computedDefinition.append(" UNION ").append(
+            positiveClauses.get(i).getValue());
       }
       for (DefinitionClause negClause : negativeClauses) {
         computedDefinition.append(" AND !").append(negClause.getValue());
       }
-      if (project.getExclusionClause() != null && 
-        !project.getExclusionClause().equals("")) {
-        computedDefinition.append(" AND !").append(project.getExclusionClause());
+      if (project.getExclusionClause() != null
+          && !project.getExclusionClause().equals("")) {
+        computedDefinition.append(" AND !")
+            .append(project.getExclusionClause());
       }
     }
     return computedDefinition.toString();
   }
-  
+
   /* see superclass */
   @Override
   public void addMember(ConceptRefsetMember member) {
@@ -647,7 +647,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     final int prime = 31;
     int result = super.hashCode();
     result =
-        prime * result + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
+        prime * result
+            + ((definitionClauses == null) ? 0 : definitionClauses.hashCode());
     result =
         prime * result + ((description == null) ? 0 : description.hashCode());
     result =
@@ -723,13 +724,14 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public String toString() {
     return "RefsetJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType + ", type="
-        + type + ", definitionClauses=" + definitionClauses + ", externalUrl=" + externalUrl
-        + ", forTranslation=" + forTranslation + ", workflowStatus="
-        + workflowStatus + ", workflowPath=" + workflowPath + ", namespace="
-        + namespace + ", refsetDescriptorUuid=" + refsetDescriptorUuid
-        + ", project=" + project + ", enabledFeedbackEvents="
-        + enabledFeedbackEvents + ", inPublicationProcess="
-        + inPublicationProcess + ", lookupInProgress=" + lookupInProgress + "]";
+        + type + ", definitionClauses=" + definitionClauses + ", externalUrl="
+        + externalUrl + ", forTranslation=" + forTranslation
+        + ", workflowStatus=" + workflowStatus + ", workflowPath="
+        + workflowPath + ", namespace=" + namespace + ", refsetDescriptorUuid="
+        + refsetDescriptorUuid + ", project=" + project
+        + ", enabledFeedbackEvents=" + enabledFeedbackEvents
+        + ", inPublicationProcess=" + inPublicationProcess
+        + ", lookupInProgress=" + lookupInProgress + "]";
   }
 
 }

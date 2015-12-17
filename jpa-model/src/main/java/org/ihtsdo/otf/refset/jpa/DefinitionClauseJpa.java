@@ -44,7 +44,6 @@ public class DefinitionClauseJpa implements DefinitionClause {
   @Column(nullable = false)
   private boolean negated;
 
-
   /**
    * The default constructor.
    */
@@ -55,7 +54,7 @@ public class DefinitionClauseJpa implements DefinitionClause {
   /**
    * Instantiates a new user jpa.
    *
-   * @param user the user
+   * @param definitionClause the definition clause
    */
   public DefinitionClauseJpa(DefinitionClause definitionClause) {
     super();
@@ -77,13 +76,11 @@ public class DefinitionClauseJpa implements DefinitionClause {
     this.id = id;
   }
 
-
   /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-
 
     result = prime * result + (negated ? 1231 : 1237);
     result = prime * result + ((value == null) ? 0 : value.hashCode());
@@ -111,11 +108,11 @@ public class DefinitionClauseJpa implements DefinitionClause {
     return true;
   }
 
-
   /* see superclass */
   @Override
   public String toString() {
-    return "DefinitionClauseJpa [id=" + id + ", value=" + value + ", negated=" + negated  + "]";
+    return "DefinitionClauseJpa [id=" + id + ", value=" + value + ", negated="
+        + negated + "]";
   }
 
   @Override

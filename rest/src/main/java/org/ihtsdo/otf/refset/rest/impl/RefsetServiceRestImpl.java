@@ -481,9 +481,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
 
-      // For indexing of members
-      refsetService.updateRefset(newRefset);
-
       // done
       refsetService.commit();
       return newRefset;
@@ -533,7 +530,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
       // Load definition
-      List<DefinitionClause> definitionClauses = handler.importDefinition(in);
+      handler.importDefinition(in);
 
       return;
     } catch (Exception e) {
@@ -1070,7 +1067,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // STAGE REFSET
       final Refset refsetCopy =
           refsetService.stageRefset(refset, Refset.StagingType.MIGRATION,
-              startDate);
+              null);
       refsetCopy.setTerminology(newTerminology);
       refsetCopy.setVersion(newVersion);
 

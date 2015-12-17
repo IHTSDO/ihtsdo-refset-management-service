@@ -145,7 +145,6 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
-   * @return the string definition
    * @throws Exception the exception
    */
   public void importDefinition(
@@ -374,8 +373,6 @@ public interface RefsetServiceRest {
    */
   public void cancelMigration(Long refsetId, String authToken) throws Exception;
 
-
-
   /**
    * Compare refsets.
    *
@@ -432,7 +429,6 @@ public interface RefsetServiceRest {
    */
   public String extrapolateDefinition(Long refsetId, String authToken)
     throws Exception;
-
 
   /**
    * Resume migration.

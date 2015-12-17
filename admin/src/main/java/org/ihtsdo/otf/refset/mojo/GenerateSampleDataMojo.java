@@ -12,10 +12,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -82,8 +80,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
   /** The created refsets. */
   private Set<Long> createdRefsets = new HashSet<>();
-  
-  /**  The created translations. */
+
+  /** The created translations. */
   private Set<Long> createdTranslations = new HashSet<>();
 
   /** The translation ct. */
@@ -607,7 +605,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           new RefsetServiceRestImpl().getRefset(test1Copy.getId(),
               author1.getAuthToken());
       test4.setName("test4");
-      System.out.println("test4 " + test4);
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test4,
           author1.getAuthToken());
 
@@ -802,7 +799,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
             }
           }
         }
-}
+      }
 
       getLog().info("Done ...");
     } catch (Exception e) {
@@ -887,7 +884,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setRefset(refset);
     member.setActive(true);
     member.setConceptActive(true);
-    refset.addMember(member);
 
     return (ConceptRefsetMemberJpa) new RefsetServiceRestImpl()
         .addRefsetMember(member, auth.getAuthToken());
@@ -982,7 +978,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -1063,11 +1060,13 @@ public class GenerateSampleDataMojo extends AbstractMojo {
         in.close();
       }
     } else if (type == Refset.Type.INTENSIONAL && definition != null) {
-      /*new RefsetServiceRestImpl().beginRedefinition(refset.getId(), definition,
-          auth.getAuthToken());
-      new RefsetServiceRestImpl().finishRedefinition(refset.getId(),
-          auth.getAuthToken());*/
-      //new RefsetServiceRestImpl().updateRefset(refset, auth.getAuthToken());
+      /*
+       * new RefsetServiceRestImpl().beginRedefinition(refset.getId(),
+       * definition, auth.getAuthToken()); new
+       * RefsetServiceRestImpl().finishRedefinition(refset.getId(),
+       * auth.getAuthToken());
+       */
+      // new RefsetServiceRestImpl().updateRefset(refset, auth.getAuthToken());
     }
 
     if (assignNames) {
@@ -1075,7 +1074,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       createdRefsets.add(refset.getId());
     }
 
-    return refset;
+    return (RefsetJpa) new RefsetServiceRestImpl().getRefset(refset.getId(),
+        auth.getAuthToken());
   }
 
   /**
@@ -1161,6 +1161,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       createdTranslations.add(translation.getId());
     }
 
-    return translation;
+    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
+        translation.getId(), auth.getAuthToken());
   }
 }

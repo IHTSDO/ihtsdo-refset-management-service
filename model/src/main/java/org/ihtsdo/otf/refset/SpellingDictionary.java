@@ -37,7 +37,7 @@ public interface SpellingDictionary extends HasId {
   /**
    * Adds multiple entries at once.
    *
-   * @param entry the entry
+   * @param newEntries the new entries
    */
   public void addEntries(StringList newEntries);
 
