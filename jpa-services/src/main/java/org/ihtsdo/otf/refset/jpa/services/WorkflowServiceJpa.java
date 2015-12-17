@@ -312,9 +312,9 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         && config.getProperty("mail.enabled").equals("true")
         && refset.getFeedbackEmail() != null) {
       ConfigUtility.sendEmail("Refset Feedback: " + refset.getTerminologyId()
-          + "-" + refset.getName(), config.getProperty("mail.smtp.user"),
+          + ", " + refset.getName(), config.getProperty("mail.smtp.user"),
           refset.getFeedbackEmail(), "<html><body><p>Name: " + name
-              + "</p><p>Email: " + email + "</p><div>" + message + "</div>",
+              + "<br>Email: " + email + "</p><div>" + message + "</div>",
           config, "true".equals(config.get("mail.smtp.auth")));
     }
   }
