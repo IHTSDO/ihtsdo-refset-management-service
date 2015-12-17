@@ -29,6 +29,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
@@ -591,6 +592,39 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
+  public void addBatchSpellingDictionaryEntries(Long translationId,
+    StringList entries, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - Batch add new entries to the spelling dictionary "
+            + " " + translationId);
+    validateNotEmpty(translationId, "translationId");
+    for (String s : entries.getObjects()) {
+      validateNotEmpty(s, "entry");
+    }
+
+    Client client = ClientBuilder.newClient();
+
+    String termsStringList =
+        ConfigUtility.getStringForGraph(entries == null ? new StringList()
+            : entries);
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/add/batch?translationId=" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.xml(termsStringList));
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+  }
+
+  @Override
   public void removeSpellingDictionaryEntry(Long translationId, String entry,
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -922,7 +956,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest/" + translationId + "/" + entry);
+            + "/translation/spelling/suggest?translationId=" + translationId
+            + "&entry=" + entry);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -939,6 +974,42 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   /* see superclass */
+  @Override
+  public KeyValuesMap suggestBatchSpelling(Long translationId,
+    StringList lookupTerms, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - Batch suggest Spelling Dictionary for translation "
+            + translationId);
+
+    Client client = ClientBuilder.newClient();
+    String lookupTermsStringList =
+        ConfigUtility.getStringForGraph(lookupTerms == null ? new StringList()
+            : lookupTerms);
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/spelling/suggest/batch/" + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.xml(lookupTermsStringList));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    KeyValuesMap map =
+        (KeyValuesMap) ConfigUtility.getGraphForString(resultString,
+            KeyValuesMap.class);
+
+    return map;
+  }
+
   @Override
   public Translation beginMigration(Long translationId, String newTerminology,
     String newVersion, String authToken) throws Exception {

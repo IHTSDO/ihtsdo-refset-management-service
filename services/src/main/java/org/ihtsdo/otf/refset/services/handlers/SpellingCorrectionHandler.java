@@ -9,6 +9,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 
 /**
@@ -21,7 +22,7 @@ public interface SpellingCorrectionHandler extends Configurable {
    * in index, that item is not returned as part of suggested spelling.
    *
    * @param term The term queried for suggestions
-   * @param entries the entries
+   * @param entries the entries in the dictionary
    * @param amt The number of terms returned
    * @param tid the tid
    * @return List of Strings representing the suggested spellings
@@ -29,6 +30,22 @@ public interface SpellingCorrectionHandler extends Configurable {
    */
   StringList suggestSpelling(String term, List<String> entries, int amt,
     Long tid) throws IOException;
+
+  /**
+   * Returns a list of suggested spellings based on a given set of term. All
+   * terms that are not residing in index are returned in a map of
+   * term-to-suggestions.
+   *
+   * @param lookupTerms The terms queried for suggestions
+   * @param dictionaryEntries the entries in the dictionary
+   * @param amt The number of terms returned
+   * @param tid the tid
+   * @return KeyValuesMap of term-to-suggestions
+   * @throws IOException Signals that an I/O exception has occurred.
+   */
+  KeyValuesMap suggestBatchSpelling(StringList lookupTerms,
+    List<String> dictionaryEntries, int amt, Long translationId)
+    throws IOException;
 
   /**
    * Parses and returns a list of strings based on an InputStream passed in.

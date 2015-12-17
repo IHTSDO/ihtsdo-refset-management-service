@@ -44,6 +44,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
@@ -1318,6 +1319,50 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  @POST
+  @Override
+  @Path("/spelling/add/batch")
+  @ApiOperation(value = "Get batch spelling suggestions", notes = "Returns map containing a list (values) of suggested replacements from dictionary per term (key)", response = KeyValuesMap.class)
+  public void addBatchSpellingDictionaryEntries(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList entries,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call Post (Add Batch Spelling Entries): /spelling/add/batch "
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "add multiple entries from the spelling dictionary", UserRole.AUTHOR);
+
+      spelling.addEntries(entries);
+      translationService.updateSpellingDictionary(spelling);
+    } catch (Exception e) {
+      handleException(e, "trying to add multiple spelling entries");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+
   /* see superclass */
   @Override
   @DELETE
@@ -1948,6 +1993,55 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
 
     return new StringList();
+  }
+
+  @POST
+  @Override
+  @Path("/spelling/suggest/batch/{translationId}")
+  @ApiOperation(value = "Get batch spelling suggestions", notes = "Returns map containing a list (values) of suggested replacements from dictionary per term (key)", response = KeyValuesMap.class)
+  public KeyValuesMap suggestBatchSpelling(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList lookupTerms,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Batch Spelling Suggestions): /spelling/suggest/batch/"
+            + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      SpellingDictionary spelling = translation.getSpellingDictionary();
+      if (spelling == null) {
+        throw new Exception(
+            "translation must have an associated spelling dictionary.");
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Suggest batch spellings based on term supplied", UserRole.VIEWER);
+
+      SpellingCorrectionHandler handler =
+          new DefaultSpellingCorrectionHandler();
+      return handler.suggestBatchSpelling(lookupTerms, spelling.getEntries(),
+          10, translationId);
+    } catch (Exception e) {
+      handleException(e, "trying to suggest batch spellings based on entries");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+    return new KeyValuesMap();
   }
 
   @GET
