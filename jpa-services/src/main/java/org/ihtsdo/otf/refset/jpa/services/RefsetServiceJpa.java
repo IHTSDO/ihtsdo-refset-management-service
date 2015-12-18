@@ -1124,7 +1124,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setTerminologyId(concept.getTerminologyId());
         member.setVersion(concept.getVersion());
         member.setId(null);
-        refset.addMember(member);
         addMember(member);
       }
     }

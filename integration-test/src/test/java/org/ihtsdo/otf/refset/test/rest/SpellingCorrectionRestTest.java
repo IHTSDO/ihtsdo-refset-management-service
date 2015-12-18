@@ -7,6 +7,7 @@
 package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
@@ -22,9 +24,9 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -70,17 +72,14 @@ public class SpellingCorrectionRestTest {
   /** The properties. */
   protected static Properties properties;
 
-  /** The test username. */
-  protected static String testUser;
-
-  /** The test password. */
-  protected static String testPassword;
-
   /** The test admin username. */
   protected static String adminUser;
 
   /** The test admin password. */
   protected static String adminPassword;
+
+  /** The assign names. */
+  private static Boolean assignNames;
 
   /**
    * Create test fixtures for class.
@@ -101,20 +100,10 @@ public class SpellingCorrectionRestTest {
     projectService = new ProjectClientRest(properties);
 
     // test run.config.ts has viewer user
-    testUser = properties.getProperty("viewer.user");
-    testPassword = properties.getProperty("viewer.password");
-
     // test run.config.ts has admin user
     adminUser = properties.getProperty("admin.user");
     adminPassword = properties.getProperty("admin.password");
 
-    if (testUser == null || testUser.isEmpty()) {
-      throw new Exception("Test prerequisite: viewer.user must be specified");
-    }
-    if (testPassword == null || testPassword.isEmpty()) {
-      throw new Exception(
-          "Test prerequisite: viewer.password must be specified");
-    }
     if (adminUser == null || adminUser.isEmpty()) {
       throw new Exception("Test prerequisite: admin.user must be specified");
     }
@@ -122,6 +111,10 @@ public class SpellingCorrectionRestTest {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
+    // The assign names property
+    assignNames =
+        Boolean.valueOf(properties
+            .getProperty("terminology.handler.DEFAULT.assignNames"));
   }
 
   /**
@@ -166,15 +159,16 @@ public class SpellingCorrectionRestTest {
    * @throws Exception the exception
    */
   private RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId, User auth)
-    throws Exception {
+    Refset.Type type, Project project, String refsetId) throws Exception {
+
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -187,13 +181,14 @@ public class SpellingCorrectionRestTest {
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
-    refset.setForTranslation(false);
+    refset.setForTranslation(true);
     refset.setLastModified(new Date());
     refset.setLookupInProgress(false);
     refset.setModuleId("900000000000445007");
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
+    refset.setInPublicationProcess(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
@@ -208,40 +203,38 @@ public class SpellingCorrectionRestTest {
     // Validate refset
     ValidationResult result =
         validationService.validateRefset(refset, project.getId(),
-            auth.getAuthToken());
+            adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
     }
     // Add refset
+    refsetService = new RefsetClientRest(properties);
 
-    refset = (RefsetJpa) refsetService.addRefset(refset, auth.getAuthToken());
+    refset = (RefsetJpa) refsetService.addRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
 
-    if (type == Refset.Type.EXTENSIONAL) {
-      // Import members (from file)
-      ValidationResult vr =
-          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-              auth.getAuthToken());
-      if (!vr.isValid()) {
-        throw new Exception("import staging is invalid - " + vr);
-      }
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
-      refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
-          auth.getAuthToken());
-      in.close();
-    } else if (type == Refset.Type.INTENSIONAL) {
-      // Import definition (from file)
-      InputStream in =
-          new FileInputStream(
-              new File(
-                  "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
-      refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
-          auth.getAuthToken());
-      in.close();
+    // EXTENSIONAL Import members (from file)
+    ValidationResult vr =
+        refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+            adminAuthToken);
+    if (!vr.isValid()) {
+      throw new Exception("import staging is invalid - " + vr);
     }
+
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+
+    InputStream in =
+        new FileInputStream(
+            new File(
+                "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+    refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+        adminAuthToken);
+    in.close();
 
     return refset;
   }
@@ -257,7 +250,7 @@ public class SpellingCorrectionRestTest {
    * @throws Exception the exception
    */
   private TranslationJpa makeTranslation(String name, Refset refset,
-    Project project, User auth) throws Exception {
+    Project project) throws Exception {
     TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
     translation.setDescription("Description of translation "
@@ -274,13 +267,13 @@ public class SpellingCorrectionRestTest {
     translation.setTerminology(refset.getTerminology());
     translation.setTerminologyId(refset.getTerminologyId());
     translation.setWorkflowPath("DEFAULT");
-    translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+    translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
 
     // Validate translation
     ValidationResult result =
         validationService.validateTranslation(translation, project.getId(),
-            auth.getAuthToken());
+            adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -288,20 +281,30 @@ public class SpellingCorrectionRestTest {
     // Add translation
     translation =
         (TranslationJpa) translationService.addTranslation(translation,
-            auth.getAuthToken());
+            adminAuthToken);
 
     // Import members (from file)
+    translationService = new TranslationClientRest(properties);
+    translation =
+        (TranslationJpa) translationService.getTranslation(translation.getId(),
+            adminAuthToken);
     ValidationResult vr =
         translationService.beginImportConcepts(translation.getId(), "DEFAULT",
-            auth.getAuthToken());
+            adminAuthToken);
     if (!vr.isValid()) {
       throw new Exception("translation staging is not valid - " + vr);
     }
+
+    translationService = new TranslationClientRest(properties);
+    translation =
+        (TranslationJpa) translationService.getTranslation(translation.getId(),
+            adminAuthToken);
+
     InputStream in =
         new FileInputStream(new File(
             "../config/src/main/resources/data/translation2/translation.zip"));
     translationService.finishImportConcepts(null, in, translation.getId(),
-        "DEFAULT", auth.getAuthToken());
+        "DEFAULT", adminAuthToken);
     in.close();
 
     return translation;
@@ -315,14 +318,13 @@ public class SpellingCorrectionRestTest {
   @Test
   public void testSpellingAddRemoveClearSuggest() throws Exception {
     Project project2 = projectService.getProject(2L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), admin);
+            .randomUUID().toString());
     TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project2, admin);
+        makeTranslation("translation1", refset1, project2);
 
     // Obtain a translation
     Long tid = translation1.getId();
@@ -359,6 +361,7 @@ public class SpellingCorrectionRestTest {
     assertEquals(0, results.getTotalCount());
 
     // clean up
+    verifyExit(refset1.getId());
     translationService.removeTranslation(tid, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -372,28 +375,26 @@ public class SpellingCorrectionRestTest {
   public void testSpellingImportExport() throws Exception {
     Project project1 = projectService.getProject(2L, adminAuthToken);
     Project project2 = projectService.getProject(3L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
-            .randomUUID().toString(), admin);
+        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project1, UUID
+            .randomUUID().toString());
     TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project1, admin);
+        makeTranslation("translation2", refset1, project1);
 
     // Create refset #2 (intensional) and import definition
     RefsetJpa refset2 =
-        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), admin);
+        makeRefset("refset3", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString());
     TranslationJpa translation2 =
-        makeTranslation("translation2", refset2, project2, admin);
+        makeTranslation("translation3", refset2, project2);
 
     // Obtain a translation
     Long tidOrig = translation1.getId();
     Long tidNew = translation2.getId();
 
     // Clear to setup process
-    translationService.clearSpellingDictionary(tidOrig, adminAuthToken);
     translationService.clearSpellingDictionary(tidNew, adminAuthToken);
 
     // Add a couple of entrie to one of the dictionaries
@@ -433,9 +434,11 @@ public class SpellingCorrectionRestTest {
     assertEquals(entriesOrig, entriesNew);
 
     // clean up
+    verifyExit(refset1.getId());
     translationService.removeTranslation(tidOrig, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
+    verifyExit(refset2.getId());
     translationService.removeTranslation(tidNew, adminAuthToken);
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
@@ -449,21 +452,20 @@ public class SpellingCorrectionRestTest {
   public void testSpellingCopy() throws Exception {
     Project project1 = projectService.getProject(2L, adminAuthToken);
     Project project2 = projectService.getProject(3L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
-            .randomUUID().toString(), admin);
+        makeRefset("refset4", null, Refset.Type.EXTENSIONAL, project1, UUID
+            .randomUUID().toString());
     TranslationJpa translation1 =
-        makeTranslation("translation1", refset1, project1, admin);
+        makeTranslation("translation4", refset1, project1);
 
     // Create refset #2 (intensional) and import definition
     RefsetJpa refset2 =
-        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project2, UUID
-            .randomUUID().toString(), admin);
+        makeRefset("refset5", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString());
     TranslationJpa translation2 =
-        makeTranslation("translation2", refset2, project2, admin);
+        makeTranslation("translation5", refset2, project2);
 
     // Obtain a translation
     Long tidFrom = translation1.getId();
@@ -509,11 +511,135 @@ public class SpellingCorrectionRestTest {
     assertEquals(0, results.getTotalCount());
 
     // clean up
+    verifyExit(refset1.getId());
     translationService.removeTranslation(tidFrom, adminAuthToken);
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
+    verifyExit(refset2.getId());
     translationService.removeTranslation(tidTo, adminAuthToken);
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test spelling add and suggest for Batch entries.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testSpellingBatchAddBatchSuggest() throws Exception {
+    Project project2 = projectService.getProject(2L, adminAuthToken);
+
+    // Create refset #1 (intensional) and import definition
+    RefsetJpa refset1 =
+        makeRefset("refset6", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString());
+
+    TranslationJpa translation1 =
+        makeTranslation("translation6", refset1, project2);
+
+    // Obtain a translation
+    Long tid = translation1.getId();
+
+    // Clear to setup process
+    translationService.clearSpellingDictionary(tid, adminAuthToken);
+
+    StringList entries = new StringList();
+    entries.addObject("Word1");
+    entries.addObject("Word2");
+    entries.addObject("Word3");
+
+    // Add a couple of entries via Batch routine
+    translationService.addBatchSpellingDictionaryEntries(tid, entries,
+        adminAuthToken);
+
+    InputStream dict =
+        translationService.exportSpellingDictionary(tid, adminAuthToken);
+
+    DefaultSpellingCorrectionHandler handler =
+        new DefaultSpellingCorrectionHandler();
+    List<String> exportedEntries = handler.getEntriesAsList(dict);
+
+    assertEquals(3, exportedEntries.size());
+
+    // Test SuggestSpelling with entries that do not reside in dictionary
+    StringList suggestTerms = new StringList();
+    suggestTerms.getObjects().add("Word");
+    suggestTerms.getObjects().add("Wordd");
+
+    KeyValuesMap results =
+        translationService.suggestBatchSpelling(tid, suggestTerms,
+            adminAuthToken);
+
+    assertEquals(2, results.getMap().keySet().size());
+
+    for (String s : results.getMap().keySet()) {
+      assertEquals(3, results.getMap().get(s).getTotalCount());
+      assertTrue(results.getMap().get(s).getObjects().contains("Word1"));
+      assertTrue(results.getMap().get(s).getObjects().contains("Word2"));
+      assertTrue(results.getMap().get(s).getObjects().contains("Word3"));
+    }
+
+    // Test SuggestSpelling with entries that partially reside in dictionary
+    suggestTerms = new StringList();
+    suggestTerms.getObjects().add("Word");
+    suggestTerms.getObjects().add("Word1");
+
+    results =
+        translationService.suggestBatchSpelling(tid, suggestTerms,
+            adminAuthToken);
+
+    Set<String> keySet = results.getMap().keySet();
+    assertEquals(1, keySet.size());
+
+    String key = keySet.iterator().next();
+
+    assertEquals(3, results.getMap().get(key).getTotalCount());
+    assertTrue(results.getMap().get(key).getObjects().contains("Word1"));
+    assertTrue(results.getMap().get(key).getObjects().contains("Word2"));
+    assertTrue(results.getMap().get(key).getObjects().contains("Word3"));
+
+    // Test SuggestSpelling with entries that all reside in dictionary
+    suggestTerms = new StringList();
+    suggestTerms.getObjects().add("Word1");
+    suggestTerms.getObjects().add("Word2");
+
+    results =
+        translationService.suggestBatchSpelling(tid, suggestTerms,
+            adminAuthToken);
+
+    assertEquals(0, results.getMap().keySet().size());
+
+    // clean up
+    verifyExit(refset1.getId());
+    translationService.removeTranslation(tid, adminAuthToken);
+    refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   * 
+   * @throws Exception the exception
+   */
+  private void verifyExit(Long refsetId) throws Exception {
+    if (assignNames) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
+
+  }
 }

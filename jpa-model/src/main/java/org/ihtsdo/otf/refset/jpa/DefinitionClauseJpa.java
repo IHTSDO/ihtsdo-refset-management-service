@@ -42,7 +42,7 @@ public class DefinitionClauseJpa implements DefinitionClause {
 
   /** The name. */
   @Column(nullable = false)
-  private boolean negated;
+  private boolean negated = false;
 
   /**
    * The default constructor.

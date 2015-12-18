@@ -850,7 +850,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Lookup names and active status of concepts
       translationService.lookupConceptNames(translationId,
-          "finish import concepts", false);
+          "finish import concepts", ConfigUtility.isBackgroundLookup());
 
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
@@ -1322,7 +1322,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/spelling/add/batch")
-  @ApiOperation(value = "Get batch spelling suggestions", notes = "Returns map containing a list (values) of suggested replacements from dictionary per term (key)", response = KeyValuesMap.class)
+  @ApiOperation(value = "Add a batch of entries to the spelling dictionary", notes = "Add a batch of entries to the spelling dictionary")
   public void addBatchSpellingDictionaryEntries(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList entries,
@@ -2797,8 +2797,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               UserRole.VIEWER);
 
       // Launch lookup process in background thread
+      String property = ConfigUtility.getConfigProperties().getProperty("lookup.background");
+      boolean background = true;
+      if (property != null && property.equals("false")) {
+        background = false;
+      }
       translationService.lookupConceptNames(translationId,
-          "request from client " + userName, true);
+          "request from client " + userName, ConfigUtility.isBackgroundLookup());
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

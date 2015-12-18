@@ -27,18 +27,18 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoFailureException;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
-import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
@@ -125,6 +125,9 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
         new ProjectServiceJpa().close();
         properties.remove("hibernate.hbm2ddl.auto");
       }
+
+      // force lookups not in background
+      properties.setProperty("lookup.background", "false");
 
       // authenticate
       SecurityService service = new SecurityServiceJpa();
@@ -801,15 +804,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setType(type);
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
-    if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+    if (definition != null && type == Refset.Type.INTENSIONAL) {
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
       definitionClauses.add(clause);
       refset.setDefinitionClauses(definitionClauses);
-    } else {
-      refset.setDefinitionClauses(null);
     }
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
@@ -834,6 +836,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     }
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
+    // TODO: why commented out?
     // ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate refset
@@ -884,7 +887,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       createdRefsets.add(refset.getId());
     }
 
-    return refset;
+    return (RefsetJpa) new RefsetServiceRestImpl().getRefset(refset.getId(),
+        auth.getAuthToken());
   }
 
   /**
@@ -968,7 +972,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     if (assignNames) {
       // Identify new refsets to ensure that lookupName process completes
       createdRefsets.add(refset.getId());
-    }    
+    }
     return refset;
   }
 
@@ -1059,7 +1063,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // completes
       createdTranslations.add(translation.getId());
     }
-    return translation;
+    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
+        translation.getId(), auth.getAuthToken());
   }
 
   /**
@@ -1075,12 +1080,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   public Refset redefine(Refset refset, String definition, User auth)
     throws Exception {
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    /*refsetService.beginRedefinition(refset.getId(), definition,
-        auth.getAuthToken());
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue(definition);
+    clause.setNegated(false);
+    refset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset((RefsetJpa) refset, auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
-    refsetService.finishRedefinition(refset.getId(), auth.getAuthToken());
-    refsetService = new RefsetServiceRestImpl();*/
-    refsetService.updateRefset((RefsetJpa)refset, auth.getAuthToken());
     return refsetService.getRefset(refset.getId(), auth.getAuthToken());
   }
 

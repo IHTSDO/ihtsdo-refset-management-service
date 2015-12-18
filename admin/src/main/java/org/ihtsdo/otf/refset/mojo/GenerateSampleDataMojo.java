@@ -120,6 +120,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
         properties.remove("hibernate.hbm2ddl.auto");
       }
 
+      // force lookups not in background
+      properties.setProperty("lookup.background", "false");
+
       // authenticate
       SecurityService service = new SecurityServiceJpa();
       String authToken =

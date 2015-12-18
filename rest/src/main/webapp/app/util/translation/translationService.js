@@ -429,6 +429,29 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // Add spelling dictionary entry
+    this.addBatchSpellingDictionaryEntries = function(translationId, entries) {
+      console.debug("addBatchSpellingDictionaryEntries");
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(translationUrl + 'spelling' + "/" + 'add' + "/" + 'batch' + "/" + "&translationId=" + translationId,
+        entry).then(
+      // success
+      function(response) {
+        console.debug("  entry ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Remove spelling dictionary entry
     this.removeSpellingDictionaryEntry = function(translationId, entry) {
       console.debug("removeSpellingDictionaryEntry");
@@ -453,7 +476,7 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
-    // get refset types
+    // Suggest spellings from dictionary for entry
     this.suggestSpelling = function(translationId, entry) {
       console.debug("suggestSpelling");
       var deferred = $q.defer();
@@ -461,6 +484,30 @@ tsApp.service('translationService', [
       // Get refset types
       gpService.increment();
       $http.get(translationUrl + 'spelling' + "/" + 'suggest' + "/" + translationId + "/" + entry)
+        .then(
+        // success
+        function(response) {
+          console.debug("  suggest = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
+
+    // Suggest unique spellings from dictionary for each of batch entries
+    this.suggestBatchSpelling = function(translationId, lookupTerms) {
+      console.debug("suggestBatchSpelling");
+      var deferred = $q.defer();
+
+      // Get refset types
+      gpService.increment();
+      $http.post(translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch' + "/" + translationId + "/" + entry)
         .then(
         // success
         function(response) {
