@@ -884,6 +884,37 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // import definition
+    this.importDefinition = function(refsetId, handlerId, file) {
+      console.debug("finish import members");
+      var deferred = $q.defer();
+      gpService.increment()
+      Upload.upload({
+        url : refsetUrl + "import/definition?refsetId=" + refsetId + "&handlerId=" + handlerId,
+        data : {
+          file : file
+        }
+      }).then(
+      // Success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
+    
     this.beginMigration = function(refsetId, terminology, version) {
       console.debug("beginMigration");
       var deferred = $q.defer();

@@ -49,7 +49,6 @@
             ng-show="paging['clauses'].filter"
             ng-click="paging['clauses'].filter = ''; getPagedClauses()"
             title="Click to clear filter text">Clear</button>
-
         </span>
 
         <span style="display: block"
@@ -59,9 +58,9 @@
           ng-show="pagedClauses.length == 0 && !paging['clauses'].filter"
           class="alert alert-warning"> No clauses </span>
 
-        <table ng-show="pagedClauses.length > 0" class="table">
+        <table class="table">
           <thead class="table-select-row">
-            <th class="col-md-6 col-xs-6">Definition Clauses</th>
+            <th class="col-md-6 col-xs-6">Definition Clause</th>
             <th class="col-md-2 col-xs-2">Negated</th>
             <th class="col-md-2 col-xs-2"></th>
           </thead>
@@ -70,7 +69,11 @@
               <td>
                 <div ng-bind-html="getClauseValue(clause)"></div>
               </td>
-              <td>{{clause.negated}}</td>
+              <td><button class="btn btn-xs btn-primary"
+                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                      <button class="btn btn-xs btn-danger"
+                        ng-show="clause.negated"
+                        uib-tooltip="Minus">-</button></td>
               <td>
                 <a class="toolicon" title="Remove"
                   ng-click="removeClause(refset, clause); $event.stopPropagation()">
@@ -78,18 +81,32 @@
                 </a>
               </td>
             </tr>
+            <tr ng-show="value == 'ASSIGNED'">
+              <td>
+                <input ng-model="newClause.value" size="40">
+              </td>
+              <td>
+                <input type="checkbox" title="Clause to be negated."
+                  ng-model="newClause.negated">
+              </td>
+              <td>
+                <a class="toolicon" title="Add new definition clause"
+                  ng-disabled="!newClause"
+                  ng-click="submitClause(refset, newClause); $event.stopPropagation()">
+                  <i title="Add clause" class="noul material-icons md-18">add</i>
+                </a>
+              </td>
+            </tr>
           </tbody>
         </table>
       </span>
-      <span><div definition clause="newClause"></div>
-      <button class="btn btn-xs btn-primary" ng-disabled="!newClause"
-    ng-click="submitClause(refset, newClause);" title="Add new definition clause">Add</button></span>
     </div>
   </div>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" 
+  <button class="btn btn-primary" ng-show="value == 'ASSIGNED'"
     ng-click="save(refset);" title="Save definition">Save</button>
-  <button class="btn btn-warning" ng-click="cancel(refset)">Cancel</button>
+  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'" ng-click="cancel(refset)">Cancel</button>
+  <button class="btn btn-warning" ng-show="value != 'ASSIGNED'" ng-click="close()">Close</button>
 </div>

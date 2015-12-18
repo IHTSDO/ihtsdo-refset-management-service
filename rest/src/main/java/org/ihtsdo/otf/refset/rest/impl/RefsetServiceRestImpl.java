@@ -370,23 +370,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
-      authorizeProject(refsetService, refset.getProject().getId(),
+      String userName = authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "update refset", UserRole.AUTHOR);
 
-      // Update refset
-      refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
-
-      // recompute definition
-      Refset dbRefset = refsetService.getRefset(refset.getId());
+      // get previously saved definition clauses
+      String previousClauses = refsetService.getRefset(refset.getId()).getDefinitionClauses().toString();
 
       // Update refset
-      refset.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      Refset updatedRefset = refsetService.getRefset(refset.getId());
+      //Refset updatedRefset = refsetService.getRefset(refset.getId());
 
-      if (refset.getType() == Refset.Type.INTENSIONAL/* && 
-          !refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())*/) {
-        refsetService.resolveRefsetDefinition(updatedRefset);
+      if (refset.getType() == Refset.Type.INTENSIONAL && 
+          !refset.getDefinitionClauses().toString().equals(previousClauses)) {
+        refsetService.resolveRefsetDefinition(refset);
       }
       
       refsetService.commit();
@@ -527,7 +524,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(refsetService, refset.getProject().getId(),
+      String userName = authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "import refset definition",
           UserRole.AUTHOR);
 
@@ -538,7 +535,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
       // Load definition
-      handler.importDefinition(in);
+      refset.setDefinitionClauses(handler.importDefinition(in));
+      
+      // Update refset
+      refset.setLastModifiedBy(userName);
+      refsetService.updateRefset(refset);
+      Refset updatedRefset = refsetService.getRefset(refset.getId());
+
+      if (refset.getType() == Refset.Type.INTENSIONAL/* && 
+          !refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())*/) {
+        refsetService.resolveRefsetDefinition(updatedRefset);
+      }
+      
 
       return;
     } catch (Exception e) {

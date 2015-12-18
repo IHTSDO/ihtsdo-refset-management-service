@@ -144,9 +144,9 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         // parse into definition clauses
         String part1 = "";
         String part2 = "";
-        if (fields[6].contains(" AND !")) {
-          part1 = fields[6].substring(0, fields[6].indexOf(" AND !"));
-          part2 = fields[6].substring(fields[6].indexOf(" AND !") + 5);
+        if (fields[6].contains(" + !")) {
+          part1 = fields[6].substring(0, fields[6].indexOf(" + !"));
+          part2 = fields[6].substring(fields[6].indexOf(" + !") + 4);
           System.out.println("*" + part1 + "*");
           System.out.println("*" + part2 + "*");
         } else {
@@ -159,18 +159,16 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
           defClause.setValue(clause);
           definitionClauses.add(defClause);
         }
-        if (part2.contains(" AND !")) {
-          String[] negativeClauses = part2.split(" AND !");
-          for (String clause : negativeClauses) {
-            // TODO: determine if this is a project level exclusion clause
-            // if so, don't add it to the negative refset level clauses
-            DefinitionClause defClause = new DefinitionClauseJpa();
-            defClause.setNegated(false);
-            defClause.setValue(clause);
-            definitionClauses.add(defClause);
-          }
+        String[] negativeClauses = part2.split(" + !");
+        for (String clause : negativeClauses) {
+          // TODO: determine if this is a project level exclusion clause
+          // if so, don't add it to the negative refset level clauses
+          DefinitionClause defClause = new DefinitionClauseJpa();
+          defClause.setNegated(true);
+          defClause.setValue(clause);
+          definitionClauses.add(defClause);
         }
-        
+
       }
     }
     pbr.close();

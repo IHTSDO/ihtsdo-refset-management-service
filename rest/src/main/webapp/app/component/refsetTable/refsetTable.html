@@ -332,9 +332,12 @@
               <b>Definition</b>
             </td>
             <td>
-              <i
-                ng-click="openDefinitionClausesModal(selected.refset);$event.stopPropagation()"
-                title="View or edit definition" class="noul material-icons md-18">edit</i>
+              <i ng-show="value != 'ASSIGNED'"
+                ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
+                title="View definition" class="noul material-icons md-18">list</i>
+              <i ng-show="value == 'ASSIGNED'"
+                ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
+                title="Edit definition" class="noul material-icons md-18">edit</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
@@ -346,7 +349,11 @@
                 <tbody>
                   <tr ng-repeat="clause in selected.refset.definitionClauses|limitTo:4">
                     <td>{{clause.value}}</td>
-                    <td>{{clause.negated}}</td>
+                    <td><button class="btn btn-xs btn-primary"
+                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                      <button class="btn btn-xs btn-danger"
+                        ng-show="clause.negated"
+                        uib-tooltip="Minus">-</button></td>
                   </tr> 
                 </tbody>
               </table>
@@ -374,10 +381,7 @@
             <td>&nbsp;</td>
           </tr>
         </tbody>
-      </table>
-
-               <!--  <td>*<div definition clause="clause"></div></td> -->
-               
+      </table>              
     </div>
 
     <!-- release info -->

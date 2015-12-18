@@ -502,8 +502,8 @@ tsApp
               //
 
               // Definition clauses modal
-              $scope.openDefinitionClausesModal = function(lrefset) {
-                console.debug("openDefinitionClausesModal ", lrefset);
+              $scope.openDefinitionClausesModal = function(lrefset, lvalue) {
+                console.debug("openDefinitionClausesModal ", lrefset, lvalue);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/definitionClauses.html',
@@ -512,6 +512,9 @@ tsApp
                   resolve : {
                     refset : function() {
                       return lrefset;
+                    },
+                    value : function() {
+                      return lvalue;
                     }
                   }
                 });
@@ -519,18 +522,20 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  $scope.selectRefset($scope.selected.refset);
+                  refsetService.fireRefsetChanged(data);
+                  $scope.selectRefset(data);
                 });
 
               };
 
               // Definition clauses controller
-              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset) {
-                console.debug("Entered definition clauses modal control", refset);
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset, value) {
+                console.debug("Entered definition clauses modal control", refset, value);
 
                 $scope.errors = [];
 
                 $scope.refset = refset;
+                $scope.value = value;
                 $scope.newClause = null;
 
                 // Paging parameters
@@ -584,6 +589,7 @@ tsApp
                       refsetService.getRefset(refset.id).then(function(data) {
                         refset.definitionClauses = data.definitionClauses;
                         $scope.getPagedClauses();
+                        $uibModalInstance.close(refset);
                       },
                       // Error - add refset
                       function(data) {
@@ -596,7 +602,6 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     })
-                    $uibModalInstance.close();
                 }
 
                 // close the modal
@@ -610,6 +615,10 @@ tsApp
                     $scope.errors[0] = data;
                     utilService.clearError();
                   })
+                  $uibModalInstance.close();
+                }
+                
+                $scope.close = function() {
                   $uibModalInstance.close();
                 }
 
@@ -948,8 +957,17 @@ tsApp
                   console.debug("import", $scope.refset.id, file);
 
                   if (type == 'Definition') {
-                    refsetService.importDefinition($scope.refset.id, $scope.selectedIoHandler.id,
-                      $scope.selectedIoHandler.fileTypeFilter);
+                    refsetService.importDefinition($scope.refset.id,
+                      $scope.selectedIoHandler.id, file).then(
+                        // Success - close dialog
+                        function(data) {
+                          $uibModalInstance.close(refset);
+                        },
+                        // Failure - show error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
                   }
 
                   if (type == 'Refset Members') {
@@ -975,7 +993,6 @@ tsApp
                             function(data) {
                               $scope.errors[0] = data;
                               utilService.clearError();
-                              // $uibModalInstance.close();
                             });
                           }
                         },
