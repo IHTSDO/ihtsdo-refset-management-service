@@ -375,12 +375,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // recompute definition
       Refset dbRefset = refsetService.getRefset(refset.getId());
-      if (refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())) {
-        refsetService.resolveRefsetDefinition(refset);
-      }
 
       refsetService.updateRefset(refset);
+      Refset updatedRefset = refsetService.getRefset(refset.getId());
 
+      if (refset.getType() == Refset.Type.INTENSIONAL/* && 
+          !refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())*/) {
+        refsetService.resolveRefsetDefinition(updatedRefset);
+      }
+      
       refsetService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a refset");

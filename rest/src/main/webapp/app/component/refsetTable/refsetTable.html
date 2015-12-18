@@ -333,21 +333,28 @@
             </td>
             <td>
               <i
-                ng-click="addDefinitionClause(selected.refset);$event.stopPropagation()"
-                title="Add definition clause" class="noul material-icons md-18">add</i>
+                ng-click="openDefinitionClausesModal(selected.refset);$event.stopPropagation()"
+                title="View or edit definition" class="noul material-icons md-18">edit</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
                 title="Export definition" class="noul material-icons md-18">file_download</i>             
-              <table>
+              
+              <table class="table">
                 <tbody>
-                  <tr ng-repeat="clause in selected.refset.definitionClauses">
-                  <td>*<div definition clause="clause"></div></td>
+                  <tr ng-repeat="clause in selected.refset.definitionClauses|limitTo:4">
+                    <td>{{clause.value}}</td>
+                    <td>{{clause.negated}}</td>
                   </tr> 
                 </tbody>
               </table>
+              <div ng-show="selected.refset.definitionClauses.length > 4" class="truncate">
+                <span ng-show="selected.refset.definitionClauses.length > 1">
+                  <br />{{selected.refset.definitionClauses.length-4}} more...
+                </span>
+              </div>
             </td>
           </tr>
           <tr ng-show="selected.refset.type == 'EXTERNAL'">
@@ -368,12 +375,9 @@
           </tr>
         </tbody>
       </table>
-      <table>
-        <tbody>
-               <tr ng-repeat="clause in selected.refset.definitionClauses">
-                <td>*<div definition clause="clause"></div></td>
-               </tr> 
-      </tbody></table>
+
+               <!--  <td>*<div definition clause="clause"></div></td> -->
+               
     </div>
 
     <!-- release info -->

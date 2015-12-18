@@ -348,10 +348,6 @@ tsApp
                 }
                 return member.memberType.replace('_STAGED', '');
               }
-
-              $scope.addDefinitionClause = function(refset) {
-                
-              }
               
               // Remove a refset
               $scope.removeRefset = function(refset) {
@@ -504,6 +500,124 @@ tsApp
               //
               // MODALS
               //
+
+              // Definition clauses modal
+              $scope.openDefinitionClausesModal = function(lrefset) {
+                console.debug("openDefinitionClausesModal ", lrefset);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/definitionClauses.html',
+                  controller : DefinitionClausesModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    refset : function() {
+                      return lrefset;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  $scope.selectRefset($scope.selected.refset);
+                });
+
+              };
+
+              // Definition clauses controller
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset) {
+                console.debug("Entered definition clauses modal control", refset);
+
+                $scope.errors = [];
+
+                $scope.refset = refset;
+                $scope.newClause = null;
+
+                // Paging parameters
+                $scope.pageSize = 5;
+                $scope.pagedClauses = [];
+                $scope.paging = {};
+                $scope.paging["clauses"] = {
+                  page : 1,
+                  filter : "",
+                  typeFilter : "",
+                  sortField : "lastModified",
+                  ascending : true
+                }
+
+                // Get paged clauses (assume all are loaded)
+                $scope.getPagedClauses = function() {
+                  $scope.pagedClauses = utilService.getPagedArray($scope.refset.definitionClauses,
+                    $scope.paging['clauses'], $scope.pageSize);
+                }
+
+                $scope.getClauseValue = function(clause) {
+                  return $sce.trustAsHtml(clause.value);
+                }
+
+                // remove clause
+                $scope.removeClause = function(refset, clause) {
+                  console.debug("remove clause", refset.id, clause.value);
+                  for (var i = 0; i < refset.definitionClauses.length; i++) {
+                    var index = refset.definitionClauses.indexOf(clause);
+                    if (index != -1) {
+                      refset.definitionClauses.splice(index, 1);
+                    }
+                  }
+                  $scope.getPagedClauses();
+                };
+
+                // add new clause
+                $scope.submitClause = function(refset, clause) {
+                  console.debug("submit clause", refset.id, clause);  
+                  // TODO: confirm clauses are unique
+                  refset.definitionClauses.push(clause);
+                  $scope.getPagedClauses();
+                  $scope.newClause = null;
+                };
+
+                $scope.save = function(refset) {
+                  refsetService.updateRefset(refset).then(
+                    // Success - add refset
+                    function(data) {
+                      $scope.newClause = null;
+                      refsetService.getRefset(refset.id).then(function(data) {
+                        refset.definitionClauses = data.definitionClauses;
+                        $scope.getPagedClauses();
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                    },
+                    // Error - add refset
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                    $uibModalInstance.close();
+                }
+
+                // close the modal
+                $scope.cancel = function(refset) {
+                  refsetService.getRefset(refset.id).then(function(data) {
+                    refset.definitionClauses = data.definitionClauses;
+                    $scope.getPagedClauses();
+                  },
+                  // Error - add refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                  $uibModalInstance.close();
+                }
+
+                // initialize modal
+                $scope.getPagedClauses();
+              };
+              
+              
 
               // Notes modal
               $scope.openNotesModal = function(lobject, ltype) {

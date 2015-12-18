@@ -1,0 +1,95 @@
+<div class="modal-header">
+  <h4>Definition Clauses</h4>
+</div>
+
+<div class="modal-body">
+  <table class="table">
+    <tr>
+      <td>
+        <b>Refset</b>
+      </td>
+      <td>{{refset.name}}</td>
+    </tr>
+    <tr ng-show="refset.description">
+      <td>
+        <b>Description</b>
+      </td>
+      <td>{{refset.description}}</td>
+    </tr>
+  </table>
+  <div class="row">
+    <!--  Left hand side -->
+    <div class="col-md-12 col-xs-12">
+
+      <!-- Errors -->
+      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
+        {{error}}</div>
+
+      <span>
+
+        <h5 ng-show="refset.definitionClauses.length > 0">
+          <b>Definition Clauses<span ng-show="pagedClauses.length > 0">
+              ({{pagedClauses.totalCount}})</span></b>
+        </h5>
+
+        <span style="display: block;">
+          <uib-pagination items-per-page="pageSize" max-size="5"
+            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+            ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
+            total-items="pagedClauses.totalCount" ng-model="paging['clauses'].page"
+            ng-change="getPagedClauses()"></uib-pagination>
+
+          <input class="input-filter" placeholder="Enter filter text"
+            ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
+            type="text" ng-model="paging['clauses'].filter"
+            ng-model-options="{ debounce: 300 }" ng-change="getPagedClauses()">
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="paging['clauses'].filter"
+            ng-click="paging['clauses'].filter = ''; getPagedClauses()"
+            title="Click to clear filter text">Clear</button>
+
+        </span>
+
+        <span style="display: block"
+          ng-show="pagedClauses.length == 0 && paging['clauses'].filter"
+          class="alert alert-warning"> No clauses matching filter </span>
+        <span style="display: block"
+          ng-show="pagedClauses.length == 0 && !paging['clauses'].filter"
+          class="alert alert-warning"> No clauses </span>
+
+        <table ng-show="pagedClauses.length > 0" class="table">
+          <thead class="table-select-row">
+            <th class="col-md-6 col-xs-6">Definition Clauses</th>
+            <th class="col-md-2 col-xs-2">Negated</th>
+            <th class="col-md-2 col-xs-2"></th>
+          </thead>
+          <tbody>
+            <tr ng-repeat="clause in pagedClauses">
+              <td>
+                <div ng-bind-html="getClauseValue(clause)"></div>
+              </td>
+              <td>{{clause.negated}}</td>
+              <td>
+                <a class="toolicon" title="Remove"
+                  ng-click="removeClause(refset, clause); $event.stopPropagation()">
+                  <i title="Remove clause" class="noul material-icons md-18">delete</i>
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </span>
+      <span><div definition clause="newClause"></div>
+      <button class="btn btn-xs btn-primary" ng-disabled="!newClause"
+    ng-click="submitClause(refset, newClause);" title="Add new definition clause">Add</button></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary" 
+    ng-click="save(refset);" title="Save definition">Save</button>
+  <button class="btn btn-warning" ng-click="cancel(refset)">Cancel</button>
+</div>

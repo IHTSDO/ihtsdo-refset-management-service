@@ -1083,7 +1083,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
     Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
     List<String> resolvedConcepts = new ArrayList<>();
-    for (ConceptRefsetMember member : refset.getMembers()) {
+    for (ConceptRefsetMember member : findMembersForRefset(refset.getId(), null, null).getObjects()) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION) {
         beforeInclusions.put(member.getConceptId(), member);
       }
