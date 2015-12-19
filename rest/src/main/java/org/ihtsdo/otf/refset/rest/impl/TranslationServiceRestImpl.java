@@ -1138,19 +1138,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove translation concept",
           UserRole.AUTHOR);
 
-      // Remove concept from translation - not needed
-
-      // Remove all descriptions
-      for (final Description description : concept.getDescriptions()) {
-        for (final LanguageRefsetMember member : description
-            .getLanguageRefsetMembers()) {
-          translationService.removeLanguageRefsetMember(member.getId());
-        }
-        translationService.removeDescription(description.getId());
-      }
-
       // Create service and configure transaction scope
-      translationService.removeConcept(conceptId);
+      translationService.removeConcept(conceptId, true);
 
       translationService.commit();
     } catch (Exception e) {
@@ -2174,7 +2163,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Remove origin-not-staged concepts
       for (final Concept originConcept : originConcepts) {
         if (!stagedConcepts.contains(originConcept)) {
-          translationService.removeConcept(originConcept.getId());
+          translationService.removeConcept(originConcept.getId(), true);
         }
       }
 
@@ -2190,7 +2179,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
         // Concept matches one in origin - remove it
         else {
-          translationService.removeConcept(stagedConcept.getId());
+          translationService.removeConcept(stagedConcept.getId(), true);
         }
       }
       stagedTranslation.setConcepts(new ArrayList<Concept>());
@@ -2797,13 +2786,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               UserRole.VIEWER);
 
       // Launch lookup process in background thread
-      String property = ConfigUtility.getConfigProperties().getProperty("lookup.background");
-      boolean background = true;
-      if (property != null && property.equals("false")) {
-        background = false;
-      }
-      translationService.lookupConceptNames(translationId,
-          "request from client " + userName, ConfigUtility.isBackgroundLookup());
+      translationService
+          .lookupConceptNames(translationId, "request from client " + userName,
+              ConfigUtility.isBackgroundLookup());
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

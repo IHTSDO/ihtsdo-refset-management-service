@@ -498,21 +498,6 @@ tsApp
                 })
               };
 
-              // reassign to author from concept.
-              $scope.performReassign = function(concept) {
-                // first unassign
-                workflowService.performTranslationWorkflowAction($scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                  'UNASSIGN').then(
-                  function(data) {
-                    workflowService.performTranslationWorkflowAction($scope.project.id,
-                      $scope.selected.translation.id, $scope.user.userName, 'AUTHOR', 'REASSIGN')
-                      .then(function(data) {
-                        translationService.fireTranslationChanged(translation);
-                      })
-                  })
-              };
-
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
                 if (translation && translation.notes && translation.notes.length > 0) {
@@ -760,6 +745,7 @@ tsApp
 
                 $scope.action = 'Add';
                 $scope.errors = [];
+                $scope.warnings = [];
                 $scope.metadata = metadata;
                 $scope.project = project;
                 $scope.refsets = refsets;
@@ -775,23 +761,52 @@ tsApp
                   $scope.translation.refsetId = refset.id;
                 };
 
+                // Update translation
                 $scope.submitTranslation = function(translation) {
                   if (!translation || !translation.name || !translation.description) {
-                    $scope.errors[0] = "The name and description fields cannot be blank. ";
+                    $scope.error = "The name, description, and terminology fields cannot be blank. ";
                     return;
                   }
 
-                  translation.projectId = project.id;
-                  translationService.addTranslation(translation).then(
-                  // Success - add translation
+                  // Validate the translation
+                  validationService.validateTranslation(translation, $scope.project.id).then(
+                  // Success
                   function(data) {
-                    $uibModalInstance.close(data);
+                    console.debug("data", data);
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    } else {
+                      $scope.errors = [];
+                    }
+
+                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
+                    if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    } else {
+                      $scope.warnings = [];
+                    }
+
+                    translationService.addTranslation(translation).then(
+                    // Success - update translation
+                    function(data) {
+                      $uibModalInstance.close(data);
+                    },
+                    // Error - update translation
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+
                   },
-                  // Error - add refset
+                  // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
-                  })
+                  });
+
                 };
 
                 $scope.cancel = function() {
@@ -838,6 +853,7 @@ tsApp
 
                 $scope.action = 'Edit';
                 $scope.errors = [];
+                $scope.warnings = [];
                 $scope.metadata = metadata;
                 $scope.refsets = refsets;
                 $scope.project = project;
@@ -851,21 +867,52 @@ tsApp
                   }
                 }
 
+                // Update translation
                 $scope.submitTranslation = function(translation) {
                   if (!translation || !translation.name || !translation.description) {
                     $scope.error = "The name, description, and terminology fields cannot be blank. ";
                     return;
                   }
-                  translationService.updateTranslation(translation).then(
-                  // Success - update translation
+
+                  // Validate the translation
+                  validationService.validateTranslation(translation, $scope.project.id).then(
+                  // Success
                   function(data) {
-                    $uibModalInstance.close(data);
+                    console.debug("data", data);
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    } else {
+                      $scope.errors = [];
+                    }
+
+                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
+                    if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    } else {
+                      $scope.warnings = [];
+                    }
+
+                    translationService.updateTranslation(translation).then(
+                    // Success - update translation
+                    function(data) {
+                      $uibModalInstance.close(data);
+                    },
+                    // Error - update translation
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+
                   },
-                  // Error - update translation
+                  // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
-                  })
+                  });
+
                 };
 
                 $scope.cancel = function() {
@@ -875,8 +922,8 @@ tsApp
               };
 
               // Assign concept modal
-              $scope.openAssignConceptModal = function(ltranslation, lconcept, luserName) {
-                console.debug("openAssignConceptModal ", ltranslation, lconcept, luserName);
+              $scope.openAssignConceptModal = function(lconcept, laction) {
+                console.debug("openAssignConceptModal ", lconcept, laction);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/assignConcept.html',
@@ -886,11 +933,17 @@ tsApp
                     concept : function() {
                       return lconcept;
                     },
+                    action : function() {
+                      return laction;
+                    },
                     translation : function() {
-                      return ltranslation;
+                      return $scope.selected.translation;
                     },
                     currentUserName : function() {
-                      return luserName;
+                      if (laction == 'ASSIGN') {
+                        return $scope.user.userName;
+                      }
+                      return null;
                     },
                     assignedUsers : function() {
                       return $scope.projects.assignedUsers;
@@ -900,6 +953,9 @@ tsApp
                     },
                     role : function() {
                       return $scope.projects.role;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.getTinymceOptions()
                     }
                   }
 
@@ -914,16 +970,18 @@ tsApp
 
               // Assign concept controller
               var AssignConceptModalCtrl = function($scope, $uibModalInstance, $sce, concept,
-                translation, currentUserName, assignedUsers, project, role) {
+                action, translation, currentUserName, assignedUsers, project, role, tinymceOptions) {
 
-                console.debug("Entered assign concept modal control", assignedUsers, project.id);
+                console.debug("Entered assign concept modal control", concept);
 
                 $scope.note;
                 $scope.concept = concept;
+                $scope.action = action;
                 $scope.project = project;
                 $scope.role = role;
                 $scope.assignedUserNames = [];
-                $scope.selectedUserName = currentUserName;
+                $scope.userName = currentUserName;
+                $scope.tinymceOptions = tinymceOptions;
                 $scope.note;
                 $scope.errors = [];
 
@@ -934,56 +992,100 @@ tsApp
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
                 // Handle assigning a concept
-                $scope.assignConcept = function(userName) {
-                  if (!userName) {
+                $scope.assignConcept = function() {
+                  if (!$scope.userName) {
                     $scope.errors[0] = "The user must be selected. ";
                     return;
                   }
 
-                  $scope.selectedUserName = userName;
+                  if (action == 'ASSIGN') {
+                    workflowService.performTranslationWorkflowAction($scope.project.id,
+                      translation.id, $scope.userName, $scope.role, "ASSIGN", $scope.concept).then(
+                      // Success
+                      function(data) {
 
-                  workflowService.performTranslationWorkflowAction($scope.project.id,
-                    translation.id, userName, $scope.role, "ASSIGN", $scope.concept).then(
-                    // Success
-                    function(data) {
-
-                      // Add a note as well
-                      if ($scope.note) {
-                        translationService.addTranslationConceptNote(translation.id, concept.id,
-                          $scope.note).then(
-                        // Success
-                        function(data) {
+                        // Add a note as well
+                        if ($scope.note) {
+                          translationService.addTranslationConceptNote(translation.id, concept.id,
+                            $scope.note).then(
+                          // Success
+                          function(data) {
+                            $uibModalInstance.close(translation);
+                          },
+                          // Error
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          });
+                        }
+                        // close dialog if no note
+                        else {
                           $uibModalInstance.close(translation);
+                        }
+
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                  }
+
+                  // else, reassign
+                  if (action == 'REASSIGN') {
+
+                    workflowService.performTranslationWorkflowAction($scope.project.id,
+                      translation.id, $scope.userName, $scope.role, 'UNASSIGN', $scope.concept)
+                      .then(
+                        // Success - unassign
+                        function(data) {
+                          workflowService.performTranslationWorkflowAction($scope.project.id,
+                            translation.id, $scope.userName, 'AUTHOR', 'REASSIGN', $scope.concept)
+                            .then(
+                              // Success - reassign
+                              function(data) {
+                                if ($scope.note) {
+                                  translationService.addTranslationConceptNote(translation.id,
+                                    concept.id, $scope.note).then(
+                                  // Success - add note
+                                  function(data) {
+                                    $uibModalInstance.close(translation);
+                                  },
+                                  // Error - add note
+                                  function(data) {
+                                    $scope.errors[0] = data;
+                                    utilService.clearError();
+                                  });
+                                }
+                                // close dialog if no note
+                                else {
+                                  $uibModalInstance.close(translation);
+                                }
+                              },
+                              // Error - reassign
+                              function(data) {
+                                $scope.errors[0] = data;
+                                utilService.clearError();
+                              });
                         },
-                        // Error
+                        // Error - unassign
                         function(data) {
                           $scope.errors[0] = data;
                           utilService.clearError();
                         });
-                      }
-                      // close dialog if no note
-                      else {
-                        $uibModalInstance.close(translation);
-                      }
 
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
-
+                  }
                 };
 
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');
                 };
 
-              };
+              }
 
               // Assign batch concept modal
-              $scope.openBatchAssignConceptModal = function(ltranslation, luserName) {
-                console.debug("openBatchAssignConceptModal ", ltranslation, luserName);
+              $scope.openBatchAssignConceptModal = function() {
+                console.debug("openBatchAssignConceptModal ");
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/assignBatch.html',
@@ -991,10 +1093,10 @@ tsApp
                   backdrop : 'static',
                   resolve : {
                     translation : function() {
-                      return ltranslation;
+                      return $scope.selected.translation;
                     },
                     currentUserName : function() {
-                      return luserName;
+                      return $scope.user.userName;
                     },
                     assignedUsers : function() {
                       return $scope.projects.assignedUsers;
@@ -1029,7 +1131,7 @@ tsApp
                 $scope.project = project;
                 $scope.role = role;
                 $scope.assignedUserNames = [];
-                $scope.selectedUserName = currentUserName;
+                $scope.userName = currentUserName;
                 $scope.errors = [];
                 $scope.note = "";
 
@@ -1040,12 +1142,11 @@ tsApp
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
                 // Handle assigning the batch
-                $scope.assignBatch = function(userName) {
-                  if (!userName) {
+                $scope.assignBatch = function() {
+                  if (!$scope.userName) {
                     $scope.errors[0] = "The user must be selected. ";
                     return;
                   }
-                  $scope.selectedUserName = userName;
 
                   // Perform the same search as the current concept id list
                   // and make sure it still matches (otherwise someone else
@@ -1060,7 +1161,7 @@ tsApp
                   };
 
                   workflowService
-                    .findAvailableEditingConcepts(project.id, translation.id, userName, pfs)
+                    .findAvailableEditingConcepts(project.id, translation.id, $scope.userName, pfs)
                     .then(
                       // Success
                       function(data) {
@@ -1085,17 +1186,18 @@ tsApp
                         };
 
                         workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                          translation.id, userName, $scope.role, "ASSIGN", conceptList).then(
-                        // Success
-                        function(data) {
-                          // close modal
-                          $uibModalInstance.close(translation);
-                        },
-                        // Error
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                          translation.id, $scope.userName, $scope.role, "ASSIGN", conceptList)
+                          .then(
+                          // Success
+                          function(data) {
+                            // close modal
+                            $uibModalInstance.close(translation);
+                          },
+                          // Error
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
 
                       },
                       // Error

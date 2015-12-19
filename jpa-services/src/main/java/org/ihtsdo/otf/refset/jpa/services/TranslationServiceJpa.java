@@ -238,18 +238,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
       // Remove concepts/ descriptions/language refset members
       for (Concept c : translation.getConcepts()) {
-        for (Description d : c.getDescriptions()) {
-          removeDescription(d.getId());
-          for (LanguageRefsetMember member : d.getLanguageRefsetMembers()) {
-            removeLanguageRefsetMember(member.getId());
-          }
-        }
-        removeConcept(c.getId());
-      }
-
-      // Remove notes
-      for (Note note : translation.getNotes()) {
-        removeNote(note.getId(), TranslationNoteJpa.class);
+        removeConcept(c.getId(), true);
       }
 
       // Remove spelling dictionary
@@ -530,7 +519,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removeConcept(Long id) throws Exception {
+  public void removeConcept(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - remove concept " + id);
 
@@ -539,6 +528,22 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     if (origTpo) {
       setTransactionPerOperation(false);
       beginTransaction();
+    }
+
+    final Concept concept = getConcept(id);
+    if (cascade) {
+      // Remove all descriptions
+      for (final Description description : concept.getDescriptions()) {
+        for (final LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          removeLanguageRefsetMember(member.getId());
+        }
+        removeDescription(description.getId());
+      }
+    }
+    // Remove notes
+    for (Note note : concept.getNotes()) {
+      removeNote(note.getId(), TranslationNoteJpa.class);
     }
 
     // Remove the component

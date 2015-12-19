@@ -111,7 +111,7 @@ public class ProjectJpa implements Project {
   private String feedbackEmail;
   
   /**  The exclusion clause. */
-  @Column(nullable = true)
+  @Column(nullable = true, length = 4000)
   private String exclusionClause;
 
   /** The role map. */

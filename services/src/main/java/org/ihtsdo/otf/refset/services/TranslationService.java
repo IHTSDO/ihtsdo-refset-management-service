@@ -192,9 +192,10 @@ public interface TranslationService extends RefsetService {
    * Removes the concept.
    *
    * @param id the id
+   * @param cascade the cascade
    * @throws Exception the exception
    */
-  public void removeConcept(Long id) throws Exception;
+  public void removeConcept(Long id, boolean cascade) throws Exception;
 
   /**
    * Returns the concept.

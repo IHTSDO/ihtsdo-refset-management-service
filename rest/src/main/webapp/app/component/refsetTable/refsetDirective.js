@@ -348,7 +348,7 @@ tsApp
                 }
                 return member.memberType.replace('_STAGED', '');
               }
-              
+
               // Remove a refset
               $scope.removeRefset = function(refset) {
                 if (!confirm("Are you sure you want to remove the refset (" + refset.name + ")?")) {
@@ -442,21 +442,6 @@ tsApp
                 releaseService.exportReleaseArtifact(artifact);
               }
 
-              // reassign to author refset that is in review
-              // process
-              $scope.performReassign = function(refset) {
-                // first unassign, then assign to author who
-                // worked on it (TODO: what if >1 authors?), need picklist
-                workflowService.performWorkflowAction($scope.project.id, refset.id,
-                  $scope.user.userName, $scope.projects.role, 'UNASSIGN').then(
-                  function(data) {
-                    workflowService.performWorkflowAction($scope.project.id, refset.id,
-                      $scope.user.userName, 'AUTHOR', 'REASSIGN').then(function(data) {
-                      refsetService.fireRefsetChanged(refset);
-                    })
-                  })
-              };
-
               // Cancel a staging operation
               $scope.cancelAction = function(refset) {
                 $scope.refset = refset;
@@ -529,7 +514,8 @@ tsApp
               };
 
               // Definition clauses controller
-              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset, value) {
+              var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset,
+                value) {
                 console.debug("Entered definition clauses modal control", refset, value);
 
                 $scope.errors = [];
@@ -574,7 +560,7 @@ tsApp
 
                 // add new clause
                 $scope.submitClause = function(refset, clause) {
-                  console.debug("submit clause", refset.id, clause);  
+                  console.debug("submit clause", refset.id, clause);
                   // TODO: confirm clauses are unique
                   refset.definitionClauses.push(clause);
                   $scope.getPagedClauses();
@@ -583,25 +569,25 @@ tsApp
 
                 $scope.save = function(refset) {
                   refsetService.updateRefset(refset).then(
-                    // Success - add refset
-                    function(data) {
-                      $scope.newClause = null;
-                      refsetService.getRefset(refset.id).then(function(data) {
-                        refset.definitionClauses = data.definitionClauses;
-                        $scope.getPagedClauses();
-                        $uibModalInstance.close(refset);
-                      },
-                      // Error - add refset
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      })
+                  // Success - add refset
+                  function(data) {
+                    $scope.newClause = null;
+                    refsetService.getRefset(refset.id).then(function(data) {
+                      refset.definitionClauses = data.definitionClauses;
+                      $scope.getPagedClauses();
+                      $uibModalInstance.close(refset);
                     },
                     // Error - add refset
                     function(data) {
                       $scope.errors[0] = data;
                       utilService.clearError();
                     })
+                  },
+                  // Error - add refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
                 }
 
                 // close the modal
@@ -617,7 +603,7 @@ tsApp
                   })
                   $uibModalInstance.close();
                 }
-                
+
                 $scope.close = function() {
                   $uibModalInstance.close();
                 }
@@ -625,8 +611,6 @@ tsApp
                 // initialize modal
                 $scope.getPagedClauses();
               };
-              
-              
 
               // Notes modal
               $scope.openNotesModal = function(lobject, ltype) {
@@ -957,17 +941,17 @@ tsApp
                   console.debug("import", $scope.refset.id, file);
 
                   if (type == 'Definition') {
-                    refsetService.importDefinition($scope.refset.id,
-                      $scope.selectedIoHandler.id, file).then(
-                        // Success - close dialog
-                        function(data) {
-                          $uibModalInstance.close(refset);
-                        },
-                        // Failure - show error
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        });
+                    refsetService.importDefinition($scope.refset.id, $scope.selectedIoHandler.id,
+                      file).then(
+                    // Success - close dialog
+                    function(data) {
+                      $uibModalInstance.close(refset);
+                    },
+                    // Failure - show error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                   }
 
                   if (type == 'Refset Members') {
@@ -1229,8 +1213,8 @@ tsApp
               }
 
               // Assign refset modal
-              $scope.openAssignRefsetModal = function(lrefset) {
-                console.debug("openAssignRefsetModal ", lrefset);
+              $scope.openAssignRefsetModal = function(lrefset, laction) {
+                console.debug("openAssignRefsetModal ", lrefset, laction);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/assignRefset.html',
@@ -1239,6 +1223,9 @@ tsApp
                   resolve : {
                     refset : function() {
                       return lrefset;
+                    },
+                    action : function() {
+                      return laction;
                     },
                     currentUserName : function() {
                       return $scope.user.userName;
@@ -1267,16 +1254,18 @@ tsApp
               };
 
               // Assign refset controller
-              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset,                 currentUserName, assignedUsers, project, role, tinymceOptions) {
+              var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset, action,
+                currentUserName, assignedUsers, project, role, tinymceOptions) {
 
                 console.debug("Entered assign refset modal control", assignedUsers, project.id);
 
                 $scope.refset = refset;
+                $scope.action = action;
                 $scope.project = project;
                 $scope.role = role;
                 $scope.tinymceOptions = tinymceOptions;
                 $scope.assignedUserNames = [];
-                $scope.selectedUserName = currentUserName;
+                $scope.userName = currentUserName;
                 $scope.note;
                 $scope.errors = [];
 
@@ -1286,45 +1275,85 @@ tsApp
                 }
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
-                $scope.assignRefset = function(userName) {
+                $scope.assignRefset = function() {
                   console.debug("Submitting chosen user", userName);
-                  if (!userName) {
+                  if (!$scope.userName) {
                     $scope.errors[0] = "The user must be selected. ";
                     return;
                   }
 
-                  $scope.selectedUserName = userName;
+                  if (action == 'ASSIGN') {
+                    workflowService.performWorkflowAction($scope.project.id, refset.id,
+                      $scope.userName, $scope.role, 'ASSIGN').then(
+                    // Success
+                    function(data) {
 
-                  workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
-                    $scope.role, 'ASSIGN').then(
-                  // Success
-                  function(data) {
-
-                    // Add a note as well
-                    if ($scope.note) {
-                      refsetService.addRefsetNote(refset.id, $scope.note).then(
-                      // Success
-                      function(data) {
+                      // Add a note as well
+                      if ($scope.note) {
+                        refsetService.addRefsetNote(refset.id, $scope.note).then(
+                        // Success
+                        function(data) {
+                          $uibModalInstance.close(refset);
+                        },
+                        // Error
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        });
+                      }
+                      // close dialog if no note
+                      else {
                         $uibModalInstance.close(refset);
+                      }
+
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    })
+                  }
+
+                  // else
+                  if (action == 'REASSIGN') {
+                    workflowService.performWorkflowAction($scope.project.id, refset.id,
+                      $scope.userName, $scope.role, 'UNASSIGN').then(
+                      // Success - unassign
+                      function(data) {
+                        workflowService.performWorkflowAction($scope.project.id, refset.id,
+                          $scope.userName, 'AUTHOR', 'REASSIGN').then(
+                        // success - reassign
+                        function(data) {
+                          // Add a note as well
+                          if ($scope.note) {
+                            refsetService.addRefsetNote(refset.id, $scope.note).then(
+                            // Success - add note
+                            function(data) {
+                              $uibModalInstance.close(refset);
+                            },
+                            // Error - remove note
+                            function(data) {
+                              $scope.errors[0] = data;
+                              utilService.clearError();
+                            });
+                          }
+                          // close dialog if no note
+                          else {
+                            $uibModalInstance.close(refset);
+                          }
+                        },
+                        // Error - reassign
+                        function(data) {
+                          $scope.errors[0] = data;
+                          utilService.clearError();
+                        })
                       },
-                      // Error
+                      // Error - unassign
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       });
-                    }
-                    // close dialog if no note
-                    else {
-                      $uibModalInstance.close(refset);
-                    }
-
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
-
+                  }
                 };
 
                 $scope.cancel = function() {

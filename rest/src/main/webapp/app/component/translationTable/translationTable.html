@@ -348,7 +348,7 @@
         </th>
         <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
             ng-show="projects.role != 'ADMIN' && selected.translation.available.totalCount > 0"
-            ng-click="openBatchAssignConceptModal(selected.translation, user.userName); $event.stopPropagation()"
+            ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
             title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
       </thead>
       <tbody>
@@ -360,7 +360,7 @@
           <td class="nobreak">
             <!-- Assign -->
             <i ng-show="projects.role != 'ADMIN'"
-              ng-click="openAssignConceptModal(selected.translation, concept, user.userName); $event.stopPropagation()"
+              ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
           </td>
         </tr>
@@ -460,11 +460,12 @@
 
             <!-- Reassign -->
             <i ng-show="projects.role == 'REVIEWER'"
-              ng-click="openAssignConceptModal(record.cocnept, 'REASSIGN', user.userName); $event.stopPropagation()"
+              ng-click="openAssignConceptModal(record.concept, 'REASSIGN'); $event.stopPropagation()"
               title="Reassign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- Finish -->
-            <i ng-show="record.concept.workflowStatus != 'REVIEW_DONE'"
+            <i
+              ng-show="record.concept.workflowStatus != 'REVIEW_DONE' && record.concept.workflowStatus != 'NEW' && record.concept.workflowStatus != 'REVIEW_NEW' && record.concept.workflowStatus != 'READY_FOR_PUBLICATION' "
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
@@ -481,6 +482,8 @@
             <i ng-show="record.concept.notes.length == 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
+              
+              <br>
           </td>
         </tr>
       </tbody>
@@ -593,7 +596,7 @@
               <td>
                 <!-- Assign (for error fixing) -->
                 <i ng-show="value == 'EDITING' && projects.role != 'ADMIN'"
-                  ng-click="openAssignConceptModal(selected.translation, concept, user.userName); $event.stopPropagation()"
+                  ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
                 <!-- Notes -->

@@ -370,22 +370,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
     try {
-      String userName = authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "update refset", UserRole.AUTHOR);
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "update refset", UserRole.AUTHOR);
 
       // get previously saved definition clauses
-      String previousClauses = refsetService.getRefset(refset.getId()).getDefinitionClauses().toString();
+      String previousClauses =
+          refsetService.getRefset(refset.getId()).getDefinitionClauses()
+              .toString();
 
       // Update refset
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      //Refset updatedRefset = refsetService.getRefset(refset.getId());
+      // Refset updatedRefset = refsetService.getRefset(refset.getId());
 
-      if (refset.getType() == Refset.Type.INTENSIONAL && 
-          !refset.getDefinitionClauses().toString().equals(previousClauses)) {
+      if (refset.getType() == Refset.Type.INTENSIONAL
+          && !refset.getDefinitionClauses().toString().equals(previousClauses)) {
         refsetService.resolveRefsetDefinition(refset);
       }
-      
+
       refsetService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
@@ -516,6 +519,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             + ioHandlerInfoId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -524,9 +529,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName = authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "import refset definition",
-          UserRole.AUTHOR);
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "import refset definition",
+              UserRole.AUTHOR);
 
       // Obtain the import handler
       final ImportRefsetHandler handler =
@@ -535,27 +541,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
       // Load definition
-      refset.setDefinitionClauses(handler.importDefinition(in));
-      
+      refset.setDefinitionClauses(handler.importDefinition(refset, in));
+
       // Update refset
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
       Refset updatedRefset = refsetService.getRefset(refset.getId());
 
-      if (refset.getType() == Refset.Type.INTENSIONAL/* && 
-          !refset.getDefinitionClauses().equals(dbRefset.getDefinitionClauses())*/) {
+      if (refset.getType() == Refset.Type.INTENSIONAL) {
         refsetService.resolveRefsetDefinition(updatedRefset);
       }
-      
 
-      return;
+      refsetService.commit();
+
     } catch (Exception e) {
       handleException(e, "trying to import refset definition");
     } finally {
       refsetService.close();
       securityService.close();
     }
-    return;
 
   }
 

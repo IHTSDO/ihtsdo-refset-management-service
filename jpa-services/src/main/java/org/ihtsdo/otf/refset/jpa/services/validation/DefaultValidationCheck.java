@@ -52,12 +52,11 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
      */
 
     // Only an INTENSIONAL refset should have a definition
-    if (refset.getDefinitionClauses() != null &&
-        refset.getDefinitionClauses().size() > 0 &&
-        refset.getType() != Refset.Type.INTENSIONAL) {
+    if (refset.getDefinitionClauses() != null
+        && refset.getDefinitionClauses().size() > 0
+        && refset.getType() != Refset.Type.INTENSIONAL) {
       result.addError("Only intensional refsets should have a definition");
     }
-
 
     // Only an EXTERNAL refset should have a externalUrl
     if (refset.getType() != Refset.Type.EXTERNAL
@@ -108,16 +107,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     return result;
   }
 
-  /**
-   * Validate.
-   *
-   * @param concept the concept
-   * @param service the service
-   * @return the validation result
-   * @throws Exception 
-   */
   @Override
-  public ValidationResult validate(Concept concept, TranslationService service) throws Exception {
+  public ValidationResult validate(Concept concept, TranslationService service)
+    throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
     Translation translation =
@@ -146,4 +138,21 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     return result;
   }
 
+  /* see superclass */
+  @Override
+  public ValidationResult validate(Translation translation,
+    TranslationService service) throws Exception {
+    ValidationResult result = new ValidationResultJpa();
+
+    // The language should be a 2 letter code matching a language
+    if (translation.getLanguage() == null) {
+      result.addError("Translation language must be set");
+    }
+
+    if (translation.getLanguage().length() > 2) {
+      result.addWarning("Translation language should be a 2 letter code");
+    }
+
+    return result;
+  }
 }

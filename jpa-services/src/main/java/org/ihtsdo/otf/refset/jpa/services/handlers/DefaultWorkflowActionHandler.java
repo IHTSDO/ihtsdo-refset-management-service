@@ -595,7 +595,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             service.removeTrackingRecord(record.getId());
           } else {
             service.removeTrackingRecord(record.getId());
-            service.removeConcept(concept.getId());
+            service.removeConcept(concept.getId(), true);
           }
         }
         // For review, it removes the reviewer and sets the status back to

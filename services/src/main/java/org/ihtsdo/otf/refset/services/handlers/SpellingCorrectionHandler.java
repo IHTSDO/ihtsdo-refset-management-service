@@ -39,7 +39,7 @@ public interface SpellingCorrectionHandler extends Configurable {
    * @param lookupTerms The terms queried for suggestions
    * @param dictionaryEntries the entries in the dictionary
    * @param amt The number of terms returned
-   * @param tid the tid
+   * @param translationId the translation id
    * @return KeyValuesMap of term-to-suggestions
    * @throws IOException Signals that an I/O exception has occurred.
    */
