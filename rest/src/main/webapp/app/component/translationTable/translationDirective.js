@@ -750,7 +750,8 @@ tsApp
                 $scope.project = project;
                 $scope.refsets = refsets;
                 $scope.translation = {
-                  workflowPath : metadata.workflowPaths[0]
+                  workflowPath : metadata.workflowPaths[0],
+                  projectId: project.id
                 };
 
                 $scope.selectRefset = function(refset) {

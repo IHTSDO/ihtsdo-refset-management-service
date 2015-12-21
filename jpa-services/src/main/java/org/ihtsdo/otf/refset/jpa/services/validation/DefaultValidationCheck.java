@@ -149,7 +149,8 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("Translation language must be set");
     }
 
-    if (translation.getLanguage().length() > 2) {
+    if (translation.getLanguage() != null
+        && translation.getLanguage().length() > 2) {
       result.addWarning("Translation language should be a 2 letter code");
     }
 

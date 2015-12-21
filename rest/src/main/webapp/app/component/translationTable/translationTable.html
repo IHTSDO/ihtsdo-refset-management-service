@@ -201,7 +201,7 @@
           <tr>
             <td>Spelling Dictionary</td>
             <td>
-              <input type="checkbox" onClick="saveUserPreferences()"
+              <input type="checkbox" ng-change="saveUserPreferences()"
                 ng-model="user.userPreferences.spellingEnabled">
               <span ng-show="user.userPreferences.spellingEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.spellingEnabled">DISABLED</span>
@@ -226,7 +226,7 @@
           <tr>
             <td>Phrase Memory</td>
             <td>
-              <input type="checkbox" onClick="saveUserPreferences()"
+              <input type="checkbox" ng-change="saveUserPreferences()"
                 ng-model="user.userPreferences.memoryEnabled">
               <span ng-show="user.userPreferences.memoryEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.memoryEnabled">DISABLED</span>
