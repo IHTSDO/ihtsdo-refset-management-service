@@ -37,7 +37,7 @@ public interface ImportRefsetHandler extends Configurable {
    * @return the mime type
    */
   public String getMimeType();
-  
+
   /**
    * Import members.
    *
@@ -46,16 +46,18 @@ public interface ImportRefsetHandler extends Configurable {
    * @return the list
    * @throws Exception the exception
    */
-  public List<ConceptRefsetMember> importMembers(Refset refset,InputStream content)
-    throws Exception;
+  public List<ConceptRefsetMember> importMembers(Refset refset,
+    InputStream content) throws Exception;
 
   /**
    * Import definition.
    *
+   * @param refset the refset
    * @param content the content
    * @return the list
    * @throws Exception the exception
    */
-  public List<DefinitionClause> importDefinition(InputStream content) throws Exception;
+  public List<DefinitionClause> importDefinition(Refset refset,
+    InputStream content) throws Exception;
 
 }

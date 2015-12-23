@@ -19,6 +19,7 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
+import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.ExportRefsetRf2Handler;
@@ -170,15 +171,18 @@ public class ImportExportRf2HandlerTest {
     Refset refset = new RefsetJpa();
     refset.setModuleId("sampleModuleId");
     refset.setTerminology("sampleTerminologyId");
-
+    refset.setProject(new ProjectJpa());
+    
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
     List<ConceptRefsetMember> members =
         importHandler.importMembers(refset, membersInputStream);
 
     // Verify the member count
     Assert.assertEquals(members.size(), 21);
-    List<DefinitionClause> definitionClauses = importHandler.importDefinition(definitionInputStream);
-    Assert.assertEquals("<<410675002|Route of administration|", definitionClauses.get(0));
+    List<DefinitionClause> definitionClauses =
+        importHandler.importDefinition(refset, definitionInputStream);
+    Assert.assertEquals("<<410675002|Route of administration|",
+        definitionClauses.get(0));
 
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
     BufferedReader reader =

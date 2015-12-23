@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4>Assign Concept to User</h4>
+  <h4>Assign Concepts</h4>
 </div>
 
 <div class="modal-body">
@@ -22,7 +22,7 @@
         <b>Select user</b>
       </td>
       <td>
-        <select ng-model="selectedUserName"
+        <select ng-model="userName"
           ng-options="item for item in assignedUserNames"></select>
       </td>
     </tr>
@@ -47,7 +47,7 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary"
-    ng-click="assignBatch(selectedUserName); 
+    ng-click="assignBatch(); 
     ">Assign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

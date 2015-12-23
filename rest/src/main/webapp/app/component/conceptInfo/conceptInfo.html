@@ -29,46 +29,46 @@
     <p ng-show="concept" style="margin-top: 5px;">
       <b>Descriptions</b>
     </p>
-    <table ng-show="concept.descriptions.length > 0" class="table"
-      style="max-height: 150px; overflow-y: scroll;">
-      <tbody>
-        <!-- terminology server doesn't return inactive descriptions -->
-        <tr ng-repeat="description in getOrderedDescriptions(concept)">
-          <td>{{description.term}}</td>
-          <td>{{description.languageCode}}</td>
-          <td>{{getDescriptionType(description)}}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div ng-show="concept.descriptions.length > 0"
+      ng-repeat="description in concept.descriptions" style="font-size: 12px"
+      class="row">
+      <div class="col-md-12 col-xs-12">
+        <span class="col-md-8 col-xs-8">&bull;&nbsp;{{description.term}}</span>
+        <span class="col-md-1 col-xs-1">{{description.languageCode}}</span>
+        <span class="col-md-3 col-xs-3">{{getDescriptionType(description)}}</span>
+      </div>
+    </div>
+
     <span ng-show="concept.descriptions.length==0" class="alert alert-warning">No
       active descriptions</span>
 
 
-    <p ng-show="concept.relationships.length > 0">
+    <p ng-show="concept.relationships.length > 0" style="margin-top: 10px">
       <b>Attributes</b>
     </p>
-    <table ng-show="concept.relationships.length > 0" class="table">
-      <tbody>
-        <!-- terminology server doesn't return inactive descriptions -->
-        <tr ng-repeat="rel in getOrderedRelationships(concept)">
-          <td>
-            <span ng-show="rel.relationshipGroup > 0">
-              <span class="label label-success"
-                uib-tooltip="Relationship group {{rel.relationshipGroup}}">{{rel.relationshipGroup}}</span>
-              &nbsp;
-            </span>
-            {{rel.typeId}}
-          </td>
-          <td>
-            <a ng-click="getConceptById(rel.destinationId)">
-              {{rel.destinationId}}</a>
-          </td>
-          <td>{{rel.destinationPreferredName}}</td>
-        </tr>
-      </tbody>
-    </table>
 
-    <p ng-show="children.length > 0">
+    <div ng-show="concept.relationships.length > 0"
+      ng-repeat="rel in concept.relationships" style="font-size: 12px"
+      class="row">
+      <div class="col-md-12 col-xs-12">
+        <span class="col-md-3 col-xs-3">
+          &bull;&nbsp;
+          <span ng-show="rel.relationshipGroup > 0">
+            <span class="label label-success"
+              uib-tooltip="Relationship group {{rel.relationshipGroup}}">{{rel.relationshipGroup}}</span>
+            &nbsp;
+          </span>
+          {{rel.typeId}}
+        </span>
+        <span class="col-md-9 col-xs-9">
+          <a ng-click="getConceptById(rel.destinationId)">
+            {{rel.destinationId}}</a>
+          {{rel.destinationPreferredName}}
+        </span>
+      </div>
+    </div>
+
+    <p ng-show="children.length > 0" style="margin-top: 10px">
       <b>Children<span ng-show="pagedChildren.length > 0">
           ({{pagedChildren.totalCount}})</span></b>
     </p>

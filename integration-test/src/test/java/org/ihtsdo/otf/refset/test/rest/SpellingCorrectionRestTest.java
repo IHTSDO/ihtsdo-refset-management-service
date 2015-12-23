@@ -154,7 +154,6 @@ public class SpellingCorrectionRestTest {
    * @param type the type
    * @param project the project
    * @param refsetId the refset id
-   * @param auth the auth
    * @return the refset jpa
    * @throws Exception the exception
    */
@@ -245,7 +244,6 @@ public class SpellingCorrectionRestTest {
    * @param name the name
    * @param refset the refset
    * @param project the project
-   * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception
    */
@@ -618,7 +616,8 @@ public class SpellingCorrectionRestTest {
   /**
    * Ensure refset completed prior to shutting down test to avoid lookupName
    * issues.
-   * 
+   *
+   * @param refsetId the refset id
    * @throws Exception the exception
    */
   private void verifyExit(Long refsetId) throws Exception {

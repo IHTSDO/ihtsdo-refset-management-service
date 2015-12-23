@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>Assign Refset</h4>
+  <h4>
+    {{action}} Refset
+    <span ng-show="action == 'REASSIGN'"> to Author</span>
+  </h4>
 </div>
 
 <div class="modal-body">
@@ -22,12 +25,12 @@
       </td>
       <td>{{refset.description}}</td>
     </tr>
-    <tr>
+    <tr ng-show="action == 'ASSIGN'">
       <td>
         <b>Select user</b>
       </td>
       <td>
-        <select ng-model="selectedUserName"
+        <select ng-model="userName"
           ng-options="item for item in assignedUserNames"></select>
       </td>
     </tr>
@@ -49,8 +52,9 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary"
-    ng-click="assignRefset(selectedUserName); 
-    ">Assign</button>
+  <button ng-show="action == 'ASSIGN' class=" btn
+    btn-primary" ng-click="assignRefset();">Assign</button>
+  <button ng-show="action == 'REASSIGN' class=" btn
+    btn-primary" ng-click="assignRefset();">Reassign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

@@ -25,6 +25,11 @@ tsApp
           return tinymceOptions;
         }
 
+        // Get tinymce options
+        this.getTinymceOptions = function() {
+          return tinymceOptions;
+        }
+
         // Sets the error
         this.setError = function(message) {
           this.error.message = message;

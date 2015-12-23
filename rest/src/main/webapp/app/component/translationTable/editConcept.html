@@ -67,7 +67,8 @@
             <tr ng-repeat="description in pagedDescriptions">
               <td>
                 <textarea title="Description term" cols="40" rows="3"
-                  ng-model="description.term"></textarea>
+                  spellcheck="false" ng-model="description.term"
+                  ui-tinymce="tinymceOptions"></textarea>
               </td>
               <td>
                 <select ng-model="description.type"
@@ -103,7 +104,7 @@
               <td>
                 <select title="Spelling dictionary entries that can be removed"
                   style="width: 200px;" ng-model="selectedWord"
-                  ng-options="word for word in getDescriptionWords() | orderBy:'word'">
+                  ng-options="word for word in getAllUniqueWordsWithoutSuggestions() | orderBy:'word'">
                   <option value="_ALL_">All entries</option>
                 </select>
                 <button class="btn btn-xs btn-primary"
@@ -146,7 +147,8 @@
           </div>
         </div>
         <!-- Warnings -->
-        <span ng-show="warnings.length > 0">Click "Save" again to override warnings</span>
+        <span ng-show="warnings.length > 0">Click "Save" again to
+          override warnings</span>
         <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
       </div>
       <!-- end R1C2 -->

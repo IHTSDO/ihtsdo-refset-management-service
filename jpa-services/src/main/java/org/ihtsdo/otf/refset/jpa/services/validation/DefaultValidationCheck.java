@@ -40,24 +40,23 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     Logger.getLogger(getClass()).debug("  Validate refset - " + refset);
     ValidationResult result = new ValidationResultJpa();
 
-    /*
-     * // FOR TESTING if (!refset.getDescription().contains("Description")) {
-     * result
-     * .addError("TESTING Error: Descriptions must include the word 'Description'."
-     * ); }
-     * 
-     * // FOR TESTING if (!refset.getDescription().contains("refset")) {
-     * result.addWarning
-     * ("TESTING Warning: Descriptions must include the word 'refset'."); }
-     */
-
-    // Only an INTENSIONAL refset should have a definition
-    if (refset.getDefinitionClauses() != null &&
-        refset.getDefinitionClauses().size() > 0 &&
-        refset.getType() != Refset.Type.INTENSIONAL) {
-      result.addError("Only intensional refsets should have a definition");
+    // Verify fields that must have values
+    if (refset.getName() == null || refset.getName().isEmpty()) {
+      result.addError("Name must not be empty.");
+    }
+    if (refset.getDescription() == null || refset.getDescription().isEmpty()) {
+      result.addError("Description must not be empty.");
+    }
+    if (refset.getModuleId() == null || refset.getModuleId().isEmpty()) {
+      result.addError("Module id must not be empty.");
     }
 
+    // Only an INTENSIONAL refset should have a definition
+    if (refset.getDefinitionClauses() != null
+        && refset.getDefinitionClauses().size() > 0
+        && refset.getType() != Refset.Type.INTENSIONAL) {
+      result.addError("Only intensional refsets should have a definition");
+    }
 
     // Only an EXTERNAL refset should have a externalUrl
     if (refset.getType() != Refset.Type.EXTERNAL
@@ -110,16 +109,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     return result;
   }
 
-  /**
-   * Validate.
-   *
-   * @param concept the concept
-   * @param service the service
-   * @return the validation result
-   * @throws Exception 
-   */
   @Override
-  public ValidationResult validate(Concept concept, TranslationService service) throws Exception {
+  public ValidationResult validate(Concept concept, TranslationService service)
+    throws Exception {
     ValidationResult result = new ValidationResultJpa();
 
     Translation translation =
@@ -148,4 +140,22 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     return result;
   }
 
+  /* see superclass */
+  @Override
+  public ValidationResult validate(Translation translation,
+    TranslationService service) throws Exception {
+    ValidationResult result = new ValidationResultJpa();
+
+    // The language should be a 2 letter code matching a language
+    if (translation.getLanguage() == null) {
+      result.addError("Translation language must be set");
+    }
+
+    if (translation.getLanguage() != null
+        && translation.getLanguage().length() > 2) {
+      result.addWarning("Translation language should be a 2 letter code");
+    }
+
+    return result;
+  }
 }
