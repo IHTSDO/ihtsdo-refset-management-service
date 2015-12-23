@@ -517,9 +517,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
         rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
         // Only keep INFERRED_RELATIONSHIP rels
-        // TODO: terminology server is not returning inferred role rels, only isa
+        // TODO: terminology server is not returning inferred role rels, only
+        // isa
         // if (rel.getCharacteristicTypeId().equals( "STATED_RELATIONSHIP")) {
-          if (rel.getCharacteristicTypeId().equals( "INFERRED_RELATIONSHIP")) {
+        if (rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
@@ -528,9 +529,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
             "effectiveTime").asText()));
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId(relNode.get("type").get("fsn").asText());
+        rel.setTypeId(relNode.get("type").get("fsn").asText()
+            .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
-        if (rel.getTypeId().equals("Is a (attribute)")) {
+        if (rel.getTypeId().equals("Is a")) {
           continue;
         }
 
