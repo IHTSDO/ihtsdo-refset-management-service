@@ -117,6 +117,14 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
       tmpIndexFile.delete();
 
       String[] results = checker.suggestSimilar(term, amt);
+      // Handle the case of no suggestions, determine whether it exists
+      if (results.length == 0) {
+        if (checker.exist(term)) {
+          checker.close();
+          return new StringList();
+        }
+        // otherwise, follow below
+      }
       checker.close();
       return convertResults(results);
     }
@@ -157,6 +165,8 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
           new IndexWriterConfig(Version.LATEST, new StandardAnalyzer());
 
       // Create tmp file for SpellChecker
+      // TODO: try to redo this with straight input stream and no need for a tmp
+      // file.
       File tmpIndexFile =
           new File(Long.toString(System.currentTimeMillis()),
               Long.toString(tid));
@@ -173,9 +183,11 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
       for (String termToSearch : lookupTerms.getObjects()) {
         if (!dictionaryEntries.contains(termToSearch)) {
           String[] results = checker.suggestSimilar(termToSearch, amt);
-          StringList resultsForTerm = convertResults(results);
-
-          resultHashMap.put(termToSearch, resultsForTerm);
+          // if there are results or the word doesn't exist, then send it back
+          if (results.length > 0 || !checker.exist(termToSearch)) {
+            StringList resultsForTerm = convertResults(results);
+            resultHashMap.put(termToSearch, resultsForTerm);
+          }
         }
       }
 

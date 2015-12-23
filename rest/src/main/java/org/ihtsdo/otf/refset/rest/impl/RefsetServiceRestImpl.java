@@ -2303,10 +2303,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
+      final Refset refset = refsetService.getRefset(refsetId);
       // Authorize the call
       final String userName =
-          authorizeApp(securityService, authToken, "start lookup process",
-              UserRole.VIEWER);
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "start lookup member names", UserRole.AUTHOR);
 
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId, "requested from client "

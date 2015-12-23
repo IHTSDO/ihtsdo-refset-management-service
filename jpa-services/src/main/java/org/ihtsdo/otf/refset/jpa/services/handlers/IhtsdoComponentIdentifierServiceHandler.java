@@ -151,8 +151,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
 
   /* see superclass */
   @Override
-  public String getTerminologyId(DescriptionType member)
-    throws Exception {
+  public String getTerminologyId(DescriptionType member) throws Exception {
     if (member.getTerminologyId() != null
         && !member.getTerminologyId().isEmpty()) {
       return member.getTerminologyId();
@@ -216,7 +215,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     concept.setTranslation(translation);
     translation.setRefset(refset);
     translation.setProject(refset.getProject());
-    
+
     return getTerminologyId(concept);
   }
 
@@ -289,13 +288,14 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     // Make a webservice call to SnowOwl
     Client client = ClientBuilder.newClient();
     WebTarget target = client.target(url + "/sct/generate?token=" + authToken);
-
     String postData =
-        "{ " + "\"namespace\": " + (namespace == null ? 0 : namespace) + ", "
+        "{ " + "\"namespace\": "
+            + (namespace == null || namespace.isEmpty() ? 0 : namespace) + ", "
             + "\"partitionId\": \"" + partitionId + "\", "
             + "\"systemId\": \"\", " + "\"software\": \"ihtsdo-refset\", "
             + "\"comment\": \"string\", " + "\"generateLegacyIds\": \"false\" "
             + "}";
+
     Response response = target.request(accept).post(Entity.json(postData));
 
     String resultString = response.readEntity(String.class);

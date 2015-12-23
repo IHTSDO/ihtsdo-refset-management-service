@@ -328,7 +328,7 @@ tsApp.service('translationService', [
         console.debug("  concept ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
-     },
+      },
       // error
       function(response) {
         utilService.handleError(response);
@@ -412,8 +412,12 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.put(translationUrl + 'spelling' + "/" + 'add' + "&translationId=" + translationId,
-        entry).then(
+      $http.put(translationUrl + 'spelling' + "/" + 'add' + "?translationId=" + translationId,
+        entry, {
+          headers : {
+            "Content-type" : "text/plain"
+          }
+        }).then(
       // success
       function(response) {
         console.debug("  entry ", response.data);
@@ -435,8 +439,11 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(translationUrl + 'spelling' + "/" + 'add' + "/" + 'batch' + "/" + "&translationId=" + translationId,
-        entry).then(
+      $http.post(
+        translationUrl + 'spelling' + "/" + 'add' + "/" + 'batch' + "?translationId="
+          + translationId, {
+          strings : entries
+        }).then(
       // success
       function(response) {
         console.debug("  entry ", response.data);
@@ -483,20 +490,21 @@ tsApp.service('translationService', [
 
       // Get refset types
       gpService.increment();
-      $http.get(translationUrl + 'spelling' + "/" + 'suggest' + "/" + translationId + "/" + entry)
-        .then(
-        // success
-        function(response) {
-          console.debug("  suggest = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.get(
+        translationUrl + 'spelling' + "/" + 'suggest' + "/" + translationId + "/"
+          + encodeURIComponent(entry)).then(
+      // success
+      function(response) {
+        console.debug("  suggest = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -507,20 +515,22 @@ tsApp.service('translationService', [
 
       // Get refset types
       gpService.increment();
-      $http.post(translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch' + "/" + translationId + "/" + entry)
-        .then(
-        // success
-        function(response) {
-          console.debug("  suggest = ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch' + "/" + translationId, {
+          strings : lookupTerms
+        }).then(
+      // success
+      function(response) {
+        console.debug("  batch suggest = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -837,8 +847,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http['delete'](
-        translationUrl + "/concept/remove/note?conceptId=" + conceptId + "&noteId="
-          + noteId).then(
+        translationUrl + "/concept/remove/note?conceptId=" + conceptId + "&noteId=" + noteId).then(
       // success
       function(response) {
         gpService.decrement();

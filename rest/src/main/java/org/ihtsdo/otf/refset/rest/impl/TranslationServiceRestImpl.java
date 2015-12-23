@@ -2780,10 +2780,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
+      final Translation translation = translationService.getTranslation(translationId);
       // Authorize the call
       final String userName =
-          authorizeApp(securityService, authToken, "start lookup process",
-              UserRole.VIEWER);
+          authorizeProject(translationService, translation.getProject().getId(),
+              securityService, authToken, "start lookup concept names", UserRole.AUTHOR);
 
       // Launch lookup process in background thread
       translationService
