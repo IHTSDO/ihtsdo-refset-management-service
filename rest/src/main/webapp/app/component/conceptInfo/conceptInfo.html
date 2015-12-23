@@ -28,17 +28,14 @@
     <p ng-show="concept" style="margin-top: 5px;">
       <b>Descriptions</b>
     </p>
-    <table ng-show="concept.descriptions.length > 0" class="table"
-      style="max-height: 150px; overflow-y: scroll;">
-      <tbody>
-        <!-- terminology server doesn't return inactive descriptions -->
-        <tr ng-repeat="description in getOrderedDescriptions(concept)">
-          <td>{{description.term}}</td>
-          <td>{{description.languageCode}}</td>
-          <td>{{getDescriptionType(description)}}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div ng-show="concept.descriptions.length > 0"
+      ng-repeat="description in concept.descriptions" style="font-size: 12px"
+      class="row">
+      <span class="col-md-8 col-xs-8">{{description.term}}</span>
+      <span class="col-md-1 col-xs-1">{{description.languageCode}}</span>
+      <span class="col-md-3 col-xs-3">{{getDescriptionType(description)}}</span>
+    </div>
+
     <span ng-show="concept.descriptions.length==0" class="alert alert-warning">No
       active descriptions</span>
 

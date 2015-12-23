@@ -91,8 +91,8 @@ public class IhtsdoComponentIdentifierServiceHandler implements
       try {
         String namespace = null;
         if (concept != null && concept.getTranslation() != null
-            && concept.getTranslation().getProject() != null) {
-          namespace = concept.getTranslation().getProject().getNamespace();
+            && concept.getTranslation().getRefset() != null) {
+          namespace = concept.getTranslation().getRefset().getNamespace();
         }
         // Obtain the ID
         return getTerminologyId(namespace,
@@ -216,6 +216,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     concept.setTranslation(translation);
     translation.setRefset(refset);
     translation.setProject(refset.getProject());
+    
     return getTerminologyId(concept);
   }
 

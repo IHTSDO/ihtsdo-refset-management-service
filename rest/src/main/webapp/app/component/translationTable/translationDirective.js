@@ -751,7 +751,7 @@ tsApp
                 $scope.refsets = refsets;
                 $scope.translation = {
                   workflowPath : metadata.workflowPaths[0],
-                  projectId: project.id
+                  projectId : project.id
                 };
 
                 $scope.selectRefset = function(refset) {
@@ -764,10 +764,6 @@ tsApp
 
                 // Update translation
                 $scope.submitTranslation = function(translation) {
-                  if (!translation || !translation.name || !translation.description) {
-                    $scope.error = "The name, description, and terminology fields cannot be blank. ";
-                    return;
-                  }
 
                   // Validate the translation
                   validationService.validateTranslation(translation, $scope.project.id).then(
@@ -782,14 +778,14 @@ tsApp
                       $scope.errors = [];
                     }
 
-                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
-                    if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
+                    // if data.warnings is set and doesn't match $scope.warnings
+                    if (data.warnings && data.warnings.length > 0 && $scope.warnings !== data.warnings) {
                       $scope.warnings = data.warnings;
                       return;
                     } else {
                       $scope.warnings = [];
                     }
-
+                    
                     translationService.addTranslation(translation).then(
                     // Success - update translation
                     function(data) {
@@ -870,10 +866,6 @@ tsApp
 
                 // Update translation
                 $scope.submitTranslation = function(translation) {
-                  if (!translation || !translation.name || !translation.description) {
-                    $scope.error = "The name, description, and terminology fields cannot be blank. ";
-                    return;
-                  }
 
                   // Validate the translation
                   validationService.validateTranslation(translation, $scope.project.id).then(
@@ -888,7 +880,7 @@ tsApp
                       $scope.errors = [];
                     }
 
-                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
+                    // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                     if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
                       $scope.warnings = data.warnings;
                       return;
@@ -941,10 +933,7 @@ tsApp
                       return $scope.selected.translation;
                     },
                     currentUserName : function() {
-                      if (laction == 'ASSIGN') {
-                        return $scope.user.userName;
-                      }
-                      return null;
+                      return $scope.user.userName;
                     },
                     assignedUsers : function() {
                       return $scope.projects.assignedUsers;
@@ -1040,6 +1029,7 @@ tsApp
                       .then(
                         // Success - unassign
                         function(data) {
+                          // The username doesn't matter - it'll go back to the author
                           workflowService.performTranslationWorkflowAction($scope.project.id,
                             translation.id, $scope.userName, 'AUTHOR', 'REASSIGN', $scope.concept)
                             .then(
@@ -1385,7 +1375,7 @@ tsApp
                     $scope.pageSize);
                 }
 
-                // Add a new blank description entry
+                // Add a new empty description entry
                 $scope.addDescription = function() {
                   var description = {};
                   description.term = "";
@@ -1418,7 +1408,7 @@ tsApp
                       spliceIndexes.push(i);
                     }
                   }
-                  // Remove blank descriptions
+                  // Remove empty descriptions
                   for (var i = 0; i < spliceIndexes.length; i++) {
                     copy.descriptions.splice(spliceIndexes[i], 1);
                   }
@@ -1446,7 +1436,7 @@ tsApp
                       $scope.errors = [];
                     }
 
-                    // if $scope.warnings is blank, and data.warnings is not, show warnings and stop
+                    // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                     if ($scope.warnings.length == 0 && data.warnings && data.warnings.length > 0) {
                       $scope.warnings = data.warnings;
                       return;

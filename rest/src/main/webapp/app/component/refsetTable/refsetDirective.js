@@ -784,7 +784,7 @@ tsApp
               };
 
               // Clone Refset modal
-              $scope.openCloneRefsetModal = function(lrefset) {
+              $scope.RefsetModal = function(lrefset) {
                 console.debug("cloneRefsetModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
@@ -828,41 +828,73 @@ tsApp
 
                 $scope.submitRefset = function(refset) {
                   console.debug("clone refset", refset.id);
-                  refsetService.cloneRefset(refset.project.id, refset).then(
-                  // Success - add refset
-                  function(data) {
-                    var newRefset = data;
-                    // If intensional, apply the definition
-                    if (newRefset.type == 'INTENSIONAL') {
-                      refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
-                      // Success - begin redefinition
-                      function(data) {
 
-                        refsetService.finishRedefinition(newRefset.id).then(
-                        // Success - finish redefinition
-                        function(data) {
+                  if (!refset.project) {
+                    $scope.errors[0] = "A project must be chosen from the picklist.";
+                    return;
+                  }
+                  // validate refset before cloning it
+                  validationService.validateRefset(refset).then(
+                    function(data) {
+
+                      // If there are errors, make them available and stop.
+                      if (data.errors && data.errors.length > 0) {
+                        $scope.errors = data.errors;
+                        return;
+                      } else {
+                        $scope.errors = [];
+                      }
+
+                      // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
+                      if (data.warnings && data.warnings.length > 0
+                        && $scope.warnings !== data.warnings) {
+                        $scope.warnings = data.warnings;
+                        return;
+                      } else {
+                        $scope.warnings = [];
+                      }
+
+                      refsetService.cloneRefset(refset.project.id, refset).then(
+                      // Success - clone refset
+                      function(data) {
+                        var newRefset = data;
+                        // If intensional, apply the definition
+                        if (newRefset.type == 'INTENSIONAL') {
+                          refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
+                          // Success - begin redefinition
+                          function(data) {
+
+                            refsetService.finishRedefinition(newRefset.id).then(
+                            // Success - finish redefinition
+                            function(data) {
+                              $uibModalInstance.close(newRefset);
+                            },
+                            // Error - finish redefinition
+                            function(data) {
+                              $scope.errors[0] = data;
+                              utilService.clearError();
+                            })
+                          },
+                          // Error - begin redefinition
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          })
+                        } else {
                           $uibModalInstance.close(newRefset);
-                        },
-                        // Error - finish redefinition
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
+                        }
                       },
-                      // Error - begin redefinition
+                      // Error - clone refset
                       function(data) {
                         $scope.errors[0] = data;
                         utilService.clearError();
                       })
-                    } else {
-                      $uibModalInstance.close(newRefset);
-                    }
-                  },
-                  // Error - add refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
+                    },
+                    // Error - validate
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                 };
 
                 $scope.cancel = function() {
@@ -1276,7 +1308,7 @@ tsApp
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
                 $scope.assignRefset = function() {
-                  console.debug("Submitting chosen user", userName);
+                  console.debug("Submitting chosen user", $scope.userName);
                   if (!$scope.userName) {
                     $scope.errors[0] = "The user must be selected. ";
                     return;
@@ -1320,6 +1352,7 @@ tsApp
                       $scope.userName, $scope.role, 'UNASSIGN').then(
                       // Success - unassign
                       function(data) {
+                        // The username doesn't matter - it'll go back to the author
                         workflowService.performWorkflowAction($scope.project.id, refset.id,
                           $scope.userName, 'AUTHOR', 'REASSIGN').then(
                         // success - reassign
@@ -1416,72 +1449,66 @@ tsApp
                 $scope.submitRefset = function(refset) {
                   console.debug("Submitting add refset", refset);
 
-                  if (!refset || !refset.name || !refset.description) {
-                    $scope.errors[0] = "The name and description fields cannot be blank. ";
-                    return;
-                  }
-
                   refset.projectId = project.id;
 
                   // validate refset before adding it
                   validationService.validateRefset(refset).then(
                     function(data) {
-                      $scope.validationResult = data;
-                      if ($scope.validationResult.errors.length > 0) {
-                        $scope.errors = $scope.validationResult.errors;
-                      } else {
-                        $scope.errors = null;
-                      }
-                      if ($scope.validationResult.warnings.length > 0) {
-                        $scope.previousWarnings = $scope.warnings;
-                        $scope.warnings = $scope.validationResult.warnings;
-                      } else {
-                        $scope.warnings = null;
-                      }
-                      // perform the edit if there are no errors or if there are only warnings
-                      // and the user clicks through the warnings
-                      if ($scope.errors == null
-                        && ($scope.warnings == null || (JSON.stringify($scope.warnings) == JSON
-                          .stringify($scope.previousWarnings)))) {
-                        $scope.warnings = null;
-                        // Success - validate refset
-                        refsetService.addRefset(refset).then(
-                          // Success - add refset
-                          function(data) {
-                            var newRefset = data;
-                            // IF intensional, apply the definition
-                            if (newRefset.type == 'INTENSIONAL') {
-                              refsetService.beginRedefinition(newRefset.id, newRefset.definition)
-                                .then(
-                                // Success - begin redefinition
-                                function(data) {
 
-                                  refsetService.finishRedefinition(newRefset.id).then(
-                                  // Success - finish redefinition
-                                  function(data) {
-                                    $uibModalInstance.close(newRefset);
-                                  },
-                                  // Error - finish redefinition
-                                  function(data) {
-                                    $scope.errors[0] = data;
-                                    utilService.clearError();
-                                  })
-                                },
-                                // Error - begin redefinition
-                                function(data) {
-                                  $scope.errors[0] = data;
-                                  utilService.clearError();
-                                })
-                            } else {
+                      // If there are errors, make them available and stop.
+                      if (data.errors && data.errors.length > 0) {
+                        $scope.errors = data.errors;
+                        return;
+                      } else {
+                        $scope.errors = [];
+                      }
+
+                      // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
+                      if (data.warnings && data.warnings.length > 0
+                        && $scope.warnings !== data.warnings) {
+                        $scope.warnings = data.warnings;
+                        return;
+                      } else {
+                        $scope.warnings = [];
+                      }
+
+                      // Success - validate refset
+                      refsetService.addRefset(refset).then(
+                      // Success - add refset
+                      function(data) {
+                        var newRefset = data;
+                        // IF intensional, apply the definition
+                        if (newRefset.type == 'INTENSIONAL') {
+                          refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
+                          // Success - begin redefinition
+                          function(data) {
+
+                            refsetService.finishRedefinition(newRefset.id).then(
+                            // Success - finish redefinition
+                            function(data) {
                               $uibModalInstance.close(newRefset);
-                            }
+                            },
+                            // Error - finish redefinition
+                            function(data) {
+                              $scope.errors[0] = data;
+                              utilService.clearError();
+                            })
                           },
-                          // Error - add refset
+                          // Error - begin redefinition
                           function(data) {
                             $scope.errors[0] = data;
                             utilService.clearError();
                           })
-                      }
+                        } else {
+                          $uibModalInstance.close(newRefset);
+                        }
+                      },
+                      // Error - add refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+
                     },
                     // Error - validate refset
                     function(data) {
@@ -1545,47 +1572,43 @@ tsApp
 
                 $scope.submitRefset = function(refset) {
 
-                  if (!refset || !refset.name || !refset.description) {
-                    $scope.error = "The name, description, and terminology fields cannot be blank. ";
-                    return;
-                  }
-
+                  // Validate refset
                   validationService.validateRefset(refset).then(
                     function(data) {
-                      $scope.validationResult = data;
-                      if ($scope.validationResult.errors.length > 0) {
-                        $scope.errors = $scope.validationResult.errors;
+
+                      // If there are errors, make them available and stop.
+                      if (data.errors && data.errors.length > 0) {
+                        $scope.errors = data.errors;
+                        return;
                       } else {
-                        $scope.errors = null;
+                        $scope.errors = [];
                       }
-                      if ($scope.validationResult.warnings.length > 0) {
-                        $scope.previousWarnings = $scope.warnings;
-                        $scope.warnings = $scope.validationResult.warnings;
+
+                      // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
+                      if (data.warnings && data.warnings.length > 0
+                        && $scope.warnings !== data.warnings) {
+                        $scope.warnings = data.warnings;
+                        return;
                       } else {
-                        $scope.warnings = null;
+                        $scope.warnings = [];
                       }
-                      // perform the edit if there are no errors or if there are only warnings
-                      // and the user clicks through the warnings
-                      if ($scope.errors == null
-                        && ($scope.warnings == null || (JSON.stringify($scope.warnings) == JSON
-                          .stringify($scope.previousWarnings)))) {
-                        $scope.warnings = null;
-                        // Success - validate refset
-                        refsetService.updateRefset(refset).then(
-                        // Success - update refset
-                        function(data) {
-                          if (refset.definition != $scope.originalDefinition) {
-                            $scope.error = "Definition is not allowed to change with refset edit.";
-                          } else {
-                            $uibModalInstance.close(refset);
-                          }
-                        },
-                        // Error - update refset
-                        function(data) {
-                          $scope.errors[0] = data;
-                          utilService.clearError();
-                        })
-                      }
+
+                      // Success - validate refset
+                      refsetService.updateRefset(refset).then(
+                      // Success - update refset
+                      function(data) {
+                        if (refset.definition != $scope.originalDefinition) {
+                          $scope.error = "Definition is not allowed to change with refset edit.";
+                        } else {
+                          $uibModalInstance.close(refset);
+                        }
+                      },
+                      // Error - update refset
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+
                     },
                     // Error - validate refset
                     function(data) {
@@ -1741,7 +1764,7 @@ tsApp
                   }
 
                   if (!search) {
-                    $scope.errors[0] = "The search field cannot be blank. ";
+                    $scope.errors[0] = "The search field cannot be empty. ";
                     return;
                   }
                   // clear data structures
@@ -2305,7 +2328,7 @@ tsApp
                   console.debug("add feeback", refset, name, email, message);
 
                   if (message == null || message == undefined || message === '') {
-                    window.alert("The message cannot be blank. ");
+                    window.alert("The message cannot be empty. ");
                     return;
                   }
 

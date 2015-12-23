@@ -1,5 +1,8 @@
 <div class="modal-header">
-  <h4>{{action}} Concept</h4>
+  <h4>
+    {{action}} Concept
+    <span ng-show="action == 'REASSIGN'"> to Author</span>
+  </h4>
 </div>
 
 <div class="modal-body">
@@ -17,7 +20,7 @@
       <td>{{concept.name}}</td>
     </tr>
     <!-- dont show username for reassign, it simply goes back to the author(s) -->
-    <tr ng-show='action == 'ASSIGN'>
+    <tr ng-show="action == 'ASSIGN'">
       <td>
         <b>Select user</b>
       </td>
@@ -45,7 +48,9 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="assignConcept(); 
-    ">Assign</button>
+  <button ng-show="action == 'ASSIGN'" class="btn btn-primary"
+    ng-click="assignConcept();">Assign</button>
+  <button ng-show="action == 'REASSIGN'" class="btn btn-primary"
+    ng-click="assignConcept();">Reassign</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>
