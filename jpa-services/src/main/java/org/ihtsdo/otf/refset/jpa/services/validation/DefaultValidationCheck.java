@@ -83,14 +83,16 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
   /* see superclass */
   @Override
   public ValidationResult validate(ConceptRefsetMember member,
-    RefsetService service) {
+    RefsetService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
+    Refset refset =
+        service.getRefset(member.getRefset().getId());
     if (member.getMemberType() == Refset.MemberType.INCLUSION
-        && member.getRefset().getType() != Refset.Type.INTENSIONAL) {
+        && refset.getType() != Refset.Type.INTENSIONAL) {
       result.addError("Inclusion member attached to non-intensional refset.");
     }
     if (member.getMemberType() == Refset.MemberType.EXCLUSION
-        && member.getRefset().getType() != Refset.Type.INTENSIONAL) {
+        && refset.getType() != Refset.Type.INTENSIONAL) {
       result.addError("Exclusion member attached to non-intensional refset.");
     }
 

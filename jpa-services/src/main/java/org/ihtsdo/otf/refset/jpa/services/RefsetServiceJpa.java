@@ -520,6 +520,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     handleLazyInit(member);
     return member;
   }
+  
 
   /* see superclass */
   @SuppressWarnings("unchecked")

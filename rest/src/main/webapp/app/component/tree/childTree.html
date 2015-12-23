@@ -1,5 +1,46 @@
 
 <div ui-tree-handle>
+  <i ng-click="openAddModal(refset, tree, project); $event.stopPropagation()"
+    ng-show="refset.type == 'INTENSIONAL' && 
+      memberTypes[tree.terminologyId].memberType != 'EXCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'INCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'MEMBER'"
+    title="Add inclusion" class="noul material-icons md-12">add</i>
+  <i ng-click="openAddModal(refset, tree, project); $event.stopPropagation()"
+    ng-show="refset.type == 'EXTENSIONAL' && 
+      memberTypes[tree.terminologyId].memberType != 'EXCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'INCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'MEMBER'"
+    title="Add members" class="noul material-icons md-12">add</i>
+  
+  <button class="btn btn-xs btn-primary"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    uib-tooltip="Member">M</button>    
+  <i ng-show="refset.type == 'INTENSIONAL' && 
+    memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(refset, memberTypes[tree.terminologyId]); "
+    title="Add exclusion" class="noul material-icons md-12">remove_circle_outline</i>
+  <i ng-show="refset.type == 'EXTENSIONAL' && 
+    memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(refset, memberTypes[tree.terminologyId]); "
+    title="Remove members" class="noul material-icons md-12">delete</i>
+  
+  <button class="btn btn-xs btn-danger"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+    uib-tooltip="Exclusion">X</button>    
+  <i ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+    ng-click="removeRefsetExclusion(refset, memberTypes[tree.terminologyId]);"
+    title="Remove exclusion" class="noul material-icons md-12">delete</i>
+  
+  <button class="btn btn-xs btn-success"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+    uib-tooltip="Inclusion">I</button>    
+  <i ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+    ng-click="removeRefsetInclusion(refset,memberTypes[tree.terminologyId]);"
+    title="Remove inclusion" class="noul material-icons md-12">delete</i>
+  
+
+
   <!-- Expand/collapse controls 
 		 Closed if collapsed flag OR children have not been loaded
 		 Open if collapsed flag false AND children have already been loaded
@@ -14,7 +55,16 @@
   <span ng-show="tree.terminologyId != concept.terminologyId"
     style="font-size:12px">
     <a ng-click="getConceptById(tree.terminologyId)"> {{tree.terminologyId}}</a>
-    : {{tree.name}}
+    : <span ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'" 
+      class="middle-blue">{{tree.name}}</span>
+      <span ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'" 
+      class="color: red">{{tree.name}}</span>
+      <span ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'" 
+      class="color: green">{{tree.name}}</span>
+      <span ng-show="memberTypes[tree.terminologyId].memberType != 'EXCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'INCLUSION' &&
+      memberTypes[tree.terminologyId].memberType != 'MEMBER'" 
+      class="color: black">{{tree.name}}</span>
   </span>
 
 

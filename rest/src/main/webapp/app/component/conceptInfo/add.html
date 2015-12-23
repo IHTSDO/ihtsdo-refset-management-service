@@ -1,0 +1,40 @@
+<div class="modal-header">
+  <h4>Add Inclusion</h4>
+</div>
+
+<div class="modal-body">
+  Select one:<br>
+  <div><input type="radio" ng-model="includeClause" name="selfAndDescendants" value="{{selfAndDescendants}}{{member.terminologyId}} | {{member.name}} |" required />
+  {{selfAndDescendants}}{{member.terminologyId}} | {{member.name}} |</div>
+  <div><input type="radio" ng-model="includeClause" name="descendants" value="{{descendants}}{{member.terminologyId}} | {{member.name}} |" required />
+   {{descendants}}{{member.terminologyId}} | {{member.name}} |</div>
+  <div><input type="radio" ng-model="includeClause" name="inclusion" value="{{member.terminologyId}} | {{member.name}} |" required />
+    {{member.terminologyId}} | {{member.name}} |</div>
+
+      <!-- Errors -->
+      <table>
+      <tr ng-show="errors.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-danger"
+            ng-repeat="error in errors">
+            {{error}}
+          </div>
+        </td>
+      </tr>
+      <tr ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning"
+            ng-repeat="warning in warnings">
+            {{warning}}
+          </div>
+        </td>
+      </tr>
+      </table>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="submitAdd(refset, member, includeClause)">Submit</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
+</div>

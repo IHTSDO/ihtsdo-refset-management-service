@@ -22,7 +22,8 @@
       style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
         <li ng-repeat="tree in parents" ui-tree-node data-nodrag
-          ng-include="'app/component/tree/parentTree.html'"></li>
+          ng-include="'app/component/tree/parentTree.html'">
+    </li>
       </ol>
     </div>
     <p ng-show="concept" style="margin-top: 5px;">

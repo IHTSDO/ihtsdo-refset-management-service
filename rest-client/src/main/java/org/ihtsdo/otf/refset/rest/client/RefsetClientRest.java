@@ -1259,4 +1259,11 @@ public class RefsetClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
   }
+
+  @Override
+  public ConceptRefsetMemberList addRefsetMembersForExpression(Long refsetId,
+    String expression, String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }
