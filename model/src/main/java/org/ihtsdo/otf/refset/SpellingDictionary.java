@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset;
 import java.util.List;
 
 import org.ihtsdo.otf.refset.helpers.HasId;
-import org.ihtsdo.otf.refset.helpers.StringList;
 
 /**
  * Represents a dictionary of correctly spelled words.
@@ -39,7 +38,7 @@ public interface SpellingDictionary extends HasId {
    *
    * @param newEntries the new entries
    */
-  public void addEntries(StringList newEntries);
+  public void addEntries(List<String> newEntries);
 
   /**
    * Removes the entry.

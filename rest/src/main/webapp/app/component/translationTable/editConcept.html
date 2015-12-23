@@ -66,9 +66,9 @@
           <tbody>
             <tr ng-repeat="description in pagedDescriptions">
               <td>
-                <textarea title="Description term" cols="40" rows="3"
+                <textarea title="Description term" cols="40" rows="2"
                   spellcheck="false" ng-model="description.term"
-                  ui-tinymce="tinymceOptions"></textarea>
+                  ui-tinymce="tinymceOptions" ng-chage="getSuggestsions()"></textarea>
               </td>
               <td>
                 <select ng-model="description.type"
@@ -104,8 +104,7 @@
               <td>
                 <select title="Spelling dictionary entries that can be removed"
                   style="width: 200px;" ng-model="selectedWord"
-                  ng-options="word for word in getAllUniqueWordsWithoutSuggestions() | orderBy:'word'">
-                  <option value="_ALL_">All entries</option>
+                  ng-options="word for word in allUniqueWordsNoSuggestions">
                 </select>
                 <button class="btn btn-xs btn-primary"
                   ng-click="removeSpellingEntry(selectedWord)"

@@ -769,7 +769,6 @@ tsApp
                   validationService.validateTranslation(translation, $scope.project.id).then(
                     // Success
                     function(data) {
-                      console.debug("data", data);
                       // If there are errors, make them available and stop.
                       if (data.errors && data.errors.length > 0) {
                         $scope.errors = data.errors;
@@ -872,7 +871,6 @@ tsApp
                   validationService.validateTranslation(translation, $scope.project.id).then(
                   // Success
                   function(data) {
-                    console.debug("data", data);
                     // If there are errors, make them available and stop.
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
@@ -1266,13 +1264,13 @@ tsApp
                   menubar : false,
                   statusbar : false,
                   toolbar : "spellchecker",
-                  spellchecker_languages : "",
-                  spellchecker_language : "",
+                  format : "text",
+                  spellchecker_languages : translation.language + "=" + translation.language,
+                  spellchecker_language : translation.language,
                   spellchecker_wordchar_pattern : /[^\s,\.]+/g,
                   spellchecker_callback : function(method, text, success, failure) {
-
                     // method == spellcheck
-                    if (method == "spellcheck") {
+                    if (method == "spellcheck" && text) {
                       // TODO: may not need to actually call this, probably can just look up
                       // words from the description
                       translationService.suggestBatchSpelling(translation.id,
@@ -1303,8 +1301,8 @@ tsApp
                       translationService.addSpellingDictionaryEntry(translation.id, text).then(
                       //Success
                       function(data) {
-                        // Remove added word from the suggestions map
-                        delete $scope.suggestions[text];
+                        // Recompute suggestions
+                        $scope.getSuggestions();
                         success(data);
                       },
                       // Error
@@ -1347,6 +1345,7 @@ tsApp
 
                 // spelling/memory scope vars
                 $scope.selectedWord = null;
+                $scope.allUniqueWordsNoSuggestions = [];
                 $scope.selectedEntry = null;
 
                 // Clear errors
@@ -1368,6 +1367,7 @@ tsApp
 
                 // Get words of a description
                 $scope.getWords = function(description) {
+                  // Same as in tinymce options
                   return description.term.match(/[^\s,\.]+/g);
                 }
 
@@ -1386,16 +1386,17 @@ tsApp
 
                 // Globally populate $scope.suggestions (outside of spelling correction run)
                 $scope.getSuggestions = function() {
-                  console.debug("suggest spellings");
+
                   translationService.suggestBatchSpelling(translation.id,
-                    text.match(this.getWordCharPattern())).then(
+                    $scope.getAllUniqueWords()).then(
                   // Success
                   function(data) {
                     $scope.suggestions = {};
                     for ( var entry in data.map) {
                       $scope.suggestions[entry] = data.map[entry].strings;
                     }
-                    console.debug("  suggest spellings=", $scope.suggestions);
+                    // compute all unique words without suggestions
+                    $scope.getAllUniqueWordsNoSuggestions();
                   },
                   // Error
                   function(data) {
@@ -1419,19 +1420,23 @@ tsApp
                   for ( var word in all) {
                     retval.push(word);
                   }
-                  return retval.sort();
+                  retval = retval.sort();
+                  if (retval.length > 0) {
+                    $scope.selectedWord = retval[0];
+                  }
+                  return retval;
                 }
 
-                // Get all unique words without suggestions
-                $scope.getAllUniqueWordsWithoutSuggestions = function() {
+                // Sets $scope.allUniqueWordsNoSuggestion
+                $scope.getAllUniqueWordsNoSuggestions = function() {
                   var words = $scope.getAllUniqueWords();
                   var retval = [];
                   for (var i = 0; i < words.length; i++) {
-                    if (!$scope.suggestions[words[i]]) {
+                    if (words[i] && !$scope.suggestions[words[i]]) {
                       retval.push(words[i]);
                     }
                   }
-                  return retval.sort();
+                  $scope.allUniqueWordsNoSuggestions = retval.sort();
                 }
 
                 // Remove a spelling entry

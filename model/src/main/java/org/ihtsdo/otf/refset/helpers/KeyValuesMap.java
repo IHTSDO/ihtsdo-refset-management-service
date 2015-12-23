@@ -98,4 +98,9 @@ public class KeyValuesMap {
     return true;
   }
 
+  /* see superclass */
+  @Override
+  public String toString() {
+    return map == null ? "" : map.toString();
+  }
 }

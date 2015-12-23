@@ -516,7 +516,8 @@ tsApp.service('translationService', [
       // Get refset types
       gpService.increment();
       $http.post(
-        translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch' + "/" + translationId, {
+        translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch?translationId='
+          + translationId, {
           strings : lookupTerms
         }).then(
       // success

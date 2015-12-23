@@ -988,7 +988,7 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest/batch/" + translationId);
+            + "/translation/spelling/suggest/batch?translationId=" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
