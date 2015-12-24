@@ -21,6 +21,7 @@ import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
@@ -493,6 +494,17 @@ public interface TranslationService extends RefsetService {
    */
   public void lookupConceptNames(Long translationId, String label,
     boolean background) throws Exception;
+
+  /**
+   * Compute preferred name.
+   *
+   * @param concept the concept
+   * @param pref the preference list
+   * @return the string
+   * @throws Exception the exception
+   */
+  public String computePreferredName(Concept concept,
+    List<LanguageDescriptionType> pref) throws Exception;
 
   /**
    * Handle lazy initialization for a translation.
