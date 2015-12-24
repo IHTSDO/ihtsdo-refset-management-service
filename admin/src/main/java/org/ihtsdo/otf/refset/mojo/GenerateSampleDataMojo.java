@@ -580,8 +580,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
               "222222", "1000124", author1, false);
       ConceptRefsetMemberJpa test2member1 =
           makeRefsetMember(test2, "62621002", "Bednar tumor",
-              Refset.MemberType.MEMBER, "SNOMEDCT", "20150131", "731000124108",
-              "62621002", author1.getName(), author1);
+              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              "731000124108", "62621002", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test2.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
 

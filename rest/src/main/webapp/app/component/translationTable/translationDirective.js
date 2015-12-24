@@ -385,6 +385,7 @@ tsApp
                 $scope.getConcepts(translation);
                 $scope.getAvailableConcepts(translation);
                 $scope.getAssignedConcepts(translation);
+                $scope.selected.concept = null;
               };
 
               // Selects a concepts (setting $scope.concept)
