@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptDiffReportJpa;
@@ -1582,5 +1583,12 @@ public class TranslationClientRest extends RootClientRest implements
     } else {
       throw new Exception(response.toString());
     }
+  }
+
+  @Override
+  public LanguageDescriptionTypeList getLanguageDescriptionTypes(
+    String authToken) throws Exception {
+    // TODO Auto-generated method stub
+    return null;
   }
 }
