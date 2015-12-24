@@ -13,6 +13,50 @@
   <div class="col-md-12 col-xs-12">
     <h4 ng-show="concept">
       <b>Concept</b> {{concept.terminologyId}}
+      
+  <i ng-click="openAddModal(refset, concept, project); $event.stopPropagation()"
+    ng-show="refset.type == 'INTENSIONAL' && 
+      memberTypes[concept.terminologyId].memberType != 'EXCLUSION' &&
+      memberTypes[concept.terminologyId].memberType != 'INCLUSION' &&
+      memberTypes[concept.terminologyId].memberType != 'MEMBER'"
+    title="Add inclusion" class="noul material-icons md-12">add</i>
+  <i ng-click="openAddModal(refset, concept, project); $event.stopPropagation()"
+    ng-show="refset.type == 'EXTENSIONAL' && 
+      memberTypes[concept.terminologyId].memberType != 'EXCLUSION' &&
+      memberTypes[concept.terminologyId].memberType != 'INCLUSION' &&
+      memberTypes[concept.terminologyId].memberType != 'MEMBER'"
+    title="Add members" class="noul material-icons md-12">add</i>
+  
+  <button class="btn btn-xs btn-primary"
+    ng-show="memberTypes[concept.terminologyId].memberType == 'MEMBER'"
+    uib-tooltip="Member">M</button>    
+  <i ng-show="refset.type == 'INTENSIONAL' && 
+    memberTypes[concept.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(refset, memberTypes[concept.terminologyId]); "
+    title="Add exclusion" class="noul material-icons md-12">remove_circle_outline</i>
+  <i ng-show="refset.type == 'EXTENSIONAL' && 
+    memberTypes[concept.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(refset, memberTypes[concept.terminologyId]); "
+    title="Remove members" class="noul material-icons md-12">delete</i>
+  
+  <button class="btn btn-xs btn-danger"
+    ng-show="memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
+    uib-tooltip="Exclusion">X</button>    
+  <i ng-show="memberTypes[concept.terminologyId].memberType == 'EXCLUSION'"
+    ng-click="removeRefsetExclusion(refset, memberTypes[concept.terminologyId]);"
+    title="Remove exclusion" class="noul material-icons md-12">delete</i>
+  
+  <button class="btn btn-xs btn-success"
+    ng-show="memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
+    uib-tooltip="Inclusion">I</button>    
+  <i ng-show="memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
+    ng-click="removeRefsetInclusion(refset,memberTypes[concept.terminologyId]);"
+    title="Remove inclusion" class="noul material-icons md-12">delete</i>
+  
+      
+      
+      
+      
     </h4>
 
     <p ng-show="parents.length > 0">

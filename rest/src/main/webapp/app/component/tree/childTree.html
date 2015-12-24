@@ -58,13 +58,13 @@
     : <span ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'" 
       class="middle-blue">{{tree.name}}</span>
       <span ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'" 
-      class="color: red">{{tree.name}}</span>
+      style="color: red;">{{tree.name}}</span>
       <span ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'" 
-      class="color: green">{{tree.name}}</span>
+      style="color: green;">{{tree.name}}</span>
       <span ng-show="memberTypes[tree.terminologyId].memberType != 'EXCLUSION' &&
       memberTypes[tree.terminologyId].memberType != 'INCLUSION' &&
       memberTypes[tree.terminologyId].memberType != 'MEMBER'" 
-      class="color: black">{{tree.name}}</span>
+      style="color: black;">{{tree.name}}</span>
   </span>
 
 
