@@ -528,10 +528,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           || releaseInfo.isPublished())
         throw new Exception("translation release is not ready to validate "
             + translationId);
-      if (!WorkflowStatus.READY_FOR_PUBLICATION.equals(translation
-          .getWorkflowStatus()))
-        throw new Exception("translation workflowstatus is not "
-            + WorkflowStatus.READY_FOR_PUBLICATION + " for " + translationId);
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
           validationService

@@ -56,6 +56,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * JPA enabled implementation of {@link TranslationService}.
@@ -917,18 +918,21 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // only exist for staging purposes
     // will become real if a finish operation is completed
     // used to prevent retrieving with index
-    translationCopy.setProvisional(true);
+
+    // Mark as provisional if staging type isn't preview
+    if (stagingType == Translation.StagingType.PREVIEW) {
+      translationCopy.setEffectiveTime(effectiveTime);
+      translationCopy.setProvisional(false);
+    } else {
+      translationCopy.setProvisional(true);
+    }
 
     // null its id and all of its components ids
     // then call addXXX on each component
     translationCopy.setId(null);
     translationCopy.setDescriptionTypes(null);
     translationCopy.setEffectiveTime(effectiveTime);
-    /*
-     * for (DescriptionTypeRefsetMember type :
-     * translationCopy.getDescriptionTypes()) { type.setId(null);
-     * translationCopy.addDescriptionType(type); //addDescriptionType(type); }
-     */
+
 
     addTranslation(translationCopy);
 
@@ -938,9 +942,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // altered from
     // 6901 to null
     for (Concept originConcept : translation.getConcepts()) {
+
+      // Skip members for preview that are not ready for publication
+      if (stagingType == Translation.StagingType.PREVIEW &&
+          originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
+        continue;
+      }
+      
       Concept concept = new ConceptJpa(originConcept, false);
       // member.setLastModifiedBy(userName);
-
       // member.setPublishable(true);
       concept.setTranslation(translationCopy);
       concept.setTerminology(translationCopy.getTerminology());
@@ -958,6 +968,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
+    
+    // TODO: need other data structures with DescripionType - see addTranslation
+    
     // set staging parameters on the original translation
     translation.setStaged(true);
     translation.setStagingType(stagingType);
