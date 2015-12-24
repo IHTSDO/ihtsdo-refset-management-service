@@ -1017,7 +1017,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Fill in standard description fields for concept
         desc.setLanguageCode(translation.getLanguage());
-        desc.setEffectiveTime(null);
+        // TODO: dss not null, correct? 
+        desc.setEffectiveTime(new Date());
         desc.setActive(true);
         desc.setPublishable(true);
         desc.setPublished(false);
@@ -1034,7 +1035,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             member.setActive(true);
-            member.setEffectiveTime(null);
+            // TODO: dss not null, correct? 
+            member.setEffectiveTime(new Date());
             member.setModuleId(translation.getModuleId());
             member.setPublishable(true);
             member.setPublished(false);

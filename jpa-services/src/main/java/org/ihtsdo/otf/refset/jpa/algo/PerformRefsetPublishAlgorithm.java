@@ -104,8 +104,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     // Update the PUBLISHED refset release info published/planned flags.
     list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
     if (list.getCount() != 1) {
-      throw new Exception("Cannot find release info for refset "
-          + refset.getId());
+      throw new Exception("Cannot find release info for staged refset "
+          + stagedRefset.getId());
     }
     releaseInfo = list.getObjects().get(0);
     releaseInfo.setPublished(true);

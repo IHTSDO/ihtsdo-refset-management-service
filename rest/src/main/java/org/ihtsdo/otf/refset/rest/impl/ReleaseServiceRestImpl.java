@@ -531,11 +531,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ValidationServiceJpa validationService = new ValidationServiceJpa();
       ValidationResult result =
           validationService
-              .validateTranslation(translation, null, translationService);
+              .validateTranslation(translation, translation.getProject(), translationService);
       if (result.isValid()) {
         for (Concept member : translation.getConcepts()) {
           result.merge(validationService.validateConcept(member,
-              null, translationService));
+              translation.getProject(), translationService));
         }
       }
       return result;

@@ -172,7 +172,7 @@ tsApp
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
                   pfs.latestOnly = $scope.showLatest;
-                  translationService.findTranslationsForQuery($scope.project.id, pfs).then(
+                  translationService.findTranslationsForQuery($scope.paging["translation"].filter, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;
@@ -534,6 +534,18 @@ tsApp
               if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
                 $scope.getTranslations();
               }
+
+              // Directive scoped method for cancelling a release
+              $scope.cancelAction = function(translation) {
+                $scope.translation = translation;
+                if (translation.stagingType == 'PREVIEW') {
+                  releaseService.cancelTranslationRelease($scope.translation.id).then(
+                  // Success
+                  function() {
+                    translationService.fireTranslationChanged($scope.translation);
+                  });
+                }
+              };
 
               // 
               // MODALS
@@ -1826,6 +1838,163 @@ tsApp
 
               };
 
+              
+              // Release Process modal
+              $scope.openReleaseProcessModal = function(ltranslation) {
+
+                console.debug("releaseProcessModal ", ltranslation);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/release.html',
+                  controller : ReleaseProcessModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    translation : function() {
+                      return ltranslation;
+                    },
+                    ioHandlers : function() {
+                      return $scope.metadata.exportHandlers;
+                    },
+                    utilService : function() {
+                      return utilService;
+                    }
+
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                  $scope.selectTranslation(data);
+                });
+              };
+
+              // Release Process controller
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation, ioHandlers,
+                utilService) {
+
+                console.debug("Entered release process modal", translation.id, ioHandlers);
+
+                $scope.errors = [];
+                $scope.translation = translation;
+                $scope.ioHandlers = ioHandlers;
+                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.releaseInfo = [];
+                $scope.validationResult = null;
+                $scope.format = 'yyyyMMdd';
+                $scope.releaseDate = utilService.toSimpleDate($scope.translation.effectiveTime);
+                $scope.status = {
+                  opened : false
+                };
+
+                if (translation.stagingType == 'PREVIEW') {
+                  releaseService.resumeRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedTranslation = data;
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                }
+
+                $scope.beginTranslationRelease = function(translation) {
+                  console.debug("begin translation release", translation.id, translation.effectiveTime);
+
+                  releaseService.beginTranslationRelease(translation.id,
+                    utilService.toSimpleDate(translation.effectiveTime)).then(
+                  // Success
+                  function(data) {
+                    $scope.releaseInfo = data;
+                    $scope.translation.inPublicationProcess = true;
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
+                };
+
+                $scope.validateTranslationRelease = function(translation) {
+                  console.debug("validate translation release", translation.id);
+
+                  releaseService.validateTranslationRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.validationResult = data;
+                    translationService.fireTranslationChanged(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.previewTranslationRelease = function(translation) {
+                  console.debug("preview translation release", translation.id);
+
+                  releaseService.previewTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedTranslation = data;
+                    $uibModalInstance.close($scope.stagedTranslation);
+                    alert("The PREVIEW translation has been added .");
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.finishTranslationRelease = function(translation) {
+                  console.debug("finish translation release", translation.id);
+
+                  releaseService.finishTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $uibModalInstance.close(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.cancel = function(translation) {
+                  console.debug("Cancel ", translation.id);
+                  if (!confirm("Are you sure you want to cancel the translation release?")) {
+                    return;
+                  }
+                  $uibModalInstance.dismiss('cancel');
+                  releaseService.cancelTranslationRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    console.debug("cancel data", data);
+                    $uibModalInstance.close(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $uibModalInstance.close();
+                  });
+                };
+
+                $scope.close = function() {
+                  $uibModalInstance.close(translation);
+                };
+
+                $scope.open = function($event) {
+                  $scope.status.opened = true;
+                };
+
+                $scope.format = 'yyyyMMdd';
+              }
               // end
 
             } ]

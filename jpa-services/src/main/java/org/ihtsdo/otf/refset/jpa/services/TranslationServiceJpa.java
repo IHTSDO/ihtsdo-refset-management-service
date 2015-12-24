@@ -20,6 +20,7 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -276,18 +277,47 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "Translation Service - find translations " + query);
+    int origStartIndex = pfs.getStartIndex();
+    if (pfs.getLatestOnly()) {
+      pfs.setStartIndex(-1);
+    }
+    // this will do filtering and sorting, but not paging
     int[] totalCt = new int[1];
     List<Translation> list =
         (List<Translation>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *] AND provisional:false" : query
                 + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
-    for (Translation translation : list) {
-      handleLazyInit(translation);
-    }
+    
     TranslationList result = new TranslationListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
+    
+    if (pfs.getLatestOnly()) {
+      List<Translation> resultList = new ArrayList<>();
+
+      Map<String, Translation> latestList = new HashMap<>();
+      for (Translation translation : list) {
+        if (translation.getEffectiveTime() == null) {
+          resultList.add(translation);
+        } else if (!latestList.containsKey(translation.getName())) {
+          latestList.put(translation.getName(), translation);
+        } else {
+          Date effectiveTime =
+              latestList.get(translation.getName()).getEffectiveTime();
+          if (translation.getEffectiveTime().after(effectiveTime)) {
+            latestList.put(translation.getName(), translation);
+          }
+        }
+      }
+      list = new ArrayList<Translation>(latestList.values());
+      list.addAll(resultList);
+      pfs.setStartIndex(origStartIndex);
+      result.setObjects(applyPfsToList(list, Translation.class, pfs));
+      result.setTotalCount(list.size());
+    } else {
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+    }
+    
     for (Translation translation : result.getObjects()) {
       handleLazyInit(translation);
     }
@@ -339,8 +369,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
     translation.getNotes().size();
-    translation.getPhraseMemory().getEntries().size();
-    translation.getSpellingDictionary().getEntries().size();
+    if (translation.getPhraseMemory() != null) {
+      translation.getPhraseMemory().getEntries().size();
+    }
+    if (translation.getSpellingDictionary() != null) {
+      translation.getSpellingDictionary().getEntries().size();
+    }
   }
 
   /* see superclass */
