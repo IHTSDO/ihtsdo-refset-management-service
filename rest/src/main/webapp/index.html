@@ -16,12 +16,16 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
   rel="stylesheet">
 
+<!-- JQuery (before Anuglar) - for ng-include with script tag
+Needed for issue collector to work.. unexpected, I know.  -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+
 <!-- Angular core  -->
 <script type="text/javascript"
   src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.min.js"></script>
 
 <script
-  src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-animate.js"></script>
+  src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-animate.js"></script>
 
 <!-- Angular ngRoute -->
 <script type="text/javascript"
@@ -43,7 +47,8 @@
 
 <!--  TinyMCE rich text formatter -->
 <script type="text/javascript" src="ui/components/tinymce/tinymce.min.js"></script>
-<script type="text/javascript" src="ui/components/angular-ui-tinymce/src/tinymce.js"></script>
+<script type="text/javascript"
+  src="ui/components/angular-ui-tinymce/src/tinymce.js"></script>
 
 <!-- Angular file upload script must be after angular.js -->
 <script src="ui/components/ng-file-upload/ng-file-upload.min.js"></script>
@@ -77,14 +82,11 @@
 <body>
   <!--  Javascript detection -->
   <noscript>
-    <style type="text/css">
-.container-fluid {
-	display: none;
-}
-</style>
     <div class="alert alert-danger">You must have Javascript enabled to
       use the IHTSDO Refset Management Service</div>
   </noscript>
+  <!-- Issue Collector link  -->
+  <div ng-include="'app/component/issues/collector.html'"></div>
 
   <!-- Header -->
   <div ng-include src="'app/page/general/header.html'"></div>
@@ -114,7 +116,8 @@
     class="top-layer">
     <div class="v-wrap">
       <div class="v-box top-layer-message">
-        <h5 ng-repeat="message in glassPane.messages" class="alert alert-success">{{message}}</h5>
+        <h5 ng-repeat="message in glassPane.messages"
+          class="alert alert-success">{{message}}</h5>
       </div>
     </div>
   </div>

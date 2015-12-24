@@ -1246,7 +1246,7 @@ tsApp
 
                 console.debug("Entered edit concept modal control");
                 // Paging params
-                $scope.pageSize = 5;
+                $scope.pageSize = 4;
                 $scope.paging = {};
                 $scope.paging["descriptions"] = {
                   page : 1,
@@ -1258,8 +1258,13 @@ tsApp
 
                 // Result of gathered suggestions - {"words" : {"word" : ["suggestion1", "suggestion2"] }}
                 $scope.suggestions = {};
+
                 // tinymce config
                 $scope.tinymceOptions = {
+                  resize : false,
+                  max_height : 80,
+                  height : 80,
+                  width : 300,
                   plugins : "spellchecker",
                   menubar : false,
                   statusbar : false,
@@ -1365,28 +1370,9 @@ tsApp
 
                 // Spelling Correction
 
-                // Get words of a description
-                $scope.getWords = function(description) {
-                  // Same as in tinymce options
-                  return description.term.match(/[^\s,\.]+/g);
-                }
-
-                // determine if a description has any suggestion words (e.g. should spelling correction be run)
-                $scope.descriptionHasSuggestions = function(description) {
-                  var words = $scope.getWords(description);
-                  if (words && words.length > 0) {
-                    for (var i = 0; i < words.length; i++) {
-                      if ($scope.suggestions[words[i]]) {
-                        return true;
-                      }
-                    }
-                  }
-                  return false;
-                }
-
-                // Globally populate $scope.suggestions (outside of spelling correction run)
+                // Populate $scope.suggestions (outside of spelling correction run)
                 $scope.getSuggestions = function() {
-
+                  console.debug("GET SUGGESTIONS");
                   translationService.suggestBatchSpelling(translation.id,
                     $scope.getAllUniqueWords()).then(
                   // Success
@@ -1405,11 +1391,24 @@ tsApp
                   });
                 }
 
+                // Determine if a description has any suggestion words (e.g. should spelling correction be run)
+                $scope.hasSuggestions = function(description) {
+                  var words = utilService.getWords(description.term);
+                  if (words && words.length > 0) {
+                    for (var i = 0; i < words.length; i++) {
+                      if ($scope.suggestions[words[i]]) {
+                        return true;
+                      }
+                    }
+                  }
+                  return false;
+                }
+
                 // Get unique words from all descriptions
                 $scope.getAllUniqueWords = function() {
                   var all = {};
                   for (var i = 0; i < $scope.conceptTranslated.descriptions.length; i++) {
-                    var words = $scope.getWords($scope.conceptTranslated.descriptions[i]);
+                    var words = utilService.getWords($scope.conceptTranslated.descriptions[i].term);
                     if (words && words.length > 0) {
                       for (var j = 0; j < words.length; j++) {
                         all[words[j]] = 1;
@@ -1420,14 +1419,10 @@ tsApp
                   for ( var word in all) {
                     retval.push(word);
                   }
-                  retval = retval.sort();
-                  if (retval.length > 0) {
-                    $scope.selectedWord = retval[0];
-                  }
-                  return retval;
+                  return retval.sort();
                 }
 
-                // Sets $scope.allUniqueWordsNoSuggestion
+                // Sets $scope.allUniqueWordsNoSuggestions
                 $scope.getAllUniqueWordsNoSuggestions = function() {
                   var words = $scope.getAllUniqueWords();
                   var retval = [];
@@ -1437,6 +1432,9 @@ tsApp
                     }
                   }
                   $scope.allUniqueWordsNoSuggestions = retval.sort();
+                  if (retval.length > 0) {
+                    $scope.selectedWord = retval[0];
+                  }
                 }
 
                 // Remove a spelling entry
@@ -1467,7 +1465,7 @@ tsApp
                   translationService.removeSpellingDictionaryEntry(translation.id, word).then(
                   // Success
                   function(data) {
-                    delete $scope.suggestions[word];
+                    $scope.getSuggestions();
                   },
                   //Error
                   function(data) {
@@ -1476,6 +1474,33 @@ tsApp
                   });
                 }
 
+                // Add a spelling entry
+                $scope.addAllSpellingEntries = function(description) {
+                  var words = utilService.getWords(description.term);
+                  var map = {};
+                  if (words && words.length > 0) {
+                    for (var i = 0; i < words.length; i++) {
+                      if ($scope.suggestions[words[i]]) {
+                        map[words[i]] = 1;
+                      }
+                    }
+                  }
+                  var entries = [];
+                  for ( var key in map) {
+                    entries.push(key);
+                  }
+                  translationService.addBatchSpellingDictionaryEntries(translation.id, entries)
+                    .then(
+                    // Success
+                    function(data) {
+                      $scope.getSuggestions();
+                    },
+                    //Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                }
                 // Translation memory
 
                 // TODO:

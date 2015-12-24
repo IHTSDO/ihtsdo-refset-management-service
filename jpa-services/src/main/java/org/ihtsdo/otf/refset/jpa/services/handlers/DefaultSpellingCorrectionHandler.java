@@ -145,7 +145,8 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
       throw new Exception(
           "Set translation must be called prior to calling suggest spelling");
     }
-    if (!checker.exist(term)) {
+    // Assume terms of length 1 or 2 always exist
+    if (!checker.exist(term) && term.length() > 2) {
       String[] results = checker.suggestSimilar(term, amt);
       // Handle the case of no suggestions, determine whether it exists
       return convertResults(results);
@@ -172,6 +173,11 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
 
     // Iterate through lookup terms and store their collections in map
     for (String term : lookupTerms.getObjects()) {
+
+      // Consider a term existing if 1 or 2 chars only
+      if (term.length() < 3) {
+        continue;
+      }
 
       // Skip terms that exist
       if (checker.exist(term)) {

@@ -22,6 +22,10 @@ a:hover {
 	color: #00a6e5;
 }
 
+.redborder {
+	border: 1px solid red;
+}
+
 .intro-text {
 	max-width: 450px;
 }
@@ -182,6 +186,13 @@ a:hover {
 	cursor: pointer;
 	text-decoration: none;
 }
+
+.noul-red {
+	color: red;
+	cursor: pointer;
+	text-decoration: none;
+}
+
 
 .noul:hover {
 	color: #00a6e5;
