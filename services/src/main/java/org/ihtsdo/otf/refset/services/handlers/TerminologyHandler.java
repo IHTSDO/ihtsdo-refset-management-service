@@ -12,6 +12,7 @@ import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 
 /**
  * Generically represents a handler for accessing terminology objects.
@@ -126,7 +127,18 @@ public interface TerminologyHandler extends Configurable {
    * @throws Exception the exception
    */
   public List<DescriptionType> getStandardDescriptionTypes(
-    String terminology, String version) throws Exception;
+      String terminology, String version) throws Exception;
+
+  /**
+   * Returns the standard language description types.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @return the standard language description types
+   * @throws Exception the exception
+   */
+  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
+      String terminology, String version) throws Exception;
 
   /**
    * Returns the standard case sensitivity types.

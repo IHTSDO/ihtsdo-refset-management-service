@@ -1,40 +1,69 @@
 <div class="modal-header">
-  <h4>Add Inclusion</h4>
+  <h4 ng-show="refset.type == 'INTENSIONAL'">Add/Include Member(s)</h4>
+  <h4 ng-show="refset.type == 'EXTENSIONAL'">Add Member(s)</h4>
 </div>
 
 <div class="modal-body">
-  Select one:<br>
-  <div><input type="radio" ng-model="includeClause" name="selfAndDescendants" value="{{selfAndDescendants}}{{member.terminologyId}} | {{member.name}} |" required />
-  {{selfAndDescendants}}{{member.terminologyId}} | {{member.name}} |</div>
-  <div><input type="radio" ng-model="includeClause" name="descendants" value="{{descendants}}{{member.terminologyId}} | {{member.name}} |" required />
-   {{descendants}}{{member.terminologyId}} | {{member.name}} |</div>
-  <div><input type="radio" ng-model="includeClause" name="inclusion" value="{{member.terminologyId}} | {{member.name}} |" required />
-    {{member.terminologyId}} | {{member.name}} |</div>
+  <p ng-show="refset.type == 'INTENSIONAL'">Add clause to the definition:</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'">Add all members for clause:</p>
 
-      <!-- Errors -->
-      <table>
-      <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger"
-            ng-repeat="error in errors">
-            {{error}}
-          </div>
-        </td>
-      </tr>
-      <tr ng-show="warnings.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-warning"
-            ng-repeat="warning in warnings">
-            {{warning}}
-          </div>
-        </td>
-      </tr>
-      </table>
+  <p>Add inclusion clause to the definition:</p>
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="includeClause" name="selfAndDescendants"
+        value="{{selfAndDescendants}}{{member.terminologyId}} | {{member.name}} |"
+        required />
+    </span>
+    <span uib-tooltip="Descendants and self" class="col-md-1 col-xs-1">{{selfAndDescendants}}</span>
+    <span class="col-md-10 col-xs-10">{{member.terminologyId}} |
+      {{member.name}} |</span>
+  </div>
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="includeClause" name="descendants"
+        value="{{descendants}}{{member.terminologyId}} | {{member.name}} |"
+        required />
+    </span>
+    <span uib-tooltip="Descendants only" class="col-md-1 col-xs-1">{{descendants}}</span>
+    <span class="col-md-10 col-xs-10">{{member.terminologyId}} |
+      {{member.name}} |</span>
+  </div>
+
+  <p ng-show="refset.type == 'INTENSIONAL'">Add individual inclusion member:</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'">Add individual member:</p>
+  <p>OR, add individual member:</p>
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="includeClause" name="inclusion"
+        value="{{member.terminologyId}} | {{member.name}} |" required />
+    </span>
+    <span uib-tooltip="Self only" class="col-md-1 col-xs-1">=</span>
+    <span class="col-md-10 col-xs-10">{{member.terminologyId}} |
+      {{member.name}} |</span>
+  </div>
+
+
+  <!-- Errors -->
+  <table>
+    <tr ng-show="errors.length > 0">
+      <td>&nbsp;</td>
+      <td>
+        <div class="alert alert-danger" ng-repeat="error in errors">
+          {{error}}</div>
+      </td>
+    </tr>
+    <tr ng-show="warnings.length > 0">
+      <td>&nbsp;</td>
+      <td>
+        <div class="alert alert-warning" ng-repeat="warning in warnings">
+          {{warning}}</div>
+      </td>
+    </tr>
+  </table>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="submitAdd(refset, member, includeClause)">Submit</button>
+  <button class="btn btn-primary"
+    ng-click="submitAdd(refset, member, includeClause)">Submit</button>
   <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

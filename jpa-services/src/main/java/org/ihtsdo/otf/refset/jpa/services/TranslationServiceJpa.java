@@ -46,6 +46,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
@@ -967,7 +968,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translationCopy.setDescriptionTypes(null);
     translationCopy.setEffectiveTime(effectiveTime);
 
-
     addTranslation(translationCopy);
 
     // without doing the copy constructor, we get the following errors:
@@ -978,11 +978,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     for (Concept originConcept : translation.getConcepts()) {
 
       // Skip members for preview that are not ready for publication
-      if (stagingType == Translation.StagingType.PREVIEW &&
-          originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
+      if (stagingType == Translation.StagingType.PREVIEW
+          && originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
         continue;
       }
-      
+
       Concept concept = new ConceptJpa(originConcept, false);
       // member.setLastModifiedBy(userName);
       // member.setPublishable(true);
@@ -1002,9 +1002,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
-    
+
     // TODO: need other data structures with DescripionType - see addTranslation
-    
+
     // set staging parameters on the original translation
     translation.setStaged(true);
     translation.setStagingType(stagingType);
@@ -1240,6 +1240,32 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         lookupProgressMap.put(translationId, LOOKUP_ERROR_CODE);
       }
     }
+  }
+
+  /* see superclass */
+  @Override
+  public String computePreferredName(Concept concept,
+    List<LanguageDescriptionType> pref) throws Exception {
+    // Iterate through concept descriptions and attempt to match to pref.
+    // Once found, return the corresponding description name.
+    for (Description desc : concept.getDescriptions()) {
+      // Iterate through preference types (in order)
+      for (LanguageDescriptionType type : pref) {
+        // IF found matching type, look for matching lang refset and
+        // acceptability id
+        if (desc.getTypeId().equals(type.getTypeId())) {
+          for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
+            if (member.getRefsetId().equals(type.getRefsetId())
+                && member.getAcceptabilityId()
+                    .equals(type.getAcceptabilityId())) {
+              return desc.getTerm();
+            }
+          }
+        }
+      }
+    }
+    // could find nothing special, return default name
+    return concept.getName();
   }
 
 }

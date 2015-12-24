@@ -17,6 +17,7 @@ import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -618,4 +619,15 @@ public interface TranslationServiceRest {
    */
   public void startLookupConceptNames(Long translationId, String authToken)
     throws Exception;
+
+  /**
+   * Returns all language description types representing the various installed
+   * translations.
+   *
+   * @param authToken the auth token
+   * @return the language description types
+   * @throws Exception the exception
+   */
+  public LanguageDescriptionTypeList getLanguageDescriptionTypes(
+    String authToken) throws Exception;
 }

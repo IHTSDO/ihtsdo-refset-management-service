@@ -1,40 +1,67 @@
 <div class="modal-header">
-  <h4>Remove</h4>
+  <h4 ng-show="refset.type == 'INTENSIONAL'">Exclude Member(s)</h4>
+  <h4 ng-show="refset.type == 'EXTENSIONAL'">Remove Member(s)</h4>
 </div>
 
 <div class="modal-body">
-  Select one:<br>
-  <div><input type="radio" ng-model="removeClause" value="{{selfAndDescendants}}{{member.conceptId}} | {{member.conceptName}} |" required />
-  ! {{selfAndDescendants}}{{member.conceptId}} | {{member.conceptName}} |</div>
-  <div><input type="radio" ng-model="removeClause" value="{{descendants}}{{member.conceptId}} | {{member.conceptName}} |" required />
-  !  {{descendants}}{{member.conceptId}} | {{member.conceptName}} |</div>
-  <div><input type="radio" ng-model="removeClause" value="{{member.conceptId}} | {{member.conceptName}} |" required />
-  !   {{member.conceptId}} | {{member.conceptName}} |</div>
+  <p ng-show="refset.type == 'INTENSIONAL'">Add exclusion clause to the definition:</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'">Remove all members for clause:</p>
 
-      <!-- Errors -->
-      <table>
-      <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger"
-            ng-repeat="error in errors">
-            {{error}}
-          </div>
-        </td>
-      </tr>
-      <tr ng-show="warnings.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-warning"
-            ng-repeat="warning in warnings">
-            {{warning}}
-          </div>
-        </td>
-      </tr>
-      </table>
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="removeClause"
+        value="{{selfAndDescendants}}{{member.conceptId}} | {{member.conceptName}} |"
+        required />
+    </span>
+    <span uib-tooltip="Descendants and self" class="col-md-1 col-xs-1">{{selfAndDescendants}}</span>
+    <span class="col-md-10 col-xs-10">{{member.conceptId}} |
+      {{member.conceptName}} |</span>
+  </div>
+
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="removeClause"
+        value="{{descendants}}{{member.conceptId}} | {{member.conceptName}} |"
+        required />
+    </span>
+    <span uib-tooltip="Descendants only" class="col-md-1 col-xs-1">{{descendants}}</span>
+    <span class="col-md-10 col-xs-10">{{member.conceptId}} |
+      {{member.conceptName}} |</span>
+  </div>
+
+  <p ng-show="refset.type == 'INTENSIONAL'">OR, exclude individual member:</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'">OR, remove individual member:</p>
+  <div class="row">
+    <span class="col-md-1 col-xs-1">
+      <input type="radio" ng-model="removeClause"
+        value="{{member.conceptId}} | {{member.conceptName}} |" required />
+    </span>
+    <span class="col-md-1 col-xs-1" uib-tooltip="Self only">=</span>
+    <span class="col-md-10 col-xs-10">{{member.conceptId}} |
+      {{member.conceptName}} |</span>
+  </div>
+
+  <!-- Errors -->
+  <table>
+    <tr ng-show="errors.length > 0">
+      <td>&nbsp;</td>
+      <td>
+        <div class="alert alert-danger" ng-repeat="error in errors">
+          {{error}}</div>
+      </td>
+    </tr>
+    <tr ng-show="warnings.length > 0">
+      <td>&nbsp;</td>
+      <td>
+        <div class="alert alert-warning" ng-repeat="warning in warnings">
+          {{warning}}</div>
+      </td>
+    </tr>
+  </table>
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="submitRemove(refset, member, removeClause)">Submit</button>
+  <button class="btn btn-primary"
+    ng-click="submitRemove(refset, member, removeClause)">Submit</button>
   <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

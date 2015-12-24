@@ -5,25 +5,28 @@
 
     <table style="width: 100%">
       <tr>
-        <td style="width: 55px"><a href="${deploy.link}">
+        <td style="width: 55px">
+          <a href="${deploy.link}">
             <img class="hidden-xs" src="images/logo-desktop.png"> <img
               class="visible-xs" src="images/logo-mobile.png">
-          </a></td>
-        <td style="width: 70%"><span class="hidden-xs header-footer-title"
-            title="${project.version}">
+          </a>
+        </td>
+        <td style="width: 70%">
+          <span class="hidden-xs header-footer-title" title="${project.version}">
             ${deploy.title} and
             <a class="header-footer-link" href="swagger.html"
               style="text-decoration: underline" target="_blank">API
               Documentation</a>
-          </span> <span class="visible-xs header-footer-text"
-            title="${project.version}">
+          </span>
+          <span class="visible-xs header-footer-text" title="${project.version}">
             ${deploy.title}
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> and
             <a class="header-footer-link" href="swagger.html"
               style="text-decoration: underline" target="_blank">API
               Documentation</a>
-          </span></td>
+          </span>
+        </td>
         <td style="text-align: right;">
           <div class="nobreak">
             <span class="hidden-xs header-footer-text" ng-show="isShowing()">
@@ -44,3 +47,4 @@
 
   </div>
 </nav>
+

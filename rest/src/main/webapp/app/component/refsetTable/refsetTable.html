@@ -430,7 +430,7 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected" refset="selected.refset" project="project"></div>
+    <div ng-show="selected.member" concept-info data="selected" value="value"></div>
 
     <!-- End R2C1 -->
   </div>
@@ -556,12 +556,12 @@
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
-                  ng-click="removeRefsetExclusion(selected.refset,member);"
+                  ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'MEMBER'"
-                  ng-click="addRefsetExclusion(selected.refset, member); "
+                  ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
                   title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
 
                 <i

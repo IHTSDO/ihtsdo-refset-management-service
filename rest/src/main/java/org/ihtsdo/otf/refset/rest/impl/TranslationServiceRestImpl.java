@@ -45,6 +45,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
@@ -59,6 +60,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
@@ -67,8 +69,11 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -2824,6 +2829,56 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  @GET
+  @Override
+  @Path("/langpref")
+  @ApiOperation(value = "Get language preference optios", notes = "Returns all language preference options.")
+  public LanguageDescriptionTypeList getLanguageDescriptionTypes(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /langpref");
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get lookup status",
+          UserRole.VIEWER);
+
+      final List<LanguageDescriptionType> types = new ArrayList<>();
+
+      final TranslationList list =
+          translationService.findTranslationsForQuery("", null);
+      // Go thru translations
+      for (Translation translation : list.getObjects()) {
+        // Go through description types (remove DEF)
+        for (DescriptionType descriptionType : translation
+            .getDescriptionTypes()) {
+          if (descriptionType.getName().equals("DEF")) {
+            continue;
+          }
+          final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+          type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+          type.setName(translation.getName());
+          type.setRefsetId(translation.getRefset().getTerminologyId());
+          type.setTypeId(descriptionType.getTypeId());
+          types.add(type);
+        }
+      }
+      LanguageDescriptionTypeList result = new LanguageDescriptionTypeListJpa();
+      result.setTotalCount(types.size());
+      result.setObjects(types);
+      return result;
+      
+    } catch (Exception e) {
+      handleException(e, "trying to look up language description types");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
   /**
    * Returns the spelling correction handler. Initializes it if necessary
    *
@@ -2850,4 +2905,5 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
     return spellingCorrectionHandlerMap.get(translation.getId());
   }
+
 }
