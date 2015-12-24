@@ -14,6 +14,11 @@ tsApp.service('refsetService', [
     this.fireRefsetChanged = function(refset) {
       $rootScope.$broadcast('refset:refsetChanged', refset);
     }
+    
+    // TODO: will this help with updating concept info?
+   /* this.fireConceptChanged = fuction(concept) {
+      $rootScope.$broadcast('data.concept', concept);
+    }*/
 
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
@@ -151,6 +156,32 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // Adds refset members resolved from expression
+    this.addRefsetMembersForExpression = function(refset, expression) {
+
+      console.debug("addRefsetmembersForExpression", refset, expression);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.post(refsetUrl + "members/add" + "?refsetId=" + refset.id + 
+        "&expression=" + expression).then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    
     // add refset
     this.addRefset = function(refset) {
       console.debug("addRefset");

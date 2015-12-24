@@ -84,6 +84,10 @@ a:hover {
 }
 
 /* Material Design Icons */
+.material-icons.md-12 {
+	font-size: 12px;
+}
+
 .material-icons.md-18 {
 	font-size: 18px;
 }
@@ -240,4 +244,8 @@ a:hover {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+}
+
+.middle-blue {
+	color: #337ab7;
 }

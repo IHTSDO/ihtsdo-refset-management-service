@@ -1,0 +1,40 @@
+<div class="modal-header">
+  <h4>Remove</h4>
+</div>
+
+<div class="modal-body">
+  Select one:<br>
+  <div><input type="radio" ng-model="removeClause" value="{{selfAndDescendants}}{{member.conceptId}} | {{member.conceptName}} |" required />
+  ! {{selfAndDescendants}}{{member.conceptId}} | {{member.conceptName}} |</div>
+  <div><input type="radio" ng-model="removeClause" value="{{descendants}}{{member.conceptId}} | {{member.conceptName}} |" required />
+  !  {{descendants}}{{member.conceptId}} | {{member.conceptName}} |</div>
+  <div><input type="radio" ng-model="removeClause" value="{{member.conceptId}} | {{member.conceptName}} |" required />
+  !   {{member.conceptId}} | {{member.conceptName}} |</div>
+
+      <!-- Errors -->
+      <table>
+      <tr ng-show="errors.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-danger"
+            ng-repeat="error in errors">
+            {{error}}
+          </div>
+        </td>
+      </tr>
+      <tr ng-show="warnings.length > 0">
+        <td>&nbsp;</td>
+        <td>
+          <div class="alert alert-warning"
+            ng-repeat="warning in warnings">
+            {{warning}}
+          </div>
+        </td>
+      </tr>
+      </table>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-primary" ng-click="submitRemove(refset, member, removeClause)">Submit</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
+</div>
