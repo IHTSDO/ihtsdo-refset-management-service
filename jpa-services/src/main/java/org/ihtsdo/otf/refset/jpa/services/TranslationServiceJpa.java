@@ -1109,14 +1109,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         lookupProgressMap.put(translationId, 0);
 
         TranslationServiceJpa translationService = new TranslationServiceJpa();
-        translationService.setTransactionPerOperation(false);
-        translationService.beginTransaction();
-
         // Translation may not be ready yet in DB, wait for 250ms until ready
         Translation translation =
             translationService.getTranslation(translationId);
         translation.setLookupInProgress(true);
         translationService.updateTranslation(translation);
+
+        translationService = new TranslationServiceJpa();
+        translation = translationService.getTranslation(translationId);
+        translationService.setTransactionPerOperation(false);
+        translationService.beginTransaction();
 
         // Get the concepts
         List<Concept> concepts = translation.getConcepts();

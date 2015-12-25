@@ -989,13 +989,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         lookupProgressMap.put(refsetId, 0);
 
         RefsetServiceJpa refsetService = new RefsetServiceJpa();
-        refsetService.setTransactionPerOperation(false);
-        refsetService.beginTransaction();
 
         // Refset may not be ready yet in DB, wait for 250ms until ready
         Refset refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(true);
         refsetService.updateRefset(refset);
+
+        refsetService = new TranslationServiceJpa();
+        refset = refsetService.getRefset(refsetId);
+        refsetService.setTransactionPerOperation(false);
+        refsetService.beginTransaction();
 
         // Get the members
         List<ConceptRefsetMember> members = refset.getMembers();
@@ -1083,7 +1086,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
     Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
     List<String> resolvedConcepts = new ArrayList<>();
-    for (ConceptRefsetMember member : findMembersForRefset(refset.getId(), null, null).getObjects()) {
+    for (ConceptRefsetMember member : findMembersForRefset(refset.getId(),
+        null, null).getObjects()) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION) {
         beforeInclusions.put(member.getConceptId(), member);
       }
