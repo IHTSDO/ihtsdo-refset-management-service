@@ -195,12 +195,16 @@ public class TranslationTest {
     translationService.finishMigration(translation1.getId(), adminAuthToken);
 
     // clean up
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(translation1.getId());
+    // translationService.removeTranslation(translation1.getId(), true,
+    // adminAuthToken);
+
     // Adding but commenting out the verify & Remove Refset calls to align with
     // commented out removeTranslation call
     // verifyRefsetLookupCompleted(janRefset.getId());
     // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
-    // translationService.removeTranslation(translation1.getId(), true,
-    // adminAuthToken);
   }
 
   /**
@@ -249,13 +253,16 @@ public class TranslationTest {
     translationService.finishMigration(janTranslation.getId(), adminAuthToken);
 
     // cleanup
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(janTranslation.getId());
+    // translationService.removeTranslation(janTranslation.getId(), true,
+    // adminAuthToken);
+
     // Adding but commenting out the verify & Remove Refset calls to align with
     // commented out removeTranslation call
     // verifyRefsetLookupCompleted(janRefset.getId());
     // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
-    // translationService.removeTranslation(janTranslation.getId(), true,
-    // adminAuthToken);
-
   }
 
   /**
@@ -309,9 +316,11 @@ public class TranslationTest {
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
     // cleanup
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(janTranslation.getId());
     // translationService.removeTranslation(janTranslation.getId(), true,
     // adminAuthToken);
-
   }
 
   /**
@@ -531,6 +540,12 @@ public class TranslationTest {
     assertEquals(2, entries.size());
 
     // clean up
+    // Adding but commenting out the verify & Remove Translation calls to align with
+    // commented out removeTranslation call located in other tests
+    // verifyTranslationLookupCompleted(translation.getId());
+    // translationService.removeTranslation(translation.getId(), true,
+    // adminAuthToken);
+
     // Adding but commenting out the verify & Remove Refset calls to align with
     // commented out removeTranslation call located in other tests
     // verifyRefsetLookupCompleted(janRefset.getId());
@@ -570,6 +585,9 @@ public class TranslationTest {
             adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(1, entries.size());
+    
+    // cleanup
+    verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -605,6 +623,8 @@ public class TranslationTest {
         translationService.suggestTranslation(translation.getId(), "test1",
             adminAuthToken);
     assertEquals(2, suggestTranslation.getTotalCount());
+
+    verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -675,6 +695,39 @@ public class TranslationTest {
           Thread.sleep(250);
         }
       }
+    }
+  }
+
+
+  /**
+   * Ensure translation completed prior to shutting down test to avoid
+   * lookupName issues.
+   *
+   * @param translationId the translation id
+   * @throws Exception the exception
+   */
+  private void verifyTranslationLookupCompleted(Long translationId)
+    throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      translationService = new TranslationClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        // System.out.println("Translation: " + translationId);
+        Translation t =
+            translationService.getTranslation(translationId, adminAuthToken);
+        if (t.isLookupInProgress()) {
+          // lookupNames still running on translation
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+
     }
   }
 }

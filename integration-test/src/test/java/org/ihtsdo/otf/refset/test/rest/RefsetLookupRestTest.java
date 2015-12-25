@@ -237,7 +237,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
   public void testIdentifyingNoProcessForRefset() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
@@ -263,7 +263,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Setup Project & Refset
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString());
@@ -306,7 +306,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Setup Project & Refset
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString());
@@ -352,7 +352,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
     // Setup Project & Refset
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString());

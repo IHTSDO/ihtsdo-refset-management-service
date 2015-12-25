@@ -350,6 +350,7 @@ public class TranslationReleaseTest {
     releaseService.cancelTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
+    verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -383,6 +384,7 @@ public class TranslationReleaseTest {
     releaseService.cancelTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
+    verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -419,6 +421,7 @@ public class TranslationReleaseTest {
     releaseService.cancelTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
+    verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -460,7 +463,9 @@ public class TranslationReleaseTest {
         releaseService.getCurrentTranslationReleaseInfo(
             stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
+    verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    verifyTranslationLookupCompleted(stagedTranslation.getId());
     translationService.removeTranslation(stagedTranslation.getId(),
         adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
@@ -538,10 +543,13 @@ public class TranslationReleaseTest {
         releaseService.getCurrentTranslationReleaseInfo(
             stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
+    verifyTranslationLookupCompleted(stagedTranslation.getId());
     translationService.removeTranslation(stagedTranslation.getId(),
         adminAuthToken);
+    verifyTranslationLookupCompleted(stagedTranslation2.getId());
     translationService.removeTranslation(stagedTranslation2.getId(),
         adminAuthToken);
+    verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -597,6 +605,39 @@ public class TranslationReleaseTest {
           Thread.sleep(250);
         }
       }
+    }
+  }
+
+
+  /**
+   * Ensure translation completed prior to shutting down test to avoid
+   * lookupName issues.
+   *
+   * @param translationId the translation id
+   * @throws Exception the exception
+   */
+  private void verifyTranslationLookupCompleted(Long translationId)
+    throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      translationService = new TranslationClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        // System.out.println("Translation: " + translationId);
+        Translation t =
+            translationService.getTranslation(translationId, adminAuthToken);
+        if (t.isLookupInProgress()) {
+          // lookupNames still running on translation
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+
     }
   }
 }

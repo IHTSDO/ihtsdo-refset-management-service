@@ -317,7 +317,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
   public void testSpellingAddRemoveClearSuggest() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project2 = projectService.getProject(52L, adminAuthToken);
+    Project project2 = projectService.getProject(2L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -376,8 +376,8 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
   public void testSpellingImportExport() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project1 = projectService.getProject(52L, adminAuthToken);
-    Project project2 = projectService.getProject(53L, adminAuthToken);
+    Project project1 = projectService.getProject(2L, adminAuthToken);
+    Project project2 = projectService.getProject(3L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -458,8 +458,8 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
   public void testSpellingCopy() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project1 = projectService.getProject(52L, adminAuthToken);
-    Project project2 = projectService.getProject(53L, adminAuthToken);
+    Project project1 = projectService.getProject(2L, adminAuthToken);
+    Project project2 = projectService.getProject(3L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -539,7 +539,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
   public void testSpellingBatchAddBatchSuggest() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
 
-    Project project2 = projectService.getProject(52L, adminAuthToken);
+    Project project2 = projectService.getProject(2L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
