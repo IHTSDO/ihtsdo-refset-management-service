@@ -86,6 +86,12 @@ public class TranslationReleaseTest {
   /** The test admin password. */
   protected static String adminPassword;
 
+  /** The assign names. */
+  private static Boolean assignNames;
+
+  /** The assign names. */
+  private static Boolean backgroundLookup;
+
   /**
    * Create test fixtures for class.
    *
@@ -127,6 +133,12 @@ public class TranslationReleaseTest {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
+    // The assign names property
+    assignNames =
+        Boolean.valueOf(properties
+            .getProperty("terminology.handler.DEFAULT.assignNames"));
+
+    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -179,7 +191,8 @@ public class TranslationReleaseTest {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -212,7 +225,8 @@ public class TranslationReleaseTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -283,7 +297,8 @@ public class TranslationReleaseTest {
 
     // Validate translation
     ValidationResult result =
-        validationService.validateTranslation(translation, project.getId(), auth.getAuthToken());
+        validationService.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -336,6 +351,7 @@ public class TranslationReleaseTest {
         adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -344,7 +360,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  // @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -368,6 +384,7 @@ public class TranslationReleaseTest {
         adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -376,7 +393,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  // @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -396,13 +413,14 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
+    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+        adminAuthToken);
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -411,7 +429,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//   @Test
+  // @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -438,11 +456,14 @@ public class TranslationReleaseTest {
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo =
+        releaseService.getCurrentTranslationReleaseInfo(
+            stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     translationService.removeTranslation(stagedTranslation.getId(),
         adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -451,7 +472,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  // @Test
   public void testRelease005() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -471,8 +492,9 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    Translation stagedTranslation = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
-        adminAuthToken);
+    Translation stagedTranslation =
+        releaseService.previewTranslationRelease(translation1.getId(),
+            "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -501,19 +523,27 @@ public class TranslationReleaseTest {
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
     // Preview release
-    Translation stagedTranslation2 = releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
-        adminAuthToken);
+    Translation stagedTranslation2 =
+        releaseService.previewTranslationRelease(translation1.getId(),
+            "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
     // clean up
-    ReleaseInfo releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation.getId(), adminAuthToken);
+    ReleaseInfo releaseInfo =
+        releaseService.getCurrentTranslationReleaseInfo(
+            stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    releaseInfo = releaseService.getCurrentTranslationReleaseInfo(stagedTranslation2.getId(), adminAuthToken);
+    releaseInfo =
+        releaseService.getCurrentTranslationReleaseInfo(
+            stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation2.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(),
+        adminAuthToken);
+    translationService.removeTranslation(stagedTranslation2.getId(),
+        adminAuthToken);
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -542,4 +572,31 @@ public class TranslationReleaseTest {
     return member;
   }
 
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  private void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
+  }
 }

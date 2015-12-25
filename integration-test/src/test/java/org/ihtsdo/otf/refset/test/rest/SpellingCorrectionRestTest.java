@@ -47,7 +47,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class SpellingCorrectionRestTest {
+public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -315,7 +315,9 @@ public class SpellingCorrectionRestTest {
    */
   @Test
   public void testSpellingAddRemoveClearSuggest() throws Exception {
-    Project project2 = projectService.getProject(2L, adminAuthToken);
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    Project project2 = projectService.getProject(52L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -360,8 +362,8 @@ public class SpellingCorrectionRestTest {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    verifyRefsetLookupCompleted(refset1.getId());
     translationService.removeTranslation(tid, adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -372,8 +374,10 @@ public class SpellingCorrectionRestTest {
    */
   @Test
   public void testSpellingImportExport() throws Exception {
-    Project project1 = projectService.getProject(2L, adminAuthToken);
-    Project project2 = projectService.getProject(3L, adminAuthToken);
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    Project project1 = projectService.getProject(52L, adminAuthToken);
+    Project project2 = projectService.getProject(53L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -435,13 +439,13 @@ public class SpellingCorrectionRestTest {
 
     // clean up
     verifyTranslationLookupCompleted(tidOrig);
-    verifyRefsetLookupCompleted(refset1.getId());
     translationService.removeTranslation(tidOrig, adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidNew);
-    verifyRefsetLookupCompleted(refset2.getId());
     translationService.removeTranslation(tidNew, adminAuthToken);
+    verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
@@ -452,8 +456,10 @@ public class SpellingCorrectionRestTest {
    */
   @Test
   public void testSpellingCopy() throws Exception {
-    Project project1 = projectService.getProject(2L, adminAuthToken);
-    Project project2 = projectService.getProject(3L, adminAuthToken);
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    Project project1 = projectService.getProject(52L, adminAuthToken);
+    Project project2 = projectService.getProject(53L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -514,13 +520,13 @@ public class SpellingCorrectionRestTest {
 
     // clean up
     verifyTranslationLookupCompleted(tidFrom);
-    verifyRefsetLookupCompleted(refset1.getId());
     translationService.removeTranslation(tidFrom, adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidTo);
-    verifyRefsetLookupCompleted(refset2.getId());
     translationService.removeTranslation(tidTo, adminAuthToken);
+    verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
@@ -531,7 +537,9 @@ public class SpellingCorrectionRestTest {
    */
   @Test
   public void testSpellingBatchAddBatchSuggest() throws Exception {
-    Project project2 = projectService.getProject(2L, adminAuthToken);
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    Project project2 = projectService.getProject(52L, adminAuthToken);
 
     // Create refset #1 (intensional) and import definition
     RefsetJpa refset1 =
@@ -615,8 +623,8 @@ public class SpellingCorrectionRestTest {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    verifyRefsetLookupCompleted(refset1.getId());
     translationService.removeTranslation(tid, adminAuthToken);
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 

@@ -90,6 +90,12 @@ public class TranslationTest {
   /** The test admin password. */
   protected static String adminPassword;
 
+  /** The assign names. */
+  private static Boolean assignNames;
+
+  /** The assign names. */
+  private static Boolean backgroundLookup;
+
   /** The translation ct. */
   private int translationCt = 0;
 
@@ -133,6 +139,12 @@ public class TranslationTest {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
+    // The assign names property
+    assignNames =
+        Boolean.valueOf(properties
+            .getProperty("terminology.handler.DEFAULT.assignNames"));
+
+    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -183,6 +195,10 @@ public class TranslationTest {
     translationService.finishMigration(translation1.getId(), adminAuthToken);
 
     // clean up
+    // Adding but commenting out the verify & Remove Refset calls to align with
+    // commented out removeTranslation call
+    // verifyRefsetLookupCompleted(janRefset.getId());
+    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
     // translationService.removeTranslation(translation1.getId(), true,
     // adminAuthToken);
   }
@@ -233,6 +249,10 @@ public class TranslationTest {
     translationService.finishMigration(janTranslation.getId(), adminAuthToken);
 
     // cleanup
+    // Adding but commenting out the verify & Remove Refset calls to align with
+    // commented out removeTranslation call
+    // verifyRefsetLookupCompleted(janRefset.getId());
+    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
     // translationService.removeTranslation(janTranslation.getId(), true,
     // adminAuthToken);
 
@@ -342,7 +362,8 @@ public class TranslationTest {
 
     // Validate translation
     ValidationResult result =
-        validationService.validateTranslation(translation, project.getId(), auth.getAuthToken());
+        validationService.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("translation does not pass validation.");
@@ -405,7 +426,8 @@ public class TranslationTest {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -438,7 +460,8 @@ public class TranslationTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -506,6 +529,12 @@ public class TranslationTest {
             adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(2, entries.size());
+
+    // clean up
+    // Adding but commenting out the verify & Remove Refset calls to align with
+    // commented out removeTranslation call located in other tests
+    // verifyRefsetLookupCompleted(janRefset.getId());
+    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 
   /**
@@ -518,27 +547,31 @@ public class TranslationTest {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional) 
+    // Create refset (extensional)
     Refset janRefset =
-        makeRefset("refset1", null,
-            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
-    
-    
-    // Create translation 
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
     TranslationJpa translation =
-        makeTranslation("translation99", janRefset,
-             project1,  admin);
+        makeTranslation("translation99", janRefset, project1, admin);
     InputStream in =
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
-    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
-    translationService.addPhraseMemoryEntry(translation.getId(), "test1", "translated test2", adminAuthToken);
-    translationService.removePhraseMemoryEntry(translation.getId(), "test1", adminAuthToken);
-    InputStream inputStream = translationService.exportPhraseMemory(translation.getId(), adminAuthToken);
+    translationService.importPhraseMemory(null, in, translation.getId(),
+        adminAuthToken);
+    translationService.addPhraseMemoryEntry(translation.getId(), "test1",
+        "translated test2", adminAuthToken);
+    translationService.removePhraseMemoryEntry(translation.getId(), "test1",
+        adminAuthToken);
+    InputStream inputStream =
+        translationService.exportPhraseMemory(translation.getId(),
+            adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(1, entries.size());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 
@@ -552,25 +585,28 @@ public class TranslationTest {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional) 
+    // Create refset (extensional)
     Refset janRefset =
-        makeRefset("refset1", null,
-            Refset.Type.EXTENSIONAL, project1, UUID.randomUUID().toString(), admin);
-    
-    
-    // Create translation 
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
     TranslationJpa translation =
-        makeTranslation("translation99", janRefset,
-             project1,  admin);
+        makeTranslation("translation99", janRefset, project1, admin);
     InputStream in =
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
-    translationService.importPhraseMemory(null, in, translation.getId(), adminAuthToken);
-    translationService.addPhraseMemoryEntry(translation.getId(), "test1", "translated test2", adminAuthToken);
-    StringList suggestTranslation = translationService.suggestTranslation(translation.getId(), "test1", adminAuthToken);
+    translationService.importPhraseMemory(null, in, translation.getId(),
+        adminAuthToken);
+    translationService.addPhraseMemoryEntry(translation.getId(), "test1",
+        "translated test2", adminAuthToken);
+    StringList suggestTranslation =
+        translationService.suggestTranslation(translation.getId(), "test1",
+            adminAuthToken);
     assertEquals(2, suggestTranslation.getTotalCount());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 
@@ -614,4 +650,31 @@ public class TranslationTest {
     return list;
   }
 
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  private void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
+  }
 }
