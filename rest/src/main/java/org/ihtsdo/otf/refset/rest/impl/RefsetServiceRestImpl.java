@@ -1747,9 +1747,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           String key2 = posClauses.get(j).getValue();
           List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
           List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
-          if (values1.containsAll(values2)) {
+          if (values1.containsAll(values2) && !values2.containsAll(values1)) {
             subsumedClauses.add(key2);
-          } else if (values2.containsAll(values1)) {
+          } else if (values2.containsAll(values1) && !values1.containsAll(values2)) {
             subsumedClauses.add(key1);
           }
         }
@@ -1760,27 +1760,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           String key2 = negClauses.get(j).getValue();
           List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
           List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
-          if (values1.containsAll(values2)) {
+          if (values1.containsAll(values2) && !values2.containsAll(values1)) {
             subsumedClauses.add(key2);
-          } else if (values2.containsAll(values1)) {
+          } else if (values2.containsAll(values1) && !values1.containsAll(values2)) {
             subsumedClauses.add(key1);
           }
         }
       }      
-      // remove subsumed clauses from the refset
-      if (subsumedClauses.size() >= 1) {
-        List<DefinitionClause> clausesToKeep = new ArrayList<>();
+      // remove subsumed and duplicate clauses from the refset
+      Map<String, DefinitionClause> clausesToKeep = new HashMap<>();
         for (DefinitionClause clause : allClauses) {
-          if (!subsumedClauses.contains(clause.getValue())) {
-            clausesToKeep.add(clause);
+          // keep clause if it isn't subsumed and
+          // it isn't a duplicate
+          if (!subsumedClauses.contains(clause.getValue()) && 
+              !clausesToKeep.keySet().contains(clause.getValue())) {
+            clausesToKeep.put(clause.getValue(), clause);
           }
         }
-        refset.setDefinitionClauses(clausesToKeep);
+        refset.setDefinitionClauses(new ArrayList<DefinitionClause>(clausesToKeep.values()));
         // Update refset
         refset.setLastModifiedBy(userName);
         refsetService.updateRefset(refset);
 
-      }
       
 
     } catch (Exception e) {

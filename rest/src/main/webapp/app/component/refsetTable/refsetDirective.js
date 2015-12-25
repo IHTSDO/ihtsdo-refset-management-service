@@ -792,7 +792,7 @@ tsApp
               };
 
               // Clone Refset modal
-              $scope.RefsetModal = function(lrefset) {
+              $scope.openCloneRefsetModal = function(lrefset) {
                 console.debug("cloneRefsetModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
