@@ -1266,4 +1266,11 @@ public class RefsetClientRest extends RootClientRest implements
     // TODO Auto-generated method stub
     return null;
   }
+
+  @Override
+  public void optimizeDefinition(Long refsetId, String authToken)
+    throws Exception {
+    // TODO Auto-generated method stub
+    
+  }
 }

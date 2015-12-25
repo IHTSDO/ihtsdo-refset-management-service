@@ -544,4 +544,13 @@ public interface RefsetServiceRest {
    */
   public ConceptRefsetMemberList addRefsetMembersForExpression(Long refsetId,
     String expression, String authToken) throws Exception;
+
+  /**
+   * Optimize definition.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void optimizeDefinition(Long refsetId, String authToken) throws Exception;
 }

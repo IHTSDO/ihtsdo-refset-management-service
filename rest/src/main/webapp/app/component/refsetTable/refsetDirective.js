@@ -288,7 +288,15 @@ tsApp
                 releaseService.getCurrentRefsetReleaseInfo(refset.id).then(function(data) {
                   $scope.refsetReleaseInfo = data;
                 })
-
+              };
+              
+              // optimizes the definition
+              $scope.optimizeDefinition = function(refset) {
+                if (confirm("The definition will be optimized, thereby eliminating superfluous definition clauses.")) {
+                  refsetService.optimizeDefinition(refset.id).then(function() {
+                    refsetService.fireRefsetChanged(refset);
+                  })
+                }
               };
 
               // Convert date to a string
