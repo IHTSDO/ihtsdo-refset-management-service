@@ -45,6 +45,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
@@ -59,17 +60,20 @@ import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.handlers.DefaultSpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -110,6 +114,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The concept diff report map. */
   private static Map<String, ConceptDiffReport> conceptDiffReportMap =
+      new HashMap<>();
+
+  /** The spelling correction handler map. */
+  private static Map<Long, SpellingCorrectionHandler> spellingCorrectionHandlerMap =
       new HashMap<>();
 
   /**
@@ -1014,7 +1022,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Fill in standard description fields for concept
         desc.setLanguageCode(translation.getLanguage());
-        desc.setEffectiveTime(null);
+        // TODO: dss not null, correct? 
+        desc.setEffectiveTime(new Date());
         desc.setActive(true);
         desc.setPublishable(true);
         desc.setPublished(false);
@@ -1031,7 +1040,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             member.setActive(true);
-            member.setEffectiveTime(null);
+            // TODO: dss not null, correct? 
+            member.setEffectiveTime(new Date());
             member.setModuleId(translation.getModuleId());
             member.setPublishable(true);
             member.setPublished(false);
@@ -1299,6 +1309,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           UserRole.AUTHOR);
 
       spelling.addEntry(entry);
+      final SpellingCorrectionHandler handler =
+          getSpellingCorrectionHandler(translation);
+      handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");
@@ -1342,7 +1355,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken,
           "add multiple entries from the spelling dictionary", UserRole.AUTHOR);
 
-      spelling.addEntries(entries);
+      // Bail on null
+      if (entries == null || entries.getObjects() == null
+          || entries.getObjects().isEmpty()) {
+        return;
+      }
+
+      spelling.addEntries(entries.getObjects());
+      final SpellingCorrectionHandler handler =
+          getSpellingCorrectionHandler(translation);
+      handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
     } catch (Exception e) {
       handleException(e, "trying to add multiple spelling entries");
@@ -1387,12 +1409,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove spelling dictionary entry",
           UserRole.AUTHOR);
 
-      translation.getSpellingDictionary().removeEntry(entry);
+      spelling.removeEntry(entry);
+      final SpellingCorrectionHandler handler =
+          getSpellingCorrectionHandler(translation);
+      handler.reindex(spelling.getEntries(), false);
+      translationService.updateSpellingDictionary(spelling);
 
-      if (!spelling.getEntries().isEmpty()) {
-        spelling.removeEntry(entry);
-        translationService.updateSpellingDictionary(spelling);
-      }
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1768,8 +1790,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final SpellingCorrectionHandler handler =
-          new DefaultSpellingCorrectionHandler();
+          getSpellingCorrectionHandler(translation);
       spelling.setEntries(handler.getEntriesAsList(in));
+      handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
     } catch (Exception e) {
       handleException(e, "trying to import spelling entries");
@@ -1817,7 +1840,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Return the dictionary's contents as InputStream
       final SpellingCorrectionHandler handler =
-          new DefaultSpellingCorrectionHandler();
+          getSpellingCorrectionHandler(translation);
+
       return handler.getEntriesAsStream(spelling.getEntries());
     } catch (Exception e) {
       handleException(e, "Trying to export spelling entries as InputStream ");
@@ -1971,9 +1995,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           "Suggest spellings based on term supplied", UserRole.VIEWER);
 
       final SpellingCorrectionHandler handler =
-          new DefaultSpellingCorrectionHandler();
-      return handler.suggestSpelling(entry, spelling.getEntries(), 10,
-          translationId);
+          getSpellingCorrectionHandler(translation);
+      return handler.suggestSpelling(entry, 10);
     } catch (Exception e) {
       handleException(e, "trying to suggest a spelling based on an entry");
     } finally {
@@ -1986,10 +2009,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   @POST
   @Override
-  @Path("/spelling/suggest/batch/{translationId}")
+  @Path("/spelling/suggest/batch")
   @ApiOperation(value = "Get batch spelling suggestions", notes = "Returns map containing a list (values) of suggested replacements from dictionary per term (key)", response = KeyValuesMap.class)
   public KeyValuesMap suggestBatchSpelling(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList lookupTerms,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2019,10 +2042,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken,
           "Suggest batch spellings based on term supplied", UserRole.VIEWER);
 
+      // Bail on null
+      if (lookupTerms == null || lookupTerms.getObjects() == null
+          || lookupTerms.getObjects().isEmpty()) {
+        return new KeyValuesMap();
+      }
+
       SpellingCorrectionHandler handler =
-          new DefaultSpellingCorrectionHandler();
-      return handler.suggestBatchSpelling(lookupTerms, spelling.getEntries(),
-          10, translationId);
+          getSpellingCorrectionHandler(translation);
+      return handler.suggestBatchSpelling(lookupTerms, 10);
     } catch (Exception e) {
       handleException(e, "trying to suggest batch spellings based on entries");
     } finally {
@@ -2780,11 +2808,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final Translation translation = translationService.getTranslation(translationId);
+      final Translation translation =
+          translationService.getTranslation(translationId);
       // Authorize the call
       final String userName =
-          authorizeProject(translationService, translation.getProject().getId(),
-              securityService, authToken, "start lookup concept names", UserRole.AUTHOR);
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "start lookup concept names", UserRole.AUTHOR);
 
       // Launch lookup process in background thread
       translationService
@@ -2798,4 +2828,82 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+
+  @GET
+  @Override
+  @Path("/langpref")
+  @ApiOperation(value = "Get language preference optios", notes = "Returns all language preference options.")
+  public LanguageDescriptionTypeList getLanguageDescriptionTypes(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Translation): /langpref");
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get lookup status",
+          UserRole.VIEWER);
+
+      final List<LanguageDescriptionType> types = new ArrayList<>();
+
+      final TranslationList list =
+          translationService.findTranslationsForQuery("", null);
+      // Go thru translations
+      for (Translation translation : list.getObjects()) {
+        // Go through description types (remove DEF)
+        for (DescriptionType descriptionType : translation
+            .getDescriptionTypes()) {
+          if (descriptionType.getName().equals("DEF")) {
+            continue;
+          }
+          final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+          type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+          type.setName(translation.getName());
+          type.setRefsetId(translation.getRefset().getTerminologyId());
+          type.setTypeId(descriptionType.getTypeId());
+          types.add(type);
+        }
+      }
+      LanguageDescriptionTypeList result = new LanguageDescriptionTypeListJpa();
+      result.setTotalCount(types.size());
+      result.setObjects(types);
+      return result;
+      
+    } catch (Exception e) {
+      handleException(e, "trying to look up language description types");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /**
+   * Returns the spelling correction handler. Initializes it if necessary
+   *
+   * @param translation the translation
+   * @return the spelling correction handler
+   * @throws Exception the exception
+   */
+  private static SpellingCorrectionHandler getSpellingCorrectionHandler(
+    Translation translation) throws Exception {
+    if (!spellingCorrectionHandlerMap.containsKey(translation.getId())) {
+
+      String key = "spelling.handler";
+      if (!ConfigUtility.getConfigProperties().containsKey("spelling.handler")) {
+        throw new Exception(
+            "Unable to find spelling.handler configuration, serious error.");
+      }
+      String handlerName = ConfigUtility.getConfigProperties().getProperty(key);
+      // Add handlers to map
+      SpellingCorrectionHandler handler =
+          ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+              handlerName, SpellingCorrectionHandler.class);
+      handler.setTranslation(translation);
+      spellingCorrectionHandlerMap.put(translation.getId(), handler);
+    }
+    return spellingCorrectionHandlerMap.get(translation.getId());
+  }
+
 }

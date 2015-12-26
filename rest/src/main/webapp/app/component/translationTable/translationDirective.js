@@ -172,7 +172,7 @@ tsApp
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
                   pfs.latestOnly = $scope.showLatest;
-                  translationService.findTranslationsForQuery($scope.project.id, pfs).then(
+                  translationService.findTranslationsForQuery($scope.paging["translation"].filter, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;
@@ -385,6 +385,7 @@ tsApp
                 $scope.getConcepts(translation);
                 $scope.getAvailableConcepts(translation);
                 $scope.getAssignedConcepts(translation);
+                $scope.selected.concept = null;
               };
 
               // Selects a concepts (setting $scope.concept)
@@ -534,6 +535,18 @@ tsApp
               if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
                 $scope.getTranslations();
               }
+
+              // Directive scoped method for cancelling a release
+              $scope.cancelAction = function(translation) {
+                $scope.translation = translation;
+                if (translation.stagingType == 'PREVIEW') {
+                  releaseService.cancelTranslationRelease($scope.translation.id).then(
+                  // Success
+                  function() {
+                    translationService.fireTranslationChanged($scope.translation);
+                  });
+                }
+              };
 
               // 
               // MODALS
@@ -769,7 +782,6 @@ tsApp
                   validationService.validateTranslation(translation, $scope.project.id).then(
                     // Success
                     function(data) {
-                      console.debug("data", data);
                       // If there are errors, make them available and stop.
                       if (data.errors && data.errors.length > 0) {
                         $scope.errors = data.errors;
@@ -872,7 +884,6 @@ tsApp
                   validationService.validateTranslation(translation, $scope.project.id).then(
                   // Success
                   function(data) {
-                    console.debug("data", data);
                     // If there are errors, make them available and stop.
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
@@ -1248,7 +1259,7 @@ tsApp
 
                 console.debug("Entered edit concept modal control");
                 // Paging params
-                $scope.pageSize = 5;
+                $scope.pageSize = 4;
                 $scope.paging = {};
                 $scope.paging["descriptions"] = {
                   page : 1,
@@ -1260,19 +1271,24 @@ tsApp
 
                 // Result of gathered suggestions - {"words" : {"word" : ["suggestion1", "suggestion2"] }}
                 $scope.suggestions = {};
+
                 // tinymce config
                 $scope.tinymceOptions = {
+                  resize : false,
+                  max_height : 80,
+                  height : 80,
+                  width : 300,
                   plugins : "spellchecker",
                   menubar : false,
                   statusbar : false,
                   toolbar : "spellchecker",
-                  spellchecker_languages : "",
-                  spellchecker_language : "",
+                  format : "text",
+                  spellchecker_languages : translation.language + "=" + translation.language,
+                  spellchecker_language : translation.language,
                   spellchecker_wordchar_pattern : /[^\s,\.]+/g,
                   spellchecker_callback : function(method, text, success, failure) {
-
                     // method == spellcheck
-                    if (method == "spellcheck") {
+                    if (method == "spellcheck" && text) {
                       // TODO: may not need to actually call this, probably can just look up
                       // words from the description
                       translationService.suggestBatchSpelling(translation.id,
@@ -1303,8 +1319,8 @@ tsApp
                       translationService.addSpellingDictionaryEntry(translation.id, text).then(
                       //Success
                       function(data) {
-                        // Remove added word from the suggestions map
-                        delete $scope.suggestions[text];
+                        // Recompute suggestions
+                        $scope.getSuggestions();
                         success(data);
                       },
                       // Error
@@ -1347,6 +1363,7 @@ tsApp
 
                 // spelling/memory scope vars
                 $scope.selectedWord = null;
+                $scope.allUniqueWordsNoSuggestions = [];
                 $scope.selectedEntry = null;
 
                 // Clear errors
@@ -1366,14 +1383,30 @@ tsApp
 
                 // Spelling Correction
 
-                // Get words of a description
-                $scope.getWords = function(description) {
-                  return description.term.match(/[^\s,\.]+/g);
+                // Populate $scope.suggestions (outside of spelling correction run)
+                $scope.getSuggestions = function() {
+                  console.debug("GET SUGGESTIONS");
+                  translationService.suggestBatchSpelling(translation.id,
+                    $scope.getAllUniqueWords()).then(
+                  // Success
+                  function(data) {
+                    $scope.suggestions = {};
+                    for ( var entry in data.map) {
+                      $scope.suggestions[entry] = data.map[entry].strings;
+                    }
+                    // compute all unique words without suggestions
+                    $scope.getAllUniqueWordsNoSuggestions();
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    $scope.suggestions = {};
+                  });
                 }
 
-                // determine if a description has any suggestion words (e.g. should spelling correction be run)
-                $scope.descriptionHasSuggestions = function(description) {
-                  var words = $scope.getWords(description);
+                // Determine if a description has any suggestion words (e.g. should spelling correction be run)
+                $scope.hasSuggestions = function(description) {
+                  var words = utilService.getWords(description.term);
                   if (words && words.length > 0) {
                     for (var i = 0; i < words.length; i++) {
                       if ($scope.suggestions[words[i]]) {
@@ -1384,31 +1417,11 @@ tsApp
                   return false;
                 }
 
-                // Globally populate $scope.suggestions (outside of spelling correction run)
-                $scope.getSuggestions = function() {
-                  console.debug("suggest spellings");
-                  translationService.suggestBatchSpelling(translation.id,
-                    text.match(this.getWordCharPattern())).then(
-                  // Success
-                  function(data) {
-                    $scope.suggestions = {};
-                    for ( var entry in data.map) {
-                      $scope.suggestions[entry] = data.map[entry].strings;
-                    }
-                    console.debug("  suggest spellings=", $scope.suggestions);
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    $scope.suggestions = {};
-                  });
-                }
-
                 // Get unique words from all descriptions
                 $scope.getAllUniqueWords = function() {
                   var all = {};
                   for (var i = 0; i < $scope.conceptTranslated.descriptions.length; i++) {
-                    var words = $scope.getWords($scope.conceptTranslated.descriptions[i]);
+                    var words = utilService.getWords($scope.conceptTranslated.descriptions[i].term);
                     if (words && words.length > 0) {
                       for (var j = 0; j < words.length; j++) {
                         all[words[j]] = 1;
@@ -1422,16 +1435,19 @@ tsApp
                   return retval.sort();
                 }
 
-                // Get all unique words without suggestions
-                $scope.getAllUniqueWordsWithoutSuggestions = function() {
+                // Sets $scope.allUniqueWordsNoSuggestions
+                $scope.getAllUniqueWordsNoSuggestions = function() {
                   var words = $scope.getAllUniqueWords();
                   var retval = [];
                   for (var i = 0; i < words.length; i++) {
-                    if (!$scope.suggestions[words[i]]) {
+                    if (words[i] && !$scope.suggestions[words[i]]) {
                       retval.push(words[i]);
                     }
                   }
-                  return retval.sort();
+                  $scope.allUniqueWordsNoSuggestions = retval.sort();
+                  if (retval.length > 0) {
+                    $scope.selectedWord = retval[0];
+                  }
                 }
 
                 // Remove a spelling entry
@@ -1462,7 +1478,7 @@ tsApp
                   translationService.removeSpellingDictionaryEntry(translation.id, word).then(
                   // Success
                   function(data) {
-                    delete $scope.suggestions[word];
+                    $scope.getSuggestions();
                   },
                   //Error
                   function(data) {
@@ -1471,6 +1487,33 @@ tsApp
                   });
                 }
 
+                // Add a spelling entry
+                $scope.addAllSpellingEntries = function(description) {
+                  var words = utilService.getWords(description.term);
+                  var map = {};
+                  if (words && words.length > 0) {
+                    for (var i = 0; i < words.length; i++) {
+                      if ($scope.suggestions[words[i]]) {
+                        map[words[i]] = 1;
+                      }
+                    }
+                  }
+                  var entries = [];
+                  for ( var key in map) {
+                    entries.push(key);
+                  }
+                  translationService.addBatchSpellingDictionaryEntries(translation.id, entries)
+                    .then(
+                    // Success
+                    function(data) {
+                      $scope.getSuggestions();
+                    },
+                    //Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
+                }
                 // Translation memory
 
                 // TODO:
@@ -1821,6 +1864,163 @@ tsApp
 
               };
 
+              
+              // Release Process modal
+              $scope.openReleaseProcessModal = function(ltranslation) {
+
+                console.debug("releaseProcessModal ", ltranslation);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/release.html',
+                  controller : ReleaseProcessModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    translation : function() {
+                      return ltranslation;
+                    },
+                    ioHandlers : function() {
+                      return $scope.metadata.exportHandlers;
+                    },
+                    utilService : function() {
+                      return utilService;
+                    }
+
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                  $scope.selectTranslation(data);
+                });
+              };
+
+              // Release Process controller
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation, ioHandlers,
+                utilService) {
+
+                console.debug("Entered release process modal", translation.id, ioHandlers);
+
+                $scope.errors = [];
+                $scope.translation = translation;
+                $scope.ioHandlers = ioHandlers;
+                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.releaseInfo = [];
+                $scope.validationResult = null;
+                $scope.format = 'yyyyMMdd';
+                $scope.releaseDate = utilService.toSimpleDate($scope.translation.effectiveTime);
+                $scope.status = {
+                  opened : false
+                };
+
+                if (translation.stagingType == 'PREVIEW') {
+                  releaseService.resumeRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedTranslation = data;
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                }
+
+                $scope.beginTranslationRelease = function(translation) {
+                  console.debug("begin translation release", translation.id, translation.effectiveTime);
+
+                  releaseService.beginTranslationRelease(translation.id,
+                    utilService.toSimpleDate(translation.effectiveTime)).then(
+                  // Success
+                  function(data) {
+                    $scope.releaseInfo = data;
+                    $scope.translation.inPublicationProcess = true;
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
+                };
+
+                $scope.validateTranslationRelease = function(translation) {
+                  console.debug("validate translation release", translation.id);
+
+                  releaseService.validateTranslationRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.validationResult = data;
+                    translationService.fireTranslationChanged(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.previewTranslationRelease = function(translation) {
+                  console.debug("preview translation release", translation.id);
+
+                  releaseService.previewTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedTranslation = data;
+                    $uibModalInstance.close($scope.stagedTranslation);
+                    alert("The PREVIEW translation has been added .");
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.finishTranslationRelease = function(translation) {
+                  console.debug("finish translation release", translation.id);
+
+                  releaseService.finishTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  // Success
+                  function(data) {
+                    $uibModalInstance.close(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                };
+
+                $scope.cancel = function(translation) {
+                  console.debug("Cancel ", translation.id);
+                  if (!confirm("Are you sure you want to cancel the translation release?")) {
+                    return;
+                  }
+                  $uibModalInstance.dismiss('cancel');
+                  releaseService.cancelTranslationRelease(translation.id).then(
+                  // Success
+                  function(data) {
+                    console.debug("cancel data", data);
+                    $uibModalInstance.close(translation);
+                  },
+                  // Error
+                  function(data) {
+                    $uibModalInstance.close();
+                  });
+                };
+
+                $scope.close = function() {
+                  $uibModalInstance.close(translation);
+                };
+
+                $scope.open = function($event) {
+                  $scope.status.opened = true;
+                };
+
+                $scope.format = 'yyyyMMdd';
+              }
               // end
 
             } ]

@@ -19,7 +19,8 @@
     <div class="col-md-7 col-xs-12">
 
       <!-- Descriptions -->
-      <h5>Translation Descriptions</h5>
+      <h5>Translation Descriptions
+        ({{conceptTranslated.descriptions.length}})</h5>
       <div style="min-height: 200px;">
         <!-- Existing descriptions -->
 
@@ -58,17 +59,19 @@
                   ng-bind="getSortIndicator('term')"></span></th>
               <th><span ng-click="setSortField('typeId', null)">Type</span>
                 <span ng-bind="getSortIndicator('typeId')"></span> /<span
-                  ng-click="setSortField('term', null)">Case</span> <span
-                  ng-bind="getSortIndicator('caseSignificanceId')"></span></th>
+                  ng-click="setSortField('caseSignificanceId', null)">Case</span>
+                <span ng-bind="getSortIndicator('caseSignificanceId')"></span></th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
             <tr ng-repeat="description in pagedDescriptions">
               <td>
-                <textarea title="Description term" cols="40" rows="3"
-                  spellcheck="false" ng-model="description.term"
-                  ui-tinymce="tinymceOptions"></textarea>
+                <div ng-class="{redborder: hasSuggestions(description)}">
+                  <textarea title="Description term" spellcheck="false"
+                    ng-model="description.term" ui-tinymce="tinymceOptions"
+                    ng-change="getSuggestions()"></textarea>
+                </div>
               </td>
               <td>
                 <select ng-model="description.type"
@@ -81,8 +84,13 @@
                 </select>
               </td>
               <td>
+                <!-- remove description -->
                 <i ng-click="removeDescription($index)"
                   title="Remove description" class="noul material-icons md-18">delete</i>
+                <!-- Add all words -->
+                <i ng-show="hasSuggestions(description)"
+                  ng-click="addAllSpellingEntries(description)"
+                  title="Add all words" class="noul-red material-icons md-18">add</i>
               </td>
             </tr>
           </tbody>
@@ -104,8 +112,7 @@
               <td>
                 <select title="Spelling dictionary entries that can be removed"
                   style="width: 200px;" ng-model="selectedWord"
-                  ng-options="word for word in getAllUniqueWordsWithoutSuggestions() | orderBy:'word'">
-                  <option value="_ALL_">All entries</option>
+                  ng-options="word for word in allUniqueWordsNoSuggestions">
                 </select>
                 <button class="btn btn-xs btn-primary"
                   ng-click="removeSpellingEntry(selectedWord)"

@@ -20,6 +20,7 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
+import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -45,6 +46,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
@@ -56,6 +58,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 /**
  * JPA enabled implementation of {@link TranslationService}.
@@ -275,18 +278,47 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "Translation Service - find translations " + query);
+    int origStartIndex = pfs.getStartIndex();
+    if (pfs.getLatestOnly()) {
+      pfs.setStartIndex(-1);
+    }
+    // this will do filtering and sorting, but not paging
     int[] totalCt = new int[1];
     List<Translation> list =
         (List<Translation>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *] AND provisional:false" : query
                 + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
-    for (Translation translation : list) {
-      handleLazyInit(translation);
-    }
+    
     TranslationList result = new TranslationListJpa();
-    result.setTotalCount(totalCt[0]);
-    result.setObjects(list);
+    
+    if (pfs.getLatestOnly()) {
+      List<Translation> resultList = new ArrayList<>();
+
+      Map<String, Translation> latestList = new HashMap<>();
+      for (Translation translation : list) {
+        if (translation.getEffectiveTime() == null) {
+          resultList.add(translation);
+        } else if (!latestList.containsKey(translation.getName())) {
+          latestList.put(translation.getName(), translation);
+        } else {
+          Date effectiveTime =
+              latestList.get(translation.getName()).getEffectiveTime();
+          if (translation.getEffectiveTime().after(effectiveTime)) {
+            latestList.put(translation.getName(), translation);
+          }
+        }
+      }
+      list = new ArrayList<Translation>(latestList.values());
+      list.addAll(resultList);
+      pfs.setStartIndex(origStartIndex);
+      result.setObjects(applyPfsToList(list, Translation.class, pfs));
+      result.setTotalCount(list.size());
+    } else {
+      result.setTotalCount(totalCt[0]);
+      result.setObjects(list);
+    }
+    
     for (Translation translation : result.getObjects()) {
       handleLazyInit(translation);
     }
@@ -338,8 +370,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
     translation.getNotes().size();
-    translation.getPhraseMemory().getEntries().size();
-    translation.getSpellingDictionary().getEntries().size();
+    if (translation.getPhraseMemory() != null) {
+      translation.getPhraseMemory().getEntries().size();
+    }
+    if (translation.getSpellingDictionary() != null) {
+      translation.getSpellingDictionary().getEntries().size();
+    }
   }
 
   /* see superclass */
@@ -917,18 +953,20 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // only exist for staging purposes
     // will become real if a finish operation is completed
     // used to prevent retrieving with index
-    translationCopy.setProvisional(true);
+
+    // Mark as provisional if staging type isn't preview
+    if (stagingType == Translation.StagingType.PREVIEW) {
+      translationCopy.setEffectiveTime(effectiveTime);
+      translationCopy.setProvisional(false);
+    } else {
+      translationCopy.setProvisional(true);
+    }
 
     // null its id and all of its components ids
     // then call addXXX on each component
     translationCopy.setId(null);
     translationCopy.setDescriptionTypes(null);
     translationCopy.setEffectiveTime(effectiveTime);
-    /*
-     * for (DescriptionTypeRefsetMember type :
-     * translationCopy.getDescriptionTypes()) { type.setId(null);
-     * translationCopy.addDescriptionType(type); //addDescriptionType(type); }
-     */
 
     addTranslation(translationCopy);
 
@@ -938,9 +976,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // altered from
     // 6901 to null
     for (Concept originConcept : translation.getConcepts()) {
+
+      // Skip members for preview that are not ready for publication
+      if (stagingType == Translation.StagingType.PREVIEW
+          && originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
+        continue;
+      }
+
       Concept concept = new ConceptJpa(originConcept, false);
       // member.setLastModifiedBy(userName);
-
       // member.setPublishable(true);
       concept.setTranslation(translationCopy);
       concept.setTerminology(translationCopy.getTerminology());
@@ -958,6 +1002,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
+
+    // TODO: need other data structures with DescripionType - see addTranslation
+
     // set staging parameters on the original translation
     translation.setStaged(true);
     translation.setStagingType(stagingType);
@@ -1195,6 +1242,32 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         lookupProgressMap.put(translationId, LOOKUP_ERROR_CODE);
       }
     }
+  }
+
+  /* see superclass */
+  @Override
+  public String computePreferredName(Concept concept,
+    List<LanguageDescriptionType> pref) throws Exception {
+    // Iterate through concept descriptions and attempt to match to pref.
+    // Once found, return the corresponding description name.
+    for (Description desc : concept.getDescriptions()) {
+      // Iterate through preference types (in order)
+      for (LanguageDescriptionType type : pref) {
+        // IF found matching type, look for matching lang refset and
+        // acceptability id
+        if (desc.getTypeId().equals(type.getTypeId())) {
+          for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
+            if (member.getRefsetId().equals(type.getRefsetId())
+                && member.getAcceptabilityId()
+                    .equals(type.getAcceptabilityId())) {
+              return desc.getTerm();
+            }
+          }
+        }
+      }
+    }
+    // could find nothing special, return default name
+    return concept.getName();
   }
 
 }

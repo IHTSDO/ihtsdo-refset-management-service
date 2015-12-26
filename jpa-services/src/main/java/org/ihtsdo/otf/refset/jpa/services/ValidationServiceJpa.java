@@ -112,7 +112,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
         result.merge(validationHandlersMap.get(key).validate(member, service));
       }
     }
-    service.close();
+    //service.close();
     return result;
   }
 
@@ -126,7 +126,7 @@ public class ValidationServiceJpa extends RootServiceJpa implements
         result.merge(validationHandlersMap.get(key).validate(refset, service));
       }
     }
-    service.close();
+    //service.close();
     return result;
   }
 

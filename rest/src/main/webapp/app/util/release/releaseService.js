@@ -235,6 +235,30 @@ tsApp.service('releaseService', [
       return deferred.promise;
     }
 
+    // begin translation release
+    this.beginTranslationRelease = function(translationId, effectiveTime) {
+      console.debug("beginTranslationRelease");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http.get(
+        releaseUrl + 'translation/begin' + "?translationId=" + translationId + "&effectiveTime=" + effectiveTime)
+        .then(
+        // success
+        function(response) {
+          console.debug("  release info = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    }
+
     // preview refset release
     this.previewRefsetRelease = function(refsetId, ioHandlerId) {
       console.debug("previewRefsetRelease");
@@ -303,6 +327,28 @@ tsApp.service('releaseService', [
       return deferred.promise;
     }
 
+    this.cancelTranslationRelease = function(translationId) {
+      console.debug("cancelTranslationRelease");
+      var deferred = $q.defer();
+
+      // get translation revision
+      gpService.increment()
+      $http.get(releaseUrl + "translation/cancel?translationId=" + translationId).then(
+      // success
+      function(response) {
+        console.debug("  cancel translation release = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     this.finishRefsetRelease = function(refsetId) {
       console.debug("finishRefsetRelease");
       var deferred = $q.defer();
@@ -345,6 +391,50 @@ tsApp.service('releaseService', [
       });
       return deferred.promise;
     }
+    
+    this.finishTranslationRelease = function(translationId) {
+      console.debug("finishTranslationRelease");
+      var deferred = $q.defer();
+
+      // get translation revision
+      gpService.increment()
+      $http.get(releaseUrl + "translation/finish?translationId=" + translationId).then(
+      // success
+      function(response) {
+        console.debug("  finish translation release = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+    // Remove release artifact
+    this.removeReleaseArtifact = function(artifactId) {
+      console.debug("removeReleaseArtifact");
+      var deferred = $q.defer();
+
+      gpService.increment()
+      $http['delete'](releaseUrl + 'remove' + "/" + 'artifact' + "/" + artifactId).then(
+      // success
+      function(response) {
+        console.debug("  artifact = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
 
     // Export a release artifact and prompt the download, no promise returned
     this.exportReleaseArtifact = function(releaseArtifact) {

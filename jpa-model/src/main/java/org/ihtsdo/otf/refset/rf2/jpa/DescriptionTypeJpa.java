@@ -15,7 +15,7 @@ import org.ihtsdo.otf.refset.rf2.DescriptionType;
  * Concrete implementation of {@link DescriptionType}.
  */
 @Entity
-@Table(name = "description_type_refset_members")
+@Table(name = "description_types")
 @Audited
 @XmlRootElement(name = "descriptionType")
 public class DescriptionTypeJpa extends AbstractRefsetMemberJpa implements

@@ -308,6 +308,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  
   /* see superclass */
   @Override
   @PUT
@@ -356,6 +357,59 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
+  @Path("/members/add")
+  @ApiOperation(value = "Add Refset members for expression", notes = "Adds the members that are resolved by the expression", response = ConceptRefsetMemberListJpa.class)
+  public ConceptRefsetMemberList addRefsetMembersForExpression(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Expression", required = true) @QueryParam("expression") String expression,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /members/add " + refsetId + expression);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    Refset refset = refsetService.getRefset(refsetId);
+    try {
+      String userName = authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "add members for expression", UserRole.AUTHOR);
+
+      ConceptList resolvedFromExpression =
+          refsetService.getTerminologyHandler().resolveExpression(expression,
+              refset.getTerminology(), refset.getVersion(), null);
+      
+      ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      for (Concept concept : resolvedFromExpression.getObjects()) {
+        final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+        member.setTerminologyId(concept.getTerminologyId());
+        member.setConceptId(concept.getTerminologyId());
+        member.setConceptName(concept.getName());
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setTerminology(concept.getTerminology());
+        member.setVersion(concept.getVersion());
+        member.setModuleId(concept.getModuleId());
+        member.setLastModifiedBy(userName);
+        member.setRefset(refset);
+        member.setActive(true);
+        member.setConceptActive(true);
+        list.addObject(refsetService.addMember(member));
+      }
+      refsetService.commit();
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to update a refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @POST
   @Path("/update")
   @ApiOperation(value = "Update refset", notes = "Updates the specified refset")
   public void updateRefset(
@@ -382,7 +436,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Update refset
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-      // Refset updatedRefset = refsetService.getRefset(refset.getId());
 
       if (refset.getType() == Refset.Type.INTENSIONAL
           && !refset.getDefinitionClauses().toString().equals(previousClauses)) {
@@ -396,9 +449,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
       securityService.close();
     }
-
   }
 
+  
   /* see superclass */
   @Override
   @DELETE
@@ -791,7 +844,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "export definition",
+      authorizeApp(securityService, authToken, "retrieve refset members",
           UserRole.VIEWER); // Load refset
 
       final Refset refset = refsetService.getRefset(refsetId);
@@ -1644,6 +1697,95 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
       return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/optimize/{refsetId}")
+  @ApiOperation(value = "Optimize definition for refset id", notes = "Optimizes the definition for the specified refset id")
+  public void optimizeDefinition(
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): optimize definition for refset id, refsetId:"
+            + refsetId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      final Refset refset = refsetService.getRefset(refsetId);
+      String userName = authorizeProject(refsetService, refset.getProject().getId(),
+          securityService, authToken, "optimize definition for refset id",
+          UserRole.AUTHOR);
+      
+      // create map of definition clause values to their resolved concepts
+      Map<String, ConceptList> clauseToConceptsMap = new HashMap<>();
+      List<DefinitionClause> allClauses = refset.getDefinitionClauses();
+      List<DefinitionClause> posClauses = new ArrayList<>();
+      List<DefinitionClause> negClauses = new ArrayList<>();
+      for (DefinitionClause clause : allClauses) {
+        if (clause.isNegated()) {
+          negClauses.add(clause);
+        } else {
+          posClauses.add(clause);
+        }
+        ConceptList concepts = refsetService.getTerminologyHandler().resolveExpression(clause.getValue(),
+            refset.getTerminology(), refset.getVersion(), null);
+        clauseToConceptsMap.put(clause.getValue(), concepts);
+      }
+      
+      // compute if any of the clauses subsume any of the other clauses
+      List<String> subsumedClauses = new ArrayList<>();
+      for (int i = 0; i < posClauses.size(); i++) {
+        for (int j = i + 1; j < posClauses.size(); j++) {
+          String key1 = posClauses.get(i).getValue();
+          String key2 = posClauses.get(j).getValue();
+          List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
+          List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
+          if (values1.containsAll(values2) && !values2.containsAll(values1)) {
+            subsumedClauses.add(key2);
+          } else if (values2.containsAll(values1) && !values1.containsAll(values2)) {
+            subsumedClauses.add(key1);
+          }
+        }
+      }
+      for (int i = 0; i < negClauses.size(); i++) {
+        for (int j = i + 1; j < negClauses.size(); j++) {
+          String key1 = negClauses.get(i).getValue();
+          String key2 = negClauses.get(j).getValue();
+          List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
+          List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
+          if (values1.containsAll(values2) && !values2.containsAll(values1)) {
+            subsumedClauses.add(key2);
+          } else if (values2.containsAll(values1) && !values1.containsAll(values2)) {
+            subsumedClauses.add(key1);
+          }
+        }
+      }      
+      // remove subsumed and duplicate clauses from the refset
+      Map<String, DefinitionClause> clausesToKeep = new HashMap<>();
+        for (DefinitionClause clause : allClauses) {
+          // keep clause if it isn't subsumed and
+          // it isn't a duplicate
+          if (!subsumedClauses.contains(clause.getValue()) && 
+              !clausesToKeep.keySet().contains(clause.getValue())) {
+            clausesToKeep.put(clause.getValue(), clause);
+          }
+        }
+        refset.setDefinitionClauses(new ArrayList<DefinitionClause>(clausesToKeep.values()));
+        // Update refset
+        refset.setLastModifiedBy(userName);
+        refsetService.updateRefset(refset);
+
+      
+
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a refset definition");
     } finally {
       refsetService.close();
       securityService.close();

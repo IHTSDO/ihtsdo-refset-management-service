@@ -114,8 +114,12 @@ public class HelperUnit011Test {
     map2.add("1", (String) null);
     assertTrue(map1.equals(map2));
     assertTrue(map1.hashCode() == map2.hashCode());
-    assertTrue(map1.toString().equals(map2.toString()));
-
+    try {
+      assertTrue(map1.toString().equals(map2.toString()));
+      fail("Expected NPE");
+    } catch (Exception e) {
+      // n/a
+    }
     map1 = new KeyValuesMap();
     map1.add(null, "1");
     map1.add(null, "2");

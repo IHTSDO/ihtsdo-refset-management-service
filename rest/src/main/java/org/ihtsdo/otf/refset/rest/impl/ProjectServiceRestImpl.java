@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -22,6 +23,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -46,6 +48,7 @@ import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -691,12 +694,34 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken,
-          "retrieve concept with description", UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken,
+              "retrieve concept with description", UserRole.VIEWER);
 
       final Concept concept =
           projectService.getTerminologyHandler().getFullConcept(terminologyId,
               terminology, version);
+
+/*      // TODO: if the user has language preferences beyond the defaults
+      UserPreferences prefs =
+          securityService.getUser(userName).getUserPreferences();
+
+// TODO: what about including the translation this user is specifically editing?
+// should that tanslation's descriptions be assumed to be included?
+ // should this all be mirrored in translationService so it can be appropriately used there
+  // also for par/chd? - that might be easeir.
+
+      // if (prefs != null && prefs.getLanguageDescriptionTypes) {
+      if (true) {
+
+        //List<LanguageDescriptionType> types = prefs.getLanguageDescriptionTypes();
+        List<LanguageDescriptionType> types = new ArrayList<>();
+//        types.
+        
+        // Find translations whose terminologyId matches the langauge
+        // refset ids specified in prefs 
+        
+      }*/
 
       return concept;
     } catch (Exception e) {

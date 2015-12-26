@@ -513,22 +513,23 @@ tsApp.service('translationService', [
       console.debug("suggestBatchSpelling");
       var deferred = $q.defer();
 
-      // Get refset types
-      gpService.increment();
+      // INTENSIONALLY doesn't use gp
+      // gpService.increment();
       $http.post(
-        translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch' + "/" + translationId, {
+        translationUrl + 'spelling' + "/" + 'suggest' + "/" + 'batch?translationId='
+          + translationId, {
           strings : lookupTerms
         }).then(
       // success
       function(response) {
         console.debug("  batch suggest = ", response.data);
-        gpService.decrement();
+        //  gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
-        gpService.decrement();
+        //gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;

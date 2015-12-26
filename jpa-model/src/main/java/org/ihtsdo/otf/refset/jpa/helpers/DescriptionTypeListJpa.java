@@ -16,7 +16,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 /**
  * JAXB enabled implementation of {@link DescriptionTypeList}.
  */
-@XmlRootElement(name = "descriptionTypeRefsetMemberList")
+@XmlRootElement(name = "descriptionTypeList")
 public class DescriptionTypeListJpa extends
     AbstractResultList<DescriptionType> implements
     DescriptionTypeList {
