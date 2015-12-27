@@ -776,7 +776,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/phrasememory/remove?translationId" + translationId
+            + "/translation/phrasememory/remove?translationId=" + translationId
             + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
