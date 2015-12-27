@@ -20,7 +20,6 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -35,7 +34,9 @@ import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
@@ -245,7 +246,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       }
 
       // Remove spelling dictionary
-      removeSpellingDictionary(translation.getSpellingDictionary());
+      removeSpellingDictionary(translation.getSpellingDictionary().getId());
 
       // Remove description types - CASCADE
     }
@@ -289,9 +290,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             ? "id:[* TO *] AND provisional:false" : query
                 + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
-    
+
     TranslationList result = new TranslationListJpa();
-    
+
     if (pfs.getLatestOnly()) {
       List<Translation> resultList = new ArrayList<>();
 
@@ -318,7 +319,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
     }
-    
+
     for (Translation translation : result.getObjects()) {
       handleLazyInit(translation);
     }
@@ -849,13 +850,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removeSpellingDictionary(SpellingDictionary dictionary)
-    throws Exception {
+  public void removeSpellingDictionary(Long dictionaryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove spelling dictionary " + dictionary);
+        "Translation Service - remove spelling dictionary " + dictionaryId);
 
+    SpellingDictionaryJpa dictionary =
+        getObject(dictionaryId, SpellingDictionaryJpa.class);
     if (dictionary != null) {
-      removeObject(dictionary, SpellingDictionary.class);
+      removeObject(dictionary, SpellingDictionaryJpa.class);
     }
   }
 
@@ -878,12 +880,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception {
+  public void removeMemoryEntry(Long memoryEntryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove memory entry " + memoryEntry);
+        "Translation Service - remove memory entry " + memoryEntryId);
 
+    MemoryEntryJpa memoryEntry =
+        this.getObject(memoryEntryId, MemoryEntryJpa.class);
     if (memoryEntry != null) {
-      removeObject(memoryEntry, MemoryEntry.class);
+      removeObject(memoryEntry, MemoryEntryJpa.class);
     }
   }
 
@@ -907,11 +911,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception {
+  public void removePhraseMemory(Long phraseMemoryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove phrase memory " + phraseMemory);
+        "Translation Service - remove phrase memory " + phraseMemoryId);
+    PhraseMemoryJpa phraseMemory =
+        getObject(phraseMemoryId, PhraseMemoryJpa.class);
     if (phraseMemory != null) {
-      removeObject(phraseMemory, PhraseMemory.class);
+      removeObject(phraseMemory, PhraseMemoryJpa.class);
     }
   }
 

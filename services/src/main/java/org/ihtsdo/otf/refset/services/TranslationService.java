@@ -366,8 +366,7 @@ public interface TranslationService extends RefsetService {
    * @param dictionary the spelling dictionary
    * @throws Exception the Exception
    */
-  public void removeSpellingDictionary(SpellingDictionary dictionary)
-    throws Exception;
+  public void removeSpellingDictionary(Long dictionaryId) throws Exception;
 
   /**
    * Adds the memory entry.
@@ -389,10 +388,10 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the memory entry.
    *
-   * @param memoryEntry the memory entry
+   * @param memoryEntryId the memory entry id
    * @throws Exception the Exception
    */
-  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception;
+  public void removeMemoryEntry(Long memoryEntryId) throws Exception;
 
   /**
    * Adds the phrase memory.
@@ -415,10 +414,10 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the phrase memory.
    *
-   * @param phraseMemory the phrase memory
+   * @param phraseMemoryId the phrase memory id
    * @throws Exception the Exception
    */
-  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception;
+  public void removePhraseMemory(Long phraseMemoryId) throws Exception;
 
   /**
    * Get a list of translations.
