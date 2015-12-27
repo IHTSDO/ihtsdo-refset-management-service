@@ -75,6 +75,7 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
@@ -1670,24 +1671,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
           "Suggest translation based on name supplied", UserRole.VIEWER);
-
-      final String query = "name:" + name;
-      final List<MemoryEntry> entries =
-          translationService.findMemoryEntryForTranslation(translationId,
-              query, null);
-      final List<String> results =
-          Lists.transform(entries, new Function<MemoryEntry, String>() {
-
-            @Override
-            public String apply(MemoryEntry arg0) {
-              return arg0.getTranslatedName();
-            }
-
-          });
-      final StringList strList = new StringList();
-      strList.setTotalCount(results.size());
-      strList.setObjects(results);
-      return strList;
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      return handler.suggestPhraseMemory(name, translationId, translationService);
     } catch (Exception e) {
       handleException(e, "trying to suggest a translation based on name");
     } finally {
@@ -1882,7 +1867,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       // Load PhraseMemory
-      final List<MemoryEntry> memories = parsePhraseMemory(translation, in);
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      final List<MemoryEntry> memories = handler.getEntriesAsList(in);
       final PhraseMemory phraseMemory = translation.getPhraseMemory();
       for (final MemoryEntry memoryEntry : memories) {
         memoryEntry.setPhraseMemory(phraseMemory);
@@ -1928,14 +1914,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("The translation phrase memory entries is null"
             + translation.getPhraseMemory().getId());
       }
-      final StringBuilder sb = new StringBuilder();
-      for (final MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-        sb.append(entry.getName()).append("|")
-            .append(entry.getTranslatedName())
-            .append(System.getProperty("line.separator"));
-      }
-
-      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      return handler.getEntriesAsStream(translation.getPhraseMemory().getEntries());
     } catch (Exception e) {
       handleException(e, "trying to export translation phrase memory");
     } finally {
@@ -2702,46 +2682,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.close();
       securityService.close();
     }
-  }
-
-  /**
-   * Parses the phrase memory.
-   *
-   * @param translation the translation
-   * @param content the content
-   * @return the list
-   * @throws Exception the exception
-   */
-  private List<MemoryEntry> parsePhraseMemory(Translation translation,
-    InputStream content) throws Exception {
-    final List<MemoryEntry> list = new ArrayList<>();
-    String line = "";
-    final Reader reader = new InputStreamReader(content, "UTF-8");
-    final PushBackReader pbr = new PushBackReader(reader);
-    while ((line = pbr.readLine()) != null) {
-
-      // Strip \r and split lines
-      line = line.replace("\r", "");
-      final String fields[] = line.split("\\|");
-
-      // Check field lengths
-      if (fields.length != 2) {
-        pbr.close();
-        Logger.getLogger(getClass()).error("line = " + line);
-        throw new Exception("Unexpected field count in phrase memory file "
-            + fields.length);
-      }
-
-      // Instantiate and populate members
-      final MemoryEntry member = new MemoryEntryJpa();
-      member.setName(fields[0]);
-      member.setTranslatedName(fields[1]);
-      // Add member
-      list.add(member);
-      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
-    }
-    pbr.close();
-    return list;
   }
 
   /* see superclass */
