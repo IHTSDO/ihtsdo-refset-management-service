@@ -25,6 +25,11 @@ tsApp
           return tinymceOptions;
         }
 
+        // Get tinymce options
+        this.getTinymceOptions = function() {
+          return tinymceOptions;
+        }
+
         // Sets the error
         this.setError = function(message) {
           this.error.message = message;
@@ -236,6 +241,13 @@ tsApp
           return false;
         }
 
+        // Get words of a string
+        this.getWords = function(str) {
+          // Same as in tinymce options
+          return str.match(/[^\s,\.]+/g);
+        }        
+        
+        
       } ]);
 
 // Glass pane service

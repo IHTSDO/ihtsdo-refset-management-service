@@ -384,7 +384,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
       securityService.updateUserPreferences(userPreferences);
     } catch (Exception e) {
-      handleException(e, "trying to update a concept");
+      handleException(e, "trying to update user preferences");
     } finally {
       securityService.close();
     }

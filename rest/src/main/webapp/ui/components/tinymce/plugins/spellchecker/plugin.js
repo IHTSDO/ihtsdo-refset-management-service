@@ -684,15 +684,15 @@ define("tinymce/spellcheckerplugin/Plugin", [
 				}});
 			}
 
-			items.push.apply(items, [
-				{text: 'Ignore', onclick: function() {
-					ignoreWord(word, spans);
-				}},
-
-				{text: 'Ignore all', onclick: function() {
-					ignoreWord(word, spans, true);
-				}}
-			]);
+//			items.push.apply(items, [
+//				{text: 'Ignore', onclick: function() {
+//					ignoreWord(word, spans);
+//				}},
+//
+//				{text: 'Ignore all', onclick: function() {
+//					ignoreWord(word, spans, true);
+//				}}
+//			]);
 
 			// Render menu
 			suggestionsMenu = new Menu({

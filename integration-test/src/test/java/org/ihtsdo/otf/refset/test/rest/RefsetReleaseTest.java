@@ -79,6 +79,12 @@ public class RefsetReleaseTest {
   /** The test admin password. */
   protected static String adminPassword;
 
+  /** The assign names. */
+  private static Boolean assignNames;
+
+  /** The assign names. */
+  private static Boolean backgroundLookup;
+
   /**
    * Create test fixtures for class.
    *
@@ -119,6 +125,12 @@ public class RefsetReleaseTest {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
+    // The assign names property
+    assignNames =
+        Boolean.valueOf(properties
+            .getProperty("terminology.handler.DEFAULT.assignNames"));
+
+    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -171,7 +183,8 @@ public class RefsetReleaseTest {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -204,7 +217,8 @@ public class RefsetReleaseTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(refset, project.getId(), auth.getAuthToken());
+        validationService.validateRefset(refset, project.getId(),
+            auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -241,7 +255,7 @@ public class RefsetReleaseTest {
 
     return refset;
   }
-  
+
   /**
    * Test refset release including begin and cancel.
    *
@@ -255,13 +269,16 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -278,15 +295,18 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -303,20 +323,23 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
-
 
   /**
    * Test refset release including begin, validate, preview and finish.
@@ -331,17 +354,21 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -358,14 +385,17 @@ public class RefsetReleaseTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (intensional) and import definition
     RefsetJpa refset1 =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID.randomUUID().toString(),
-            admin);
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project2, UUID
+            .randomUUID().toString(), admin);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // Add 5 members to refset
@@ -387,17 +417,20 @@ public class RefsetReleaseTest {
     Calendar calendar = Calendar.getInstance();
     calendar.add(Calendar.MONDAY, 1);
     // Begin release
-    releaseService.beginRefsetRelease(refset1.getId(), ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
+    releaseService.beginRefsetRelease(refset1.getId(),
+        ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
+    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+        adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
+    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
-  
+
   /**
    * Make concept refset member.
    *
@@ -423,4 +456,32 @@ public class RefsetReleaseTest {
     return member;
   }
 
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
+  }
 }

@@ -9,7 +9,6 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
-import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -354,7 +353,8 @@ public interface RefsetService extends ReleaseService {
    * @param background the background
    * @throws Exception the exception
    */
-  public void lookupMemberNames(Long refsetId, String label, boolean background) throws Exception;
+  public void lookupMemberNames(Long refsetId, String label, boolean background)
+    throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been

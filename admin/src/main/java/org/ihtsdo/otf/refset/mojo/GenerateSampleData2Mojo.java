@@ -264,20 +264,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Create projects
       //
       Logger.getLogger(getClass()).info("Add new projects");
-      ProjectJpa project1 = makeProject("Project 1", admin);
-      ProjectJpa project2 = makeProject("Project 2", admin);
-      ProjectJpa project3 = makeProject("Project 3", admin);
-      ProjectJpa project4 = makeProject("Project 4", admin);
+      ProjectJpa project1 = makeProject("Project 1", "1000001", admin);
+      ProjectJpa project2 = makeProject("Project 2", "1000036", admin);
+      ProjectJpa project3 = makeProject("Project 3", "1000124", admin);
+      ProjectJpa project4 = makeProject("Project 4", null, admin);
 
       // Make additional projects to trigger paging
-      ProjectJpa project5 = makeProject("Project 5", admin);
-      ProjectJpa project6 = makeProject("Project 6", admin);
-      makeProject("Project 7", admin);
-      makeProject("Project 8", admin);
-      makeProject("Project 9", admin);
-      makeProject("Project 10", admin);
-      makeProject("Project 11", admin);
-      makeProject("Project 12", admin);
+      ProjectJpa project5 = makeProject("Project 5", null, admin);
+      ProjectJpa project6 = makeProject("Project 6", null, admin);
+      makeProject("Project 7", null, admin);
+      makeProject("Project 8", null, admin);
+      makeProject("Project 9", null, admin);
+      makeProject("Project 10", null, admin);
+      makeProject("Project 11", null, admin);
+      makeProject("Project 12", null, admin);
 
       //
       // Assign project roles
@@ -412,64 +412,64 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       makeRefset(
           "Accessible information - communication support simple reference set",
           null, 1, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999002121000000109", "999000051000000104", reviewer1);
+          "999002121000000109", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Action context values simple reference set", null, 2,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001711000000106",
-          "999000051000000104", reviewer1);
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Breathing finding simple reference set", null, 3,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001431000000106",
-          "999000051000000104", reviewer1);
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Care planning action context values simple reference set",
           null, 4, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999000081000000105", "999000051000000104", reviewer1);
+          "999000081000000105", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Christian religion simple reference set", null, 5,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999000441000000105",
-          "999000051000000104", reviewer1);
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Device reading body site simple reference set", null, 6,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "999001011000000109",
-          "999000051000000104", reviewer1);
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Emergency care investigations simple reference set", null, 7,
           "UK1000000", Refset.Type.EXTENSIONAL, project1, "991261000000107",
-          "999000051000000104", reviewer1);
+          "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Emergency care mechanism of injury simple reference set",
           null, 8, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "991281000000103", "999000051000000104", reviewer1);
+          "991281000000103", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Financial circumstances finding simple reference set", null,
           9, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999001521000000105", "999000051000000104", reviewer1);
+          "999001521000000105", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Laterality simple reference set", null, 10, "UK1000000",
-          Refset.Type.EXTENSIONAL, project1, "999000821000000100",
+          Refset.Type.EXTENSIONAL, project1, "999000821000000100", "1000001",
           "999000051000000104", reviewer1);
 
       makeRefset("Need for interpreter findings simple reference set", null,
           11, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "991481000000102", "999000051000000104", reviewer1);
+          "991481000000102", "1000001", "999000051000000104", reviewer1);
 
       makeRefset(
           "Newborn blood spot screening result status simple reference set",
           null, 12, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "966281000000109", "999000051000000104", reviewer1);
+          "966281000000109", "1000001", "999000051000000104", reviewer1);
 
       makeRefset(
           "Occupational therapy functional observable simple reference set",
           null, 13, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999001701000000109", "999000051000000104", reviewer1);
+          "999001701000000109", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Respiratory medicine diagnosis simple reference set", null,
           14, "UK1000000", Refset.Type.EXTENSIONAL, project1,
-          "999001871000000106", "999000051000000104", reviewer1);
+          "999001871000000106", "1000001", "999000051000000104", reviewer1);
 
       makeRefset("Smoking simple reference set", null, 15, "UK1000000",
-          Refset.Type.EXTENSIONAL, project1, "999000891000000102",
+          Refset.Type.EXTENSIONAL, project1, "999000891000000102", "1000001",
           "999000051000000104", reviewer1);
 
       // Create two refsets in project 2 (intensional and external)
@@ -478,12 +478,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       makeRefset("Unexpected result indicator reference set", null, 0,
           "AU1000036", Refset.Type.INTENSIONAL, project2, "32568021000036109",
-          "32570231000036109", reviewer2);
+          "1000036", "32570231000036109", reviewer2);
 
       RefsetJpa refset =
           makeRefset("Adverse reaction agent reference set", null, 0,
               "AU1000036", Refset.Type.EXTERNAL, project2, "142321000036106",
-              "32570231000036109", reviewer2);
+              "1000036", "32570231000036109", reviewer2);
       // Set the external URL
       refset
           .setExternalUrl("http://www.nehta.gov.au/news-and-events/news/701-available-for-download-nctis-adverse-reaction-reference-set-implementation-guide-and-snomed-ct-au-mapping-guidelines");
@@ -493,7 +493,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Spanish translation - new refsetid for scope refset
       refset =
           makeTranslationRefset("Spanish Translation scope reference set", 2,
-              "INT", project2, "", "450829007", reviewer2);
+              "INT", project2, "", "1000124", "450829007", reviewer2);
 
       // Make spanish translation
       makeTranslation(
@@ -503,7 +503,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Swedish translation - new refsetid for scope refset
       refset =
           makeTranslationRefset("Swedish Translation scope reference set", 3,
-              "INT", project2, "", "45991000052106", reviewer2);
+              "INT", project2, "", "1000124", "45991000052106", reviewer2);
 
       // Make Swedish translation
       makeTranslation(
@@ -515,14 +515,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       reviewer3 = (UserJpa) security.authenticate("reviewer3", "reviewer3");
       makeRefset("Route of administration reference set", null, 17,
           "US1000124", Refset.Type.EXTENSIONAL, project3, "442311000124105",
-          "731000124108", reviewer3);
+          "1000124", "731000124108", reviewer3);
 
       // Create intensional refsets to test definition changes
       Logger.getLogger(getClass()).info(
           "  intensional refsets with definition changes");
       refset =
           makeRefset("Antibiotic measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "",
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
@@ -535,7 +535,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       refset =
           makeRefset("Ampicillin measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "",
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
@@ -561,7 +561,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       refset =
           makeRefset("Pneumonia reference set reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "",
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
@@ -582,7 +582,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           "  intensional refsets with version changes");
       refset =
           makeRefset("Antibiotic measurement reference set", null, 0,
-              "US1000124", Refset.Type.INTENSIONAL, project3, "",
+              "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
@@ -593,7 +593,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       refset =
           makeRefset("Azole anitfungal reference set", null, 0, "US1000124",
-              Refset.Type.INTENSIONAL, project3, "", "731000124108", reviewer3);
+              Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
+              reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
@@ -603,7 +604,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       refset =
           makeRefset("Polyderma reference set", null, 0, "US1000124",
-              Refset.Type.INTENSIONAL, project3, "", "731000124108", reviewer3);
+              Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
+              reviewer3);
       refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
@@ -613,7 +615,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make danish refset and translation
       refset =
           makeTranslationRefset("Danish Translation scope reference set", 20,
-              "INT", project3, "554461000005103", "554471000005108", reviewer3);
+              "INT", project3, "554461000005103", "1000005", "554471000005108",
+              reviewer3);
 
       // Make Swedish translation
       TranslationJpa translation =
@@ -691,12 +694,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * Make project.
    *
    * @param name the name
+   * @param namespaceId the namespace id
    * @param auth the auth
    * @return the project jpa
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
-  private ProjectJpa makeProject(String name, User auth) throws Exception {
+  private ProjectJpa makeProject(String name, String namespaceId, User auth)
+    throws Exception {
     final ProjectJpa project = new ProjectJpa();
     project.setName(name);
     project.setDescription("Description of project " + name);
@@ -707,7 +712,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     project.setOrganization("IHTSDO");
     // This is the only namespace configured in the sample id generation service
     // when there are others, we can play with this
-    project.setNamespace("1000179");
+    project.setNamespace(namespaceId);
     return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
         auth.getAuthToken());
   }
@@ -791,6 +796,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @param type the type
    * @param project the project
    * @param refsetId the refset id
+   * @param namespaceId the namespace id
    * @param moduleId the module id
    * @param auth the auth
    * @return the refset jpa
@@ -798,7 +804,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    */
   private RefsetJpa makeRefset(String name, String definition, int num,
     String edition, Refset.Type type, Project project, String refsetId,
-    String moduleId, User auth) throws Exception {
+    String namespaceId, String moduleId, User auth) throws Exception {
     final RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -820,6 +826,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
     refset.setLookupInProgress(false);
+    refset.setNamespace(namespaceId);
     refset.setModuleId(moduleId);
     refset.setProject(project);
     refset.setPublishable(true);
@@ -899,14 +906,15 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
    * @param edition the edition
    * @param project the project
    * @param refsetId the refset id
+   * @param namespaceId the namespace id
    * @param moduleId the module id
    * @param auth the auth
    * @return the refset jpa
    * @throws Exception the exception
    */
   private RefsetJpa makeTranslationRefset(String name, int num, String edition,
-    Project project, String refsetId, String moduleId, User auth)
-    throws Exception {
+    Project project, String refsetId, String namespaceId, String moduleId,
+    User auth) throws Exception {
     final RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(Refset.Type.EXTENSIONAL);
@@ -919,6 +927,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_REMOVE);
     refset.setForTranslation(false);
     refset.setLastModified(new Date());
+    refset.setNamespace(namespaceId);
     refset.setModuleId(moduleId);
     refset.setProject(project);
     refset.setPublishable(true);

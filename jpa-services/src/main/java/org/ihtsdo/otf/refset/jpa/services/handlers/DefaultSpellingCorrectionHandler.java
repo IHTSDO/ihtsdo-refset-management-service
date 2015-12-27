@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
@@ -16,12 +15,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.spell.PlainTextDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
+import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -34,6 +34,10 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
  */
 public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     SpellingCorrectionHandler {
+
+  /** The spell checker. */
+  private SpellChecker checker;
+
   /**
    * Instantiates an empty {@link DefaultSpellingCorrectionHandler}.
    *
@@ -46,6 +50,51 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
   @Override
   public void setProperties(Properties p) throws Exception {
     // N/A
+  }
+
+  @Override
+  public void setTranslation(Translation translation) throws Exception {
+
+    String dir =
+        ConfigUtility.getConfigProperties().getProperty(
+            "hibernate.search.default.indexBase");
+    if (dir == null) {
+      throw new Exception(
+          "Index directory hibernate.search.default.indexBase not set in config.properties");
+    }
+    // e.g. $dir/spelling/$translationId
+    File indexDir =
+        new File(new File(dir, "spelling"), translation.getId().toString());
+
+    // Load the dictionary
+
+    // Create the index writer
+    FSDirectory indexFsDir = FSDirectory.open(indexDir);
+    checker = new SpellChecker(indexFsDir);
+    // Presumably not needed - index already built, just opening it
+    // reindex(translation.getSpellingDictionary().getEntries(),true);
+  }
+
+  /* see superclass */
+  @Override
+  public void reindex(List<String> entries, boolean merge) throws Exception {
+    if (checker == null) {
+      throw new Exception(
+          "Set translation must be called prior to calling reindex");
+    }
+    IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST, null);
+    StringBuilder builder = new StringBuilder();
+    for (String s : entries) {
+      builder.append(s);
+      builder.append("\n");
+    }
+    InputStream is =
+        new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
+    PlainTextDictionary ptDict = new PlainTextDictionary(is);
+    if (!merge) {
+      checker.clearIndex();
+    }
+    checker.indexDictionary(ptDict, iwConfig, false);
   }
 
   /* see superclass */
@@ -91,33 +140,15 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public StringList suggestSpelling(String term, List<String> entries, int amt,
-    Long tid) throws IOException {
-    if (!entries.contains(term)) {
-      File tmpIndexFile =
-          new File(Long.toString(System.currentTimeMillis()),
-              Long.toString(tid));
-
-      StringBuilder builder = new StringBuilder();
-      for (String s : entries) {
-        builder.append(s);
-        builder.append("\n");
-      }
-
-      InputStream is =
-          new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
-      PlainTextDictionary ptDict = new PlainTextDictionary(is);
-
-      IndexWriterConfig iwConfig =
-          new IndexWriterConfig(Version.LATEST, new StandardAnalyzer());
-      FSDirectory indexDir = FSDirectory.open(tmpIndexFile);
-      SpellChecker checker = new SpellChecker(indexDir);
-
-      checker.indexDictionary(ptDict, iwConfig, true);
-      tmpIndexFile.delete();
-
+  public StringList suggestSpelling(String term, int amt) throws Exception {
+    if (checker == null) {
+      throw new Exception(
+          "Set translation must be called prior to calling suggest spelling");
+    }
+    // Assume terms of length 1 or 2 always exist
+    if (!checker.exist(term) && term.length() > 2) {
       String[] results = checker.suggestSimilar(term, amt);
-      checker.close();
+      // Handle the case of no suggestions, determine whether it exists
       return convertResults(results);
     }
 
@@ -125,65 +156,42 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
   }
 
   @Override
-  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms,
-    List<String> dictionaryEntries, int amt, Long tid) throws IOException {
+  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms, int amount)
+    throws Exception {
+    if (checker == null) {
+      throw new Exception(
+          "Set translation must be called prior to calling suggest batch spelling");
+    }
     KeyValuesMap retMap = new KeyValuesMap();
 
-    // Only process if lookupTerms need suggestions, so idenify if case
-    boolean termsToProcess = false;
-    for (String termToSearch : lookupTerms.getObjects()) {
-      if (!dictionaryEntries.contains(termToSearch)) {
-        termsToProcess = true;
-        break;
-      }
+    if (lookupTerms == null || lookupTerms.getObjects() == null
+        || lookupTerms.getObjects().isEmpty()) {
+      return new KeyValuesMap();
     }
 
-    if (termsToProcess) {
-      HashMap<String, StringList> resultHashMap = new HashMap<>();
+    HashMap<String, StringList> resultHashMap = new HashMap<>();
 
-      // Create input stream for Dictionary
-      StringBuilder builder = new StringBuilder();
-      for (String s : dictionaryEntries) {
-        builder.append(s);
-        builder.append("\n");
+    // Iterate through lookup terms and store their collections in map
+    for (String term : lookupTerms.getObjects()) {
+
+      // Consider a term existing if 1 or 2 chars only
+      if (term.length() < 3) {
+        continue;
       }
 
-      InputStream is =
-          new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
-
-      // Create Index Writer
-      PlainTextDictionary ptDict = new PlainTextDictionary(is);
-      IndexWriterConfig iwConfig =
-          new IndexWriterConfig(Version.LATEST, new StandardAnalyzer());
-
-      // Create tmp file for SpellChecker
-      File tmpIndexFile =
-          new File(Long.toString(System.currentTimeMillis()),
-              Long.toString(tid));
-      FSDirectory indexDir = FSDirectory.open(tmpIndexFile);
-
-      // Create SpellChecker
-      SpellChecker checker = new SpellChecker(indexDir);
-
-      // Index Checker and delete tmp file
-      checker.indexDictionary(ptDict, iwConfig, true);
-      tmpIndexFile.delete();
-
-      // Iterate through lookup terms and store their collections in map
-      for (String termToSearch : lookupTerms.getObjects()) {
-        if (!dictionaryEntries.contains(termToSearch)) {
-          String[] results = checker.suggestSimilar(termToSearch, amt);
-          StringList resultsForTerm = convertResults(results);
-
-          resultHashMap.put(termToSearch, resultsForTerm);
-        }
+      // Skip terms that exist
+      if (checker.exist(term)) {
+        continue;
       }
 
-      checker.close();
-
-      // Convert Map to proper return type
-      retMap.setMap(resultHashMap);
+      String[] results = checker.suggestSimilar(term, amount);
+      // if there are results or the word doesn't exist, then send it back
+      StringList resultsForTerm = convertResults(results);
+      resultHashMap.put(term, resultsForTerm);
     }
+
+    // Convert Map to proper return type
+    retMap.setMap(resultHashMap);
 
     return retMap;
   }
@@ -204,10 +212,4 @@ public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
     return retStrList;
   }
 
-  /* see superclass */
-  @Override
-  public SpellingCorrectionHandler copy() throws Exception {
-    // Nothing to do
-    return new DefaultSpellingCorrectionHandler();
-  }
 }

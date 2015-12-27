@@ -2,23 +2,25 @@
 // e.g. <div concept-info data="data" paging="paging" ></div>
 tsApp.directive('conceptInfo',
   [
+    '$uibModal',
     'utilService',
     'projectService',
-    function(utilService, projectService) {
+    'refsetService',
+    'validationService',
+    function($uibModal, utilService, projectService, refsetService, validationService) {
       console.debug('configure conceptInfo directive');
       return {
         restrict : 'A',
         scope : {
-          data : '='
+          data : '=',
+          value : '='
         },
         templateUrl : 'app/component/conceptInfo/conceptInfo.html',
         controller : [
           '$scope',
           function($scope) {
-
             // Paging parameters
             $scope.pageSize = 10;
-            $scope.pagedChildren = [];
             $scope.paging = {};
             $scope.paging["children"] = {
               page : 1,
@@ -32,6 +34,10 @@ tsApp.directive('conceptInfo',
             $scope.parents = [];
             $scope.error = null;
 
+            // tracks member types by concept id
+            $scope.disableMemberTypes = false;
+            $scope.memberTypes = {};
+
             // When concept changes, redo paging
             $scope.$watch('data.concept', function() {
               // When used by translation table, data.concept is null until selected
@@ -41,12 +47,8 @@ tsApp.directive('conceptInfo',
                 $scope.getConceptParents($scope.data.concept);
                 $scope.getFullConcept($scope.data.concept);
                 $scope.getConceptChildren($scope.data.concept);
+                $scope.memberTypes = {};
               }
-            });
-
-            // When children are reloaded, redo paging
-            $scope.$watch('children', function() {
-              $scope.getPagedChildren();
             });
 
             // Clear error
@@ -71,6 +73,7 @@ tsApp.directive('conceptInfo',
               // Success
               function(data) {
                 $scope.parents = data.concepts;
+                $scope.getMemberTypes();
               },
               // Error 
               function(data) {
@@ -90,6 +93,7 @@ tsApp.directive('conceptInfo',
               function(data) {
                 $scope.children = data.concepts;
                 $scope.children.totalCount = data.totalCount;
+                $scope.getMemberTypes();
               },
               // Error 
               function(data) {
@@ -141,7 +145,7 @@ tsApp.directive('conceptInfo',
               return "UNKNOWN";
             }
 
-            // Order by group. TODO:
+            // Order by group.
             $scope.getOrderedRelationships = function(concept) {
               if (concept && concept.relationships.length > 0) {
                 return concept.relationships.sort($scope.sortByRelationshipGroup);
@@ -154,33 +158,6 @@ tsApp.directive('conceptInfo',
               var t1 = a.relationshipGroup ? a.relationshipGroup : 9999;
               var t2 = b.relationshipGroup ? b.relationshipGroup : 9999;
               return (t1 > t2) - (t2 > t1);
-            }
-
-            // Table sorting mechanism
-            $scope.setSortField = function(table, field) {
-              utilService.setSortField(table, field, $scope.paging);
-              // re-page the children
-              if (table == 'children') {
-                $scope.getPagedChildren();
-              }
-
-            };
-
-            // Return up or down sort chars if sorted
-            $scope.getSortIndicator = function(table, field) {
-              return utilService.getSortIndicator(table, field, $scope.paging);
-            };
-
-            // Get paged children (assume all are loaded)
-            $scope.getPagedChildren = function() {
-              $scope.pagedChildren = $scope.getPagedArray($scope.children,
-                $scope.paging['children']);
-            }
-
-            // Helper to get a paged array with show/hide flags
-            // and filtered by query string
-            $scope.getPagedArray = function(array, paging) {
-              return utilService.getPagedArray(array, paging, $scope.pageSize);
             }
 
             // 
@@ -293,6 +270,8 @@ tsApp.directive('conceptInfo',
                   }
                 }
 
+                $scope.getMemberTypes();
+
               });
 
             }
@@ -330,11 +309,385 @@ tsApp.directive('conceptInfo',
                   tree.inner.push(data.concepts[i]);
                 }
 
+                $scope.getMemberTypes();
+
+              });
+            }
+
+            // Function to find all concepts in the graph
+            $scope.getAllConcepts = function() {
+              var concepts = [ $scope.data.concept.terminologyId ];
+              for (var i = 0; i < $scope.children.length; i++) {
+                concepts = concepts.concat($scope.getAllConceptsHelper($scope.children[i]));
+              }
+              for (var i = 0; i < $scope.parents.length; i++) {
+                concepts = concepts.concat($scope.getAllConceptsHelper($scope.parents[i]));
+              }
+              return concepts;
+            }
+
+            // Helper
+            $scope.getAllConceptsHelper = function(tree) {
+              var concepts = [ tree.terminologyId ];
+              if (tree.inner) {
+                for (var i = 0; i < tree.inner.length; i++) {
+                  concepts = concepts.concat($scope.getAllConceptsHelper(tree.inner[i]));
+                }
+              }
+              return concepts;
+            }
+
+            // Gets $scope.memberTypes
+            // Only operates if $scope.data.refset exists
+            $scope.getMemberTypes = function() {
+              // skip if refset not set
+              if (!$scope.data.refset) {
+                $scope.disableMemberTypes = true;
+                return;
+              }
+
+              console.debug("MEMBERTYPES", $scope.memberTypes, $scope.memberTypes.length == 0,
+                'abc');
+
+              // only show for "ASSIGNED" refsets
+              if ($scope.value != 'ASSIGNED') {
+                $scope.disableMemberTypes = true;
+                return;
+              }
+
+              $scope.disableMemberTypes = false;
+
+              var concepts = $scope.getAllConcepts();
+              var query = concepts[0];
+              for (var i = 1; i < concepts.length; i++) {
+                if (!$scope.memberTypes[concepts[i]]) {
+                  query += " OR ";
+                  query += concepts[i];
+                  // put a placeholder entry for the cases when it isn't a member of the refset
+                  $scope.memberTypes[concepts[i]] = {
+                    conceptId : concepts[i].terminologyId
+                  };
+                }
+              }
+              var pfs = {
+                startIndex : -1
+              };
+              query = "(" + query + ")";
+              refsetService.findRefsetMembersForQuery($scope.data.refset.id, query, pfs).then(
+              // Success
+              function(data) {
+                for (var i = 0; i < data.members.length; i++) {
+                  $scope.memberTypes[data.members[i].conceptId] = data.members[i];
+                }
+              })
+            }
+
+            // Remove refset inclusion
+            $scope.removeRefsetInclusion = function(refset, member) {
+              if (!confirm("Are you sure you want to remove the inclusion (" + member.conceptName
+                + ")?")) {
+                return;
+              }
+              refsetService.removeRefsetMember(member.id).then(
+              // Success 
+              function() {
+                refsetService.fireRefsetChanged(refset);
+                $scope.memberTypes = {};
+                $scope.getMemberTypes();
+              });
+            };
+
+            // Remove refset exclusion and refreshes members
+            $scope.removeRefsetExclusion = function(refset, member) {
+              refsetService.removeRefsetExclusion(member.id).then(
+              // Success
+              function() {
+                refsetService.fireRefsetChanged(refset);
+                $scope.memberTypes = {};
+                $scope.getMemberTypes();
+              });
+            };
+
+            // Modals
+            // Add modal
+            $scope.openAddModal = function(lrefset, lmember) {
+              console.debug("openAddModal ", lrefset, lmember);
+
+              var modalInstance = $uibModal.open({
+                templateUrl : 'app/component/conceptInfo/add.html',
+                controller : AddModalCtrl,
+                backdrop : 'static',
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  member : function() {
+                    return lmember;
+                  }
+                }
               });
 
-            }
-            // end
+              modalInstance.result.then(
+              // Success
+              function(data) {
+                refsetService.fireRefsetChanged(data);
+                $scope.memberTypes = {};
+                $scope.getMemberTypes();
+              });
 
+            };
+
+            // Add modal controller
+            var AddModalCtrl = function($scope, $uibModalInstance, refset, member) {
+              console.debug("Entered add modal control", refset, member);
+
+              $scope.errors = [];
+
+              $scope.refset = refset;
+              $scope.member = member;
+              $scope.selfAndDescendants = '<<';
+              $scope.descendants = '<';
+              $scope.includeClause = "";
+
+              // Add button
+              $scope.submitAdd = function(refset, concept, value) {
+                var definitionClause = value.indexOf('<') != -1;
+                // if intensional and clause defined, add clause and update refset
+                if (refset.type == 'INTENSIONAL' && definitionClause) {
+                  var clause = {
+                    value : value,
+                    negated : false
+                  }
+                  refset.definitionClauses.push(clause);
+                  refsetService.updateRefset(refset).then(
+                  // Success - update refset
+                  function(data) {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - add refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                }
+                // if extensional and clause defined, call addRefsetMembersForExpression
+                else if (refset.type == 'EXTENSIONAL' && definitionClause) {
+                  refsetService.addRefsetMembersForExpression(refset, value).then(
+                  // Success - update refset
+                  function(data) {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - add refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                }
+                // if intensional and clause undefined, call add inclusion
+                else if (refset.type == 'INTENSIONAL' && !definitionClause) {
+                  $scope.addMember(concept, 'INCLUSION');
+                }
+                // if extensional and clause undefined, call add member
+                else if (refset.type == 'EXTENSIONAL' && !definitionClause) {
+                  $scope.addMember(concept, 'MEMBER');
+                }
+              }
+
+              // close the modal
+              $scope.close = function() {
+                $uibModalInstance.close();
+              }
+
+              // Add the member
+              $scope.addMember = function(concept, memberType) {
+
+                var member = {
+                  active : true,
+                  conceptId : concept.terminologyId,
+                  conceptName : concept.name,
+                  conceptActive : concept.active,
+                  memberType : memberType,
+                  terminology : refset.terminology,
+                  version : refset.version,
+                  moduleId : refset.moduleId,
+                };
+                member.refsetId = refset.id;
+
+                // validate member before adding it
+                validationService.validateMember(member, $scope.refset.projectId).then(
+                  // Success - validate refset
+                  function(data) {
+                    $scope.validationResult = data;
+
+                    // If there are errors, make them available and stop.
+                    if (data.errors && data.errors.length > 0) {
+                      $scope.errors = data.errors;
+                      return;
+                    } else {
+                      $scope.errors = [];
+                    }
+
+                    // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
+                    if (data.warnings && data.warnings.length > 0
+                      && $scope.warnings !== data.warnings) {
+                      $scope.warnings = data.warnings;
+                      return;
+                    } else {
+                      $scope.warnings = [];
+                    }
+
+                    // Handle regular member type
+                    if (member.memberType == 'MEMBER') {
+
+                      refsetService.addRefsetMember(member).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                    }
+
+                    // Handle inclusion
+                    if (member.memberType == 'INCLUSION') {
+                      refsetService.addRefsetInclusion(member, false).then(
+                      // Success
+                      function(data) {
+                        $uibModalInstance.close(refset);
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      })
+                    }
+                  },
+                  // Error - validate refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+              };
+            };
+
+            // Remove modal
+            $scope.openRemoveModal = function(lrefset, lmember) {
+              console.debug("openRemoveModal ", lrefset, lmember);
+
+              var modalInstance = $uibModal.open({
+                templateUrl : 'app/component/conceptInfo/remove.html',
+                controller : RemoveModalCtrl,
+                backdrop : 'static',
+                resolve : {
+                  refset : function() {
+                    return lrefset;
+                  },
+                  member : function() {
+                    return lmember;
+                  }
+                }
+              });
+
+              modalInstance.result.then(
+              // Success
+              function(data) {
+                refsetService.fireRefsetChanged(data);
+                $scope.memberTypes = {};
+                $scope.getMemberTypes();
+              });
+
+            };
+
+            // Remove modal controller
+            var RemoveModalCtrl = function($scope, $uibModalInstance, refset, member) {
+              console.debug("Entered remove modal control", refset, member);
+
+              $scope.errors = [];
+
+              $scope.refset = refset;
+              $scope.member = member;
+              $scope.selfAndDescendants = '<<';
+              $scope.descendants = '<';
+              $scope.removeClause = "";
+
+              // Handles removing a member or clause
+              $scope.submitRemove = function(refset, concept, value) {
+                var definitionClause = value.indexOf('<') != -1;
+
+                // if intensional and clause defined, add clause and update refset
+                if (refset.type == 'INTENSIONAL' && definitionClause) {
+                  var clause = {
+                    value : value,
+                    negated : true
+                  }
+                  // This updates refset model
+                  refset.definitionClauses.push(clause);
+                  refsetService.updateRefset(refset).then(
+                  // Success - update refset
+                  function(data) {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - update refset
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                }
+
+                // if extensional and clause defined, call removeRefsetMembersForExpression
+                else if (refset.type == 'EXTENSIONAL' && definitionClause) {
+                  refsetService.removeRefsetMembersForExpression(refset, value).then(
+                  // Success - add members for expression
+                  function(data) {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - add members for expression
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                }
+
+                // if intensional and clause undefined, call add exclusion
+                else if (refset.type == 'INTENSIONAL' && !definitionClause) {
+                  refsetService.addRefsetExclusion(refset, member.conceptId, false).then(
+                  // Success - add exclusion
+                  function() {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - add exclusion
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                }
+
+                // if extensional and clause undefined, call remove member
+                else if (refset.type == 'EXTENSIONAL' && !definitionClause) {
+
+                  refsetService.removeRefsetMember(member.id).then(
+                  // Success - remove member
+                  function(data) {
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - remove member
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                }
+              }
+
+              // close the modal
+              $scope.close = function() {
+                $uibModalInstance.close();
+              }
+            };
+            // end
           } ]
       }
+
     } ]);

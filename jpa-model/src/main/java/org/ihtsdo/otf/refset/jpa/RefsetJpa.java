@@ -596,10 +596,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       for (DefinitionClause negClause : negativeClauses) {
         computedDefinition.append(" + !").append(negClause.getValue());
       }
-      if (project.getExclusionClause() != null
-          && !project.getExclusionClause().equals("")) {
-        computedDefinition.append(" + !")
-            .append(project.getExclusionClause());
+      if (project.getExclusionClause() != null) {
+        computedDefinition.append(" + !").append(project.getExclusionClause());
       }
     }
     return computedDefinition.toString();

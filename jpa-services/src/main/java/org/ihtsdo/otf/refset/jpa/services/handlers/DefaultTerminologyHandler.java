@@ -31,11 +31,13 @@ import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Relationship;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
@@ -517,9 +519,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
         rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
         // Only keep INFERRED_RELATIONSHIP rels
-        // TODO: terminology server is not returning inferred role rels, only isa
+        // TODO: terminology server is not returning inferred role rels, only
+        // isa
         // if (rel.getCharacteristicTypeId().equals( "STATED_RELATIONSHIP")) {
-          if (rel.getCharacteristicTypeId().equals( "INFERRED_RELATIONSHIP")) {
+        if (rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
@@ -528,9 +531,10 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
             "effectiveTime").asText()));
         rel.setModuleId(relNode.get("moduleId").asText());
-        rel.setTypeId(relNode.get("type").get("fsn").asText());
+        rel.setTypeId(relNode.get("type").get("fsn").asText()
+            .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
         // Skip "isa" rels
-        if (rel.getTypeId().equals("Is a (attribute)")) {
+        if (rel.getTypeId().equals("Is a")) {
           continue;
         }
 
@@ -932,36 +936,61 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       type.setRefsetId("900000000000538005");
       type.setDescriptionFormat("900000000000540000");
       if (i == 0) {
-        type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
-        type.setTypeId("900000000000003001");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("FSN");
-        type.setDescriptionLength(255);
-      }
-      if (i == 1) {
-        type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
-        type.setTypeId("900000000000550004");
-        type.setAcceptabilityId("900000000000548007");
-        type.setName("DEF");
-        type.setDescriptionLength(4096);
-      }
-      if (i == 2) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246363");
         type.setTypeId("900000000000013009");
         type.setAcceptabilityId("900000000000548007");
         type.setName("PN");
         type.setDescriptionLength(255);
       }
-      if (i == 3) {
+      if (i == 1) {
+        type.setTerminologyId("0f928c01-b245-5907-9758-a46cbeed2674");
+        type.setTypeId("900000000000003001");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("FSN");
+        type.setDescriptionLength(255);
+      }
+      if (i == 2) {
         type.setTerminologyId("909a711e-b114-5543-841e-242aaa246362");
         type.setTypeId("900000000000013009");
         type.setAcceptabilityId("900000000000549004");
         type.setName("SY");
         type.setDescriptionLength(255);
       }
+      if (i == 3) {
+        type.setTerminologyId("807f775b-1d66-5069-b58e-a37ace985dcf");
+        type.setTypeId("900000000000550004");
+        type.setAcceptabilityId("900000000000548007");
+        type.setName("DEF");
+        type.setDescriptionLength(4096);
+      }
       list.add(type);
     }
     return list;
+  }
+
+  /* see superclass */
+  @Override
+  public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
+    String terminology, String version) throws Exception {
+
+    // Assume these are in the correct order (see above)
+    final List<DescriptionType> descriptionTypes =
+        getStandardDescriptionTypes(terminology, version);
+    final List<LanguageDescriptionType> types = new ArrayList<>();
+    for (DescriptionType descriptionType : descriptionTypes) {
+      // don't include definition
+      if (descriptionType.getName().equals("DEF")) {
+        continue;
+      }
+      final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+      type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+      type.setName("US English");
+      type.setRefsetId("900000000000509007");
+      type.setTypeId(descriptionType.getTypeId());
+      types.add(type);
+    }
+
+    return types;
   }
 
   /* see superclass */

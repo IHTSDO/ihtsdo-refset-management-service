@@ -532,4 +532,25 @@ public interface RefsetServiceRest {
    */
   public void startLookupMemberNames(Long refsetId, String authToken)
     throws Exception;
+
+  /**
+   * Adds the refset members for expression.
+   *
+   * @param refsetId the refset id
+   * @param expression the expression
+   * @param authToken the auth token
+   * @return the concept refset member list
+   * @throws Exception the exception
+   */
+  public ConceptRefsetMemberList addRefsetMembersForExpression(Long refsetId,
+    String expression, String authToken) throws Exception;
+
+  /**
+   * Optimize definition.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void optimizeDefinition(Long refsetId, String authToken) throws Exception;
 }

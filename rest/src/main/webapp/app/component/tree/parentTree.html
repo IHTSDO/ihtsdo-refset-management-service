@@ -1,6 +1,5 @@
 
 <div ui-tree-handle>
-
   <!-- recursive display of next level of tree -->
   <ol ui-tree-nodes="" ng-model="tree.inner" ng-class="{hidden: collapsed}">
     <!--  render the parents -->
@@ -8,18 +7,67 @@
       ng-include="'app/component/tree/parentTree.html'"></li>
   </ol>
 
-
-  <a ng-click="getParentTrees(tree, this)">
-    <span class="glyphicon" ng-class="getTreeNodeIcon(tree, collapsed)"></span>
-  </a>
+  <i ng-click="getParentTrees(tree, this)" class="noul glyphicon"
+    ng-class="getTreeNodeIcon(tree, collapsed)"></i>
 
   <i ng-show="tree.leaf" class="glyphicon glyphicon-leaf"></i>
+
+  <!-- Action for a non-member -->
+  <i
+    ng-click="openAddModal(data.refset, tree, project); $event.stopPropagation()"
+    ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && !memberTypes[tree.terminologyId].memberType"
+    title="Add inclusion" class="noul material-icons md-12">add</i>
+  <i
+    ng-click="openAddModal(data.refset, tree, project); $event.stopPropagation()"
+    ng-show="data.refset.type == 'EXTENSIONAL' && !disableMemberTypes && !memberTypes[tree.terminologyId].memberType"
+    title="Add members" class="noul material-icons md-12">add</i>
+
+  <!-- Icons and actions for a regular member -->
+  <button class="btn btn-xs btn-primary"
+    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    uib-tooltip="Member">M</button>
+  <i
+    ng-show="data.refset.type == 'INTENSIONAL' && memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(data.refset, memberTypes[tree.terminologyId]); "
+    title="Add exclusion" class="noul material-icons md-12">remove_circle_outline</i>
+  <i
+    ng-show="data.refset.type == 'EXTENSIONAL' && memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+    ng-click="openRemoveModal(data.refset, memberTypes[tree.terminologyId]); "
+    title="Remove members" class="noul material-icons md-12">delete</i>
+
+  <!-- Icons and actions for an explicit exclusion -->
+  <button class="btn btn-xs btn-danger"
+    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+    uib-tooltip="Exclusion">X</button>
+  <i ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+    ng-click="removeRefsetExclusion(data.refset, memberTypes[tree.terminologyId]);"
+    title="Remove exclusion" class="noul material-icons md-12">delete</i>
+
+  <!-- Icons and actions for an explicit inclusion -->
+  <button class="btn btn-xs btn-success"
+    style="transform: scale(.6, .6); margin-bottom: 4px; padding-left: 4px;"
+    ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+    uib-tooltip="Inclusion">I</button>
+  <i ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+    ng-click="removeRefsetInclusion(data.refset,memberTypes[tree.terminologyId]);"
+    title="Remove inclusion" class="noul material-icons md-12">delete</i>
 
   <!-- if not the component viewed, render with hyperlink -->
   <span ng-show="tree.terminologyId != concept.terminologyId"
     style="font-size: 12px">
     <a ng-click="getConceptById(tree.terminologyId)"> {{tree.terminologyId}}</a>
-    : {{tree.name}}
+    :
+    <span ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'"
+      class="middle-blue">{{tree.name}}</span>
+    <span ng-show="memberTypes[tree.terminologyId].memberType == 'EXCLUSION'"
+      style="color: red">{{tree.name}}</span>
+    <span ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
+      style="color: green">{{tree.name}}</span>
+    <span ng-show="!disableMemberTypes && !memberTypes[tree.terminologyId].memberType"
+      style="color: black">{{tree.name}}</span>
+    <span ng-show="disableMemberTypes " style="color: black">{{tree.name}}</span>
   </span>
 
 </div>

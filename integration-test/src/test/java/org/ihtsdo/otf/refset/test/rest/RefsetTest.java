@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
@@ -74,6 +75,12 @@ public class RefsetTest {
   /** The test admin password. */
   protected static String adminPassword;
 
+  /** The assign names. */
+  private static Boolean assignNames;
+
+  /** The assign names. */
+  private static Boolean backgroundLookup;
+
   /**
    * Create test fixtures for class.
    *
@@ -115,6 +122,12 @@ public class RefsetTest {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
+    // The assign names property
+    assignNames =
+        Boolean.valueOf(properties
+            .getProperty("terminology.handler.DEFAULT.assignNames"));
+
+    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -166,7 +179,8 @@ public class RefsetTest {
     refset.setName(name);
     refset.setDescription("Description of refset " + name);
     if (type == Refset.Type.INTENSIONAL) {
-      List<DefinitionClause> definitionClauses = new ArrayList<DefinitionClause>();
+      List<DefinitionClause> definitionClauses =
+          new ArrayList<DefinitionClause>();
       DefinitionClause clause = new DefinitionClauseJpa();
       clause.setValue(definition);
       clause.setNegated(false);
@@ -219,5 +233,34 @@ public class RefsetTest {
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setRefset(refset);
     return member;
+  }
+
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
   }
 }

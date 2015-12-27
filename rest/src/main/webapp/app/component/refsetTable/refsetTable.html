@@ -1,7 +1,6 @@
 
 <!-- R1 -->
 <div class="row">
-
   <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
 
@@ -117,11 +116,13 @@
 
           <!-- AVAILABLE actions -->
           <td class="nobreak" ng-show="value == 'AVAILABLE'">
+            <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
+              title="Edit" class="noul material-icons md-18">edit</i>
             <i title="Remove"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
             <i
-              ng-click="openAssignRefsetModal(refset); $event.stopPropagation()"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
@@ -159,8 +160,8 @@
             <i ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
-              ng-click="performReassign(refset)" title="Reassign"
-              class="noul material-icons md-18">assignment_ind</i>
+              ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
+              title="Reassign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-click="performWorkflowAction(refset, 'SAVE', user.userName)"
               title="Save" class="noul material-icons md-18">save</i>
             <i ng-show="refset.workflowStatus != 'REVIEW_DONE'"
@@ -204,7 +205,7 @@
 
             <i
               ng-show="projects.role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignRefsetModal(refset); $event.stopPropagation()"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
@@ -338,26 +339,33 @@
               <i ng-show="value == 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
+              <i ng-show="value == 'ASSIGNED'"
+                ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
+                title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
-                title="Export definition" class="noul material-icons md-18">file_download</i>             
-              
+                title="Export definition" class="noul material-icons md-18">file_download</i>
+
+
               <table class="table">
                 <tbody>
-                  <tr ng-repeat="clause in selected.refset.definitionClauses|limitTo:4">
+                  <tr
+                    ng-repeat="clause in selected.refset.definitionClauses|limitTo:4">
                     <td>{{clause.value}}</td>
-                    <td><button class="btn btn-xs btn-primary"
-                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                    <td>
+                      <button class="btn btn-xs btn-primary"
+                        ng-show="!clause.negated" uib-tooltip="Union">+</button>
                       <button class="btn btn-xs btn-danger"
-                        ng-show="clause.negated"
-                        uib-tooltip="Minus">-</button></td>
-                  </tr> 
+                        ng-show="clause.negated" uib-tooltip="Minus">-</button>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
-              <div ng-show="selected.refset.definitionClauses.length > 4" class="truncate">
+              <div ng-show="selected.refset.definitionClauses.length > 4"
+                class="truncate">
                 <span ng-show="selected.refset.definitionClauses.length > 1">
                   <br />{{selected.refset.definitionClauses.length-4}} more...
                 </span>
@@ -381,7 +389,7 @@
             <td>&nbsp;</td>
           </tr>
         </tbody>
-      </table>              
+      </table>
     </div>
 
     <!-- release info -->
@@ -426,7 +434,7 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected"></div>
+    <div ng-show="selected.member" concept-info data="selected" value="value"></div>
 
     <!-- End R2C1 -->
   </div>
@@ -552,12 +560,12 @@
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
-                  ng-click="removeRefsetExclusion(selected.refset,member);"
+                  ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'MEMBER'"
-                  ng-click="addRefsetExclusion(selected.refset, member); "
+                  ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
                   title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
 
                 <i

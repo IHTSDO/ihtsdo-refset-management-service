@@ -3,11 +3,11 @@
  */
 package org.ihtsdo.otf.refset.services.handlers;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -18,18 +18,33 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 public interface SpellingCorrectionHandler extends Configurable {
 
   /**
+   * Configures the translation.
+   *
+   * @param translation the translation
+   * @throws Exception the exception
+   */
+  public void setTranslation(Translation translation) throws Exception;
+
+  /**
+   * Rebuild spell correction index.
+   *
+   * @param entries the entries
+   * @param merge the merge flag - <code>true</code> if index should be merged
+   *          with existing, <code>false</code> to rebuild from scratch.
+   * @throws Exception the exception
+   */
+  public void reindex(List<String> entries, boolean merge) throws Exception;
+
+  /**
    * Returns a list of suggested spellings based on a given term. If term exists
    * in index, that item is not returned as part of suggested spelling.
    *
    * @param term The term queried for suggestions
-   * @param entries the entries in the dictionary
-   * @param amt The number of terms returned
-   * @param tid the tid
+   * @param amount the amount
    * @return List of Strings representing the suggested spellings
-   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws Exception Signals that an I/O exception has occurred.
    */
-  StringList suggestSpelling(String term, List<String> entries, int amt,
-    Long tid) throws IOException;
+  public StringList suggestSpelling(String term, int amount) throws Exception;
 
   /**
    * Returns a list of suggested spellings based on a given set of term. All
@@ -37,15 +52,12 @@ public interface SpellingCorrectionHandler extends Configurable {
    * term-to-suggestions.
    *
    * @param lookupTerms The terms queried for suggestions
-   * @param dictionaryEntries the entries in the dictionary
-   * @param amt The number of terms returned
-   * @param tid the tid
+   * @param amount the amount
    * @return KeyValuesMap of term-to-suggestions
-   * @throws IOException Signals that an I/O exception has occurred.
+   * @throws Exception Signals that an I/O exception has occurred.
    */
-  KeyValuesMap suggestBatchSpelling(StringList lookupTerms,
-    List<String> dictionaryEntries, int amt, Long translationId)
-    throws IOException;
+  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms, int amount)
+    throws Exception;
 
   /**
    * Parses and returns a list of strings based on an InputStream passed in.
@@ -69,12 +81,4 @@ public interface SpellingCorrectionHandler extends Configurable {
   public InputStream getEntriesAsStream(List<String> l)
     throws UnsupportedEncodingException;
 
-  /**
-   * Returns a copy of the handler.
-   *
-   * @return A SpellingCorrectionHandler that is identical to the current
-   *         instance
-   * @throws Exception the exception
-   */
-  SpellingCorrectionHandler copy() throws Exception;
 }

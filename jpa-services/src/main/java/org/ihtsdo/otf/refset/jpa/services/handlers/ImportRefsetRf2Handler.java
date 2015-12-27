@@ -115,7 +115,8 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /* see superclass */
   @Override
-  public List<DefinitionClause> importDefinition(InputStream content) throws Exception {
+  public List<DefinitionClause> importDefinition(Refset refset,
+    InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import refset definition");
 
     String line = "";
@@ -140,15 +141,13 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       if (!fields[0].equals("id")) {
 
         Logger.getLogger(getClass()).debug("  definition = " + fields[6]);
-        
+
         // parse into definition clauses
         String part1 = "";
         String part2 = "";
         if (fields[6].contains(" + !")) {
           part1 = fields[6].substring(0, fields[6].indexOf(" + !"));
           part2 = fields[6].substring(fields[6].indexOf(" + !") + 4);
-          System.out.println("*" + part1 + "*");
-          System.out.println("*" + part2 + "*");
         } else {
           part1 = fields[6];
         }
@@ -161,8 +160,14 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         }
         String[] negativeClauses = part2.split(" + !");
         for (String clause : negativeClauses) {
-          // TODO: determine if this is a project level exclusion clause
-          // if so, don't add it to the negative refset level clauses
+          // Skip the empty clause (i.e. if there are no clauses)
+          if (clause.equals("")) {
+            continue;
+          }
+          // Skip project exclusion clause
+          if (refset.getProject().getExclusionClause().equals(clause)) {
+            continue;
+          }
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(true);
           defClause.setValue(clause);
