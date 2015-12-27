@@ -97,8 +97,24 @@
             <i
               ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
-              title="Start release process - TODO"
+              title="Start release process"
               class="noul material-icons md-18">open_in_new</i>
+
+            <i
+              ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
+              ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
+              title="Continue release processing"
+              class="noul material-icons md-18">open_in_new</i>
+
+            <span ng-show="translation.stagingType == 'PREVIEW'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelAction(translation)"
+                uib-tooltip="Click to cancel release process">Cancel
+                Release</button>
+            </span>
+
+
 
           </td>
 

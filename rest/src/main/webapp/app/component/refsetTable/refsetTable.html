@@ -339,12 +339,16 @@
               <i ng-show="value == 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
+              <i ng-show="value == 'ASSIGNED'"
+                ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
+                title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
                 title="Export definition" class="noul material-icons md-18">file_download</i>
+
 
               <table class="table">
                 <tbody>

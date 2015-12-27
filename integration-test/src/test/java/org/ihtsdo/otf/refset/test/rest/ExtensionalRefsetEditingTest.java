@@ -38,7 +38,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(newRefset, project2.getId(), adminAuthToken);
+        validationService.validateRefset(newRefset, project2.getId(),
+            adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset did not pass validation.");
@@ -186,6 +187,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // WorkflowStatus status = record.getRefset().getWorkflowStatus();
 
     // remove refset
+    verifyRefsetLookupCompleted(currentRefset.getId());
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
 
     currentRefset =
@@ -209,7 +211,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Validate refset
     ValidationResult result =
-        validationService.validateRefset(newRefset, project2.getId(), adminAuthToken);
+        validationService.validateRefset(newRefset, project2.getId(),
+            adminAuthToken);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -220,6 +223,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
         (RefsetJpa) refsetService.addRefset(newRefset, adminAuthToken);
     assertTrue(currentRefset != null);
     // remove refset
+    verifyRefsetLookupCompleted(currentRefset.getId());
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
 
     assertTrue(refsetService.getRefset(currentRefset.getId(), adminAuthToken) == null);

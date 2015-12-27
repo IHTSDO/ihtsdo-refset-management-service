@@ -577,6 +577,29 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // optimize the refset definition
+    this.optimizeDefinition = function(refsetId) {
+      console.debug("optimizeDefinition");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(refsetUrl + 'optimize' + "/" + refsetId).then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // get definition for refset id
     this.extrapolateDefinition = function(refsetId) {
       console.debug("extrapolateDefinition");
