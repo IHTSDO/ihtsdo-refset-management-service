@@ -346,6 +346,11 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       return user.applicationRole == 'ADMIN';
     }
 
+    // isUser function
+    this.isUser = function() {
+      return user.applicationRole == 'ADMIN' || user.applicationRole == 'USER';
+    }
+
     // Logout
     this.logout = function() {
       if (user.authToken == null) {
