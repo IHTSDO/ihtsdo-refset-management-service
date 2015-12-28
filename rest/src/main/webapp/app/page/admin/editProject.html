@@ -141,7 +141,9 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="submitProject(project);">{{action}}
-  </button>
+  <button ng-show="action == 'Add'" class="btn btn-primary"
+    ng-click="submitProject(project);">Add</button>
+  <button ng-show="action == 'Edit'" class="btn btn-primary"
+    ng-click="submitProject(project);">Save</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>
