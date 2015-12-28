@@ -171,7 +171,7 @@ public class TranslationTest {
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -216,7 +216,7 @@ public class TranslationTest {
   public void testMigration002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration002");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -277,7 +277,7 @@ public class TranslationTest {
   public void testMigration003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration003");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create translation (extensional) and import definition
     Translation janTranslation =
@@ -517,7 +517,7 @@ public class TranslationTest {
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -560,7 +560,7 @@ public class TranslationTest {
   @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -601,7 +601,7 @@ public class TranslationTest {
   @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
