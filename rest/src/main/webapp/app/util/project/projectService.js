@@ -342,7 +342,6 @@ tsApp.service('projectService', [
       function(response) {
         console.debug("  anyrole = " + response.data);
         userProjectsInfo.anyRole = response.data;
-        console.debug("getUserHasAnyRole", userProjectsInfo.anyRole);
         gpService.decrement();
         deferred.resolve(response.data);
       },

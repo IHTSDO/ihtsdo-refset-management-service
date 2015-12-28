@@ -1,7 +1,8 @@
 'use strict'
 
-var tsApp = angular.module('tsApp', [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce' ])
-  .config(function($rootScopeProvider) {
+var tsApp = angular.module('tsApp',
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce' ]).config(
+  function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
     // $rootScopeProvider.digestTtl(15);
@@ -94,6 +95,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     // Setup tabs
     $scope.tabs = tabService.tabs;
 
+    // User projects info from the project service
     $scope.userProjectsInfo = projectService.getUserProjectsInfo();
 
     // Set selected tab (change the view)
@@ -130,6 +132,11 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     // for ng-show
     $scope.isAdmin = function() {
       return securityService.isAdmin();
+    }
+    
+    // for ng-show
+    $scope.isUser = function() {
+      return securityService.isUser();
     }
 
   } ]);

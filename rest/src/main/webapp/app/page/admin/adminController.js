@@ -28,8 +28,7 @@ tsApp
         // Scope Variables
         //
         $scope.user = securityService.getUser();
-        $scope.user.userPreferences.lastTab = '/admin';
-        
+
         $scope.selectedProject = null;
         $scope.projectRoles = [];
 
@@ -98,6 +97,7 @@ tsApp
             function(data) {
               $scope.projects = data.projects;
               $scope.projects.totalCount = data.totalCount;
+
             })
 
         };
@@ -240,7 +240,9 @@ tsApp
               return;
             }
           }
-          projectService.removeProject(project).then(function() {
+          projectService.removeProject(project).then(
+          // Success
+          function() {
             // Refresh projects
             $scope.getProjects();
             $scope.getCandidateProjects();
@@ -342,17 +344,6 @@ tsApp
         }
 
         //
-        // Initialize
-        //
-        $scope.getProjects();
-        $scope.getUsers();
-        $scope.getCandidateProjects();
-        $scope.getApplicationRoles();
-        $scope.getProjectRoles();
-        $scope.getTerminologyEditions();
-        $scope.getValidationChecks();
-
-        //
         // MODALS
         //
 
@@ -381,6 +372,7 @@ tsApp
             projectService.fireProjectChanged(project);
             $scope.getProjects();
             $scope.getCandidateProjects();
+
           });
         };
 
@@ -436,7 +428,7 @@ tsApp
               function(data) {
                 // if not an admin, add user as a project admin
                 if ($scope.user.applicationRole != 'ADMIN') {
-                  projectService.assignUserToProject(data.id, $scope.user.name, 'ADMIN').then(
+                  projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
                       $uibModalInstance.close(data);
                     },
@@ -670,7 +662,22 @@ tsApp
           };
 
         };
+
+        //
+        // Initialize
+        //
+        $scope.getProjects();
+        $scope.getUsers();
+        $scope.getCandidateProjects();
+        $scope.getApplicationRoles();
+        $scope.getProjectRoles();
+        $scope.getTerminologyEditions();
+        $scope.getValidationChecks();
+        $scope.user.userPreferences.lastTab = '/admin';
         securityService.updateUserPreferences($scope.user.userPreferences);
+
+        // end
+
       }
 
     ]);

@@ -439,17 +439,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // remove the spelling dictionary
       translationService.removeSpellingDictionary(translation
-          .getSpellingDictionary());
+          .getSpellingDictionary().getId());
 
       // remove memory entry
       if (translation.getPhraseMemory() != null) {
         for (final MemoryEntry entry : translation.getPhraseMemory()
             .getEntries()) {
-          translationService.removeMemoryEntry(entry);
+          translationService.removeMemoryEntry(entry.getId());
         }
 
         // remove phrase memory
-        translationService.removePhraseMemory(translation.getPhraseMemory());
+        translationService.removePhraseMemory(translation.getPhraseMemory()
+            .getId());
       }
 
       // Create service and configure transaction scope
@@ -1023,7 +1024,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Fill in standard description fields for concept
         desc.setLanguageCode(translation.getLanguage());
-        // TODO: dss not null, correct? 
+        // TODO: dss not null, correct?
         desc.setEffectiveTime(new Date());
         desc.setActive(true);
         desc.setPublishable(true);
@@ -1041,7 +1042,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             member.setActive(true);
-            // TODO: dss not null, correct? 
+            // TODO: dss not null, correct?
             member.setEffectiveTime(new Date());
             member.setModuleId(translation.getModuleId());
             member.setPublishable(true);
@@ -1641,7 +1642,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               query, null);
       // Create service and configure transaction scope
       for (MemoryEntry entry : entries) {
-        translationService.removeMemoryEntry(entry);
+        translationService.removeMemoryEntry(entry.getId());
       }
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
@@ -1722,7 +1723,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           "remove all entries  from the phrase memory", UserRole.AUTHOR);
 
       for (final MemoryEntry memoryEntry : phraseMemory.getEntries()) {
-        translationService.removeMemoryEntry(memoryEntry);
+        translationService.removeMemoryEntry(memoryEntry.getId());
       }
     } catch (Exception e) {
       handleException(e, "trying to remove all phrase memory entries");
@@ -2809,7 +2810,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       result.setTotalCount(types.size());
       result.setObjects(types);
       return result;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to look up language description types");
     } finally {
