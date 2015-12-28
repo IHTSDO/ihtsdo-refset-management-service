@@ -20,7 +20,6 @@ tsApp.controller('DirectoryCtrl', [
     projectService.prepareIconConfig();
 
     $scope.user = securityService.getUser();
-    $scope.user.userPreferences.lastTab = '/directory';    
     $scope.userProjectsInfo = projectService.getUserProjectsInfo();
 
     // Wrap in a json object so we can pass to the directive effectively
@@ -105,8 +104,8 @@ tsApp.controller('DirectoryCtrl', [
     $scope.getProjects();
     $scope.getTerminologyEditions();
     $scope.getWorkflowPaths();
+    $scope.user.userPreferences.lastTab = '/directory';
     securityService.updateUserPreferences($scope.user.userPreferences);
 
     // end
-  }
-]);
+  } ]);

@@ -156,7 +156,6 @@ tsApp
             return "▾";
           }
         };
-        
 
         // Helper to get a paged array with show/hide flags
         // and filtered by query string
@@ -245,9 +244,8 @@ tsApp
         this.getWords = function(str) {
           // Same as in tinymce options
           return str.match(/[^\s,\.]+/g);
-        }        
-        
-        
+        }
+
       } ]);
 
 // Glass pane service
@@ -627,7 +625,7 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'security
 
     // sets the selected tab by label
     // to be called by controllers when their
-    // respective tab is select3ed
+    // respective tab is selected
     this.setSelectedTabByLabel = function(label) {
       for (var i = 0; i < this.tabs.length; i++) {
         if (this.tabs[i].label === label) {

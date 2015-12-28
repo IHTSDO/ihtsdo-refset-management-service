@@ -95,6 +95,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     // Setup tabs
     $scope.tabs = tabService.tabs;
 
+    // User projects info from the project service
     $scope.userProjectsInfo = projectService.getUserProjectsInfo();
 
     // Set selected tab (change the view)

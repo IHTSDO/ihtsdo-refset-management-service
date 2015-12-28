@@ -5,13 +5,11 @@
 <div class="modal-body">
   <div class="row">
     <table class="table">
-      <tr>
+      <tr ng-show="project.id">
         <td>
           <b>Project Id</b>
         </td>
-        <td>
-          <input ng-model="project.id" placeholder="Optional" />
-        </td>
+        <td>{{project.id}}</td>
       </tr>
       <tr>
         <td>
