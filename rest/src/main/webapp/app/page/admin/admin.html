@@ -156,25 +156,42 @@
     </h5>
     </uib-accordion-heading> <!--  end A3 User Prefs-->
     <div class="row">
-      <!--  spelling correction -->
-      <input type="checkbox" ng-change="saveUserPreferences()"
-        ng-model="user.userPreferences.spellingEnabled">
-      <span ng-show="user.userPreferences.spellingEnabled">Spelling
-        Correction (ENABLED)</span>
-      <span ng-show="!user.userPreferences.spellingEnabled">Spelling
-        Correction (DISABLED)</span>
+      <div class="col-md-12 col-xs-12">
+        <!--  spelling correction -->
+        <input type="checkbox" ng-change="saveUserPreferences()"
+          ng-model="user.userPreferences.spellingEnabled">
+        <span ng-show="user.userPreferences.spellingEnabled">Spelling
+          Correction (ENABLED)</span>
+        <span ng-show="!user.userPreferences.spellingEnabled">Spelling
+          Correction (DISABLED)</span>
+      </div>
     </div>
     <div class="row">
-      <!--  phrase memory-->
-      <input type="checkbox" ng-change="saveUserPreferences()"
-        ng-model="user.userPreferences.memoryEnabled">
-      <span ng-show="user.userPreferences.memoryEnabled">Phrase Memory
-        Suggestion (ENABLED)</span>
-      <span ng-show="!user.userPreferences.memoryEnabled">Phrase Memory
-        Suggestion (DISABLED)</span>
+      <div class="col-md-12 col-xs-12">
+        <!--  phrase memory-->
+        <input type="checkbox" ng-change="saveUserPreferences()"
+          ng-model="user.userPreferences.memoryEnabled">
+        <span ng-show="user.userPreferences.memoryEnabled">Phrase Memory
+          Suggestion (ENABLED)</span>
+        <span ng-show="!user.userPreferences.memoryEnabled">Phrase Memory
+          Suggestion (DISABLED)</span>
+      </div>
     </div>
     <div class="row">
-    {{user.userPreferences.languageDescriptionTypes}}
+      <!-- PFS table of available (not already assigned) language description types -->
+      <div class="col-md-6 col-xs-6">
+        <h5>
+          <b>Available Types</b>
+        </h5>
+        {{languageDescriptionTypes}}
+      </div>
+      <!-- Orderable table of assigned description types -->
+      <div class="col-md-6 col-xs-6">
+        <h5>
+          <b>Assigned Types</b>
+        </h5>
+        {{user.userPreferences.languageDescriptionTypes}}
+      </div>
     </div>
 
     </uib-accordion-group>
@@ -345,7 +362,7 @@
                 <td>
                   <i
                     ng-click="unassignUserFromProject(selectedProject.id, user.userName);"
-                    title="Unassign user" class="noul material-icons md-18">remove</i>
+                    title="Unassign user" class="noul material-icons md-18">delete</i>
                 </td>
               </tr>
             </tbody>

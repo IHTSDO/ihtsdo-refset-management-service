@@ -1033,6 +1033,28 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // get the available language description types
+    this.getLanguageDescriptionTypes = function() {
+      console.debug("getLanguageDescriptionTypes");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(translationUrl + "langpref").then(
+      // success
+      function(response) {
+        console.debug("  language desc types = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // end    
 
   } ]);

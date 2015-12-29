@@ -38,6 +38,8 @@ tsApp
         $scope.users = null;
         $scope.assignedUsers = null;
         $scope.unassignedUsers = null;
+        $scope.languageDescriptionTypes = [];
+        $scope.pagedAvailableLdt = [];
 
         // Metadata for refsets, projects, etc.
         $scope.metadata = {
@@ -77,7 +79,15 @@ tsApp
           sortField : 'userName',
           ascending : null
         }
+        $scope.paging["lang"] = {
+          page : 1,
+          filter : "",
+          typeFilter : "",
+          sortField : "refsetId",
+          ascending : true
+        }
 
+        
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -273,6 +283,27 @@ tsApp
         // Save the user preferences
         $scope.saveUserPreferences = function() {
           securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
+        // Get $scope.languageDescriptionTypes
+        $scope.getLanguageDescriptionTypes = function() {
+          translationService.getLanguageDescriptionTypes().then(
+          // Success
+          function(data) {
+            $scope.languageDescriptionTypes = data;
+          });
+        }
+
+        // Get paged available language description types not already assigned
+        $scope.getPagedAvailable = function() {
+          var available = [];
+          for (var i = 0; i < $scope.languageDescriptionTypes; i++) {
+            for (var j = 0; i < $user.userPreferences.languageDescriptionTypes; i++) {
+              // TODO: add in ones that don't match
+            }
+          }
+          $scope.pagedAvailableLdt = utilService.getPagedArray(available,
+            $scope.paging['lang'], $scope.pageSize);
         }
 
         // sort mechanism 
@@ -678,6 +709,7 @@ tsApp
         $scope.getProjectRoles();
         $scope.getTerminologyEditions();
         $scope.getValidationChecks();
+        $scope.getLanguageDescriptionTypes();
         $scope.user.userPreferences.lastTab = '/admin';
         securityService.updateUserPreferences($scope.user.userPreferences);
 

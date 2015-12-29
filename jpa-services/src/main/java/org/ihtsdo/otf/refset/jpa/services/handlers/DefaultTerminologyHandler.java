@@ -218,6 +218,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "&offset=" + localPfs.getStartIndex() + "&expand=pt()");
+
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -315,8 +316,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       } else {
         throw new Exception(resultString);
       }
-
-      conceptList = new ConceptListJpa();
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
       // get total amount

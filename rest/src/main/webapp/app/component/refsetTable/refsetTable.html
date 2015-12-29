@@ -327,12 +327,12 @@
 
 
               <i
-                ng-click="openRefactorModel(selected.refset, 'Migration'); $event.stopPropagation()"
+                ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
                 ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'"
                 title="Migration" class="noul material-icons md-18">find_replace</i>
 
               <i
-                ng-click="openRefactorModal(selected.refset, 'Migration'); $event.stopPropagation()"
+                ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
                 ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'"
                 title="Resume migration" class="noul material-icons md-18">play_arrow</i>
 

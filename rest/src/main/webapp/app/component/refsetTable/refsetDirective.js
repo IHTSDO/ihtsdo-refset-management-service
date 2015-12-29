@@ -644,7 +644,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  $scope.selectRefset($scope.selected.refset);
+                  refsetService.fireRefsetChanged(data);
                 });
 
               };
@@ -1116,7 +1116,6 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
               };
 
@@ -1618,8 +1617,6 @@ tsApp
 
               };
 
-              // Add member modal
-
               $scope.openAddMemberModal = function(lrefset) {
 
                 console.debug("openAddMemberModal ", lrefset);
@@ -1803,14 +1800,14 @@ tsApp
 
               };
 
-              // Refactor modal - for redefinition or migration
-              $scope.openRefactorModal = function(lrefset, ltype) {
+              // Migration modal - for redefinition or migration
+              $scope.openMigrationModal = function(lrefset, ltype) {
 
-                console.debug("openRefactorModal ", lrefset, ltype);
+                console.debug("openMigrationModal ", lrefset, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/refactor.html',
-                  controller : RefactorModalCtrl,
+                  controller : MigrationModalCtrl,
                   backdrop : 'static',
                   size : 'lg',
                   resolve : {
@@ -1837,12 +1834,11 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
               };
 
-              // Refactor modal controller
-              var RefactorModalCtrl = function($scope, $uibModalInstance, refset, definition,
+              // Migration modal controller
+              var MigrationModalCtrl = function($scope, $uibModalInstance, refset, definition,
                 paging, type, metadata) {
 
                 console.debug("Entered refactor modal control");
@@ -2279,10 +2275,6 @@ tsApp
                 }
 
               }
-
-              //
-              // Modals
-              //
 
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
