@@ -270,6 +270,11 @@ tsApp
 
         };
 
+        // Save the user preferences
+        $scope.saveUserPreferences = function() {
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
         // sort mechanism 
         $scope.setSortField = function(table, field) {
           utilService.setSortField(table, field, $scope.paging);

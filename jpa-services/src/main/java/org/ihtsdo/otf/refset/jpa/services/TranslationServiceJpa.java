@@ -78,6 +78,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   private static Map<String, ExportTranslationHandler> exportTranslationHandlers =
       new HashMap<>();
 
+  /** The phrase memory handlers. */
   private static Map<String, PhraseMemoryHandler> phraseMemoryHandlers =
       new HashMap<>();
 
@@ -349,8 +350,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Translation Service - find concepts - " + query
-            + " translationId " + translationId);
+        "Translation Service - find concepts - " + query + " translationId "
+            + translationId);
 
     StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
@@ -1330,13 +1331,20 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // Prepare result
     final List<LanguageDescriptionType> result = new ArrayList<>();
 
-    // Add in any translation-specific types not already covered
+    // Add translation types if user prefs don't have any for this refset
     // by user types
+    boolean found = false;
     for (LanguageDescriptionType type : translationTypes) {
-      if (!prefs.getLanguageDescriptionTypes().contains(type)) {
-        result.add(type);
+      for (LanguageDescriptionType type2 : prefs.getLanguageDescriptionTypes()) {
+        if (type.getRefsetId().equals(type2.getRefsetId())) {
+          found = true;
+          break;
+        }
       }
     }
+    if (!found) {
+      result.addAll(translationTypes);
+    } // otherwise - just let user prefs language win
 
     // Add in all the user types
     if (prefs != null) {

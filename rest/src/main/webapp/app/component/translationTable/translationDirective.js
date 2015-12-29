@@ -41,6 +41,7 @@ tsApp
                 descriptionTypes : []
               };
               $scope.translations = null;
+              $scope.translationLookupProgress = {};
               $scope.translationReleaseInfo = null;
               $scope.project = null;
               $scope.refsets = [];
@@ -172,35 +173,42 @@ tsApp
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
                   pfs.latestOnly = $scope.showLatest;
-                  translationService.findTranslationsForQuery($scope.paging["translation"].filter, pfs).then(
-                    function(data) {
-                      $scope.translations = data.translations;
-                      $scope.translations.totalCount = data.totalCount;
-                      $scope.reselect();
-                    })
+                  translationService.findTranslationsForQuery($scope.paging["translation"].filter,
+                    pfs).then(function(data) {
+                    $scope.translations = data.translations;
+                    $scope.translations.totalCount = data.totalCount;
+                    $scope.reselect();
+                  })
                 }
 
               };
 
               // Reselect selected translation to refresh it
               $scope.reselect = function() {
-                // Bail if no selection
-                if (!$scope.selected.translation) {
-                  return;
-                }
-                // If $scope.selected.translation is in the list, select it, if not clear $scope.selected.translation
-                var found = false;
+                // if there is a selection...
                 if ($scope.selected.translation) {
-                  for (var i = 0; i < $scope.translations.length; i++) {
-                    if ($scope.selected.translation.id == $scope.translations[i].id) {
-                      $scope.selectTranslation($scope.translations[i]);
-                      found = true;
-                      break;
+                  // If $scope.selected.translation is in the list, select it, if not clear $scope.selected.translation
+                  var found = false;
+                  if ($scope.selected.translation) {
+                    for (var i = 0; i < $scope.translations.length; i++) {
+                      if ($scope.selected.translation.id == $scope.translations[i].id) {
+                        $scope.selectTranslation($scope.translations[i]);
+                        found = true;
+                        break;
+                      }
                     }
                   }
+                  if (!found) {
+                    $scope.selected.translation = null;
+                  }
                 }
-                if (!found) {
-                  $scope.selected.translation = null;
+
+                // If "lookup in progress" is set, get progress
+                for (var i = 0; i < $scope.translations.length; i++) {
+                  var translation = $scope.translations[i];
+                  if (translation.lookupInProgress) {
+                    $scope.refreshLookupProgress(translation);
+                  }
                 }
               }
               // Get $scope.selected.translation.concepts
@@ -498,6 +506,27 @@ tsApp
                   translationService.fireConceptChanged(concept);
                 })
               };
+
+              // Start lookup again
+              $scope.startLookup = function(refset) {
+                refsetService.startLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = 1;
+                });
+              }
+
+              // Refresh lookup progress
+              $scope.refreshLookupProgress = function(refset) {
+                refsetService.getLookupProgress(refset.id).then(
+                // Success
+                function(data) {
+                  if (data > 0 && data < 101) {
+                    window.alert("Progress is " + data + " % complete.");
+                  }
+                  $scope.refsetLookupProgress[refset.id] = data;
+                });
+              }
 
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
@@ -1861,7 +1890,6 @@ tsApp
 
               };
 
-              
               // Release Process modal
               $scope.openReleaseProcessModal = function(ltranslation) {
 
@@ -1894,8 +1922,8 @@ tsApp
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation, ioHandlers,
-                utilService) {
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation,
+                ioHandlers, utilService) {
 
                 console.debug("Entered release process modal", translation.id, ioHandlers);
 
@@ -1958,7 +1986,8 @@ tsApp
 
                 $scope.previewTranslationRelease = function(translation) {
 
-                  releaseService.previewTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  releaseService.previewTranslationRelease(translation.id,
+                    $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
                     $scope.stagedTranslation = data;
@@ -1974,7 +2003,8 @@ tsApp
 
                 $scope.finishTranslationRelease = function(translation) {
 
-                  releaseService.finishTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  releaseService.finishTranslationRelease(translation.id,
+                    $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
                     $uibModalInstance.close(translation);

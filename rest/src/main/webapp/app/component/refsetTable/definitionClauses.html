@@ -37,8 +37,8 @@
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
-            total-items="pagedClauses.totalCount" ng-model="paging['clauses'].page"
-            ng-change="getPagedClauses()"></uib-pagination>
+            total-items="pagedClauses.totalCount"
+            ng-model="paging['clauses'].page" ng-change="getPagedClauses()"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
             ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
@@ -69,11 +69,12 @@
               <td>
                 <div ng-bind-html="getClauseValue(clause)"></div>
               </td>
-              <td><button class="btn btn-xs btn-primary"
-                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
-                      <button class="btn btn-xs btn-danger"
-                        ng-show="clause.negated"
-                        uib-tooltip="Minus">-</button></td>
+              <td>
+                <button class="btn btn-xs btn-primary" ng-show="!clause.negated"
+                  uib-tooltip="Union">+</button>
+                <button class="btn btn-xs btn-danger" ng-show="clause.negated"
+                  uib-tooltip="Minus">-</button>
+              </td>
               <td>
                 <a class="toolicon" title="Remove"
                   ng-click="removeClause(refset, clause); $event.stopPropagation()">
@@ -107,6 +108,6 @@
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="value == 'ASSIGNED'"
     ng-click="save(refset);" title="Save definition">Save</button>
-  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'" ng-click="cancel(refset)">Cancel</button>
-  <button class="btn btn-warning" ng-show="value != 'ASSIGNED'" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
+    ng-click="cancel(refset)">Cancel</button>
 </div>

@@ -43,6 +43,7 @@ tsApp
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
+              $scope.refsetLookupProgress = {};
               $scope.project = null;
               // TODO: consider whether refset.members should just be "members"
               $scope.showLatest = true;
@@ -218,23 +219,30 @@ tsApp
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
+                // if there is a selection...
                 // Bail if nothing selected
-                if (!$scope.selected.refset) {
-                  return;
-                }
-                // If $scope.selected.refset is in the list, select it, if not clear $scope.selected.refset
-                var found = false;
                 if ($scope.selected.refset) {
-                  for (var i = 0; i < $scope.refsets.length; i++) {
-                    if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                      $scope.selectRefset($scope.refsets[i]);
-                      found = true;
-                      break;
+                  // If $scope.selected.refset is in the list, select it, if not clear $scope.selected.refset
+                  var found = false;
+                  if ($scope.selected.refset) {
+                    for (var i = 0; i < $scope.refsets.length; i++) {
+                      if ($scope.selected.refset.id == $scope.refsets[i].id) {
+                        $scope.selectRefset($scope.refsets[i]);
+                        found = true;
+                        break;
+                      }
                     }
                   }
+                  if (!found) {
+                    $scope.selected.refset = null;
+                  }
                 }
-                if (!found) {
-                  $scope.selected.refset = null;
+
+                // If "lookup in progress" is set, get progress
+                for (var i = 0; i < $scope.refsets.length; i++) {
+                  if ($scope.refsets[i].lookupInProgress) {
+                    $scope.refreshLookupProgress($scope.refsets[i]);
+                  }
                 }
               }
 
@@ -473,6 +481,27 @@ tsApp
                 }
               };
 
+              // Start lookup again
+              $scope.startLookup = function(refset) {
+                refsetService.startLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = 1;
+                });
+              }
+
+              // Refresh lookup progress
+              $scope.refreshLookupProgress = function(refset) {
+                refsetService.getLookupProgress(refset.id).then(
+                // Success
+                function(data) {
+                  if (data > 0 && data < 101) {
+                    window.alert("Progress is " + data + " % complete.");
+                  }
+                  $scope.refsetLookupProgress[refset.id] = data;
+                });
+              }
+
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
@@ -513,7 +542,6 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
 
               };
@@ -574,17 +602,7 @@ tsApp
                   refsetService.updateRefset(refset).then(
                   // Success - add refset
                   function(data) {
-                    $scope.newClause = null;
-                    refsetService.getRefset(refset.id).then(function(data) {
-                      refset.definitionClauses = data.definitionClauses;
-                      $scope.getPagedClauses();
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error - add refset
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
+                    $uibModalInstance.close(refset);
                   },
                   // Error - add refset
                   function(data) {
@@ -595,20 +613,7 @@ tsApp
 
                 // close the modal
                 $scope.cancel = function(refset) {
-                  refsetService.getRefset(refset.id).then(function(data) {
-                    refset.definitionClauses = data.definitionClauses;
-                    $scope.getPagedClauses();
-                  },
-                  // Error - add refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
-                  $uibModalInstance.close();
-                }
-
-                $scope.close = function() {
-                  $uibModalInstance.close();
+                  $uibModalInstance.close(refset);
                 }
 
                 // initialize modal

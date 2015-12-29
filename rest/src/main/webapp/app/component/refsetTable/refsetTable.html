@@ -172,6 +172,7 @@
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
 
+            <!-- Cancel buttons if migration in progress -->
             <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -179,19 +180,28 @@
                 uib-tooltip="Click to cancel failed import">Cancel
                 Import</button>
             </span>
-            <span ng-show="refset.stagingType == 'DEFINITION'">
-              <br />
-              <button class="btn btn-xs btn-warning"
-                ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel redefinition">Cancel
-                Redefinition</button>
-            </span>
             <span ng-show="refset.stagingType == 'MIGRATION'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel migration">Cancel
                 Migration</button>
+            </span>
+
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] == -1">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(refset)"
+                uib-tooltip="Click to restart lookup">Restart Lookup</button>
+            </span>
+            <span
+              ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] > -1 && refsetLookupProgress[refset.id] < 100">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(refset)"
+                uib-tooltip="Click to refresh lookup progress">Refresh</button>
             </span>
           </td>
 

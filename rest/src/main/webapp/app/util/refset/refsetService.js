@@ -14,11 +14,12 @@ tsApp.service('refsetService', [
     this.fireRefsetChanged = function(refset) {
       $rootScope.$broadcast('refset:refsetChanged', refset);
     }
-    
+
     // TODO: will this help with updating concept info?
-   /* this.fireConceptChanged = fuction(concept) {
-      $rootScope.$broadcast('data.concept', concept);
-    }*/
+    /*
+         * this.fireConceptChanged = fuction(concept) { $rootScope.$broadcast('data.concept',
+         * concept); }
+         */
 
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
@@ -164,24 +165,24 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + "members/add" + "?refsetId=" + refset.id + 
-        "&expression=" + expression).then(
-      // success
-      function(response) {
-        console.debug("  output = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      $http
+        .post(refsetUrl + "members/add" + "?refsetId=" + refset.id + "&expression=" + expression)
+        .then(
+        // success
+        function(response) {
+          console.debug("  output = ", response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
-    
     // add refset
     this.addRefset = function(refset) {
       console.debug("addRefset");
@@ -968,7 +969,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     this.beginMigration = function(refsetId, terminology, version) {
       console.debug("beginMigration");
       var deferred = $q.defer();
@@ -1160,7 +1161,11 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + "lookup/status?refsetId=" + refsetId).then(
+      $http.get(refsetUrl + "lookup/status?refsetId=" + refsetId, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
@@ -1177,8 +1182,8 @@ tsApp.service('refsetService', [
     }
 
     // start lookup of member names/statuses
-    this.startLookupNames = function(refsetId) {
-      console.debug("startLookupNames");
+    this.startLookup = function(refsetId) {
+      console.debug("startLookup");
       var deferred = $q.defer();
 
       // get refset revision
@@ -1200,4 +1205,4 @@ tsApp.service('refsetService', [
     }
 
     // end
-} ]);
+  } ]);

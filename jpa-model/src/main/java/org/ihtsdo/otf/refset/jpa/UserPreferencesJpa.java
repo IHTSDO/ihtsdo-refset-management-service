@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.jpa;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -26,6 +27,8 @@ import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled implementation of {@link UserPreferences}.
  */
@@ -33,6 +36,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 @Table(name = "user_preferences")
 @Audited
 @XmlRootElement(name = "prefs")
+// TODO: remove this after spellingENabled and memoryEnabled are here
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPreferencesJpa implements UserPreferences {
 
   /** The id. */
@@ -46,7 +51,7 @@ public class UserPreferencesJpa implements UserPreferences {
   private User user;
 
   /** The language Refset members. */
-  @OneToMany(fetch = FetchType.EAGER, targetEntity = LanguageDescriptionTypeJpa.class)
+  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = LanguageDescriptionTypeJpa.class, orphanRemoval = true)
   @CollectionTable(name = "user_pref_language_desc_types")
   private List<LanguageDescriptionType> languageDescriptionTypes = null;
 
