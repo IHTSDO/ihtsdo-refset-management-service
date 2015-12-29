@@ -26,6 +26,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 
 /**
  * Generically represents a service for accessing {@link Translation}
@@ -534,5 +535,14 @@ public interface TranslationService extends RefsetService {
    * @param concept the concept
    */
   public void handleLazyInit(Concept concept);
+
+  /**
+   * Gets the phrase memory handler.
+   *
+   * @param key the key
+   * @return the phrase memory handler
+   * @throws Exception the exception
+   */
+  PhraseMemoryHandler getPhraseMemoryHandler(String key) throws Exception;
 
 }

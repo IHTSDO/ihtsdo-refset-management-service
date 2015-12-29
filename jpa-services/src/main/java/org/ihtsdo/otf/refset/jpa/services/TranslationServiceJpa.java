@@ -60,6 +60,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -75,6 +76,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /** The export translation handlers. */
   private static Map<String, ExportTranslationHandler> exportTranslationHandlers =
+      new HashMap<>();
+
+  private static Map<String, PhraseMemoryHandler> phraseMemoryHandlers =
       new HashMap<>();
 
   static {
@@ -101,10 +105,21 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
                 handlerName, ExportTranslationHandler.class);
         exportTranslationHandlers.put(handlerName, handlerService);
       }
+      key = "phrasememory.handler";
+      for (String handlerName : config.getProperty(key).split(",")) {
+        if (handlerName.isEmpty())
+          continue;
+        // Add handlers to map
+        PhraseMemoryHandler handlerService =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, PhraseMemoryHandler.class);
+        phraseMemoryHandlers.put(handlerName, handlerService);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       importTranslationHandlers = null;
       exportTranslationHandlers = null;
+      phraseMemoryHandlers = null;
     }
   }
 
@@ -460,6 +475,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       return exportTranslationHandlers.get(key);
     }
     return exportTranslationHandlers.get(ConfigUtility.DEFAULT);
+  }
+
+  /* see superclass */
+  @Override
+  public PhraseMemoryHandler getPhraseMemoryHandler(String key)
+    throws Exception {
+    if (phraseMemoryHandlers.containsKey(key)) {
+      return phraseMemoryHandlers.get(key);
+    }
+    return phraseMemoryHandlers.get(ConfigUtility.DEFAULT);
   }
 
   /* see superclass */
