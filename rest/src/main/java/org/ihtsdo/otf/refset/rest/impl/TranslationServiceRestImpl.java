@@ -1657,15 +1657,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @GET
   @Override
-  @Path("/suggest/{translationId}/{name}")
+  @Path("/phrasememory/suggest")
   @ApiOperation(value = "Get translation suggestions", notes = "Returns list of suggested translated name", response = StringList.class)
   public StringList suggestTranslation(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "name, e.g. name", required = true) @PathParam("name") String name,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "name, e.g. name", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Spelling Entry): /translation/suggest/"
+        "RESTful call PUT (Spelling Entry): /translation/phrasememory/suggest"
             + translationId + " " + name);
 
     final TranslationService translationService = new TranslationServiceJpa();
