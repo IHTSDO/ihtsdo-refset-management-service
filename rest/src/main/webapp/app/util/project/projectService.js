@@ -384,7 +384,7 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
 
-    this.getConceptParents = function(terminologyId, terminology, version) {
+    this.getConceptParents = function(terminologyId, terminology, version, translationId) {
 
       console.debug("getConceptParents", terminologyId);
       // Setup deferred
@@ -394,7 +394,8 @@ tsApp.service('projectService', [
       gpService.increment();
       $http.get(
         projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
-          + "&version=" + version).then(
+          + "&version=" + version
+          + (translationId != null ? "&translationId=" + translationId : "")).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
@@ -411,7 +412,7 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
 
-    this.getConceptChildren = function(terminologyId, terminology, version, pfs) {
+    this.getConceptChildren = function(terminologyId, terminology, version, translationId, pfs) {
 
       console.debug("getConceptChildren", terminologyId);
       // Setup deferred
@@ -421,7 +422,8 @@ tsApp.service('projectService', [
       gpService.increment();
       $http.post(
         projectUrl + "concept/children" + "?terminologyId=" + terminologyId + "&terminology="
-          + terminology + "&version=" + version, pfs).then(
+          + terminology + "&version=" + version
+          + (translationId != null ? "&translationId=" + translationId : ""), pfs).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
@@ -439,7 +441,7 @@ tsApp.service('projectService', [
     };
 
     // get concept with descriptions
-    this.getFullConcept = function(terminologyId, terminology, version) {
+    this.getFullConcept = function(terminologyId, terminology, version, translationId) {
 
       console.debug("getFullConcept", terminologyId);
       // Setup deferred
@@ -449,7 +451,8 @@ tsApp.service('projectService', [
       gpService.increment();
       $http.get(
         projectUrl + "concept" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
-          + "&version=" + version).then(
+          + "&version=" + version
+          + (translationId != null ? "&translationId=" + translationId : "")).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);
@@ -510,13 +513,12 @@ tsApp.service('projectService', [
 
     // Get standard description types
     this.getStandardDescriptionTypes = function(terminology, version) {
-      console.debug("getStandardDescriptionTypes",terminology,version);
+      console.debug("getStandardDescriptionTypes", terminology, version);
       var deferred = $q.defer();
 
       // Get projects
       gpService.increment()
-      $http.get(projectUrl + 'terminology/' + terminology + 
-        '/descriptiontypes?version=' + version)
+      $http.get(projectUrl + 'terminology/' + terminology + '/descriptiontypes?version=' + version)
         .then(
         // success
         function(response) {

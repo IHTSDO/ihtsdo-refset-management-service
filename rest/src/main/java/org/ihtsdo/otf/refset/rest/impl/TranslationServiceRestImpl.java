@@ -2859,10 +2859,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             continue;
           }
           final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-          type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+          type.setDescriptionType(descriptionType);
           type.setName(translation.getName());
           type.setRefsetId(translation.getRefset().getTerminologyId());
-          type.setTypeId(descriptionType.getTypeId());
           types.add(type);
         }
       }

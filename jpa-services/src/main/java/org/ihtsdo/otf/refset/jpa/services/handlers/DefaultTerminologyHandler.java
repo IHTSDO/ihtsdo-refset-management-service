@@ -486,7 +486,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
         }
-        Logger.getLogger(getClass()).debug("  description = " + description);
         for (JsonNode language : desc.findValues("acceptabilityMap")) {
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
           member.setActive(true);
@@ -500,7 +499,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             member.setAcceptabilityId("900000000000549004");
           }
           description.getLanguageRefsetMembers().add(member);
-          Logger.getLogger(getClass()).debug("    member = " + member);
         }
 
         concept.getDescriptions().add(description);
@@ -562,7 +560,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         destination.setDefinitionStatusId(relNode.get("target")
             .get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
-        Logger.getLogger(getClass()).debug("  relationship = " + rel);
 
         concept.getRelationships().add(rel);
       }
@@ -983,10 +980,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         continue;
       }
       final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-      type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+      type.setDescriptionType(descriptionType);
       type.setName("US English");
       type.setRefsetId("900000000000509007");
-      type.setTypeId(descriptionType.getTypeId());
       types.add(type);
     }
 

@@ -5,7 +5,7 @@ var tsApp = angular.module('tsApp',
   function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
-    // $rootScopeProvider.digestTtl(15);
+    $rootScopeProvider.digestTtl(17);
   });
 
 // Declare top level URL vars
@@ -133,7 +133,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     $scope.isAdmin = function() {
       return securityService.isAdmin();
     }
-    
+
     // for ng-show
     $scope.isUser = function() {
       return securityService.isUser();

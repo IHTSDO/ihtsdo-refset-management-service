@@ -9,9 +9,12 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
+import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -27,6 +30,12 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
   /** The model object to test. */
   private LanguageDescriptionTypeJpa object;
 
+  /** The test fixture d1. */
+  private DescriptionTypeJpa d1;
+
+  /** The test fixture d2. */
+  private DescriptionTypeJpa d2;
+
   /**
    * Setup class.
    */
@@ -37,10 +46,16 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
 
   /**
    * Setup.
+   *
+   * @throws Exception the exception
    */
   @Before
-  public void setup() {
+  public void setup() throws Exception {
     object = new LanguageDescriptionTypeJpa();
+
+    ProxyTester tester = new ProxyTester(new DescriptionTypeJpa());
+    d1 = (DescriptionTypeJpa) tester.createObject(1);
+    d2 = (DescriptionTypeJpa) tester.createObject(2);
 
   }
 
@@ -67,8 +82,10 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("refsetId");
     tester.include("name");
-    tester.include("typeId");
-    tester.include("acceptabilityId");
+    tester.include("descriptionType");
+
+    tester.proxy(DescriptionType.class, 1, d1);
+    tester.proxy(DescriptionType.class, 2, d2);
 
     assertTrue(tester.testIdentitiyFieldEquals());
     assertTrue(tester.testNonIdentitiyFieldEquals());
@@ -88,6 +105,9 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     CopyConstructorTester tester = new CopyConstructorTester(object);
 
+    tester.proxy(DescriptionType.class, 1, d1);
+    tester.proxy(DescriptionType.class, 2, d2);
+
     assertTrue(tester.testCopyConstructor(LanguageDescriptionType.class));
   }
 
@@ -100,6 +120,9 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
   public void testModelXmlSerialization017() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
+    tester.proxy(DescriptionType.class, 1, d1);
+    tester.proxy(DescriptionType.class, 2, d2);
+
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -114,8 +137,6 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("refsetId");
     tester.include("name");
-    tester.include("typeId");
-    tester.include("acceptabilityId");
     assertTrue(tester.testNotNullFields());
   }
 

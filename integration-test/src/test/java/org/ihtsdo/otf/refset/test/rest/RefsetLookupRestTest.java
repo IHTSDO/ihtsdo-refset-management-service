@@ -144,6 +144,7 @@ public class RefsetLookupRestTest extends RestIntegrationSupport {
    *
    * @param name the name
    * @param definition the definition
+   * @param type the type
    * @param project the project
    * @param refsetId the refset id
    * @return the refset jpa

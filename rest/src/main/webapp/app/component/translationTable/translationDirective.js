@@ -1340,7 +1340,8 @@ tsApp
                 // data structure for report - setting this causes the frame to load
                 $scope.data = {
                   concept : null,
-                  descriptionTypes : translation.descriptionTypes
+                  descriptionTypes : translation.descriptionTypes,
+                  translation : translation
                 }
 
                 // scope variables
@@ -1385,7 +1386,6 @@ tsApp
 
                 // Populate $scope.suggestions (outside of spelling correction run)
                 $scope.getSuggestions = function() {
-                  console.debug("GET SUGGESTIONS");
                   translationService.suggestBatchSpelling(translation.id,
                     $scope.getAllUniqueWords()).then(
                   // Success
@@ -1600,7 +1600,6 @@ tsApp
                   validationService.validateConcept(concept, $scope.project.id).then(
                   // Success
                   function(data) {
-                    console.debug("data", data);
                     // If there are errors, make them available and stop.
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
@@ -1635,7 +1634,6 @@ tsApp
                   translationService.updateTranslationConcept(concept).then(
                     // Success - update concept
                     function(data) {
-                      console.debug("updated concept", data);
 
                       // Perform a workflow "save" operation
                       workflowService.performTranslationWorkflowAction($scope.project.id,
@@ -1680,7 +1678,6 @@ tsApp
                       var type = $scope.translation.descriptionTypes[j];
                       if (desc.typeId == type.typeId
                         && desc.languages[0].acceptabilityId == type.acceptabilityId) {
-                        console.debug("set desc type", type);
                         desc.type = type;
                       }
                     }
@@ -1778,7 +1775,7 @@ tsApp
 
               // Copy modal
               $scope.openCopyModal = function(ltranslation, ltype) {
-                console.debug("copyModal ", ltranslation, ltype);
+                console.debug("openCopyModal ", ltranslation, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/copy.html',
@@ -1868,7 +1865,7 @@ tsApp
               // Release Process modal
               $scope.openReleaseProcessModal = function(ltranslation) {
 
-                console.debug("releaseProcessModal ", ltranslation);
+                console.debug("openReleaseProcessModal ", ltranslation);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/release.html',
@@ -1928,7 +1925,6 @@ tsApp
                 }
 
                 $scope.beginTranslationRelease = function(translation) {
-                  console.debug("begin translation release", translation.id, translation.effectiveTime);
 
                   releaseService.beginTranslationRelease(translation.id,
                     utilService.toSimpleDate(translation.effectiveTime)).then(
@@ -1946,7 +1942,6 @@ tsApp
                 };
 
                 $scope.validateTranslationRelease = function(translation) {
-                  console.debug("validate translation release", translation.id);
 
                   releaseService.validateTranslationRelease(translation.id).then(
                   // Success
@@ -1962,7 +1957,6 @@ tsApp
                 };
 
                 $scope.previewTranslationRelease = function(translation) {
-                  console.debug("preview translation release", translation.id);
 
                   releaseService.previewTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
                   // Success
@@ -1979,7 +1973,6 @@ tsApp
                 };
 
                 $scope.finishTranslationRelease = function(translation) {
-                  console.debug("finish translation release", translation.id);
 
                   releaseService.finishTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
                   // Success
@@ -1994,7 +1987,6 @@ tsApp
                 };
 
                 $scope.cancel = function(translation) {
-                  console.debug("Cancel ", translation.id);
                   if (!confirm("Are you sure you want to cancel the translation release?")) {
                     return;
                   }
@@ -2002,7 +1994,6 @@ tsApp
                   releaseService.cancelTranslationRelease(translation.id).then(
                   // Success
                   function(data) {
-                    console.debug("cancel data", data);
                     $uibModalInstance.close(translation);
                   },
                   // Error

@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -52,6 +53,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
@@ -332,7 +334,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Translation Service - find concepts " + "/" + query
+        "Translation Service - find concepts - " + query
             + " translationId " + translationId);
 
     StringBuilder sb = new StringBuilder();
@@ -1261,11 +1263,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       for (LanguageDescriptionType type : pref) {
         // IF found matching type, look for matching lang refset and
         // acceptability id
-        if (desc.getTypeId().equals(type.getTypeId())) {
+        if (desc.getTypeId().equals(type.getDescriptionType().getTypeId())) {
           for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
             if (member.getRefsetId().equals(type.getRefsetId())
-                && member.getAcceptabilityId()
-                    .equals(type.getAcceptabilityId())) {
+                && member.getAcceptabilityId().equals(
+                    type.getDescriptionType().getAcceptabilityId())) {
               return desc.getTerm();
             }
           }
@@ -1276,4 +1278,50 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return concept.getName();
   }
 
+  /* see superclass */
+  @Override
+  public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
+    Translation translation, UserPreferences prefs) throws Exception {
+
+    // Get standard language desc types
+    final List<LanguageDescriptionType> standardTypes =
+        getTerminologyHandler().getStandardLanguageDescriptionTypes(
+            translation.getRefset().getTerminology(),
+            translation.getRefset().getVersion());
+
+    // Get translation-specific desc types
+    final List<LanguageDescriptionType> translationTypes = new ArrayList<>();
+    if (translation != null) {
+      // By default, these are in order
+      for (DescriptionType descriptionType : translation.getDescriptionTypes()) {
+        final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+        type.setRefsetId(translation.getTerminologyId());
+        type.setName(translation.getName());
+        type.setDescriptionType(descriptionType);
+        translationTypes.add(type);
+      }
+    }
+
+    // Prepare result
+    final List<LanguageDescriptionType> result = new ArrayList<>();
+
+    // Add in any translation-specific types not already covered
+    // by user types
+    for (LanguageDescriptionType type : translationTypes) {
+      if (!prefs.getLanguageDescriptionTypes().contains(type)) {
+        result.add(type);
+      }
+    }
+
+    // Add in all the user types
+    if (prefs != null) {
+      result.addAll(prefs.getLanguageDescriptionTypes());
+    }
+
+    // Add in the standard types at the end
+    result.addAll(standardTypes);
+
+    return result;
+
+  }
 }

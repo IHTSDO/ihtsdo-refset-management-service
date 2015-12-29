@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.Translation.StagingType;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -363,7 +364,7 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the spelling dictionary.
    *
-   * @param dictionary the spelling dictionary
+   * @param dictionaryId the dictionary id
    * @throws Exception the Exception
    */
   public void removeSpellingDictionary(Long dictionaryId) throws Exception;
@@ -504,6 +505,21 @@ public interface TranslationService extends RefsetService {
    */
   public String computePreferredName(Concept concept,
     List<LanguageDescriptionType> pref) throws Exception;
+
+  /**
+   * Resolve language description types. This combines any user preferences with
+   * the description types for this translation and the default language
+   * description types for the translation service. The idea is to have a single
+   * definitive place to gather all resources needed to compute a preferred
+   * name.
+   *
+   * @param translation the translation
+   * @param prefs the prefs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
+    Translation translation, UserPreferences prefs) throws Exception;
 
   /**
    * Handle lazy initialization for a translation.

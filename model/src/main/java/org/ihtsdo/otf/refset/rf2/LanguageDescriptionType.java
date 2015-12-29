@@ -37,30 +37,17 @@ public interface LanguageDescriptionType extends HasId, HasName {
   public void setRefsetId(String refsetId);
   
   /**
-   * Returns the type id. For example 900000000000013009.
+   * Returns the description type.
    *
-   * @return the type id
+   * @return the description type
    */
-  public String getTypeId();
-
+  public DescriptionType getDescriptionType();
+  
   /**
-   * Sets the type id.
+   * Sets the description type.
    *
-   * @param typeId the type id
+   * @param descripionType the description type
    */
-  public void setTypeId(String typeId);
+  public void setDescriptionType(DescriptionType descripionType);
 
-  /**
-   * Returns the acceptability id.
-   *
-   * @return the acceptability id
-   */
-  public String getAcceptabilityId();
-
-  /**
-   * Sets the acceptability id.
-   *
-   * @param acceptabilityId the acceptability id
-   */
-  public void setAcceptabilityId(String acceptabilityId);
 }

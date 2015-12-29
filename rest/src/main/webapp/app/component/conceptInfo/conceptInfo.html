@@ -95,12 +95,12 @@
       <b>Descriptions</b>
     </p>
     <div ng-show="concept.descriptions.length > 0"
-      ng-repeat="description in concept.descriptions" style="font-size: 12px"
-      class="row">
+      ng-repeat="description in orderedDescriptions"
+      style="font-size: 12px" class="row">
       <div class="col-md-12 col-xs-12">
         <span class="col-md-8 col-xs-8">&bull;&nbsp;{{description.term}}</span>
-        <span class="col-md-1 col-xs-1">{{description.languageCode}}</span>
-        <span class="col-md-3 col-xs-3">{{getDescriptionType(description)}}</span>
+        <span class="col-md-2 col-xs-2">{{description.languageCode}}</span>
+        <span class="col-md-2 col-xs-2">{{getDescriptionType(description)}}</span>
       </div>
     </div>
 

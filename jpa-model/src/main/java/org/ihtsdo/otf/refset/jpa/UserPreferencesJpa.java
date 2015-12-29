@@ -3,10 +3,16 @@
  */
 package org.ihtsdo.otf.refset.jpa;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.persistence.CollectionTable;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
@@ -17,6 +23,8 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 
 /**
  * JPA enabled implementation of {@link UserPreferences}.
@@ -36,6 +44,11 @@ public class UserPreferencesJpa implements UserPreferences {
   /** The user name. */
   @OneToOne(targetEntity = UserJpa.class)
   private User user;
+
+  /** The language Refset members. */
+  @OneToMany(fetch = FetchType.EAGER, targetEntity = LanguageDescriptionTypeJpa.class)
+  @CollectionTable(name = "user_pref_language_desc_types")
+  private List<LanguageDescriptionType> languageDescriptionTypes = null;
 
   /** The lastTab. */
   private String lastTab;
@@ -188,6 +201,22 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
+  @XmlElement(type = LanguageDescriptionTypeJpa.class)
+  @Override
+  public List<LanguageDescriptionType> getLanguageDescriptionTypes() {
+    if (languageDescriptionTypes == null) {
+      languageDescriptionTypes = new ArrayList<>();
+    }
+    return languageDescriptionTypes;
+  }
+
+  @Override
+  public void setLanguageDescriptionTypes(
+    List<LanguageDescriptionType> languageDescriptionTypes) {
+    this.languageDescriptionTypes = languageDescriptionTypes;
+  }
+
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -197,7 +226,11 @@ public class UserPreferencesJpa implements UserPreferences {
         prime * result
             + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
     result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
-    result = prime * result + ((user == null) ? 0 : user.hashCode());
+    result =
+        prime
+            * result
+            + ((user == null || user.getUserName() == null) ? 0 : user
+                .getUserName().hashCode());
     return result;
   }
 
@@ -226,19 +259,20 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!lastTab.equals(other.lastTab))
       return false;
-    if (user == null) {
-      if (other.user != null)
+    if (user == null || user.getUserName() == null) {
+      if (other.user != null && other.user.getUserName() != null)
         return false;
-    } else if (!user.equals(other.user))
+    } else if (!user.getId().equals(other.user.getId()))
       return false;
     return true;
   }
 
-  /* see superclass */
   @Override
   public String toString() {
-    return "UserPreferencesJpa [id=" + id + ", user=" + user + ", lastTab="
-        + lastTab + ", lastAccordion=" + lastAccordion + "]";
+    return "UserPreferencesJpa [id=" + id + ", user="
+        + (user != null ? user.getUserName() : null)
+        + ", languageDescriptionTypes=" + languageDescriptionTypes
+        + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion + "]";
   }
 
 }
