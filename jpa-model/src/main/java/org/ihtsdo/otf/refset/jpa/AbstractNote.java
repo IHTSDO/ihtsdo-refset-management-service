@@ -29,9 +29,9 @@ import org.ihtsdo.otf.refset.Note;
 public abstract class AbstractNote implements Note {
 
   /** The id. Set initial value to 5 to bypass entries in import.sql */
-  @TableGenerator(name = "EntityIdGenNote", table = "table_generator_notes", pkColumnValue = "Entity", initialValue = 50)
+  @TableGenerator(name = "EntityIdGen", table = "table_generator", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGenNote")
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
   /** The last modified. */

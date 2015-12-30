@@ -982,6 +982,79 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+
+    // get the progress of the name/status concept lookup process
+    this.getLookupProgress = function(translationId) {
+      console.debug("getLookupProgress");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(translationUrl + "lookup/status?translationId=" + translationId, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // start lookup of concept names/statuses
+    this.startLookup = function(translationId) {
+      console.debug("startLookup");
+      var deferred = $q.defer();
+
+      // get translation revision
+      gpService.increment()
+      $http.get(translationUrl + "lookup/start?translationId=" + translationId).then(
+      // success
+      function(response) {
+        console.debug("  start lookup names = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // get the available language description types
+    this.getLanguageDescriptionTypes = function() {
+      console.debug("getLanguageDescriptionTypes");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(translationUrl + "langpref").then(
+      // success
+      function(response) {
+        console.debug("  language desc types = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // end    
 
   } ]);

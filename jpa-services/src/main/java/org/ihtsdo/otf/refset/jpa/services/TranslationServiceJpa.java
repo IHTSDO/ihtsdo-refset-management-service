@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
@@ -34,7 +35,9 @@ import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
+import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
+import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
@@ -50,12 +53,14 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -71,6 +76,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /** The export translation handlers. */
   private static Map<String, ExportTranslationHandler> exportTranslationHandlers =
+      new HashMap<>();
+
+  /** The phrase memory handlers. */
+  private static Map<String, PhraseMemoryHandler> phraseMemoryHandlers =
       new HashMap<>();
 
   static {
@@ -97,10 +106,21 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
                 handlerName, ExportTranslationHandler.class);
         exportTranslationHandlers.put(handlerName, handlerService);
       }
+      key = "phrasememory.handler";
+      for (String handlerName : config.getProperty(key).split(",")) {
+        if (handlerName.isEmpty())
+          continue;
+        // Add handlers to map
+        PhraseMemoryHandler handlerService =
+            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+                handlerName, PhraseMemoryHandler.class);
+        phraseMemoryHandlers.put(handlerName, handlerService);
+      }
     } catch (Exception e) {
       e.printStackTrace();
       importTranslationHandlers = null;
       exportTranslationHandlers = null;
+      phraseMemoryHandlers = null;
     }
   }
 
@@ -244,7 +264,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       }
 
       // Remove spelling dictionary
-      removeSpellingDictionary(translation.getSpellingDictionary());
+      removeSpellingDictionary(translation.getSpellingDictionary().getId());
 
       // Remove description types - CASCADE
     }
@@ -288,9 +308,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             ? "id:[* TO *] AND provisional:false" : query
                 + " AND provisional:false", TranslationJpa.class,
             TranslationJpa.class, pfs, totalCt);
-    
+
     TranslationList result = new TranslationListJpa();
-    
+
     if (pfs.getLatestOnly()) {
       List<Translation> resultList = new ArrayList<>();
 
@@ -317,7 +337,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
     }
-    
+
     for (Translation translation : result.getObjects()) {
       handleLazyInit(translation);
     }
@@ -330,8 +350,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public ConceptList findConceptsForTranslation(Long translationId,
     String query, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
-        "Translation Service - find concepts " + "/" + query
-            + " translationId " + translationId);
+        "Translation Service - find concepts - " + query + " translationId "
+            + translationId);
 
     StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
@@ -456,6 +476,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       return exportTranslationHandlers.get(key);
     }
     return exportTranslationHandlers.get(ConfigUtility.DEFAULT);
+  }
+
+  /* see superclass */
+  @Override
+  public PhraseMemoryHandler getPhraseMemoryHandler(String key)
+    throws Exception {
+    if (phraseMemoryHandlers.containsKey(key)) {
+      return phraseMemoryHandlers.get(key);
+    }
+    return phraseMemoryHandlers.get(ConfigUtility.DEFAULT);
   }
 
   /* see superclass */
@@ -848,13 +878,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removeSpellingDictionary(SpellingDictionary dictionary)
-    throws Exception {
+  public void removeSpellingDictionary(Long dictionaryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove spelling dictionary " + dictionary);
+        "Translation Service - remove spelling dictionary " + dictionaryId);
 
+    SpellingDictionaryJpa dictionary =
+        getObject(dictionaryId, SpellingDictionaryJpa.class);
     if (dictionary != null) {
-      removeObject(dictionary, SpellingDictionary.class);
+      removeObject(dictionary, SpellingDictionaryJpa.class);
     }
   }
 
@@ -877,12 +908,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception {
+  public void removeMemoryEntry(Long memoryEntryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove memory entry " + memoryEntry);
+        "Translation Service - remove memory entry " + memoryEntryId);
 
+    MemoryEntryJpa memoryEntry =
+        this.getObject(memoryEntryId, MemoryEntryJpa.class);
     if (memoryEntry != null) {
-      removeObject(memoryEntry, MemoryEntry.class);
+      removeObject(memoryEntry, MemoryEntryJpa.class);
     }
   }
 
@@ -906,11 +939,13 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception {
+  public void removePhraseMemory(Long phraseMemoryId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - remove phrase memory " + phraseMemory);
+        "Translation Service - remove phrase memory " + phraseMemoryId);
+    PhraseMemoryJpa phraseMemory =
+        getObject(phraseMemoryId, PhraseMemoryJpa.class);
     if (phraseMemory != null) {
-      removeObject(phraseMemory, PhraseMemory.class);
+      removeObject(phraseMemory, PhraseMemoryJpa.class);
     }
   }
 
@@ -1254,11 +1289,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       for (LanguageDescriptionType type : pref) {
         // IF found matching type, look for matching lang refset and
         // acceptability id
-        if (desc.getTypeId().equals(type.getTypeId())) {
+        if (desc.getTypeId().equals(type.getDescriptionType().getTypeId())) {
           for (LanguageRefsetMember member : desc.getLanguageRefsetMembers()) {
             if (member.getRefsetId().equals(type.getRefsetId())
-                && member.getAcceptabilityId()
-                    .equals(type.getAcceptabilityId())) {
+                && member.getAcceptabilityId().equals(
+                    type.getDescriptionType().getAcceptabilityId())) {
               return desc.getTerm();
             }
           }
@@ -1269,4 +1304,57 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return concept.getName();
   }
 
+  /* see superclass */
+  @Override
+  public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
+    Translation translation, UserPreferences prefs) throws Exception {
+
+    // Get standard language desc types
+    final List<LanguageDescriptionType> standardTypes =
+        getTerminologyHandler().getStandardLanguageDescriptionTypes(
+            translation.getRefset().getTerminology(),
+            translation.getRefset().getVersion());
+
+    // Get translation-specific desc types
+    final List<LanguageDescriptionType> translationTypes = new ArrayList<>();
+    if (translation != null) {
+      // By default, these are in order
+      for (DescriptionType descriptionType : translation.getDescriptionTypes()) {
+        final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+        type.setRefsetId(translation.getTerminologyId());
+        type.setName(translation.getName());
+        type.setDescriptionType(descriptionType);
+        translationTypes.add(type);
+      }
+    }
+
+    // Prepare result
+    final List<LanguageDescriptionType> result = new ArrayList<>();
+
+    // Add translation types if user prefs don't have any for this refset
+    // by user types
+    boolean found = false;
+    for (LanguageDescriptionType type : translationTypes) {
+      for (LanguageDescriptionType type2 : prefs.getLanguageDescriptionTypes()) {
+        if (type.getRefsetId().equals(type2.getRefsetId())) {
+          found = true;
+          break;
+        }
+      }
+    }
+    if (!found) {
+      result.addAll(translationTypes);
+    } // otherwise - just let user prefs language win
+
+    // Add in all the user types
+    if (prefs != null) {
+      result.addAll(prefs.getLanguageDescriptionTypes());
+    }
+
+    // Add in the standard types at the end
+    result.addAll(standardTypes);
+
+    return result;
+
+  }
 }

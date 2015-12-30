@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.Translation.StagingType;
+import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
@@ -25,6 +26,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 
 /**
  * Generically represents a service for accessing {@link Translation}
@@ -363,11 +365,10 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the spelling dictionary.
    *
-   * @param dictionary the spelling dictionary
+   * @param dictionaryId the dictionary id
    * @throws Exception the Exception
    */
-  public void removeSpellingDictionary(SpellingDictionary dictionary)
-    throws Exception;
+  public void removeSpellingDictionary(Long dictionaryId) throws Exception;
 
   /**
    * Adds the memory entry.
@@ -389,10 +390,10 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the memory entry.
    *
-   * @param memoryEntry the memory entry
+   * @param memoryEntryId the memory entry id
    * @throws Exception the Exception
    */
-  public void removeMemoryEntry(MemoryEntry memoryEntry) throws Exception;
+  public void removeMemoryEntry(Long memoryEntryId) throws Exception;
 
   /**
    * Adds the phrase memory.
@@ -415,10 +416,10 @@ public interface TranslationService extends RefsetService {
   /**
    * Remove the phrase memory.
    *
-   * @param phraseMemory the phrase memory
+   * @param phraseMemoryId the phrase memory id
    * @throws Exception the Exception
    */
-  public void removePhraseMemory(PhraseMemory phraseMemory) throws Exception;
+  public void removePhraseMemory(Long phraseMemoryId) throws Exception;
 
   /**
    * Get a list of translations.
@@ -507,6 +508,21 @@ public interface TranslationService extends RefsetService {
     List<LanguageDescriptionType> pref) throws Exception;
 
   /**
+   * Resolve language description types. This combines any user preferences with
+   * the description types for this translation and the default language
+   * description types for the translation service. The idea is to have a single
+   * definitive place to gather all resources needed to compute a preferred
+   * name.
+   *
+   * @param translation the translation
+   * @param prefs the prefs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
+    Translation translation, UserPreferences prefs) throws Exception;
+
+  /**
    * Handle lazy initialization for a translation.
    *
    * @param translation the translation
@@ -519,5 +535,14 @@ public interface TranslationService extends RefsetService {
    * @param concept the concept
    */
   public void handleLazyInit(Concept concept);
+
+  /**
+   * Gets the phrase memory handler.
+   *
+   * @param key the key
+   * @return the phrase memory handler
+   * @throws Exception the exception
+   */
+  PhraseMemoryHandler getPhraseMemoryHandler(String key) throws Exception;
 
 }

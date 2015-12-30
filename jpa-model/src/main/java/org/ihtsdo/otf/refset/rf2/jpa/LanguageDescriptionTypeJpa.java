@@ -3,16 +3,20 @@
  */
 package org.ihtsdo.otf.refset.rf2.jpa;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
+import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 
 /**
@@ -38,13 +42,9 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   @Column(nullable = false)
   private String refsetId;
 
-  /** the type id. */
-  @Column(nullable = false)
-  private String typeId;
-
-  /** the acceptability id. */
-  @Column(nullable = false)
-  private String acceptabilityId;
+  /** The description type. */
+  @OneToOne(cascade = CascadeType.ALL, targetEntity = DescriptionTypeJpa.class, optional = false)
+  private DescriptionType descriptionType;
 
   /**
    * Instantiates an empty {@link LanguageDescriptionTypeJpa}.
@@ -62,9 +62,8 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   public LanguageDescriptionTypeJpa(LanguageDescriptionType type) {
     id = type.getId();
     refsetId = type.getRefsetId();
-    typeId = type.getTypeId();
-    acceptabilityId = type.getAcceptabilityId();
     name = type.getName();
+    descriptionType = type.getDescriptionType();
   }
 
   @Override
@@ -102,35 +101,24 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   }
 
   /* see superclass */
+  @XmlElement(type = DescriptionTypeJpa.class)
   @Override
-  public String getTypeId() {
-    return typeId;
+  public DescriptionType getDescriptionType() {
+    return descriptionType;
   }
 
   /* see superclass */
   @Override
-  public void setTypeId(String typeId) {
-    this.typeId = typeId;
-  }
-
-  /* see superclass */
-  @Override
-  public String getAcceptabilityId() {
-    return acceptabilityId;
-  }
-
-  /* see superclass */
-  @Override
-  public void setAcceptabilityId(String acceptabilityId) {
-    this.acceptabilityId = acceptabilityId;
+  public void setDescriptionType(DescriptionType descriptionType) {
+    this.descriptionType = descriptionType;
   }
 
   /* see superclass */
   @Override
   public String toString() {
     return "LanguageDescriptionTypeJpa [id=" + id + ", name=" + name
-        + ", refsetId=" + refsetId + ", typeId=" + typeId
-        + ", acceptabilityId=" + acceptabilityId + "]";
+        + ", refsetId=" + refsetId + ", descriptionType=" + descriptionType
+        + "]";
   }
 
   @Override
@@ -139,10 +127,9 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
     int result = 1;
     result =
         prime * result
-            + ((acceptabilityId == null) ? 0 : acceptabilityId.hashCode());
+            + ((descriptionType == null) ? 0 : descriptionType.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
-    result = prime * result + ((typeId == null) ? 0 : typeId.hashCode());
     return result;
   }
 
@@ -155,10 +142,10 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
     if (getClass() != obj.getClass())
       return false;
     LanguageDescriptionTypeJpa other = (LanguageDescriptionTypeJpa) obj;
-    if (acceptabilityId == null) {
-      if (other.acceptabilityId != null)
+    if (descriptionType == null) {
+      if (other.descriptionType != null)
         return false;
-    } else if (!acceptabilityId.equals(other.acceptabilityId))
+    } else if (!descriptionType.equals(other.descriptionType))
       return false;
     if (name == null) {
       if (other.name != null)
@@ -169,11 +156,6 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
       if (other.refsetId != null)
         return false;
     } else if (!refsetId.equals(other.refsetId))
-      return false;
-    if (typeId == null) {
-      if (other.typeId != null)
-        return false;
-    } else if (!typeId.equals(other.typeId))
       return false;
     return true;
   }

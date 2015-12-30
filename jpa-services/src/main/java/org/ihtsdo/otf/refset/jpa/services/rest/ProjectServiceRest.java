@@ -204,12 +204,13 @@ public interface ProjectServiceRest {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param translationId the translation id
    * @param authToken the auth token
    * @return the concept with descriptions
    * @throws Exception the exception
    */
-  public Concept getConceptWithDescriptions(String terminologyId,
-    String terminology, String version, String authToken) throws Exception;
+  public Concept getFullConcept(String terminologyId, String terminology,
+    String version, Long translationId, String authToken) throws Exception;
 
   /**
    * Returns the concept children.
@@ -217,14 +218,15 @@ public interface ProjectServiceRest {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param translationId the translation id
    * @param pfs the pfs
    * @param authToken the auth token
    * @return the concept children
    * @throws Exception the exception
    */
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, PfsParameterJpa pfs, String authToken)
-    throws Exception;
+    String terminology, String version, Long translationId,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Returns the concept parents.
@@ -232,12 +234,14 @@ public interface ProjectServiceRest {
    * @param terminologyId the terminology id
    * @param terminology the terminology
    * @param version the version
+   * @param translationId the translation id
    * @param authToken the auth token
    * @return the concept parents
    * @throws Exception the exception
    */
   public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version, String authToken) throws Exception;
+    String terminology, String version, Long translationId, String authToken)
+    throws Exception;
 
   /**
    * Returns the standard description types.

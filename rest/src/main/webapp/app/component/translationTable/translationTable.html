@@ -97,8 +97,7 @@
             <i
               ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
-              title="Start release process"
-              class="noul material-icons md-18">open_in_new</i>
+              title="Start release process" class="noul material-icons md-18">open_in_new</i>
 
             <i
               ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
@@ -106,6 +105,7 @@
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
+            <!-- Cancel staging operation -->
             <span ng-show="translation.stagingType == 'PREVIEW'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -115,6 +115,21 @@
             </span>
 
 
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="translation.lookupInProgress && translationLookupProgress[translation.id] == -1">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(translation)"
+                uib-tooltip="Click to restart lookup">Restart Lookup</button>
+            </span>
+            <span
+              ng-show="translation.lookupInProgress && translationLookupProgress[translation.id] > -1 && translationLookupProgress[translation.id] < 100">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(translation)"
+                uib-tooltip="Click to refresh lookup progress">Refresh</button>
+            </span>
 
           </td>
 
@@ -498,8 +513,8 @@
             <i ng-show="record.concept.notes.length == 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
-              
-              <br>
+
+            <br>
           </td>
         </tr>
       </tbody>

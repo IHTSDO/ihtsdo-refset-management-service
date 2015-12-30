@@ -3,14 +3,19 @@
 
   <!-- Content -->
   <div class="col-md-12 col-xs-12">
-    <h4 ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">Application
+
+    <!-- Application Administration section -->
+    <h4
+      ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">Application
       Administration</h4>
-    <uib-accordion ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'"> <uib-accordion-group
-      heading="Application Administration" is-open="false">
-    <!-- Projects --> <uib-accordion-heading>
+
+    <!-- Accordion -->
+    <uib-accordion
+      ng-show="user.applicationRole == 'ADMIN' || user.applicationRole == 'USER'">
+
+    <!-- A1 - Projects --> <uib-accordion-group> <uib-accordion-heading>
     <h5>
-      <span uib-tooltip-placement="right" uib-tooltip="List of the projects.">
-        Projects </span>
+      <span uib-tooltip="Add, edit, and remove projects"> Projects </span>
     </h5>
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
@@ -76,12 +81,12 @@
         </tbody>
       </table>
     </div>
-    <!--  end Projects --> </uib-accordion-group> <uib-accordion-group> <!-- Users -->
-    <uib-accordion-heading>
+    <!--  end A2 - Projects --> </uib-accordion-group>
+    <div></div>
+
+    <!-- Accordion 2 - Users --> <uib-accordion-group> <uib-accordion-heading>
     <h5>
-      <span uib-tooltip-placement="right"
-        uib-tooltip="List of the users and their application roles.">
-        Users </span>
+      <span uib-tooltip="Add, edit, and remove users"> Users </span>
     </h5>
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
@@ -142,7 +147,56 @@
         </tbody>
       </table>
     </div>
-    <!--  end Users --> </uib-accordion-group> </uib-accordion>
+    <!--  end A2 Users --> </uib-accordion-group>
+    <div></div>
+
+    <!-- A3 - User Preferences --> <uib-accordion-group> <uib-accordion-heading>
+    <h5>
+      <span uib-tooltip="Manage user preferences"> User Preferences </span>
+    </h5>
+    </uib-accordion-heading> <!--  end A3 User Prefs-->
+    <div class="row">
+      <div class="col-md-12 col-xs-12">
+        <!--  spelling correction -->
+        <input type="checkbox" ng-change="saveUserPreferences()"
+          ng-model="user.userPreferences.spellingEnabled">
+        <span ng-show="user.userPreferences.spellingEnabled">Spelling
+          Correction (ENABLED)</span>
+        <span ng-show="!user.userPreferences.spellingEnabled">Spelling
+          Correction (DISABLED)</span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 col-xs-12">
+        <!--  phrase memory-->
+        <input type="checkbox" ng-change="saveUserPreferences()"
+          ng-model="user.userPreferences.memoryEnabled">
+        <span ng-show="user.userPreferences.memoryEnabled">Phrase Memory
+          Suggestion (ENABLED)</span>
+        <span ng-show="!user.userPreferences.memoryEnabled">Phrase Memory
+          Suggestion (DISABLED)</span>
+      </div>
+    </div>
+    <div class="row">
+      <!-- PFS table of available (not already assigned) language description types -->
+      <div class="col-md-6 col-xs-6">
+        <h5>
+          <b>Available Types</b>
+        </h5>
+        {{languageDescriptionTypes}}
+      </div>
+      <!-- Orderable table of assigned description types -->
+      <div class="col-md-6 col-xs-6">
+        <h5>
+          <b>Assigned Types</b>
+        </h5>
+        {{user.userPreferences.languageDescriptionTypes}}
+      </div>
+    </div>
+
+    </uib-accordion-group>
+    <div></div>
+
 
     <h4>User & Project Management</h4>
     <div class="col-md-6 col-xs-12">
@@ -308,7 +362,7 @@
                 <td>
                   <i
                     ng-click="unassignUserFromProject(selectedProject.id, user.userName);"
-                    title="Unassign user" class="noul material-icons md-18">remove</i>
+                    title="Unassign user" class="noul material-icons md-18">delete</i>
                 </td>
               </tr>
             </tbody>

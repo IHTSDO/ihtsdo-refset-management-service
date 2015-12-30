@@ -218,6 +218,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
             + "&offset=" + localPfs.getStartIndex() + "&expand=pt()");
+
     Response response =
         target.request(accept).header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -315,8 +316,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       } else {
         throw new Exception(resultString);
       }
-
-      conceptList = new ConceptListJpa();
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
       // get total amount
@@ -486,7 +485,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
         }
-        Logger.getLogger(getClass()).debug("  description = " + description);
         for (JsonNode language : desc.findValues("acceptabilityMap")) {
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
           member.setActive(true);
@@ -500,7 +498,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
             member.setAcceptabilityId("900000000000549004");
           }
           description.getLanguageRefsetMembers().add(member);
-          Logger.getLogger(getClass()).debug("    member = " + member);
         }
 
         concept.getDescriptions().add(description);
@@ -562,7 +559,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         destination.setDefinitionStatusId(relNode.get("target")
             .get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
-        Logger.getLogger(getClass()).debug("  relationship = " + rel);
 
         concept.getRelationships().add(rel);
       }
@@ -983,10 +979,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         continue;
       }
       final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-      type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+      type.setDescriptionType(descriptionType);
       type.setName("US English");
       type.setRefsetId("900000000000509007");
-      type.setTypeId(descriptionType.getTypeId());
       types.add(type);
     }
 

@@ -437,13 +437,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       TranslationJpa translation1 =
           makeTranslation("translation1", refset5, refset5.getProject(),
               reviewer3);
-      TranslationJpa translation2 =
-          makeTranslation("translation2", refset5, refset5.getProject(),
-              reviewer3);
 
       // Create refsets 6-12 on project 5
-      makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
-          "666666912342013", "1000124", admin, true);
+      Refset refset6 =
+          makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
+              "666666912342013", "1000124", admin, true);
+      TranslationJpa translation2 =
+          makeTranslation("translation2", refset6, refset5.getProject(),
+              reviewer3);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
           "777777912342013", "1000124", admin, true);
       makeRefset("refset8", null, Refset.Type.EXTERNAL, project5,

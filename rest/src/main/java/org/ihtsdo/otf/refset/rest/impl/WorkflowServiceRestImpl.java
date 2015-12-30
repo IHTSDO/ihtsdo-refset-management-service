@@ -780,7 +780,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Get all assigned editing refsets
       String query =
-          "NOT refsetId:0" + " AND (forAuthoring:true OR forReview:true)";
+          "projectId:" + projectId
+              + " AND (forAuthoring:true OR forReview:true) AND NOT refsetId:0";
       // Perform this search without pfs
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);

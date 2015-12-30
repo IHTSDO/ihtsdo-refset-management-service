@@ -5,13 +5,11 @@
 <div class="modal-body">
   <div class="row">
     <table class="table">
-      <tr>
+      <tr ng-show="project.id">
         <td>
           <b>Project Id</b>
         </td>
-        <td>
-          <input ng-model="project.id" placeholder="Optional" />
-        </td>
+        <td>{{project.id}}</td>
       </tr>
       <tr>
         <td>
@@ -120,7 +118,7 @@
             <td>
               <i ng-click="removeValidationCheck(check)"
                 title="Remove validation check from project"
-                class="noul material-icons md-18">remove</i>
+                class="noul material-icons md-18">delete</i>
             </td>
           </tr>
           <tr ng-show="errors.length > 0">
@@ -143,7 +141,9 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="submitProject(project);">{{action}}
-  </button>
+  <button ng-show="action == 'Add'" class="btn btn-primary"
+    ng-click="submitProject(project);">Add</button>
+  <button ng-show="action == 'Edit'" class="btn btn-primary"
+    ng-click="submitProject(project);">Save</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

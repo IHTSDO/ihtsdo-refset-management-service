@@ -520,7 +520,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     handleLazyInit(member);
     return member;
   }
-  
 
   /* see superclass */
   @SuppressWarnings("unchecked")
@@ -892,7 +891,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
     String query, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info(
+    Logger.getLogger(getClass()).debug(
         "Release Service - find refset release infos " + "/" + query
             + " refsetId " + refsetId);
 
@@ -941,19 +940,28 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public int getLookupProgress(Long refsetId) throws Exception {
     Refset refset = getRefset(refsetId);
 
+    int retval = 100;
     if (refset.isLookupInProgress()) {
       if (lookupProgressMap.containsKey(refsetId)) {
         if (lookupProgressMap.get(refsetId).intValue() == LOOKUP_ERROR_CODE) {
           throw new Exception("The lookup process unexpectedly failed");
         } else {
-          return lookupProgressMap.get(refsetId);
+          retval = lookupProgressMap.get(refsetId);
         }
       } else {
-        return -1;
+        retval = -1;
       }
+    } else {
+      retval = 100;
     }
+    Logger.getLogger(getClass()).info(
+        "Release Service - getLookupProgress - " + refset);
+    Logger.getLogger(getClass()).info(
+        "Release Service - getLookupProgress - " + lookupProgressMap);
+    Logger.getLogger(getClass()).info(
+        "Release Service - getLookupProgress - " + retval);
 
-    return 100;
+    return retval;
   }
 
   /**
@@ -1084,10 +1092,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).info(
         "Release Service - resolve refset definition " + " refsetId "
             + refset.getId());
-    
+
     Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
     Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
-    
+
     List<String> resolvedConcepts = new ArrayList<>();
     for (ConceptRefsetMember member : findMembersForRefset(refset.getId(),
         null, null).getObjects()) {
@@ -1111,8 +1119,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       resolvedConcepts.add(concept.getTerminologyId());
     }
 
-    // concepts that are properly resolved by the definition that are not 
-    // already covered by regular members (or prior exclusions, which stay 
+    // concepts that are properly resolved by the definition that are not
+    // already covered by regular members (or prior exclusions, which stay
     // in place as exclusions)
     Date startDate = new Date();
     for (Concept concept : resolvedFromExpression.getObjects()) {
@@ -1137,15 +1145,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         addMember(member);
       }
     }
-    
-    //Anything that was an explicit inclusion that is now resolved by the 
-    //definition normally ,doesn’t need to be an inclusion anymore – because 
-    //it can just be a regular member.  Thus we can remove the INCLUSION.
+
+    // Anything that was an explicit inclusion that is now resolved by the
+    // definition normally ,doesn’t need to be an inclusion anymore – because
+    // it can just be a regular member. Thus we can remove the INCLUSION.
     beforeInclusions.keySet().removeAll(resolvedConcepts);
     for (ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
       removeMember(beforeInclusion.getId());
     }
-    
+
     // Delete all previous members and exclusions that are not resolved from
     // the current definition.
     beforeMembersExclusions.keySet().removeAll(resolvedConcepts);

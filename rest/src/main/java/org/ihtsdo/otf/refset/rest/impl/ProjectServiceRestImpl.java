@@ -4,8 +4,10 @@
 package org.ihtsdo.otf.refset.rest.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -22,6 +24,7 @@ import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Terminology;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
@@ -43,16 +46,17 @@ import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
-import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
-import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -681,54 +685,51 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Path("/concept")
   @ApiOperation(value = "Retrieves a concept with descriptions", notes = "Retrieves a concept with descriptions", response = ConceptJpa.class)
-  public Concept getConceptWithDescriptions(
+  public Concept getFullConcept(
     @ApiParam(value = "TerminologyId", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
         "RESTful call (Project): get concept with description, "
-            + terminologyId + ", " + terminology + ", " + version);
+            + terminologyId + ", " + terminology + ", " + version + ", "
+            + translationId);
 
-    final ProjectService projectService = new ProjectServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       final String userName =
           authorizeApp(securityService, authToken,
               "retrieve concept with description", UserRole.VIEWER);
 
       final Concept concept =
-          projectService.getTerminologyHandler().getFullConcept(terminologyId,
-              terminology, version);
+          translationService.getTerminologyHandler().getFullConcept(
+              terminologyId, terminology, version);
 
-/*      // TODO: if the user has language preferences beyond the defaults
-      UserPreferences prefs =
-          securityService.getUser(userName).getUserPreferences();
+      // If translationId is set, include descriptions from the translation
+      // and from any language refsets in user prefs
+      if (translationId != null) {
 
-// TODO: what about including the translation this user is specifically editing?
-// should that tanslation's descriptions be assumed to be included?
- // should this all be mirrored in translationService so it can be appropriately used there
-  // also for par/chd? - that might be easeir.
+        // Get other language refset ids
+        final UserPreferences prefs =
+            securityService.getUser(userName).getUserPreferences();
 
-      // if (prefs != null && prefs.getLanguageDescriptionTypes) {
-      if (true) {
+        // Get the translation
+        final Translation translation =
+            translationService.getTranslation(translationId);
 
-        //List<LanguageDescriptionType> types = prefs.getLanguageDescriptionTypes();
-        List<LanguageDescriptionType> types = new ArrayList<>();
-//        types.
-        
-        // Find translations whose terminologyId matches the langauge
-        // refset ids specified in prefs 
-        
-      }*/
+        addDescriptionsHelper(userName, translationService, translation,
+            concept, prefs);
+      }
 
       return concept;
     } catch (Exception e) {
       handleException(e, "trying to retrieve projects ");
       return null;
     } finally {
-      projectService.close();
+      translationService.close();
       securityService.close();
     }
 
@@ -743,28 +744,50 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
         "RESTful call (Project): retrieves concept's parents, " + terminologyId
-            + ", " + terminology + ", " + version);
+            + ", " + terminology + ", " + version + ", " + translationId);
 
-    final ProjectService projectService = new ProjectServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get concept parents",
-          UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken, "get concept parents",
+              UserRole.VIEWER);
 
       final ConceptList concepts =
-          projectService.getTerminologyHandler().getConceptParents(
+          translationService.getTerminologyHandler().getConceptParents(
               terminologyId, terminology, version);
+
+      // If translationId is set, include descriptions from the translation
+      if (translationId != null) {
+        // Get other language refset ids
+        final UserPreferences prefs =
+            securityService.getUser(userName).getUserPreferences();
+
+        // Get the translation
+        final Translation translation =
+            translationService.getTranslation(translationId);
+
+        // Add descriptions and compute pref name
+        for (Concept concept : concepts.getObjects()) {
+          addDescriptionsHelper(userName, translationService, translation,
+              concept, prefs);
+
+          // do not send descriptions across the wire
+          concept.setDescriptions(new ArrayList<Description>());
+        }
+      }
 
       return concepts;
     } catch (Exception e) {
       handleException(e, "trying to retrieve concept parents ");
       return null;
     } finally {
-      projectService.close();
+      translationService.close();
       securityService.close();
     }
 
@@ -779,37 +802,111 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
+    @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
         "RESTful call (Project): retrieves concept's children, "
-            + terminologyId + ", " + terminology + ", " + version);
+            + terminologyId + ", " + terminology + ", " + version + ", "
+            + translationId);
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
+
     try {
-      authorizeApp(securityService, authToken, "get concept children",
-          UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken, "get concept children",
+              UserRole.VIEWER);
 
-      final ConceptList children =
-          refsetService.getTerminologyHandler().getConceptChildren(
+      final ConceptList concepts =
+          translationService.getTerminologyHandler().getConceptChildren(
               terminologyId, terminology, version);
 
-      // apply pfs to add paging/sorting
-      final ConceptList list = new ConceptListJpa();
-      list.setTotalCount(children.getObjects().size());
-      list.setObjects(refsetService.applyPfsToList(children.getObjects(),
-          Concept.class, pfs));
-      return list;
+      // If translationId is set, include descriptions from the translation
+      if (translationId != null) {
+        // Get other language refset ids
+        final UserPreferences prefs =
+            securityService.getUser(userName).getUserPreferences();
+
+        // Get the translation
+        final Translation translation =
+            translationService.getTranslation(translationId);
+        for (Concept concept : concepts.getObjects()) {
+
+          addDescriptionsHelper(userName, translationService, translation,
+              concept, prefs);
+          // do not send descriptions across the wire
+          concept.setDescriptions(new ArrayList<Description>());
+        }
+      }
+      return concepts;
 
     } catch (Exception e) {
       handleException(e, "trying to retrieve concept children ");
       return null;
     } finally {
       securityService.close();
-      refsetService.close();
+      translationService.close();
     }
+
+  }
+
+  /**
+   * Adds the descriptions helper.
+   *
+   * @param userName the user name
+   * @param translationService the translation service
+   * @param translation the translation
+   * @param concept the concept
+   * @param prefs the prefs
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private void addDescriptionsHelper(String userName,
+    TranslationService translationService, Translation translation,
+    Concept concept, UserPreferences prefs) throws Exception {
+    // Get other language refset ids
+    Set<String> langRefsetIds = new HashSet<>();
+    for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
+      langRefsetIds.add(type.getRefsetId());
+    }
+
+    // Find any concepts with this terminologyId
+    // and a translation terminologyId matching any of the ids from above.
+    final StringBuilder query = new StringBuilder();
+    query.append("terminologyId:" + concept.getTerminologyId());
+    // Add in the translation
+    query.append(" AND (");
+    query.append("translationTerminologyId:" + translation.getTerminologyId());
+    for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
+      if (!langRefsetIds.contains(type.getRefsetId())) {
+        query.append(" OR translationTerminologyId:" + type.getRefsetId());
+      }
+      // do not repeat
+      langRefsetIds.add(type.getRefsetId());
+    }
+    query.append(")");
+
+    // Get all concepts matching translation queries
+    final ConceptList list =
+        translationService.findConceptsForTranslation(null, query.toString(),
+            null);
+    // Add all descriptions to the concept
+    for (Concept conceptTranslated : list.getObjects()) {
+      Logger.getLogger(this.getClass()).debug("  concept=" + conceptTranslated);
+      for (Description desc : conceptTranslated.getDescriptions()) {
+        Logger.getLogger(this.getClass()).debug("  description=" + desc);
+        // Add to the concept to return
+        concept.getDescriptions().add(desc);
+      }
+    }
+
+    // Compute the concept preferred name
+    concept
+        .setName(translationService.computePreferredName(concept,
+            translationService.resolveLanguageDescriptionTypes(translation,
+                prefs)));
 
   }
 

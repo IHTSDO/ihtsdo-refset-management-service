@@ -18,7 +18,7 @@ public class MapIdBridge implements StringBridge {
   @Override
   public String objectToString(Object value) {
     if (value != null) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       Map<HasId, ?> map = (Map<HasId, ?>) value;
       for (HasId item : map.keySet()) {

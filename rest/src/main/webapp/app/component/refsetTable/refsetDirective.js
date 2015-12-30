@@ -43,6 +43,7 @@ tsApp
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
+              $scope.refsetLookupProgress = {};
               $scope.project = null;
               // TODO: consider whether refset.members should just be "members"
               $scope.showLatest = true;
@@ -183,9 +184,6 @@ tsApp
                             if (data.reviewers.length > 0) {
                               $scope.refsetReviewersMap[data.refsetId] = data.reviewers;
                             }
-                            console.debug(" ar map", data.refsetId,
-                              $scope.refsetAuthorsMap[data.refsetId],
-                              $scope.refsetReviewersMap[data.refsetId]);
                           });
                       }
                       $scope.reselect();
@@ -221,23 +219,30 @@ tsApp
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
+                // if there is a selection...
                 // Bail if nothing selected
-                if (!$scope.selected.refset) {
-                  return;
-                }
-                // If $scope.selected.refset is in the list, select it, if not clear $scope.selected.refset
-                var found = false;
                 if ($scope.selected.refset) {
-                  for (var i = 0; i < $scope.refsets.length; i++) {
-                    if ($scope.selected.refset.id == $scope.refsets[i].id) {
-                      $scope.selectRefset($scope.refsets[i]);
-                      found = true;
-                      break;
+                  // If $scope.selected.refset is in the list, select it, if not clear $scope.selected.refset
+                  var found = false;
+                  if ($scope.selected.refset) {
+                    for (var i = 0; i < $scope.refsets.length; i++) {
+                      if ($scope.selected.refset.id == $scope.refsets[i].id) {
+                        $scope.selectRefset($scope.refsets[i]);
+                        found = true;
+                        break;
+                      }
                     }
                   }
+                  if (!found) {
+                    $scope.selected.refset = null;
+                  }
                 }
-                if (!found) {
-                  $scope.selected.refset = null;
+
+                // If "lookup in progress" is set, get progress
+                for (var i = 0; i < $scope.refsets.length; i++) {
+                  if ($scope.refsets[i].lookupInProgress) {
+                    $scope.refreshLookupProgress($scope.refsets[i]);
+                  }
                 }
               }
 
@@ -289,7 +294,7 @@ tsApp
                   $scope.refsetReleaseInfo = data;
                 })
               };
-              
+
               // optimizes the definition
               $scope.optimizeDefinition = function(refset) {
                 if (confirm("The definition will be optimized, thereby eliminating superfluous definition clauses.")) {
@@ -476,6 +481,27 @@ tsApp
                 }
               };
 
+              // Start lookup again
+              $scope.startLookup = function(refset) {
+                refsetService.startLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = 1;
+                });
+              }
+
+              // Refresh lookup progress
+              $scope.refreshLookupProgress = function(refset) {
+                refsetService.getLookupProgress(refset.id).then(
+                // Success
+                function(data) {
+                  if (data > 0 && data < 101) {
+                    window.alert("Progress is " + data + " % complete.");
+                  }
+                  $scope.refsetLookupProgress[refset.id] = data;
+                });
+              }
+
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
@@ -516,7 +542,6 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
 
               };
@@ -556,7 +581,6 @@ tsApp
 
                 // remove clause
                 $scope.removeClause = function(refset, clause) {
-                  console.debug("remove clause", refset.id, clause.value);
                   for (var i = 0; i < refset.definitionClauses.length; i++) {
                     var index = refset.definitionClauses.indexOf(clause);
                     if (index != -1) {
@@ -568,7 +592,6 @@ tsApp
 
                 // add new clause
                 $scope.submitClause = function(refset, clause) {
-                  console.debug("submit clause", refset.id, clause);
                   // TODO: confirm clauses are unique
                   refset.definitionClauses.push(clause);
                   $scope.getPagedClauses();
@@ -579,17 +602,7 @@ tsApp
                   refsetService.updateRefset(refset).then(
                   // Success - add refset
                   function(data) {
-                    $scope.newClause = null;
-                    refsetService.getRefset(refset.id).then(function(data) {
-                      refset.definitionClauses = data.definitionClauses;
-                      $scope.getPagedClauses();
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error - add refset
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    })
+                    $uibModalInstance.close(refset);
                   },
                   // Error - add refset
                   function(data) {
@@ -600,20 +613,7 @@ tsApp
 
                 // close the modal
                 $scope.cancel = function(refset) {
-                  refsetService.getRefset(refset.id).then(function(data) {
-                    refset.definitionClauses = data.definitionClauses;
-                    $scope.getPagedClauses();
-                  },
-                  // Error - add refset
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  })
-                  $uibModalInstance.close();
-                }
-
-                $scope.close = function() {
-                  $uibModalInstance.close();
+                  $uibModalInstance.close(refset);
                 }
 
                 // initialize modal
@@ -644,7 +644,7 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-                  $scope.selectRefset($scope.selected.refset);
+                  refsetService.fireRefsetChanged(data);
                 });
 
               };
@@ -685,7 +685,7 @@ tsApp
 
                 // remove note
                 $scope.removeNote = function(object, note) {
-                  console.debug("remove note", object.id, note.value);
+
                   if ($scope.type == 'Refset') {
                     refsetService.removeRefsetNote(object.id, note.id).then(
                     // Success - add refset
@@ -731,7 +731,6 @@ tsApp
 
                 // add new note
                 $scope.submitNote = function(object, text) {
-                  console.debug("submit note", object.id, text);
 
                   if ($scope.type == 'Refset') {
                     refsetService.addRefsetNote(object.id, text).then(
@@ -835,7 +834,6 @@ tsApp
                 $scope.refset.terminologyId = null;
 
                 $scope.submitRefset = function(refset) {
-                  console.debug("clone refset", refset.id);
 
                   if (!refset.project) {
                     $scope.errors[0] = "A project must be chosen from the picklist.";
@@ -961,7 +959,6 @@ tsApp
 
                 // Handle export
                 $scope.export = function(file) {
-                  console.debug("export", $scope.refset.id, file);
 
                   if (type == 'Definition') {
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler.id,
@@ -978,7 +975,6 @@ tsApp
 
                 // Handle import
                 $scope.import = function(file) {
-                  console.debug("import", $scope.refset.id, file);
 
                   if (type == 'Definition') {
                     refsetService.importDefinition($scope.refset.id, $scope.selectedIoHandler.id,
@@ -1000,7 +996,6 @@ tsApp
 
                         // Success
                         function(data) {
-                          console.debug("begin import members, valdiation = ", data);
                           // data is a validation result, check for errors
                           if (data.errors.length > 0) {
                             $scope.errors = data.errors;
@@ -1032,7 +1027,6 @@ tsApp
 
                 // Handle continue import
                 $scope.continueImport = function(file) {
-                  console.debug("continue import", $scope.refset.id, file);
 
                   if (type == 'Refset Members') {
                     refsetService.finishImportMembers($scope.refset.id,
@@ -1122,7 +1116,6 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
               };
 
@@ -1158,7 +1151,6 @@ tsApp
                 }
 
                 $scope.beginRefsetRelease = function(refset) {
-                  console.debug("begin refset release", refset.id, refset.effectiveTime);
 
                   releaseService.beginRefsetRelease(refset.id,
                     utilService.toSimpleDate(refset.effectiveTime)).then(
@@ -1176,7 +1168,6 @@ tsApp
                 };
 
                 $scope.validateRefsetRelease = function(refset) {
-                  console.debug("validate refset release", refset.id);
 
                   releaseService.validateRefsetRelease(refset.id).then(
                   // Success
@@ -1192,7 +1183,6 @@ tsApp
                 };
 
                 $scope.previewRefsetRelease = function(refset) {
-                  console.debug("preview refset release", refset.id);
 
                   releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
                   // Success
@@ -1209,7 +1199,6 @@ tsApp
                 };
 
                 $scope.finishRefsetRelease = function(refset) {
-                  console.debug("finish refset release", refset.id);
 
                   releaseService.finishRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
                   // Success
@@ -1224,7 +1213,6 @@ tsApp
                 };
 
                 $scope.cancel = function(refset) {
-                  console.debug("Cancel ", refset.id);
                   if (!confirm("Are you sure you want to cancel the refset release?")) {
                     return;
                   }
@@ -1232,7 +1220,6 @@ tsApp
                   releaseService.cancelRefsetRelease(refset.id).then(
                   // Success
                   function(data) {
-                    console.debug("cancel data", data);
                     $uibModalInstance.close(refset);
                   },
                   // Error
@@ -1316,7 +1303,6 @@ tsApp
                 $scope.assignedUserNames = $scope.assignedUserNames.sort();
 
                 $scope.assignRefset = function() {
-                  console.debug("Submitting chosen user", $scope.userName);
                   if (!$scope.userName) {
                     $scope.errors[0] = "The user must be selected. ";
                     return;
@@ -1455,7 +1441,6 @@ tsApp
                 };
 
                 $scope.submitRefset = function(refset) {
-                  console.debug("Submitting add refset", refset);
 
                   refset.projectId = project.id;
 
@@ -1631,8 +1616,6 @@ tsApp
                 };
 
               };
-
-              // Add member modal
 
               $scope.openAddMemberModal = function(lrefset) {
 
@@ -1817,14 +1800,14 @@ tsApp
 
               };
 
-              // Refactor modal - for redefinition or migration
-              $scope.openRefactorModal = function(lrefset, ltype) {
+              // Migration modal - for redefinition or migration
+              $scope.openMigrationModal = function(lrefset, ltype) {
 
-                console.debug("openRefactorModal ", lrefset, ltype);
+                console.debug("openMigrationModal ", lrefset, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/refactor.html',
-                  controller : RefactorModalCtrl,
+                  controller : MigrationModalCtrl,
                   backdrop : 'static',
                   size : 'lg',
                   resolve : {
@@ -1851,12 +1834,11 @@ tsApp
                 // Success
                 function(data) {
                   refsetService.fireRefsetChanged(data);
-                  $scope.selectRefset(data);
                 });
               };
 
-              // Refactor modal controller
-              var RefactorModalCtrl = function($scope, $uibModalInstance, refset, definition,
+              // Migration modal controller
+              var MigrationModalCtrl = function($scope, $uibModalInstance, refset, definition,
                 paging, type, metadata) {
 
                 console.debug("Entered refactor modal control");
@@ -2294,13 +2276,9 @@ tsApp
 
               }
 
-              //
-              // Modals
-              //
-
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
-                console.debug("feedbackModal ", lrefset);
+                console.debug("Open feedbackModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/feedback.html',
@@ -2333,7 +2311,6 @@ tsApp
                 $scope.tinymceOptions = tinymceOptions;
 
                 $scope.addFeedback = function(refset, name, email, message) {
-                  console.debug("add feeback", refset, name, email, message);
 
                   if (message == null || message == undefined || message === '') {
                     window.alert("The message cannot be empty. ");

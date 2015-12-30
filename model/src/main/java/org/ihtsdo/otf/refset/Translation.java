@@ -223,7 +223,7 @@ public interface Translation extends Component, Searchable {
    * @return the spelling dictionary entry count
    */
   public int getSpellingDictionarySize();
-  
+
   /**
    * Returns the phrase memory entry count.
    *
@@ -244,7 +244,6 @@ public interface Translation extends Component, Searchable {
    * @param phraseMemory the phrase memory
    */
   public void setPhraseMemory(PhraseMemory phraseMemory);
-
 
   /**
    * Indicates whether or not provisional is the case.
@@ -287,6 +286,7 @@ public interface Translation extends Component, Searchable {
    * @param inPublicationProcess the in publication process
    */
   public void setInPublicationProcess(boolean inPublicationProcess);
+
   /**
    * Updates whether a lookup of member concepts names and statuses is in
    * progress.
@@ -302,4 +302,5 @@ public interface Translation extends Component, Searchable {
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isLookupInProgress();
+
 }

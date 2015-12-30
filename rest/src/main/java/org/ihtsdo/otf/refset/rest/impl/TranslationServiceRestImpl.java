@@ -5,8 +5,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -79,11 +77,9 @@ import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
+import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
-import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiParam;
@@ -438,17 +434,18 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // remove the spelling dictionary
       translationService.removeSpellingDictionary(translation
-          .getSpellingDictionary());
+          .getSpellingDictionary().getId());
 
       // remove memory entry
       if (translation.getPhraseMemory() != null) {
         for (final MemoryEntry entry : translation.getPhraseMemory()
             .getEntries()) {
-          translationService.removeMemoryEntry(entry);
+          translationService.removeMemoryEntry(entry.getId());
         }
 
         // remove phrase memory
-        translationService.removePhraseMemory(translation.getPhraseMemory());
+        translationService.removePhraseMemory(translation.getPhraseMemory()
+            .getId());
       }
 
       // Create service and configure transaction scope
@@ -1022,7 +1019,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Fill in standard description fields for concept
         desc.setLanguageCode(translation.getLanguage());
-        // TODO: dss not null, correct? 
+        // TODO: dss not null, correct?
         desc.setEffectiveTime(new Date());
         desc.setActive(true);
         desc.setPublishable(true);
@@ -1040,7 +1037,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             member.setActive(true);
-            // TODO: dss not null, correct? 
+            // TODO: dss not null, correct?
             member.setEffectiveTime(new Date());
             member.setModuleId(translation.getModuleId());
             member.setPublishable(true);
@@ -1640,7 +1637,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               query, null);
       // Create service and configure transaction scope
       for (MemoryEntry entry : entries) {
-        translationService.removeMemoryEntry(entry);
+        translationService.removeMemoryEntry(entry.getId());
       }
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
@@ -1655,15 +1652,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @GET
   @Override
-  @Path("/suggest/{translationId}/{name}")
+  @Path("/phrasememory/suggest")
   @ApiOperation(value = "Get translation suggestions", notes = "Returns list of suggested translated name", response = StringList.class)
   public StringList suggestTranslation(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "name, e.g. name", required = true) @PathParam("name") String name,
+    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "name, e.g. name", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Spelling Entry): /translation/suggest/"
+        "RESTful call PUT (Spelling Entry): /translation/phrasememory/suggest"
             + translationId + " " + name);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -1681,24 +1678,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
           "Suggest translation based on name supplied", UserRole.VIEWER);
-
-      final String query = "name:" + name;
-      final List<MemoryEntry> entries =
-          translationService.findMemoryEntryForTranslation(translationId,
-              query, null);
-      final List<String> results =
-          Lists.transform(entries, new Function<MemoryEntry, String>() {
-
-            @Override
-            public String apply(MemoryEntry arg0) {
-              return arg0.getTranslatedName();
-            }
-
-          });
-      final StringList strList = new StringList();
-      strList.setTotalCount(results.size());
-      strList.setObjects(results);
-      return strList;
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      return handler.suggestPhraseMemory(name, translationId, translationService);
     } catch (Exception e) {
       handleException(e, "trying to suggest a translation based on name");
     } finally {
@@ -1737,7 +1718,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           "remove all entries  from the phrase memory", UserRole.AUTHOR);
 
       for (final MemoryEntry memoryEntry : phraseMemory.getEntries()) {
-        translationService.removeMemoryEntry(memoryEntry);
+        translationService.removeMemoryEntry(memoryEntry.getId());
       }
     } catch (Exception e) {
       handleException(e, "trying to remove all phrase memory entries");
@@ -1895,7 +1876,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       // Load PhraseMemory
-      final List<MemoryEntry> memories = parsePhraseMemory(translation, in);
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      final List<MemoryEntry> memories = handler.getEntriesAsList(in);
       final PhraseMemory phraseMemory = translation.getPhraseMemory();
       for (final MemoryEntry memoryEntry : memories) {
         memoryEntry.setPhraseMemory(phraseMemory);
@@ -1941,14 +1923,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("The translation phrase memory entries is null"
             + translation.getPhraseMemory().getId());
       }
-      final StringBuilder sb = new StringBuilder();
-      for (final MemoryEntry entry : translation.getPhraseMemory().getEntries()) {
-        sb.append(entry.getName()).append("|")
-            .append(entry.getTranslatedName())
-            .append(System.getProperty("line.separator"));
-      }
-
-      return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
+      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      return handler.getEntriesAsStream(translation.getPhraseMemory().getEntries());
     } catch (Exception e) {
       handleException(e, "trying to export translation phrase memory");
     } finally {
@@ -2721,46 +2697,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
-  /**
-   * Parses the phrase memory.
-   *
-   * @param translation the translation
-   * @param content the content
-   * @return the list
-   * @throws Exception the exception
-   */
-  private List<MemoryEntry> parsePhraseMemory(Translation translation,
-    InputStream content) throws Exception {
-    final List<MemoryEntry> list = new ArrayList<>();
-    String line = "";
-    final Reader reader = new InputStreamReader(content, "UTF-8");
-    final PushBackReader pbr = new PushBackReader(reader);
-    while ((line = pbr.readLine()) != null) {
-
-      // Strip \r and split lines
-      line = line.replace("\r", "");
-      final String fields[] = line.split("\\|");
-
-      // Check field lengths
-      if (fields.length != 2) {
-        pbr.close();
-        Logger.getLogger(getClass()).error("line = " + line);
-        throw new Exception("Unexpected field count in phrase memory file "
-            + fields.length);
-      }
-
-      // Instantiate and populate members
-      final MemoryEntry member = new MemoryEntryJpa();
-      member.setName(fields[0]);
-      member.setTranslatedName(fields[1]);
-      // Add member
-      list.add(member);
-      Logger.getLogger(getClass()).debug("  phrasememory = " + member);
-    }
-    pbr.close();
-    return list;
-  }
-
   /* see superclass */
   @Override
   @GET
@@ -2864,13 +2800,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
           // Ensure that type not already included in list
           if (!discoveredTypeIds.contains(descriptionType)) {
-            final LanguageDescriptionType type =
-                new LanguageDescriptionTypeJpa();
-            type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+            final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
+            type.setDescriptionType(descriptionType);
             type.setName(translation.getName());
             type.setRefsetId(translation.getRefset().getTerminologyId());
-            type.setTypeId(descriptionType.getTypeId());
-            types.add(type);
+            types.add(type);            
             discoveredTypeIds.add(descriptionType);
           }
         }

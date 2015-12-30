@@ -744,7 +744,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/phrasememory/add?" + "translationId="
+            + "/phrasememory/add?" + "translationId="
             + translationId + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
     Response response =
@@ -777,7 +777,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/phrasememory/remove?translationId" + translationId
+            + "/translation/phrasememory/remove?translationId=" + translationId
             + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
@@ -1532,8 +1532,10 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/suggest/"
-            + translationId + "/" + name);
+        client.target(config.getProperty("base.url") + "/translation/phrasememory/suggest?translationId="
+            + translationId 
+            + "&name="
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

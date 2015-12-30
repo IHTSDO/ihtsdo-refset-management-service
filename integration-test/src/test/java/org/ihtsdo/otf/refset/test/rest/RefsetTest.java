@@ -549,7 +549,6 @@ public class RefsetTest {
    * @param refsetId the refset id
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed

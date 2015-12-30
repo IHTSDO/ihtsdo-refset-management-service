@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.Date;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -946,7 +947,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
       buffer.flush();
       artifact.setData(buffer.toByteArray());
-
+      artifact.setTimestamp(new Date());
       // Add the release artifact
       return releaseService.addReleaseArtifact(artifact);
 

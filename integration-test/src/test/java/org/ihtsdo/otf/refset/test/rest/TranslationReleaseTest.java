@@ -330,7 +330,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -564,7 +564,7 @@ public class TranslationReleaseTest {
   public void testReleaseReportToken() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testReleaseReportToken");
 
-    Project project = projectService.getProject(1L, adminAuthToken);
+    Project project = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (extensional)

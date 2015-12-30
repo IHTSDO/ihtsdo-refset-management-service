@@ -6,7 +6,7 @@
 
 # Configure 
 set REFSET_CODE=~/refset/code
-set REFSET_CONFIG=~/refset/config/config.properties
+set REFSET_CONFIG=~/refset/config/config-load.properties
 set REFSET_DATA=~/refset/data
 set SERVER=false
 echo "------------------------------------------------"
