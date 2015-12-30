@@ -6,30 +6,41 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
 import org.ihtsdo.otf.refset.rest.client.WorkflowClientRest;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Test case for refset.
@@ -167,12 +178,14 @@ public class RefsetTest {
    * @param type the type
    * @param project the project
    * @param refsetId the refset id
+   * @param importMembers if to import members during refset creation
    * @return the refset jpa
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
   protected RefsetJpa makeRefset(String name, String definition,
-    Refset.Type type, Project project, String refsetId) throws Exception {
+    Refset.Type type, Project project, String refsetId, boolean importMembers)
+    throws Exception {
     RefsetJpa refset = new RefsetJpa();
     refset.setActive(true);
     refset.setType(type);
@@ -206,11 +219,63 @@ public class RefsetTest {
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
 
-    if (type == Refset.Type.EXTERNAL) {
+    if (type == Refset.Type.INTENSIONAL && definition == null) {
+      refset.setDefinitionClauses(new ArrayList<DefinitionClause>());
+    } else if (type == Refset.Type.EXTERNAL) {
       refset.setExternalUrl("http://www.example.com/some/other/refset.txt");
     }
 
-    return refset;
+    // Validate refset
+    ValidationResult result =
+        validationService.validateRefset(refset, project.getId(),
+            adminAuthToken);
+    if (!result.isValid()) {
+      Logger.getLogger(getClass()).error(result.toString());
+      throw new Exception("Refset does not pass validation.");
+    }
+    // Add refset
+    refsetService = new RefsetClientRest(properties);
+
+    refset = (RefsetJpa) refsetService.addRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+
+    if (importMembers) {
+      refset =
+          (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+
+      if (type == Refset.Type.EXTENSIONAL) {
+        // EXTENSIONAL Import members (from file)
+        ValidationResult vr =
+            refsetService.beginImportMembers(refset.getId(), "DEFAULT",
+                adminAuthToken);
+        if (!vr.isValid()) {
+          throw new Exception("import staging is invalid - " + vr);
+        }
+
+        refsetService = new RefsetClientRest(properties);
+        refset =
+            (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+
+        InputStream in =
+            new FileInputStream(
+                new File(
+                    "../config/src/main/resources/data/refset/der2_Refset_SimpleSnapshot_INT_20140731.txt"));
+        refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
+            adminAuthToken);
+        in.close();
+      } else if (type == Refset.Type.INTENSIONAL) {
+        // Import definition (from file)
+        InputStream in =
+            new FileInputStream(
+                new File(
+                    "../config/src/main/resources/data/refset/der2_Refset_DefinitionSnapshot_INT_20140731.txt"));
+        refsetService.importDefinition(null, in, refset.getId(), "DEFAULT",
+            adminAuthToken);
+        in.close();
+      }
+    }
+
+    return (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
   }
 
   /**
@@ -231,8 +296,250 @@ public class RefsetTest {
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
+    member.setModuleId(refset.getModuleId());
+    member.setTerminology(refset.getTerminology());
+    member.setVersion(refset.getVersion());
     member.setRefset(refset);
     return member;
+  }
+
+  /**
+   * Test getting a specific member from a refset.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetMember() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST getMember");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), true);
+
+    refsetService = new RefsetClientRest(properties);
+
+    // Create a new Member and add to refset
+    ConceptRefsetMemberJpa createdMember =
+        makeConceptRefsetMember("TestMember", "1234567", refset);
+    createdMember =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(createdMember,
+            adminAuthToken);
+
+    // With new member's Id, pull member via getMember()
+    Long memberId = createdMember.getId();
+    ConceptRefsetMemberJpa pulledMember =
+        (ConceptRefsetMemberJpa) refsetService.getMember(memberId,
+            adminAuthToken);
+
+    assertEquals(createdMember, pulledMember);
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test adding a member to a refset via an expression
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testAddRefsetMembersForExpression() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST addRefsetMembersForExpression");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), true);
+
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+
+    // Verify number of members to begin with
+    List<ConceptRefsetMember> foundMembers =
+        refsetService.findRefsetMembersForQuery(refset.getId(), "",
+            new PfsParameterJpa(), adminAuthToken).getObjects();
+
+    assertEquals(21, foundMembers.size());
+
+    // Add Concept Id expression
+    String expression = "284009009";
+    ConceptRefsetMemberList updateMembers =
+        refsetService.addRefsetMembersForExpression(refset.getId(), expression,
+            adminAuthToken);
+
+    // Verify new member created from concept specified
+    assertEquals(1, updateMembers.getCount());
+    ConceptRefsetMember updateMember = updateMembers.getObjects().get(0);
+    assertEquals("284009009", updateMember.getConceptId());
+    assertEquals("Route of administration value", updateMember.getConceptName());
+
+    // Verify number of members in refset has increased due to new member
+    foundMembers =
+        refsetService.findRefsetMembersForQuery(refset.getId(), "",
+            new PfsParameterJpa(), adminAuthToken).getObjects();
+    assertEquals(22, foundMembers.size());
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test removing a refset exclusion from a refset
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRemoveRefsetExclusion() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST removeRefsetExclusion");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.INTENSIONAL, project, null, true);
+
+    // Get all members
+    ConceptRefsetMemberList originalMemberList =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, originalMemberList.getCount());
+
+    // Identify member to exclude
+    ConceptRefsetMemberList memberToRemove =
+        refsetService.findRefsetMembersForQuery(refset.getId(), "429817007",
+            new PfsParameterJpa(), adminAuthToken);
+
+    // Add exclusion and verify refset members have decreased
+    refsetService.addRefsetExclusion(refset.getId(), "429817007", false,
+        adminAuthToken);
+    ConceptRefsetMemberList removedMemberList =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(142, removedMemberList.getCount());
+
+    // Remove exclusion and verify refset members have increased
+    ConceptRefsetMember exclusionRemovedMember =
+        refsetService.removeRefsetExclusion(memberToRemove.getObjects().get(0)
+            .getId(), adminAuthToken);
+    assertEquals(exclusionRemovedMember.getConceptId(), "429817007");
+    assertEquals(exclusionRemovedMember.getConceptName(), "Interstitial route");
+    ConceptRefsetMemberList finalMemberList =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, finalMemberList.getObjects().size());
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test optomizing a refset definition with a redundant subsumption clauses
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testOptimizeDefinition() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST optimizeDefinition");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.INTENSIONAL, project, null,
+            false);
+
+    // Populate contents with clause
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue("<<284009009|Route of administration|");
+    clause.setNegated(false);
+    refset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+    ConceptRefsetMemberList members =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, members.getCount());
+
+    // Add 2nd clause that is based on concept that is child of original
+    // concept's clause
+    clause = new DefinitionClauseJpa();
+    clause.setValue("<<6064005 | Topical route (qualifier value) |");
+    clause.setNegated(false);
+    refset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+    members =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, members.getCount());
+    assertEquals(2, refset.getDefinitionClauses().size());
+
+    // Add a negated clause
+    clause = new DefinitionClauseJpa();
+    clause.setValue("<<372457001 | Gingival route (qualifier value) |");
+    clause.setNegated(true);
+    refset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+    members =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, members.getCount());
+    assertEquals(3, refset.getDefinitionClauses().size());
+
+    // Add 2nd negated clause that is based on concept that is child of original
+    // concept's clause
+    clause = new DefinitionClauseJpa();
+    clause.setValue("<<419601003 | Subgingival route (qualifier value) |");
+    clause.setNegated(true);
+    refset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset(refset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+    members =
+        refsetService.findRefsetMembersForQuery(refset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, members.getCount());
+    assertEquals(4, refset.getDefinitionClauses().size());
+
+    // After Optimize, should turn into 2 clauses (one positive & one negated)
+    refsetService.optimizeDefinition(refset.getId(), adminAuthToken);
+    Refset optomizedRefset =
+        refsetService.getRefset(refset.getId(), adminAuthToken);
+    assertEquals(2, optomizedRefset.getDefinitionClauses().size());
+    members =
+        refsetService.findRefsetMembersForQuery(optomizedRefset.getId(),
+            "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
+    assertEquals(143, members.getCount());
+
+    int posClauses = 0;
+    int negClauses = 0;
+    for (DefinitionClause optimizedClause : optomizedRefset
+        .getDefinitionClauses()) {
+      if (optimizedClause.isNegated()) {
+        negClauses++;
+      } else {
+        posClauses++;
+      }
+    }
+
+    assertEquals(1, negClauses);
+    assertEquals(1, posClauses);
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**
