@@ -20,7 +20,6 @@ import org.hibernate.envers.query.AuditEntity;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -1106,7 +1105,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void lookupConceptNames(Long translationId, String label,
     boolean background) throws Exception {
-    // Only launch process if refset not already looked-up
+    // Only launch process if translation not already looked-up
     if (getTerminologyHandler().assignNames()) {
       if (!lookupProgressMap.containsKey(translationId)) {
         // Create new thread

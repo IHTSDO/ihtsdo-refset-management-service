@@ -2490,7 +2490,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   }
 
   @Override
-  @POST
+  @GET
   @Path("/release/report")
   @ApiOperation(value = "Releases a report and token", notes = "Deletes a report.")
   public void releaseReportToken(
@@ -2498,7 +2498,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Translation): release/report");
+        "RESTful call (Translation): /release/report: " + reportToken);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -2775,7 +2775,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call GET (Translation): /lookup/status " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
-    try {
+    try { 
       if (translationService.getTranslation(translationId) == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
@@ -2832,7 +2832,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/langpref")
-  @ApiOperation(value = "Get language preference optios", notes = "Returns all language preference options.")
+  @ApiOperation(value = "Get unique language description types", notes = "Returns all unique language description types.", response = LanguageDescriptionTypeListJpa.class)
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2848,8 +2848,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final List<LanguageDescriptionType> types = new ArrayList<>();
 
       final TranslationList list =
-          translationService.findTranslationsForQuery("", null);
+          translationService
+              .findTranslationsForQuery("", new PfsParameterJpa());
       // Go thru translations
+
+      Set<DescriptionType> discoveredTypeIds = new HashSet<>();
+
       for (Translation translation : list.getObjects()) {
         // Go through description types (remove DEF)
         for (DescriptionType descriptionType : translation
@@ -2857,19 +2861,25 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           if (descriptionType.getName().equals("DEF")) {
             continue;
           }
-          final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
-          type.setAcceptabilityId(descriptionType.getAcceptabilityId());
-          type.setName(translation.getName());
-          type.setRefsetId(translation.getRefset().getTerminologyId());
-          type.setTypeId(descriptionType.getTypeId());
-          types.add(type);
+
+          // Ensure that type not already included in list
+          if (!discoveredTypeIds.contains(descriptionType)) {
+            final LanguageDescriptionType type =
+                new LanguageDescriptionTypeJpa();
+            type.setAcceptabilityId(descriptionType.getAcceptabilityId());
+            type.setName(translation.getName());
+            type.setRefsetId(translation.getRefset().getTerminologyId());
+            type.setTypeId(descriptionType.getTypeId());
+            types.add(type);
+            discoveredTypeIds.add(descriptionType);
+          }
         }
       }
       LanguageDescriptionTypeList result = new LanguageDescriptionTypeListJpa();
       result.setTotalCount(types.size());
       result.setObjects(types);
       return result;
-      
+
     } catch (Exception e) {
       handleException(e, "trying to look up language description types");
     } finally {
