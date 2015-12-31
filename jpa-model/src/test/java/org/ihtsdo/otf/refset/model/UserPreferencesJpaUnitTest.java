@@ -16,7 +16,6 @@ import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
-import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link RelationshipJpa}.
+ * Unit testing for {@link UserPreferencesJpa}.
  */
 public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
 

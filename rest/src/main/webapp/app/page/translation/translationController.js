@@ -23,6 +23,8 @@ tsApp
         // Initialize
         projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        $scope.accordionState = {};
+
         // Wrap in a json object so we can pass to the directive effectively
         $scope.projects = {
           data : [],
@@ -52,7 +54,21 @@ tsApp
           projectService.findProjectsAsList("", pfs).then(function(data) {
             $scope.projects.data = data.projects;
             $scope.projects.totalCount = data.totalCount;
-            $scope.setProject(data.projects[0]);
+            if ($scope.user.userPreferences.lastProjectId) {
+              var found = false;
+              for(var i = 0; i < data.projects.length; i++) {
+                if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
+                  $scope.setProject(data.projects[i]);
+                  found = true;
+                  break;
+                }
+              }
+              if (!found) {
+                $scope.setProject(data.projects[0]);
+              }
+            } else {
+              $scope.setProject(data.projects[0]);
+            }            
           })
 
         };
@@ -63,7 +79,8 @@ tsApp
           if (!$scope.project) {
             return;
           }
-
+          $scope.user.userPreferences.lastProjectId = $scope.project.id;
+          securityService.updateUserPreferences($scope.user.userPreferences);
           // Empty PFS
           var pfs = {};
           // Find role
@@ -83,6 +100,9 @@ tsApp
                     } else if ($scope.projects.role == 'AUTHOR') {
                       $scope.roleOptions = ['AUTHOR'];
                     }
+                    if ($scope.user.userPreferences.lastProjectRole) {
+                      $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
+                    }
                     break;
                   }
                 }
@@ -92,6 +112,8 @@ tsApp
         }
 
         $scope.updateRole = function() {
+          $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+          securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
         }
         
@@ -116,14 +138,23 @@ tsApp
             $scope.metadata.workflowPaths = data.strings;
           });
         }
+        
+        // Set the current accordion
+        $scope.setAccordion = function(data) {
+          $scope.user.userPreferences.lastTranslationAccordion = data;
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        } 
 
         // Initialize
         $scope.getProjects();
         // Initialize some metadata first time
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        $scope.user.userPreferences.lastTab = '/translation';   
+        $scope.user.userPreferences.lastTab = '/translation';  
         securityService.updateUserPreferences($scope.user.userPreferences);
+        if ($scope.user.userPreferences.lastTranslationAccordion) {
+          $scope.accordionState[$scope.user.userPreferences.lastTranslationAccordion] = true;
+        }
       }
 
     ]);

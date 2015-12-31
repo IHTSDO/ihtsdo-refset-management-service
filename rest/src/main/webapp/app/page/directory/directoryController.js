@@ -21,6 +21,7 @@ tsApp.controller('DirectoryCtrl', [
 
     $scope.user = securityService.getUser();
     $scope.userProjectsInfo = projectService.getUserProjectsInfo();
+    $scope.accordionState = {};
 
     // Wrap in a json object so we can pass to the directive effectively
     $scope.projects = {
@@ -98,6 +99,12 @@ tsApp.controller('DirectoryCtrl', [
         $scope.metadata.workflowPaths = data.strings;
       });
     };
+    
+    // Set the current accordion
+    $scope.setAccordion = function(data) {
+      $scope.user.userPreferences.lastDirectoryAccordion = data;
+      securityService.updateUserPreferences($scope.user.userPreferences);
+    };
 
     // Initialize
     $scope.getRefsetTypes();
@@ -106,6 +113,8 @@ tsApp.controller('DirectoryCtrl', [
     $scope.getWorkflowPaths();
     $scope.user.userPreferences.lastTab = '/directory';
     securityService.updateUserPreferences($scope.user.userPreferences);
-
+    if ($scope.user.userPreferences.lastDirectoryAccordion) {
+      $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
+    }
     // end
   } ]);

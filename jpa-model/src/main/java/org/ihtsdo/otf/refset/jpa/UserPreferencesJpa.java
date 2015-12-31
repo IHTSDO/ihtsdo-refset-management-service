@@ -24,6 +24,7 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 
@@ -58,8 +59,20 @@ public class UserPreferencesJpa implements UserPreferences {
   /** The lastTab. */
   private String lastTab;
 
-  /** The lastAccordion. */
-  private String lastAccordion;
+  /** The lastRefsetAccordion. */
+  private String lastRefsetAccordion;
+
+  /** The lastTranslationAccordion. */
+  private String lastTranslationAccordion;
+
+  /** The lastDirectoryAccordion. */
+  private String lastDirectoryAccordion;
+
+  /** The lastProjectRole. */
+  private UserRole lastProjectRole;
+
+  /** The lastProjectId. */
+  private Long lastProjectId;
 
   /**
    * The default constructor.
@@ -78,7 +91,12 @@ public class UserPreferencesJpa implements UserPreferences {
     id = userPreferences.getId();
     user = userPreferences.getUser();
     lastTab = userPreferences.getLastTab();
-    lastAccordion = userPreferences.getLastAccordion();
+    languageDescriptionTypes = userPreferences.getLanguageDescriptionTypes();
+    lastRefsetAccordion = userPreferences.getLastRefsetAccordion();
+    lastTranslationAccordion = userPreferences.getLastTranslationAccordion();
+    lastDirectoryAccordion = userPreferences.getLastDirectoryAccordion();
+    lastProjectRole = userPreferences.getLastProjectRole();
+    lastProjectId = userPreferences.getLastProjectId();
   }
 
   /**
@@ -186,23 +204,103 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /**
-   * Sets the last accordion accessed.
+   * Returns the last refset accordion accessed.
    *
-   * @param lastAccordion the last accordion accessed
+   * @return the lastRefsetAccordion
    */
   @Override
-  public void setLastAccordion(String lastAccordion) {
-    this.lastAccordion = lastAccordion;
+  public String getLastRefsetAccordion() {
+    return lastRefsetAccordion;
   }
 
   /**
-   * Returns the last accordion accessed.
+   * Sets the last refset accordion accessed.
    *
-   * @return the lastAccordion
+   * @param lastRefsetAccordion the last refset accordion accessed
    */
   @Override
-  public String getLastAccordion() {
-    return lastAccordion;
+  public void setLastRefsetAccordion(String lastRefsetAccordion) {
+    this.lastRefsetAccordion = lastRefsetAccordion;
+  }
+
+  /**
+   * Returns the last translation accordion accessed.
+   *
+   * @return the lastTranslationAccordion
+   */
+  @Override
+  public String getLastTranslationAccordion() {
+    return lastTranslationAccordion;
+  }
+
+  /**
+   * Sets the last translation accordion accessed.
+   *
+   * @param lastTranslationAccordion the last translation accordion accessed
+   */
+  @Override
+  public void setLastTranslationAccordion(String lastTranslationAccordion) {
+    this.lastTranslationAccordion = lastTranslationAccordion;
+  }
+
+  /**
+   * Returns the last directory accordion accessed.
+   *
+   * @return the lastDirectoryAccordion
+   */
+  @Override
+  public String getLastDirectoryAccordion() {
+    return lastDirectoryAccordion;
+  }
+
+  /**
+   * Sets the last directory accordion accessed.
+   *
+   * @param lastDirectoryAccordion the last directory accordion accessed
+   */
+  @Override
+  public void setLastDirectoryAccordion(String lastDirectoryAccordion) {
+    this.lastDirectoryAccordion = lastDirectoryAccordion;
+  }
+
+  /**
+   * Returns the last project role accessed.
+   *
+   * @return the lastProjectRole
+   */
+  @Override
+  public UserRole getLastProjectRole() {
+    return lastProjectRole;
+  }
+
+  /**
+   * Sets the last project role accessed.
+   *
+   * @param lastProjectRole the last project role accessed
+   */
+  @Override
+  public void setLastProjectRole(UserRole lastProjectRole) {
+    this.lastProjectRole = lastProjectRole;
+  }
+
+  /**
+   * Returns the last project ID accessed.
+   *
+   * @return the lastProjectId
+   */
+  @Override
+  public Long getLastProjectId() {
+    return lastProjectId;
+  }
+
+  /**
+   * Sets the last project accessed.
+   *
+   * @param lastProjectiD ID of the last project accessed
+   */
+  @Override
+  public void setLastProjectId(Long lastProjectId) {
+    this.lastProjectId = lastProjectId;
   }
 
   /* see superclass */
@@ -228,14 +326,33 @@ public class UserPreferencesJpa implements UserPreferences {
     int result = 1;
     result = prime * result + ((id == null) ? 0 : id.hashCode());
     result =
+        prime
+            * result
+            + ((languageDescriptionTypes == null) ? 0
+                : languageDescriptionTypes.hashCode());
+    result =
+        prime
+            * result
+            + ((lastDirectoryAccordion == null) ? 0 : lastDirectoryAccordion
+                .hashCode());
+    result =
         prime * result
-            + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
+            + ((lastProjectId == null) ? 0 : lastProjectId.hashCode());
+    result =
+        prime * result
+            + ((lastProjectRole == null) ? 0 : lastProjectRole.hashCode());
+    result =
+        prime
+            * result
+            + ((lastRefsetAccordion == null) ? 0 : lastRefsetAccordion
+                .hashCode());
     result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
     result =
         prime
             * result
-            + ((user == null || user.getUserName() == null) ? 0 : user
-                .getUserName().hashCode());
+            + ((lastTranslationAccordion == null) ? 0
+                : lastTranslationAccordion.hashCode());
+    result = prime * result + ((user == null) ? 0 : user.hashCode());
     return result;
   }
 
@@ -254,30 +371,56 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!id.equals(other.id))
       return false;
-    if (lastAccordion == null) {
-      if (other.lastAccordion != null)
+    if (languageDescriptionTypes == null) {
+      if (other.languageDescriptionTypes != null)
         return false;
-    } else if (!lastAccordion.equals(other.lastAccordion))
+    } else if (!languageDescriptionTypes.equals(other.languageDescriptionTypes))
+      return false;
+    if (lastDirectoryAccordion == null) {
+      if (other.lastDirectoryAccordion != null)
+        return false;
+    } else if (!lastDirectoryAccordion.equals(other.lastDirectoryAccordion))
+      return false;
+    if (lastProjectId == null) {
+      if (other.lastProjectId != null)
+        return false;
+    } else if (!lastProjectId.equals(other.lastProjectId))
+      return false;
+    if (lastProjectRole != other.lastProjectRole)
+      return false;
+    if (lastRefsetAccordion == null) {
+      if (other.lastRefsetAccordion != null)
+        return false;
+    } else if (!lastRefsetAccordion.equals(other.lastRefsetAccordion))
       return false;
     if (lastTab == null) {
       if (other.lastTab != null)
         return false;
     } else if (!lastTab.equals(other.lastTab))
       return false;
-    if (user == null || user.getUserName() == null) {
-      if (other.user != null && other.user.getUserName() != null)
+    if (lastTranslationAccordion == null) {
+      if (other.lastTranslationAccordion != null)
         return false;
-    } else if (!user.getId().equals(other.user.getId()))
+    } else if (!lastTranslationAccordion.equals(other.lastTranslationAccordion))
+      return false;
+    if (user == null) {
+      if (other.user != null)
+        return false;
+    } else if (!user.equals(other.user))
       return false;
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
-    return "UserPreferencesJpa [id=" + id + ", user="
-        + (user != null ? user.getUserName() : null)
+    return "UserPreferencesJpa [id=" + id + ", user=" + user
         + ", languageDescriptionTypes=" + languageDescriptionTypes
-        + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion + "]";
+        + ", lastTab=" + lastTab + ", lastRefsetAccordion="
+        + lastRefsetAccordion + ", lastTranslationAccordion="
+        + lastTranslationAccordion + ", lastDirectoryAccordion="
+        + lastDirectoryAccordion + ", lastProjectRole=" + lastProjectRole
+        + ", lastProjectId=" + lastProjectId + "]";
   }
 
 }
