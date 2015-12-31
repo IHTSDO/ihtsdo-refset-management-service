@@ -2502,7 +2502,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call GET (Translation): /lookup/status " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
-    try { 
+    try {
       if (translationService.getTranslation(translationId) == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
@@ -2588,8 +2588,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             continue;
           }
 
-          // Ensure that type not already included in list
-          if (!discoveredTypeIds.contains(descriptionType)) {
           final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
           type.setDescriptionType(descriptionType);
           // Null the id so that all objects can be cleanly passed back in for
@@ -2598,7 +2596,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           type.setName(translation.getName());
           type.setRefsetId(translation.getRefset().getTerminologyId());
           type.setLanguage(translation.getLanguage());
-
           types.add(type);
         }
       }

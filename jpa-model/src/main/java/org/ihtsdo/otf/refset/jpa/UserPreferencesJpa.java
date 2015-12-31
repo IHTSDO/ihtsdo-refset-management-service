@@ -57,10 +57,6 @@ public class UserPreferencesJpa implements UserPreferences {
   @Column(nullable = true)
   private String lastTab;
 
-  /** The lastAccordion. */
-  @Column(nullable = true)
-  private String lastAccordion;
-
   /** The lastRefsetAccordion. */
   @Column(nullable = true)
   private String lastRefsetAccordion;
@@ -368,9 +364,6 @@ public class UserPreferencesJpa implements UserPreferences {
             + ((languageDescriptionTypes == null) ? 0
                 : languageDescriptionTypes.hashCode());
     result =
-        prime * result
-            + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
-    result =
         prime
             * result
             + ((lastDirectoryAccordion == null) ? 0 : lastDirectoryAccordion
@@ -414,11 +407,6 @@ public class UserPreferencesJpa implements UserPreferences {
       if (other.languageDescriptionTypes != null)
         return false;
     } else if (!languageDescriptionTypes.equals(other.languageDescriptionTypes))
-      return false;
-    if (lastAccordion == null) {
-      if (other.lastAccordion != null)
-        return false;
-    } else if (!lastAccordion.equals(other.lastAccordion))
       return false;
     if (lastDirectoryAccordion == null) {
       if (other.lastDirectoryAccordion != null)
@@ -468,13 +456,12 @@ public class UserPreferencesJpa implements UserPreferences {
   public String toString() {
     return "UserPreferencesJpa [id=" + id + ", user=" + user
         + ", languageDescriptionTypes=" + languageDescriptionTypes
-        + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion
-        + ", lastRefsetAccordion=" + lastRefsetAccordion + ", spellingEnabled="
-        + spellingEnabled + ", memoryEnabled=" + memoryEnabled
-        + ", lastTranslationAccordion=" + lastTranslationAccordion
-        + ", lastDirectoryAccordion=" + lastDirectoryAccordion
-        + ", lastProjectRole=" + lastProjectRole + ", lastProjectId="
-        + lastProjectId + "]";
+        + ", lastTab=" + lastTab + ", lastRefsetAccordion="
+        + lastRefsetAccordion + ", spellingEnabled=" + spellingEnabled
+        + ", memoryEnabled=" + memoryEnabled + ", lastTranslationAccordion="
+        + lastTranslationAccordion + ", lastDirectoryAccordion="
+        + lastDirectoryAccordion + ", lastProjectRole=" + lastProjectRole
+        + ", lastProjectId=" + lastProjectId + "]";
   }
 
 }

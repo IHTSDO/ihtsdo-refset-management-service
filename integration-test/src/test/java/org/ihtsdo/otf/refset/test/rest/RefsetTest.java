@@ -182,7 +182,6 @@ public class RefsetTest {
    * @return the refset jpa
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected RefsetJpa makeRefset(String name, String definition,
     Refset.Type type, Project project, String refsetId, boolean importMembers)
     throws Exception {
