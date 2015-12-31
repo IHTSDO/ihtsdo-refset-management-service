@@ -31,6 +31,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -171,7 +172,7 @@ public class TranslationTest {
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -212,11 +213,11 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testMigration002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration002");
 
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -277,7 +278,7 @@ public class TranslationTest {
   public void testMigration003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration003");
 
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create translation (extensional) and import definition
     Translation janTranslation =
@@ -513,11 +514,11 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -557,10 +558,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -585,7 +586,7 @@ public class TranslationTest {
             adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(1, entries.size());
-    
+
     // cleanup
     verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
@@ -598,10 +599,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -628,6 +629,42 @@ public class TranslationTest {
     translationService.removeTranslation(translation.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test Get Language Description Types (Per RestImpl, DEF not returned)
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetLanguageDescriptionTypes() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN GetLanguageDescriptionTypes");
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset(extensional)
+    Project project = projectService.getProject(52L, adminAuthToken);
+    Refset refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
+    TranslationJpa translation =
+        makeTranslation("translation99", refset, project, admin);
+
+    LanguageDescriptionTypeList types =
+        translationService.getLanguageDescriptionTypes(adminAuthToken);
+
+    // Verify that translation has the number of description types as returned
+    // during query
+    assertEquals(translation.getDescriptionTypes().size() - 1,
+        types.getTotalCount());
+    assertEquals(3, types.getTotalCount());
+
+    // clean up
+    verifyTranslationLookupCompleted(translation.getId());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**
@@ -697,7 +734,6 @@ public class TranslationTest {
       }
     }
   }
-
 
   /**
    * Ensure translation completed prior to shutting down test to avoid

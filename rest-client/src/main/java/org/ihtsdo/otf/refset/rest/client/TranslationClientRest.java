@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
@@ -1206,8 +1207,25 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - release report token: " + reportToken);
+    validateNotEmpty(reportToken, "reportToken");
 
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/release/report" + "?reportToken=" + reportToken);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   /* see superclass */
@@ -1587,10 +1605,29 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - get language description types");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/translation/langpref");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (LanguageDescriptionTypeListJpa) ConfigUtility.getGraphForString(
+        resultString, LanguageDescriptionTypeListJpa.class);
   }
 }
