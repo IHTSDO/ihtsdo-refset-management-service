@@ -24,10 +24,9 @@ import javax.xml.bind.annotation.XmlTransient;
 import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
+import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
  * JPA enabled implementation of {@link UserPreferences}.
@@ -62,6 +61,10 @@ public class UserPreferencesJpa implements UserPreferences {
   @Column(nullable = true)
   private String lastAccordion;
 
+  /** The lastRefsetAccordion. */
+  @Column(nullable = true)
+  private String lastRefsetAccordion;
+
   /** The spelling enabled. */
   @Column(nullable = false)
   private boolean spellingEnabled = true;
@@ -69,6 +72,18 @@ public class UserPreferencesJpa implements UserPreferences {
   /** The memory enabled. */
   @Column(nullable = false)
   private boolean memoryEnabled = true;
+
+  /** The lastTranslationAccordion. */
+  private String lastTranslationAccordion;
+
+  /** The lastDirectoryAccordion. */
+  private String lastDirectoryAccordion;
+
+  /** The lastProjectRole. */
+  private UserRole lastProjectRole;
+
+  /** The lastProjectId. */
+  private Long lastProjectId;
 
   /**
    * The default constructor.
@@ -87,10 +102,15 @@ public class UserPreferencesJpa implements UserPreferences {
     id = prefs.getId();
     user = prefs.getUser();
     lastTab = prefs.getLastTab();
-    lastAccordion = prefs.getLastAccordion();
     languageDescriptionTypes = prefs.getLanguageDescriptionTypes();
     spellingEnabled = prefs.isSpellingEnabled();
     memoryEnabled = prefs.isMemoryEnabled();
+    languageDescriptionTypes = prefs.getLanguageDescriptionTypes();
+    lastRefsetAccordion = prefs.getLastRefsetAccordion();
+    lastTranslationAccordion = prefs.getLastTranslationAccordion();
+    lastDirectoryAccordion = prefs.getLastDirectoryAccordion();
+    lastProjectRole = prefs.getLastProjectRole();
+    lastProjectId = prefs.getLastProjectId();
   }
 
   /**
@@ -198,23 +218,103 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /**
-   * Sets the last accordion accessed.
+   * Returns the last refset accordion accessed.
    *
-   * @param lastAccordion the last accordion accessed
+   * @return the lastRefsetAccordion
    */
   @Override
-  public void setLastAccordion(String lastAccordion) {
-    this.lastAccordion = lastAccordion;
+  public String getLastRefsetAccordion() {
+    return lastRefsetAccordion;
   }
 
   /**
-   * Returns the last accordion accessed.
+   * Sets the last refset accordion accessed.
    *
-   * @return the lastAccordion
+   * @param lastRefsetAccordion the last refset accordion accessed
    */
   @Override
-  public String getLastAccordion() {
-    return lastAccordion;
+  public void setLastRefsetAccordion(String lastRefsetAccordion) {
+    this.lastRefsetAccordion = lastRefsetAccordion;
+  }
+
+  /**
+   * Returns the last translation accordion accessed.
+   *
+   * @return the lastTranslationAccordion
+   */
+  @Override
+  public String getLastTranslationAccordion() {
+    return lastTranslationAccordion;
+  }
+
+  /**
+   * Sets the last translation accordion accessed.
+   *
+   * @param lastTranslationAccordion the last translation accordion accessed
+   */
+  @Override
+  public void setLastTranslationAccordion(String lastTranslationAccordion) {
+    this.lastTranslationAccordion = lastTranslationAccordion;
+  }
+
+  /**
+   * Returns the last directory accordion accessed.
+   *
+   * @return the lastDirectoryAccordion
+   */
+  @Override
+  public String getLastDirectoryAccordion() {
+    return lastDirectoryAccordion;
+  }
+
+  /**
+   * Sets the last directory accordion accessed.
+   *
+   * @param lastDirectoryAccordion the last directory accordion accessed
+   */
+  @Override
+  public void setLastDirectoryAccordion(String lastDirectoryAccordion) {
+    this.lastDirectoryAccordion = lastDirectoryAccordion;
+  }
+
+  /**
+   * Returns the last project role accessed.
+   *
+   * @return the lastProjectRole
+   */
+  @Override
+  public UserRole getLastProjectRole() {
+    return lastProjectRole;
+  }
+
+  /**
+   * Sets the last project role accessed.
+   *
+   * @param lastProjectRole the last project role accessed
+   */
+  @Override
+  public void setLastProjectRole(UserRole lastProjectRole) {
+    this.lastProjectRole = lastProjectRole;
+  }
+
+  /**
+   * Returns the last project ID accessed.
+   *
+   * @return the lastProjectId
+   */
+  @Override
+  public Long getLastProjectId() {
+    return lastProjectId;
+  }
+
+  /**
+   * Sets the last project accessed.
+   *
+   * @param lastProjectId the last project id
+   */
+  @Override
+  public void setLastProjectId(Long lastProjectId) {
+    this.lastProjectId = lastProjectId;
   }
 
   /* see superclass */
@@ -258,7 +358,6 @@ public class UserPreferencesJpa implements UserPreferences {
     this.memoryEnabled = memoryEnabled;
   }
 
-  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -271,18 +370,37 @@ public class UserPreferencesJpa implements UserPreferences {
     result =
         prime * result
             + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
-    result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
-    result = prime * result + (memoryEnabled ? 1231 : 1237);
-    result = prime * result + (spellingEnabled ? 1231 : 1237);
     result =
         prime
             * result
-            + ((user == null || user.getUserName() == null) ? 0 : user
-                .getUserName().hashCode());
+            + ((lastDirectoryAccordion == null) ? 0 : lastDirectoryAccordion
+                .hashCode());
+    result =
+        prime * result
+            + ((lastProjectId == null) ? 0 : lastProjectId.hashCode());
+    result =
+        prime * result
+            + ((lastProjectRole == null) ? 0 : lastProjectRole.hashCode());
+    result =
+        prime
+            * result
+            + ((lastRefsetAccordion == null) ? 0 : lastRefsetAccordion
+                .hashCode());
+    result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
+    result =
+        prime
+            * result
+            + ((lastTranslationAccordion == null) ? 0
+                : lastTranslationAccordion.hashCode());
+    result = prime * result + (memoryEnabled ? 1231 : 1237);
+    result = prime * result + (spellingEnabled ? 1231 : 1237);
+    final String userName =
+        user == null || user.getUserName() == null ? null : user.getUserName();
+    result = prime * result + ((userName == null) ? 0 : userName.hashCode());
+
     return result;
   }
 
-  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -302,10 +420,32 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!lastAccordion.equals(other.lastAccordion))
       return false;
+    if (lastDirectoryAccordion == null) {
+      if (other.lastDirectoryAccordion != null)
+        return false;
+    } else if (!lastDirectoryAccordion.equals(other.lastDirectoryAccordion))
+      return false;
+    if (lastProjectId == null) {
+      if (other.lastProjectId != null)
+        return false;
+    } else if (!lastProjectId.equals(other.lastProjectId))
+      return false;
+    if (lastProjectRole != other.lastProjectRole)
+      return false;
+    if (lastRefsetAccordion == null) {
+      if (other.lastRefsetAccordion != null)
+        return false;
+    } else if (!lastRefsetAccordion.equals(other.lastRefsetAccordion))
+      return false;
     if (lastTab == null) {
       if (other.lastTab != null)
         return false;
     } else if (!lastTab.equals(other.lastTab))
+      return false;
+    if (lastTranslationAccordion == null) {
+      if (other.lastTranslationAccordion != null)
+        return false;
+    } else if (!lastTranslationAccordion.equals(other.lastTranslationAccordion))
       return false;
     if (memoryEnabled != other.memoryEnabled)
       return false;
@@ -324,14 +464,17 @@ public class UserPreferencesJpa implements UserPreferences {
     return true;
   }
 
-  /* see superclass */
   @Override
   public String toString() {
     return "UserPreferencesJpa [id=" + id + ", user=" + user
         + ", languageDescriptionTypes=" + languageDescriptionTypes
         + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion
-        + ", spellingEnabled=" + spellingEnabled + ", memoryEnabled="
-        + memoryEnabled + "]";
+        + ", lastRefsetAccordion=" + lastRefsetAccordion + ", spellingEnabled="
+        + spellingEnabled + ", memoryEnabled=" + memoryEnabled
+        + ", lastTranslationAccordion=" + lastTranslationAccordion
+        + ", lastDirectoryAccordion=" + lastDirectoryAccordion
+        + ", lastProjectRole=" + lastProjectRole + ", lastProjectId="
+        + lastProjectId + "]";
   }
 
 }

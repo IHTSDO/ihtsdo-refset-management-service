@@ -29,6 +29,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LanguageDescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -157,6 +158,167 @@ public class TranslationTest {
     adminAuthToken =
         securityService.authenticate(adminUser, adminPassword).getAuthToken();
 
+  }
+
+  /**
+   * Test migration including begin, cancel, resume and finish.
+   *
+   * @throws Exception the exception
+   */
+  // @Test
+  public void testMigration001() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration001");
+
+    Project project1 = projectService.getProject(51L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional)
+    Refset janRefset =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
+            admin);
+
+    // Create translation
+    TranslationJpa translation1 =
+        makeTranslation("translation99", janRefset, project1, admin);
+    // Begin migration
+    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
+        "2015-01-31 ", adminAuthToken);
+    // Cancel migration
+    translationService.cancelMigration(translation1.getId(), adminAuthToken);
+    // Begin migration
+    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
+        "2015-01-31", adminAuthToken);
+    // Resume migration
+    translationService.resumeMigration(translation1.getId(), adminAuthToken);
+    // Finish migration
+    translationService.finishMigration(translation1.getId(), adminAuthToken);
+
+    // clean up
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(translation1.getId());
+    // translationService.removeTranslation(translation1.getId(), true,
+    // adminAuthToken);
+
+    // Adding but commenting out the verify & Remove Refset calls to align with
+    // commented out removeTranslation call
+    // verifyRefsetLookupCompleted(janRefset.getId());
+    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test migration002.
+   *
+   * @throws Exception the exception
+   */
+//  @Test
+  public void testMigration002() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration002");
+
+    Project project1 = projectService.getProject(51L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create refset (extensional)
+    Refset janRefset =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
+            admin);
+
+    // Create translation
+    TranslationJpa janTranslation =
+        makeTranslation("translation99", janRefset, project1, admin);
+
+    // Begin migration
+    Translation julyStagedTranslation =
+        translationService.beginMigration(janTranslation.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+
+    String reportToken =
+        translationService.compareTranslations(janTranslation.getId(),
+            julyStagedTranslation.getId(), adminAuthToken);
+
+    ConceptDiffReport diffReport =
+        translationService.getDiffReport(reportToken, adminAuthToken);
+    assertEquals(0, diffReport.getOldNotNew().size());
+    assertEquals(0, diffReport.getNewNotOld().size());
+
+    // TODO: put this back in - throws lazy initialization exception about
+    // concept.descriptions
+    /*
+     * ConceptList commonList =
+     * translationService.findConceptsInCommon(reportToken, null, null,
+     * adminAuthToken); //assertEquals(5, commonList.getObjects().size());
+     */
+
+    // Finish migration
+    translationService.finishMigration(janTranslation.getId(), adminAuthToken);
+
+    // cleanup
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(janTranslation.getId());
+    // translationService.removeTranslation(janTranslation.getId(), true,
+    // adminAuthToken);
+
+    // Adding but commenting out the verify & Remove Refset calls to align with
+    // commented out removeTranslation call
+    // verifyRefsetLookupCompleted(janRefset.getId());
+    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test migration003. Add concept 111269008 to the
+   * der2_Refset_SimpleSnapshot_INT_20140731.txt file. This member becomes
+   * inactive in 2015-07-31, so this migration tests that it is removed from the
+   * migrated translation.
+   *
+   * @throws Exception the exception
+   */
+  // @Test
+  public void testMigration003() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testMigration003");
+
+    Project project1 = projectService.getProject(51L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+    // Create translation (extensional) and import definition
+    Translation janTranslation =
+        makeTranslation("translation1", null, project1, admin);
+
+    // Begin migration
+    Translation julyStagedTranslation =
+        translationService.beginMigration(janTranslation.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+    assertEquals(
+        21,
+        translationService
+            .findTranslationConceptsForQuery(julyStagedTranslation.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+    String reportToken =
+        translationService.compareTranslations(janTranslation.getId(),
+            julyStagedTranslation.getId(), adminAuthToken);
+
+    ConceptDiffReport diffReport =
+        translationService.getDiffReport(reportToken, adminAuthToken);
+    assertEquals(1, diffReport.getOldNotNew().size());
+    assertEquals(1, diffReport.getNewNotOld().size());
+
+    ConceptList commonList =
+        translationService.findConceptsInCommon(reportToken, null, null,
+            adminAuthToken);
+    assertEquals(20, commonList.getObjects().size());
+
+    // Finish migration
+    translationService.finishMigration(janTranslation.getId(), adminAuthToken);
+    assertEquals(
+        20,
+        translationService
+            .findTranslationConceptsForQuery(janTranslation.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+    // cleanup
+    // Adding but commenting out the verify Translation calls to align with
+    // commented out removeTranslation call
+    // verifyTranslationLookupCompleted(janTranslation.getId());
+    // translationService.removeTranslation(janTranslation.getId(), true,
+    // adminAuthToken);
   }
 
   /**
@@ -349,11 +511,11 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -394,10 +556,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -435,10 +597,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
-    Project project1 = projectService.getProject(1L, adminAuthToken);
+    Project project1 = projectService.getProject(51L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -465,6 +627,42 @@ public class TranslationTest {
     translationService.removeTranslation(translation.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test Get Language Description Types (Per RestImpl, DEF not returned)
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetLanguageDescriptionTypes() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN GetLanguageDescriptionTypes");
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset(extensional)
+    Project project = projectService.getProject(52L, adminAuthToken);
+    Refset refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
+    TranslationJpa translation =
+        makeTranslation("translation99", refset, project, admin);
+
+    LanguageDescriptionTypeList types =
+        translationService.getLanguageDescriptionTypes(adminAuthToken);
+
+    // Verify that translation has the number of description types as returned
+    // during query
+    assertEquals(translation.getDescriptionTypes().size() - 1,
+        types.getTotalCount());
+    assertEquals(3, types.getTotalCount());
+
+    // clean up
+    verifyTranslationLookupCompleted(translation.getId());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**

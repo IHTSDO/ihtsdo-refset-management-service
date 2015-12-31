@@ -70,18 +70,18 @@ public interface UserPreferences {
   public void setLastTab(String lastTab);
 
   /**
-   * Sets the last accordion accessed.
+   * Returns the last refset accordion accessed.
    *
-   * @param lastAccordion the last accordion accessed
+   * @return the lastRefsetAccordion
    */
-  public void setLastAccordion(String lastAccordion);
+  public String getLastRefsetAccordion();
 
   /**
-   * Returns the last accordion accessed.
+   * Sets the last refset accordion accessed.
    *
-   * @return the lastAccordion
+   * @param lastRefsetAccordion the last refset accordion accessed
    */
-  public String getLastAccordion();
+  public void setLastRefsetAccordion(String lastRefsetAccordion);
 
   /**
    * Indicates whether or not spelling enabled is the case.
@@ -110,5 +110,61 @@ public interface UserPreferences {
    * @param memoryEnabled the memory enabled
    */
   public void setMemoryEnabled(boolean memoryEnabled);
+
+  /**
+   * Returns the last translation accordion accessed.
+   *
+   * @return the lastTranslationAccordion
+   */
+  public String getLastTranslationAccordion();
+
+  /**
+   * Sets the last translation accordion accessed.
+   *
+   * @param lastTranslationAccordion the last translation accordion accessed
+   */
+  public void setLastTranslationAccordion(String lastTranslationAccordion);
+
+  /**
+   * Returns the last directory accordion accessed.
+   *
+   * @return the lastDirectoryAccordion
+   */
+  public String getLastDirectoryAccordion();
+
+  /**
+   * Sets the last directory accordion accessed.
+   *
+   * @param lastDirectoryAccordion the last directory accordion accessed
+   */
+  public void setLastDirectoryAccordion(String lastDirectoryAccordion);
+
+  /**
+   * Returns the last project role accessed.
+   *
+   * @return the lastProjectRole
+   */
+  public UserRole getLastProjectRole();
+
+  /**
+   * Sets the last project role accessed.
+   *
+   * @param lastProjectRole the last project role accessed
+   */
+  public void setLastProjectRole(UserRole lastProjectRole);
+
+  /**
+   * Returns the last project ID accessed.
+   *
+   * @return the lastProjectId
+   */
+  public Long getLastProjectId();
+
+  /**
+   * Sets the last project accessed.
+   *
+   * @param lastProjectiD ID of the last project accessed
+   */
+  public void setLastProjectId(Long lastProjectId);
 
 }

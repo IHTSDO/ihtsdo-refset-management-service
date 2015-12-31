@@ -34,7 +34,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTENSIONAL)
     RefsetJpa newRefset =
-        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999");
+        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999", true);
 
     // Validate refset
     ValidationResult result =
@@ -196,7 +196,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTERNAL)
     RefsetJpa newRefset =
-        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998");
+        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998", true);
 
     // Validate refset
     ValidationResult result =

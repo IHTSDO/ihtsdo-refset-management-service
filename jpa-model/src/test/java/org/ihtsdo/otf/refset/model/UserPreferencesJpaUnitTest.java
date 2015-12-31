@@ -30,7 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link RelationshipJpa}.
+ * Unit testing for {@link UserPreferencesJpa}.
  */
 public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
 

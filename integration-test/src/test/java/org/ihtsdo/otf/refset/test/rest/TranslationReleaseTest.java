@@ -17,10 +17,10 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
-import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -330,7 +330,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  @Test
+//  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -553,6 +553,46 @@ public class TranslationReleaseTest {
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test Releasing a generated report token
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testReleaseReportToken() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testReleaseReportToken");
+
+    Project project = projectService.getProject(51L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset (extensional)
+    Refset refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, null,
+            admin);
+
+    // Create translation
+    TranslationJpa janTranslation =
+        makeTranslation("translation", refset, project, admin);
+
+    // Compare translations (thus creating Report Token)
+    String reportToken =
+        translationService.compareTranslations(janTranslation.getId(),
+            janTranslation.getId(), adminAuthToken);
+
+    // Release Report Token
+    translationService.releaseReportToken(reportToken, adminAuthToken);
+
+    // Attempt to re-release Report Token
+    translationService.releaseReportToken(reportToken, adminAuthToken);
+
+    // clean up
+    verifyTranslationLookupCompleted(janTranslation.getId());
+    translationService
+        .removeTranslation(janTranslation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**
