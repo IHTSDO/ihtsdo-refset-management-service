@@ -247,7 +247,7 @@ tsApp
               console.debug("phrase", phrase);
               // a phrase have at least 5 chars and no start/end words that are purely punctuation
               if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
-                && words[j-1].match(/.*[A-Za-z0-9].*/)) {
+                && words[j - 1].match(/.*[A-Za-z0-9].*/)) {
                 console.debug("  push");
                 phrases.push(phrase.toLowerCase());
               }
@@ -558,6 +558,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
     // update user preferences
     this.updateUserPreferences = function(userPreferences) {
       console.debug("updateUserPreferences");
+      // skip if user preferences is not set
+      if (!userPreferences) {
+        return;
+      }
       var deferred = $q.defer();
 
       gpService.increment()

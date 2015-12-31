@@ -7,7 +7,7 @@
     <h4>Refsets</h4>
 
     <uib-accordion> <uib-accordion-group is-open="accordionState['PUBLISHED']">
-    <uib-accordion-heading>
+    <uib-accordion-heading ng-click="setAccordion('PUBLISHED');">
     <h5 class="section-header" ng-click="setAccordion('PUBLISHED');">Published</h5>
     </uib-accordion-heading>
     <div refset-table value="PUBLISHED" projects="projects" metadata="metadata"></div>
