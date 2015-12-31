@@ -163,7 +163,7 @@ public interface UserPreferences {
   /**
    * Sets the last project accessed.
    *
-   * @param lastProjectiD ID of the last project accessed
+   * @param lastProjectId the last project id
    */
   public void setLastProjectId(Long lastProjectId);
 

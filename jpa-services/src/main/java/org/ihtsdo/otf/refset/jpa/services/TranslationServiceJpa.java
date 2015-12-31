@@ -132,7 +132,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Translation Service - get translation " + id);
     Translation translation = getHasLastModified(id, TranslationJpa.class);
-    handleLazyInit(translation);
+    if (translation != null) {
+      handleLazyInit(translation);
+    }
     return translation;
   }
 

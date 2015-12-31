@@ -35,6 +35,7 @@ tsApp
 
               // Variables
               $scope.user = securityService.getUser();
+              $scope.userProjectsInfo = projectService.getUserProjectsInfo();
               $scope.selected = {
                 concept : null,
                 translation : null,
@@ -406,11 +407,6 @@ tsApp
 
               // Remove a translation
               $scope.removeTranslation = function(translation) {
-                // Confirm action
-                if (!confirm("Are you sure you want to remove the translation (" + translation.name
-                  + ")?")) {
-                  return;
-                }
 
                 // warn about concepts
                 if (translation.concepts) {
@@ -452,11 +448,6 @@ tsApp
 
               // Unassign the specified concept
               $scope.unassign = function(concept) {
-                // Confirm action
-                if (!confirm("Are you sure you want to unassign this concept ("
-                  + concept.terminologyId + ")")) {
-                  return;
-                }
                 if (!concept) {
                   return;
                 }
@@ -473,10 +464,6 @@ tsApp
 
               // Unassign all concepts assigned to this user
               $scope.unassignAll = function() {
-                // Confirm action
-                if (!confirm("Are you sure you want to unassign all concepts?")) {
-                  return;
-                }
 
                 // load all concepts assigned to the user
                 var pfs = {
@@ -2187,9 +2174,7 @@ tsApp
                 };
 
                 $scope.cancel = function(translation) {
-                  if (!confirm("Are you sure you want to cancel the translation release?")) {
-                    return;
-                  }
+
                   $uibModalInstance.dismiss('cancel');
                   releaseService.cancelTranslationRelease(translation.id).then(
                   // Success
@@ -2212,6 +2197,84 @@ tsApp
 
                 $scope.format = 'yyyyMMdd';
               }
+
+              // Feedback modal
+              $scope.openFeedbackModal = function(ltranslation) {
+                console.debug("Open feedbackModal ", ltranslation);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/feedback.html',
+                  controller : FeedbackModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    translation : function() {
+                      return ltranslation;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.tinymceOptions;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                });
+
+              };
+
+              // Feedback controller
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, translation,
+                tinymceOptions) {
+                console.debug("Entered feedback modal control", translation);
+
+                $scope.errors = [];
+                $scope.translation = JSON.parse(JSON.stringify(translation));
+                $scope.tinymceOptions = tinymceOptions;
+
+                $scope.addFeedback = function(translation, name, email, message) {
+
+                  if (message == null || message == undefined || message === '') {
+                    window.alert("The message cannot be empty. ");
+                    return;
+                  }
+
+                  if (name == null || name == undefined || name === '' || email == null
+                    || email == undefined || email === '') {
+                    window.alert("Name and email must be provided.");
+                    return;
+                  }
+
+                  if (!validateEmail(email)) {
+                    window
+                      .alert("Invalid email address provided (e.g. should be like someone@example.com)");
+                    return;
+                  }
+
+                  workflowService.addFeedback(translation, name, email, message).then(
+                  // Success
+                  function(data) {
+                    $uibModalInstance.dismiss('cancel');
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                };
+
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+                // email validation via regex
+                function validateEmail(email) {
+                  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                  return re.test(email);
+                }
+
+              };
               // end
 
             } ]

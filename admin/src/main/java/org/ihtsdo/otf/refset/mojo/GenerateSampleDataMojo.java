@@ -994,6 +994,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     } else {
       refset.setDefinitionClauses(null);
     }
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -1116,6 +1117,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();

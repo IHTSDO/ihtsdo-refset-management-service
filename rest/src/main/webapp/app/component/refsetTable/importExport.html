@@ -89,14 +89,12 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="operation == 'Export'"
-    ng-click="export(); 
-    ">Export</button>
+    ng-click="export();">Export</button>
   <button class="btn btn-primary"
+    ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length == 0"
-    ng-click="import(file); 
-    ">Import</button>
+    ng-click="import(file);">Import</button>
   <button class="btn btn-primary" ng-show="operation == 'Import' && errors.length > 0"
-    ng-click="continueImport(file); 
-    ">Continue With Import</button>
+    ng-click="continueImport(file);">Continue With Import</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

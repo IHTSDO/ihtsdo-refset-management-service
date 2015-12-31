@@ -266,13 +266,13 @@ public interface WorkflowServiceRest {
   /**
    * Adds the feedback.
    *
-   * @param refsetId the refset id
+   * @param objectId the object id
    * @param name the name
    * @param email the email
    * @param message the message
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void addFeedback(Long refsetId, String name, String email,
+  public void addFeedback(Long objectId, String name, String email,
     String message, String authToken) throws Exception;
 }

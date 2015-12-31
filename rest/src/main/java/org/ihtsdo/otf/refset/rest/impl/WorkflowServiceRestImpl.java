@@ -32,12 +32,14 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
@@ -983,7 +985,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Consumes("text/plain")
   @ApiOperation(value = "Adds a feedback message.", notes = "Adds a feedback message.")
   public void addFeedback(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Object id, e.g. 3", required = true) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Name", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Email", required = true) @QueryParam("email") String email,
     @ApiParam(value = "message", required = true) String message,
@@ -996,22 +998,24 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     // Test preconditions
-    if (refsetId == null) {
+    if (objectId == null) {
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      final Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = translationService.getRefset(objectId);
+      final Translation translation =
+          translationService.getTranslation(objectId);
+
       // authorize call
       authorizeApp(securityService, authToken, "add feedback", UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: " + message + ", "
-              + refset.getFeedbackEmail());
+          "RESTful call (Workflow): /message msg: " + message);
 
-      workflowService.addFeedback(refset, name, email, message);
+      workflowService.addFeedback(refset, translation, name, email, message);
 
     } catch (Exception e) {
       handleException(e, "send a message email");

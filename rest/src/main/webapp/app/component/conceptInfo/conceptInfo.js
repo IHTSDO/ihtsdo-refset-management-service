@@ -388,10 +388,6 @@ tsApp.directive('conceptInfo', [
 
           // Remove refset inclusion
           $scope.removeRefsetInclusion = function(refset, member) {
-            if (!confirm("Are you sure you want to remove the inclusion (" + member.conceptName
-              + ")?")) {
-              return;
-            }
             refsetService.removeRefsetMember(member.id).then(
             // Success 
             function() {

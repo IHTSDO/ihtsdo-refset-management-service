@@ -297,11 +297,9 @@ tsApp
 
               // optimizes the definition
               $scope.optimizeDefinition = function(refset) {
-                if (confirm("The definition will be optimized, thereby eliminating superfluous definition clauses.")) {
-                  refsetService.optimizeDefinition(refset.id).then(function() {
-                    refsetService.fireRefsetChanged(refset);
-                  })
-                }
+                refsetService.optimizeDefinition(refset.id).then(function() {
+                  refsetService.fireRefsetChanged(refset);
+                })
               };
 
               // Convert date to a string
@@ -364,9 +362,6 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
-                if (!confirm("Are you sure you want to remove the refset (" + refset.name + ")?")) {
-                  return;
-                }
 
                 if (refset.members != null) {
                   if (!confirm("The refset has members that will also be deleted.")) {
@@ -382,10 +377,7 @@ tsApp
 
               // Remove refset member
               $scope.removeRefsetMember = function(refset, member) {
-                if (!confirm("Are you sure you want to remove the member (" + member.conceptName
-                  + ")?")) {
-                  return;
-                }
+
                 refsetService.removeRefsetMember(member.id).then(
                 // Success 
                 function() {
@@ -394,10 +386,7 @@ tsApp
               };
               // Remove refset inclusion
               $scope.removeRefsetInclusion = function(refset, member) {
-                if (!confirm("Are you sure you want to remove the inclusion (" + member.conceptName
-                  + ")?")) {
-                  return;
-                }
+
                 refsetService.removeRefsetMember(member.id).then(
                 // Success 
                 function() {
@@ -422,10 +411,8 @@ tsApp
 
               };
 
+              // Unassign refset from user
               $scope.unassign = function(refset, userName) {
-                if (!confirm("Are you sure you want to unassign the refset?")) {
-                  return;
-                }
                 $scope.performWorkflowAction(refset, "UNASSIGN", userName);
               }
 
@@ -438,11 +425,8 @@ tsApp
                 })
               };
 
+              // Removes all refset members
               $scope.removeAllRefsetMembers = function(refset) {
-                if (!confirm("Are you sure you want to remove all the members of the refset" + " ("
-                  + refset.name + ")?")) {
-                  return;
-                }
                 refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
                   refsetService.fireRefsetChanged($scope.project.id)
                   $scope.selectRefset(refset);
@@ -460,13 +444,6 @@ tsApp
                 $scope.refset = refset;
                 if (refset.stagingType == 'IMPORT') {
                   refsetService.cancelImportMembers($scope.refset.id).then(
-                  // Success
-                  function() {
-                    refsetService.fireRefsetChanged($scope.refset);
-                  });
-                }
-                if (refset.stagingType == 'DEFINITION') {
-                  refsetService.cancelRedefinition($scope.refset.id).then(
                   // Success
                   function() {
                     refsetService.fireRefsetChanged($scope.refset);
@@ -594,7 +571,7 @@ tsApp
                 $scope.submitClause = function(refset, clause) {
 
                   // Confirm clauses are unique, skip if not
-                  for (var i = 0; i< refset.definitionClauses.length; i++) {
+                  for (var i = 0; i < refset.definitionClauses.length; i++) {
                     if (refset.definitionClauses[i] == clause) {
                       return;
                     }
@@ -870,31 +847,7 @@ tsApp
                       // Success - clone refset
                       function(data) {
                         var newRefset = data;
-                        // If intensional, apply the definition
-                        if (newRefset.type == 'INTENSIONAL') {
-                          refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
-                          // Success - begin redefinition
-                          function(data) {
-
-                            refsetService.finishRedefinition(newRefset.id).then(
-                            // Success - finish redefinition
-                            function(data) {
-                              $uibModalInstance.close(newRefset);
-                            },
-                            // Error - finish redefinition
-                            function(data) {
-                              $scope.errors[0] = data;
-                              utilService.clearError();
-                            })
-                          },
-                          // Error - begin redefinition
-                          function(data) {
-                            $scope.errors[0] = data;
-                            utilService.clearError();
-                          })
-                        } else {
-                          $uibModalInstance.close(newRefset);
-                        }
+                        $uibModalInstance.close(newRefset);
                       },
                       // Error - clone refset
                       function(data) {
@@ -1062,18 +1015,11 @@ tsApp
 
               };
 
-              // Directive scoped method for cancelling an import/redefinition/migration
+              // Directive scoped method for cancelling an import/migration
               $scope.cancelAction = function(refset) {
                 $scope.refset = refset;
                 if (refset.stagingType == 'IMPORT') {
                   refsetService.cancelImportMembers($scope.refset.id).then(
-                  // Success
-                  function() {
-                    refsetService.fireRefsetChanged($scope.refset);
-                  });
-                }
-                if (refset.stagingType == 'DEFINITION') {
-                  refsetService.cancelRedefinition($scope.refset.id).then(
                   // Success
                   function() {
                     refsetService.fireRefsetChanged($scope.refset);
@@ -1218,10 +1164,9 @@ tsApp
                   });
                 };
 
+                // Cancel release process
                 $scope.cancel = function(refset) {
-                  if (!confirm("Are you sure you want to cancel the refset release?")) {
-                    return;
-                  }
+
                   $uibModalInstance.dismiss('cancel');
                   releaseService.cancelRefsetRelease(refset.id).then(
                   // Success
@@ -1234,6 +1179,7 @@ tsApp
                   });
                 };
 
+                // Close the window - to return later
                 $scope.close = function() {
                   $uibModalInstance.close(refset);
                 };
@@ -1476,31 +1422,7 @@ tsApp
                       // Success - add refset
                       function(data) {
                         var newRefset = data;
-                        // IF intensional, apply the definition
-                        if (newRefset.type == 'INTENSIONAL') {
-                          refsetService.beginRedefinition(newRefset.id, newRefset.definition).then(
-                          // Success - begin redefinition
-                          function(data) {
-
-                            refsetService.finishRedefinition(newRefset.id).then(
-                            // Success - finish redefinition
-                            function(data) {
-                              $uibModalInstance.close(newRefset);
-                            },
-                            // Error - finish redefinition
-                            function(data) {
-                              $scope.errors[0] = data;
-                              utilService.clearError();
-                            })
-                          },
-                          // Error - begin redefinition
-                          function(data) {
-                            $scope.errors[0] = data;
-                            utilService.clearError();
-                          })
-                        } else {
-                          $uibModalInstance.close(newRefset);
-                        }
+                        $uibModalInstance.close(newRefset);
                       },
                       // Error - add refset
                       function(data) {
@@ -1806,13 +1728,13 @@ tsApp
 
               };
 
-              // Migration modal - for redefinition or migration
+              // Migration modal
               $scope.openMigrationModal = function(lrefset, ltype) {
 
                 console.debug("openMigrationModal ", lrefset, ltype);
 
                 var modalInstance = $uibModal.open({
-                  templateUrl : 'app/component/refsetTable/refactor.html',
+                  templateUrl : 'app/component/refsetTable/migration.html',
                   controller : MigrationModalCtrl,
                   backdrop : 'static',
                   size : 'lg',
@@ -1859,30 +1781,7 @@ tsApp
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
 
-                // Initialize
-                if ($scope.refset.stagingType == 'DEFINITION') {
-                  refsetService.resumeRedefinition($scope.refset.id).then(
-                  // Success
-                  function(data) {
-                    $scope.stagedRefset = data;
-                    refsetService.compareRefsets($scope.refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                } else if ($scope.refset.stagingType == 'MIGRATION') {
+                if ($scope.refset.stagingType == 'MIGRATION') {
                   refsetService.resumeMigration($scope.refset.id).then(
                   // Success
                   function(data) {
@@ -1995,33 +1894,6 @@ tsApp
                   });
                 };
 
-                // Begin redefinition and compare refsets and get diff report
-                $scope.beginRedefinition = function(newDefinition) {
-
-                  refsetService.beginRedefinition(refset.id, newDefinition).then(
-                  // Success
-                  function(data) {
-                    $scope.stagedRefset = data;
-                    $scope.refset.stagingType = 'DEFINITION';
-                    refsetService.compareRefsets(refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
-                };
-
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
 
@@ -2049,21 +1921,10 @@ tsApp
                   });
                 };
 
-                // Finish redefinition or migration
+                // Finish migration
                 $scope.finish = function(refset) {
 
-                  if ($scope.type == 'Redefinition') {
-                    refsetService.finishRedefinition(refset.id).then(
-                    // Success
-                    function(data) {
-                      $uibModalInstance.close(refset);
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  } else if ($scope.type == 'Migration') {
+                  if ($scope.type == 'Migration') {
                     refsetService.finishMigration(refset.id).then(
                     // Success
                     function(data) {
@@ -2245,23 +2106,9 @@ tsApp
                   return member.memberType.replace('_STAGED', '');
                 }
 
-                // Cancel redefinition or migration
+                // Cancel migration
                 $scope.cancel = function(refset) {
-                  if (!confirm("Are you sure you want to cancel " + $scope.type + "?")) {
-                    return;
-                  }
-                  if ($scope.type == 'Redefinition') {
-                    refsetService.cancelRedefinition(refset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.stagedRefset = null;
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
-                  } else if ($scope.type == 'Migration') {
+                  if ($scope.type == 'Migration') {
                     refsetService.cancelMigration(refset.id).then(
                     // Success
                     function(data) {
@@ -2359,6 +2206,7 @@ tsApp
 
               };
 
+              // end
             } ]
         }
       } ]);

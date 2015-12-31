@@ -139,7 +139,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public Refset getRefset(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
     Refset refset = getHasLastModified(id, RefsetJpa.class);
-    handleLazyInit(refset);
+    if (refset != null) {
+      handleLazyInit(refset);
+    }
     return refset;
   }
 

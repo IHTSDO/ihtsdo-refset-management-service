@@ -73,7 +73,9 @@
                 ng-click="openEditProjectModal(project); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
 
-              <i ng-click="removeProject(project); $event.stopPropagation()"
+              <i
+                confirm="Are you sure you want to remove the project ({{project.name}})?"
+                ng-click="removeProject(project); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
 
             </td>
@@ -140,7 +142,9 @@
             <td class="nobreak">
               <i ng-click="openEditUserModal(user); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
-              <i ng-click="removeUser(user); $event.stopPropagation()"
+              <i
+                confirm="Are you sure you want to remove the user ({{user.userName}})?"
+                ng-click="removeUser(user); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
             </td>
           </tr>

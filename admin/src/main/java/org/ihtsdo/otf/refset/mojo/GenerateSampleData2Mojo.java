@@ -832,6 +832,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setInPublicationProcess(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     // This is an opportunity to use "branch"
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
@@ -933,6 +934,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
@@ -1018,6 +1020,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();

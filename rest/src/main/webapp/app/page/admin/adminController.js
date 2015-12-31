@@ -241,9 +241,7 @@ tsApp
 
         // Removes a project
         $scope.removeProject = function(project) {
-          if (!confirm("Are you sure you want to remove the project (" + project.name + ")?")) {
-            return;
-          }
+
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
             if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project ("
@@ -261,10 +259,7 @@ tsApp
         };
 
         // Removes a user
-        $scope.remove = function(user) {
-          if (!confirm("Are you sure you want to remove the user (" + user.userName + ")?")) {
-            return;
-          }
+        $scope.removeUser = function(user) {
           if (user.projectRoleMap && Object.keys(user.projectRoleMap).length > 0) {
             window.alert("You can not delete a user that is assigned to a project."
               + "Remove this user from all projects before deleting it.");
@@ -305,8 +300,6 @@ tsApp
         // Get paged available language description types not already assigned
         $scope.getPagedAvailableLdt = function() {
           var available = [];
-          console.debug("XXX", $scope.languageDescriptionTypes);
-          console.debug("YYY", $scope.user.userPreferences.languageDescriptionTypes);
           for (var i = 0; i < $scope.languageDescriptionTypes.length; i++) {
             var found = false;
             for (var j = 0; j < $scope.user.userPreferences.languageDescriptionTypes.length; j++) {
@@ -317,7 +310,6 @@ tsApp
               }
             }
             if (!found) {
-              console.debug("PUSH", $scope.languageDescriptionTypes[i]);
               available.push($scope.languageDescriptionTypes[i]);
             }
           }
