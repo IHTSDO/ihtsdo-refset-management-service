@@ -54,10 +54,12 @@ public class LanguageDescriptionTypeListUnitTest extends
     o2 = new LanguageDescriptionTypeJpa();
     o1.setId(1L);
     o1.setName("1");
+    o1.setLanguage("1");
     ProxyTester tester = new ProxyTester(new DescriptionTypeJpa());
     o1.setDescriptionType((DescriptionType) tester.createObject(1));
     o2.setId(2L);
     o2.setName("2");
+    o2.setLanguage("2");
     o2.setDescriptionType((DescriptionType) tester.createObject(2));
   }
 

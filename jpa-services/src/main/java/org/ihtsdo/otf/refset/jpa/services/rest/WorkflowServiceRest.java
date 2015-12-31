@@ -248,7 +248,7 @@ public interface WorkflowServiceRest {
    * @return the concept list
    * @throws Exception the exception
    */
-  public ConceptList findAllAssignedConcepts(Long projectId,
+  public TrackingRecordList findAllAssignedConcepts(Long projectId,
     Long translationId, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**

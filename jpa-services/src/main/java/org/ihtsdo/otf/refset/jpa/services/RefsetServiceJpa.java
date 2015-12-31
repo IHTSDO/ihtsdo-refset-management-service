@@ -797,9 +797,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // original refset
     refsetCopy.getTranslations().clear();
 
-    // TODO: copy notes? - yes for MIGRATION, not for PREVIEW
-
     addRefset(refsetCopy);
+
+    // copy notes - yes for MIGRATION, not for PREVIEW
+    if (stagingType == Refset.StagingType.MIGRATION) {
+      for (Note note : refset.getNotes()) {
+        RefsetNoteJpa noteCopy = new RefsetNoteJpa((RefsetNoteJpa) note);
+        noteCopy.setRefset(refsetCopy);
+        this.addNote(noteCopy);
+        refsetCopy.getNotes().add(noteCopy);
+      }
+    }
 
     // Copy members for EXTENSIONAL staging, or for PREVIEW staging
     if (refsetCopy.getType() == Refset.Type.EXTENSIONAL
@@ -811,8 +819,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       for (ConceptRefsetMember originMember : refset.getMembers()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
         member.setRefset(refsetCopy);
-        member.setTerminology(refsetCopy.getTerminology());
-        member.setVersion(refsetCopy.getVersion());
+        member.setTerminology("N/A");
+        member.setVersion("N/A");
         member.setId(null);
         addMember(member);
       }
@@ -919,6 +927,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public void lookupMemberNames(Long refsetId, String label, boolean background)
     throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - lookup member names - " + refsetId);
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
@@ -954,12 +964,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     } else {
       retval = 100;
     }
-    Logger.getLogger(getClass()).info(
-        "Release Service - getLookupProgress - " + refset);
-    Logger.getLogger(getClass()).info(
-        "Release Service - getLookupProgress - " + lookupProgressMap);
-    Logger.getLogger(getClass()).info(
-        "Release Service - getLookupProgress - " + retval);
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - getLookupProgress - " + retval);
 
     return retval;
   }
@@ -1139,8 +1145,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
-        member.setTerminologyId(concept.getTerminologyId());
-        member.setVersion(concept.getVersion());
+        member.setTerminologyId("N/A");
+        member.setVersion("N/A");
         member.setId(null);
         addMember(member);
       }

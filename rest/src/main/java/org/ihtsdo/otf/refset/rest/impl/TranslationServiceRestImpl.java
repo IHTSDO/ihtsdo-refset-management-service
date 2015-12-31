@@ -6,7 +6,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -114,6 +113,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /** The spelling correction handler map. */
   private static Map<Long, SpellingCorrectionHandler> spellingCorrectionHandlerMap =
+      new HashMap<>();
+
+  /** The phrase memory handler map. */
+  private static Map<Long, PhraseMemoryHandler> phraseMemoryHandlerMap =
       new HashMap<>();
 
   /**
@@ -1019,8 +1022,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
         // Fill in standard description fields for concept
         desc.setLanguageCode(translation.getLanguage());
-        // TODO: dss not null, correct?
-        desc.setEffectiveTime(new Date());
+        // New descriptions have null effective time.
+        desc.setEffectiveTime(null);
         desc.setActive(true);
         desc.setPublishable(true);
         desc.setPublished(false);
@@ -1037,14 +1040,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
             member.setActive(true);
-            // TODO: dss not null, correct?
-            member.setEffectiveTime(new Date());
+            // new language refset members have null effective time
+            member.setEffectiveTime(null);
             member.setModuleId(translation.getModuleId());
             member.setPublishable(true);
             member.setPublished(false);
             member.setRefsetId(translation.getTerminologyId());
-            member.setTerminology(translation.getTerminology());
-            member.setVersion(translation.getVersion());
+            member.setTerminology("N/A");
+            member.setVersion("N/A");
             member.setDescriptionId(desc.getTerminologyId());
             member.setLastModifiedBy(userName);
             translationService.addLanguageRefsetMember(member);
@@ -1613,13 +1616,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/phrasememory/remove")
   @ApiOperation(value = "Remove phrase memory entry", notes = "Removes the phrase memory entry for this translation")
   public void removePhraseMemoryEntry(
-    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "name, e.g. phrase", required = true) @QueryParam("name") String name,
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Name, e.g. phrase", required = true) @QueryParam("name") String name,
+    @ApiParam(value = "Translated name, e.g. phrase", required = true) @QueryParam("translatedName") String translatedName,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /phrasememory/remove/name "
-            + translationId + " " + name);
+            + translationId + ", " + name + ", " + translatedName);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -1631,7 +1635,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove entry from the phrase memory",
           UserRole.AUTHOR);
 
-      final String query = "name:" + name;
+      final String query =
+          "name:\"" + name + "\" AND translatedName:\"" + translatedName + "\"";
       final List<MemoryEntry> entries =
           translationService.findMemoryEntryForTranslation(translationId,
               query, null);
@@ -1678,8 +1683,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken,
           "Suggest translation based on name supplied", UserRole.VIEWER);
-      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
-      return handler.suggestPhraseMemory(name, translationId, translationService);
+      PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
+      return handler
+          .suggestTranslation(name, translationId, translationService);
     } catch (Exception e) {
       handleException(e, "trying to suggest a translation based on name");
     } finally {
@@ -1688,6 +1694,68 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
 
     return new StringList();
+  }
+
+  @POST
+  @Override
+  @Path("/phrasememory/suggest/batch")
+  @ApiOperation(value = "Get batch translation sugestions", notes = "Returns map containing a list (values) of suggested replacements from phrase memory per phrase", response = KeyValuesMap.class)
+  public KeyValuesMap suggestBatchTranslation(
+    @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList phrases,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger
+        .getLogger(getClass())
+        .info(
+            "RESTful call POST (Batch Translation Suggestions): /phrasememory/suggest/batch/"
+                + translationId);
+
+    TranslationService translationService = new TranslationServiceJpa();
+
+    try {
+      // Load translation
+      Translation translation =
+          translationService.getTranslation(translationId);
+
+      if (translation == null) {
+        throw new Exception("Invalid translation id " + translationId);
+      }
+
+      PhraseMemory memory = translation.getPhraseMemory();
+      if (memory == null) {
+        throw new Exception(
+            "translation must have an associated phrase memory.");
+      }
+
+      // Authorize call
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken,
+          "Suggest batch spellings based on term supplied", UserRole.VIEWER);
+
+      // Bail on null
+      if (phrases == null || phrases.getObjects() == null
+          || phrases.getObjects().isEmpty()) {
+        return new KeyValuesMap();
+      }
+
+      PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
+      final KeyValuesMap map = new KeyValuesMap();
+      for (String phrase : phrases.getObjects()) {
+        for (String translatedPhrase : handler.suggestTranslation(phrase,
+            translationId, translationService).getObjects()) {
+          map.add(phrase, translatedPhrase);
+        }
+      }
+      return map;
+    } catch (Exception e) {
+      handleException(e, "trying to suggest batch spellings based on entries");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+    return new KeyValuesMap();
   }
 
   /* see superclass */
@@ -1876,7 +1944,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + translation.getPhraseMemory().getId());
       }
       // Load PhraseMemory
-      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
+      PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
       final List<MemoryEntry> memories = handler.getEntriesAsList(in);
       final PhraseMemory phraseMemory = translation.getPhraseMemory();
       for (final MemoryEntry memoryEntry : memories) {
@@ -1923,8 +1991,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("The translation phrase memory entries is null"
             + translation.getPhraseMemory().getId());
       }
-      PhraseMemoryHandler handler = translationService.getPhraseMemoryHandler(ConfigUtility.DEFAULT);
-      return handler.getEntriesAsStream(translation.getPhraseMemory().getEntries());
+      PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);
+      return handler.getEntriesAsStream(translation.getPhraseMemory()
+          .getEntries());
     } catch (Exception e) {
       handleException(e, "trying to export translation phrase memory");
     } finally {
@@ -2035,284 +2104,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     }
 
     return new KeyValuesMap();
-  }
-
-  @GET
-  @Override
-  @Path("/migration/begin")
-  @ApiOperation(value = "Begin translation migration", notes = "Begins the migration process by validating the translation for migration and marking the translation as staged.", response = TranslationJpa.class)
-  public Translation beginMigration(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
-    @ApiParam(value = "New version, e.g. 20150131", required = true) @QueryParam("newVersion") String newVersion,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /migration/begin " + translationId
-            + ", " + newTerminology + ", " + newVersion);
-
-    final TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      final Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "begin translation migration",
-          UserRole.AUTHOR);
-
-      // Check staging flag
-      if (translation.isStaged()) {
-        throw new LocalException(
-            "Begin migration is not allowed while the translation is already staged.");
-
-      }
-
-      // turn transaction per operation off
-      // create a transaction
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-      final Translation translationCopy =
-          translationService.stageTranslation(translation,
-              Translation.StagingType.MIGRATION, new Date());
-      translationCopy.setTerminology(newTerminology);
-      translationCopy.setVersion(newVersion);
-
-      // TODO Is this correct?
-      // How will the potential new concepts that could be translated be
-      // identified to the user?
-      final Set<Concept> conceptsToRemove = new HashSet<>();
-      for (final Concept concept : translationCopy.getConcepts()) {
-        if (!translationService
-            .getTerminologyHandler()
-            .getConcept(concept.getTerminologyId(),
-                translationCopy.getTerminology(), translationCopy.getVersion())
-            .isActive()) {
-          // concept.setConceptType(Translation.ConceptType.INACTIVE_MEMBER);
-          conceptsToRemove.add(concept);
-        }
-      }
-      for (final Concept cpt : conceptsToRemove) {
-        translationCopy.getConcepts().remove(cpt);
-      }
-
-      translationService.updateTranslation(translationCopy);
-      translationService.commit();
-      return translationCopy;
-
-    } catch (Exception e) {
-      handleException(e, "trying to begin migration of translation");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  @GET
-  @Override
-  @Path("/migration/finish")
-  @ApiOperation(value = "Finish translation migration", notes = "Finishes the migration process.", response = TranslationJpa.class)
-  public Translation finishMigration(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /migration/finish " + translationId);
-
-    final TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      final Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "finish translation migration", UserRole.AUTHOR);
-
-      // verify that staged
-      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
-        throw new Exception(
-            "Translation is not staged for migration, cannot finish.");
-      }
-
-      // turn transaction per operation off
-      // create a transaction
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-
-      // get the staged change tracking object
-      final StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
-
-      // Get origin and staged concepts
-      final Translation stagedTranslation = change.getStagedTranslation();
-      final Translation originTranslation = change.getOriginTranslation();
-      final Set<Concept> originConcepts =
-          new HashSet<>(originTranslation.getConcepts());
-      final Set<Concept> stagedConcepts =
-          new HashSet<>(stagedTranslation.getConcepts());
-
-      // Remove origin-not-staged concepts
-      for (final Concept originConcept : originConcepts) {
-        if (!stagedConcepts.contains(originConcept)) {
-          translationService.removeConcept(originConcept.getId(), true);
-        }
-      }
-
-      // rewire staged-not-origin concepts (remove inactive entries)
-      // TODO: reconsider whether to keep or remove inactive concepts
-      // if keeping, convert them back to "MEMBER" or "INCLUSION"
-      for (final Concept stagedConcept : stagedConcepts) {
-
-        // New member, rewire to origin
-        if (!originConcepts.contains(stagedConcept)) {
-          stagedConcept.setTranslation(translation);
-          translationService.updateConcept(stagedConcept);
-        }
-        // Concept matches one in origin - remove it
-        else {
-          translationService.removeConcept(stagedConcept.getId(), true);
-        }
-      }
-      stagedTranslation.setConcepts(new ArrayList<Concept>());
-
-      // Remove the staged translation change and set staging type back to null
-      translation.setStagingType(null);
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-
-      // Remove the staged translation change
-      translationService.removeStagedTranslationChange(change.getId());
-
-      // remove the translation
-      translationService.removeTranslation(stagedTranslation.getId(), false);
-
-      translationService.commit();
-
-      return translation;
-
-    } catch (Exception e) {
-      handleException(e, "trying to finish translation migration");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  @GET
-  @Override
-  @Path("/migration/cancel")
-  @ApiOperation(value = "Cancel translation migration", notes = "Cancels the migration process by removing the marking as staged.")
-  public void cancelMigration(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /migration/cancel " + translationId);
-
-    final TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      final Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      final String userName =
-          authorizeProject(translationService,
-              translation.getProject().getId(), securityService, authToken,
-              "cancel translation migration", UserRole.AUTHOR);
-
-      // Translation must be staged as MIGRATION
-      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
-        throw new LocalException("Translation is not staged for migration.");
-      }
-
-      // turn transaction per operation off
-      translationService.setTransactionPerOperation(false);
-      translationService.beginTransaction();
-
-      // Remove the staged translation change and set staging type back to null
-      final StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
-      translationService.removeStagedTranslationChange(change.getId());
-
-      translationService.removeTranslation(change.getStagedTranslation()
-          .getId(), true);
-      translation.setStagingType(null);
-      translation.setStaged(false);
-      translation.setProvisional(false);
-      translation.setLastModifiedBy(userName);
-      translationService.updateTranslation(translation);
-
-      translationService.commit();
-
-    } catch (Exception e) {
-      handleException(e, "trying to cancel migration of translation");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
-  }
-
-  @GET
-  @Override
-  @Path("/migration/resume")
-  @ApiOperation(value = "Resume translation migration", notes = "Resumes the migration process by re-validating the translation.", response = TranslationJpa.class)
-  public Translation resumeMigration(
-    @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /migration/resume " + translationId);
-
-    final TranslationService translationService = new TranslationServiceJpa();
-    try {
-      // Load translation
-      final Translation translation =
-          translationService.getTranslation(translationId);
-      if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
-      }
-
-      // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "resume translation migration",
-          UserRole.AUTHOR);
-
-      // Check staging flag
-      if (translation.getStagingType() != Translation.StagingType.MIGRATION) {
-        throw new LocalException("Translation is not staged for migration.");
-
-      }
-
-      // recovering the previously saved state of the staged translation
-      return translationService.getStagedTranslationChange(translationId)
-          .getStagedTranslation();
-
-    } catch (Exception e) {
-      handleException(e, "trying to resume translation migration");
-    } finally {
-      translationService.close();
-      securityService.close();
-    }
-    return null;
   }
 
   @Override
@@ -2786,7 +2577,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final TranslationList list =
           translationService.findTranslationsForQuery("", null);
       // Go thru translations
+      Set<String> terminologies = new HashSet<>();
       for (Translation translation : list.getObjects()) {
+        terminologies.add(translation.getTerminology());
         // Go through description types (remove DEF)
         for (DescriptionType descriptionType : translation
             .getDescriptionTypes()) {
@@ -2795,11 +2588,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           }
           final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
           type.setDescriptionType(descriptionType);
+          // Null the id so that all objects can be cleanly passed back in for
+          // add
+          type.getDescriptionType().setId(null);
           type.setName(translation.getName());
           type.setRefsetId(translation.getRefset().getTerminologyId());
+          type.setLanguage(translation.getLanguage());
+
           types.add(type);
         }
       }
+
+      // Add standard ones too
+      for (String terminology : terminologies) {
+        types.addAll(translationService.getTerminologyHandler()
+            .getStandardLanguageDescriptionTypes(terminology));
+      }
+
       LanguageDescriptionTypeList result = new LanguageDescriptionTypeListJpa();
       result.setTotalCount(types.size());
       result.setObjects(types);
@@ -2841,4 +2646,30 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     return spellingCorrectionHandlerMap.get(translation.getId());
   }
 
+  /**
+   * Returns the phrase memory handler.
+   *
+   * @param translation the translation
+   * @return the phrase memory handler
+   * @throws Exception the exception
+   */
+  private static PhraseMemoryHandler getPhraseMemoryHandler(
+    Translation translation) throws Exception {
+    if (!phraseMemoryHandlerMap.containsKey(translation.getId())) {
+
+      String key = "phrasememory.handler";
+      if (!ConfigUtility.getConfigProperties().containsKey(
+          "phrasememory.handler")) {
+        throw new Exception(
+            "Unable to find phrasememory.handler configuration, serious error.");
+      }
+      String handlerName = ConfigUtility.getConfigProperties().getProperty(key);
+      // Add handlers to map
+      PhraseMemoryHandler handler =
+          ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
+              handlerName, PhraseMemoryHandler.class);
+      phraseMemoryHandlerMap.put(translation.getId(), handler);
+    }
+    return phraseMemoryHandlerMap.get(translation.getId());
+  }
 }

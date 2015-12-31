@@ -20,7 +20,6 @@ import java.util.Properties;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.ConceptDiffReport;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Project;
@@ -29,14 +28,12 @@ import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
-import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
@@ -160,167 +157,6 @@ public class TranslationTest {
     adminAuthToken =
         securityService.authenticate(adminUser, adminPassword).getAuthToken();
 
-  }
-
-  /**
-   * Test migration including begin, cancel, resume and finish.
-   *
-   * @throws Exception the exception
-   */
-  // @Test
-  public void testMigration001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
-
-    Project project1 = projectService.getProject(1L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional)
-    Refset janRefset =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
-            admin);
-
-    // Create translation
-    TranslationJpa translation1 =
-        makeTranslation("translation99", janRefset, project1, admin);
-    // Begin migration
-    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
-        "2015-01-31 ", adminAuthToken);
-    // Cancel migration
-    translationService.cancelMigration(translation1.getId(), adminAuthToken);
-    // Begin migration
-    translationService.beginMigration(translation1.getId(), "SNOMEDCT",
-        "2015-01-31", adminAuthToken);
-    // Resume migration
-    translationService.resumeMigration(translation1.getId(), adminAuthToken);
-    // Finish migration
-    translationService.finishMigration(translation1.getId(), adminAuthToken);
-
-    // clean up
-    // Adding but commenting out the verify Translation calls to align with
-    // commented out removeTranslation call
-    // verifyTranslationLookupCompleted(translation1.getId());
-    // translationService.removeTranslation(translation1.getId(), true,
-    // adminAuthToken);
-
-    // Adding but commenting out the verify & Remove Refset calls to align with
-    // commented out removeTranslation call
-    // verifyRefsetLookupCompleted(janRefset.getId());
-    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
-  }
-
-  /**
-   * Test migration002.
-   *
-   * @throws Exception the exception
-   */
-  @Test
-  public void testMigration002() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration002");
-
-    Project project1 = projectService.getProject(1L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create refset (extensional)
-    Refset janRefset =
-        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
-            admin);
-
-    // Create translation
-    TranslationJpa janTranslation =
-        makeTranslation("translation99", janRefset, project1, admin);
-
-    // Begin migration
-    Translation julyStagedTranslation =
-        translationService.beginMigration(janTranslation.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
-
-    String reportToken =
-        translationService.compareTranslations(janTranslation.getId(),
-            julyStagedTranslation.getId(), adminAuthToken);
-
-    ConceptDiffReport diffReport =
-        translationService.getDiffReport(reportToken, adminAuthToken);
-    assertEquals(0, diffReport.getOldNotNew().size());
-    assertEquals(0, diffReport.getNewNotOld().size());
-
-    // TODO: put this back in - throws lazy initialization exception about
-    // concept.descriptions
-    /*
-     * ConceptList commonList =
-     * translationService.findConceptsInCommon(reportToken, null, null,
-     * adminAuthToken); //assertEquals(5, commonList.getObjects().size());
-     */
-
-    // Finish migration
-    translationService.finishMigration(janTranslation.getId(), adminAuthToken);
-
-    // cleanup
-    // Adding but commenting out the verify Translation calls to align with
-    // commented out removeTranslation call
-    // verifyTranslationLookupCompleted(janTranslation.getId());
-    // translationService.removeTranslation(janTranslation.getId(), true,
-    // adminAuthToken);
-
-    // Adding but commenting out the verify & Remove Refset calls to align with
-    // commented out removeTranslation call
-    // verifyRefsetLookupCompleted(janRefset.getId());
-    // refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
-  }
-
-  /**
-   * Test migration003. Add concept 111269008 to the
-   * der2_Refset_SimpleSnapshot_INT_20140731.txt file. This member becomes
-   * inactive in 2015-07-31, so this migration tests that it is removed from the
-   * migrated translation.
-   *
-   * @throws Exception the exception
-   */
-  // @Test
-  public void testMigration003() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration003");
-
-    Project project1 = projectService.getProject(1L, adminAuthToken);
-    User admin = securityService.authenticate(adminUser, adminPassword);
-    // Create translation (extensional) and import definition
-    Translation janTranslation =
-        makeTranslation("translation1", null, project1, admin);
-
-    // Begin migration
-    Translation julyStagedTranslation =
-        translationService.beginMigration(janTranslation.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
-    assertEquals(
-        21,
-        translationService
-            .findTranslationConceptsForQuery(julyStagedTranslation.getId(), "",
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
-
-    String reportToken =
-        translationService.compareTranslations(janTranslation.getId(),
-            julyStagedTranslation.getId(), adminAuthToken);
-
-    ConceptDiffReport diffReport =
-        translationService.getDiffReport(reportToken, adminAuthToken);
-    assertEquals(1, diffReport.getOldNotNew().size());
-    assertEquals(1, diffReport.getNewNotOld().size());
-
-    ConceptList commonList =
-        translationService.findConceptsInCommon(reportToken, null, null,
-            adminAuthToken);
-    assertEquals(20, commonList.getObjects().size());
-
-    // Finish migration
-    translationService.finishMigration(janTranslation.getId(), adminAuthToken);
-    assertEquals(
-        20,
-        translationService
-            .findTranslationConceptsForQuery(janTranslation.getId(), "",
-                new PfsParameterJpa(), adminAuthToken).getObjects().size());
-
-    // cleanup
-    // Adding but commenting out the verify Translation calls to align with
-    // commented out removeTranslation call
-    // verifyTranslationLookupCompleted(janTranslation.getId());
-    // translationService.removeTranslation(janTranslation.getId(), true,
-    // adminAuthToken);
   }
 
   /**
@@ -540,7 +376,8 @@ public class TranslationTest {
     assertEquals(2, entries.size());
 
     // clean up
-    // Adding but commenting out the verify & Remove Translation calls to align with
+    // Adding but commenting out the verify & Remove Translation calls to align
+    // with
     // commented out removeTranslation call located in other tests
     // verifyTranslationLookupCompleted(translation.getId());
     // translationService.removeTranslation(translation.getId(), true,
@@ -579,13 +416,13 @@ public class TranslationTest {
     translationService.addPhraseMemoryEntry(translation.getId(), "test1",
         "translated test2", adminAuthToken);
     translationService.removePhraseMemoryEntry(translation.getId(), "test1",
-        adminAuthToken);
+        "translated test2", adminAuthToken);
     InputStream inputStream =
         translationService.exportPhraseMemory(translation.getId(),
             adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
     assertEquals(1, entries.size());
-    
+
     // cleanup
     verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), adminAuthToken);
@@ -698,7 +535,6 @@ public class TranslationTest {
     }
   }
 
-
   /**
    * Ensure translation completed prior to shutting down test to avoid
    * lookupName issues.
@@ -717,7 +553,6 @@ public class TranslationTest {
         // Assume process has completed
         completed = true;
 
-        // System.out.println("Translation: " + translationId);
         Translation t =
             translationService.getTranslation(translationId, adminAuthToken);
         if (t.isLookupInProgress()) {

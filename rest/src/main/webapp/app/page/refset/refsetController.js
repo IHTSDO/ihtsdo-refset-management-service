@@ -159,7 +159,10 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        $scope.user.userPreferences.lastTab = '/refset';
+        // handle case where there is no user
+        if ($scope.user.userPreferences) {
+          $scope.user.userPreferences.lastTab = '/refset';
+        }
         securityService.updateUserPreferences($scope.user.userPreferences);
       }
 

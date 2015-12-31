@@ -315,12 +315,6 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
       return false;
     if (conceptActive != other.conceptActive)
       return false;
-    // removed this to get member diff report to work with
-    // IN/EXCLUSION_STAGED
-    /*
-     * if (memberType == null) { if (other.memberType != null) return false; }
-     * else if (memberType != other.memberType) return false;
-     */
     if (refset == null) {
       if (other.refset != null)
         return false;

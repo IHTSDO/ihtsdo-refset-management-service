@@ -60,7 +60,6 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
-import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -76,10 +75,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /** The export translation handlers. */
   private static Map<String, ExportTranslationHandler> exportTranslationHandlers =
-      new HashMap<>();
-
-  /** The phrase memory handlers. */
-  private static Map<String, PhraseMemoryHandler> phraseMemoryHandlers =
       new HashMap<>();
 
   static {
@@ -106,21 +101,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
                 handlerName, ExportTranslationHandler.class);
         exportTranslationHandlers.put(handlerName, handlerService);
       }
-      key = "phrasememory.handler";
-      for (String handlerName : config.getProperty(key).split(",")) {
-        if (handlerName.isEmpty())
-          continue;
-        // Add handlers to map
-        PhraseMemoryHandler handlerService =
-            ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
-                handlerName, PhraseMemoryHandler.class);
-        phraseMemoryHandlers.put(handlerName, handlerService);
-      }
+
     } catch (Exception e) {
       e.printStackTrace();
       importTranslationHandlers = null;
       exportTranslationHandlers = null;
-      phraseMemoryHandlers = null;
     }
   }
 
@@ -182,17 +167,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // These will get added by CASCADE
     if (translation.getDescriptionTypes().size() == 0) {
       for (DescriptionType d : getTerminologyHandler()
-          .getStandardDescriptionTypes(translation.getTerminology(),
-              translation.getVersion())) {
-        d.setLastModifiedBy(translation.getLastModifiedBy());
+          .getStandardDescriptionTypes(translation.getTerminology())) {
         translation.getDescriptionTypes().add(d);
       }
     }
 
     // Case sensitive types - start with standard ones
     translation.setCaseSensitiveTypes(getTerminologyHandler()
-        .getStandardCaseSensitivityTypes(translation.getTerminology(),
-            translation.getVersion()));
+        .getStandardCaseSensitivityTypes(translation.getTerminology()));
 
     // Add component
     Translation newTranslation = addHasLastModified(translation);
@@ -297,8 +279,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "Translation Service - find translations " + query);
-    int origStartIndex = pfs.getStartIndex();
-    if (pfs.getLatestOnly()) {
+    int origStartIndex = pfs == null ? -1 : pfs.getStartIndex();
+    if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
     // this will do filtering and sorting, but not paging
@@ -311,7 +293,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     TranslationList result = new TranslationListJpa();
 
-    if (pfs.getLatestOnly()) {
+    if (pfs != null && pfs.getLatestOnly()) {
       List<Translation> resultList = new ArrayList<>();
 
       Map<String, Translation> latestList = new HashMap<>();
@@ -476,16 +458,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       return exportTranslationHandlers.get(key);
     }
     return exportTranslationHandlers.get(ConfigUtility.DEFAULT);
-  }
-
-  /* see superclass */
-  @Override
-  public PhraseMemoryHandler getPhraseMemoryHandler(String key)
-    throws Exception {
-    if (phraseMemoryHandlers.containsKey(key)) {
-      return phraseMemoryHandlers.get(key);
-    }
-    return phraseMemoryHandlers.get(ConfigUtility.DEFAULT);
   }
 
   /* see superclass */
@@ -1004,6 +976,17 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     addTranslation(translationCopy);
 
+    // copy notes - yes for MIGRATION, not for PREVIEW
+    if (stagingType == Translation.StagingType.MIGRATION) {
+      for (Note note : translation.getNotes()) {
+        TranslationNoteJpa noteCopy =
+            new TranslationNoteJpa((TranslationNoteJpa) note);
+        noteCopy.setTranslation(translationCopy);
+        this.addNote(noteCopy);
+        translationCopy.getNotes().add(noteCopy);
+      }
+    }
+
     // without doing the copy constructor, we get the following errors:
     // identifier of an instance of
     // org.ihtsdo.otf.translation.rf2.jpa.ConceptTranslationMemberJpa was
@@ -1021,8 +1004,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       // member.setLastModifiedBy(userName);
       // member.setPublishable(true);
       concept.setTranslation(translationCopy);
-      concept.setTerminology(translationCopy.getTerminology());
-      concept.setVersion(translationCopy.getVersion());
+      concept.setTerminology("N/A");
+      concept.setVersion("N/A");
       concept.setId(null);
       translationCopy.getConcepts().add(concept);
       addConcept(concept);
@@ -1037,7 +1020,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       // addDescriptionType(type);
     }
 
-    // TODO: need other data structures with DescripionType - see addTranslation
+    // TODO: need to copy notes
 
     // set staging parameters on the original translation
     translation.setStaged(true);
@@ -1140,6 +1123,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void lookupConceptNames(Long translationId, String label,
     boolean background) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - lookup concept names - " + translationId);
+
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
       if (!lookupProgressMap.containsKey(translationId)) {
@@ -1282,11 +1268,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public String computePreferredName(Concept concept,
     List<LanguageDescriptionType> pref) throws Exception {
-    // Iterate through concept descriptions and attempt to match to pref.
-    // Once found, return the corresponding description name.
-    for (Description desc : concept.getDescriptions()) {
-      // Iterate through preference types (in order)
-      for (LanguageDescriptionType type : pref) {
+    // Iterate through preference types (in order)
+    for (LanguageDescriptionType type : pref) {
+
+      // Check if any of the descriptions match this type
+      for (Description desc : concept.getDescriptions()) {
         // IF found matching type, look for matching lang refset and
         // acceptability id
         if (desc.getTypeId().equals(type.getDescriptionType().getTypeId())) {
@@ -1308,12 +1294,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
     Translation translation, UserPreferences prefs) throws Exception {
-
+    Logger.getLogger(getClass()).debug("resolveLanguageDescriptionTypes");
     // Get standard language desc types
     final List<LanguageDescriptionType> standardTypes =
         getTerminologyHandler().getStandardLanguageDescriptionTypes(
-            translation.getRefset().getTerminology(),
-            translation.getRefset().getVersion());
+            translation.getRefset().getTerminology());
 
     // Get translation-specific desc types
     final List<LanguageDescriptionType> translationTypes = new ArrayList<>();
@@ -1324,6 +1309,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         type.setRefsetId(translation.getTerminologyId());
         type.setName(translation.getName());
         type.setDescriptionType(descriptionType);
+        type.setLanguage(translation.getLanguage());
         translationTypes.add(type);
       }
     }
@@ -1351,9 +1337,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       result.addAll(prefs.getLanguageDescriptionTypes());
     }
 
-    // Add in the standard types at the end
+    // Add in the standard types at the end - this may produce duplicates, but
+    // it's ok. this is a fail safe
     result.addAll(standardTypes);
 
+    StringBuilder resultSb = new StringBuilder();
+    for (LanguageDescriptionType type : result) {
+      resultSb.append(
+          type.getRefsetId() + " " + type.getDescriptionType().getName())
+          .append(", ");
+    }
     return result;
 
   }

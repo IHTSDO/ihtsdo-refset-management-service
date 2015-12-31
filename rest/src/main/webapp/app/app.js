@@ -18,9 +18,9 @@ var workflowUrl = "workflow/";
 var validationUrl = "validate/";
 
 // Initialization of tsApp
-tsApp.run(function($rootScope, $http, $window) {
+tsApp.run(['$rootScope','$http','$window', function($rootScope, $http, $window) {
   // n/a
-});
+}]);
 
 // Route provider configuration
 tsApp.config([ '$routeProvider', '$locationProvider', '$logProvider',

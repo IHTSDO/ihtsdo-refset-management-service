@@ -71,10 +71,8 @@ public class HelperUnit011Test {
     assertTrue(map1.toString().equals(map3.toString()));
 
     // Test serialization
-    System.out.println(ConfigUtility.getStringForGraph(map1));
     assertEquals(map1, ConfigUtility.getGraphForString(
         ConfigUtility.getStringForGraph(map1), KeyValuesMap.class));
-    System.out.println(ConfigUtility.getJsonForGraph(map1));
     assertEquals(map1, ConfigUtility.getGraphForJson(
         ConfigUtility.getJsonForGraph(map1), KeyValuesMap.class));
 

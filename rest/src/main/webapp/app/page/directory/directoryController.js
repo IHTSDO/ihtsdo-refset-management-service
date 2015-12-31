@@ -104,8 +104,10 @@ tsApp.controller('DirectoryCtrl', [
     $scope.getProjects();
     $scope.getTerminologyEditions();
     $scope.getWorkflowPaths();
-    $scope.user.userPreferences.lastTab = '/directory';
-    securityService.updateUserPreferences($scope.user.userPreferences);
-
+    // Handle users without user preferences
+    if ($scope.user.userPreferences) {
+      $scope.user.userPreferences.lastTab = '/directory';
+      securityService.updateUserPreferences($scope.user.userPreferences);
+    }
     // end
   } ]);

@@ -12,22 +12,12 @@ tsApp
         };
 
         // tinymce options
-        var tinymceOptions = {
+        this.tinymceOptions = {
           menubar : false,
           statusbar : false,
           plugins : "autolink autoresize link image charmap searchreplace lists paste",
           toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
           forced_root_block : ''
-        }
-
-        // Get tinymce options
-        this.getTinymceOptions = function() {
-          return tinymceOptions;
-        }
-
-        // Get tinymce options
-        this.getTinymceOptions = function() {
-          return tinymceOptions;
         }
 
         // Sets the error
@@ -244,6 +234,26 @@ tsApp
         this.getWords = function(str) {
           // Same as in tinymce options
           return str.match(/[^\s,\.]+/g);
+        }
+
+        // Single and multiple-word ordered phrases
+        this.getPhrases = function(str) {
+          var words = str.match(/[^\s,\.]+/g);
+          var phrases = [];
+          console.debug("WORDS", words);
+          for (var i = 0; i < words.length; i++) {
+            for (var j = i + 1; j <= words.length; j++) {
+              var phrase = words.slice(i, j).join(' ');
+              console.debug("phrase", phrase);
+              // a phrase have at least 5 chars and no start/end words that are purely punctuation
+              if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
+                && words[j-1].match(/.*[A-Za-z0-9].*/)) {
+                console.debug("  push");
+                phrases.push(phrase.toLowerCase());
+              }
+            }
+          }
+          return phrases;
         }
 
       } ]);

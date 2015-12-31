@@ -573,8 +573,8 @@ public class TranslationReleaseTest {
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
-    member.setTerminology(refset.getTerminology());
-    member.setVersion(refset.getVersion());
+    member.setTerminology("N/A");
+    member.setVersion("N/A");
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;
@@ -608,7 +608,6 @@ public class TranslationReleaseTest {
     }
   }
 
-
   /**
    * Ensure translation completed prior to shutting down test to avoid
    * lookupName issues.
@@ -627,7 +626,6 @@ public class TranslationReleaseTest {
         // Assume process has completed
         completed = true;
 
-        // System.out.println("Translation: " + translationId);
         Translation t =
             translationService.getTranslation(translationId, adminAuthToken);
         if (t.isLookupInProgress()) {

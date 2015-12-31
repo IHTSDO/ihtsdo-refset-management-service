@@ -66,7 +66,7 @@ tsApp.service('projectService', [
     this.getIcon = function(key) {
       return iconConfig[key];
     }
-
+    
     // get all projects
     this.getProjects = function() {
       var deferred = $q.defer();

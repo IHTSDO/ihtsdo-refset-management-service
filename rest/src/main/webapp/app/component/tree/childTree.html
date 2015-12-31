@@ -54,8 +54,7 @@
     title="Remove inclusion" class="noul material-icons md-12">delete</i>
 
   <!-- if not the component viewed, render with hyperlink -->
-  <span ng-show="tree.terminologyId != concept.terminologyId"
-    style="font-size: 12px">
+  <span ng-show="tree.terminologyId != concept.terminologyId">
     <a ng-click="getConceptById(tree.terminologyId)"> {{tree.terminologyId}}</a>
     :
     <span ng-show="memberTypes[tree.terminologyId].memberType == 'MEMBER'"
@@ -64,7 +63,8 @@
       style="color: red;">{{tree.name}}</span>
     <span ng-show="memberTypes[tree.terminologyId].memberType == 'INCLUSION'"
       style="color: green;">{{tree.name}}</span>
-    <span ng-show="!disableMemberTypes && !memberTypes[tree.terminologyId].memberType"
+    <span
+      ng-show="!disableMemberTypes && !memberTypes[tree.terminologyId].memberType"
       style="color: black;">{{tree.name}}</span>
     <span ng-show="disableMemberTypes" style="color: black;">{{tree.name}}</span>
   </span>

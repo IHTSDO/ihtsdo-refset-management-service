@@ -8,8 +8,8 @@ import java.util.List;
 
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -36,8 +36,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(name = "user_preferences")
 @Audited
 @XmlRootElement(name = "prefs")
-// TODO: remove this after spellingENabled and memoryEnabled are here
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserPreferencesJpa implements UserPreferences {
 
   /** The id. */
@@ -51,15 +49,26 @@ public class UserPreferencesJpa implements UserPreferences {
   private User user;
 
   /** The language Refset members. */
-  @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, targetEntity = LanguageDescriptionTypeJpa.class, orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, targetEntity = LanguageDescriptionTypeJpa.class, orphanRemoval = true)
   @CollectionTable(name = "user_pref_language_desc_types")
-  private List<LanguageDescriptionType> languageDescriptionTypes = null;
+  private List<LanguageDescriptionType> languageDescriptionTypes =
+      new ArrayList<>();
 
   /** The lastTab. */
+  @Column(nullable = true)
   private String lastTab;
 
   /** The lastAccordion. */
+  @Column(nullable = true)
   private String lastAccordion;
+
+  /** The spelling enabled. */
+  @Column(nullable = false)
+  private boolean spellingEnabled = true;
+
+  /** The memory enabled. */
+  @Column(nullable = false)
+  private boolean memoryEnabled = true;
 
   /**
    * The default constructor.
@@ -71,14 +80,17 @@ public class UserPreferencesJpa implements UserPreferences {
   /**
    * Instantiates a new user jpa.
    *
-   * @param userPreferences the user preferences
+   * @param prefs the user preferences
    */
-  public UserPreferencesJpa(UserPreferences userPreferences) {
+  public UserPreferencesJpa(UserPreferences prefs) {
     super();
-    id = userPreferences.getId();
-    user = userPreferences.getUser();
-    lastTab = userPreferences.getLastTab();
-    lastAccordion = userPreferences.getLastAccordion();
+    id = prefs.getId();
+    user = prefs.getUser();
+    lastTab = prefs.getLastTab();
+    lastAccordion = prefs.getLastAccordion();
+    languageDescriptionTypes = prefs.getLanguageDescriptionTypes();
+    spellingEnabled = prefs.isSpellingEnabled();
+    memoryEnabled = prefs.isMemoryEnabled();
   }
 
   /**
@@ -215,6 +227,7 @@ public class UserPreferencesJpa implements UserPreferences {
     return languageDescriptionTypes;
   }
 
+  /* see superclass */
   @Override
   public void setLanguageDescriptionTypes(
     List<LanguageDescriptionType> languageDescriptionTypes) {
@@ -223,14 +236,44 @@ public class UserPreferencesJpa implements UserPreferences {
 
   /* see superclass */
   @Override
+  public boolean isSpellingEnabled() {
+    return spellingEnabled;
+  }
+
+  /* see superclass */
+  @Override
+  public void setSpellingEnabled(boolean spellingEnabled) {
+    this.spellingEnabled = spellingEnabled;
+  }
+
+  /* see superclass */
+  @Override
+  public boolean isMemoryEnabled() {
+    return memoryEnabled;
+  }
+
+  /* see superclass */
+  @Override
+  public void setMemoryEnabled(boolean memoryEnabled) {
+    this.memoryEnabled = memoryEnabled;
+  }
+
+  /* see superclass */
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((id == null) ? 0 : id.hashCode());
+    result =
+        prime
+            * result
+            + ((languageDescriptionTypes == null) ? 0
+                : languageDescriptionTypes.hashCode());
     result =
         prime * result
             + ((lastAccordion == null) ? 0 : lastAccordion.hashCode());
     result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
+    result = prime * result + (memoryEnabled ? 1231 : 1237);
+    result = prime * result + (spellingEnabled ? 1231 : 1237);
     result =
         prime
             * result
@@ -249,10 +292,10 @@ public class UserPreferencesJpa implements UserPreferences {
     if (getClass() != obj.getClass())
       return false;
     UserPreferencesJpa other = (UserPreferencesJpa) obj;
-    if (id == null) {
-      if (other.id != null)
+    if (languageDescriptionTypes == null) {
+      if (other.languageDescriptionTypes != null)
         return false;
-    } else if (!id.equals(other.id))
+    } else if (!languageDescriptionTypes.equals(other.languageDescriptionTypes))
       return false;
     if (lastAccordion == null) {
       if (other.lastAccordion != null)
@@ -264,20 +307,31 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!lastTab.equals(other.lastTab))
       return false;
-    if (user == null || user.getUserName() == null) {
-      if (other.user != null && other.user.getUserName() != null)
+    if (memoryEnabled != other.memoryEnabled)
+      return false;
+    if (spellingEnabled != other.spellingEnabled)
+      return false;
+    final String userName =
+        user == null || user.getUserName() == null ? null : user.getUserName();
+    final String otherUserName =
+        other.user == null || other.user.getUserName() == null ? null
+            : other.user.getUserName();
+    if (userName == null) {
+      if (otherUserName != null)
         return false;
-    } else if (!user.getId().equals(other.user.getId()))
+    } else if (!userName.equals(otherUserName))
       return false;
     return true;
   }
 
+  /* see superclass */
   @Override
   public String toString() {
-    return "UserPreferencesJpa [id=" + id + ", user="
-        + (user != null ? user.getUserName() : null)
+    return "UserPreferencesJpa [id=" + id + ", user=" + user
         + ", languageDescriptionTypes=" + languageDescriptionTypes
-        + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion + "]";
+        + ", lastTab=" + lastTab + ", lastAccordion=" + lastAccordion
+        + ", spellingEnabled=" + spellingEnabled + ", memoryEnabled="
+        + memoryEnabled + "]";
   }
 
 }

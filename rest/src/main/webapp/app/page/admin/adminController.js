@@ -15,8 +15,10 @@ tsApp
       'securityService',
       'projectService',
       'validationService',
+      'translationService',
       function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, projectService, validationService) {
+        utilService, tabService, securityService, projectService, validationService,
+        translationService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
@@ -79,7 +81,7 @@ tsApp
           sortField : 'userName',
           ascending : null
         }
-        $scope.paging["lang"] = {
+        $scope.paging['lang'] = {
           page : 1,
           filter : "",
           typeFilter : "",
@@ -87,7 +89,6 @@ tsApp
           ascending : true
         }
 
-        
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -282,7 +283,12 @@ tsApp
 
         // Save the user preferences
         $scope.saveUserPreferences = function() {
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          securityService.updateUserPreferences($scope.user.userPreferences).then(
+          // Success
+          function(data) {
+            $scope.user.userPreferences = data;
+            $scope.getPagedAvailableLdt();
+          });
         }
 
         // Get $scope.languageDescriptionTypes
@@ -290,20 +296,83 @@ tsApp
           translationService.getLanguageDescriptionTypes().then(
           // Success
           function(data) {
-            $scope.languageDescriptionTypes = data;
+            $scope.languageDescriptionTypes = data.types;
+            $scope.languageDescriptionTypes.totalCount = data.totalCount;
+            $scope.getPagedAvailableLdt();
           });
         }
 
         // Get paged available language description types not already assigned
-        $scope.getPagedAvailable = function() {
+        $scope.getPagedAvailableLdt = function() {
           var available = [];
-          for (var i = 0; i < $scope.languageDescriptionTypes; i++) {
-            for (var j = 0; i < $user.userPreferences.languageDescriptionTypes; i++) {
-              // TODO: add in ones that don't match
+          console.debug("XXX", $scope.languageDescriptionTypes);
+          console.debug("YYY", $scope.user.userPreferences.languageDescriptionTypes);
+          for (var i = 0; i < $scope.languageDescriptionTypes.length; i++) {
+            var found = false;
+            for (var j = 0; j < $scope.user.userPreferences.languageDescriptionTypes.length; j++) {
+              if ($scope.isEquivalent($scope.languageDescriptionTypes[i],
+                $scope.user.userPreferences.languageDescriptionTypes[j])) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              console.debug("PUSH", $scope.languageDescriptionTypes[i]);
+              available.push($scope.languageDescriptionTypes[i]);
             }
           }
-          $scope.pagedAvailableLdt = utilService.getPagedArray(available,
-            $scope.paging['lang'], $scope.pageSize);
+          $scope.pagedAvailableLdt = utilService.getPagedArray(available, $scope.paging['lang'],
+            $scope.pageSize);
+        }
+
+        // equivalent test for language description types
+        $scope.isEquivalent = function(ldt1, ldt2) {
+          return ldt1.refsetId == ldt2.refsetId
+            && ldt1.descriptionType.typeId == ldt2.descriptionType.typeId
+            && ldt1.descriptionType.acceptabilityId == ldt2.descriptionType.acceptabilityId;
+        }
+
+        // Add an LDT to user prefs
+        $scope.addLanguageDescriptionType = function(ldt) {
+          $scope.user.userPreferences.languageDescriptionTypes.push(ldt);
+          $scope.saveUserPreferences();
+        }
+
+        // Remove an LDT from user prefs
+        $scope.removeLanguageDescriptionType = function(ldt) {
+          for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
+            }
+          }
+          $scope.saveUserPreferences();
+        }
+
+        // Move an LDT up in user prefs
+        $scope.moveLanguageDescriptionTypeUp = function(ldt) {
+          // Start at index 1 because we can't move the top one up
+          for (var i = 1; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i - 1, 0, ldt);
+            }
+          }
+          $scope.saveUserPreferences();
+        }
+
+        // Move an LDT down in user prefs
+        $scope.moveLanguageDescriptionTypeDown = function(ldt) {
+          // end at index -11 because we can't move the last one down
+          for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length - 1; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              console.debug(" ldt 1 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 2,
+                $scope.user.userPreferences.languageDescriptionTypes[i + 1], ldt);
+              console.debug(" ldt 2 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              break;
+            }
+          }
+          $scope.saveUserPreferences();
         }
 
         // sort mechanism 
@@ -321,8 +390,9 @@ tsApp
             $scope.getAssignedUsers();
           } else if (table === 'candidateUser') {
             $scope.getUnassignedUsers();
+          } else if (table === 'lang') {
+            $scope.getPagedAvailableLdt();
           }
-
         }
 
         // Return up or down sort chars if sorted
@@ -336,7 +406,7 @@ tsApp
             window.alert("Select a project before assigning a user! ");
             return;
           }
-
+          // call service
           projectService.assignUserToProject(projectId, userName, projectRole).then(function(data) {
             $scope.getProjects();
             $scope.selectedProject = data;
@@ -371,12 +441,7 @@ tsApp
           // Success 
           function(data) {
             $scope.validationChecks = data.keyValuePairs;
-          },
-          // Error - update refset
-          function(data) {
-            $scope.errors[0] = data;
-            utilService.clearError();
-          })
+          });
         }
 
         //
@@ -710,7 +775,10 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
-        $scope.user.userPreferences.lastTab = '/admin';
+        // handle case where there is no user
+        if ($scope.user.userPreferences) {
+          $scope.user.userPreferences.lastTab = '/admin';
+        }
         securityService.updateUserPreferences($scope.user.userPreferences);
 
         // end

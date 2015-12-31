@@ -38,6 +38,10 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   @Column(nullable = false)
   private String name;
 
+  /** The language. */
+  @Column(nullable = false)
+  private String language;
+
   /** the refset id. */
   @Column(nullable = false)
   private String refsetId;
@@ -63,6 +67,7 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
     id = type.getId();
     refsetId = type.getRefsetId();
     name = type.getName();
+    language = type.getLanguage();
     descriptionType = type.getDescriptionType();
   }
 
@@ -86,6 +91,18 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   @Override
   public void setName(String name) {
     this.name = name;
+  }
+
+  /* see superclass */
+  @Override
+  public String getLanguage() {
+    return language;
+  }
+
+  /* see superclass */
+  @Override
+  public void setLanguage(String language) {
+    this.language = language;
   }
 
   /* see superclass */
@@ -118,7 +135,7 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
   public String toString() {
     return "LanguageDescriptionTypeJpa [id=" + id + ", name=" + name
         + ", refsetId=" + refsetId + ", descriptionType=" + descriptionType
-        + "]";
+        + ", language=" + language + "]";
   }
 
   @Override
@@ -129,6 +146,7 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
         prime * result
             + ((descriptionType == null) ? 0 : descriptionType.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
     return result;
   }
@@ -151,6 +169,11 @@ public class LanguageDescriptionTypeJpa implements LanguageDescriptionType {
       if (other.name != null)
         return false;
     } else if (!name.equals(other.name))
+      return false;
+    if (language == null) {
+      if (other.language != null)
+        return false;
+    } else if (!language.equals(other.language))
       return false;
     if (refsetId == null) {
       if (other.refsetId != null)

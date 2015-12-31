@@ -70,6 +70,7 @@
                 <div ng-class="{redborder: hasSuggestions(description)}">
                   <textarea title="Description term" spellcheck="false"
                     ng-model="description.term" ui-tinymce="tinymceOptions"
+                    ng-model-options="{ debounce: 300 }"
                     ng-change="getSuggestions()"></textarea>
                 </div>
               </td>
@@ -105,16 +106,23 @@
           <tbody>
             <tr>
               <td>
-                <input type="checkbox"
-                  ng-model="user.userPreferences.spellingEnabled"
-                  name="Spelling Corrrection">Spelling Correction
+                <input type="checkbox" ng-change="saveUserPreferences()"
+                  ng-model="user.userPreferences.spellingEnabled">
+                <span ng-show="user.userPreferences.spellingEnabled">Spelling
+                  Correction (ENABLED)</span>
+                <span ng-show="!user.userPreferences.spellingEnabled">Spelling
+                  Correction (DISABLED)</span>
               </td>
+            </tr>
+            <tr ng-show="user.userPreferences.spellingEnabled">
               <td>
+                <!-- Remove -->
                 <select title="Spelling dictionary entries that can be removed"
-                  style="width: 200px;" ng-model="selectedWord"
+                  style="width: 250px;" ng-model="selectedWord"
                   ng-options="word for word in allUniqueWordsNoSuggestions">
                 </select>
-                <button class="btn btn-xs btn-primary"
+                <button ng-disabled="!selectedWord"
+                  class="btn btn-xs btn-primary"
                   ng-click="removeSpellingEntry(selectedWord)"
                   uib-tooltip="Remove entry from spelling dictionary">Remove</button>
               </td>
@@ -122,19 +130,44 @@
 
             <tr>
               <td>
-                <input type="checkbox"
-                  ng-model="user.userPreferences.memoryEnabled"
-                  name="Phrase Memory">Phrase Memory
+                <input type="checkbox" ng-change="saveUserPreferences()"
+                  ng-model="user.userPreferences.memoryEnabled">
+                <span ng-show="user.userPreferences.memoryEnabled">Phrase
+                  Memory (ENABLED)</span>
+                <span ng-show="!user.userPreferences.memoryEnabled">Memory
+                  Memory (DISABLED)</span>
               </td>
+            </tr>
+            <tr ng-show="user.userPreferences.memoryEnabled">
               <td>
-                <select title="Memory entries that can be removed"
-                  style="width: 200px;" ng-model="selectedEntry"
-                  ng-options="concat(entry.name,' -> ',entry.translatedName) for entry in getMemoryEntries()">
-                </select>
-
-                <button class="btn btn-xs btn-primary"
-                  ng-click="removeMemoryEntry(selectedEntry)"
-                  uib-tooltip="Remove phrase from translation memory">Remove</button>
+                <!-- Remove entries -->
+                <div>
+                  <select title="Memory entries that can be removed"
+                    style="width: 250px;" ng-model="selectedEntry"
+                    ng-options="getEntryInfo(entry) for entry in memoryEntries">
+                  </select>
+                  <button ng-disabled="!selectedEntry"
+                    class="btn btn-xs btn-primary"
+                    ng-click="removeMemoryEntry(selectedEntry.name, selectedEntry.translatedName)"
+                    uib-tooltip="Remove phrase memory entry">Remove</button>
+                  <button ng-disabled="!selectedEntry"
+                    class="btn btn-xs btn-primary"
+                    ng-click="applyMemoryEntry(selectedEntry.translatedName)"
+                    uib-tooltip="Use this phrase memory entry">Use</button>
+                </div>
+                <br />
+                <!-- Add entries -->
+                <div>
+                  <select title="Phrases without suggestions"
+                    style="width: 150px;" ng-model="selectedName"
+                    ng-options="phrase for phrase in allUniquePhrasesNoSuggestions">
+                  </select> <input ng-change="saveUserPreferences()" size="20"
+                    ng-model="translatedName">
+                  <button ng-disabled="!translatedName || !selectedName"
+                    class="btn btn-xs btn-primary"
+                    ng-click="addMemoryEntry(selectedName, translatedName)"
+                    uib-tooltip="Add phrase memory entry">Add</button>
+                </div>
               </td>
             </tr>
 

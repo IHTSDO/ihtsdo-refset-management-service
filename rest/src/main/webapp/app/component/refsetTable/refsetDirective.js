@@ -45,7 +45,7 @@ tsApp
               $scope.refsets = null;
               $scope.refsetLookupProgress = {};
               $scope.project = null;
-              // TODO: consider whether refset.members should just be "members"
+
               $scope.showLatest = true;
 
               // Page metadata
@@ -592,7 +592,13 @@ tsApp
 
                 // add new clause
                 $scope.submitClause = function(refset, clause) {
-                  // TODO: confirm clauses are unique
+
+                  // Confirm clauses are unique, skip if not
+                  for (var i = 0; i< refset.definitionClauses.length; i++) {
+                    if (refset.definitionClauses[i] == clause) {
+                      return;
+                    }
+                  }
                   refset.definitionClauses.push(clause);
                   $scope.getPagedClauses();
                   $scope.newClause = null;
@@ -636,7 +642,7 @@ tsApp
                       return ltype;
                     },
                     tinymceOptions : function() {
-                      return utilService.getTinymceOptions();
+                      return utilService.tinymceOptions;
                     }
                   }
                 });
@@ -1267,7 +1273,7 @@ tsApp
                       return $scope.projects.role;
                     },
                     tinymceOptions : function() {
-                      return utilService.getTinymceOptions()
+                      return utilService.inymceOptions;
                     }
                   }
 
@@ -2289,7 +2295,7 @@ tsApp
                       return lrefset;
                     },
                     tinymceOptions : function() {
-                      return utilService.getTinymceOptions();
+                      return utilService.tinymceOptions;
                     }
                   }
                 });

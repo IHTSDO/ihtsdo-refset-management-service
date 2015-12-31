@@ -216,6 +216,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (final TrackingRecord record : records.getObjects()) {
         workflowService.handleLazyInit(record);
         workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
 
       return records;
@@ -303,6 +309,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (final TrackingRecord record : records.getObjects()) {
         workflowService.handleLazyInit(record);
         workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
       return records;
 
@@ -347,11 +359,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Set last modified by
       concept.setLastModifiedBy(authName);
-      return workflowService.performWorkflowAction(translationId, userName,
-          UserRole.valueOf(projectRole),
+      TrackingRecord record =
+          workflowService.performWorkflowAction(translationId, userName,
+              UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
+              concept);
+      if (record != null) {
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+      }
 
-          WorkflowAction.valueOf(action), concept);
-
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on translation");
     } finally {
@@ -392,16 +413,30 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // Set last modified by
-      final TrackingRecordList list = new TrackingRecordListJpa();
+      final TrackingRecordList records = new TrackingRecordListJpa();
       for (final Concept concept : conceptList.getObjects()) {
         concept.setLastModifiedBy(authName);
-        list.getObjects().add(
+        records.getObjects().add(
             workflowService.performWorkflowAction(translationId, userName,
                 UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
                 concept));
       }
-      list.setTotalCount(list.getCount());
-      return list;
+
+      records.setTotalCount(records.getCount());
+
+      // Handle lazy init
+      for (final TrackingRecord record : records.getObjects()) {
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+      }
+
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow actions on translation");
@@ -810,8 +845,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/all")
-  @ApiOperation(value = "Find all assigned work", notes = "Finds concepts assigned to any user for the specified translation.", response = ConceptListJpa.class)
-  public ConceptList findAllAssignedConcepts(
+  @ApiOperation(value = "Find all assigned work", notes = "Finds concepts assigned to any user for the specified translation.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAllAssignedConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -825,8 +860,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find all assigned concepts", UserRole.AUTHOR);
 
-      final List<Concept> concepts = new ArrayList<>();
-
       // Get all assigned editing refsets
       final String query =
           "translationId:" + translationId
@@ -835,18 +868,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (final TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
-        Concept concept = record.getConcept();
-        workflowService.handleLazyInit(concept);
-        concepts.add(concept);
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
 
-      ConceptList list = new ConceptListJpa();
-      list.setTotalCount(concepts.size());
-      list.getObjects().addAll(
-          workflowService.applyPfsToList(concepts, Concept.class, pfs));
-
-      return list;
+      return records;
     } catch (Exception e) {
       handleException(e, "trying to find all assigned work");
     } finally {

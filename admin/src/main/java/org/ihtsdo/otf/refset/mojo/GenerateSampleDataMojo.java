@@ -62,8 +62,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * Goal which generates sample data in an empty database. Uses JPA services
  * directly, no need for REST layer.
  * 
- * TODO: implement against JPA/RestImpl for now, alter against clients
- * 
  * See admin/pom.xml for sample usage
  * 
  * @goal sample-data
@@ -414,7 +412,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       RefsetJpa refset2 =
           makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
               "222222912342013", "1000124", reviewer2, true);
-      // TODO: set importMembers back to true to test importDefinition
       RefsetJpa refset3 =
           makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
               "33333912342013", "1000124", reviewer2, true);
@@ -885,8 +882,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setConceptId(conceptId);
     member.setConceptName(conceptName);
     member.setMemberType(memberType);
-    member.setTerminology(terminology);
-    member.setVersion(version);
+    member.setTerminology("N/A");
+    member.setVersion("N/A");
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);
     member.setRefset(refset);

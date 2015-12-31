@@ -56,31 +56,59 @@ public interface UserPreferences {
     List<LanguageDescriptionType> languageDescriptionTypes);
 
   /**
-   * Returns the last tab accessed
-   * 
+   * Returns the last tab accessed.
+   *
    * @return the lastTab
    */
   public String getLastTab();
 
   /**
-   * Sets the last tab accessed
-   * 
+   * Sets the last tab accessed.
+   *
    * @param lastTab the last tab accessed
    */
   public void setLastTab(String lastTab);
 
   /**
-   * Sets the last accordion accessed
-   * 
+   * Sets the last accordion accessed.
+   *
    * @param lastAccordion the last accordion accessed
    */
   public void setLastAccordion(String lastAccordion);
 
   /**
-   * Returns the last accordion accessed
-   * 
+   * Returns the last accordion accessed.
+   *
    * @return the lastAccordion
    */
   public String getLastAccordion();
+
+  /**
+   * Indicates whether or not spelling enabled is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isSpellingEnabled();
+
+  /**
+   * Sets the spelling enabled.
+   *
+   * @param spellingEnabled the spelling enabled
+   */
+  public void setSpellingEnabled(boolean spellingEnabled);
+
+  /**
+   * Indicates whether or not memory enabled is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isMemoryEnabled();
+
+  /**
+   * Sets the memory enabled.
+   *
+   * @param memoryEnabled the memory enabled
+   */
+  public void setMemoryEnabled(boolean memoryEnabled);
 
 }
