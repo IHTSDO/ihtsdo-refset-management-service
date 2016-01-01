@@ -240,15 +240,13 @@ tsApp
         this.getPhrases = function(str) {
           var words = str.match(/[^\s,\.]+/g);
           var phrases = [];
-          console.debug("WORDS", words);
+
           for (var i = 0; i < words.length; i++) {
             for (var j = i + 1; j <= words.length; j++) {
               var phrase = words.slice(i, j).join(' ');
-              console.debug("phrase", phrase);
               // a phrase have at least 5 chars and no start/end words that are purely punctuation
               if (phrase.length > 5 && words[i].match(/.*[A-Za-z0-9].*/)
                 && words[j - 1].match(/.*[A-Za-z0-9].*/)) {
-                console.debug("  push");
                 phrases.push(phrase.toLowerCase());
               }
             }
@@ -297,8 +295,8 @@ tsApp.service('gpService', function() {
 });
 
 // Security service
-tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'gpService',
-  function($http, $location, $q, utilService, gpService) {
+tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', 'utilService',
+  'gpService', function($http, $location, $q, $cookieStore, utilService, gpService) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -319,6 +317,18 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
 
     // Gets the user
     this.getUser = function() {
+
+      // Determine if page has been reloaded
+      if (!$http.defaults.headers.common.Authorization) {
+        console.debug("no header");
+        // Retrieve cookie
+        var cookieUser = JSON.parse($cookieStore.get("user"));
+        // If there is a user cookie, load it
+        if (cookieUser) {
+          this.setUser(cookieUser);
+          $http.defaults.headers.common.Authorization = user.authToken;
+        }
+      }
       return user;
     }
 
@@ -330,6 +340,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       user.password = "";
       user.applicationRole = data.applicationRole;
       user.userPreferences = data.userPreferences;
+
+      // Whenver set user is called, we should save a cookie
+      $cookieStore.put("user", JSON.stringify(user));
+
     }
 
     // Clears the user
@@ -415,6 +429,27 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       return deferred.promise;
     }
 
+    // get user for auth token
+    this.getUserForAuthToken = function() {
+      console.debug("getUserforAuthToken");
+      var deferred = $q.defer();
+
+      // Get users
+      gpService.increment()
+      $http.get(securityUrl + 'user').then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // add user
     this.addUser = function(user) {
       console.debug("addUser");
@@ -533,27 +568,6 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
 
       return deferred.promise;
     }
-    // add user preferences
-    this.addUserPreferences = function(userPreferences) {
-      console.debug("addUserPreferences");
-      var deferred = $q.defer();
-
-      gpService.increment()
-      $http.put(securityUrl + 'user/preferences/add', userPreferences).then(
-      // success
-      function(response) {
-        console.debug("  userPreferences = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    }
 
     // update user preferences
     this.updateUserPreferences = function(userPreferences) {
@@ -562,6 +576,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       if (!userPreferences) {
         return;
       }
+
+      // Whenever we update user preferences, we need to update the cookie
+      $cookieStore.put("user", JSON.stringify(user));
+
       var deferred = $q.defer();
 
       gpService.increment()
@@ -581,27 +599,6 @@ tsApp.service('securityService', [ '$http', '$location', '$q', 'utilService', 'g
       return deferred.promise;
     }
 
-    // remove user preferences
-    this.removeUserPreferences = function(userPreferences) {
-      console.debug("removeUserPreferences");
-      var deferred = $q.defer();
-
-      gpService.increment();
-      $http['delete'](securityUrl + 'user/preferences/remove' + "/" + userPreferences.id).then(
-      // success
-      function(response) {
-        console.debug("  userPreferences = ", response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
-      return deferred.promise;
-    }
   } ]);
 
 // Tab service

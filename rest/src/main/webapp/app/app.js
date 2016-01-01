@@ -1,7 +1,7 @@
 'use strict'
 
 var tsApp = angular.module('tsApp',
-  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce' ]).config(
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies' ]).config(
   function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
@@ -23,44 +23,43 @@ tsApp.run([ '$rootScope', '$http', '$window', function($rootScope, $http, $windo
 } ]);
 
 // Route provider configuration
-tsApp.config([ '$routeProvider', '$locationProvider', '$logProvider',
-  function($routeProvider, $locationProvider, $logProvider) {
-    console.debug('configure $routeProvider');
-    $logProvider.debugEnabled(true);
+tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logProvider) {
+  console.debug('configure $routeProvider');
+  $logProvider.debugEnabled(true);
 
-    // Set reloadOnSearch so that $location.hash() calls do not reload the
-    // controller
-    $routeProvider.when('/', {
-      templateUrl : 'app/page/login/login.html',
-      controller : 'LoginCtrl',
-      reloadOnSearch : false
-    }).when('/refset', {
-      templateUrl : 'app/page/refset/refset.html',
-      controller : 'RefsetCtrl',
-      reloadOnSearch : false
-    }).when('/translation', {
-      templateUrl : 'app/page/translation/translation.html',
-      controller : 'TranslationCtrl',
-      reloadOnSearch : false
-    }).when('/directory', {
-      templateUrl : 'app/page/directory/directory.html',
-      controller : 'DirectoryCtrl',
-      reloadOnSearch : false
-    }).when('/admin', {
-      templateUrl : 'app/page/admin/admin.html',
-      controller : 'AdminCtrl',
-      reloadOnSearch : false
-    }).when('/help/:type', {
-      templateUrl : function(params) {
-        return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
-      }
-    }).otherwise({
-      redirectTo : '/'
-    });
+  // Set reloadOnSearch so that $location.hash() calls do not reload the
+  // controller
+  $routeProvider.when('/', {
+    templateUrl : 'app/page/login/login.html',
+    controller : 'LoginCtrl',
+    reloadOnSearch : false
+  }).when('/refset', {
+    templateUrl : 'app/page/refset/refset.html',
+    controller : 'RefsetCtrl',
+    reloadOnSearch : false
+  }).when('/translation', {
+    templateUrl : 'app/page/translation/translation.html',
+    controller : 'TranslationCtrl',
+    reloadOnSearch : false
+  }).when('/directory', {
+    templateUrl : 'app/page/directory/directory.html',
+    controller : 'DirectoryCtrl',
+    reloadOnSearch : false
+  }).when('/admin', {
+    templateUrl : 'app/page/admin/admin.html',
+    controller : 'AdminCtrl',
+    reloadOnSearch : false
+  }).when('/help/:type', {
+    templateUrl : function(params) {
+      return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
+    }
+  }).otherwise({
+    redirectTo : '/'
+  });
 
-    // $locationProvider.html5Mode(true);
+  // $locationProvider.html5Mode(true);
 
-  } ]);
+} ]);
 
 // Simple glass pane controller
 tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
@@ -142,8 +141,8 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', 'securityService',
-  function($scope, $location, securityService) {
+tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService',
+  function($scope, $location, $http, securityService) {
     console.debug('configure HeaderCtrl');
 
     // Declare user
@@ -157,7 +156,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', 'securityService',
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
-      path = "/help" + path;
+      path = "/help" + path + "?authToken=" + $http.defaults.headers.common.Authorization;
       var currentUrl = window.location.href;
       var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
       var newUrl = baseUrl + path;
@@ -190,17 +189,17 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
   } ]);
 
 // Confirm dialog conroller and directive
-tsApp.controller('ConfirmModalController', function($scope, $modalInstance, data) {
+tsApp.controller('ConfirmModalController', function($scope, $uibModalInstance, data) {
   // Local data for scope
   $scope.data = angular.copy(data);
 
   // OK function
   $scope.ok = function() {
-    $modalInstance.close();
+    $uibModalInstance.close();
   };
   // Cancel function
   $scope.cancel = function() {
-    $modalInstance.dismiss('cancel');
+    $uibModalInstance.dismiss('cancel');
   };
 });
 
@@ -212,7 +211,7 @@ tsApp
       controller : 'ConfirmModalController'
     });
 
-tsApp.factory('$confirm', function($modal, $confirmModalDefaults) {
+tsApp.factory('$confirm', function($uibModal, $confirmModalDefaults) {
   return function(data, settings) {
     settings = angular.extend($confirmModalDefaults, (settings || {}));
     data = data || {};
@@ -227,7 +226,7 @@ tsApp.factory('$confirm', function($modal, $confirmModalDefaults) {
       }
     };
 
-    return $modal.open(settings).result;
+    return $uibModal.open(settings).result;
   };
 });
 

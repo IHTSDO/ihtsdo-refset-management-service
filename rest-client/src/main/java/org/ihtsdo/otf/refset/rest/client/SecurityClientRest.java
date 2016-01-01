@@ -118,6 +118,36 @@ public class SecurityClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
+  public User getUserForAuthToken(String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Security Client - get user for auth token " + authToken);
+    validateNotEmpty(authToken, "authToken");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/security/user"
+            + authToken);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204)
+      return null;
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    UserJpa user =
+        (UserJpa) ConfigUtility.getGraphForString(resultString, UserJpa.class);
+    return user;
+  }
+
+  /* see superclass */
+  @Override
   public User getUser(String userName, String authToken) throws Exception {
     Logger.getLogger(getClass())
         .debug("Security Client - get user " + userName);

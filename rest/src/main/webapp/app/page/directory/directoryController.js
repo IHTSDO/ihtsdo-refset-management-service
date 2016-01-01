@@ -17,10 +17,11 @@ tsApp.controller('DirectoryCtrl', [
     }
 
     // Initialize
+    $scope.user = securityService.getUser();
+    projectService.getUserHasAnyRole();
+    $scope.userProjectsInfo = projectService.getUserProjectsInfo();
     projectService.prepareIconConfig();
 
-    $scope.user = securityService.getUser();
-    $scope.userProjectsInfo = projectService.getUserProjectsInfo();
     $scope.accordionState = {};
 
     // Wrap in a json object so we can pass to the directive effectively
@@ -58,6 +59,15 @@ tsApp.controller('DirectoryCtrl', [
         $scope.projects.totalCount = data.totalCount;
       })
 
+    };
+
+    // Test for empty accordion state
+    $scope.isAccordionStateEmpty = function() {
+      for (key in $scope.accordionState) {
+        if ($scope.accordionState.hasOwnProperty(key))
+          return false;
+      }
+      return true;
     };
 
     // Get $scope.refsetTypes - for picklist
@@ -106,18 +116,26 @@ tsApp.controller('DirectoryCtrl', [
       securityService.updateUserPreferences($scope.user.userPreferences);
     };
 
+    // Configure tab and accordion
+    $scope.configureTab = function() {
+      $scope.user.userPreferences.lastTab = '/directory';
+      if ($scope.user.userPreferences.lastDirectoryAccordion) {
+        $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
+      } else {
+        // default is published if nothing set
+        $scope.accordionState['PUBLISHED'] = true;
+      }
+      securityService.updateUserPreferences($scope.user.userPreferences);
+    }
+
     // Initialize
     $scope.getRefsetTypes();
     $scope.getProjects();
     $scope.getTerminologyEditions();
     $scope.getWorkflowPaths();
-    // Handle users without user preferences
+    // Handle users with user preferences
     if ($scope.user.userPreferences) {
-      $scope.user.userPreferences.lastTab = '/directory';
-      securityService.updateUserPreferences($scope.user.userPreferences);
-    }
-    if ($scope.user.userPreferences.lastDirectoryAccordion) {
-      $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
+      $scope.configureTab();
     }
 
     // end

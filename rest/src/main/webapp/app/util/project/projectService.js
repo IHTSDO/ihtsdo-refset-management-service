@@ -10,7 +10,7 @@ tsApp.service('projectService', [
 
     // Declare the model
     var userProjectsInfo = {
-      anyrole : false
+      anyrole : null
     };
 
     var iconConfig = {};

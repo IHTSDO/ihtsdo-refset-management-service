@@ -5,14 +5,13 @@ tsApp
     [
       '$scope',
       '$http',
-      '$rootScope',
       'tabService',
       'securityService',
       'projectService',
       'translationService',
       'workflowService',
-      function($scope, $http, $rootScope, tabService, securityService, projectService,
-        translationService, workflowService) {
+      function($scope, $http, tabService, securityService, projectService, translationService,
+        workflowService) {
         console.debug('configure TranslationCtrl');
 
         // Handle resetting tabs on "back" button
@@ -21,8 +20,9 @@ tsApp
         }
 
         // Initialize
-        projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        projectService.getUserHasAnyRole();
+        projectService.prepareIconConfig();
         $scope.accordionState = {};
 
         // Wrap in a json object so we can pass to the directive effectively
@@ -41,6 +41,15 @@ tsApp
           workflowPaths : []
         }
 
+        // Test for empty accordion state
+        $scope.isAccordionStateEmpty = function() {
+          for (key in $scope.accordionState) {
+            if ($scope.accordionState.hasOwnProperty(key))
+              return false;
+          }
+          return true;
+        };
+
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -56,7 +65,7 @@ tsApp
             $scope.projects.totalCount = data.totalCount;
             if ($scope.user.userPreferences.lastProjectId) {
               var found = false;
-              for(var i = 0; i < data.projects.length; i++) {
+              for (var i = 0; i < data.projects.length; i++) {
                 if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
                   $scope.setProject(data.projects[i]);
                   found = true;
@@ -64,11 +73,11 @@ tsApp
                 }
               }
               if (!found) {
-            $scope.setProject(data.projects[0]);
+                $scope.setProject(data.projects[0]);
               }
             } else {
               $scope.setProject(data.projects[0]);
-            }            
+            }
           })
 
         };
@@ -138,26 +147,36 @@ tsApp
             $scope.metadata.workflowPaths = data.strings;
           });
         }
-        
+
         // Set the current accordion
         $scope.setAccordion = function(data) {
           $scope.user.userPreferences.lastTranslationAccordion = data;
           securityService.updateUserPreferences($scope.user.userPreferences);
-        } 
+        }
+
+        // Configure tab and accordion
+        $scope.configureTab = function() {
+          $scope.user.userPreferences.lastTab = '/translation';
+          if ($scope.user.userPreferences.lastTranslationAccordion) {
+            $scope.accordionState[$scope.user.userPreferences.lastTranslationAccordion] = true;
+          } else {
+            // default is published if nothing set
+            $scope.accordionState['EDITING'] = true;
+          }
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
 
         // Initialize
         $scope.getProjects();
         // Initialize some metadata first time
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        // handle case where there is no user
+
+        // Handle users with user preferences
         if ($scope.user.userPreferences) {
-          $scope.user.userPreferences.lastTab = '/translation';
+          $scope.configureTab();
         }
-        securityService.updateUserPreferences($scope.user.userPreferences);
-        if ($scope.user.userPreferences.lastTranslationAccordion) {
-          $scope.accordionState[$scope.user.userPreferences.lastTranslationAccordion] = true;
-      }
+
       }
 
     ]);

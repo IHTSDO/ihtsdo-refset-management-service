@@ -6,9 +6,6 @@ tsApp
       '$scope',
       '$http',
       '$uibModal',
-      '$location',
-      '$anchorScroll',
-      '$timeout',
       'gpService',
       'utilService',
       'tabService',
@@ -16,21 +13,21 @@ tsApp
       'projectService',
       'validationService',
       'translationService',
-      function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, projectService, validationService,
-        translationService) {
+      function($scope, $http, $uibModal, gpService, utilService, tabService, securityService,
+        projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
         }
-
+        
         //
         // Scope Variables
         //
         $scope.user = securityService.getUser();
-
+        projectService.getUserHasAnyRole();
+        
         $scope.selectedProject = null;
         $scope.projectRoles = [];
 
@@ -400,6 +397,8 @@ tsApp
           }
           // call service
           projectService.assignUserToProject(projectId, userName, projectRole).then(function(data) {
+            // Update "anyrole"
+            projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
             $scope.getAssignedUsers();
@@ -410,6 +409,8 @@ tsApp
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
           projectService.unassignUserFromProject(projectId, userName).then(function(data) {
+            // Update "anyrole"
+            projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
             $scope.getAssignedUsers();
@@ -523,6 +524,8 @@ tsApp
                 if ($scope.user.applicationRole != 'ADMIN') {
                   projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
+                      // Update "anyrole"
+                      projectService.getUserHasAnyRole();
                       $uibModalInstance.close(data);
                     },
                     // Error
@@ -756,6 +759,12 @@ tsApp
 
         };
 
+        // Configure the tab
+        $scope.configureTab = function() {
+          $scope.user.userPreferences.lastTab = '/admin';
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
         //
         // Initialize
         //
@@ -767,11 +776,11 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
-        // handle case where there is no user
+
+        // Handle users with user preferences
         if ($scope.user.userPreferences) {
-          $scope.user.userPreferences.lastTab = '/admin';
+          $scope.configureTab();
         }
-        securityService.updateUserPreferences($scope.user.userPreferences);
 
         // end
 

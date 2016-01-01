@@ -5,14 +5,13 @@ tsApp
     [
       '$scope',
       '$http',
-      '$rootScope',
       'tabService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, $rootScope, tabService, securityService, projectService,
-        refsetService, workflowService) {
+      function($scope, $http, tabService, securityService, projectService, refsetService,
+        workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on "back" button
@@ -21,8 +20,9 @@ tsApp
         }
 
         // Initialize
-        projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        projectService.getUserHasAnyRole();
+        projectService.prepareIconConfig();
         $scope.accordionState = {};
         // Wrap in a json object so we can pass to the directive effectively
         $scope.projects = {
@@ -43,6 +43,15 @@ tsApp
           workflowPaths : []
         }
 
+        // Test for empty accordion state
+        $scope.isAccordionStateEmpty = function() {
+          for (key in $scope.accordionState) {
+            if ($scope.accordionState.hasOwnProperty(key))
+              return false;
+          }
+          return true;
+        };
+
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -55,10 +64,10 @@ tsApp
           };
           projectService.findProjectsAsList("", pfs).then(function(data) {
             $scope.projects.data = data.projects;
-            $scope.projects.totalCount = data.totalCount;            
+            $scope.projects.totalCount = data.totalCount;
             if ($scope.user.userPreferences.lastProjectId) {
               var found = false;
-              for(var i = 0; i < data.projects.length; i++) {
+              for (var i = 0; i < data.projects.length; i++) {
                 if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
                   $scope.setProject(data.projects[i]);
                   found = true;
@@ -70,7 +79,7 @@ tsApp
               }
             } else {
               $scope.setProject(data.projects[0]);
-            }            
+            }
           })
 
         };
@@ -117,7 +126,7 @@ tsApp
           $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
           securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
-        }        
+        }
 
         // Determine whether the user is a project admin
         $scope.isProjectAdmin = function() {
@@ -171,12 +180,24 @@ tsApp
             $scope.metadata.workflowPaths = data.strings;
           });
         }
-        
+
         // Set the current accordion
         $scope.setAccordion = function(data) {
           $scope.user.userPreferences.lastRefsetAccordion = data;
           securityService.updateUserPreferences($scope.user.userPreferences);
-        }        
+        }
+
+        // Configure tab and accordion
+        $scope.configureTab = function() {
+          $scope.user.userPreferences.lastTab = '/refset';
+          if ($scope.user.userPreferences.lastRefsetAccordion) {
+            $scope.accordionState[$scope.user.userPreferences.lastRefsetAccordion] = true;
+          } else {
+            // default is published if nothing set
+            $scope.accordionState['AVAILABLE'] = true;
+          }
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
 
         // Initialize
         $scope.getProjects();
@@ -185,14 +206,12 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        // handle case where there is no user
+
+        // Handle users with user preferences
         if ($scope.user.userPreferences) {
-          $scope.user.userPreferences.lastTab = '/refset';
+          $scope.configureTab();
         }
-        securityService.updateUserPreferences($scope.user.userPreferences);
-        if ($scope.user.userPreferences.lastRefsetAccordion) {
-          $scope.accordionState[$scope.user.userPreferences.lastRefsetAccordion] = true;
-        }
+
       }
 
     ]);

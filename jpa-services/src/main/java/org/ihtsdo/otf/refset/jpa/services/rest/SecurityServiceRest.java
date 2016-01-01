@@ -56,6 +56,15 @@ public interface SecurityServiceRest {
   public User getUser(String userName, String authToken) throws Exception;
 
   /**
+   * Returns the user for auth token.
+   *
+   * @param authToken the auth token
+   * @return the user for auth token
+   * @throws Exception the exception
+   */
+  public User getUserForAuthToken(String authToken) throws Exception;
+
+  /**
    * Returns the users.
    *
    * @param authToken the auth token

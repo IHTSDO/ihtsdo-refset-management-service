@@ -160,6 +160,31 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/user")
+  @ApiOperation(value = "Get user by auth token", notes = "Gets the user for the auth token", response = UserJpa.class)
+  public User getUserForAuthToken(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Security): /user/name" + authToken);
+    final SecurityService securityService = new SecurityServiceJpa();
+    try {
+      final String userName = authorizeApp(securityService, authToken, "retrieve the user by auth token",
+          UserRole.VIEWER);
+      final User user = securityService.getUser(userName);
+      securityService.handleLazyInit(user);
+      return user;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a user by auth token");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
   /* see superclass */
   @Override
   @GET
