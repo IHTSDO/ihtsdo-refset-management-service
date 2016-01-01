@@ -595,7 +595,7 @@ public class WorkflowClientRest extends RootClientRest implements
   }
 
   @Override
-  public ConceptList findAllAssignedConcepts(Long projectId,
+  public TrackingRecordList findAllAssignedConcepts(Long projectId,
     Long translationId, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - find all assigned concepts - " + translationId);
@@ -624,8 +624,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (ConceptList) ConfigUtility.getGraphForString(resultString,
-        ConceptJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   @Override

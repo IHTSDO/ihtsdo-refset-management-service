@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
+import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
@@ -55,6 +56,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -62,6 +64,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -389,8 +392,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
         member.setMemberType(Refset.MemberType.MEMBER);
-        member.setTerminology(concept.getTerminology());
-        member.setVersion(concept.getVersion());
+        member.setTerminology("N/A");
+        member.setVersion("N/A");
         member.setModuleId(concept.getModuleId());
         member.setLastModifiedBy(userName);
         member.setRefset(refset);
@@ -534,8 +537,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setPublished(false);
           member.setPublishable(true);
           member.setRefset(newRefset);
-          member.setTerminology(newRefset.getTerminology());
-          member.setVersion(newRefset.getVersion());
+          member.setTerminology("N/A");
+          member.setVersion("N/A");
           // Insert new members
           member.setId(null);
           member.setLastModifiedBy(userName);
@@ -1188,8 +1191,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setMemberType(Refset.MemberType.MEMBER);
           member.setPublishable(true);
           member.setRefset(refsetCopy);
-          member.setTerminology(refsetCopy.getTerminology());
-          member.setVersion(refsetCopy.getVersion());
+          member.setTerminology("N/A");
+          member.setVersion("N/A");
           member.setId(null);
           refsetService.addMember(member);
 
@@ -1245,7 +1248,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /migration/finish " + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService refsetService = new TranslationServiceJpa();
     try {
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
@@ -1309,10 +1312,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
 
       // Remove the staged refset change and set staging type back to null
+      // and update version
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
+      refset.setTerminology(stagedRefset.getTerminology());
+      refset.setVersion(stagedRefset.getVersion());
       refsetService.updateRefset(refset);
 
+      // Update terminology/version also for any translations      
+      for (Translation translation : refset.getTranslations()) {
+        translation.setTerminology(refset.getTerminology());
+        translation.setVersion(refset.getVersion());
+        refsetService.updateTranslation(translation);
+      }
+      
       // Remove the staged refset change
       refsetService.removeStagedRefsetChange(change.getId());
 
@@ -1697,7 +1710,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "get definition for refset id",
           UserRole.AUTHOR);
 
-      // TODO:?
+      // Unable to implement this for now.. placeholder
+      
       return refset.computeDefinition();
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");

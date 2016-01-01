@@ -32,12 +32,14 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
@@ -216,6 +218,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (final TrackingRecord record : records.getObjects()) {
         workflowService.handleLazyInit(record);
         workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
 
       return records;
@@ -303,6 +311,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (final TrackingRecord record : records.getObjects()) {
         workflowService.handleLazyInit(record);
         workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
       return records;
 
@@ -347,11 +361,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Set last modified by
       concept.setLastModifiedBy(authName);
-      return workflowService.performWorkflowAction(translationId, userName,
-          UserRole.valueOf(projectRole),
+      TrackingRecord record =
+          workflowService.performWorkflowAction(translationId, userName,
+              UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
+              concept);
+      if (record != null) {
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+      }
 
-          WorkflowAction.valueOf(action), concept);
-
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on translation");
     } finally {
@@ -392,16 +415,30 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // Set last modified by
-      final TrackingRecordList list = new TrackingRecordListJpa();
+      final TrackingRecordList records = new TrackingRecordListJpa();
       for (final Concept concept : conceptList.getObjects()) {
         concept.setLastModifiedBy(authName);
-        list.getObjects().add(
+        records.getObjects().add(
             workflowService.performWorkflowAction(translationId, userName,
                 UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
                 concept));
       }
-      list.setTotalCount(list.getCount());
-      return list;
+
+      records.setTotalCount(records.getCount());
+
+      // Handle lazy init
+      for (final TrackingRecord record : records.getObjects()) {
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+      }
+
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow actions on translation");
@@ -810,8 +847,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translation/assigned/all")
-  @ApiOperation(value = "Find all assigned work", notes = "Finds concepts assigned to any user for the specified translation.", response = ConceptListJpa.class)
-  public ConceptList findAllAssignedConcepts(
+  @ApiOperation(value = "Find all assigned work", notes = "Finds concepts assigned to any user for the specified translation.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAllAssignedConcepts(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Translation id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -825,8 +862,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find all assigned concepts", UserRole.AUTHOR);
 
-      final List<Concept> concepts = new ArrayList<>();
-
       // Get all assigned editing refsets
       final String query =
           "translationId:" + translationId
@@ -835,18 +870,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (final TrackingRecord record : records.getObjects()) {
-        // handle lazy initialization
-        Concept concept = record.getConcept();
-        workflowService.handleLazyInit(concept);
-        concepts.add(concept);
+        workflowService.handleLazyInit(record);
+        workflowService.handleLazyInit(record.getConcept());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
       }
 
-      ConceptList list = new ConceptListJpa();
-      list.setTotalCount(concepts.size());
-      list.getObjects().addAll(
-          workflowService.applyPfsToList(concepts, Concept.class, pfs));
-
-      return list;
+      return records;
     } catch (Exception e) {
       handleException(e, "trying to find all assigned work");
     } finally {
@@ -951,7 +985,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Consumes("text/plain")
   @ApiOperation(value = "Adds a feedback message.", notes = "Adds a feedback message.")
   public void addFeedback(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Object id, e.g. 3", required = true) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Name", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Email", required = true) @QueryParam("email") String email,
     @ApiParam(value = "message", required = true) String message,
@@ -964,22 +998,24 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     // Test preconditions
-    if (refsetId == null) {
+    if (objectId == null) {
       handleException(new Exception("Required parameter has a null value"), "");
     }
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      final Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = translationService.getRefset(objectId);
+      final Translation translation =
+          translationService.getTranslation(objectId);
+
       // authorize call
       authorizeApp(securityService, authToken, "add feedback", UserRole.VIEWER);
 
       Logger.getLogger(WorkflowServiceRest.class).info(
-          "RESTful call (Workflow): /message msg: " + message + ", "
-              + refset.getFeedbackEmail());
+          "RESTful call (Workflow): /message msg: " + message);
 
-      workflowService.addFeedback(refset, name, email, message);
+      workflowService.addFeedback(refset, translation, name, email, message);
 
     } catch (Exception e) {
       handleException(e, "send a message email");

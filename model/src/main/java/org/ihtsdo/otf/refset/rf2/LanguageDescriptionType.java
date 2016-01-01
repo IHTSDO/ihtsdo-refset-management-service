@@ -23,6 +23,20 @@ import org.ihtsdo.otf.refset.helpers.HasName;
 public interface LanguageDescriptionType extends HasId, HasName {
 
   /**
+   * Returns the language.
+   *
+   * @return the language
+   */
+  public String getLanguage();
+
+  /**
+   * Sets the language.
+   *
+   * @param language the language
+   */
+  public void setLanguage(String language);
+
+  /**
    * Returns the language refset id.
    *
    * @return the language refset id
@@ -35,14 +49,14 @@ public interface LanguageDescriptionType extends HasId, HasName {
    * @param refsetId the language refset id
    */
   public void setRefsetId(String refsetId);
-  
+
   /**
    * Returns the description type.
    *
    * @return the description type
    */
   public DescriptionType getDescriptionType();
-  
+
   /**
    * Sets the description type.
    *

@@ -66,9 +66,7 @@
           </thead>
           <tbody>
             <tr ng-repeat="clause in pagedClauses">
-              <td>
-                <div ng-bind-html="getClauseValue(clause)"></div>
-              </td>
+              <td>{{getClauseValue(clause)}}</td>
               <td>
                 <button class="btn btn-xs btn-primary" ng-show="!clause.negated"
                   uib-tooltip="Union">+</button>
@@ -76,10 +74,9 @@
                   uib-tooltip="Minus">-</button>
               </td>
               <td>
-                <a class="toolicon" title="Remove"
-                  ng-click="removeClause(refset, clause); $event.stopPropagation()">
-                  <i title="Remove clause" class="noul material-icons md-18">delete</i>
-                </a>
+                <i
+                  ng-click="removeClause(refset, clause); $event.stopPropagation()"
+                  title="Remove clause" class="noul material-icons md-18">delete</i>
               </td>
             </tr>
             <tr ng-show="value == 'ASSIGNED'">
@@ -91,11 +88,9 @@
                   ng-model="newClause.negated">
               </td>
               <td>
-                <a class="toolicon" title="Add new definition clause"
-                  ng-disabled="!newClause"
-                  ng-click="submitClause(refset, newClause); $event.stopPropagation()">
-                  <i title="Add clause" class="noul material-icons md-18">add</i>
-                </a>
+                <i ng-disabled="!newClause"
+                  ng-click="submitClause(refset, newClause); $event.stopPropagation()"
+                  title="Add clause" class="noul material-icons md-18">add</i>
               </td>
             </tr>
           </tbody>

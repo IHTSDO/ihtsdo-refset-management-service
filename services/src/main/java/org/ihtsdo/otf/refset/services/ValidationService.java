@@ -20,19 +20,19 @@ public interface ValidationService extends RootService {
    * Validate concept.
    *
    * @param concept the concept
-   * @param project TODO
+   * @param project the project
    * @param service the service
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateConcept(Concept concept,
-    Project project, TranslationService service) throws Exception;
+  public ValidationResult validateConcept(Concept concept, Project project,
+    TranslationService service) throws Exception;
 
   /**
    * Validate translation.
    *
    * @param translation the translation
-   * @param project TODO
+   * @param project the project
    * @param service the service
    * @return the validation result
    * @throws Exception the exception
@@ -44,7 +44,7 @@ public interface ValidationService extends RootService {
    * Validate member.
    *
    * @param member the member
-   * @param project TODO
+   * @param project the project
    * @param service the service
    * @return the validation result
    * @throws Exception the exception
@@ -61,8 +61,8 @@ public interface ValidationService extends RootService {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateRefset(Refset refset, Project project, RefsetService service)
-    throws Exception;
+  public ValidationResult validateRefset(Refset refset, Project project,
+    RefsetService service) throws Exception;
 
   /**
    * Returns the validation check names.

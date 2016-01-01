@@ -423,7 +423,7 @@ tsApp.service('projectService', [
       $http.post(
         projectUrl + "concept/children" + "?terminologyId=" + terminologyId + "&terminology="
           + terminology + "&version=" + version
-          + (translationId != null ? "&translationId=" + translationId : ""), pfs).then(
+          + (translationId != null ? "&translationId=" + translationId : ""), pfs ? pfs : {}).then(
       // success
       function(response) {
         console.debug("  output = ", response.data);

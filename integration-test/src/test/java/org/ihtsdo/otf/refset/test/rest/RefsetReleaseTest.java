@@ -654,8 +654,8 @@ public class RefsetReleaseTest {
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
-    member.setTerminology(refset.getTerminology());
-    member.setVersion(refset.getVersion());
+    member.setTerminology("N/A");
+    member.setVersion("N/A");
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;

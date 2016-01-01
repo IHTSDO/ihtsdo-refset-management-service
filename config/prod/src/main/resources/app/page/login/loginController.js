@@ -13,6 +13,7 @@ tsApp.controller('LoginCtrl', [
     // Need to call IMS/api/accounts
     // THis requires an nginx setup to redirect ims-api to
     // https://ims.ihtsdotools.org
+    gpService.increment();
     $http.get('ims-api/account').then(
       // Success
       function(response) {
@@ -33,8 +34,12 @@ tsApp.controller('LoginCtrl', [
           // set request header authorization and rerouted
           $http.defaults.headers.common.Authorization = response.data.authToken;
           projectService.getUserHasAnyRole();
-          $location.path("/directory");
-
+          if (response.data.userPreferences && response.data.userPreferences.lastTab) {
+            $location.path(response.data.userPreferences.lastTab);
+          } else {
+            $location.path("/directory");
+          }
+          gpService.decrement();
         },
         // Error
         function(response) {

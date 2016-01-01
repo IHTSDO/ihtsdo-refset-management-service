@@ -134,12 +134,14 @@ public interface SecurityServiceRest {
   public void removeUserPreferences(Long id, String authToken) throws Exception;
 
   /**
-   * Update user preferences.
+   * Update user preferences. Returns user preferences because of CASCADE
+   * features, need to be able to pick up identifiers.
    *
    * @param userPreferences the user preferences
    * @param authToken the auth token
+   * @return the user preferences
    * @throws Exception the exception
    */
-  public void updateUserPreferences(UserPreferencesJpa userPreferences,
-    String authToken) throws Exception;
+  public UserPreferences updateUserPreferences(
+    UserPreferencesJpa userPreferences, String authToken) throws Exception;
 }

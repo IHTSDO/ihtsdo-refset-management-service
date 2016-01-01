@@ -73,7 +73,9 @@
                 ng-click="openEditProjectModal(project); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
 
-              <i ng-click="removeProject(project); $event.stopPropagation()"
+              <i
+                confirm="Are you sure you want to remove the project ({{project.name}})?"
+                ng-click="removeProject(project); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
 
             </td>
@@ -140,7 +142,9 @@
             <td class="nobreak">
               <i ng-click="openEditUserModal(user); $event.stopPropagation()"
                 title="Edit" class="noul material-icons md-18">edit</i>
-              <i ng-click="removeUser(user); $event.stopPropagation()"
+              <i
+                confirm="Are you sure you want to remove the user ({{user.userName}})?"
+                ng-click="removeUser(user); $event.stopPropagation()"
                 title="Delete" class="noul material-icons md-18">delete</i>
             </td>
           </tr>
@@ -157,43 +161,158 @@
     </uib-accordion-heading> <!--  end A3 User Prefs-->
     <div class="row">
       <div class="col-md-12 col-xs-12">
-        <!--  spelling correction -->
-        <input type="checkbox" ng-change="saveUserPreferences()"
-          ng-model="user.userPreferences.spellingEnabled">
-        <span ng-show="user.userPreferences.spellingEnabled">Spelling
-          Correction (ENABLED)</span>
-        <span ng-show="!user.userPreferences.spellingEnabled">Spelling
-          Correction (DISABLED)</span>
+        <h5>
+          <b>Spelling and Memory Settings</b>
+        </h5>
       </div>
-    </div>
-    <div class="row">
       <div class="col-md-12 col-xs-12">
-        <!--  phrase memory-->
-        <input type="checkbox" ng-change="saveUserPreferences()"
-          ng-model="user.userPreferences.memoryEnabled">
-        <span ng-show="user.userPreferences.memoryEnabled">Phrase Memory
-          Suggestion (ENABLED)</span>
-        <span ng-show="!user.userPreferences.memoryEnabled">Phrase Memory
-          Suggestion (DISABLED)</span>
+        <div class="col-md-12 col-xs-12">
+          <!--  spelling correction -->
+          <input type="checkbox" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.spellingEnabled">
+          <span class="info-text" ng-show="user.userPreferences.spellingEnabled">Spelling
+            Correction (ENABLED)</span>
+          <span class="info-text"
+            ng-show="!user.userPreferences.spellingEnabled">Spelling
+            Correction (DISABLED)</span>
+        </div>
+        <div class="col-md-12 col-xs-12">
+          <!--  phrase memory-->
+          <input type="checkbox" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.memoryEnabled">
+          <span class="info-text" ng-show="user.userPreferences.memoryEnabled">Phrase
+            Memory Suggestion (ENABLED)</span>
+          <span class="info-text" ng-show="!user.userPreferences.memoryEnabled">Phrase
+            Memory Suggestion (DISABLED)</span>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <!-- PFS table of available (not already assigned) language description types -->
-      <div class="col-md-6 col-xs-6">
+    <div class="row" style="margin-top: 5px;">
+      <div class="col-md-12 col-xs-12">
         <h5>
-          <b>Available Types</b>
+          <b>Language Description Types</b>
         </h5>
-        {{languageDescriptionTypes}}
       </div>
-      <!-- Orderable table of assigned description types -->
-      <div class="col-md-6 col-xs-6">
-        <h5>
-          <b>Assigned Types</b>
-        </h5>
-        {{user.userPreferences.languageDescriptionTypes}}
-      </div>
-    </div>
+      <div class="col-md-12 col-xs-12">
 
+        <!-- PFS table of available (not already assigned) language description types -->
+        <div class="col-md-6 col-xs-6">
+          <span>Available Types</span>
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedAvailableLdt.totalCount > pageSize || paging['lang'].filter"
+              total-items="pagedAvailableLdt.totalCount"
+              ng-model="paging['lang'].page" ng-change="getPagedAvailableLdt()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedAvailableLdt.totalCount > pageSize || paging['lang'].filter"
+              type="text" ng-model="paging['lang'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedAvailableLdt()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['lang'].filter"
+              ng-click="paging['lang'].filter = ''; getPagedAvailableLdt()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedAvailableLdt.length == 0 && paging['lang'].filter"
+            class="alert alert-warning"> No language description types
+            matching filter </span>
+          <span style="display: block"
+            ng-show="pagedAvailableLdt.length == 0 && !paging['lang'].filter"
+            class="alert alert-warning"> No language description types </span>
+
+          <table class="table"
+            ng-show="pagedAvailableLdt.totalCount > 0 || paging['lang'].filter">
+            <thead class="table-select-row">
+              <th class="col-md-5 col-xs-5"
+                ng-click="setSortField('lang','name')">Name<span
+                  ng-bind="getSortIndicator('lang','name')"></span>
+              </th>
+              <th class="col-md-3 col-xs-3"
+                ng-click="setSortField('lang','refsetId')">Refset Id<span
+                  ng-bind="getSortIndicator('lang','refsetId')"></span>
+              </th>
+              <th class="col-md-1 col-xs-1"
+                ng-click="setSortField('lang','language')">Lang<span
+                  ng-bind="getSortIndicator('lang','language')"></span>
+              </th>
+              <th class="col-md-2 col-xs-2"
+                ng-click="setSortField('lang','descriptionType.name')">Type<span
+                  ng-bind="getSortIndicator('lang','descriptionType.name')"></span>
+              </th>
+              <th class="col-md-1 col-xs-1"></th>
+            </thead>
+            <tbody>
+              <tr ng-repeat="ldt in pagedAvailableLdt">
+                <td>{{ldt.name}}</td>
+                <td>{{ldt.refsetId}}</td>
+                <td>{{ldt.language}}</td>
+                <td>{{ldt.descriptionType.name}}</td>
+                <td>
+                  <!-- Actions -->
+                  <i ng-click="addLanguageDescriptionType(ldt)"
+                    title="Add language description type"
+                    class="noul material-icons md-18">add</i>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Ordered table of assigned description types -->
+        <div class="col-md-6 col-xs-6">
+          <span>Precedence List</span>
+          <span style="display: block"
+            ng-show="user.userPreferences.languageDescriptionTypes.length == 0"
+            class="alert alert-warning"> No language description types </span>
+
+          <table class="table"
+            ng-show="user.userPreferences.languageDescriptionTypes.length > 0">
+            <thead class="table-select-row">
+              <th class="col-md-5 col-xs-5">Name</th>
+              <th class="col-md-3 col-xs-3">Refset Id</th>
+              <th class="col-md-1 col-xs-1">Lang</th>
+              <th class="col-md-1 col-xs-2">Type</th>
+              <th class="col-md-1 col-xs-1"></th>
+            </thead>
+            <tbody>
+              <tr
+                ng-repeat="ldt in user.userPreferences.languageDescriptionTypes">
+                <td>{{ldt.name}}</td>
+                <td>{{ldt.refsetId}}</td>
+                <td>{{ldt.language}}</td>
+                <td>{{ldt.descriptionType.name}}</td>
+                <td>
+                  <span class="nobreak">
+                    <!-- Actions - move up-->
+                    <i ng-show="$index != 0"
+                      ng-click="moveLanguageDescriptionTypeUp(ldt)"
+                      title="Move language description type up"
+                      class="noul material-icons md-18">file_upload</i>
+                    <!-- Actions - move down-->
+                    <i
+                      ng-show="$index != user.userPreferences.languageDescriptionTypes.length-1"
+                      ng-click="moveLanguageDescriptionTypeDown(ldt)"
+                      title="Move language description type down"
+                      class="noul material-icons md-18">file_download</i>
+                    <!-- Actions - remove -->
+                    <i ng-click="removeLanguageDescriptionType(ldt)"
+                      title="Remove description type"
+                      class="noul material-icons md-18">delete</i>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
     </uib-accordion-group>
     <div></div>
 

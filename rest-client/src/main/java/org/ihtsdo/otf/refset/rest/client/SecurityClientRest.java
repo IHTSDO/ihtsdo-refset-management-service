@@ -358,8 +358,8 @@ public class SecurityClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void updateUserPreferences(UserPreferencesJpa userPreferences,
-    String authToken) throws Exception {
+  public UserPreferences updateUserPreferences(
+    UserPreferencesJpa userPreferences, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Security Client - update user preferences " + userPreferences);
     Client client = ClientBuilder.newClient();
@@ -375,10 +375,15 @@ public class SecurityClientRest extends RootClientRest implements
             .header("Authorization", authToken)
             .post(Entity.xml(userPreferencesString));
 
+    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // do nothing
+      // n/a
     } else {
       throw new Exception(response.toString());
     }
+
+    // converting to object
+    return (UserPreferencesJpa) ConfigUtility.getGraphForString(resultString,
+        UserPreferencesJpa.class);
   }
 }

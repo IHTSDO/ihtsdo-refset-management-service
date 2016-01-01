@@ -3,24 +3,28 @@
  */
 package org.ihtsdo.otf.refset.rf2;
 
+import org.ihtsdo.otf.refset.helpers.HasId;
+import org.ihtsdo.otf.refset.helpers.HasName;
+import org.ihtsdo.otf.refset.helpers.HasTerminologyId;
+
 /**
  * Represents a description type reference set member.
  */
-public interface DescriptionType extends RefsetMember {
+public interface DescriptionType extends HasName, HasId, HasTerminologyId {
 
   /**
-   * Returns the name. For example "Synonym"
+   * Returns the refset id.
    *
-   * @return the name
+   * @return the refset id
    */
-  public String getName();
+  public String getRefsetId();
 
   /**
-   * Sets the name
+   * Sets the refset id.
    *
-   * @param name the name
+   * @param refsetId the refset id
    */
-  public void setName(String name);
+  public void setRefsetId(String refsetId);
 
   /**
    * Returns the type id. For example 900000000000013009.
