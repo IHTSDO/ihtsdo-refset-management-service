@@ -1003,8 +1003,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         Refset refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(true);
         refsetService.updateRefset(refset);
+		refsetService.clear();
 
-        refsetService = new TranslationServiceJpa();
         refset = refsetService.getRefset(refsetId);
         refsetService.setTransactionPerOperation(false);
         refsetService.beginTransaction();
