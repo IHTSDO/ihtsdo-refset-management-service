@@ -312,7 +312,7 @@ public class RefsetTest {
   public void testGetMember() throws Exception {
     Logger.getLogger(getClass()).debug("TEST getMember");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
@@ -349,7 +349,7 @@ public class RefsetTest {
   public void testAddRefsetMembersForExpression() throws Exception {
     Logger.getLogger(getClass()).debug("TEST addRefsetMembersForExpression");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
@@ -398,7 +398,7 @@ public class RefsetTest {
   public void testRemoveRefsetExclusion() throws Exception {
     Logger.getLogger(getClass()).debug("TEST removeRefsetExclusion");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.INTENSIONAL, project, null, true);
@@ -447,7 +447,7 @@ public class RefsetTest {
   public void testOptimizeDefinition() throws Exception {
     Logger.getLogger(getClass()).debug("TEST optimizeDefinition");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
     RefsetJpa refset =
         makeRefset("refset", null, Refset.Type.INTENSIONAL, project, null,
             false);
@@ -551,7 +551,7 @@ public class RefsetTest {
   public void testRefsetLookupNoMembers() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRefsetLookupNoMembers");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     // Create refset (extensional) and do not import definition
     RefsetJpa refset =
@@ -574,7 +574,7 @@ public class RefsetTest {
 
     Logger.getLogger(getClass()).debug("RUN testGetOldNewRegularMembers");
 
-    Project project = projectService.getProject(53L, adminAuthToken);
+    Project project = projectService.getProject(3L, adminAuthToken);
 
     // Create refset (extensional) and import definition
     RefsetJpa janRefset =
