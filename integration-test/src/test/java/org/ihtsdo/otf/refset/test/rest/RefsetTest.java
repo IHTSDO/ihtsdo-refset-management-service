@@ -542,12 +542,162 @@ public class RefsetTest {
   }
 
   /**
+   * Test refset lookup for the case that no members are added nor looked-up.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRefsetLookupNoMembers() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testRefsetLookupNoMembers");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    // Create refset (extensional) and do not import definition
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), false);
+
+    refsetService = new RefsetClientRest(properties);
+
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test getting both old and new regular members.
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testGetOldNewRegularMembers() throws Exception {
+
+    Logger.getLogger(getClass()).debug("RUN testGetOldNewRegularMembers");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    // Create refset (extensional) and import definition
+    RefsetJpa janRefset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), true);
+
+    refsetService = new RefsetClientRest(properties);
+
+    // Begin migration
+    Refset julyStagedRefset =
+        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+
+    // Create Report with identical content
+    // Thus Old & New the same size
+    String reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    ConceptRefsetMemberList oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    ConceptRefsetMemberList newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+
+    assertEquals(0, oldRegularMembers.getCount());
+    assertEquals(0, newRegularMembers.getCount());
+
+    // Add member to July refset and regenerate report
+    // Thus New has an extra member
+    ConceptRefsetMemberJpa createdMember =
+        makeConceptRefsetMember("TestMember", "1234567", julyStagedRefset);
+    createdMember =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(createdMember,
+            adminAuthToken);
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+
+    assertEquals(0, oldRegularMembers.getCount());
+    assertEquals(1, newRegularMembers.getCount());
+    assertEquals(createdMember.getConceptId(), newRegularMembers.getObjects()
+        .get(0).getConceptId());
+    assertEquals(createdMember.getConceptName(), newRegularMembers.getObjects()
+        .get(0).getConceptName());
+
+    // Add identical member to Jan refset and regenerate report
+    // Thus Old & New again the same size
+    ConceptRefsetMemberJpa createdMember2 =
+        makeConceptRefsetMember("TestMember", "1234567", janRefset);
+    ConceptRefsetMember addIdenticalMember =
+        refsetService.addRefsetMember(createdMember2, adminAuthToken);
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+
+    assertEquals(0, oldRegularMembers.getCount());
+    assertEquals(0, newRegularMembers.getCount());
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    // Add another but unique member to Jan refset and regenerate report
+    // Thus Old has an extra member
+    ConceptRefsetMemberJpa createdMember3 =
+        makeConceptRefsetMember("TestMember3", "12345673", janRefset);
+    createdMember =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(createdMember3,
+            adminAuthToken);
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    assertEquals(1, oldRegularMembers.getCount());
+    assertEquals(0, newRegularMembers.getCount());
+    assertEquals(createdMember3.getConceptId(), oldRegularMembers.getObjects()
+        .get(0).getConceptId());
+    assertEquals(createdMember3.getConceptName(), oldRegularMembers
+        .getObjects().get(0).getConceptName());
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+
+    // cleanup
+    verifyRefsetLookupCompleted(janRefset.getId());
+    verifyRefsetLookupCompleted(julyStagedRefset.getId());
+    // refsetService.finishMigration(janRefset.getId(), adminAuthToken);
+    refsetService.cancelMigration(janRefset.getId(), adminAuthToken);
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
    * Ensure refset completed prior to shutting down test to avoid lookupName
    * issues.
    *
    * @param refsetId the refset id
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed
