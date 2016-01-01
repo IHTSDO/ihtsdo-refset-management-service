@@ -226,7 +226,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     final SecurityService securityService = new SecurityServiceJpa();
     try {
 
-      authorizeApp(securityService, authToken, "add new user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "add new user", UserRole.USER);
 
       // Create service and configure transaction scope
       final User newUser = securityService.addUser(user);
@@ -254,7 +254,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "remove user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "remove user", UserRole.USER);
 
       // Remove user
       securityService.removeUser(id);
@@ -278,7 +278,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Security): /user/update " + user);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "update concept", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "update concept", UserRole.USER);
       securityService.updateUser(user);
     } catch (Exception e) {
       handleException(e, "trying to update a concept");
@@ -363,7 +363,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     try {
 
       authorizeApp(securityService, authToken, "add new user preferences",
-          UserRole.ADMIN);
+          UserRole.USER);
 
       // Create service and configure transaction scope
       UserPreferences newUserPreferences =
@@ -392,7 +392,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "remove user preferences",
-          UserRole.ADMIN);
+          UserRole.USER);
 
       securityService.removeUserPreferences(id);
     } catch (Exception e) {
