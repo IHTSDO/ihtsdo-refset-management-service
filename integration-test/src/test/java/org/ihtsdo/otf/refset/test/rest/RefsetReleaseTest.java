@@ -31,6 +31,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -659,6 +660,65 @@ public class RefsetReleaseTest {
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;
+  }
+
+  /**
+   * Test finding refset releases via a query.
+   * 
+   * NOTE: Remain commented out as 
+   *  findRefsetReleasesForQuery() is known to be broken 
+   *  Therefore, leave as-is until further notice.  
+   *  At that time, review this test
+   *  
+   * @throws Exception the exception
+   */
+  // @Test
+  public void testFindRefsetReleasesForQuery() throws Exception {
+    Project project = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset (intensional) and import definition
+    RefsetJpa refset =
+        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Begin release
+    releaseService.beginRefsetRelease(refset.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
+    releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
+    // Preview release
+    releaseService.previewRefsetRelease(refset.getId(), "DEFAULT",
+        adminAuthToken);
+
+    // resume release
+    ReleaseInfoList releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // Finish release
+    releaseService.cancelRefsetRelease(refset.getId(), adminAuthToken);
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**

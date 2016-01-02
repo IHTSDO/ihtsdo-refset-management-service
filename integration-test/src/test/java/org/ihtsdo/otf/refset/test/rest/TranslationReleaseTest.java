@@ -6,6 +6,8 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -26,6 +28,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -595,6 +598,75 @@ public class TranslationReleaseTest {
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test finding translation releases via a query.
+   * 
+   * NOTE: Remain commented out as 
+   *  findTranslationReleasesForQuery() is known to be broken 
+   *  Therefore, leave as-is until further notice.  
+   *  At that time, review this test
+   *  
+   * @throws Exception the exception
+   */
+  // @Test
+  public void testFindTranslationReleasesForQuery() throws Exception {
+    Project project = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset (intensional) and import definition
+    RefsetJpa refset =
+        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
+    TranslationJpa translation =
+        makeTranslation("translation", refset, project, admin);
+
+    // Begin release
+    releaseService.beginTranslationRelease(translation.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
+    releaseService.validateTranslationRelease(translation.getId(),
+        adminAuthToken);
+    // Preview release
+    releaseService.previewTranslationRelease(translation.getId(), "DEFAULT",
+        adminAuthToken);
+
+    // resume release
+    ReleaseInfoList releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            null, null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    releaseService
+        .finishTranslationRelease(translation.getId(), adminAuthToken);
+
+    releases =
+        releaseService.findTranslationReleasesForQuery(null,
+            "translationTerminologyId:" + translation.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "translationTerminologyId:" + translation.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // Finish release
+    releaseService
+        .cancelTranslationRelease(translation.getId(), adminAuthToken);
+
+    // clean up
+    verifyTranslationLookupCompleted(translation.getId());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+  
   /**
    * Make concept refset member.
    *
