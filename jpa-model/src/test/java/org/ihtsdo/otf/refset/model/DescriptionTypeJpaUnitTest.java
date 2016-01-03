@@ -82,8 +82,6 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
   public void testModelEqualsHashcode017() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("active");
-    tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
     // tester.include("version");
@@ -154,12 +152,6 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
   public void testModelNotNullField017() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
-    tester.include("lastModified");
-    tester.include("lastModifiedBy");
-    tester.include("active");
-    tester.include("published");
-    tester.include("publishable");
-    tester.include("moduleId");
     tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");

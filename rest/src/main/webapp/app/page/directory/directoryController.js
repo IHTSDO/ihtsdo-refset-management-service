@@ -17,10 +17,12 @@ tsApp.controller('DirectoryCtrl', [
     }
 
     // Initialize
+    $scope.user = securityService.getUser();
+    projectService.getUserHasAnyRole();
+    $scope.userProjectsInfo = projectService.getUserProjectsInfo();
     projectService.prepareIconConfig();
 
-    $scope.user = securityService.getUser();
-    $scope.userProjectsInfo = projectService.getUserProjectsInfo();
+    $scope.accordionState = {};
 
     // Wrap in a json object so we can pass to the directive effectively
     $scope.projects = {
@@ -57,6 +59,15 @@ tsApp.controller('DirectoryCtrl', [
         $scope.projects.totalCount = data.totalCount;
       })
 
+    };
+
+    // Test for empty accordion state
+    $scope.isAccordionStateEmpty = function() {
+      for (key in $scope.accordionState) {
+        if ($scope.accordionState.hasOwnProperty(key))
+          return false;
+      }
+      return true;
     };
 
     // Get $scope.refsetTypes - for picklist
@@ -99,13 +110,33 @@ tsApp.controller('DirectoryCtrl', [
       });
     };
 
+    // Set the current accordion
+    $scope.setAccordion = function(data) {
+      $scope.user.userPreferences.lastDirectoryAccordion = data;
+      securityService.updateUserPreferences($scope.user.userPreferences);
+    };
+
+    // Configure tab and accordion
+    $scope.configureTab = function() {
+      $scope.user.userPreferences.lastTab = '/directory';
+      if ($scope.user.userPreferences.lastDirectoryAccordion) {
+        $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;
+      } else {
+        // default is published if nothing set
+        $scope.accordionState['PUBLISHED'] = true;
+      }
+      securityService.updateUserPreferences($scope.user.userPreferences);
+    }
+
     // Initialize
     $scope.getRefsetTypes();
     $scope.getProjects();
     $scope.getTerminologyEditions();
     $scope.getWorkflowPaths();
-    $scope.user.userPreferences.lastTab = '/directory';
-    securityService.updateUserPreferences($scope.user.userPreferences);
+    // Handle users with user preferences
+    if ($scope.user.userPreferences) {
+      $scope.configureTab();
+    }
 
     // end
   } ]);

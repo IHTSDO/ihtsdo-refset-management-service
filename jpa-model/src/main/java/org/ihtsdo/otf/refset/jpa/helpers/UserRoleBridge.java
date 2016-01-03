@@ -20,7 +20,7 @@ public class UserRoleBridge implements StringBridge {
   @Override
   public String objectToString(Object value) {
     if (value != null) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       Map<User, UserRole> map = (Map<User, UserRole>) value;
       for(Map.Entry<User, UserRole> entry : map.entrySet()) {

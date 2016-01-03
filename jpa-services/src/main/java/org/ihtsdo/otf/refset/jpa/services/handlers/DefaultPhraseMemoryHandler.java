@@ -4,7 +4,6 @@
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -15,7 +14,6 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.MemoryEntry;
-import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -100,9 +98,9 @@ public class DefaultPhraseMemoryHandler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public StringList suggestPhraseMemory(String name, Long translationId,
+  public StringList suggestTranslation(String name, Long translationId,
     TranslationService translationService) throws Exception {
-    final String query = "name:" + name;
+    final String query = "name:\"" + name + "\"";
     final StringList strList = new StringList();
     List<MemoryEntry> entries;
     entries =
@@ -110,31 +108,14 @@ public class DefaultPhraseMemoryHandler extends RootServiceJpa implements
             null);
     final List<String> results =
         Lists.transform(entries, new Function<MemoryEntry, String>() {
-
           @Override
           public String apply(MemoryEntry arg0) {
             return arg0.getTranslatedName();
           }
-
         });
     strList.setTotalCount(results.size());
     strList.setObjects(results);
     return strList;
   }
 
-  @Override
-  public KeyValuesMap suggestBatchPhraseMemory(StringList lookupTerms,
-    Long translationId, TranslationService translationService)
-    throws IOException {
-    KeyValuesMap retMap = new KeyValuesMap();
-
-    return retMap;
-  }
-
-  /* see superclass */
-  @Override
-  public PhraseMemoryHandler copy() throws Exception {
-    // Nothing to do
-    return new DefaultPhraseMemoryHandler();
-  }
 }

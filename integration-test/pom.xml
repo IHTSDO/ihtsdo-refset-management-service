@@ -74,8 +74,17 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org.ihtsdo.otf.refset/test/rest/Content*Test.java</include>
-              </includes>
+<!--                
+ <include>**/org/ihtsdo/otf/refset/test/rest/TranslationTest.java</include>
+ 
+                    <include>**/org/ihtsdo/otf/refset/test/rest/RefsetReleaseTest.java</include> 
+
+<include>**/org/ihtsdo/otf/refset/test/rest/TranslationReleaseTest.java</include>
+
+-->               
+                    <include>**/org/ihtsdo/otf/refset/test/rest/RefsetTest.java</include>
+
+           </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>
               </additionalClasspathElements>
@@ -97,7 +106,7 @@
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
               <includes>
-                <include>**/org/ihtsdo/otf/refset/test/jpa/*Test.java</include>
+                <include>**/org/ihtsdo/otf/refset/test/jpa/DefaultSpelling*Test.java</include>
               </includes>
               <additionalClasspathElements>
                 <additionalClasspathElement>src/main/resources</additionalClasspathElement>

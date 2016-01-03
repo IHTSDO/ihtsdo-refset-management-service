@@ -8,8 +8,8 @@ tsApp.controller('LoginCtrl', [
   'utilService',
   'tabService',
   'projectService',
-  function($scope, $http, $location, securityService, gpService, utilService,
-    tabService, projectService) {
+  function($scope, $http, $location, securityService, gpService, utilService, tabService,
+    projectService) {
     console.debug('configure LoginCtrl');
 
     // Clear user info
@@ -29,7 +29,7 @@ tsApp.controller('LoginCtrl', [
       }
 
       // login
-      gpService.increment()
+      gpService.increment();
       return $http({
         url : securityUrl + 'authenticate/' + name,
         method : 'POST',
@@ -43,13 +43,11 @@ tsApp.controller('LoginCtrl', [
         utilService.clearError();
         console.debug("user = ", response.data);
         securityService.setUser(response.data);
-        
+
         // set request header authorization and reroute
         console.debug("authToken = " + response.data.authToken);
         $http.defaults.headers.common.Authorization = response.data.authToken;
-        projectService.getUserHasAnyRole();
-
-        if (response.data.userPreferences.lastTab) {
+        if (response.data.userPreferences && response.data.userPreferences.lastTab) {
           $location.path(response.data.userPreferences.lastTab);
         } else {
           $location.path("/directory");

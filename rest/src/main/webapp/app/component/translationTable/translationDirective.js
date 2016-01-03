@@ -35,12 +35,14 @@ tsApp
 
               // Variables
               $scope.user = securityService.getUser();
+              $scope.userProjectsInfo = projectService.getUserProjectsInfo();
               $scope.selected = {
                 concept : null,
                 translation : null,
                 descriptionTypes : []
               };
               $scope.translations = null;
+              $scope.translationLookupProgress = {};
               $scope.translationReleaseInfo = null;
               $scope.project = null;
               $scope.refsets = [];
@@ -172,35 +174,42 @@ tsApp
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
                   pfs.latestOnly = $scope.showLatest;
-                  translationService.findTranslationsForQuery($scope.paging["translation"].filter, pfs).then(
-                    function(data) {
-                      $scope.translations = data.translations;
-                      $scope.translations.totalCount = data.totalCount;
-                      $scope.reselect();
-                    })
+                  translationService.findTranslationsForQuery($scope.paging["translation"].filter,
+                    pfs).then(function(data) {
+                    $scope.translations = data.translations;
+                    $scope.translations.totalCount = data.totalCount;
+                    $scope.reselect();
+                  })
                 }
 
               };
 
               // Reselect selected translation to refresh it
               $scope.reselect = function() {
-                // Bail if no selection
-                if (!$scope.selected.translation) {
-                  return;
-                }
-                // If $scope.selected.translation is in the list, select it, if not clear $scope.selected.translation
-                var found = false;
+                // if there is a selection...
                 if ($scope.selected.translation) {
-                  for (var i = 0; i < $scope.translations.length; i++) {
-                    if ($scope.selected.translation.id == $scope.translations[i].id) {
-                      $scope.selectTranslation($scope.translations[i]);
-                      found = true;
-                      break;
+                  // If $scope.selected.translation is in the list, select it, if not clear $scope.selected.translation
+                  var found = false;
+                  if ($scope.selected.translation) {
+                    for (var i = 0; i < $scope.translations.length; i++) {
+                      if ($scope.selected.translation.id == $scope.translations[i].id) {
+                        $scope.selectTranslation($scope.translations[i]);
+                        found = true;
+                        break;
+                      }
                     }
                   }
+                  if (!found) {
+                    $scope.selected.translation = null;
+                  }
                 }
-                if (!found) {
-                  $scope.selected.translation = null;
+
+                // If "lookup in progress" is set, get progress
+                for (var i = 0; i < $scope.translations.length; i++) {
+                  var translation = $scope.translations[i];
+                  if (translation.lookupInProgress) {
+                    $scope.refreshLookupProgress(translation);
+                  }
                 }
               }
               // Get $scope.selected.translation.concepts
@@ -328,11 +337,13 @@ tsApp
                 })
               };
 
-              // Save user preferences // TODO: should use security service
+              // Save user preferences
               $scope.saveUserPreferences = function() {
-                console.debug("save user prefs", $scope.user.userPreferences);
-                window.alert("need to implement save user prefs");
-                // Saves $scope.user.userPreferences, probably just saves the user
+                securityService.updateUserPreferences($scope.user.userPreferences).then(
+                // Success
+                function(data) {
+                  $scope.user.userPreferences = data;
+                });
               }
 
               // export release artifact
@@ -396,18 +407,36 @@ tsApp
 
               // Remove a translation
               $scope.removeTranslation = function(translation) {
-                // Confirm action
-                if (!confirm("Are you sure you want to remove the translation (" + translation.name
-                  + ")?")) {
-                  return;
-                }
 
-                // TODO need to handle where concepts isn't loaded
-                if (translation.concepts != null) {
+                // warn about concepts
+                if (translation.concepts) {
                   if (!confirm("The translation has concepts that will also be deleted.")) {
                     return;
                   }
                 }
+
+                // IF concepts are not loaded, load, check, and re-confirm
+                else {
+                  // Test for concept
+                  translationService.findTranslationConceptsForQuery(translation.id, "", {
+                    startIndex : 0,
+                    maxResults : 1
+                  }).then(function(data) {
+                    if (data.concepts.length == 1) {
+                      if (!confirm("The translation has concepts that will also be deleted.")) {
+                        return;
+                      }
+                    }
+                    translationService.removeTranslation(translation.id).then(
+                    // Success
+                    function(data) {
+                      $scope.selected.translation = null;
+                      translationService.fireTranslationChanged();
+                    });
+
+                  })
+                }
+
                 translationService.removeTranslation(translation.id).then(
                 // Success
                 function(data) {
@@ -419,11 +448,6 @@ tsApp
 
               // Unassign the specified concept
               $scope.unassign = function(concept) {
-                // Confirm action
-                if (!confirm("Are you sure you want to unassign this concept ("
-                  + concept.terminologyId + ")")) {
-                  return;
-                }
                 if (!concept) {
                   return;
                 }
@@ -440,10 +464,6 @@ tsApp
 
               // Unassign all concepts assigned to this user
               $scope.unassignAll = function() {
-                // Confirm action
-                if (!confirm("Are you sure you want to unassign all concepts?")) {
-                  return;
-                }
 
                 // load all concepts assigned to the user
                 var pfs = {
@@ -499,6 +519,27 @@ tsApp
                 })
               };
 
+              // Start lookup again
+              $scope.startLookup = function(refset) {
+                refsetService.startLookup(refset.id).then(
+                // Success
+                function(data) {
+                  $scope.refsetLookupProgress[refset.id] = 1;
+                });
+              }
+
+              // Refresh lookup progress
+              $scope.refreshLookupProgress = function(refset) {
+                refsetService.getLookupProgress(refset.id).then(
+                // Success
+                function(data) {
+                  if (data > 0 && data < 101) {
+                    window.alert("Progress is " + data + " % complete.");
+                  }
+                  $scope.refsetLookupProgress[refset.id] = data;
+                });
+              }
+
               // Get the most recent note for display
               $scope.getLatestNote = function(translation) {
                 if (translation && translation.notes && translation.notes.length > 0) {
@@ -508,11 +549,13 @@ tsApp
                 return $sce.trustAsHtml("");
               }
 
-              // Save user preferences // TODO: should use security service
+              // Save user preferences
               $scope.saveUserPreferences = function() {
-                console.debug("save user prefs", $scope.user.userPreferences);
-                window.alert("need to implement save user prefs");
-                // Saves $scope.user.userPreferences, probably just saves the user
+                securityService.updateUserPreferences($scope.user.userPreferences).then(
+                // Success
+                function(data) {
+                  $scope.user.userPreferences = data;
+                });
               }
 
               // Clear spelling dictionary
@@ -557,7 +600,7 @@ tsApp
                 console.debug("openNotesModal ", lobject, ltype);
 
                 var modalInstance = $uibModal.open({
-                  // Reuse refset URL - TODO: should make this a reusable component
+                  // Reuse refset URL
                   templateUrl : 'app/component/refsetTable/notes.html',
                   controller : NotesModalCtrl,
                   backdrop : 'static',
@@ -569,7 +612,7 @@ tsApp
                       return ltype;
                     },
                     tinymceOptions : function() {
-                      return utilService.getTinymceOptions();
+                      return utilService.tinymceOptions;
                     }
                   }
                 });
@@ -957,7 +1000,7 @@ tsApp
                       return $scope.projects.role;
                     },
                     tinymceOptions : function() {
-                      return utilService.getTinymceOptions()
+                      return utilService.tinymceOptions;
                     }
                   }
 
@@ -1269,9 +1312,6 @@ tsApp
                 }
                 $scope.pagedDescriptions;
 
-                // Result of gathered suggestions - {"words" : {"word" : ["suggestion1", "suggestion2"] }}
-                $scope.suggestions = {};
-
                 // tinymce config
                 $scope.tinymceOptions = {
                   resize : false,
@@ -1289,7 +1329,7 @@ tsApp
                   spellchecker_callback : function(method, text, success, failure) {
                     // method == spellcheck
                     if (method == "spellcheck" && text) {
-                      // TODO: may not need to actually call this, probably can just look up
+                      // NOTE: may not need to actually call this, probably can just look up
                       // words from the description
                       translationService.suggestBatchSpelling(translation.id,
                         text.match(this.getWordCharPattern())).then(
@@ -1340,7 +1380,8 @@ tsApp
                 // data structure for report - setting this causes the frame to load
                 $scope.data = {
                   concept : null,
-                  descriptionTypes : translation.descriptionTypes
+                  descriptionTypes : translation.descriptionTypes,
+                  translation : translation
                 }
 
                 // scope variables
@@ -1364,8 +1405,18 @@ tsApp
                 // spelling/memory scope vars
                 $scope.selectedWord = null;
                 $scope.allUniqueWordsNoSuggestions = [];
+                // Result of gathered suggestions - {"words" : {"word" : ["suggestion1", "suggestion2"] }}
+                $scope.suggestions = {};
+                $scope.memoryEntries = [];
+                $scope.memoryEntriesMap = {};
+                $scope.allUniquePhrasesNoSuggestions = [];
                 $scope.selectedEntry = null;
-
+                $scope.selectedName = null;
+                $scope.translatedName = null;
+                // When descriptions are ready, load phrases
+                $scope.$watch('data.descriptions', function() {
+                  $scope.getMemoryEntries();
+                });
                 // Clear errors
                 $scope.clearError = function() {
                   $scope.errors = [];
@@ -1385,12 +1436,16 @@ tsApp
 
                 // Populate $scope.suggestions (outside of spelling correction run)
                 $scope.getSuggestions = function() {
-                  console.debug("GET SUGGESTIONS");
+
+                  $scope.suggestions = {};
+                  if (!$scope.user.userPreferences.spellingEnabled) {
+                    return;
+                  }
+
                   translationService.suggestBatchSpelling(translation.id,
                     $scope.getAllUniqueWords()).then(
                   // Success
                   function(data) {
-                    $scope.suggestions = {};
                     for ( var entry in data.map) {
                       $scope.suggestions[entry] = data.map[entry].strings;
                     }
@@ -1437,6 +1492,10 @@ tsApp
 
                 // Sets $scope.allUniqueWordsNoSuggestions
                 $scope.getAllUniqueWordsNoSuggestions = function() {
+                  if (!$scope.user.userPreferences.spellingEnabled) {
+                    $scope.allUniqueWordsNoSuggestions = [];
+                    return;
+                  }
                   var words = $scope.getAllUniqueWords();
                   var retval = [];
                   for (var i = 0; i < words.length; i++) {
@@ -1514,21 +1573,147 @@ tsApp
                       utilService.clearError();
                     });
                 }
+
                 // Translation memory
 
-                // TODO:
+                // Get unique phrases from all English descriptions
+                $scope.getAllUniquePhrases = function() {
+                  // bail if no descriptions
+                  if (!$scope.data.descriptions) {
+                    return [];
+                  }
+                  var all = {};
+                  for (var i = 0; i < $scope.data.descriptions.length; i++) {
+                    var desc = $scope.data.descriptions[i];
+                    // Skip non-English phrases
+                    // NOTE: ideally this should be metadata driven
+                    if (desc.languageCode != 'en') {
+                      continue;
+                    }
+                    var phrases = utilService.getPhrases(desc.term);
+                    if (phrases && phrases.length > 0) {
+                      for (var j = 0; j < phrases.length; j++) {
+                        all[phrases[j]] = 1;
+                      }
+                    }
+                  }
+                  var retval = [];
+                  for ( var phrase in all) {
+                    retval.push(phrase);
+                  }
+                  return retval.sort();
+                }
+
+                // Sets $scope.allUniquePhraseNoSuggestions
+                $scope.getAllUniquePhrasesNoSuggestions = function() {
+                  if (!$scope.user.userPreferences.memoryEnabled) {
+                    $scope.allUniquePhrasesNoSuggestions = [];
+                    return;
+                  }
+                  var phrases = $scope.getAllUniquePhrases();
+                  var retval = [];
+                  for (var i = 0; i < phrases.length; i++) {
+                    if (phrases[i] && !$scope.memoryEntriesMap[phrases[i]]) {
+                      retval.push(phrases[i]);
+                    }
+                  }
+                  $scope.allUniquePhrasesNoSuggestions = retval.sort();
+                  if (retval.length > 0) {
+                    $scope.selectedName = retval[0];
+                  }
+                }
+
+                // Displayable value for an entry
+                $scope.getEntryInfo = function(entry) {
+                  return entry.name + " => " + entry.translatedName;
+                }
+                // Populates $scope.memoryEntries
                 $scope.getMemoryEntries = function() {
-                  return [];
+                  $scope.memoryEntries = [];
+                  $scope.memoryEntriesMap = {};
+                  if (!$scope.user.userPreferences.memoryEnabled) {
+                    return;
+                  }
+
+                  translationService.suggestBatchTranslation(translation.id,
+                    $scope.getAllUniquePhrases()).then(
+                  // Success
+                  function(data) {
+                    for ( var entry in data.map) {
+                      for (var i = 0; i < data.map[entry].strings.length; i++) {
+                        $scope.memoryEntriesMap[entry] = 1;
+                        $scope.memoryEntries.push({
+                          name : entry,
+                          translatedName : data.map[entry].strings[i]
+                        });
+                      }
+                      if ($scope.memoryEntries.length > 0) {
+                        $scope.selectedEntry = $scope.memoryEntries[0];
+
+                      }
+                    }
+                    // compute all unique phrases without suggestions
+                    $scope.getAllUniquePhrasesNoSuggestions();
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    $scope.suggestions = {};
+                  });
+                }
+
+                // Apply memory entry to the "current" description
+                $scope.applyMemoryEntry = function(translatedName) {
+                  // Find the first empty description and put the translated name there
+                  var found = false;
+                  for (var i = 0; i < $scope.pagedDescriptions.length; i++) {
+                    var desc = $scope.pagedDescriptions[i];
+                    if (!desc.term) {
+                      desc.term = translatedName;
+                      found = true;
+                    }
+                  }
+                  // If not found, just add to the end of the first description
+                  if (!found && $scope.pagedDescriptions.length > 0) {
+                    if ($scope.pagedDescriptions[0].term) {
+                      $scope.pagedDescriptions[0].term += " " + translatedName;
+                    } else {
+                      $scope.pagedDescriptions[0].term = translatedName;
+                    }
+                  }
                 }
 
                 // Remove a memory entry
                 $scope.removeMemoryEntry = function(name, translatedName) {
-                  // Make a call to translation sevice to remove the entry from memory
+                  translationService.removePhraseMemoryEntry(translation.id, name, translatedName)
+                    .then(
+                    // Success
+                    function(data) {
+                      $scope.getMemoryEntries();
+                    },
+                    //Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                 }
 
                 // Add a memory entry
                 $scope.addMemoryEntry = function(name, translatedName) {
-                  // Make a call to translation sevice to add entry to memory
+                  translationService.addPhraseMemoryEntry(translation.id, name, translatedName)
+                    .then(
+                    // Success
+                    function(data) {
+                      // clear selected ata model
+                      $scope.selectedName = null;
+                      $scope.translatedName = null;
+                      $scope.getMemoryEntries();
+                    },
+                    //Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                 }
 
                 // Description stuff
@@ -1549,8 +1734,9 @@ tsApp
                   var description = {};
                   description.term = "";
                   description.caseSignificanceId = $scope.caseSensitiveTypes[0].key;
-                  // TODO: decide which one to pick (maybe just look for "Synonym"
-                  description.type = $scope.translation.descriptionTypes[$scope.translation.descriptionTypes.length - 1];
+                  // TODO: decide which one to pick (maybe just look for "Synonym")
+                  var types = $scope.getDescriptionTypes();
+                  description.type = types[types.length - 1];
 
                   $scope.conceptTranslated.descriptions.unshift(description);
                   $scope.getPagedDescriptions();
@@ -1600,7 +1786,6 @@ tsApp
                   validationService.validateConcept(concept, $scope.project.id).then(
                   // Success
                   function(data) {
-                    console.debug("data", data);
                     // If there are errors, make them available and stop.
                     if (data.errors && data.errors.length > 0) {
                       $scope.errors = data.errors;
@@ -1635,7 +1820,6 @@ tsApp
                   translationService.updateTranslationConcept(concept).then(
                     // Success - update concept
                     function(data) {
-                      console.debug("updated concept", data);
 
                       // Perform a workflow "save" operation
                       workflowService.performTranslationWorkflowAction($scope.project.id,
@@ -1680,7 +1864,6 @@ tsApp
                       var type = $scope.translation.descriptionTypes[j];
                       if (desc.typeId == type.typeId
                         && desc.languages[0].acceptabilityId == type.acceptabilityId) {
-                        console.debug("set desc type", type);
                         desc.type = type;
                       }
                     }
@@ -1778,7 +1961,7 @@ tsApp
 
               // Copy modal
               $scope.openCopyModal = function(ltranslation, ltype) {
-                console.debug("copyModal ", ltranslation, ltype);
+                console.debug("openCopyModal ", ltranslation, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/copy.html',
@@ -1864,11 +2047,10 @@ tsApp
 
               };
 
-              
               // Release Process modal
               $scope.openReleaseProcessModal = function(ltranslation) {
 
-                console.debug("releaseProcessModal ", ltranslation);
+                console.debug("openReleaseProcessModal ", ltranslation);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/release.html',
@@ -1897,8 +2079,8 @@ tsApp
               };
 
               // Release Process controller
-              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation, ioHandlers,
-                utilService) {
+              var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation,
+                ioHandlers, utilService) {
 
                 console.debug("Entered release process modal", translation.id, ioHandlers);
 
@@ -1928,7 +2110,6 @@ tsApp
                 }
 
                 $scope.beginTranslationRelease = function(translation) {
-                  console.debug("begin translation release", translation.id, translation.effectiveTime);
 
                   releaseService.beginTranslationRelease(translation.id,
                     utilService.toSimpleDate(translation.effectiveTime)).then(
@@ -1946,7 +2127,6 @@ tsApp
                 };
 
                 $scope.validateTranslationRelease = function(translation) {
-                  console.debug("validate translation release", translation.id);
 
                   releaseService.validateTranslationRelease(translation.id).then(
                   // Success
@@ -1962,9 +2142,9 @@ tsApp
                 };
 
                 $scope.previewTranslationRelease = function(translation) {
-                  console.debug("preview translation release", translation.id);
 
-                  releaseService.previewTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  releaseService.previewTranslationRelease(translation.id,
+                    $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
                     $scope.stagedTranslation = data;
@@ -1979,9 +2159,9 @@ tsApp
                 };
 
                 $scope.finishTranslationRelease = function(translation) {
-                  console.debug("finish translation release", translation.id);
 
-                  releaseService.finishTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                  releaseService.finishTranslationRelease(translation.id,
+                    $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
                     $uibModalInstance.close(translation);
@@ -1994,15 +2174,11 @@ tsApp
                 };
 
                 $scope.cancel = function(translation) {
-                  console.debug("Cancel ", translation.id);
-                  if (!confirm("Are you sure you want to cancel the translation release?")) {
-                    return;
-                  }
+
                   $uibModalInstance.dismiss('cancel');
                   releaseService.cancelTranslationRelease(translation.id).then(
                   // Success
                   function(data) {
-                    console.debug("cancel data", data);
                     $uibModalInstance.close(translation);
                   },
                   // Error
@@ -2021,6 +2197,84 @@ tsApp
 
                 $scope.format = 'yyyyMMdd';
               }
+
+              // Feedback modal
+              $scope.openFeedbackModal = function(ltranslation) {
+                console.debug("Open feedbackModal ", ltranslation);
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/translationTable/feedback.html',
+                  controller : FeedbackModalCtrl,
+                  backdrop : 'static',
+                  resolve : {
+                    translation : function() {
+                      return ltranslation;
+                    },
+                    tinymceOptions : function() {
+                      return utilService.tinymceOptions;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                  translationService.fireTranslationChanged(data);
+                });
+
+              };
+
+              // Feedback controller
+              var FeedbackModalCtrl = function($scope, $uibModalInstance, translation,
+                tinymceOptions) {
+                console.debug("Entered feedback modal control", translation);
+
+                $scope.errors = [];
+                $scope.translation = JSON.parse(JSON.stringify(translation));
+                $scope.tinymceOptions = tinymceOptions;
+
+                $scope.addFeedback = function(translation, name, email, message) {
+
+                  if (message == null || message == undefined || message === '') {
+                    window.alert("The message cannot be empty. ");
+                    return;
+                  }
+
+                  if (name == null || name == undefined || name === '' || email == null
+                    || email == undefined || email === '') {
+                    window.alert("Name and email must be provided.");
+                    return;
+                  }
+
+                  if (!validateEmail(email)) {
+                    window
+                      .alert("Invalid email address provided (e.g. should be like someone@example.com)");
+                    return;
+                  }
+
+                  workflowService.addFeedback(translation, name, email, message).then(
+                  // Success
+                  function(data) {
+                    $uibModalInstance.dismiss('cancel');
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  })
+                };
+
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+
+                // email validation via regex
+                function validateEmail(email) {
+                  var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                  return re.test(email);
+                }
+
+              };
               // end
 
             } ]

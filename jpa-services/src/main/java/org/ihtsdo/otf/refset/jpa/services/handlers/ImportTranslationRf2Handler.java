@@ -283,7 +283,7 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     c.setPublishable(true);
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
-    c.setTerminology(refset.getTerminology());
-    c.setVersion(refset.getVersion());
+    c.setTerminology("N/A");
+    c.setVersion("N/A");
   }
 }

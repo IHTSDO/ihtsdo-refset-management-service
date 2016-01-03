@@ -3,20 +3,8 @@
 </div>
 
 <div class="modal-body">
-  <table class="table">
-    <tr>
-      <td>
-        <b>Refset</b>
-      </td>
-      <td>{{refset.name}}</td>
-    </tr>
-    <tr ng-show="refset.description">
-      <td>
-        <b>Description</b>
-      </td>
-      <td>{{refset.description}}</td>
-    </tr>
-  </table>
+  <div refset-info refset="refset" form="short"></div>
+
   <div class="row">
     <!--  Left hand side -->
     <div class="col-md-12 col-xs-12">
@@ -37,8 +25,8 @@
             boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
             next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
             ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
-            total-items="pagedClauses.totalCount" ng-model="paging['clauses'].page"
-            ng-change="getPagedClauses()"></uib-pagination>
+            total-items="pagedClauses.totalCount"
+            ng-model="paging['clauses'].page" ng-change="getPagedClauses()"></uib-pagination>
 
           <input class="input-filter" placeholder="Enter filter text"
             ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
@@ -66,19 +54,17 @@
           </thead>
           <tbody>
             <tr ng-repeat="clause in pagedClauses">
+              <td>{{getClauseValue(clause)}}</td>
               <td>
-                <div ng-bind-html="getClauseValue(clause)"></div>
+                <button class="btn btn-xs btn-primary" ng-show="!clause.negated"
+                  uib-tooltip="Union">+</button>
+                <button class="btn btn-xs btn-danger" ng-show="clause.negated"
+                  uib-tooltip="Minus">-</button>
               </td>
-              <td><button class="btn btn-xs btn-primary"
-                      ng-show="!clause.negated" uib-tooltip="Union">+</button>
-                      <button class="btn btn-xs btn-danger"
-                        ng-show="clause.negated"
-                        uib-tooltip="Minus">-</button></td>
               <td>
-                <a class="toolicon" title="Remove"
-                  ng-click="removeClause(refset, clause); $event.stopPropagation()">
-                  <i title="Remove clause" class="noul material-icons md-18">delete</i>
-                </a>
+                <i
+                  ng-click="removeClause(refset, clause); $event.stopPropagation()"
+                  title="Remove clause" class="noul material-icons md-18">delete</i>
               </td>
             </tr>
             <tr ng-show="value == 'ASSIGNED'">
@@ -90,11 +76,9 @@
                   ng-model="newClause.negated">
               </td>
               <td>
-                <a class="toolicon" title="Add new definition clause"
-                  ng-disabled="!newClause"
-                  ng-click="submitClause(refset, newClause); $event.stopPropagation()">
-                  <i title="Add clause" class="noul material-icons md-18">add</i>
-                </a>
+                <i ng-disabled="!newClause"
+                  ng-click="submitClause(refset, newClause); $event.stopPropagation()"
+                  title="Add clause" class="noul material-icons md-18">add</i>
               </td>
             </tr>
           </tbody>
@@ -107,6 +91,6 @@
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="value == 'ASSIGNED'"
     ng-click="save(refset);" title="Save definition">Save</button>
-  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'" ng-click="cancel(refset)">Cancel</button>
-  <button class="btn btn-warning" ng-show="value != 'ASSIGNED'" ng-click="close()">Close</button>
+  <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
+    ng-click="cancel(refset)">Cancel</button>
 </div>

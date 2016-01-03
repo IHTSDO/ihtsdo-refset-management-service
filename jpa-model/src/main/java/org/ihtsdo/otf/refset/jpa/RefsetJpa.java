@@ -586,7 +586,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         positiveClauses.add(clause);
       }
     }
-    StringBuffer computedDefinition = new StringBuffer();
+    StringBuilder computedDefinition = new StringBuilder();
     if (positiveClauses.size() > 0) {
       computedDefinition.append(positiveClauses.get(0).getValue());
       for (int i = 1; i < positiveClauses.size(); i++) {

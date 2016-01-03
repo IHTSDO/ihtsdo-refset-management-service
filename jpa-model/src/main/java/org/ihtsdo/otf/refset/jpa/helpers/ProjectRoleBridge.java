@@ -20,7 +20,7 @@ public class ProjectRoleBridge implements StringBridge {
   @Override
   public String objectToString(Object value) {
     if (value != null) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       Map<Project, UserRole> map = (Map<Project, UserRole>) value;
       for (Map.Entry<Project, UserRole> entry : map.entrySet()) {

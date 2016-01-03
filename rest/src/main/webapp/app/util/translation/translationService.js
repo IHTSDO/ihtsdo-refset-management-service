@@ -535,6 +535,58 @@ tsApp.service('translationService', [
       return deferred.promise;
     }
 
+    // Suggest translations from phrase memory for entry
+    this.suggestTranslation = function(translationId, entry) {
+      console.debug("suggestTranslation");
+      var deferred = $q.defer();
+
+      // Get refset types
+      gpService.increment();
+      $http.get(
+        translationUrl + 'phrasememory' + "/" + 'suggest' + "/" + translationId + "/"
+          + encodeURIComponent(entry)).then(
+      // success
+      function(response) {
+        console.debug("  suggest = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // Suggest unique translations from dictionary for each of batch entries
+    this.suggestBatchTranslation = function(translationId, phrases) {
+      console.debug("suggestBatchTranslation");
+      var deferred = $q.defer();
+
+      // INTENSIONALLY doesn't use gp
+      // gpService.increment();
+      $http.post(
+        translationUrl + 'phrasememory' + "/" + 'suggest' + "/" + 'batch?translationId='
+          + translationId, {
+          strings : phrases
+        }).then(
+      // success
+      function(response) {
+        console.debug("  batch suggest = ", response.data);
+        //  gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        //gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
     // Clear spelling dictionary
     this.clearSpellingDictionary = function(translationId) {
       console.debug("clearSpellingDictionary");
@@ -605,41 +657,21 @@ tsApp.service('translationService', [
     }
 
     // Add new entry to phrase memory
-    this.addPhraseMemoryEntry = function(translationId, entry) {
+    this.addPhraseMemoryEntry = function(translationId, name, translatedName) {
       console.debug("addPhraseMemoryEntry");
       var deferred = $q.defer();
 
       gpService.increment();
-      $http
-        .put(translationUrl + 'phrasememory' + "/" + 'add?translationId=' + translationId, entry)
-        .then(
-        // success
-        function(response) {
-          console.debug("  entry ", response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
-      return deferred.promise;
-    }
-
-    // Remove phrase memory entry
-    this.removePhraseMemoryEntry = function(translationId, name) {
-      console.debug("removePhraseMemoryEntry");
-      var deferred = $q.defer();
-
-      gpService.increment();
-      $http['delete'](
-        translationUrl + 'phrasememory' + "/" + 'remove?translationId=' + translationId + "&name="
-          + encodeURIComponent(name)).then(
+      $http.put(
+        translationUrl + 'phrasememory' + "/" + 'add?translationId=' + translationId + "&name="
+          + encodeURIComponent(name), translatedName, {
+          headers : {
+            "Content-type" : "text/plain"
+          }
+        }).then(
       // success
       function(response) {
-        console.debug("  removed " + name);
+        console.debug("  memory entry = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -649,6 +681,31 @@ tsApp.service('translationService', [
         gpService.decrement();
         deferred.reject(response.data);
       });
+      return deferred.promise;
+    }
+
+    // Remove phrase memory entry
+    this.removePhraseMemoryEntry = function(translationId, name, translatedName) {
+      console.debug("removePhraseMemoryEntry");
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http['delete'](
+        translationUrl + 'phrasememory' + "/" + 'remove?translationId=' + translationId + "&name="
+          + encodeURIComponent(name) + "&translatedName=" + encodeURIComponent(translatedName))
+        .then(
+        // success
+        function(response) {
+          console.debug("  removed " + name);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
@@ -982,6 +1039,79 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     };
+
+    // get the progress of the name/status concept lookup process
+    this.getLookupProgress = function(translationId) {
+      console.debug("getLookupProgress");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(translationUrl + "lookup/status?translationId=" + translationId, {
+        headers : {
+          "Content-type" : "text/plain"
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  output = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // start lookup of concept names/statuses
+    this.startLookup = function(translationId) {
+      console.debug("startLookup");
+      var deferred = $q.defer();
+
+      // get translation revision
+      gpService.increment()
+      $http.get(translationUrl + "lookup/start?translationId=" + translationId).then(
+      // success
+      function(response) {
+        console.debug("  start lookup names = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // get the available language description types
+    this.getLanguageDescriptionTypes = function() {
+      console.debug("getLanguageDescriptionTypes");
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http.get(translationUrl + "langpref").then(
+      // success
+      function(response) {
+        console.debug("  language desc types = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // end    
 
   } ]);

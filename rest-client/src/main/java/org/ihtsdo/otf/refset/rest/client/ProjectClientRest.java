@@ -532,8 +532,8 @@ public class ProjectClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Concept getConceptWithDescriptions(String terminologyId,
-    String terminology, String version, String authToken) throws Exception {
+  public Concept getFullConcept(String terminologyId, String terminology,
+    String version, Long translationId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Project Client - get concept with descriptions - " + terminologyId
             + ", " + terminology + ", " + version);
@@ -545,7 +545,8 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/concepts?"
             + "terminologyId=" + terminologyId + "&terminology=" + terminology
-            + "&version=" + version);
+            + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -568,8 +569,8 @@ public class ProjectClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, PfsParameterJpa pfs, String authToken)
-    throws Exception {
+    String terminology, String version, Long translationId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Project Client - get children - " + terminologyId + ", " + terminology
             + ", " + version + ", " + pfs);
@@ -581,7 +582,8 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/project/concept/children?" + "terminologyId=" + terminologyId
-            + "&terminology=" + terminology + "&version=" + version);
+            + "&terminology=" + terminology + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -607,7 +609,8 @@ public class ProjectClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version, String authToken) throws Exception {
+    String terminology, String version, Long translationId, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Project Client - get parents - " + terminologyId + ", " + terminology
             + ", " + version);
@@ -619,7 +622,8 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/project/concept/parents?" + "terminologyId=" + terminologyId
-            + "&terminology=" + terminology + "&version=" + version);
+            + "&terminology=" + terminology + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

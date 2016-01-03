@@ -1,0 +1,77 @@
+
+<h4>{{refset.name}}</h4>
+<table class="table">
+  <tbody>
+    <tr>
+      <td>
+        <b>Description</b>
+      </td>
+      <td>{{refset.description}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>Refset Id</b>
+      </td>
+      <td>{{refset.terminologyId}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>Module Id</b>
+      </td>
+      <td>
+        {{refset.moduleId}}
+        <span flag-icon obj="refset"></span>
+      </td>
+    </tr>
+    <tr ng-show="form == 'long'">
+      <td>
+        <b>Organization</b>
+      </td>
+      <td>{{refset.organization}}</td>
+    </tr>
+    <tr ng-show="form == 'long' && refset.effectiveTime">
+      <td>
+        <b>Effective Time</b>
+      </td>
+      <td>{{toShortDate(refset.effectiveTime)}}</td>
+    </tr>
+    <tr ng-show="form == 'long'">
+      <td>
+        <b>Terminology</b>
+      </td>
+      <td>{{refset.terminology}} {{refset.version}}</td>
+    </tr>
+    <tr ng-show="form == 'long'">
+      <td>Version</td>
+      <td>{{refset.version}}</td>
+    </tr>
+    <tr ng-show="form == 'long' && refset.type == 'INTENSIONAL'">
+      <td>
+        <b>Definition</b>
+      </td>
+      <td>
+        <div style="max-height: 200px; overflow-y: scroll;">
+          <table class="table">
+            <tbody>
+              <tr ng-repeat="clause in refset.definitionClauses">
+                <td>{{clause.value}}</td>
+                <td>
+                  <button class="btn btn-xs btn-primary"
+                    ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                  <button class="btn btn-xs btn-danger" ng-show="clause.negated"
+                    uib-tooltip="Minus">-</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </td>
+    </tr>
+    <tr ng-show="form == 'long' && refset.type == 'EXTERNAL'">
+      <td>
+        <b>External Url</b>
+      </td>
+      <td>{{refset.externalUrl}}</td>
+    </tr>
+  </tbody>
+</table>

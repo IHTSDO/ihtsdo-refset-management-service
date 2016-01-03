@@ -1,0 +1,55 @@
+
+<h4>{{translation.name}}</h4>
+<table class="table">
+  <thead class="table-select-row">
+    <th class="col-md-4 col-xs-4"></th>
+    <th class="col-md-8 col-xs-8"></th>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <b>Description</b>
+      </td>
+      <td>{{translation.description}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>Refset Id</b>
+      </td>
+      <td>{{translation.terminologyId}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>Module Id</b>
+      </td>
+      <td>
+        {{translation.moduleId}}
+        <span flag-icon obj="translation"></span>
+      </td>
+    </tr>
+    <tr ng-show="form == 'long' && translation.effectiveTime">
+      <td>
+        <b>Effective Time</b>
+      </td>
+      <td>{{toShortDate(translation.effectiveTime)}}</td>
+    </tr>
+    <tr>
+      <td>
+        <b>Language</b>
+      </td>
+      <td>{{translation.language}}</td>
+    </tr>
+    <tr ng-show="form == 'long'">
+      <td>
+        <b>Terminology</b>
+      </td>
+      <td>{{translation.terminology}}</td>
+    </tr>
+    <tr ng-show="form == 'long'">
+      <td>
+        <b>Version</b>
+      </td>
+      <td>{{translation.version}}</td>
+    </tr>
+  </tbody>
+</table>

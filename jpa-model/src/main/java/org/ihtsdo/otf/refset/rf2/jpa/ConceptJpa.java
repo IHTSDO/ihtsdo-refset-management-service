@@ -263,6 +263,17 @@ public class ConceptJpa extends AbstractComponent implements Concept {
     translation.setId(translationId);
   }
 
+  /**
+   * Returns the translation terminology id. For indexing.
+   *
+   * @return the translation terminology id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getTranslationTerminologyId() {
+    return (translation != null) ? translation.getTerminologyId() : "";
+  }
+
   /* see superclass */
   @Override
   public boolean isLeaf() {

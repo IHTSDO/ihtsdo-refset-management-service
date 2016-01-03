@@ -89,6 +89,7 @@ public class MemoryEntryJpa implements MemoryEntry {
   }
 
   /* see superclass */
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getTranslatedName() {
     return translatedName;
@@ -169,7 +170,8 @@ public class MemoryEntryJpa implements MemoryEntry {
   @FieldBridge(impl = LongBridge.class)
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getTranslationId() {
-    return (phraseMemory != null && phraseMemory.getTranslation() != null)  ? phraseMemory.getTranslation().getId() : 0;
+    return (phraseMemory != null && phraseMemory.getTranslation() != null)
+        ? phraseMemory.getTranslation().getId() : 0;
   }
 
   /* see superclass */

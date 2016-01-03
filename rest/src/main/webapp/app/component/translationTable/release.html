@@ -92,8 +92,9 @@
           <p class="input-group">
             <span class="input-group-btn">
               <input style="width: 150px" type="text" class="form-control"
-                uib-datepicker-popup="yyyyMMdd" ng-model="translation.effectiveTime"
-                is-open="status.opened" datepicker-options="dateOptions"
+                uib-datepicker-popup="yyyyMMdd"
+                ng-model="translation.effectiveTime" is-open="status.opened"
+                datepicker-options="dateOptions"
                 date-disabled="disabled(date, mode)" ng-required="true"
                 close-text="Close" placeholder="YYYYMMDD" />
               <button type="button" class="btn btn-default"
@@ -152,6 +153,7 @@
     ng-click="finishTranslationRelease(translation) 
     ">Finish</button>
   <button class="btn btn-error" ng-show="translation.inPublicationProcess"
+    confirm="Are you sure you want to cancel the translation release?"
     ng-click="cancel(translation)">Cancel</button>
   <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

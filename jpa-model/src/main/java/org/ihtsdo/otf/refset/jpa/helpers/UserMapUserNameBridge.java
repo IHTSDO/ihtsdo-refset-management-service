@@ -18,7 +18,7 @@ public class UserMapUserNameBridge implements StringBridge {
   @Override
   public String objectToString(Object value) {
     if (value != null) {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
 
       Map<User, ?> map = (Map<User, ?>) value;
       for (User item : map.keySet()) {

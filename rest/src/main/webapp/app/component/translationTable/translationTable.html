@@ -55,9 +55,9 @@
         <th class="col-md-1 col-xs-1"
           ng-click="setSortField('translation','language', null)">Lang<span
             ng-bind="getSortIndicator('translation','language',null)"></span></th>
-        <th class="col-md-2 col-xs-2"
-          ng-show="value == 'EDITING' || value == 'EDITING_ALL' || value == 'RELEASE'">Actions
-          <span style="float: right;">
+        <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
+          <span ng-show="value != 'PUBLISHED' && value != 'PREVIEW'"
+            style="float: right;">
             <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
               title="Add translation" class="noul material-icons md-18">add</i>
           </span>
@@ -80,25 +80,37 @@
             <br class="visible-xs-inline" />
             <span flag-icon obj="translation"></span>
             <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" /> {{translation.organization}} <br />
-            {{translation.workflowStatus}}
+            <br class="visible-xs-inline" /> {{translation.organization}}
+            <span ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">
+              <br />{{refset.workflowStatus}}
+            </span>
+
           </td>
           <td>{{translation.language}}</td>
+
+          <!-- PUBLISHED/PREVIEW actions -->
+          <td class="nobreak"
+            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">
+            <i
+              ng-click="openFeedbackModal(translation); $event.stopPropagation()"
+              title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+          </td>
 
           <!-- EDITING actions -->
           <td class="nobreak" ng-show="value == 'EDITING'">
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i ng-click="removeTranslation(translation);" title="Remove"
+            <i
+              confirm="Are you sure you want to remove the translation ({{translation.name}})?"
+              ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
 
             <!-- Start release -->
             <i
               ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
-              title="Start release process"
-              class="noul material-icons md-18">open_in_new</i>
+              title="Start release process" class="noul material-icons md-18">open_in_new</i>
 
             <i
               ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
@@ -106,6 +118,7 @@
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
+            <!-- Cancel staging operation -->
             <span ng-show="translation.stagingType == 'PREVIEW'">
               <br />
               <button class="btn btn-xs btn-warning"
@@ -115,6 +128,21 @@
             </span>
 
 
+            <!-- Refresh/start buttons if lookup in progress -->
+            <span
+              ng-show="translation.lookupInProgress && translationLookupProgress[translation.id] == -1">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="startLookup(translation)"
+                uib-tooltip="Click to restart lookup">Restart Lookup</button>
+            </span>
+            <span
+              ng-show="translation.lookupInProgress && translationLookupProgress[translation.id] > -1 && translationLookupProgress[translation.id] < 100">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="refreshLookupProgress(translation)"
+                uib-tooltip="Click to refresh lookup progress">Refresh</button>
+            </span>
 
           </td>
 
@@ -123,14 +151,18 @@
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i ng-click="removeTranslation(translation);" title="Remove"
+            <i
+              confirm="Are you sure you want to remove the translation ({{translation.name}})?"
+              ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
           </td>
           </td>
 
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
-            <i ng-click="removeTranslation(translation);" title="Remove"
+            <i
+              confirm="Are you sure you want to remove the translation ({{translation.name}})?"
+              ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
           </td>
         </tr>
@@ -188,34 +220,48 @@
             </td>
           </tr>
           <tr>
-            <td>Refset Id</td>
+            <td>
+              <b>Refset Id</b>
+            </td>
             <td>{{selected.translation.terminologyId}}</td>
           </tr>
           <tr>
-            <td>Module Id</td>
+            <td>
+              <b>Module Id</b>
+            </td>
             <td>
               {{selected.translation.moduleId}}
               <span flag-icon obj="selected.translation"></span>
             </td>
           </tr>
           <tr ng-show="selected.translation.effectiveTime">
-            <td>Effective Time</td>
+            <td>
+              <b>Effective Time</b>
+            </td>
             <td>{{toShortDate(selected.translation.effectiveTime)}}</td>
           </tr>
           <tr>
-            <td>Language</td>
+            <td>
+              <b>Language</b>
+            </td>
             <td>{{selected.translation.language}}</td>
           </tr>
           <tr>
-            <td>Terminology</td>
+            <td>
+              <b>Terminology</b>
+            </td>
             <td>{{selected.translation.terminology}}</td>
           </tr>
           <tr>
-            <td>Version</td>
+            <td>
+              <b>Version</b>
+            </td>
             <td>{{selected.translation.version}}</td>
           </tr>
           <tr>
-            <td>Spelling Dictionary</td>
+            <td>
+              <b>Spelling Dictionary</b>
+            </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
                 ng-model="user.userPreferences.spellingEnabled">
@@ -240,7 +286,9 @@
             </td>
           </tr>
           <tr>
-            <td>Phrase Memory</td>
+            <td>
+              <b>Phrase Memory</b>
+            </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
                 ng-model="user.userPreferences.memoryEnabled">
@@ -262,8 +310,15 @@
                 class="noul material-icons md-18">delete</i>
             </td>
           </tr>
-          <tr ng-show="translationReleaseInfo">
-            <td>RELEASED</td>
+          <tr
+            ng-show="translationReleaseInfo && !translationReleaseInfo.planned">
+            <td ng-show="translationReleaseInfo.published">
+              <b>RELEASED</b>
+            </td>
+            <td
+              ng-show="!translationReleaseInfo.published && !translationReleaseInfo.planned">
+              <b>PREVIEW</b>
+            </td>
             <td>{{translationReleaseInfo.name}}
           </tr>
           <tr ng-show="!translationReleaseInfo">
@@ -434,6 +489,7 @@
         </th>
         <th class="col-md-2 col-xs-2">Actions <i
             ng-show="selected.translation.assigned.totalCount > 0"
+            confirm="Are you sure you want to unassign all concepts?"
             ng-click="unassignAll();" title="Unassign all"
             class="noul material-icons md-18">assignment_return</i></th>
       </thead>
@@ -453,6 +509,7 @@
 
             <!-- UnAssign (instead of delete) -->
             <i ng-show="projects.role != 'ADMIN'"
+              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
               ng-click="unassign(record.concept)" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
 
@@ -461,6 +518,7 @@
                 <!-- Only unassign if there are no reviewers -->
                 <i ng-show="!record.reviewers || record.reviewers.length == 0"
                   uib-tooltip="Unassign author: {{author.userName}}"
+                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
                   ng-click="unassign(record.concept)"
                   class="noul material-icons md-18">assignment_return</i>
                 <i ng-show="record.reviewers.length > 0"
@@ -469,6 +527,7 @@
               </span>
               <span ng-repeat="reviewer in record.reviewers">
                 <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
+              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
                   ng-click="unassign(record.concept)"
                   class="noul material-icons md-18">assignment_return</i>
               </span>
@@ -498,8 +557,8 @@
             <i ng-show="record.concept.notes.length == 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
               title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
-              
-              <br>
+
+            <br>
           </td>
         </tr>
       </tbody>

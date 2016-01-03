@@ -62,8 +62,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * Goal which generates sample data in an empty database. Uses JPA services
  * directly, no need for REST layer.
  * 
- * TODO: implement against JPA/RestImpl for now, alter against clients
- * 
  * See admin/pom.xml for sample usage
  * 
  * @goal sample-data
@@ -414,7 +412,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       RefsetJpa refset2 =
           makeRefset("refset2", null, Refset.Type.INTENSIONAL, project2,
               "222222912342013", "1000124", reviewer2, true);
-      // TODO: set importMembers back to true to test importDefinition
       RefsetJpa refset3 =
           makeRefset("refset3", null, Refset.Type.EXTERNAL, project2,
               "33333912342013", "1000124", reviewer2, true);
@@ -437,13 +434,14 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       TranslationJpa translation1 =
           makeTranslation("translation1", refset5, refset5.getProject(),
               reviewer3);
-      TranslationJpa translation2 =
-          makeTranslation("translation2", refset5, refset5.getProject(),
-              reviewer3);
 
       // Create refsets 6-12 on project 5
-      makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
-          "666666912342013", "1000124", admin, true);
+      Refset refset6 =
+          makeRefset("refset6", null, Refset.Type.EXTERNAL, project5,
+              "666666912342013", "1000124", admin, true);
+      TranslationJpa translation2 =
+          makeTranslation("translation2", refset6, refset5.getProject(),
+              reviewer3);
       makeRefset("refset7", null, Refset.Type.EXTERNAL, project5,
           "777777912342013", "1000124", admin, true);
       makeRefset("refset8", null, Refset.Type.EXTERNAL, project5,
@@ -884,8 +882,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setConceptId(conceptId);
     member.setConceptName(conceptName);
     member.setMemberType(memberType);
-    member.setTerminology(terminology);
-    member.setVersion(version);
+    member.setTerminology("N/A");
+    member.setVersion("N/A");
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);
     member.setRefset(refset);
@@ -996,6 +994,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     } else {
       refset.setDefinitionClauses(null);
     }
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -1118,6 +1117,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();

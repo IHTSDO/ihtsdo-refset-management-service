@@ -68,10 +68,12 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       final User user = securityService.authenticate(userName, password);
-      securityService.close();
-
       if (user == null || user.getAuthToken() == null)
         throw new LocalException("Unable to authenticate user");
+
+      // lazy initialize
+      securityService.handleLazyInit(user);
+
       return user;
     } catch (Exception e) {
       handleException(e, "trying to authenticate a user");
@@ -98,7 +100,6 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       securityService.logout(authToken);
       return null;
     } catch (Exception e) {
-      securityService.close();
       handleException(e, "trying to authenticate a user");
     } finally {
       securityService.close();
@@ -122,6 +123,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve the user",
           UserRole.VIEWER);
       final User user = securityService.getUser(id);
+      user.setUserPreferences(null);
+
       return user;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a user");
@@ -147,6 +150,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve the user by userName",
           UserRole.VIEWER);
       final User user = securityService.getUser(userName);
+      user.setUserPreferences(null);
       return user;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a user by userName");
@@ -156,6 +160,31 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/user")
+  @ApiOperation(value = "Get user by auth token", notes = "Gets the user for the auth token", response = UserJpa.class)
+  public User getUserForAuthToken(
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Security): /user/name" + authToken);
+    final SecurityService securityService = new SecurityServiceJpa();
+    try {
+      final String userName = authorizeApp(securityService, authToken, "retrieve the user by auth token",
+          UserRole.VIEWER);
+      final User user = securityService.getUser(userName);
+      securityService.handleLazyInit(user);
+      return user;
+    } catch (Exception e) {
+      handleException(e, "trying to retrieve a user by auth token");
+      return null;
+    } finally {
+      securityService.close();
+    }
+  }
   /* see superclass */
   @Override
   @GET
@@ -170,6 +199,9 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve all users",
           UserRole.VIEWER);
       final UserList list = securityService.getUsers();
+      for (User user : list.getObjects()) {
+        user.setUserPreferences(null);
+      }
       return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve all users");
@@ -194,10 +226,11 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     final SecurityService securityService = new SecurityServiceJpa();
     try {
 
-      authorizeApp(securityService, authToken, "add new user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "add new user", UserRole.USER);
 
       // Create service and configure transaction scope
       final User newUser = securityService.addUser(user);
+      securityService.handleLazyInit(newUser);
       return newUser;
     } catch (Exception e) {
       handleException(e, "trying to add a user");
@@ -221,7 +254,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
     final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "remove user", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "remove user", UserRole.USER);
 
       // Remove user
       securityService.removeUser(id);
@@ -245,7 +278,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Security): /user/update " + user);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "update concept", UserRole.ADMIN);
+      authorizeApp(securityService, authToken, "update concept", UserRole.USER);
       securityService.updateUser(user);
     } catch (Exception e) {
       handleException(e, "trying to update a concept");
@@ -295,15 +328,19 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
             + (query == null ? "" : "query=" + query));
 
     // Track system level information
-    final SecurityService security = new SecurityServiceJpa();
+    final SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(security, authToken, "find users", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find users", UserRole.VIEWER);
 
-      return security.findUsersForQuery(query, pfs);
+      UserList list = securityService.findUsersForQuery(query, pfs);
+      for (User user : list.getObjects()) {
+        user.setUserPreferences(null);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to find users");
     } finally {
-      security.close();
+      securityService.close();
     }
     return null;
   }
@@ -326,14 +363,14 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     try {
 
       authorizeApp(securityService, authToken, "add new user preferences",
-          UserRole.ADMIN);
+          UserRole.USER);
 
       // Create service and configure transaction scope
       UserPreferences newUserPreferences =
           securityService.addUserPreferences(userPreferences);
       return newUserPreferences;
     } catch (Exception e) {
-      handleException(e, "trying to add a user");
+      handleException(e, "trying to add a user prefs");
       return null;
     } finally {
       securityService.close();
@@ -355,7 +392,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "remove user preferences",
-          UserRole.ADMIN);
+          UserRole.USER);
 
       securityService.removeUserPreferences(id);
     } catch (Exception e) {
@@ -369,8 +406,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/user/preferences/update")
-  @ApiOperation(value = "Update user preferences", notes = "Updates the specified user preferences")
-  public void updateUserPreferences(
+  @ApiOperation(value = "Update user preferences", notes = "Updates the specified user preferences", response = UserPreferencesJpa.class)
+  public UserPreferences updateUserPreferences(
     @ApiParam(value = "UserPreferencesJpa, e.g. update", required = true) UserPreferencesJpa userPreferences,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -379,14 +416,27 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
             + userPreferences);
     SecurityService securityService = new SecurityServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "update user preferences",
-          UserRole.USER);
+      final String userName =
+          authorizeApp(securityService, authToken, "update user preferences",
+              UserRole.VIEWER);
+
+      if (!userPreferences.getUser().getUserName().equals(userName)) {
+        throw new Exception(
+            "User preferences can only be updated for this user");
+      }
 
       securityService.updateUserPreferences(userPreferences);
+      final User user = securityService.getUser(userName);
+
+      // lazy initialize
+      securityService.handleLazyInit(user);
+
+      return user.getUserPreferences();
     } catch (Exception e) {
       handleException(e, "trying to update user preferences");
     } finally {
       securityService.close();
     }
+    return null;
   }
 }

@@ -304,18 +304,37 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public void addFeedback(Refset refset, String name, String email,
-    String message) throws Exception {
+  public void addFeedback(Refset refset, Translation translation, String name,
+    String email, String message) throws Exception {
+
+    String feedbackEmail = null;
+    if (refset != null) {
+      feedbackEmail = refset.getFeedbackEmail();
+    } else if (translation != null) {
+      feedbackEmail = translation.getRefset().getFeedbackEmail();
+    }
 
     Properties config = ConfigUtility.getConfigProperties();
     if (config.getProperty("mail.enabled") != null
         && config.getProperty("mail.enabled").equals("true")
-        && refset.getFeedbackEmail() != null) {
-      ConfigUtility.sendEmail("Refset Feedback: " + refset.getTerminologyId()
-          + ", " + refset.getName(), config.getProperty("mail.smtp.user"),
-          refset.getFeedbackEmail(), "<html><body><p>Name: " + name
-              + "<br>Email: " + email + "</p><div>" + message + "</div>",
-          config, "true".equals(config.get("mail.smtp.auth")));
+        && feedbackEmail != null) {
+
+      if (refset != null) {
+        ConfigUtility.sendEmail("Refset Feedback: " + refset.getTerminologyId()
+            + ", " + refset.getName(), config.getProperty("mail.smtp.user"),
+            feedbackEmail, "<html><body><p>Name: " + name + "<br>Email: "
+                + email + "</p><div>" + message + "</div>", config,
+            "true".equals(config.get("mail.smtp.auth")));
+      }
+
+      if (translation != null) {
+        ConfigUtility.sendEmail(
+            "Translation Feedback: " + translation.getTerminologyId() + ", "
+                + translation.getName(), config.getProperty("mail.smtp.user"),
+            feedbackEmail, "<html><body><p>Name: " + name + "<br>Email: "
+                + email + "</p><div>" + message + "</div>", config,
+            "true".equals(config.get("mail.smtp.auth")));
+      }
     }
   }
 
