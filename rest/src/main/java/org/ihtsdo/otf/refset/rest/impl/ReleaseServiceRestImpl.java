@@ -105,7 +105,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + refsetId + " " + query);
+        "RESTful call (Release): /refset with query:" + query + ", refsetId:" + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -141,7 +141,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + translationId);
+        "RESTful call (Release): /translationId with query:" + query + ", translationId:" + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -930,7 +930,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /import/artifact");
+        "RESTful call POST (Release): /import/artifact: releaseInfoId");
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
