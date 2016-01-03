@@ -6,7 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +31,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -659,6 +660,142 @@ public class RefsetReleaseTest {
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;
+  }
+
+  /**
+   * Test finding refset releases via a query.
+   * 
+   * @throws Exception the exception
+   */
+   @Test
+  public void testFindRefsetReleasesForQuery() throws Exception {
+    Project project = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset (intensional) and import definition
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Begin release
+    releaseService.beginRefsetRelease(refset.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
+    releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
+    // Preview release
+    releaseService.previewRefsetRelease(refset.getId(), "DEFAULT",
+        adminAuthToken);
+
+    /*
+     * While release still in process
+     */
+
+    // find releases per refset
+    ReleaseInfoList releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per terminologyId (there are two b/c of
+    // beginRefsetRelease() with 2nd planned=false
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId(), null, adminAuthToken);
+    assertEquals(2, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findRefsetReleasesForQuery(null,
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 2);
+
+    // find releases per refsetId & projectId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per refsetId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
+            null, adminAuthToken);
+    assertEquals(2, releases.getCount());
+
+    // find releases per refsetId & projectId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // Now finish the release
+    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+
+    /*
+     * Following completed of release
+     */
+
+    // find releases per refset
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per terminologyId (there are two b/c of
+    // beginRefsetRelease() with 2nd planned=false
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findRefsetReleasesForQuery(null,
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 1);
+
+    // find releases per refsetId & projectId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per refsetId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
+            null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per refsetId & projectId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // clean up
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
   /**

@@ -436,8 +436,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
       // remove the spelling dictionary
-      translationService.removeSpellingDictionary(translation
-          .getSpellingDictionary().getId());
+      if (translation.getSpellingDictionary() != null) {
+        translationService.removeSpellingDictionary(translation
+            .getSpellingDictionary().getId());
+      }
 
       // remove memory entry
       if (translation.getPhraseMemory() != null) {

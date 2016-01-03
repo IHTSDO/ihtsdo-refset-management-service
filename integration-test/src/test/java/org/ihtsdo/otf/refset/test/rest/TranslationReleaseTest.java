@@ -6,6 +6,9 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -26,6 +29,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
@@ -330,7 +334,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-//  @Test
+  @Test
   public void testRelease001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -361,7 +365,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -395,7 +399,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -432,7 +436,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -465,7 +469,6 @@ public class TranslationReleaseTest {
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     verifyTranslationLookupCompleted(translation1.getId());
     translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    verifyTranslationLookupCompleted(stagedTranslation.getId());
     translationService.removeTranslation(stagedTranslation.getId(),
         adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
@@ -477,7 +480,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testRelease005() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -564,7 +567,7 @@ public class TranslationReleaseTest {
   public void testReleaseReportToken() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testReleaseReportToken");
 
-    Project project = projectService.getProject(51L, adminAuthToken);
+    Project project = projectService.getProject(52L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (extensional)
@@ -595,6 +598,160 @@ public class TranslationReleaseTest {
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
+  /**
+   * Test finding translation releases via a query.
+   * 
+   * @throws Exception the exception
+   */
+  @Test
+  public void testFindTranslationReleasesForQuery() throws Exception {
+    Project project = projectService.getProject(2L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    // Create refset (intensional) and import definition
+    Refset refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), admin);
+
+    // Create translation
+    TranslationJpa translation =
+        makeTranslation("translation", refset, project, admin);
+
+    // Begin release
+    releaseService.beginTranslationRelease(translation.getId(),
+        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+        adminAuthToken);
+    releaseService.validateTranslationRelease(translation.getId(),
+        adminAuthToken);
+    // Preview release
+    Translation stagedTranslation =
+        releaseService.previewTranslationRelease(translation.getId(),
+            "DEFAULT", adminAuthToken);
+
+    /*
+     * While release still in process
+     */
+
+    // find releases per translation
+    ReleaseInfoList releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            null, null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per terminologyId (there are two b/c of
+    // beginTranslationRelease() with 2nd planned=false
+    releases =
+        releaseService.findTranslationReleasesForQuery(null,
+            "translationTerminologyId:" + translation.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(2, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findTranslationReleasesForQuery(null, "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 2);
+
+    // find releases per translationId & projectId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per translationId & terminologyId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "translationTerminologyId:" + translation.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findTranslationReleasesForQuery(null,
+            "translationTerminologyId:" + translation.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(2, releases.getCount());
+
+    // find releases per translationId & projectId & terminologyId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "translationTerminologyId:" + translation.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // Now finish the release
+    releaseService
+        .finishTranslationRelease(translation.getId(), adminAuthToken);
+
+    /*
+     * Following completed of release
+     */
+
+    // find releases per translation
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            null, null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per terminologyId (there are two b/c of
+    // beginTranslationRelease() with 2nd planned=false
+    releases =
+        releaseService.findTranslationReleasesForQuery(null,
+            "translationTerminologyId:" + translation.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findTranslationReleasesForQuery(null, "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 1);
+
+    // find releases per translationId & projectId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per translationId & terminologyId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "translationTerminologyId:" + translation.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findTranslationReleasesForQuery(null,
+            "translationTerminologyId:" + translation.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per translationId & projectId & terminologyId
+    releases =
+        releaseService.findTranslationReleasesForQuery(translation.getId(),
+            "translationTerminologyId:" + translation.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // clean up
+    ReleaseInfo releaseInfo =
+        releaseService.getCurrentTranslationReleaseInfo(
+            stagedTranslation.getId(), adminAuthToken);
+
+    verifyTranslationLookupCompleted(translation.getId());
+    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(),
+        adminAuthToken);
+    verifyRefsetLookupCompleted(refset.getId());
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+  
   /**
    * Make concept refset member.
    *

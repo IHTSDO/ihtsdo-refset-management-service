@@ -6,7 +6,9 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -94,16 +96,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/refset/{refsetId}")
+  @Path("/refset")
   @ApiOperation(value = "Find refset releases for Query", notes = "Identifies refset releases for query", response = ReleaseInfoListJpa.class)
   public ReleaseInfoList findRefsetReleasesForQuery(
-    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Refset internal id, e.g. 2", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Query, e.g. 2", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + refsetId + " " + query);
+        "RESTful call (Release): /refset with query:" + query + ", refsetId:" + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -114,7 +116,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           refsetService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
       for (ReleaseInfo rel : releaseInfoList.getObjects()) {
-        refsetService.handleLazyInit(rel.getRefset());
+        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
+        rel.setArtifacts(lazyInitList);
       }
       return releaseInfoList;
     } catch (Exception e) {
@@ -129,16 +132,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @POST
-  @Path("/translation/{translationId}")
+  @Path("/translation")
   @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
   public ReleaseInfoList findTranslationReleasesForQuery(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Translation internal id, e.g. 2", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Query, e.g. 2", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + translationId);
+        "RESTful call (Release): /translationId with query:" + query + ", translationId:" + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -148,6 +151,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfoList releaseInfoList =
           translationService.findTranslationReleasesForQuery(translationId,
               query, pfs);
+
+      for (ReleaseInfo rel : releaseInfoList.getObjects()) {
+        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
+        rel.setArtifacts(lazyInitList);
+      }
 
       return releaseInfoList;
     } catch (Exception e) {
@@ -922,7 +930,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /import/artifact");
+        "RESTful call POST (Release): /import/artifact: releaseInfoId");
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
