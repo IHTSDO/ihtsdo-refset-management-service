@@ -248,7 +248,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       }
 
       // Remove spelling dictionary
-      removeSpellingDictionary(translation.getSpellingDictionary().getId());
+      if (translation.getSpellingDictionary() != null) {
+        removeSpellingDictionary(translation.getSpellingDictionary().getId());
+      }
 
       // Remove description types - CASCADE
     }

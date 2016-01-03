@@ -287,17 +287,17 @@ public class ReleaseClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Release Client - find Refset Releases For Query: " + refsetId + ", "
             + query);
-    validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/release/refset/"
-            + refsetId
+            + "/release/refset"
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
+                .replaceAll("\\+", "%20") 
+            + "&refsetId="
+            + (refsetId == null ? "" : refsetId));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -355,18 +355,17 @@ public class ReleaseClientRest extends RootClientRest implements
     Logger.getLogger(getClass()).debug(
         "Release Client - find Translation Releases For Query: "
             + translationId + ", " + query);
-    validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/release/translation/"
-            + translationId
+            + "/release/translation"
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
+                .replaceAll("\\+", "%20") 
+            + "&translationId="
+            + (translationId == null ? "" : translationId));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()

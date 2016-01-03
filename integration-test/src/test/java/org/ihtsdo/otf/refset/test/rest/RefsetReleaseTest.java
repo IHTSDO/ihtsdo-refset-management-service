@@ -6,7 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -665,21 +665,16 @@ public class RefsetReleaseTest {
   /**
    * Test finding refset releases via a query.
    * 
-   * NOTE: Remain commented out as 
-   *  findRefsetReleasesForQuery() is known to be broken 
-   *  Therefore, leave as-is until further notice.  
-   *  At that time, review this test
-   *  
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testFindRefsetReleasesForQuery() throws Exception {
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (intensional) and import definition
     RefsetJpa refset =
-        makeRefset("refset2", null, Refset.Type.EXTENSIONAL, project, UUID
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString(), admin);
 
     // Begin release
@@ -691,30 +686,112 @@ public class RefsetReleaseTest {
     releaseService.previewRefsetRelease(refset.getId(), "DEFAULT",
         adminAuthToken);
 
-    // resume release
+    /*
+     * While release still in process
+     */
+
+    // find releases per refset
     ReleaseInfoList releases =
         releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
             adminAuthToken);
-    assertEquals(0, releases.getCount());
+    assertEquals(1, releases.getCount());
 
-    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
-
+    // find releases per terminologyId (there are two b/c of
+    // beginRefsetRelease() with 2nd planned=false
     releases =
         releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
             + refset.getTerminologyId(), null, adminAuthToken);
-    assertEquals(1, releases.getCount());
+    assertEquals(2, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findRefsetReleasesForQuery(null,
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 2);
+
+    // find releases per refsetId & projectId
     releases =
         releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
             + project.getId(), null, adminAuthToken);
     assertEquals(1, releases.getCount());
+
+    // find releases per refsetId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
+            null, adminAuthToken);
+    assertEquals(2, releases.getCount());
+
+    // find releases per refsetId & projectId & terminologyId
     releases =
         releaseService.findRefsetReleasesForQuery(refset.getId(),
             "refsetTerminologyId:" + refset.getTerminologyId()
                 + " AND projectId:" + project.getId(), null, adminAuthToken);
     assertEquals(1, releases.getCount());
 
-    // Finish release
-    releaseService.cancelRefsetRelease(refset.getId(), adminAuthToken);
+    // Now finish the release
+    releaseService.finishRefsetRelease(refset.getId(), adminAuthToken);
+
+    /*
+     * Following completed of release
+     */
+
+    // find releases per refset
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per terminologyId (there are two b/c of
+    // beginRefsetRelease() with 2nd planned=false
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId(), null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per projectId. Will have 2 or more depending on how many
+    // have been created in DB
+    releases =
+        releaseService.findRefsetReleasesForQuery(null,
+            "projectId:" + project.getId(), null, adminAuthToken);
+    assertTrue(releases.getCount() >= 1);
+
+    // find releases per refsetId & projectId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(), "projectId:"
+            + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per refsetId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId(), null,
+            adminAuthToken);
+    assertEquals(0, releases.getCount());
+
+    // find releases per projectId & terminologyId. Reason is same as reason
+    // during terminologyId only test
+    releases =
+        releaseService.findRefsetReleasesForQuery(null, "refsetTerminologyId:"
+            + refset.getTerminologyId() + " AND projectId:" + project.getId(),
+            null, adminAuthToken);
+    assertEquals(1, releases.getCount());
+
+    // find releases per refsetId & projectId & terminologyId
+    releases =
+        releaseService.findRefsetReleasesForQuery(refset.getId(),
+            "refsetTerminologyId:" + refset.getTerminologyId()
+                + " AND projectId:" + project.getId(), null, adminAuthToken);
+    assertEquals(0, releases.getCount());
 
     // clean up
     verifyRefsetLookupCompleted(refset.getId());
