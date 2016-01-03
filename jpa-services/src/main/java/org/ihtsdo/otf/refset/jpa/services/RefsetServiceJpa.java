@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
@@ -229,6 +230,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     Refset refset = getRefset(id);
     if (cascade) {
+      if (getTransactionPerOperation())
+        throw new Exception(
+            "Unable to remove refset, transactionPerOperation must be disabled to perform cascade remove.");
       // fail if there are translations
       if (refset.getTranslations().size() > 0) {
         throw new Exception(
@@ -520,7 +524,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     handleLazyInit(member);
     return member;
   }
-  
 
   /* see superclass */
   @SuppressWarnings("unchecked")
@@ -1084,10 +1087,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     Logger.getLogger(getClass()).info(
         "Release Service - resolve refset definition " + " refsetId "
             + refset.getId());
-    
+
     Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
     Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
-    
+
     List<String> resolvedConcepts = new ArrayList<>();
     for (ConceptRefsetMember member : findMembersForRefset(refset.getId(),
         null, null).getObjects()) {
@@ -1111,8 +1114,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       resolvedConcepts.add(concept.getTerminologyId());
     }
 
-    // concepts that are properly resolved by the definition that are not 
-    // already covered by regular members (or prior exclusions, which stay 
+    // concepts that are properly resolved by the definition that are not
+    // already covered by regular members (or prior exclusions, which stay
     // in place as exclusions)
     Date startDate = new Date();
     for (Concept concept : resolvedFromExpression.getObjects()) {
@@ -1137,21 +1140,42 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         addMember(member);
       }
     }
-    
-    //Anything that was an explicit inclusion that is now resolved by the 
-    //definition normally ,doesn’t need to be an inclusion anymore – because 
-    //it can just be a regular member.  Thus we can remove the INCLUSION.
+
+    // Anything that was an explicit inclusion that is now resolved by the
+    // definition normally ,doesn’t need to be an inclusion anymore – because
+    // it can just be a regular member. Thus we can remove the INCLUSION.
     beforeInclusions.keySet().removeAll(resolvedConcepts);
     for (ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
       removeMember(beforeInclusion.getId());
     }
-    
+
     // Delete all previous members and exclusions that are not resolved from
     // the current definition.
     beforeMembersExclusions.keySet().removeAll(resolvedConcepts);
     for (ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions
         .values()) {
       removeMember(beforeMemberExclusion.getId());
+    }
+
+  }
+
+  public void recoveryRefset(Long refsetId) throws Exception {
+    AuditReader reader = AuditReaderFactory.get(manager);
+    AuditQuery query =
+        reader.createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(RefsetJpa.class, false, false)
+            .addProjection(AuditEntity.revisionNumber().max())
+            // add id and owner as constraints
+            .add(AuditEntity.property("id").eq(refsetId));
+    Number revision = (Number) query.getSingleResult();
+    RefsetJpa refset =
+        (RefsetJpa) reader.createQuery()
+            .forEntitiesAtRevision(RefsetJpa.class, revision)
+            .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
+    if(refset != null) {
+      RefsetJpa refsetJpa = new RefsetJpa(refset);
+      addRefset(refsetJpa);
     }
 
   }
