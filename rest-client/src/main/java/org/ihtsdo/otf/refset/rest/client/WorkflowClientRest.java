@@ -399,8 +399,8 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAssignedEditingRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
+  public TrackingRecordList findAssignedEditingRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - find assigned editing refsets - " + userName);
 
@@ -428,8 +428,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */
@@ -469,8 +469,8 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAssignedReviewRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
+  public TrackingRecordList findAssignedReviewRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - find assigned review refsets - " + userName);
 
@@ -498,8 +498,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */
@@ -520,10 +520,33 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
-    String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+  public TrackingRecordList findAllAssignedRefsets(Long projectId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/assigned/all" + "?projectId=" + projectId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+    }
+
+    // converting to object
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */

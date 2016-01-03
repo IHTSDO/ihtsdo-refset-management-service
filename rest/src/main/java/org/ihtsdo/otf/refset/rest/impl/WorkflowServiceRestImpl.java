@@ -563,8 +563,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/refset/assigned/editing")
-  @ApiOperation(value = "Find assigned editing work", notes = "Finds refsets assigned for editing by the specified user.", response = ConceptListJpa.class)
-  public RefsetList findAssignedEditingRefsets(
+  @ApiOperation(value = "Find assigned editing work", notes = "Finds refsets assigned for editing by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedEditingRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. author1", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -591,24 +591,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       }
       // Perform this search without pfs
       final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
+          workflowService.findTrackingRecordsForQuery(query, pfs);
 
-      final List<Refset> refsets = new ArrayList<>();
       for (final TrackingRecord record : records.getObjects()) {
         // Handle lazy initialization
-        Refset refset = record.getRefset();
-        workflowService.handleLazyInit(refset);
-        refsets.add(refset);
-      }
-      final RefsetList list = new RefsetListJpa();
-      list.setObjects(workflowService
-          .applyPfsToList(refsets, Refset.class, pfs));
-      list.setTotalCount(records.getTotalCount());
+        workflowService.handleLazyInit(record.getRefset());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
 
-      for (final Refset r : list.getObjects()) {
-        workflowService.handleLazyInit(r);
       }
-      return list;
+      return records;
 
     } catch (Exception e) {
       handleException(e, "trying to find assigned editing work");
@@ -695,8 +691,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/refset/assigned/review")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = RefsetListJpa.class)
-  public RefsetList findAssignedReviewRefsets(
+  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = TrackingRecordListJpa.class)
+  public TrackingRecordList findAssignedReviewRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. 3", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -720,23 +716,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("UserName must always be set");
       }
       final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
+          workflowService.findTrackingRecordsForQuery(query, pfs);
 
-      final List<Refset> refsets = new ArrayList<>();
       for (final TrackingRecord record : records.getObjects()) {
-        Refset refset = record.getRefset();
-        workflowService.handleLazyInit(refset);
-        refsets.add(refset);
-      }
-      final RefsetList list = new RefsetListJpa();
-      list.setTotalCount(records.getTotalCount());
-      list.setObjects(workflowService
-          .applyPfsToList(refsets, Refset.class, pfs));
+        // Handle lazy initialization
+        workflowService.handleLazyInit(record.getRefset());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
 
-      for (final Refset r : list.getObjects()) {
-        workflowService.handleLazyInit(r);
       }
-      return list;
+      return records;
+
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
     } finally {
@@ -799,8 +793,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/refset/assigned/all")
-  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = RefsetListJpa.class)
-  public RefsetList findAllAssignedRefsets(
+  @ApiOperation(value = "Find assigned review work", notes = "Finds refsets assigned for review by the specified user.", response = TrackingRecordJpa.class)
+  public TrackingRecordList findAllAssignedRefsets(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
@@ -813,27 +807,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset assigned review work", UserRole.AUTHOR);
 
-      final List<Refset> refsets = new ArrayList<>();
-
       // Get all assigned editing refsets
       String query =
           "projectId:" + projectId
               + " AND (forAuthoring:true OR forReview:true) AND NOT refsetId:0";
       // Perform this search without pfs
       final TrackingRecordList records =
-          workflowService.findTrackingRecordsForQuery(query, null);
+          workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
-        Refset refset = record.getRefset();
-        workflowService.handleLazyInit(refset);
-        refsets.add(refset);
+        // Handle lazy initialization
+        workflowService.handleLazyInit(record.getRefset());
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+
       }
-
-      final RefsetList list = new RefsetListJpa();
-      list.setTotalCount(refsets.size());
-      list.getObjects().addAll(
-          workflowService.applyPfsToList(refsets, Refset.class, pfs));
-
-      return list;
+      return records;
     } catch (Exception e) {
       handleException(e, "trying to find assigned review work");
     } finally {

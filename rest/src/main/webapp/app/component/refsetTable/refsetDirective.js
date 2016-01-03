@@ -170,37 +170,39 @@ tsApp
                 }
                 if ($scope.value == 'ASSIGNED_ALL' && $scope.projects.role == 'ADMIN') {
                   workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
-                    function(data) {
-                      $scope.refsets = data.refsets;
-                      $scope.refsets.totalCount = data.totalCount;
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data);
+                    $scope.refsets.totalCount = data.totalCount;
 
-                      // get refset tracking records in order to get refset authors
-                      for (var i = 0; i < $scope.refsets.length; i++) {
-                        workflowService.getTrackingRecordForRefset($scope.refsets[i].id).then(
-                          function(data) {
-                            if (data.authors.length > 0) {
-                              $scope.refsetAuthorsMap[data.refsetId] = data.authors;
-                            }
-                            if (data.reviewers.length > 0) {
-                              $scope.refsetReviewersMap[data.refsetId] = data.reviewers;
-                            }
-                          });
+                    // get refset tracking records in order to get refset authors
+                    for (var i = 0; i < data.length; i++) {
+                      if (data.authors.length > 0) {
+                        $scope.refsetAuthorsMap[data.refset.id] = data.authors;
                       }
-                      $scope.reselect();
-                    })
+                      if (data.reviewers.length > 0) {
+                        $scope.refsetReviewersMap[data.refset.id] = data.reviewers;
+                      }
+                    }
+                    $scope.reselect();
+                  })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
                   workflowService.findAssignedEditingRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
+                    $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
                   workflowService.findAssignedReviewRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
+                    $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
@@ -216,6 +218,14 @@ tsApp
                     })
                 }
               };
+
+              // Convert an array of tracking records to an array of refsets.
+              $scope.getRefsetsFromRecords = function(records) {
+                var refsets = [];
+                for (var i = 0; i < records.length; i++) {
+                  refsets.push(records[i].refset);
+                }
+              }
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
@@ -316,6 +326,19 @@ tsApp
 
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
+
+                // handle 'ASSIGNED' vs 'AVAILABLE' fields
+                // refsetTable.html expresses the fields in terms of available
+                var lfield = field;
+                if (value = 'ASSIGNED') {
+                  if (field == 'terminologyId') {
+                    lfield = 'refsetId';
+                  } else {
+                    // uppercase and prepend refset in all other cases
+                    lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);
+                  }
+                }
+
                 utilService.setSortField(table, field, $scope.paging);
                 // retrieve the correct table
                 if (table === 'refset') {

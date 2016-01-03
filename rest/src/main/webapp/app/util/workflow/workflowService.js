@@ -318,7 +318,7 @@ tsApp.service('workflowService', [
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug("  tracking record = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -368,7 +368,7 @@ tsApp.service('workflowService', [
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug("  tracking records = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -414,7 +414,7 @@ tsApp.service('workflowService', [
       $http.post(workflowUrl + "refset/assigned/all" + "?projectId=" + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug("  tracking records = ", response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },

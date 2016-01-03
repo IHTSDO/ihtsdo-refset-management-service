@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.junit.Test;
 
 /**
@@ -34,7 +35,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTENSIONAL)
     RefsetJpa newRefset =
-        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999", true);
+        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999",
+            true);
 
     // Validate refset
     ValidationResult result =
@@ -64,9 +66,10 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Find the assigned refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAssignedEditingRefsets(
-            currentRefset.getProject().getId(), testUser,
-            new PfsParameterJpa(), adminAuthToken), record.getRefset());
+        getNewRefsetInTrackingRecordList(
+            workflowService.findAssignedEditingRefsets(currentRefset
+                .getProject().getId(), testUser, new PfsParameterJpa(),
+                adminAuthToken), record.getRefset());
     assertTrue(currentRefset != null);
 
     // Add 5 members to refset
@@ -146,9 +149,10 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     // Find assigned review refset
     currentRefset =
-        getNewRefsetInRefsetList(workflowService.findAssignedReviewRefsets(
-            currentRefset.getProject().getId(), testUser,
-            new PfsParameterJpa(), adminAuthToken), record.getRefset());
+        getNewRefsetInTrackingRecordList(
+            workflowService.findAssignedReviewRefsets(currentRefset
+                .getProject().getId(), testUser, new PfsParameterJpa(),
+                adminAuthToken), record.getRefset());
 
     assertTrue(currentRefset != null);
 
@@ -196,7 +200,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTERNAL)
     RefsetJpa newRefset =
-        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998", true);
+        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998",
+            true);
 
     // Validate refset
     ValidationResult result =
@@ -230,6 +235,24 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     for (Refset ref : list.getObjects()) {
       if (ref.equals(oldRefset)) {
         return ref;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the new refset in tracking record list.
+   *
+   * @param list the list
+   * @param oldRefset the old refset
+   * @return the new refset in tracking record list
+   */
+  @SuppressWarnings("static-method")
+  private Refset getNewRefsetInTrackingRecordList(TrackingRecordList list,
+    Refset oldRefset) {
+    for (TrackingRecord record : list.getObjects()) {
+      if (record.getRefset().equals(oldRefset)) {
+        return record.getRefset();
       }
     }
     return null;

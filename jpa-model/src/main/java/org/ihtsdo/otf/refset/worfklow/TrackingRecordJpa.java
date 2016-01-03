@@ -286,7 +286,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlTransient
+  @XmlElement(type = RefsetJpa.class)
   @Override
   public Refset getRefset() {
     return refset;
@@ -359,7 +359,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Returns the concept name.
+   * Returns the concept name. For indexing.
    *
    * @return the concept name
    */
@@ -367,6 +367,39 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getConceptName() {
     return concept == null ? "" : concept.getName();
+  }
+
+  /**
+   * Returns the refset name. For indexing.
+   *
+   * @return the refset name
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetName() {
+    return refset == null ? "" : refset.getName();
+  }
+
+  /**
+   * Returns the refset module id. For indexing.
+   *
+   * @return the refset module id
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetModuleId() {
+    return refset == null ? "" : refset.getModuleId();
+  }
+
+  /**
+   * Returns the refset type. For indexing.
+   *
+   * @return the refset type
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getRefsetType() {
+    return refset == null ? "" : refset.getType().toString();
   }
 
   /* see superclass */

@@ -295,6 +295,9 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("conceptId");
     tester.include("conceptTerminologyId");
     tester.include("conceptName");
+    tester.include("refsetName");
+    tester.include("refsetModuleId");
+    tester.include("refsetType");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }

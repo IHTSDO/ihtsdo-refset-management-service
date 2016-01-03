@@ -30,7 +30,9 @@
         <span ng-hide="showLatest" title="Click to show only most recent">All</span>
       </button>
 
-      <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
+      <!-- Admins shouldn't add projects -->
+      <h4
+        ng-show="value == 'AVAILABLE' && refsets.totalCount == 0 && projects.role != 'ADMIN'">
         <div style="float: right;">
           <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
             title="Add refset" class="noul material-icons md-24">add</i>
@@ -67,7 +69,7 @@
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <!-- Actions header -->
         <th class="col-md-2 col-xs-2"
-          ng-show="value == 'AVAILABLE' || value == 'ASSIGNED' || value == 'ASSIGNED_ALL' || value == 'RELEASE'">Actions
+          ng-show="value != 'PUBLISHED' && value != 'PREVIEW' &&projects.role != 'ADMIN'">Actions
           <span style="float: right;">
             <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
               title="Add refset" class="noul material-icons md-18">add</i>
