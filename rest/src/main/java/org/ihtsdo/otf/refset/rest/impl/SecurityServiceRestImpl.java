@@ -55,10 +55,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Consumes({
     MediaType.TEXT_PLAIN
   })
-  @ApiOperation(value = "Authenticate a user", notes = "Performs authentication on specified userName and password and returns a token upon successful authentication. Throws 401 error if not.", response = UserJpa.class)
+  @ApiOperation(value = "Authenticate a user", notes = "Performs authentication on specified userName/password and returns the corresponding user with authToken included. Throws 401 error if not", response = UserJpa.class)
   public User authenticate(
-    @ApiParam(value = "Username, e.g. 'guest'", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Password, as string post data, e.g. 'guest'", required = true) String password)
+    @ApiParam(value = "Username, e.g. 'author1'", required = true) @PathParam("userName") String userName,
+    @ApiParam(value = "Password, as string post data, e.g. 'author1'", required = true) String password)
     throws Exception {
 
     Logger.getLogger(getClass())
@@ -88,9 +88,9 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/logout/{authToken}")
-  @ApiOperation(value = "Log out an auth token", notes = "Performs logout on specified auth token", response = String.class)
+  @ApiOperation(value = "Logout an auth token", notes = "Performs logout on specified auth token. This effectively logs the user out", response = String.class)
   public String logout(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @PathParam("authToken") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @PathParam("authToken") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -114,8 +114,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Path("/user/{id}")
   @ApiOperation(value = "Get user by id", notes = "Gets the user for the specified id", response = UserJpa.class)
   public User getUser(
-    @ApiParam(value = "User internal id, e.g. 2", required = true) @PathParam("id") Long id,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Security): /user/" + id);
     final SecurityService securityService = new SecurityServiceJpa();
@@ -141,7 +141,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Get user by name", notes = "Gets the user for the specified name", response = UserJpa.class)
   public User getUser(
     @ApiParam(value = "Username, e.g. \"guest\"", required = true) @PathParam("userName") String userName,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Security): /user/name/" + userName);
@@ -165,9 +165,9 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/user")
-  @ApiOperation(value = "Get user by auth token", notes = "Gets the user for the auth token", response = UserJpa.class)
+  @ApiOperation(value = "Get user by auth token", notes = "Gets the user for the specified auth token", response = UserJpa.class)
   public User getUserForAuthToken(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Security): /user/name" + authToken);
@@ -185,13 +185,14 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+  
   /* see superclass */
   @Override
   @GET
   @Path("/user/users")
   @ApiOperation(value = "Get all users", notes = "Gets all users", response = UserListJpa.class)
   public UserList getUsers(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Security): /user/users");
     final SecurityService securityService = new SecurityServiceJpa();
@@ -215,10 +216,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/user/add")
-  @ApiOperation(value = "Add new user", notes = "Creates a new user", response = UserJpa.class)
+  @ApiOperation(value = "Add new user", notes = "Adds the specified new user", response = UserJpa.class)
   public User addUser(
     @ApiParam(value = "User, e.g. newUser", required = true) UserJpa user,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Security): /user/add " + user);
@@ -246,8 +247,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Path("/user/remove/{id}")
   @ApiOperation(value = "Remove user by id", notes = "Removes the user for the specified id")
   public void removeUser(
-    @ApiParam(value = "User internal id, e.g. 2", required = true) @PathParam("id") Long id,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Security): /user/remove/" + id);
@@ -272,7 +273,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Update user", notes = "Updates the specified user")
   public void updateUser(
     @ApiParam(value = "User, e.g. update", required = true) UserJpa user,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Security): /user/update " + user);
@@ -290,9 +291,9 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/roles")
-  @ApiOperation(value = "Get application roles", notes = "Returns list of valid application roles", response = StringList.class)
+  @ApiOperation(value = "Get application roles", notes = "Gets list of valid application roles", response = StringList.class)
   public StringList getApplicationRoles(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful POST call (Security): /roles");
 
@@ -316,12 +317,12 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
 
   @POST
   @Path("/user/find")
-  @ApiOperation(value = "Find user", notes = "Gets a list of all users for the specified query", response = UserListJpa.class)
+  @ApiOperation(value = "Find user", notes = "Finds a list of all users for the specified query", response = UserListJpa.class)
   @Override
   public UserList findUsersForQuery(
     @ApiParam(value = "The query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Security): /user/find "
@@ -349,10 +350,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/user/preferences/add")
-  @ApiOperation(value = "Add new user preferences", notes = "Creates a new user preferences", response = UserPreferencesJpa.class)
+  @ApiOperation(value = "Add new user preferences", notes = "Adds specified new user preferences. NOTE: the user.id must be set", response = UserPreferencesJpa.class)
   public UserPreferences addUserPreferences(
     @ApiParam(value = "UserPreferencesJpa, e.g. update", required = true) UserPreferencesJpa userPreferences,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass())
         .info(
@@ -383,8 +384,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Path("/user/preferences/remove/{id}")
   @ApiOperation(value = "Remove user preferences by id", notes = "Removes the user preferences for the specified id")
   public void removeUserPreferences(
-    @ApiParam(value = "User internal id, e.g. 2", required = true) @PathParam("id") Long id,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("id") Long id,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Security): /user/preferences/remove/" + id);
@@ -406,10 +407,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/user/preferences/update")
-  @ApiOperation(value = "Update user preferences", notes = "Updates the specified user preferences", response = UserPreferencesJpa.class)
+  @ApiOperation(value = "Update user preferences", notes = "Updates the specified user preferences and returns the updated object in case cascaded data structures were added with new identifiers", response = UserPreferencesJpa.class)
   public UserPreferences updateUserPreferences(
     @ApiParam(value = "UserPreferencesJpa, e.g. update", required = true) UserPreferencesJpa userPreferences,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Security): /user/preferences/update "

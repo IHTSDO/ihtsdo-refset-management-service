@@ -5,11 +5,11 @@ tsApp.service('workflowService', [
   'gpService',
   'utilService',
   function($http, $q, gpService, utilService) {
-    console.debug("configure workflowService");
+    console.debug('configure workflowService');
 
     // Get workflow paths
     this.getWorkflowPaths = function() {
-      console.debug("getWorkflowPaths");
+      console.debug('getWorkflowPaths');
       var deferred = $q.defer();
 
       // Perform workflow action on a refset
@@ -17,7 +17,7 @@ tsApp.service('workflowService', [
       $http.get(workflowUrl + 'paths').then(
       // success
       function(response) {
-        console.debug("  paths = ", response.data);
+        console.debug('  paths = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -32,17 +32,17 @@ tsApp.service('workflowService', [
 
     // Perform workflow action on a refset
     this.performWorkflowAction = function(projectId, refsetId, userName, projectRole, action) {
-      console.debug("performWorkflowAction");
+      console.debug('performWorkflowAction');
       var deferred = $q.defer();
 
       // Perform workflow action on a refset
       gpService.increment()
       $http.get(
-        workflowUrl + 'refset' + "/" + action + "?refsetId=" + refsetId + "&userName=" + userName
-          + "&projectId=" + projectId + "&projectRole=" + projectRole).then(
+        workflowUrl + 'refset' + '/' + action + '?refsetId=' + refsetId + '&userName=' + userName
+          + '&projectId=' + projectId + '&projectRole=' + projectRole).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug('  refset = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -57,17 +57,17 @@ tsApp.service('workflowService', [
 
     // Find available translation editing work
     this.findAvailableEditingConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug("findAvailableEditingConcepts");
+      console.debug('findAvailableEditingConcepts');
       var deferred = $q.defer();
 
       // Find available editing work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/available/editing" + "?projectId=" + projectId
-          + "&translationId=" + translationId + "&userName=" + userName, pfs).then(
+        workflowUrl + 'translation/available/editing' + '?projectId=' + projectId
+          + '&translationId=' + translationId + '&userName=' + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -82,17 +82,17 @@ tsApp.service('workflowService', [
 
     // Find assigned translation editing work
     this.findAssignedEditingConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug("findAssignedEditingConcepts");
+      console.debug('findAssignedEditingConcepts');
       var deferred = $q.defer();
 
       // Find assigned editing work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/assigned/editing" + "?projectId=" + projectId
-          + "&translationId=" + translationId + "&userName=" + userName, pfs).then(
+        workflowUrl + 'translation/assigned/editing' + '?projectId=' + projectId
+          + '&translationId=' + translationId + '&userName=' + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -107,17 +107,17 @@ tsApp.service('workflowService', [
 
     // Find available translation review work
     this.findAvailableReviewConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug("findAvailableReviewConcepts");
+      console.debug('findAvailableReviewConcepts');
       var deferred = $q.defer();
 
       // Find available review work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/available/review" + "?projectId=" + projectId
-          + "&translationId=" + translationId + "&userName=" + userName, pfs).then(
+        workflowUrl + 'translation/available/review' + '?projectId=' + projectId
+          + '&translationId=' + translationId + '&userName=' + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -132,17 +132,17 @@ tsApp.service('workflowService', [
 
     // Find all available translation  work
     this.findAllAvailableConcepts = function(projectId, translationId, pfs) {
-      console.debug("findAllAvailableConcepts");
+      console.debug('findAllAvailableConcepts');
       var deferred = $q.defer();
 
       // Find all available  work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/available/all" + "?projectId=" + projectId + "&translationId="
+        workflowUrl + 'translation/available/all' + '?projectId=' + projectId + '&translationId='
           + translationId, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -157,17 +157,17 @@ tsApp.service('workflowService', [
 
     // Find all assigned translation work
     this.findAllAssignedConcepts = function(projectId, translationId, pfs) {
-      console.debug("findAllAvailableConcepts");
+      console.debug('findAllAvailableConcepts');
       var deferred = $q.defer();
 
       // Find all assigned work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/assigned/all" + "?projectId=" + projectId + "&translationId="
+        workflowUrl + 'translation/assigned/all' + '?projectId=' + projectId + '&translationId='
           + translationId, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -182,17 +182,17 @@ tsApp.service('workflowService', [
 
     // Find assigned translation review work
     this.findAssignedReviewConcepts = function(projectId, translationId, userName, pfs) {
-      console.debug("findAssignedReviewConcepts");
+      console.debug('findAssignedReviewConcepts');
       var deferred = $q.defer();
 
       // Find assigned review work
       gpService.increment()
       $http.post(
-        workflowUrl + "translation/assigned/review" + "?projectId=" + projectId + "&translationId="
-          + translationId + "&userName=" + userName, pfs).then(
+        workflowUrl + 'translation/assigned/review' + '?projectId=' + projectId + '&translationId='
+          + translationId + '&userName=' + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -207,14 +207,14 @@ tsApp.service('workflowService', [
 
     // Find non release process translations
     this.findNonReleaseProcessTranslations = function(projectId, pfs) {
-      console.debug("findReleaseProcessTranslations");
+      console.debug('findReleaseProcessTranslations');
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(workflowUrl + "translation/nonrelease" + "?projectId=" + projectId, pfs).then(
+      $http.post(workflowUrl + 'translation/nonrelease' + '?projectId=' + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -230,18 +230,18 @@ tsApp.service('workflowService', [
     // Perform workflow action on a translation
     this.performTranslationWorkflowAction = function(projectId, translationId, userName,
       projectRole, action, concept) {
-      console.debug("performWorkflowActionOnTranslation");
+      console.debug('performWorkflowActionOnTranslation');
       var deferred = $q.defer();
 
       // Perform workflow action on a translation
       gpService.increment()
       $http.post(
-        workflowUrl + 'translation' + "/" + action + "?translationId=" + translationId
-          + "&userName=" + userName + "&projectId=" + projectId + "&projectRole=" + projectRole,
+        workflowUrl + 'translation' + '/' + action + '?translationId=' + translationId
+          + '&userName=' + userName + '&projectId=' + projectId + '&projectRole=' + projectRole,
         concept).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -257,18 +257,18 @@ tsApp.service('workflowService', [
     // Perform batch workflow action on a translation
     this.performBatchTranslationWorkflowAction = function(projectId, translationId, userName,
       projectRole, action, conceptList) {
-      console.debug("performBatchWorkflowActionOnTranslation");
+      console.debug('performBatchWorkflowActionOnTranslation');
       var deferred = $q.defer();
 
       // Perform workflow action on a translation
       gpService.increment()
       $http.post(
-        workflowUrl + 'translation' + "/" + action + "/batch?translationId=" + translationId
-          + "&userName=" + userName + "&projectId=" + projectId + "&projectRole=" + projectRole,
+        workflowUrl + 'translation' + '/' + action + '/batch?translationId=' + translationId
+          + '&userName=' + userName + '&projectId=' + projectId + '&projectRole=' + projectRole,
         conceptList).then(
       // success
       function(response) {
-        console.debug("  work = ", response.data);
+        console.debug('  work = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -283,17 +283,17 @@ tsApp.service('workflowService', [
 
     // Finds refsets available for editing by the specified user
     this.findAvailableEditingRefsets = function(projectId, userName, pfs) {
-      console.debug("findAvailableEditingRefsets");
+      console.debug('findAvailableEditingRefsets');
       var deferred = $q.defer();
 
       // Finds refsets available for editing by the specified user
       gpService.increment()
       $http.post(
-        workflowUrl + "refset/available/editing" + "?projectId=" + projectId + "&userName="
+        workflowUrl + 'refset/available/editing' + '?projectId=' + projectId + '&userName='
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug('  refset = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -308,17 +308,17 @@ tsApp.service('workflowService', [
 
     // Finds refsets assigned for editing by the specified user
     this.findAssignedEditingRefsets = function(projectId, userName, pfs) {
-      console.debug("findAssignedEditingRefsets");
+      console.debug('findAssignedEditingRefsets');
       var deferred = $q.defer();
 
       // Finds refsets assigned for editing by the specified user
       gpService.increment()
       $http.post(
-        workflowUrl + "refset/assigned/editing" + "?projectId=" + projectId + "&userName="
+        workflowUrl + 'refset/assigned/editing' + '?projectId=' + projectId + '&userName='
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  tracking record = ", response.data);
+        console.debug('  tracking record = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -333,17 +333,17 @@ tsApp.service('workflowService', [
 
     // Finds refsets available for review by the specified user
     this.findAvailableReviewRefsets = function(projectId, userName, pfs) {
-      console.debug("findAvailableReviewRefsets");
+      console.debug('findAvailableReviewRefsets');
       var deferred = $q.defer();
 
       // Finds refsets available for review by the specified user
       gpService.increment()
       $http.get(
-        workflowUrl + "refset/available/review" + "?projectId=" + projectId + "&userName="
+        workflowUrl + 'refset/available/review' + '?projectId=' + projectId + '&userName='
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug('  refset = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -358,17 +358,17 @@ tsApp.service('workflowService', [
 
     // Finds refsets assigned for review for the specified user
     this.findAssignedReviewRefsets = function(projectId, userName, pfs) {
-      console.debug("findAssignedReviewRefsets");
+      console.debug('findAssignedReviewRefsets');
       var deferred = $q.defer();
 
       // Finds refsets assigned for review by the specified user
       gpService.increment()
       $http.post(
-        workflowUrl + "refset/assigned/review" + "?projectId=" + projectId + "&userName="
+        workflowUrl + 'refset/assigned/review' + '?projectId=' + projectId + '&userName='
           + userName, pfs).then(
       // success
       function(response) {
-        console.debug("  tracking records = ", response.data);
+        console.debug('  tracking records = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -383,15 +383,15 @@ tsApp.service('workflowService', [
 
     // Finds all refsets available
     this.findAllAvailableRefsets = function(projectId, pfs) {
-      console.debug("findAllAvailableRefsets");
+      console.debug('findAllAvailableRefsets');
       var deferred = $q.defer();
 
       // Finds refsets available for review by the specified user
       gpService.increment()
-      $http.post(workflowUrl + "refset/available/all" + "?projectId=" + projectId, pfs).then(
+      $http.post(workflowUrl + 'refset/available/all' + '?projectId=' + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  refset = ", response.data);
+        console.debug('  refset = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -406,15 +406,15 @@ tsApp.service('workflowService', [
 
     // Finds all assigned refsets
     this.findAllAssignedRefsets = function(projectId, pfs) {
-      console.debug("findAllAssignedRefsets");
+      console.debug('findAllAssignedRefsets');
       var deferred = $q.defer();
 
       // Finds refsets assigned for review by the specified user
       gpService.increment()
-      $http.post(workflowUrl + "refset/assigned/all" + "?projectId=" + projectId, pfs).then(
+      $http.post(workflowUrl + 'refset/assigned/all' + '?projectId=' + projectId, pfs).then(
       // success
       function(response) {
-        console.debug("  tracking records = ", response.data);
+        console.debug('  tracking records = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -428,15 +428,15 @@ tsApp.service('workflowService', [
     }
 
     this.getTrackingRecordForRefset = function(refsetId) {
-      console.debug("getTrackingRecordForRefset");
+      console.debug('getTrackingRecordForRefset');
       var deferred = $q.defer();
 
       // Finds refsets available for review by the specified user
       gpService.increment()
-      $http.get(workflowUrl + "record" + "?refsetId=" + refsetId).then(
+      $http.get(workflowUrl + 'record' + '?refsetId=' + refsetId).then(
       // success
       function(response) {
-        console.debug("  record = ", response.data);
+        console.debug('  record = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -450,15 +450,15 @@ tsApp.service('workflowService', [
     }
 
     this.getTrackingRecordForConcept = function(conceptId) {
-      console.debug("getTrackingRecordForRefset");
+      console.debug('getTrackingRecordForRefset');
       var deferred = $q.defer();
 
       // Finds refsets available for review by the specified user
       gpService.increment()
-      $http.get(workflowUrl + "record" + "?refsetId=" + refsetId).then(
+      $http.get(workflowUrl + 'record' + '?refsetId=' + refsetId).then(
       // success
       function(response) {
-        console.debug("  record = ", response.data);
+        console.debug('  record = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -473,15 +473,15 @@ tsApp.service('workflowService', [
 
     // send feedback email
     this.addFeedback = function(object, name, email, message) {
-      console.debug("add feedback", name, email, message, object);
+      console.debug('add feedback', name, email, message, object);
       var deferred = $q.defer();
       // find members
       gpService.increment()
       $http.post(
-        workflowUrl + "message" + "?objectId=" + object.id + "&name=" + encodeURIComponent(name)
-          + "&email=" + encodeURIComponent(email), message, {
+        workflowUrl + 'message' + '?objectId=' + object.id + '&name=' + encodeURIComponent(name)
+          + '&email=' + encodeURIComponent(email), message, {
           headers : {
-            "Content-type" : "text/plain"
+            'Content-type' : 'text/plain'
           }
         }).then(
 

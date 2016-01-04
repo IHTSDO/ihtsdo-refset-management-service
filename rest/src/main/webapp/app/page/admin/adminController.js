@@ -17,7 +17,7 @@ tsApp
         projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
-        // Handle resetting tabs on "back" button
+        // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
         }
@@ -48,41 +48,41 @@ tsApp
         // Paging variables
         $scope.pageSize = 10;
         $scope.paging = {};
-        $scope.paging["project"] = {
+        $scope.paging['project'] = {
           page : 1,
-          filter : "",
+          filter : '',
           sortField : 'lastModified',
           ascending : null
         }
-        $scope.paging["candidateProject"] = {
+        $scope.paging['candidateProject'] = {
           page : 1,
-          filter : "",
+          filter : '',
           sortField : 'lastModified',
           ascending : null
         }
-        $scope.paging["user"] = {
+        $scope.paging['user'] = {
           page : 1,
-          filter : "",
+          filter : '',
           sortField : 'userName',
           ascending : null
         }
-        $scope.paging["assignedUser"] = {
+        $scope.paging['assignedUser'] = {
           page : 1,
-          filter : "",
+          filter : '',
           sortField : 'userName',
           ascending : null
         }
-        $scope.paging["candidateUser"] = {
+        $scope.paging['candidateUser'] = {
           page : 1,
-          filter : "",
+          filter : '',
           sortField : 'userName',
           ascending : null
         }
         $scope.paging['lang'] = {
           page : 1,
-          filter : "",
-          typeFilter : "",
-          sortField : "refsetId",
+          filter : '',
+          typeFilter : '',
+          sortField : 'refsetId',
           ascending : true
         }
 
@@ -90,18 +90,18 @@ tsApp
         $scope.getProjects = function() {
 
           var pfs = {
-            startIndex : ($scope.paging["project"].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['project'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging["project"].sortField,
-            ascending : $scope.paging["project"].ascending == null ? true
-              : $scope.paging["project"].ascending,
+            sortField : $scope.paging['project'].sortField,
+            ascending : $scope.paging['project'].ascending == null ? true
+              : $scope.paging['project'].ascending,
             queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
           // clear queryRestriction for application admins
           if ($scope.user.applicationRole == 'ADMIN') {
             pfs.queryRestriction = null;
           }
-          projectService.findProjectsAsList($scope.paging["project"].filter, pfs).then(
+          projectService.findProjectsAsList($scope.paging['project'].filter, pfs).then(
             function(data) {
               $scope.projects = data.projects;
               $scope.projects.totalCount = data.totalCount;
@@ -116,11 +116,11 @@ tsApp
         $scope.getCandidateProjects = function() {
 
           var pfs = {
-            startIndex : ($scope.paging["candidateProject"].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['candidateProject'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging["candidateProject"].sortField,
-            ascending : $scope.paging["candidateProject"].ascending == null ? true
-              : $scope.paging["candidateProject"].ascending,
+            sortField : $scope.paging['candidateProject'].sortField,
+            ascending : $scope.paging['candidateProject'].ascending == null ? true
+              : $scope.paging['candidateProject'].ascending,
             queryRestriction : 'userRoleMap:' + $scope.user.userName + 'ADMIN'
           };
           // clear queryRestriction for application admins
@@ -128,7 +128,7 @@ tsApp
             pfs.queryRestriction = null;
           }
 
-          projectService.findProjectsAsList($scope.paging["candidateProject"].filter, pfs).then(
+          projectService.findProjectsAsList($scope.paging['candidateProject'].filter, pfs).then(
             function(data) {
               $scope.candidateProjects = data.projects;
               $scope.candidateProjects.totalCount = data.totalCount;
@@ -140,16 +140,16 @@ tsApp
         $scope.getUsers = function() {
 
           var pfs = {
-            startIndex : ($scope.paging["user"].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['user'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging["user"].sortField,
-            ascending : $scope.paging["user"].ascending,
-            ascending : $scope.paging["user"].ascending == null ? true
-              : $scope.paging["user"].ascending,
+            sortField : $scope.paging['user'].sortField,
+            ascending : $scope.paging['user'].ascending,
+            ascending : $scope.paging['user'].ascending == null ? true
+              : $scope.paging['user'].ascending,
             queryRestriction : null
           };
 
-          securityService.findUsersAsList($scope.paging["user"].filter, pfs).then(function(data) {
+          securityService.findUsersAsList($scope.paging['user'].filter, pfs).then(function(data) {
             $scope.users = data.users;
             $scope.users.totalCount = data.totalCount;
           })
@@ -161,16 +161,16 @@ tsApp
         // assigned to the selected project
         $scope.getUnassignedUsers = function() {
           var pfs = {
-            startIndex : ($scope.paging["candidateUser"].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['candidateUser'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging["candidateUser"].sortField,
-            ascending : $scope.paging["candidateUser"].ascending == null ? true
-              : $scope.paging["candidateUser"].ascending,
-            queryRestriction : "(applicationRole:USER OR applicationRole:ADMIN)"
+            sortField : $scope.paging['candidateUser'].sortField,
+            ascending : $scope.paging['candidateUser'].ascending == null ? true
+              : $scope.paging['candidateUser'].ascending,
+            queryRestriction : '(applicationRole:USER OR applicationRole:ADMIN)'
           };
 
           projectService.findUnassignedUsersForProject($scope.selectedProject.id,
-            $scope.paging["candidateUser"].filter, pfs).then(function(data) {
+            $scope.paging['candidateUser'].filter, pfs).then(function(data) {
             $scope.unassignedUsers = data.users;
             $scope.unassignedUsers.totalCount = data.totalCount;
           })
@@ -182,15 +182,15 @@ tsApp
         $scope.getAssignedUsers = function() {
 
           var pfs = {
-            startIndex : ($scope.paging["assignedUser"].page - 1) * $scope.pageSize,
+            startIndex : ($scope.paging['assignedUser'].page - 1) * $scope.pageSize,
             maxResults : $scope.pageSize,
-            sortField : $scope.paging["assignedUser"].sortField,
-            ascending : $scope.paging["assignedUser"].ascending == null ? true
-              : $scope.paging["assignedUser"].ascending,
+            sortField : $scope.paging['assignedUser'].sortField,
+            ascending : $scope.paging['assignedUser'].ascending == null ? true
+              : $scope.paging['assignedUser'].ascending,
             queryRestriction : null
           };
           projectService.findAssignedUsersForProject($scope.selectedProject.id,
-            $scope.paging["assignedUser"].filter, pfs).then(function(data) {
+            $scope.paging['assignedUser'].filter, pfs).then(function(data) {
             $scope.assignedUsers = data.users;
             $scope.assignedUsers.totalCount = data.totalCount;
           })
@@ -241,8 +241,8 @@ tsApp
 
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
-            if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project ("
-              + project.name + ") and unassign all of its users?")) {
+            if (!confirm('The project has users assigned to it.  Are you sure you want to remove the project ('
+              + project.name + ') and unassign all of its users?')) {
               return;
             }
           }
@@ -258,8 +258,8 @@ tsApp
         // Removes a user
         $scope.removeUser = function(user) {
           if (user.projectRoleMap && Object.keys(user.projectRoleMap).length > 0) {
-            window.alert("You can not delete a user that is assigned to a project."
-              + "Remove this user from all projects before deleting it.");
+            window.alert('You can not delete a user that is assigned to a project.'
+              + 'Remove this user from all projects before deleting it.');
             return;
           }
           securityService.removeUser(user).then(function() {
@@ -354,10 +354,10 @@ tsApp
           // end at index -11 because we can't move the last one down
           for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length - 1; i++) {
             if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
-              console.debug(" ldt 1 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              console.debug(' ldt 1 = ', $scope.user.userPreferences.languageDescriptionTypes);
               $scope.user.userPreferences.languageDescriptionTypes.splice(i, 2,
                 $scope.user.userPreferences.languageDescriptionTypes[i + 1], ldt);
-              console.debug(" ldt 2 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              console.debug(' ldt 2 = ', $scope.user.userPreferences.languageDescriptionTypes);
               break;
             }
           }
@@ -392,12 +392,12 @@ tsApp
         // assign user to project
         $scope.assignUserToProject = function(projectId, userName, projectRole) {
           if (projectId == null || projectId == undefined) {
-            window.alert("Select a project before assigning a user! ");
+            window.alert('Select a project before assigning a user! ');
             return;
           }
           // call service
           projectService.assignUserToProject(projectId, userName, projectRole).then(function(data) {
-            // Update "anyrole"
+            // Update 'anyrole'
             projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
@@ -409,7 +409,7 @@ tsApp
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
           projectService.unassignUserFromProject(projectId, userName).then(function(data) {
-            // Update "anyrole"
+            // Update 'anyrole'
             projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
@@ -505,7 +505,7 @@ tsApp
           $scope.submitProject = function(project) {
 
             if (!project || !project.name || !project.description || !project.terminology) {
-              window.alert("The name, description, and terminology fields cannot be blank. ");
+              window.alert('The name, description, and terminology fields cannot be blank. ');
               return;
             }
 
@@ -524,7 +524,7 @@ tsApp
                 if ($scope.user.applicationRole != 'ADMIN') {
                   projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
-                      // Update "anyrole"
+                      // Update 'anyrole'
                       projectService.getUserHasAnyRole();
                       $uibModalInstance.close(data);
                     },
@@ -611,7 +611,7 @@ tsApp
 
           $scope.submitProject = function(project) {
             if (!project || !project.name || !project.description || !project.terminology) {
-              window.alert("The name, description, and terminology fields cannot be blank. ");
+              window.alert('The name, description, and terminology fields cannot be blank. ');
               return;
             }
 
@@ -673,7 +673,7 @@ tsApp
 
           $scope.submitUser = function(user) {
             if (!user || !user.name || !user.userName || !user.applicationRole) {
-              window.alert("The name, user name, and application role fields cannot be blank. ");
+              window.alert('The name, user name, and application role fields cannot be blank. ');
               return;
             }
             securityService.addUser(user).then(
@@ -737,7 +737,7 @@ tsApp
           $scope.submitUser = function(user) {
 
             if (!user || !user.name || !user.userName || !user.applicationRole) {
-              window.alert("The name, user name, and application role fields cannot be blank. ");
+              window.alert('The name, user name, and application role fields cannot be blank. ');
               return;
             }
 

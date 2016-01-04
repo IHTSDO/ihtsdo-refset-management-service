@@ -1,5 +1,5 @@
 // Concept Info directive
-// e.g. <div concept-info data="data" paging="paging" ></div>
+// e.g. <div concept-info data='data' paging='paging' ></div>
 tsApp.directive('conceptInfo', [
   '$uibModal',
   'utilService',
@@ -21,10 +21,10 @@ tsApp.directive('conceptInfo', [
           // Paging parameters
           $scope.pageSize = 10;
           $scope.paging = {};
-          $scope.paging["children"] = {
+          $scope.paging['children'] = {
             page : 1,
-            filter : "",
-            typeFilter : "",
+            filter : '',
+            typeFilter : '',
             sortField : 'name',
             ascending : null
           }
@@ -159,7 +159,7 @@ tsApp.directive('conceptInfo', [
                 return type.name;
               }
             }
-            return "UNKNOWN";
+            return 'UNKNOWN';
           }
 
           // function for sorting a relationship array
@@ -173,7 +173,7 @@ tsApp.directive('conceptInfo', [
           // Supporting trees
           // 
 
-          /** Fake "enum" for clarity. Could use freeze, but meh */
+          /** Fake 'enum' for clarity. Could use freeze, but meh */
           var TreeNodeExpansionState = {
             'Undefined' : -1,
             'Unloaded' : 0,
@@ -353,7 +353,7 @@ tsApp.directive('conceptInfo', [
               return;
             }
 
-            // only show for "ASSIGNED" refsets
+            // only show for 'ASSIGNED' refsets
             if ($scope.value != 'ASSIGNED') {
               $scope.disableMemberTypes = true;
               return;
@@ -365,7 +365,7 @@ tsApp.directive('conceptInfo', [
             var query = concepts[0];
             for (var i = 1; i < concepts.length; i++) {
               if (!$scope.memberTypes[concepts[i]]) {
-                query += " OR ";
+                query += ' OR ';
                 query += concepts[i];
                 // put a placeholder entry for the cases when it isn't a member of the refset
                 $scope.memberTypes[concepts[i]] = {
@@ -376,7 +376,7 @@ tsApp.directive('conceptInfo', [
             var pfs = {
               startIndex : -1
             };
-            query = "(" + query + ")";
+            query = '(' + query + ')';
             refsetService.findRefsetMembersForQuery($scope.data.refset.id, query, pfs).then(
             // Success
             function(data) {
@@ -411,7 +411,7 @@ tsApp.directive('conceptInfo', [
           // Modals
           // Add modal
           $scope.openAddModal = function(lrefset, lmember) {
-            console.debug("openAddModal ", lrefset, lmember);
+            console.debug('openAddModal ', lrefset, lmember);
 
             var modalInstance = $uibModal.open({
               templateUrl : 'app/component/conceptInfo/add.html',
@@ -439,7 +439,7 @@ tsApp.directive('conceptInfo', [
 
           // Add modal controller
           var AddModalCtrl = function($scope, $uibModalInstance, refset, member) {
-            console.debug("Entered add modal control", refset, member);
+            console.debug('Entered add modal control', refset, member);
 
             $scope.errors = [];
 
@@ -447,7 +447,7 @@ tsApp.directive('conceptInfo', [
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
             $scope.descendants = '<';
-            $scope.includeClause = "";
+            $scope.includeClause = '';
 
             // Add button
             $scope.submitAdd = function(refset, concept, value) {
@@ -575,7 +575,7 @@ tsApp.directive('conceptInfo', [
 
           // Remove modal
           $scope.openRemoveModal = function(lrefset, lmember) {
-            console.debug("openRemoveModal ", lrefset, lmember);
+            console.debug('openRemoveModal ', lrefset, lmember);
 
             var modalInstance = $uibModal.open({
               templateUrl : 'app/component/conceptInfo/remove.html',
@@ -603,7 +603,7 @@ tsApp.directive('conceptInfo', [
 
           // Remove modal controller
           var RemoveModalCtrl = function($scope, $uibModalInstance, refset, member) {
-            console.debug("Entered remove modal control", refset, member);
+            console.debug('Entered remove modal control', refset, member);
 
             $scope.errors = [];
 
@@ -611,7 +611,7 @@ tsApp.directive('conceptInfo', [
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
             $scope.descendants = '<';
-            $scope.removeClause = "";
+            $scope.removeClause = '';
 
             // Handles removing a member or clause
             $scope.submitRemove = function(refset, concept, value) {

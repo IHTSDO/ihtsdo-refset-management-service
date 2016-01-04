@@ -21,10 +21,10 @@ tsApp.controller('LoginCtrl', [
     // Login function
     $scope.login = function(name, password) {
       if (!name) {
-        alert("You must specify a user name");
+        alert('You must specify a user name');
         return;
       } else if (!password) {
-        alert("You must specify a password");
+        alert('You must specify a password');
         return;
       }
 
@@ -41,16 +41,16 @@ tsApp.controller('LoginCtrl', [
       // success
       function(response) {
         utilService.clearError();
-        console.debug("user = ", response.data);
+        console.debug('user = ', response.data);
         securityService.setUser(response.data);
 
         // set request header authorization and reroute
-        console.debug("authToken = " + response.data.authToken);
+        console.debug('authToken = ' + response.data.authToken);
         $http.defaults.headers.common.Authorization = response.data.authToken;
         if (response.data.userPreferences && response.data.userPreferences.lastTab) {
           $location.path(response.data.userPreferences.lastTab);
         } else {
-          $location.path("/directory");
+          $location.path('/directory');
         }
         gpService.decrement();
       },

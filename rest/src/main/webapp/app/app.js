@@ -9,13 +9,13 @@ var tsApp = angular.module('tsApp',
   });
 
 // Declare top level URL vars
-var securityUrl = "security/";
-var refsetUrl = "refset/";
-var translationUrl = "translation/";
-var releaseUrl = "release/";
-var projectUrl = "project/";
-var workflowUrl = "workflow/";
-var validationUrl = "validate/";
+var securityUrl = 'security/';
+var refsetUrl = 'refset/';
+var translationUrl = 'translation/';
+var releaseUrl = 'release/';
+var projectUrl = 'project/';
+var workflowUrl = 'workflow/';
+var validationUrl = 'validate/';
 
 // Initialization of tsApp
 tsApp.run([ '$rootScope', '$http', '$window', function($rootScope, $http, $window) {
@@ -114,12 +114,12 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
       }
     }
 
-    // Set "active" or not
+    // Set 'active' or not
     $scope.tabClass = function(tab) {
       if (tabService.selectedTab == tab) {
-        return "active";
+        return 'active';
       } else {
-        return "";
+        return '';
       }
     }
 
@@ -156,11 +156,11 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
-      path = "/help" + path + "?authToken=" + $http.defaults.headers.common.Authorization;
+      path = '/help' + path + '?authToken=' + $http.defaults.headers.common.Authorization;
       var currentUrl = window.location.href;
       var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
       var newUrl = baseUrl + path;
-      var myWindow = window.open(newUrl, "helpWindow");
+      var myWindow = window.open(newUrl, 'helpWindow');
       myWindow.focus();
     };
 
@@ -235,13 +235,13 @@ tsApp.directive('confirm', function($confirm) {
     priority : 1,
     restrict : 'A',
     scope : {
-      confirmIf : "=",
+      confirmIf : '=',
       ngClick : '&',
       confirm : '@'
     },
     link : function(scope, element, attrs) {
       function reBind(func) {
-        element.unbind("click").bind("click", function() {
+        element.unbind('click').bind('click', function() {
           func();
         });
       }

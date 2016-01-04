@@ -383,18 +383,18 @@ public class GenerateSampleDataMojo extends AbstractMojo {
        *     - Refset 11: external
        *     - Refset 12: external
        *  - Project 6
-       *     - Refset 20: external, preview
-       *     - Refset 21: external, preview
-       *     - Refset 22: external, preview
-       *     - Refset 23: external, preview
-       *     - Refset 24: external, preview
-       *     - Refset 25: external, preview
-       *     - Refset 26: external, preview
-       *     - Refset 27: external, preview
-       *     - Refset 28: external, preview
-       *     - Refset 29: external, preview
-       *     - Refset 30: external, preview
-       *     - Refset 31: external, preview
+       *     - Refset 20: external, beta
+       *     - Refset 21: external, beta
+       *     - Refset 22: external, beta
+       *     - Refset 23: external, beta
+       *     - Refset 24: external, beta
+       *     - Refset 25: external, beta
+       *     - Refset 26: external, beta
+       *     - Refset 27: external, beta
+       *     - Refset 28: external, beta
+       *     - Refset 29: external, beta
+       *     - Refset 30: external, beta
+       *     - Refset 31: external, beta
        * </pre>
        */
 
@@ -455,66 +455,66 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       makeRefset("refset12", null, Refset.Type.EXTERNAL, project5,
           "12121212342013", "1000124", admin, true);
 
-      // Create refsets 20-32 on project 6, as PREVIEW
+      // Create refsets 20-32 on project 6, as BETA
       RefsetJpa refset =
           makeRefset("refset20", null, Refset.Type.EXTERNAL, project6,
               "206666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset21", null, Refset.Type.EXTERNAL, project6,
               "216666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset22", null, Refset.Type.EXTERNAL, project6,
               "226666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset23", null, Refset.Type.EXTERNAL, project6,
               "236666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset24", null, Refset.Type.EXTERNAL, project6,
               "246666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset25", null, Refset.Type.EXTERNAL, project6,
               "256666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset26", null, Refset.Type.EXTERNAL, project6,
               "266666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset27", null, Refset.Type.EXTERNAL, project6,
               "276666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset28", null, Refset.Type.EXTERNAL, project6,
               "286666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset29", null, Refset.Type.EXTERNAL, project6,
               "296666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset30", null, Refset.Type.EXTERNAL, project6,
               "306666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
       refset =
           makeRefset("refset31", null, Refset.Type.EXTERNAL, project6,
               "316666612342013", "1000124", admin, true);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl().updateRefset(refset, admin.getAuthToken());
 
       // take a refset entirely through the release cycle, including release
@@ -715,7 +715,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(),
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(),
           "DEFAULT", reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
@@ -728,7 +728,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().previewRefsetRelease(test9.getId(),
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(),
           "DEFAULT", reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());

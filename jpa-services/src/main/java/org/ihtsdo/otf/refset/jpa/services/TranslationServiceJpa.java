@@ -964,8 +964,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // will become real if a finish operation is completed
     // used to prevent retrieving with index
 
-    // Mark as provisional if staging type isn't preview
-    if (stagingType == Translation.StagingType.PREVIEW) {
+    // Mark as provisional if staging type isn't beta
+    if (stagingType == Translation.StagingType.BETA) {
       translationCopy.setEffectiveTime(effectiveTime);
       translationCopy.setProvisional(false);
     } else {
@@ -980,8 +980,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     addTranslation(translationCopy);
 
-    // copy notes - yes for MIGRATION, not for PREVIEW
-    if (stagingType == Translation.StagingType.MIGRATION) {
+    // copy notes - not for BETA
+    if (stagingType != Translation.StagingType.BETA) {
       for (Note note : translation.getNotes()) {
         TranslationNoteJpa noteCopy =
             new TranslationNoteJpa((TranslationNoteJpa) note);
@@ -998,8 +998,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // 6901 to null
     for (Concept originConcept : translation.getConcepts()) {
 
-      // Skip members for preview that are not ready for publication
-      if (stagingType == Translation.StagingType.PREVIEW
+      // Skip members for beta that are not ready for publication
+      if (stagingType == Translation.StagingType.BETA
           && originConcept.getWorkflowStatus() != WorkflowStatus.READY_FOR_PUBLICATION) {
         continue;
       }

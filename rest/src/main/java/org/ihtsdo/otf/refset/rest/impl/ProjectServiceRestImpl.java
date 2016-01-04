@@ -77,7 +77,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@Api(value = "/project", description = "Operations to retrieve project info")
+@Api(value = "/project", description = "Operations to retrieve project info and interact with the terminology handler")
 public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     ProjectServiceRest {
 
@@ -97,9 +97,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/roles")
-  @ApiOperation(value = "Get project roles", notes = "Returns list of valid project roles", response = StringList.class)
+  @ApiOperation(value = "Get project roles", notes = "Gets list of valid project roles", response = StringList.class)
   public StringList getProjectRoles(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /roles");
 
@@ -123,12 +123,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/assign")
-  @ApiOperation(value = "Assign user to project", notes = "Assigns the specified user to the specified project with the specified role.", response = ProjectJpa.class)
+  @ApiOperation(value = "Assign user to project", notes = "Assigns the specified user to the specified project with the specified role", response = ProjectJpa.class)
   public Project assignUserToProject(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @QueryParam("role") String role,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /assign " + projectId + ", " + userName
@@ -165,11 +165,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/unassign")
-  @ApiOperation(value = "Unassign user from project", notes = "Unassign the specified user from the specified project with the specified role.", response = ProjectJpa.class)
+  @ApiOperation(value = "Unassign user from project", notes = "Unassigns the specified user from the specified project", response = ProjectJpa.class)
   public Project unassignUserFromProject(
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /removeuser " + projectId + ", "
@@ -218,7 +218,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Project): /users/ " + projectId + ", " + query
@@ -262,7 +262,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Project): /users/ " + projectId + "/unassigned, "
@@ -300,10 +300,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/add")
-  @ApiOperation(value = "Add new project", notes = "Creates a new project", response = ProjectJpa.class)
+  @ApiOperation(value = "Add new project", notes = "Adds a new project", response = ProjectJpa.class)
   public Project addProject(
     @ApiParam(value = "Project, e.g. newProject", required = true) ProjectJpa project,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Project): /add " + project);
@@ -344,7 +344,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Update project", notes = "Updates the specified project")
   public void updateProject(
     @ApiParam(value = "Project, e.g. existingProject", required = true) ProjectJpa project,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Project): /update " + project);
@@ -401,7 +401,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Remove project", notes = "Removes the project with the specified id")
   public void removeProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Project): /remove/" + projectId);
@@ -433,8 +433,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Path("/{projectId}")
   @ApiOperation(value = "Get project for id", notes = "Gets the project for the specified id", response = ProjectJpa.class)
   public Project getProject(
-    @ApiParam(value = "Project internal id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Project): /" + projectId);
 
@@ -460,11 +460,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/projects")
-  @ApiOperation(value = "Finds projects", notes = "Finds projects based on pfs parameter and query", response = ProjectListJpa.class)
+  @ApiOperation(value = "Finds projects", notes = "Finds projects for the specified query", response = ProjectListJpa.class)
   public ProjectList findProjectsForQuery(
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -492,7 +492,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Reindexes specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /reindex "
@@ -525,9 +525,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/user/anyrole")
-  @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project.", response = Boolean.class)
+  @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project", response = Boolean.class)
   public Boolean userHasSomeProjectRole(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /user/anyrole");
@@ -559,9 +559,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/terminology/all")
-  @ApiOperation(value = "Get all terminology editions", notes = "Returns all known terminology editions.", response = StringList.class)
+  @ApiOperation(value = "Get all terminology editions", notes = "Gets all known terminology editions", response = StringList.class)
   public StringList getTerminologyEditions(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/all");
@@ -589,10 +589,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/terminology/{terminology}/all")
-  @ApiOperation(value = "Get all terminology versions", notes = "Returns versions for the specified terminology edition.", response = StringList.class)
+  @ApiOperation(value = "Get all terminology versions", notes = "Gets versions for the specified terminology edition", response = StringList.class)
   public TerminologyList getTerminologyVersions(
     @ApiParam(value = "Edition, e.g. 'SNOMEDCT'", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/" + terminology + "/all");
@@ -621,9 +621,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/icons")
-  @ApiOperation(value = "Get icon map", notes = "Returns the mapping from namespace or module ID to icon key.", response = KeyValuePairList.class)
+  @ApiOperation(value = "Get icon map", notes = "Gets the mapping from namespace or module ID to icon key", response = KeyValuePairList.class)
   public KeyValuePairList getIconConfig(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /icons");
@@ -655,13 +655,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concepts")
-  @ApiOperation(value = "Finds concepts", notes = "Finds concepts based on pfs parameter and query", response = ConceptListJpa.class)
+  @ApiOperation(value = "Finds concepts", notes = "Finds concepts for the specified query", response = ConceptListJpa.class)
   public ConceptList findConceptsForQuery(
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -691,13 +691,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/concept")
-  @ApiOperation(value = "Retrieves a concept with descriptions", notes = "Retrieves a concept with descriptions", response = ConceptJpa.class)
+  @ApiOperation(value = "Get full concept", notes = "Gets a concept with descriptions and relationships for the specified terminology id", response = ConceptJpa.class)
   public Concept getFullConcept(
     @ApiParam(value = "TerminologyId", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -746,13 +746,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/parents")
-  @ApiOperation(value = "Retrieve concept parents", notes = "Retrieves parents concepts of the indicated concept", response = ConceptListJpa.class)
+  @ApiOperation(value = "Get concept parents", notes = "Gets parents concepts of the specified concept", response = ConceptListJpa.class)
   public ConceptList getConceptParents(
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -804,14 +804,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concept/children")
-  @ApiOperation(value = "Retrieve concept children", notes = "Retrieves child concepts of the indicated concept", response = ConceptListJpa.class)
+  @ApiOperation(value = "Get concept children", notes = "Gets child concepts of the specified concept", response = ConceptListJpa.class)
   public ConceptList getConceptChildren(
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -920,11 +920,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/terminology/{terminology}/descriptiontypes")
-  @ApiOperation(value = "Get standard description types", notes = "Returns standard description types for the specified terminology and version.", response = DescriptionTypeListJpa.class)
+  @ApiOperation(value = "Get standard description types", notes = "Returns standard description types for the specified parameters", response = DescriptionTypeListJpa.class)
   public DescriptionTypeList getStandardDescriptionTypes(
     @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/" + terminology

@@ -85,7 +85,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   public ValidationResult validateConcept(
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
     @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /concept " + concept);
@@ -118,7 +118,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   public ValidationResult validateRefset(
     @ApiParam(value = "Refset", required = true) RefsetJpa refset,
     @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /refset " + refset + "/" + projectId);
@@ -150,7 +150,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   public ValidationResult validateTranslation(
     @ApiParam(value = "Translation", required = true) TranslationJpa translation,
     @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /translation " + translation + "/"
@@ -185,7 +185,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   public ValidationResult validateMember(
     @ApiParam(value = "Refset member", required = true) ConceptRefsetMemberJpa member,
     @ApiParam(value = "Project id, e.g. 8", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /member " + member);
@@ -217,7 +217,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate all translation concept member", notes = "Validates all of the concept members of the specified translation", response = ConceptValidationResultListJpa.class)
   public ConceptValidationResultList validateAllConcepts(
     @ApiParam(value = "Translation id, e.g. 10", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /concepts " + translationId);
@@ -267,7 +267,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Validate all refset members", notes = "Validates all of the members of the specified refset", response = MemberValidationResultListJpa.class)
   public MemberValidationResultList validateAllMembers(
     @ApiParam(value = "Refset id, e.g. 10", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /members " + refsetId);
@@ -310,7 +310,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/checks")
   @ApiOperation(value = "Gets all validation checks", notes = "Gets all validation checks", response = KeyValuePairList.class)
   public KeyValuePairList getValidationChecks(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Validation): /checks ");

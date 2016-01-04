@@ -6,7 +6,7 @@ tsApp.service('projectService', [
   'gpService',
   'utilService',
   function($http, $q, $rootScope, gpService, utilService) {
-    console.debug("configure projectService");
+    console.debug('configure projectService');
 
     // Declare the model
     var userProjectsInfo = {
@@ -26,13 +26,13 @@ tsApp.service('projectService', [
     }
 
     this.getIconConfig = function() {
-      console.debug("get icon config", iconConfig);
+      console.debug('get icon config', iconConfig);
       return iconConfig;
     }
 
     // get icon config info
     this.prepareIconConfig = function() {
-      console.debug("prepareIconConfig");
+      console.debug('prepareIconConfig');
       var deferred = $q.defer();
 
       // Get projects
@@ -40,7 +40,7 @@ tsApp.service('projectService', [
       $http.get(projectUrl + 'icons').then(
       // success
       function(response) {
-        console.debug("  icons = ", response.data);
+        console.debug('  icons = ', response.data);
         // Set the map of key=>value
         for (var i = 0; i < response.data.keyValuePairs.length; i++) {
           iconConfig[response.data.keyValuePairs[i].key] = response.data.keyValuePairs[i].value;
@@ -110,7 +110,7 @@ tsApp.service('projectService', [
     }
     // add project
     this.addProject = function(project) {
-      console.debug("addProject");
+      console.debug('addProject');
       var deferred = $q.defer();
 
       // Add project
@@ -118,7 +118,7 @@ tsApp.service('projectService', [
       $http.put(projectUrl + 'add', project).then(
       // success
       function(response) {
-        console.debug("  project = ", response.data);
+        console.debug('  project = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -141,7 +141,7 @@ tsApp.service('projectService', [
       $http.post(projectUrl + 'update', project).then(
       // success
       function(response) {
-        console.debug("  project = ", response.data);
+        console.debug('  project = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -161,10 +161,10 @@ tsApp.service('projectService', [
 
       // Add project
       gpService.increment()
-      $http['delete'](projectUrl + 'remove' + "/" + project.id).then(
+      $http['delete'](projectUrl + 'remove' + '/' + project.id).then(
       // success
       function(response) {
-        console.debug("  project = ", response.data);
+        console.debug('  project = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -180,20 +180,20 @@ tsApp.service('projectService', [
     // Finds projects as a list
     this.findProjectsAsList = function(queryStr, pfs) {
 
-      var query = (queryStr == null) ? "" : queryStr;
-      console.debug("findProjectsAsList", query, pfs);
+      var query = (queryStr == null) ? '' : queryStr;
+      console.debug('findProjectsAsList', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(projectUrl + "projects" + "?query=" + query, pfs)
+      $http.post(projectUrl + 'projects' + '?query=' + query, pfs)
       // + encodeURIComponent(utilService.cleanQuery(queryStr)),
       // pfs)
       .then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -210,16 +210,16 @@ tsApp.service('projectService', [
     // Finds users on given project
     this.findAssignedUsersForProject = function(projectId, query, pfs) {
 
-      console.debug("findAssignedUsersForProject", projectId, pfs);
+      console.debug('findAssignedUsersForProject', projectId, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make PUT call
       gpService.increment();
-      $http.put(projectUrl + "users/" + projectId + "?query=" + query, pfs).then(
+      $http.put(projectUrl + 'users/' + projectId + '?query=' + query, pfs).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -236,16 +236,16 @@ tsApp.service('projectService', [
     // Finds users NOT on given project
     this.findUnassignedUsersForProject = function(projectId, query, pfs) {
 
-      console.debug("findUnassignedUsersForProject", projectId, pfs);
+      console.debug('findUnassignedUsersForProject', projectId, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make PUT call
       gpService.increment();
-      $http.put(projectUrl + "users/" + projectId + "/unassigned?query=" + query, pfs).then(
+      $http.put(projectUrl + 'users/' + projectId + '/unassigned?query=' + query, pfs).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -261,17 +261,17 @@ tsApp.service('projectService', [
 
     // assign user to project
     this.assignUserToProject = function(projectId, userName, projectRole) {
-      console.debug("assignUserToProject");
+      console.debug('assignUserToProject');
       var deferred = $q.defer();
 
       // Assign user to project
       gpService.increment()
       $http.get(
-        projectUrl + 'assign' + "?projectId=" + projectId + "&userName=" + userName + "&role="
+        projectUrl + 'assign' + '?projectId=' + projectId + '&userName=' + userName + '&role='
           + projectRole).then(
       // success
       function(response) {
-        console.debug("  project = ", response.data);
+        console.debug('  project = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -286,16 +286,16 @@ tsApp.service('projectService', [
 
     // unassign user from project
     this.unassignUserFromProject = function(projectId, userName) {
-      console.debug("unassignUserFromProject");
+      console.debug('unassignUserFromProject');
       var deferred = $q.defer();
 
       // Unassign user from project
       gpService.increment()
-      $http.get(projectUrl + 'unassign' + "?projectId=" + projectId + "&userName=" + userName)
+      $http.get(projectUrl + 'unassign' + '?projectId=' + projectId + '&userName=' + userName)
         .then(
         // success
         function(response) {
-          console.debug("  project = ", response.data);
+          console.debug('  project = ', response.data);
           gpService.decrement();
           deferred.resolve(response.data);
         },
@@ -310,7 +310,7 @@ tsApp.service('projectService', [
 
     // get project roles
     this.getProjectRoles = function() {
-      console.debug("getProjectRoles");
+      console.debug('getProjectRoles');
       var deferred = $q.defer();
 
       // Get project roles
@@ -332,7 +332,7 @@ tsApp.service('projectService', [
 
     // does user have any role on any project
     this.getUserHasAnyRole = function() {
-      console.debug("getUserHasAnyRole");
+      console.debug('getUserHasAnyRole');
       var deferred = $q.defer();
 
       // Get project roles
@@ -340,7 +340,7 @@ tsApp.service('projectService', [
       $http.get(projectUrl + 'user/anyrole').then(
       // success
       function(response) {
-        console.debug("  anyrole = " + response.data);
+        console.debug('  anyrole = ' + response.data);
         userProjectsInfo.anyRole = response.data;
         gpService.decrement();
         deferred.resolve(response.data);
@@ -356,21 +356,21 @@ tsApp.service('projectService', [
 
     this.findConceptsForQuery = function(queryStr, terminology, version, pfs) {
 
-      var query = (queryStr == null) ? "" : queryStr;
-      console.debug("findConceptsForQuery", query, pfs);
+      var query = (queryStr == null) ? '' : queryStr;
+      console.debug('findConceptsForQuery', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + "concepts" + "?query=" + encodeURIComponent(utilService.cleanQuery(queryStr))
-          + "&terminology=" + terminology + "&version=" + version, pfs)
+        projectUrl + 'concepts' + '?query=' + encodeURIComponent(utilService.cleanQuery(queryStr))
+          + '&terminology=' + terminology + '&version=' + version, pfs)
 
       .then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -386,19 +386,19 @@ tsApp.service('projectService', [
 
     this.getConceptParents = function(terminologyId, terminology, version, translationId) {
 
-      console.debug("getConceptParents", terminologyId);
+      console.debug('getConceptParents', terminologyId);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + "parents" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
-          + "&version=" + version
-          + (translationId != null ? "&translationId=" + translationId : "")).then(
+        projectUrl + 'parents' + '?terminologyId=' + terminologyId + '&terminology=' + terminology
+          + '&version=' + version
+          + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -414,19 +414,19 @@ tsApp.service('projectService', [
 
     this.getConceptChildren = function(terminologyId, terminology, version, translationId, pfs) {
 
-      console.debug("getConceptChildren", terminologyId);
+      console.debug('getConceptChildren', terminologyId);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + "concept/children" + "?terminologyId=" + terminologyId + "&terminology="
-          + terminology + "&version=" + version
-          + (translationId != null ? "&translationId=" + translationId : ""), pfs ? pfs : {}).then(
+        projectUrl + 'concept/children' + '?terminologyId=' + terminologyId + '&terminology='
+          + terminology + '&version=' + version
+          + (translationId != null ? '&translationId=' + translationId : ''), pfs ? pfs : {}).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -443,19 +443,19 @@ tsApp.service('projectService', [
     // get concept with descriptions
     this.getFullConcept = function(terminologyId, terminology, version, translationId) {
 
-      console.debug("getFullConcept", terminologyId);
+      console.debug('getFullConcept', terminologyId);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + "concept" + "?terminologyId=" + terminologyId + "&terminology=" + terminology
-          + "&version=" + version
-          + (translationId != null ? "&translationId=" + translationId : "")).then(
+        projectUrl + 'concept' + '?terminologyId=' + terminologyId + '&terminology=' + terminology
+          + '&version=' + version
+          + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -513,7 +513,7 @@ tsApp.service('projectService', [
 
     // Get standard description types
     this.getStandardDescriptionTypes = function(terminology, version) {
-      console.debug("getStandardDescriptionTypes", terminology, version);
+      console.debug('getStandardDescriptionTypes', terminology, version);
       var deferred = $q.defer();
 
       // Get projects

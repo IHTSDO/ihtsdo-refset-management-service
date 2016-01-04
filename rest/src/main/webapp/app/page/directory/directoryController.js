@@ -11,7 +11,7 @@ tsApp.controller('DirectoryCtrl', [
     workflowService) {
     console.debug('configure DirectoryCtrl');
 
-    // Handle resetting tabs on "back" button
+    // Handle resetting tabs on 'back' button
     if (tabService.selectedTab.label != 'Directory') {
       tabService.setSelectedTabByLabel('Directory');
     }
@@ -52,7 +52,7 @@ tsApp.controller('DirectoryCtrl', [
         sortField : 'name',
         queryRestriction : 'userAnyRole:' + $scope.user.userName
       };
-      projectService.findProjectsAsList("", pfs).then(
+      projectService.findProjectsAsList('', pfs).then(
       // Success
       function(data) {
         $scope.projects.data = data.projects;
