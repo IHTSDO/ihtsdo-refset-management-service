@@ -436,24 +436,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
-      // remove the spelling dictionary
-      if (translation.getSpellingDictionary() != null) {
-        translationService.removeSpellingDictionary(translation
-            .getSpellingDictionary().getId());
-      }
-
-      // remove memory entry
-      if (translation.getPhraseMemory() != null) {
-        for (final MemoryEntry entry : translation.getPhraseMemory()
-            .getEntries()) {
-          translationService.removeMemoryEntry(entry.getId());
-        }
-
-        // remove phrase memory
-        translationService.removePhraseMemory(translation.getPhraseMemory()
-            .getId());
-      }
-
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId, true);
 
