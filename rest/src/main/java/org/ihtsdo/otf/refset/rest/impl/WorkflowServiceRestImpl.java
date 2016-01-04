@@ -129,9 +129,20 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on refset", UserRole.AUTHOR);
 
-      return workflowService.performWorkflowAction(refsetId, userName,
-          UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
+      TrackingRecord record =
+          workflowService.performWorkflowAction(refsetId, userName,
+              UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
+      if (record != null) {
+        for (final User author : record.getAuthors()) {
+          author.setUserPreferences(null);
+        }
+        for (final User reviewer : record.getReviewers()) {
+          reviewer.setUserPreferences(null);
+        }
+      }
+
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
     } finally {
@@ -547,8 +558,18 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "perform workflow action on refset",
           UserRole.AUTHOR);
 
-      return workflowService.getTrackingRecordsForRefset(refsetId, null);
+      TrackingRecord record =
+          workflowService.getTrackingRecordsForRefset(refsetId, null);
 
+      for (User author : record.getAuthors()) {
+        author.setUserPreferences(null);
+      }
+
+      for (User reviewer : record.getReviewers()) {
+        reviewer.setUserPreferences(null);
+      }
+
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to get tracking records for refset");
     } finally {
