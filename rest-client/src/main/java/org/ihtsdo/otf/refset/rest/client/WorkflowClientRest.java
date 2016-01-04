@@ -92,8 +92,8 @@ public class WorkflowClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/refset/"
-            + action + "?projectId=" + projectId + "?refsetId=" + refsetId
-            + "?userName=" + userName + "&projectRole=" + projectRole);
+            + action + "?projectId=" + projectId + "&refsetId=" + refsetId
+            + "&userName=" + userName + "&projectRole=" + projectRole);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -506,16 +506,63 @@ public class WorkflowClientRest extends RootClientRest implements
   @Override
   public TrackingRecord getTrackingRecordForRefset(Long refsetId,
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - get tracking record for refset: " + refsetId);
+
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/workflow/record"
+            + "?refsetId=" + refsetId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+  }
+
+    // converting to object
+    return (TrackingRecord) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordJpa.class);
   }
 
   /* see superclass */
   @Override
   public RefsetList findAllAvailableRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find all available refsets: " + projectId);
+
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/workflow/refset/available/all" + "?projectId=" + projectId);
+
+    String pfsStr =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsStr));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      Logger.getLogger(getClass()).debug(resultString);
+    } else {
+      throw new Exception(resultString);
+  }
+
+    // converting to object
+    return (RefsetList) ConfigUtility.getGraphForString(resultString,
+        RefsetListJpa.class);
   }
 
   /* see superclass */
@@ -648,7 +695,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     // converting to object
     return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
-        TrackingRecordListJpa.class);
+        TrackingRecordList.class);
   }
 
   @Override

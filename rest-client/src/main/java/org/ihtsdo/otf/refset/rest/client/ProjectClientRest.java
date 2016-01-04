@@ -171,7 +171,7 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/assign?projectId="
+        client.target(config.getProperty("base.url") + "/project/assign?projectId="
             + projectId + "&userName=" + userName + "&role=" + role);
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -204,7 +204,7 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/unassign?projectId="
+        client.target(config.getProperty("base.url") + "/project/unassign?projectId="
             + projectId + "&userName=" + userName);
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -388,7 +388,7 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/user/anyrole");
+        client.target(config.getProperty("base.url") + "/project/user/anyrole");
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
