@@ -222,13 +222,10 @@ tsApp
 
               // Convert an array of tracking records to an array of refsets.
               $scope.getRefsetsFromRecords = function(records) {
-                console.debug('abc',records);
                 var refsets = [];
                 for (var i = 0; i < records.length; i++) {
-                  console.debug(" refset=",records[i].refset);
                   refsets.push(records[i].refset);
                 }
-                console.debug("  refsets="+refsets);
                 return refsets;
               }
 
@@ -391,7 +388,7 @@ tsApp
               // Remove a refset
               $scope.removeRefset = function(refset) {
 
-                if (refset.members && refset.members.totalCount >0) {
+                if (refset.members && refset.members.totalCount > 0) {
                   if (!confirm('The refset has members that will also be deleted.')) {
                     return;
                   }
