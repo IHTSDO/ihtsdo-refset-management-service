@@ -1217,8 +1217,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
+      //if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+        refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
           ConfigUtility.isBackgroundLookup());
+      //}
 
       return refsetCopy;
 
