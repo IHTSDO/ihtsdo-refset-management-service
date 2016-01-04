@@ -173,7 +173,7 @@ tsApp
                   workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
                   // Success
                   function(data) {
-                    $scope.refsets = $scope.getRefsetsFromRecords(data);
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
 
                     // get refset tracking records in order to get refset authors
@@ -193,7 +193,7 @@ tsApp
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
-                    $scope.refsets = $scope.getRefsetsFromRecords(data);
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
@@ -203,7 +203,7 @@ tsApp
                     $scope.user.userName, pfs).then(
                   // Success
                   function(data) {
-                    $scope.refsets = $scope.getRefsetsFromRecords(data);
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
@@ -222,10 +222,13 @@ tsApp
 
               // Convert an array of tracking records to an array of refsets.
               $scope.getRefsetsFromRecords = function(records) {
+                console.debug('abc',records);
                 var refsets = [];
                 for (var i = 0; i < records.length; i++) {
+                  console.debug(" refset=",records[i].refset);
                   refsets.push(records[i].refset);
                 }
+                console.debug("  refsets="+refsets);
                 return refsets;
               }
 
