@@ -133,14 +133,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService.performWorkflowAction(refsetId, userName,
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
-      workflowService.handleLazyInit(record);
-      workflowService.handleLazyInit(record.getConcept());
-      for (final User author : record.getAuthors()) {
-        author.setUserPreferences(null);
-      }
-      for (final User reviewer : record.getReviewers()) {
-        reviewer.setUserPreferences(null);
-      }
+      handleLazyInit(record, workflowService);
 
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
@@ -226,14 +219,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
-        workflowService.handleLazyInit(record);
-        workflowService.handleLazyInit(record.getConcept());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
+        handleLazyInit(record, workflowService);
       }
 
       return records;
@@ -319,14 +305,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
-        workflowService.handleLazyInit(record);
-        workflowService.handleLazyInit(record.getConcept());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
+        handleLazyInit(record, workflowService);
       }
       return records;
 
@@ -376,12 +355,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
               concept);
       if (record != null) {
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
+        handleLazyInit(record, workflowService);
       }
 
       return record;
@@ -438,14 +412,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Handle lazy init
       for (final TrackingRecord record : records.getObjects()) {
-        workflowService.handleLazyInit(record);
-        workflowService.handleLazyInit(record.getConcept());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
+        handleLazyInit(record, workflowService);
       }
 
       return records;
@@ -559,13 +526,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       TrackingRecord record =
           workflowService.getTrackingRecordsForRefset(refsetId, null);
-
-      for (User author : record.getAuthors()) {
-        author.setUserPreferences(null);
-      }
-
-      for (User reviewer : record.getReviewers()) {
-        reviewer.setUserPreferences(null);
+      if (record != null) {
+        handleLazyInit(record, workflowService);
       }
 
       return record;
@@ -615,14 +577,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       for (final TrackingRecord record : records.getObjects()) {
         // Handle lazy initialization
-        workflowService.handleLazyInit(record.getRefset());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
-
+        handleLazyInit(record, workflowService);
       }
       return records;
 
@@ -740,14 +695,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       for (final TrackingRecord record : records.getObjects()) {
         // Handle lazy initialization
-        workflowService.handleLazyInit(record.getRefset());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
-
+        handleLazyInit(record, workflowService);
       }
       return records;
 
@@ -836,14 +784,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
         // Handle lazy initialization
-        workflowService.handleLazyInit(record.getRefset());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
-
+        handleLazyInit(record, workflowService);
       }
       return records;
     } catch (Exception e) {
@@ -882,14 +823,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, null);
       for (final TrackingRecord record : records.getObjects()) {
-        workflowService.handleLazyInit(record);
-        workflowService.handleLazyInit(record.getConcept());
-        for (final User author : record.getAuthors()) {
-          author.setUserPreferences(null);
-        }
-        for (final User reviewer : record.getReviewers()) {
-          reviewer.setUserPreferences(null);
-        }
+        handleLazyInit(record, workflowService);
       }
 
       return records;
@@ -1034,6 +968,30 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     } finally {
       workflowService.close();
       securityService.close();
+    }
+  }
+
+  /**
+   * Handle lazy init.
+   *
+   * @param record the record
+   * @param workflowService the workflow service
+   */
+  @SuppressWarnings("static-method")
+  private void handleLazyInit(TrackingRecord record,
+    WorkflowService workflowService) {
+    workflowService.handleLazyInit(record);
+    if (record.getConcept() != null) {
+      workflowService.handleLazyInit(record.getConcept());
+    }
+    if (record.getRefset() != null) {
+      workflowService.handleLazyInit(record.getRefset());
+    }
+    for (final User author : record.getAuthors()) {
+      author.setUserPreferences(null);
+    }
+    for (final User reviewer : record.getReviewers()) {
+      reviewer.setUserPreferences(null);
     }
   }
 }
