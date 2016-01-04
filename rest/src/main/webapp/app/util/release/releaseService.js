@@ -435,6 +435,36 @@ tsApp.service('releaseService', [
       return deferred.promise;
     }
 
+    // Begin import release artifact- if validation is result, OK to proceed.
+    this.importReleaseArtifact = function(releaseInfoId, file) {
+      console.debug("import release artifact");
+      var deferred = $q.defer();
+      gpService.increment();
+      Upload.upload({
+        url : translationUrl + "import/artifact?releaseInfoId=" + releaseInfoId.id,
+        data : {
+          file : file
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug("  validation result = ", response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
 
     // Export a release artifact and prompt the download, no promise returned
     this.exportReleaseArtifact = function(releaseArtifact) {

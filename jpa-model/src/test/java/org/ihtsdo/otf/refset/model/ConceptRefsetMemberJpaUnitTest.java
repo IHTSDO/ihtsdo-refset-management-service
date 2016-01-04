@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
+import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
@@ -82,25 +83,25 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
   @Test
   public void testModelEqualsHashcode021() throws Exception {
     // TODO: need to get this working
-    // Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
-    // EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    // tester.include("active");
-    // tester.include("moduleId");
-    // tester.include("terminology");
-    // tester.include("terminologyId");
-    // //tester.include("version");
-    // tester.include("conceptId");
-    // tester.include("conceptName");
-    // tester.include("memberType");
-    //
-    // //tester.proxy(Refset.class, 1, r1);
-    // //tester.proxy(Refset.class, 2, r2);
-    // assertTrue(tester.testIdentitiyFieldEquals());
-    // assertTrue(tester.testNonIdentitiyFieldEquals());
-    // assertTrue(tester.testIdentityFieldNotEquals());
-    // assertTrue(tester.testIdentitiyFieldHashcode());
-    // assertTrue(tester.testNonIdentitiyFieldHashcode());
-    // assertTrue(tester.testIdentityFieldDifferentHashcode());
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+    EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
+    tester.include("active");
+    tester.include("moduleId");
+    tester.include("terminology");
+    tester.include("terminologyId");
+    tester.include("conceptId");
+    tester.include("conceptName");
+    tester.include("conceptActive");
+    tester.include("refset");
+
+    tester.proxy(Refset.class, 1, r1);
+    tester.proxy(Refset.class, 2, r2);
+    assertTrue(tester.testIdentitiyFieldEquals());
+    assertTrue(tester.testNonIdentitiyFieldEquals());
+    assertTrue(tester.testIdentityFieldNotEquals());
+    assertTrue(tester.testIdentitiyFieldHashcode());
+    assertTrue(tester.testNonIdentitiyFieldHashcode());
+    assertTrue(tester.testIdentityFieldDifferentHashcode());
   }
 
   /**
@@ -142,14 +143,16 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
   public void testModelNotNullField021() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
+
+    tester.include("active");
+    tester.include("moduleId");
+    tester.include("terminology");
+    tester.include("terminologyId");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
-    tester.include("active");
     tester.include("published");
     tester.include("publishable");
-    tester.include("moduleId");
-    tester.include("terminologyId");
-    tester.include("terminology");
+
     tester.include("version");
     tester.include("memberType");
 
@@ -191,6 +194,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
+
   /**
    * Teardown.
    */

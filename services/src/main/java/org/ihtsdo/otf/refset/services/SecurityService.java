@@ -129,20 +129,26 @@ public interface SecurityService extends RootService {
    * @param userPreferences the user preferences
    * @return the userPreferences
    */
-  UserPreferences addUserPreferences(UserPreferences userPreferences);
+  public UserPreferences addUserPreferences(UserPreferences userPreferences);
 
   /**
    * Removes user preferences.
    *
    * @param id the id
    */
-  void removeUserPreferences(Long id);
+  public void removeUserPreferences(Long id);
 
   /**
    * Update user preferences.
    *
    * @param userPreferences the user preferences
    */
-  void updateUserPreferences(UserPreferences userPreferences);
+  public void updateUserPreferences(UserPreferences userPreferences);
 
+  /**
+   * Handle lazy init.
+   *
+   * @param user the user
+   */
+  public void handleLazyInit(User user);
 }

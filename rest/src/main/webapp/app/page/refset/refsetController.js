@@ -5,14 +5,13 @@ tsApp
     [
       '$scope',
       '$http',
-      '$rootScope',
       'tabService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, $rootScope, tabService, securityService, projectService,
-        refsetService, workflowService) {
+      function($scope, $http, tabService, securityService, projectService, refsetService,
+        workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on "back" button
@@ -21,8 +20,10 @@ tsApp
         }
 
         // Initialize
-        projectService.prepareIconConfig();
         $scope.user = securityService.getUser();
+        projectService.getUserHasAnyRole();
+        projectService.prepareIconConfig();
+        $scope.accordionState = {};
         // Wrap in a json object so we can pass to the directive effectively
         $scope.projects = {
           data : [],
@@ -42,6 +43,15 @@ tsApp
           workflowPaths : []
         }
 
+        // Test for empty accordion state
+        $scope.isAccordionStateEmpty = function() {
+          for (key in $scope.accordionState) {
+            if ($scope.accordionState.hasOwnProperty(key))
+              return false;
+          }
+          return true;
+        };
+
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -55,7 +65,21 @@ tsApp
           projectService.findProjectsAsList("", pfs).then(function(data) {
             $scope.projects.data = data.projects;
             $scope.projects.totalCount = data.totalCount;
-            $scope.setProject(data.projects[0]);
+            if ($scope.user.userPreferences.lastProjectId) {
+              var found = false;
+              for (var i = 0; i < data.projects.length; i++) {
+                if (data.projects[i].id == $scope.user.userPreferences.lastProjectId) {
+                  $scope.setProject(data.projects[i]);
+                  found = true;
+                  break;
+                }
+              }
+              if (!found) {
+                $scope.setProject(data.projects[0]);
+              }
+            } else {
+              $scope.setProject(data.projects[0]);
+            }
           })
 
         };
@@ -66,7 +90,8 @@ tsApp
           if (!$scope.project) {
             return;
           }
-
+          $scope.user.userPreferences.lastProjectId = $scope.project.id;
+          securityService.updateUserPreferences($scope.user.userPreferences);
           // Empty PFS
           var pfs = {};
           // Find role
@@ -86,7 +111,9 @@ tsApp
                     } else if ($scope.projects.role == 'AUTHOR') {
                       $scope.roleOptions = [ 'AUTHOR' ];
                     }
-
+                    if ($scope.user.userPreferences.lastProjectRole) {
+                      $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
+                    }
                     break;
                   }
                 }
@@ -96,6 +123,8 @@ tsApp
         }
 
         $scope.updateRole = function() {
+          $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+          securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
         }
 
@@ -152,6 +181,24 @@ tsApp
           });
         }
 
+        // Set the current accordion
+        $scope.setAccordion = function(data) {
+          $scope.user.userPreferences.lastRefsetAccordion = data;
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
+        // Configure tab and accordion
+        $scope.configureTab = function() {
+          $scope.user.userPreferences.lastTab = '/refset';
+          if ($scope.user.userPreferences.lastRefsetAccordion) {
+            $scope.accordionState[$scope.user.userPreferences.lastRefsetAccordion] = true;
+          } else {
+            // default is published if nothing set
+            $scope.accordionState['AVAILABLE'] = true;
+          }
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
         // Initialize
         $scope.getProjects();
         // Initialize some metadata first time
@@ -159,8 +206,12 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getIOHandlers();
         $scope.getWorkflowPaths();
-        $scope.user.userPreferences.lastTab = '/refset';
-        securityService.updateUserPreferences($scope.user.userPreferences);
+
+        // Handle users with user preferences
+        if ($scope.user.userPreferences) {
+          $scope.configureTab();
+        }
+
       }
 
     ]);

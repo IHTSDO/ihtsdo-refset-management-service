@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.jpa.TranslationNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
@@ -743,8 +744,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/"
-            + "/phrasememory/add?" + "translationId="
-            + translationId + "&name="
+            + "/phrasememory/add?" + "translationId=" + translationId
+            + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -766,7 +767,7 @@ public class TranslationClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public void removePhraseMemoryEntry(Long translationId, String name,
-    String authToken) throws Exception {
+    String translatedName, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - remove phrase memory entry " + translationId
             + " " + name);
@@ -989,7 +990,8 @@ public class TranslationClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/spelling/suggest/batch?translationId=" + translationId);
+            + "/translation/spelling/suggest/batch?translationId="
+            + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1009,99 +1011,6 @@ public class TranslationClientRest extends RootClientRest implements
             KeyValuesMap.class);
 
     return map;
-  }
-
-  @Override
-  public Translation beginMigration(Long translationId, String newTerminology,
-    String newVersion, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - begin translation migration");
-    validateNotEmpty(translationId, "translationId");
-    validateNotEmpty(newTerminology, "newTerminology");
-    validateNotEmpty(newVersion, "newVersion");
-
-    Client client = ClientBuilder.newClient();
-    String encodedTerminology =
-        URLEncoder.encode(newTerminology, "UTF-8").replaceAll("\\+", "%20");
-    String encodedVersion =
-        URLEncoder.encode(newVersion, "UTF-8").replaceAll("\\+", "%20");
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/migration/begin" + "?translationId="
-            + translationId + "&newTerminology=" + encodedTerminology
-            + "&newVersion=" + encodedVersion);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
-        TranslationJpa.class);
-  }
-
-  /* see superclass */
-  @Override
-  public Translation finishMigration(Long translationId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug("Translation Client - finish migration");
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/migration/finish" + "?translationId="
-            + translationId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
-        TranslationJpa.class);
-
-  }
-
-  /* see superclass */
-  @Override
-  public void cancelMigration(Long translationId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - cancel translation migration");
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/migration/cancel" + "?translationId="
-            + translationId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
   }
 
   /* see superclass */
@@ -1206,8 +1115,25 @@ public class TranslationClientRest extends RootClientRest implements
   @Override
   public void releaseReportToken(String reportToken, String authToken)
     throws Exception {
-    // TODO Auto-generated method stub
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - release report token: " + reportToken);
+    validateNotEmpty(reportToken, "reportToken");
 
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/release/report" + "?reportToken=" + reportToken);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
   }
 
   /* see superclass */
@@ -1336,36 +1262,6 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
 
-  }
-
-  /* see superclass */
-  @Override
-  public Translation resumeMigration(Long translationId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - resume translation migration");
-    validateNotEmpty(translationId, "translationId");
-
-    Client client = ClientBuilder.newClient();
-
-    WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/translation/migration/resume" + "?translationId="
-            + translationId);
-
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-    // converting to object
-    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
-        TranslationJpa.class);
   }
 
   /* see superclass */
@@ -1514,9 +1410,9 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/phrasememory/suggest?translationId="
-            + translationId 
-            + "&name="
+        client.target(config.getProperty("base.url")
+            + "/translation/phrasememory/suggest?translationId="
+            + translationId + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
@@ -1531,6 +1427,43 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     return suggestions;
+  }
+
+  /* see superclass */
+  @Override
+  public KeyValuesMap suggestBatchTranslation(Long translationId,
+    StringList phrases, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - Batch suggest translations " + translationId);
+
+    Client client = ClientBuilder.newClient();
+    String phrasesStringList =
+        ConfigUtility.getStringForGraph(phrases == null ? new StringList()
+            : phrases);
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/translation/phrasememory/suggest/batch?translationId="
+            + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.xml(phrasesStringList));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    KeyValuesMap map =
+        (KeyValuesMap) ConfigUtility.getGraphForString(resultString,
+            KeyValuesMap.class);
+
+    return map;
   }
 
   /* see superclass */
@@ -1587,10 +1520,29 @@ public class TranslationClientRest extends RootClientRest implements
     }
   }
 
+  /* see superclass */
   @Override
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
     String authToken) throws Exception {
-    // TODO Auto-generated method stub
-    return null;
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - get language description types");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/translation/langpref");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (LanguageDescriptionTypeListJpa) ConfigUtility.getGraphForString(
+        resultString, LanguageDescriptionTypeListJpa.class);
   }
 }

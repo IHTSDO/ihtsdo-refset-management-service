@@ -27,7 +27,7 @@ public class DummyComponentIdentifierServiceHandler implements
     IdentifierAssignmentHandler {
 
   /** The ct. */
-  private int ct = 111111;
+  private int ct = 33444;
 
   /* see superclass */
   @Override

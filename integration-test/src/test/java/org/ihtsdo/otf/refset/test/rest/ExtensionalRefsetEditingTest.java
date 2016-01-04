@@ -34,7 +34,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTENSIONAL)
     RefsetJpa newRefset =
-        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999");
+        makeRefset("refset999", null, Refset.Type.EXTENSIONAL, project2, "999", true);
 
     // Validate refset
     ValidationResult result =
@@ -48,10 +48,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Add refset
     Refset currentRefset = refsetService.addRefset(newRefset, adminAuthToken);
     assertTrue(currentRefset != null);
-    // TODO: this doesn't work
-    // if (!currentRefset.equals(newRefset)) {
-    // throw new Exception("Refset does not pass equality test.");
-    // }
 
     // Workflow - Assign the refset
     currentRefset =
@@ -103,10 +99,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     assertTrue(refsetService
         .findRefsetMembersForQuery(currentRefset.getId(), "",
             new PfsParameterJpa(), adminAuthToken).getObjects().size() == 3);
-
-    // TODO: What happens to the currentRefset here as the members were removed
-    // but the refset is not refreshed
-    // Check it out when I step through the code
 
     // Change Refset Definition
     currentRefset.setDefinitionClauses(null);
@@ -183,9 +175,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
             .getId(), currentRefset.getId(), testUser, "AUTHOR", "FINISH",
             adminAuthToken);
 
-    // TODO: Remove the line below later. Just for debugging
-    // WorkflowStatus status = record.getRefset().getWorkflowStatus();
-
     // remove refset
     verifyRefsetLookupCompleted(currentRefset.getId());
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
@@ -207,7 +196,7 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTERNAL)
     RefsetJpa newRefset =
-        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998");
+        makeRefset("refset998", null, Refset.Type.EXTERNAL, project2, "998", true);
 
     // Validate refset
     ValidationResult result =

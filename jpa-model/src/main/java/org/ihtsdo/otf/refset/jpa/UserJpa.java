@@ -84,7 +84,7 @@ public class UserJpa implements User {
   private String authToken;
 
   /** The user preferences. */
-  @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, fetch = FetchType.EAGER, optional = true)
+  @OneToOne(mappedBy = "user", targetEntity = UserPreferencesJpa.class, optional = true)
   private UserPreferences userPreferences;
 
   /** The project role map. */
@@ -116,7 +116,7 @@ public class UserJpa implements User {
     email = user.getEmail();
     applicationRole = user.getApplicationRole();
     authToken = user.getAuthToken();
-    userPreferences = new UserPreferencesJpa(user.getUserPreferences());
+    userPreferences = user.getUserPreferences();
     projectRoleMap = new HashMap<>(user.getProjectRoleMap());
   }
 

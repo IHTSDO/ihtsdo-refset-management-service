@@ -17,11 +17,12 @@
           <td>
             <h5><b>New Terminology:</b></h5>
           </td>
-          <td><select ng-model="refset.newTerminology"
-            ng-change="terminologySelected(refset.terminology)"
-            ng-options="item for item in metadata.terminologies"></select> <b>New
+          <td>
+            <select ng-model="refset.newTerminology"
+              ng-change="terminologySelected(refset.terminology)"
+              ng-options="item for item in metadata.terminologies"></select> <b>New
               Version:</b> <select ng-model="refset.newVersion"
-            ng-options="item for item in versions"></select>
+              ng-options="item for item in versions"></select>
             {{refset.lookupInProgress}}
             <button class="btn btn-primary"
               ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>
@@ -114,10 +115,12 @@
               <tr ng-repeat="member in validInclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><a ng-click="include(member, true)">
+                <td>
+                  <a ng-click="include(member, true)">
                     <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
-                  </a></td>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -143,10 +146,12 @@
               <tr ng-repeat="member in stagedInclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><a ng-click="revert(refset, member)">
+                <td>
+                  <a ng-click="revert(refset, member)">
                     <i uib-tooltip="Revert staged inclusion."
                       class="noul material-icons md-18">arrow_back</i>
-                  </a></td>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -191,10 +196,12 @@
               <tr ng-repeat="member in validExclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><a ng-click="exclude(refset, member, 'true')">
+                <td>
+                  <a ng-click="exclude(refset, member, 'true')">
                     <i uib-tooltip="Add inclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
-                  </a></td>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -218,10 +225,12 @@
               <tr ng-repeat="member in stagedExclusions">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><a ng-click="revert(refset, member)">
+                <td>
+                  <a ng-click="revert(refset, member)">
                     <i uib-tooltip="Revert staged inclusion."
                       class="noul material-icons md-18">arrow_back</i>
-                  </a></td>
+                  </a>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -276,10 +285,12 @@
             ng-class="getMemberStyle(member)">
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
-            <td><a ng-click="exclude(refset, member, 'false')">
+            <td>
+              <a ng-click="exclude(refset, member, 'false')">
                 <i uib-tooltip="Exclude new member."
                   class="noul material-icons md-18">remove_circle_outline</i>
-              </a></td>
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -309,11 +320,13 @@
             ng-class="getMemberStyle(member)">
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
-            <td><a ng-show="member.memberType == 'MEMBER'"
+            <td>
+              <a ng-show="member.memberType == 'MEMBER'"
                 ng-click="include(member, false)">
                 <i uib-tooltip="Include old member."
                   class="noul material-icons md-18">add_circle_outline</i>
-              </a></td>
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>
@@ -334,8 +347,9 @@
   <button class="btn btn-primary" ng-disabled="refset.stagingType == null"
     ng-click="finish(refset); 
     ">Finish</button>
-  <button class="btn btn-warning" ng-show="refset.stagingType != null"
-    title="Cancel redefinition" ng-click="cancel(refset);">Cancel</button>
+  <button confirm="Are you sure you want to cancel migration?"
+    class="btn btn-warning" ng-show="refset.stagingType != null"
+    title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
   <button class="btn btn-warning" ng-show="refset.stagingType == null"
     title="Close" ng-click="close();">Close</button>
 </div>

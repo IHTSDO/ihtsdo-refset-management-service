@@ -75,8 +75,6 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * Goal which generates sample data in an empty database. Uses JPA services
  * directly, no need for REST layer.
  * 
- * TODO: implement against JPA/RestImpl for now, alter against clients
- * 
  * See admin/pom.xml for sample usage
  * 
  * @goal sample-data2
@@ -834,6 +832,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setInPublicationProcess(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     // This is an opportunity to use "branch"
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
@@ -843,18 +842,18 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     }
 
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    // TODO: why commented out?
-    // ValidationServiceRest validation = new ValidationServiceRestImpl();
+
+    ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate refset
-    // ValidationResult result =
-    // validation.validateRefset(refset, auth.getAuthToken());
-    // if (!result.isValid()) {
-    // Logger.getLogger(getClass()).error(result.toString());
-    // throw new Exception("Refset does not pass validation.");
-    // }
+    ValidationResult result =
+        validation.validateRefset(refset, refset.getProject().getId(),
+            auth.getAuthToken());
+    if (!result.isValid()) {
+      Logger.getLogger(getClass()).error(result.toString());
+      throw new Exception("Refset does not pass validation.");
+    }
     // Add refset
-
     refsetService.addRefset(refset, auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
 
@@ -935,6 +934,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
+    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setVersion("2015-01-31");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
@@ -1020,6 +1020,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     translation.setVersion(refset.getVersion());
+    translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();

@@ -145,6 +145,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     // Reload the user to populate UserPreferences
     final User result = getUser(authUser.getUserName());
     result.setAuthToken(token);
+
     return result;
   }
 
@@ -447,4 +448,18 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     }
   }
 
+  /**
+   * Handle lazy init.
+   *
+   * @param user the user
+   */
+  @Override
+  public void handleLazyInit(User user) {
+    if (user.getUserPreferences() != null
+        && user.getUserPreferences().getLanguageDescriptionTypes() != null
+        && user.getUserPreferences().getLanguageDescriptionTypes().size() > 0) {
+      user.getUserPreferences().getLanguageDescriptionTypes().get(0)
+          .getDescriptionType().getName();
+    }
+  }
 }

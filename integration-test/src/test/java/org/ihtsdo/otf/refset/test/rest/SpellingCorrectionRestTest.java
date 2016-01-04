@@ -674,7 +674,6 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
         // Assume process has completed
         completed = true;
 
-        // System.out.println("Translation: " + translationId);
         Translation t =
             translationService.getTranslation(translationId, adminAuthToken);
         if (t.isLookupInProgress()) {

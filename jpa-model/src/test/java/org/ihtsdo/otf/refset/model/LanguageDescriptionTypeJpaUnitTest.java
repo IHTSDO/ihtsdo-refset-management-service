@@ -82,6 +82,7 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("refsetId");
     tester.include("name");
+    tester.include("language");
     tester.include("descriptionType");
 
     tester.proxy(DescriptionType.class, 1, d1);
@@ -137,6 +138,7 @@ public class LanguageDescriptionTypeJpaUnitTest extends ModelUnitSupport {
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("refsetId");
     tester.include("name");
+    tester.include("language");
     assertTrue(tester.testNotNullFields());
   }
 

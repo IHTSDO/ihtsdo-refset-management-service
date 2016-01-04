@@ -6,12 +6,15 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -92,17 +95,17 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
-  @Path("/refset/{refsetId}")
-  @ApiOperation(value = "Get release history for refsetId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
+  @POST
+  @Path("/refset")
+  @ApiOperation(value = "Find refset releases for Query", notes = "Identifies refset releases for query", response = ReleaseInfoListJpa.class)
   public ReleaseInfoList findRefsetReleasesForQuery(
-    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Query, e.g. 2", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "Refset internal id, e.g. 2", required = false) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Query, e.g. 2", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + refsetId + " " + query);
+        "RESTful call (Release): /refset with query:" + query + ", refsetId:" + refsetId );
 
     RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -112,6 +115,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfoList releaseInfoList =
           refsetService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
+      for (ReleaseInfo rel : releaseInfoList.getObjects()) {
+        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
+        rel.setArtifacts(lazyInitList);
+      }
       return releaseInfoList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve release history for a refset");
@@ -120,22 +127,21 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
       securityService.close();
     }
-
   }
 
   /* see superclass */
   @Override
-  @GET
-  @Path("/translation/{translationId}")
+  @POST
+  @Path("/translation")
   @ApiOperation(value = "Get release history for translationId", notes = "Gets the release history for the specified id", response = ReleaseInfoListJpa.class)
   public ReleaseInfoList findTranslationReleasesForQuery(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "Query, e.g. 2", required = true) @QueryParam("query") String query,
+    @ApiParam(value = "Translation internal id, e.g. 2", required = false) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Query, e.g. 2", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /" + translationId);
+        "RESTful call (Release): /translationId with query:" + query + ", translationId:" + translationId );
 
     TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -145,6 +151,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfoList releaseInfoList =
           translationService.findTranslationReleasesForQuery(translationId,
               query, pfs);
+
+      for (ReleaseInfo rel : releaseInfoList.getObjects()) {
+        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
+        rel.setArtifacts(lazyInitList);
+      }
 
       return releaseInfoList;
     } catch (Exception e) {
@@ -783,7 +794,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @GET
   @Override
-  @Path("/release/resume")
+  @Path("/resume")
   @ApiOperation(value = "Resume refset release", notes = "Resumes the release process by re-validating the refset.", response = RefsetJpa.class)
   public Refset resumeRelease(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -907,18 +918,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
-  @GET
+  @POST
   @Override
   @Path("/import/artifact")
-  @ApiOperation(value = "Import release artifact", notes = "Imports a release artifact from the input stream")
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @ApiOperation(value = "Import release artifact", notes = "Imports a release artifact from the input stream", response = ReleaseArtifactJpa.class)
   public ReleaseArtifact importReleaseArtifact(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
-    @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
+    @ApiParam(value = "Content of release artifact import file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Release info id, e.g. 3", required = true) @QueryParam("releaseInfoId") Long releaseInfoId,
     @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /import/artifact");
+        "RESTful call POST (Release): /import/artifact: releaseInfoId");
 
     ReleaseService releaseService = new ReleaseServiceJpa();
     try {
@@ -938,7 +950,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       artifact.setLastModifiedBy(userName);
       artifact.setName(contentDispositionHeader.getFileName());
       artifact.setReleaseInfo(info);
-      artifact.setTimestamp(contentDispositionHeader.getModificationDate());
+      artifact.setTimestamp(new Date());
       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
       int nRead;
       byte[] data = new byte[16384];
@@ -947,7 +959,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
       buffer.flush();
       artifact.setData(buffer.toByteArray());
-      artifact.setTimestamp(new Date());
+
       // Add the release artifact
       return releaseService.addReleaseArtifact(artifact);
 
@@ -966,9 +978,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Produces("application/octet-stream")
   @Path("/export/{artifactId}")
-  @ApiOperation(value = "Exports a report", notes = "Exports a report the specified id.", response = ReleaseArtifactJpa.class)
+  @ApiOperation(value = "Exports a release artifact", notes = "Exports a release artifact as InputStream from the specified artifact id.", response = InputStream.class)
   public InputStream exportReleaseArtifact(
-    @ApiParam(value = "Report id", required = true) @PathParam("artifactId") Long artifactId,
+    @ApiParam(value = "Artifact id", required = true) @PathParam("artifactId") Long artifactId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(

@@ -1,7 +1,7 @@
 'use strict'
 
 var tsApp = angular.module('tsApp',
-  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce' ]).config(
+  [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies' ]).config(
   function($rootScopeProvider) {
 
     // Set recursive digest limit higher to handle very deep trees.
@@ -18,49 +18,48 @@ var workflowUrl = "workflow/";
 var validationUrl = "validate/";
 
 // Initialization of tsApp
-tsApp.run(function($rootScope, $http, $window) {
+tsApp.run([ '$rootScope', '$http', '$window', function($rootScope, $http, $window) {
   // n/a
-});
+} ]);
 
 // Route provider configuration
-tsApp.config([ '$routeProvider', '$locationProvider', '$logProvider',
-  function($routeProvider, $locationProvider, $logProvider) {
-    console.debug('configure $routeProvider');
-    $logProvider.debugEnabled(true);
+tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logProvider) {
+  console.debug('configure $routeProvider');
+  $logProvider.debugEnabled(true);
 
-    // Set reloadOnSearch so that $location.hash() calls do not reload the
-    // controller
-    $routeProvider.when('/', {
-      templateUrl : 'app/page/login/login.html',
-      controller : 'LoginCtrl',
-      reloadOnSearch : false
-    }).when('/refset', {
-      templateUrl : 'app/page/refset/refset.html',
-      controller : 'RefsetCtrl',
-      reloadOnSearch : false
-    }).when('/translation', {
-      templateUrl : 'app/page/translation/translation.html',
-      controller : 'TranslationCtrl',
-      reloadOnSearch : false
-    }).when('/directory', {
-      templateUrl : 'app/page/directory/directory.html',
-      controller : 'DirectoryCtrl',
-      reloadOnSearch : false
-    }).when('/admin', {
-      templateUrl : 'app/page/admin/admin.html',
-      controller : 'AdminCtrl',
-      reloadOnSearch : false
-    }).when('/help/:type', {
-      templateUrl : function(params) {
-        return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
-      }
-    }).otherwise({
-      redirectTo : '/'
-    });
+  // Set reloadOnSearch so that $location.hash() calls do not reload the
+  // controller
+  $routeProvider.when('/', {
+    templateUrl : 'app/page/login/login.html',
+    controller : 'LoginCtrl',
+    reloadOnSearch : false
+  }).when('/refset', {
+    templateUrl : 'app/page/refset/refset.html',
+    controller : 'RefsetCtrl',
+    reloadOnSearch : false
+  }).when('/translation', {
+    templateUrl : 'app/page/translation/translation.html',
+    controller : 'TranslationCtrl',
+    reloadOnSearch : false
+  }).when('/directory', {
+    templateUrl : 'app/page/directory/directory.html',
+    controller : 'DirectoryCtrl',
+    reloadOnSearch : false
+  }).when('/admin', {
+    templateUrl : 'app/page/admin/admin.html',
+    controller : 'AdminCtrl',
+    reloadOnSearch : false
+  }).when('/help/:type', {
+    templateUrl : function(params) {
+      return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
+    }
+  }).otherwise({
+    redirectTo : '/'
+  });
 
-    // $locationProvider.html5Mode(true);
+  // $locationProvider.html5Mode(true);
 
-  } ]);
+} ]);
 
 // Simple glass pane controller
 tsApp.controller('GlassPaneCtrl', [ '$scope', 'gpService', function($scope, gpService) {
@@ -142,8 +141,8 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
   } ]);
 
 // Header controller
-tsApp.controller('HeaderCtrl', [ '$scope', '$location', 'securityService',
-  function($scope, $location, securityService) {
+tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityService',
+  function($scope, $location, $http, securityService) {
     console.debug('configure HeaderCtrl');
 
     // Declare user
@@ -157,7 +156,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', 'securityService',
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
-      path = "/help" + path;
+      path = "/help" + path + "?authToken=" + $http.defaults.headers.common.Authorization;
       var currentUrl = window.location.href;
       var baseUrl = currentUrl.substring(0, currentUrl.indexOf('#') + 1);
       var newUrl = baseUrl + path;
@@ -187,6 +186,85 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
       return securityService.isLoggedIn();
     }
 
-  }
+  } ]);
 
-]);
+// Confirm dialog conroller and directive
+tsApp.controller('ConfirmModalController', function($scope, $uibModalInstance, data) {
+  // Local data for scope
+  $scope.data = angular.copy(data);
+
+  // OK function
+  $scope.ok = function() {
+    $uibModalInstance.close();
+  };
+  // Cancel function
+  $scope.cancel = function() {
+    $uibModalInstance.dismiss('cancel');
+  };
+});
+
+tsApp
+  .value(
+    '$confirmModalDefaults',
+    {
+      template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><button class="btn btn-primary" ng-click="ok()">OK</button><button class="btn btn-warning" ng-click="cancel()">Cancel</button></div>',
+      controller : 'ConfirmModalController'
+    });
+
+tsApp.factory('$confirm', function($uibModal, $confirmModalDefaults) {
+  return function(data, settings) {
+    settings = angular.extend($confirmModalDefaults, (settings || {}));
+    data = data || {};
+
+    if ('templateUrl' in settings && 'template' in settings) {
+      delete settings.template;
+    }
+
+    settings.resolve = {
+      data : function() {
+        return data;
+      }
+    };
+
+    return $uibModal.open(settings).result;
+  };
+});
+
+tsApp.directive('confirm', function($confirm) {
+  return {
+    priority : 1,
+    restrict : 'A',
+    scope : {
+      confirmIf : "=",
+      ngClick : '&',
+      confirm : '@'
+    },
+    link : function(scope, element, attrs) {
+      function reBind(func) {
+        element.unbind("click").bind("click", function() {
+          func();
+        });
+      }
+
+      function bindConfirm() {
+        $confirm({
+          text : scope.confirm
+        }).then(scope.ngClick);
+      }
+
+      if ('confirmIf' in attrs) {
+        scope.$watch('confirmIf', function(newVal) {
+          if (newVal) {
+            reBind(bindConfirm);
+          } else {
+            reBind(function() {
+              scope.$apply(scope.ngClick);
+            });
+          }
+        });
+      } else {
+        reBind(bindConfirm);
+      }
+    }
+  }
+})

@@ -359,11 +359,12 @@ public interface TranslationServiceRest {
    *
    * @param translationId the translation id
    * @param name the name of the entry
+   * @param translatedName the translated name
    * @param authToken the auth token
    * @throws Exception the exception
    */
   public void removePhraseMemoryEntry(Long translationId, String name,
-    String authToken) throws Exception;
+    String translatedName, String authToken) throws Exception;
 
   /**
    * Clear phrase memory.
@@ -448,40 +449,6 @@ public interface TranslationServiceRest {
     StringList lookupTerms, String authToken) throws Exception;
 
   /**
-   * Begin migration.
-   *
-   * @param translationId the translation id
-   * @param newTerminology the new terminology
-   * @param newVersion the new version
-   * @param authToken the auth token
-   * @return the translation
-   * @throws Exception the exception
-   */
-  public Translation beginMigration(Long translationId, String newTerminology,
-    String newVersion, String authToken) throws Exception;
-
-  /**
-   * Finish migration.
-   *
-   * @param translationId the translation id
-   * @param authToken the auth token
-   * @return the translation
-   * @throws Exception the exception
-   */
-  public Translation finishMigration(Long translationId, String authToken)
-    throws Exception;
-
-  /**
-   * Cancel migration.
-   *
-   * @param translationId the translation id
-   * @param authToken the auth token
-   * @throws Exception the exception
-   */
-  public void cancelMigration(Long translationId, String authToken)
-    throws Exception;
-
-  /**
    * Compare translations.
    *
    * @param translationId1 the translation id1
@@ -515,17 +482,6 @@ public interface TranslationServiceRest {
    * @throws Exception the exception
    */
   public ConceptDiffReport getDiffReport(String reportToken, String authToken)
-    throws Exception;
-
-  /**
-   * Resume migration.
-   *
-   * @param translationId the translation id
-   * @param authToken the auth token
-   * @return the translation
-   * @throws Exception the exception
-   */
-  public Translation resumeMigration(Long translationId, String authToken)
     throws Exception;
 
   /**
@@ -598,13 +554,25 @@ public interface TranslationServiceRest {
     String authToken) throws Exception;
 
   /**
+   * Suggest batch translation.
+   *
+   * @param translationId the translation id
+   * @param phrases the phrases
+   * @param authToken the auth token
+   * @return the key values map
+   * @throws Exception the exception
+   */
+  public KeyValuesMap suggestBatchTranslation(Long translationId,
+    StringList phrases, String authToken) throws Exception;
+
+  /**
    * Returns the status of identifying the name and active states for all
    * concepts of the translation.
    *
    * @param translationId the translation id
    * @param authToken the auth token
    * @return lookup status
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Integer getLookupProgress(Long translationId, String authToken)
     throws Exception;
@@ -612,10 +580,10 @@ public interface TranslationServiceRest {
   /**
    * Launches the lookup process of identifying the name and active states for
    * all concepts of the translation.
-   * 
-   * @param translationId
-   * @param authToken
-   * @throws Exception
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @throws Exception the exception
    */
   public void startLookupConceptNames(Long translationId, String authToken)
     throws Exception;

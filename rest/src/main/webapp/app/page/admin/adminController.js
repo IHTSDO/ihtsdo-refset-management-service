@@ -6,29 +6,28 @@ tsApp
       '$scope',
       '$http',
       '$uibModal',
-      '$location',
-      '$anchorScroll',
-      '$timeout',
       'gpService',
       'utilService',
       'tabService',
       'securityService',
       'projectService',
       'validationService',
-      function($scope, $http, $uibModal, $location, $anchorScroll, $timeout, gpService,
-        utilService, tabService, securityService, projectService, validationService) {
+      'translationService',
+      function($scope, $http, $uibModal, gpService, utilService, tabService, securityService,
+        projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on "back" button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
         }
-
+        
         //
         // Scope Variables
         //
         $scope.user = securityService.getUser();
-
+        projectService.getUserHasAnyRole();
+        
         $scope.selectedProject = null;
         $scope.projectRoles = [];
 
@@ -79,7 +78,7 @@ tsApp
           sortField : 'userName',
           ascending : null
         }
-        $scope.paging["lang"] = {
+        $scope.paging['lang'] = {
           page : 1,
           filter : "",
           typeFilter : "",
@@ -87,7 +86,6 @@ tsApp
           ascending : true
         }
 
-        
         // Get $scope.projects
         $scope.getProjects = function() {
 
@@ -240,9 +238,7 @@ tsApp
 
         // Removes a project
         $scope.removeProject = function(project) {
-          if (!confirm("Are you sure you want to remove the project (" + project.name + ")?")) {
-            return;
-          }
+
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
             if (!confirm("The project has users assigned to it.  Are you sure you want to remove the project ("
@@ -260,10 +256,7 @@ tsApp
         };
 
         // Removes a user
-        $scope.remove = function(user) {
-          if (!confirm("Are you sure you want to remove the user (" + user.userName + ")?")) {
-            return;
-          }
+        $scope.removeUser = function(user) {
           if (user.projectRoleMap && Object.keys(user.projectRoleMap).length > 0) {
             window.alert("You can not delete a user that is assigned to a project."
               + "Remove this user from all projects before deleting it.");
@@ -282,7 +275,12 @@ tsApp
 
         // Save the user preferences
         $scope.saveUserPreferences = function() {
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          securityService.updateUserPreferences($scope.user.userPreferences).then(
+          // Success
+          function(data) {
+            $scope.user.userPreferences = data;
+            $scope.getPagedAvailableLdt();
+          });
         }
 
         // Get $scope.languageDescriptionTypes
@@ -290,20 +288,80 @@ tsApp
           translationService.getLanguageDescriptionTypes().then(
           // Success
           function(data) {
-            $scope.languageDescriptionTypes = data;
+            $scope.languageDescriptionTypes = data.types;
+            $scope.languageDescriptionTypes.totalCount = data.totalCount;
+            $scope.getPagedAvailableLdt();
           });
         }
 
         // Get paged available language description types not already assigned
-        $scope.getPagedAvailable = function() {
+        $scope.getPagedAvailableLdt = function() {
           var available = [];
-          for (var i = 0; i < $scope.languageDescriptionTypes; i++) {
-            for (var j = 0; i < $user.userPreferences.languageDescriptionTypes; i++) {
-              // TODO: add in ones that don't match
+          for (var i = 0; i < $scope.languageDescriptionTypes.length; i++) {
+            var found = false;
+            for (var j = 0; j < $scope.user.userPreferences.languageDescriptionTypes.length; j++) {
+              if ($scope.isEquivalent($scope.languageDescriptionTypes[i],
+                $scope.user.userPreferences.languageDescriptionTypes[j])) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              available.push($scope.languageDescriptionTypes[i]);
             }
           }
-          $scope.pagedAvailableLdt = utilService.getPagedArray(available,
-            $scope.paging['lang'], $scope.pageSize);
+          $scope.pagedAvailableLdt = utilService.getPagedArray(available, $scope.paging['lang'],
+            $scope.pageSize);
+        }
+
+        // equivalent test for language description types
+        $scope.isEquivalent = function(ldt1, ldt2) {
+          return ldt1.refsetId == ldt2.refsetId
+            && ldt1.descriptionType.typeId == ldt2.descriptionType.typeId
+            && ldt1.descriptionType.acceptabilityId == ldt2.descriptionType.acceptabilityId;
+        }
+
+        // Add an LDT to user prefs
+        $scope.addLanguageDescriptionType = function(ldt) {
+          $scope.user.userPreferences.languageDescriptionTypes.push(ldt);
+          $scope.saveUserPreferences();
+        }
+
+        // Remove an LDT from user prefs
+        $scope.removeLanguageDescriptionType = function(ldt) {
+          for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
+            }
+          }
+          $scope.saveUserPreferences();
+        }
+
+        // Move an LDT up in user prefs
+        $scope.moveLanguageDescriptionTypeUp = function(ldt) {
+          // Start at index 1 because we can't move the top one up
+          for (var i = 1; i < $scope.user.userPreferences.languageDescriptionTypes.length; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 1);
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i - 1, 0, ldt);
+            }
+          }
+          $scope.saveUserPreferences();
+        }
+
+        // Move an LDT down in user prefs
+        $scope.moveLanguageDescriptionTypeDown = function(ldt) {
+          // end at index -11 because we can't move the last one down
+          for (var i = 0; i < $scope.user.userPreferences.languageDescriptionTypes.length - 1; i++) {
+            if ($scope.isEquivalent(ldt, $scope.user.userPreferences.languageDescriptionTypes[i])) {
+              console.debug(" ldt 1 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              $scope.user.userPreferences.languageDescriptionTypes.splice(i, 2,
+                $scope.user.userPreferences.languageDescriptionTypes[i + 1], ldt);
+              console.debug(" ldt 2 = ", $scope.user.userPreferences.languageDescriptionTypes);
+              break;
+            }
+          }
+          $scope.saveUserPreferences();
         }
 
         // sort mechanism 
@@ -321,8 +379,9 @@ tsApp
             $scope.getAssignedUsers();
           } else if (table === 'candidateUser') {
             $scope.getUnassignedUsers();
+          } else if (table === 'lang') {
+            $scope.getPagedAvailableLdt();
           }
-
         }
 
         // Return up or down sort chars if sorted
@@ -336,8 +395,10 @@ tsApp
             window.alert("Select a project before assigning a user! ");
             return;
           }
-
+          // call service
           projectService.assignUserToProject(projectId, userName, projectRole).then(function(data) {
+            // Update "anyrole"
+            projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
             $scope.getAssignedUsers();
@@ -348,6 +409,8 @@ tsApp
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
           projectService.unassignUserFromProject(projectId, userName).then(function(data) {
+            // Update "anyrole"
+            projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
             $scope.getAssignedUsers();
@@ -371,12 +434,7 @@ tsApp
           // Success 
           function(data) {
             $scope.validationChecks = data.keyValuePairs;
-          },
-          // Error - update refset
-          function(data) {
-            $scope.errors[0] = data;
-            utilService.clearError();
-          })
+          });
         }
 
         //
@@ -466,6 +524,8 @@ tsApp
                 if ($scope.user.applicationRole != 'ADMIN') {
                   projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
+                      // Update "anyrole"
+                      projectService.getUserHasAnyRole();
                       $uibModalInstance.close(data);
                     },
                     // Error
@@ -699,6 +759,12 @@ tsApp
 
         };
 
+        // Configure the tab
+        $scope.configureTab = function() {
+          $scope.user.userPreferences.lastTab = '/admin';
+          securityService.updateUserPreferences($scope.user.userPreferences);
+        }
+
         //
         // Initialize
         //
@@ -710,8 +776,11 @@ tsApp
         $scope.getTerminologyEditions();
         $scope.getValidationChecks();
         $scope.getLanguageDescriptionTypes();
-        $scope.user.userPreferences.lastTab = '/admin';
-        securityService.updateUserPreferences($scope.user.userPreferences);
+
+        // Handle users with user preferences
+        if ($scope.user.userPreferences) {
+          $scope.configureTab();
+        }
 
         // end
 

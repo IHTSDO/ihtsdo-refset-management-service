@@ -29,7 +29,7 @@
     <p ng-show="concept && !disableMemberTypes" style="margin-top: 5px;">
       <b>Concept</b>
     </p>
-    <p ng-show="concept && !disableMemberTypes" style="font-size: 12px;">
+    <p ng-show="concept && !disableMemberTypes" class="info-text">
       <!-- Add buttons for both refset types -->
       <i ng-click="openAddModal(data.refset, concept); $event.stopPropagation()"
         ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && !memberTypes[concept.terminologyId].memberType"
@@ -67,6 +67,7 @@
         ng-show="memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
         uib-tooltip="Inclusion">I</button>
       <i ng-show="memberTypes[concept.terminologyId].memberType == 'INCLUSION'"
+        confirm="Are you sure you want to remove the inclusion ({{memberTypes[concept.terminologyId].conceptName}})?"
         ng-click="removeRefsetInclusion(data.refset,memberTypes[concept.terminologyId]);"
         title="Remove inclusion" class="noul material-icons md-12">delete</i>
 
@@ -95,8 +96,7 @@
       <b>Descriptions</b>
     </p>
     <div ng-show="concept.descriptions.length > 0"
-      ng-repeat="description in orderedDescriptions"
-      style="font-size: 12px" class="row">
+      ng-repeat="description in orderedDescriptions" class="info-text row">
       <div class="col-md-12 col-xs-12">
         <span class="col-md-8 col-xs-8">&bull;&nbsp;{{description.term}}</span>
         <span class="col-md-2 col-xs-2">{{description.languageCode}}</span>
@@ -113,8 +113,7 @@
     </p>
 
     <div ng-show="concept.relationships.length > 0"
-      ng-repeat="rel in orderedRelationships" style="font-size: 12px"
-      class="row">
+      ng-repeat="rel in orderedRelationships" class="info-text row">
       <div class="col-md-12 col-xs-12">
         <span class="col-md-3 col-xs-3">
           &bull;&nbsp;

@@ -239,7 +239,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       }
       final UserList list = securityService.findUsersForQuery(query, pfs);
-
+      // lazy initialize with blank user prefs
+      for (User user : list.getObjects()) {
+        user.setUserPreferences(null);
+      }
       return list;
     } catch (Exception e) {
       handleException(e, "find users for project");
@@ -278,6 +281,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
       }
       final UserList list = securityService.findUsersForQuery(query, pfs);
+      // lazy initialize with blank user prefs
+      for (User user : list.getObjects()) {
+        user.setUserPreferences(null);
+      }
 
       return list;
     } catch (Exception e) {
@@ -894,9 +901,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             null);
     // Add all descriptions to the concept
     for (Concept conceptTranslated : list.getObjects()) {
-      Logger.getLogger(this.getClass()).debug("  concept=" + conceptTranslated);
       for (Description desc : conceptTranslated.getDescriptions()) {
-        Logger.getLogger(this.getClass()).debug("  description=" + desc);
         // Add to the concept to return
         concept.getDescriptions().add(desc);
       }
@@ -931,7 +936,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       final List<DescriptionType> types =
           projectService.getTerminologyHandler().getStandardDescriptionTypes(
-              terminology, version);
+              terminology);
 
       final DescriptionTypeList list = new DescriptionTypeListJpa();
       list.setObjects(types);

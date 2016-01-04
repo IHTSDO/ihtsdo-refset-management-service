@@ -5,6 +5,9 @@ package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
@@ -16,7 +19,9 @@ import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
-import org.ihtsdo.otf.refset.rf2.jpa.RelationshipJpa;
+import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,7 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Unit testing for {@link RelationshipJpa}.
+ * Unit testing for {@link UserPreferencesJpa}.
  */
 public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
 
@@ -36,6 +41,14 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
 
   /** The u2. */
   private User u2;
+
+  /** The l1. */
+  @SuppressWarnings("rawtypes")
+  private List l1;
+
+  /** The l2. */
+  @SuppressWarnings("rawtypes")
+  private List l2;
 
   /**
    * Setup class.
@@ -50,12 +63,28 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("unchecked")
   @Before
   public void setup() throws Exception {
     object = new UserPreferencesJpa();
     ProxyTester tester = new ProxyTester(new UserJpa());
     u1 = (UserJpa) tester.createObject(1);
     u2 = (UserJpa) tester.createObject(2);
+
+    ProxyTester tester2 = new ProxyTester(new LanguageDescriptionTypeJpa());
+    ProxyTester tester3 = new ProxyTester(new DescriptionTypeJpa());
+    l1 = new ArrayList<>();
+    LanguageDescriptionType ldt1 =
+        (LanguageDescriptionType) tester2.createObject(1);
+    ldt1.setDescriptionType((DescriptionTypeJpa) tester3.createObject(1));
+    l1.add(ldt1);
+
+    l2 = new ArrayList<>();
+    LanguageDescriptionType ldt2 =
+        (LanguageDescriptionType) tester2.createObject(2);
+    ldt2.setDescriptionType((DescriptionTypeJpa) tester3.createObject(2));
+    l2.add(ldt2);
+
   }
 
   /**
@@ -81,18 +110,43 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
   public void testModelEqualsHashcode030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-
-    // Off for now, the user/userId/userName interaction is causing issues
+    tester.include("languageDescriptionTypes");
+    tester.include("lastProjectId");
+    tester.include("lastProjectRole");
+    tester.include("lastDirectoryAccordion");
+    tester.include("lastRefsetAccordion");
+    tester.include("lastTranslationAccordion");
+    tester.include("lastTab");
+    tester.include("memoryEnabled");
+    tester.include("spellingEnabled");
+    tester.include("user");
 
     // Set up objects
     tester.proxy(User.class, 1, u1);
     tester.proxy(User.class, 2, u2);
-//    assertTrue(tester.testIdentitiyFieldEquals());
-//    assertTrue(tester.testNonIdentitiyFieldEquals());
-//    assertTrue(tester.testIdentityFieldNotEquals());
-//    assertTrue(tester.testIdentitiyFieldHashcode());
-//    assertTrue(tester.testNonIdentitiyFieldHashcode());
-//    assertTrue(tester.testIdentityFieldDifferentHashcode());
+    tester.proxy(List.class, 1, l1);
+    tester.proxy(List.class, 2, l2);
+
+    assertTrue(tester.testIdentitiyFieldEquals());
+    assertTrue(tester.testNonIdentitiyFieldEquals());
+    // the "setUserName" is actually changing the u1 object to have a username
+    // of u2 so we need to recreate
+    ProxyTester tester2 = new ProxyTester(new UserJpa());
+    u1 = (UserJpa) tester2.createObject(1);
+    u2 = (UserJpa) tester2.createObject(2);
+    tester.proxy(User.class, 1, u1);
+    tester.proxy(User.class, 2, u2);
+    assertTrue(tester.testIdentityFieldNotEquals());
+    assertTrue(tester.testIdentitiyFieldHashcode());
+    assertTrue(tester.testNonIdentitiyFieldHashcode());
+
+    // the "setUserName" is actually changing the u1 object to have a username
+    // of u2 so we need to recreate
+    u1 = (UserJpa) tester2.createObject(1);
+    u2 = (UserJpa) tester2.createObject(2);
+    tester.proxy(User.class, 1, u1);
+    tester.proxy(User.class, 2, u2);
+    assertTrue(tester.testIdentityFieldDifferentHashcode());
   }
 
   /**
@@ -140,7 +194,8 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
   public void testModelNotNullField030() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
-
+    tester.include("memoryEnabled");
+    tester.include("spellingEnabled");
     assertTrue(tester.testNotNullFields());
   }
 

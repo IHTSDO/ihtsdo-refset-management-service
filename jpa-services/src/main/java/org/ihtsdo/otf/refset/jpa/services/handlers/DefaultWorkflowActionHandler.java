@@ -735,8 +735,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       Concept concept = new ConceptJpa();
       concept.setActive(member.isActive());
       concept.setModuleId(member.getModuleId());
-      concept.setTerminology(member.getTerminology());
-      concept.setVersion(member.getVersion());
+      concept.setTerminology("N/A");
+      concept.setVersion("N/A");
       concept.setTerminologyId(member.getConceptId());
       concept.setName(member.getConceptName());
       list.getObjects().add(concept);

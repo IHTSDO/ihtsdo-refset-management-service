@@ -43,7 +43,6 @@ tsApp.directive('conceptInfo', [
           $scope.$watch('data.concept', function() {
             // When used by translation table, data.concept is null until selected
             // Clear error
-            console.debug("data.concept");
             $scope.error = null;
             if ($scope.data.concept) {
               $scope.getFullConcept($scope.data.concept);
@@ -112,18 +111,19 @@ tsApp.directive('conceptInfo', [
               concept.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
               // Success
               function(data) {
+                // Needed to communicate phrase memory info back to the translation editing.
+                $scope.data.descriptions = data.descriptions;
+                // Needed for local scope
                 $scope.concept = data;
                 $scope.orderedDescriptions = [];
                 if ($scope.concept && $scope.concept.descriptions.length > 0) {
                   $scope.orderedDescriptions = $scope.concept.descriptions
                     .sort($scope.sortByDescriptionType);
-                  console.debug("ordered d", $scope.orderedDescriptions);
                 }
                 $scope.orderedRelationships = [];
                 if ($scope.concept && $scope.concept.relationships.length > 0) {
                   $scope.orderedRelationships = $scope.concept.relationships
                     .sort($scope.sortByRelationshipGroup);
-                  console.debug("ordered r", $scope.orderedRelationships);
                 }
 
               },
@@ -137,7 +137,6 @@ tsApp.directive('conceptInfo', [
 
           // function for sorting an array by (string) field and direction
           $scope.sortByDescriptionType = function(a, b) {
-            // TODO: sort by user preferences languageDescripionTypes
             // put non-EN above EN - just to make it a little easier to see
             var latCodea = 1;
             if (a.languageCode == 'en') {
@@ -147,8 +146,8 @@ tsApp.directive('conceptInfo', [
             if (b.languageCode == 'en') {
               latCodeb = 2
             }
-            return a = $scope.getDescriptionType(a)+latCodea, b = $scope.getDescriptionType(b)+latCodeb, (a > b)
-              - (b > a);
+            return a = $scope.getDescriptionType(a) + latCodea, b = $scope.getDescriptionType(b)
+              + latCodeb, (a > b) - (b > a);
           }
 
           // Return the description type name
@@ -389,10 +388,6 @@ tsApp.directive('conceptInfo', [
 
           // Remove refset inclusion
           $scope.removeRefsetInclusion = function(refset, member) {
-            if (!confirm("Are you sure you want to remove the inclusion (" + member.conceptName
-              + ")?")) {
-              return;
-            }
             refsetService.removeRefsetMember(member.id).then(
             // Success 
             function() {

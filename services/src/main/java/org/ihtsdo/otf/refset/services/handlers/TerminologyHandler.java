@@ -95,8 +95,8 @@ public interface TerminologyHandler extends Configurable {
    * @return the concepts
    * @throws Exception the exception
    */
-  public ConceptList getConcepts(List<String> terminologyIds, String terminology,
-    String version) throws Exception;
+  public ConceptList getConcepts(List<String> terminologyIds,
+    String terminology, String version) throws Exception;
 
   /**
    * Find concepts for query.
@@ -122,34 +122,31 @@ public interface TerminologyHandler extends Configurable {
    * Returns the standard description types.
    *
    * @param terminology the terminology
-   * @param version the version
    * @return the standard description types
    * @throws Exception the exception
    */
-  public List<DescriptionType> getStandardDescriptionTypes(
-      String terminology, String version) throws Exception;
+  public List<DescriptionType> getStandardDescriptionTypes(String terminology)
+    throws Exception;
 
   /**
    * Returns the standard language description types.
    *
    * @param terminology the terminology
-   * @param version the version
    * @return the standard language description types
    * @throws Exception the exception
    */
   public List<LanguageDescriptionType> getStandardLanguageDescriptionTypes(
-      String terminology, String version) throws Exception;
+    String terminology) throws Exception;
 
   /**
    * Returns the standard case sensitivity types.
    *
    * @param terminology the terminology
-   * @param version the version
    * @return the standard case sensitivity types
    * @throws Exception the exception
    */
-  public Map<String,String> getStandardCaseSensitivityTypes(
-    String terminology, String version) throws Exception;
+  public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
+    throws Exception;
 
   /**
    * Returns the concept parents.
@@ -175,7 +172,6 @@ public interface TerminologyHandler extends Configurable {
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version) throws Exception;
 
-  // TODO: other methods (if using term server storage)
   /**
    * <pre>
    * Refset methods
