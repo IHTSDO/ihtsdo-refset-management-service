@@ -242,6 +242,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Translation translation = getTranslation(id);
     if (cascade) {
 
+      if (getTransactionPerOperation())
+        throw new Exception(
+            "Unable to remove translation, transactionPerOperation must be disabled to perform cascade remove.");
+
       // Remove concepts/ descriptions/language refset members
       for (Concept c : translation.getConcepts()) {
         removeConcept(c.getId(), true);
@@ -1022,6 +1026,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       concept.setTerminology("N/A");
       concept.setVersion("N/A");
       concept.setId(null);
+      if(concept.getEffectiveTime() == null) {
+          concept.setEffectiveTime(effectiveTime);
+      }
       translationCopy.getConcepts().add(concept);
       addConcept(concept);
     }

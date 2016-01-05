@@ -182,8 +182,10 @@ tsApp
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
-          $scope.user.userPreferences.lastRefsetAccordion = data;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences) {
+            $scope.user.userPreferences.lastRefsetAccordion = data;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
         }
 
         // Configure tab and accordion

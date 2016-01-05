@@ -1428,4 +1428,30 @@ public class RefsetClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
   }
+
+  @Override
+  public Refset recoveryRefset(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass())
+        .debug("Refset Client - recovery refset " + refsetId);
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/recovery/" + refsetId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
+  }
 }
