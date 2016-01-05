@@ -522,7 +522,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Antibiotic measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<58427002 | Antibiotic measurement (procedure) |
@@ -535,7 +535,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Ampicillin measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<105070004 | Ampicillin measurement (procedure) |
@@ -561,7 +561,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Pneumonia reference set reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<233604007 | Pneumonia (disorder) | + !<<78895009 |
@@ -582,7 +582,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Antibiotic measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
@@ -593,7 +593,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Azole anitfungal reference set", null, 0, "US1000124",
               Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
               reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<373236000 | Azole antifungal (substance) |",
@@ -604,7 +604,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Polyderma reference set", null, 0, "US1000124",
               Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
               reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);

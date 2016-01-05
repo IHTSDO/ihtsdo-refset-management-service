@@ -58,7 +58,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * JPA enabled implementation of {@link Refset}. This object extends
  * {@link AbstractComponent} and uses effectiveTime in a special way. For
  * refsets that are being edited the effectiveTime will always be null. During
- * the release process, the effectiveTime is set when the staging of PREVIEW
+ * the release process, the effectiveTime is set when the staging of BETA
  * begins. Thus the unique key below works to allow multiple releases and an
  * editing copy of the same refset with the same terminologyId to simultaneously
  * exist.

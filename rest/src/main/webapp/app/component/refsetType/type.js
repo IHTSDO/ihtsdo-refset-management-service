@@ -1,5 +1,5 @@
 // Translation Table directive
-// e.g. <div refset-type-icon obj="refset"></div>
+// e.g. <div refset-type-icon obj='refset'></div>
 tsApp.directive('refsetTypeIcon', [ function() {
   console.debug('configure refsetTypeIcon directive');
   return {

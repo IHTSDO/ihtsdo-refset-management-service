@@ -4,27 +4,27 @@
 
 <div class="modal-body">
   <span
-    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'PREVIEW'"
+    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'BETA'"
     class="alert alert-warning">Release of {{releaseInfo.name}} has been
     started.</span>
 
   <span
-    ng-show="validationResult && translation.stagingType != 'PREVIEW' &&
+    ng-show="validationResult && translation.stagingType != 'BETA' &&
     validationResult.warnings.length == 0 &&
     validationResult.errors.length == 0"
     class="alert alert-warning">Validation passed with no errors or
     warnings.</span>
 
   <span
-    ng-show="translation.stagingType == 'PREVIEW' || stagedTranslation.workflowStatus == 'PREVIEW'"
-    class="alert alert-warning">The PREVIEW release can be viewed in the
+    ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
+    class="alert alert-warning">The BETA release can be viewed in the
     "Releases" section.</span>
   <br>
   <span
-    ng-show="translation.stagingType == 'PREVIEW' || stagedTranslation.workflowStatus == 'PREVIEW'"
+    ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
     class="alert alert-warning">Click 'Finish' to complete the release.</span>
 
-  <div ng-show="validationResult && translation.stagingType != 'PREVIEW'">
+  <div ng-show="validationResult && translation.stagingType != 'BETA'">
     <h4 ng-show="validationResult.comments.length > 0">Comments</h4>
     <table class="table">
       <tr ng-repeat="comment in validationResult.comments">
@@ -138,20 +138,16 @@
 <div class="modal-footer">
 
   <button class="btn btn-primary" ng-show="!translation.inPublicationProcess"
-    ng-click="beginTranslationRelease(translation) 
-    ">Release</button>
+    ng-click="beginTranslationRelease(translation)">Release</button>
   <button class="btn btn-primary"
-    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'PREVIEW' && stagedTranslation.workflowStatus != 'PREVIEW'"
-    ng-click="validateTranslationRelease(translation) 
-    ">Validate</button>
+    ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'BETA' && stagedTranslation.workflowStatus != 'BETA'"
+    ng-click="validateTranslationRelease(translation)">Validate</button>
   <button class="btn btn-primary"
-    ng-show="validationResult && translation.stagingType != 'PREVIEW'"
-    ng-click="previewTranslationRelease(translation) 
-    ">Preview</button>
+    ng-show="validationResult && translation.stagingType != 'BETA'"
+    ng-click="betaTranslationRelease(translation)">Beta</button>
   <button class="btn btn-primary"
-    ng-show="translation.stagingType == 'PREVIEW' || stagedTranslation.workflowStatus == 'PREVIEW'"
-    ng-click="finishTranslationRelease(translation) 
-    ">Finish</button>
+    ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
+    ng-click="finishTranslationRelease(translation)">Finish</button>
   <button class="btn btn-error" ng-show="translation.inPublicationProcess"
     confirm="Are you sure you want to cancel the translation release?"
     ng-click="cancel(translation)">Cancel</button>

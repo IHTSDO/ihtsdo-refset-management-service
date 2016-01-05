@@ -786,8 +786,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // Clone the refset and call set it provisional
     Refset refsetCopy = new RefsetJpa(refset);
 
-    // Mark as provisional if staging type isn't preview
-    if (stagingType == Refset.StagingType.PREVIEW) {
+    // Mark as provisional if staging type isn't beta
+    if (stagingType == Refset.StagingType.BETA) {
       refsetCopy.setEffectiveTime(effectiveTime);
       refsetCopy.setProvisional(false);
     } else {
@@ -809,7 +809,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     addRefset(refsetCopy);
 
-    // copy notes - yes for MIGRATION, not for PREVIEW
+    // copy notes - yes for MIGRATION, not for BETA
     if (stagingType == Refset.StagingType.MIGRATION) {
       for (Note note : refset.getNotes()) {
         RefsetNoteJpa noteCopy = new RefsetNoteJpa((RefsetNoteJpa) note);
@@ -819,9 +819,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
 
-    // Copy members for EXTENSIONAL staging, or for PREVIEW staging
+    // Copy members for EXTENSIONAL staging, or for BETA staging
     if (refsetCopy.getType() == Refset.Type.EXTENSIONAL
-        || stagingType == Refset.StagingType.PREVIEW) {
+        || stagingType == Refset.StagingType.BETA) {
       // without doing the copy constructor, we get the following errors:
       // identifier of an instance of
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from

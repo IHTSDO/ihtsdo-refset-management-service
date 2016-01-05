@@ -29,8 +29,8 @@ public enum WorkflowStatus {
   /** ready for publication */
   READY_FOR_PUBLICATION,
 
-  /** The preview status. */
-  PREVIEW,
+  /** The beta status. */
+  BETA,
 
   /** The published status. */
   PUBLISHED;

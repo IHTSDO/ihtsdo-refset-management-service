@@ -14,7 +14,7 @@ tsApp
         workflowService) {
         console.debug('configure RefsetCtrl');
 
-        // Handle resetting tabs on "back" button
+        // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Refset') {
           tabService.setSelectedTabByLabel('Refset');
         }
@@ -62,7 +62,7 @@ tsApp
             sortField : 'name',
             queryRestriction : 'userAnyRole:' + $scope.user.userName
           };
-          projectService.findProjectsAsList("", pfs).then(function(data) {
+          projectService.findProjectsAsList('', pfs).then(function(data) {
             $scope.projects.data = data.projects;
             $scope.projects.totalCount = data.totalCount;
             if ($scope.user.userPreferences.lastProjectId) {
@@ -84,7 +84,7 @@ tsApp
 
         };
 
-        // Fire a "projectChanged" event after looking up role
+        // Fire a 'projectChanged' event after looking up role
         $scope.setProject = function(project) {
           $scope.project = project;
           if (!$scope.project) {
@@ -96,7 +96,7 @@ tsApp
           var pfs = {};
           // Find role
           projectService
-            .findAssignedUsersForProject($scope.project.id, "", pfs)
+            .findAssignedUsersForProject($scope.project.id, '', pfs)
             .then(
               // Success
               function(data) {
@@ -159,7 +159,6 @@ tsApp
             $scope.metadata.versions[terminology] = [];
             for (var i = 0; i < data.translations.length; i++) {
               $scope.metadata.versions[terminology].push(data.translations[i].version);
-              //.replace(/-/gi, ""));
             }
           })
         };
@@ -183,8 +182,10 @@ tsApp
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
-          $scope.user.userPreferences.lastRefsetAccordion = data;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences) {
+            $scope.user.userPreferences.lastRefsetAccordion = data;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
         }
 
         // Configure tab and accordion

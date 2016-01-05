@@ -84,19 +84,17 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public Refset previewRefsetRelease(Long refsetId, String ioHandlerId,
+  public Refset betaRefsetRelease(Long refsetId, String ioHandlerId,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Client - preview refset release");
+    Logger.getLogger(getClass()).debug("Release Client - beta refset release");
     validateNotEmpty(refsetId, "refsetId");
     validateNotEmpty(ioHandlerId, "ioHandlerId");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/release/refset/preview" + "?refsetId=" + refsetId
-            + "&ioHandlerId=" + ioHandlerId);
+        client.target(config.getProperty("base.url") + "/release/refset/beta"
+            + "?refsetId=" + refsetId + "&ioHandlerId=" + ioHandlerId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -171,10 +169,10 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public Translation previewTranslationRelease(Long translationId,
+  public Translation betaTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Release Client - preview translation release");
+        "Release Client - beta translation release");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerId, "ioHandlerId");
 
@@ -182,8 +180,8 @@ public class ReleaseClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/release/translation/preview" + "?translationId="
-            + translationId + "&ioHandlerId=" + ioHandlerId);
+            + "/release/translation/beta" + "?translationId=" + translationId
+            + "&ioHandlerId=" + ioHandlerId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -295,8 +293,7 @@ public class ReleaseClientRest extends RootClientRest implements
             + "/release/refset"
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20") 
-            + "&refsetId="
+                .replaceAll("\\+", "%20") + "&refsetId="
             + (refsetId == null ? "" : refsetId));
 
     String pfsString =
@@ -324,9 +321,10 @@ public class ReleaseClientRest extends RootClientRest implements
   }
 
   @Override
-  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - get current release info for refset");
+  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Client - get current release info for refset");
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
@@ -363,8 +361,7 @@ public class ReleaseClientRest extends RootClientRest implements
             + "/release/translation"
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20") 
-            + "&translationId="
+                .replaceAll("\\+", "%20") + "&translationId="
             + (translationId == null ? "" : translationId));
 
     String pfsString =
@@ -392,14 +389,15 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public ReleaseInfo getCurrentTranslationReleaseInfo(Long translationId,
     String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Release Client - get current release info for translation");
+    Logger.getLogger(getClass()).debug(
+        "Release Client - get current release info for translation");
     validateNotEmpty(translationId, "translationtd");
 
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/release/translation/info"
-            + "?translationId=" + translationId);
+        client.target(config.getProperty("base.url")
+            + "/release/translation/info" + "?translationId=" + translationId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();

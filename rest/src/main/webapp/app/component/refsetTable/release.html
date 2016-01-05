@@ -4,27 +4,27 @@
 
 <div class="modal-body">
   <span
-    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'PREVIEW'"
+    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'BETA'"
     class="alert alert-warning">Release of {{releaseInfo.name}} has been
     started.</span>
 
   <span
-    ng-show="validationResult && refset.stagingType != 'PREVIEW' &&
+    ng-show="validationResult && refset.stagingType != 'BETA' &&
     validationResult.warnings.length == 0 &&
     validationResult.errors.length == 0"
     class="alert alert-warning">Validation passed with no errors or
     warnings.</span>
 
   <span
-    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
-    class="alert alert-warning">The PREVIEW release can be viewed in the
+    ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
+    class="alert alert-warning">The BETA release can be viewed in the
     "Releases" section.</span>
   <br>
   <span
-    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
+    ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
     class="alert alert-warning">Click 'Finish' to complete the release.</span>
 
-  <div ng-show="validationResult && refset.stagingType != 'PREVIEW'">
+  <div ng-show="validationResult && refset.stagingType != 'BETA'">
     <h4 ng-show="validationResult.comments.length > 0">Comments</h4>
     <table class="table">
       <tr ng-repeat="comment in validationResult.comments">
@@ -137,20 +137,16 @@
 <div class="modal-footer">
 
   <button class="btn btn-primary" ng-show="!refset.inPublicationProcess"
-    ng-click="beginRefsetRelease(refset) 
-    ">Release</button>
+    ng-click="beginRefsetRelease(refset)">Release</button>
   <button class="btn btn-primary"
-    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'PREVIEW' && stagedRefset.workflowStatus != 'PREVIEW'"
-    ng-click="validateRefsetRelease(refset) 
-    ">Validate</button>
+    ng-show="refset.inPublicationProcess && !validationResult && refset.stagingType != 'BETA' && stagedRefset.workflowStatus != 'BETA'"
+    ng-click="validateRefsetRelease(refset)">Validate</button>
   <button class="btn btn-primary"
-    ng-show="validationResult && refset.stagingType != 'PREVIEW'"
-    ng-click="previewRefsetRelease(refset) 
-    ">Preview</button>
+    ng-show="validationResult && refset.stagingType != 'BETA'"
+    ng-click="betaRefsetRelease(refset)">Beta</button>
   <button class="btn btn-primary"
-    ng-show="refset.stagingType == 'PREVIEW' || stagedRefset.workflowStatus == 'PREVIEW'"
-    ng-click="finishRefsetRelease(refset) 
-    ">Finish</button>
+    ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
+    ng-click="finishRefsetRelease(refset)">Finish</button>
   <button confirm="Are you sure you want to cancel the refset release?"
     class="btn btn-error" ng-show="refset.inPublicationProcess"
     ng-click="cancel(refset)">Cancel</button>

@@ -715,8 +715,8 @@ public class RefsetTest {
     // Thus Old & New again the same size
     ConceptRefsetMemberJpa createdMember2 =
         makeConceptRefsetMember("TestMember", "1234567", janRefset);
-    ConceptRefsetMember addIdenticalMember =
-        refsetService.addRefsetMember(createdMember2, adminAuthToken);
+    // ConceptRefsetMember addIdenticalMember =
+    refsetService.addRefsetMember(createdMember2, adminAuthToken);
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     reportToken =
@@ -829,7 +829,6 @@ public class RefsetTest {
    * @param refsetId the refset id
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed

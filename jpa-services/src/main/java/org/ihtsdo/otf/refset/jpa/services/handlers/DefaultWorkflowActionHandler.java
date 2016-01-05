@@ -105,7 +105,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       case ASSIGN:
         // A tracking record must not exist yet for this refset.
-        // the tracking record goes away when something is set to PREVIEW or
+        // the tracking record goes away when something is set to BETA or
         // READY_FOR_PUBLICATION, or PUBLISHED
         boolean authorFlag =
             projectRole == UserRole.AUTHOR
@@ -180,7 +180,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         flag = authorFlag || reviewerFlag;
         break;
 
-      case PREVIEW:
+      case BETA:
         // Handled by release process, all editing must be done
         flag =
             EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION).contains(
@@ -332,9 +332,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // Otherwise status stays the same
         break;
 
-      case PREVIEW:
-        // Handled by release process. Simply set status to PREVIEW.
-        refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      case BETA:
+        // Handled by release process. Simply set status to BETA.
+        refset.setWorkflowStatus(WorkflowStatus.BETA);
         break;
 
       case PUBLISH:
@@ -489,7 +489,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
         break;
 
-      case PREVIEW:
+      case BETA:
         // Handled by release process, all editing must be done
         flag =
             EnumSet.of(WorkflowStatus.NEW).contains(
@@ -499,7 +499,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       case PUBLISH:
         // Handled by release process, all editing must be done
         flag =
-            EnumSet.of(WorkflowStatus.NEW, WorkflowStatus.PREVIEW).contains(
+            EnumSet.of(WorkflowStatus.NEW, WorkflowStatus.BETA).contains(
                 translation.getWorkflowStatus());
         break;
 
@@ -663,10 +663,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         // Otherwise status stays the same
         break;
 
-      case PREVIEW:
-        // Handled by release process. Simply set status to PREVIEW.
+      case BETA:
+        // Handled by release process. Simply set status to BETA.
         translation.setLastModifiedBy(user.getUserName());
-        translation.setWorkflowStatus(WorkflowStatus.PREVIEW);
+        translation.setWorkflowStatus(WorkflowStatus.BETA);
         service.updateTranslation(translation);
         break;
 
@@ -800,12 +800,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // NEW Refsets for this project that do not yet have tracking records
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
-    // For sure, ready, preview, or published refsets are not available
+    // For sure, ready, beta, or published refsets are not available
     String queryStr =
         "select a from RefsetJpa a where " // workflowStatus = 'NEW' "
             + " a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa) "
-            + "and workflowStatus not in ('READY_FOR_PUBLICATION','PREVIEW','PUBLISHED')";
+            + "and workflowStatus not in ('READY_FOR_PUBLICATION','BETA','PUBLISHED')";
 
     Query ctQuery =
         rootService.getEntityManager().createQuery(

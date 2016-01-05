@@ -22,7 +22,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * finishing the release process.
  * 
  * <pre>
- * 1. Converts the preview release into a published release 
+ * 1. Converts the beta release into a published release 
  * 2. Separates the published release from the origin READY_FOR_PUBLICATION release.
  * </pre>
  * 
@@ -64,10 +64,10 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
       throw new Exception("translation workflowstatus is not staged for "
           + translation.getId());
     stagedTranslationChange = getStagedTranslationChange(translation.getId());
-    if (!WorkflowStatus.PREVIEW.equals(stagedTranslationChange
+    if (!WorkflowStatus.BETA.equals(stagedTranslationChange
         .getStagedTranslation().getWorkflowStatus())) {
       throw new Exception(
-          "Translation must be staged and with a workflow status of PREVIEW");
+          "Translation must be staged and with a workflow status of BETA");
     }
   }
 

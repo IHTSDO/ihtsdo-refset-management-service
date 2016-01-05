@@ -25,14 +25,11 @@ public interface Translation extends Component, Searchable {
    * Enum of staging types.
    */
   public enum StagingType {
-    /** The import. */
+    /** The import type. */
     IMPORT,
 
-    /** The migration. */
-    MIGRATION,
-
-    /** The preview. */
-    PREVIEW;
+    /** The beta. */
+    BETA;
   }
 
   /**

@@ -10,15 +10,16 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.Refset.StagingType;
 import org.ihtsdo.otf.refset.ReleaseInfo;
-import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
-import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -28,19 +29,18 @@ import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 /**
- * Implementation of an algorithm to create a preview {@link Translation}
- * release.
+ * Implementation of an algorithm to create a beta {@link Refset} release.
  * 
  * <pre>
  * 1. Generates file(s) for the release
  * 2. Attaches the files as release artifacts (and cleans up after itself)
- * 3. Marks the workflow status of the release as "PREVIEW"
+ * 3. Marks the workflow status of the release as "BETA"
  * </pre>
  * 
- * The process can return the preview {@link Translation}
+ * The process can return the beta {@link Refset}
  */
-public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
-    implements Algorithm {
+public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
+    Algorithm {
 
   /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -55,113 +55,122 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
   /** The user name. */
   private String userName;
 
-  /** The translation. */
-  private Translation translation;
+  /** The refset. */
+  private Refset refset;
 
-  /** The staged translation. */
-  private Translation stagedTranslation;
+  /** The staged refset. */
+  private Refset stagedRefset;
 
   /** The release info. */
   private ReleaseInfo releaseInfo;
 
   /**
-   * Instantiates an empty {@link PerformTranslationPreviewAlgorithm}.
+   * Instantiates an empty {@link PerformRefsetBetaAlgorithm}.
    * @throws Exception if anything goes wrong
    */
-  public PerformTranslationPreviewAlgorithm() throws Exception {
+  public PerformRefsetBetaAlgorithm() throws Exception {
     super();
   }
 
   /* see superclass */
   @Override
   public void checkPreconditions() throws Exception {
+    // Check preconditions
     ReleaseInfoList releaseInfoList =
-        findTranslationReleasesForQuery(translation.getId(), null, null);
+        findRefsetReleasesForQuery(refset.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new Exception("Cannot find release info for translation "
-          + translation.getId());
+      throw new Exception("Cannot find release info for refset "
+          + refset.getId());
     }
+
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
         || releaseInfo.isPublished())
-      throw new Exception("translation release is not ready to validate "
-          + translation.getId());
-    if (translation.isStaged())
-      throw new Exception("translation workflowstatus is staged for "
-          + translation.getId());
+      throw new Exception("refset release is not ready to beta "
+          + refset.getId());
+
+    if (refset.isStaged())
+      throw new Exception("refset is staged for " + refset.getId());
+
   }
 
   /* see superclass */
   @Override
   public void compute() throws Exception {
 
-    // Stage the translation
-    stagedTranslation =
-        stageTranslation(translation, Translation.StagingType.PREVIEW,
-            releaseInfo.getEffectiveTime());
+    // Stage the refset for beta
+    stagedRefset =
+        stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
 
-    // Copy the release info from origin refset
+    // Copy the release info, copy any release artifacts from
+    // the origin refset
     ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
     stageReleaseInfo.setId(null);
     stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
-    stageReleaseInfo.setTranslation(stagedTranslation);
+    stageReleaseInfo.setRefset(stagedRefset);
 
     // Generate the snapshot release artifact and add it
-    ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
+    ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportConcepts(translation, translation.getConcepts());
+        handler.exportMembers(refset, refset.getMembers());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getFileName(translation.getProject()
-        .getNamespace(), "Snapshot", releaseInfo.getName()));
+    artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
+        "Snapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
+
+    // Add it to the staged release info
     stageReleaseInfo.getArtifacts().add(artifact);
 
     // Generate the delta release artifact and add it
     releaseInfo =
-        getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
-            translation.getProject().getId());
+        getCurrentRefsetReleaseInfo(refset.getTerminologyId(), refset
+            .getProject().getId());
     if (releaseInfo != null) {
-      Set<Concept> delta =
-          Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
-      delta.removeAll(stagedTranslation.getConcepts());
-      for (Concept member : delta) {
+      Set<ConceptRefsetMember> delta =
+          Sets.newHashSet(releaseInfo.getRefset().getMembers());
+      delta.removeAll(stagedRefset.getMembers());
+      for (ConceptRefsetMember member : delta) {
         member.setActive(false);
         member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
       }
-      Set<Concept> newMembers =
-          Sets.newHashSet(stagedTranslation.getConcepts());
-      newMembers.removeAll(releaseInfo.getTranslation().getConcepts());
-      for (Concept member : newMembers) {
+      Set<ConceptRefsetMember> newMembers =
+          Sets.newHashSet(stagedRefset.getMembers());
+      newMembers.removeAll(releaseInfo.getRefset().getMembers());
+      for (ConceptRefsetMember member : newMembers) {
         member.setActive(true);
         member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
       }
       delta.addAll(newMembers);
       inputStream =
-          handler.exportConcepts(stagedTranslation, Lists.newArrayList(delta));
+          handler.exportMembers(stagedRefset, Lists.newArrayList(delta));
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
-      
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getFileName(translation.getProject()
-          .getNamespace(), "Snapshot", releaseInfo.getName()));
+      artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
+          "Delta", releaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
+
+      // Add it to the staged release info
       stageReleaseInfo.getArtifacts().add(artifact);
     }
 
-    // Update staged and origin translations
-    stagedTranslation.setWorkflowStatus(WorkflowStatus.PREVIEW);
-    translation.setLastModifiedBy(userName);
-    updateTranslation(translation);
-    stagedTranslation.setLastModifiedBy(userName);
-    updateTranslation(stagedTranslation);
+    // Set aspects of staged refset
+    stagedRefset.setWorkflowStatus(WorkflowStatus.BETA);
+    stagedRefset.setLastModifiedBy(userName);
 
-    // Add the staged release info - not published, not planned
+    // Update/add
+    refset.setLastModifiedBy(userName);
+    updateRefset(refset);
+    stagedRefset.setLastModifiedBy(userName);
+    updateRefset(stagedRefset);
+    
+    // not planned anymore, but also not published yet
     stageReleaseInfo.setPlanned(false);
     addReleaseInfo(stageReleaseInfo);
   }
@@ -203,6 +212,12 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
     requestCancel = true;
   }
 
+  /* see superclass */
+  @Override
+  public void refreshCaches() throws Exception {
+    // n/a
+  }
+
   /**
    * Sets the io handler info id.
    *
@@ -213,23 +228,23 @@ public class PerformTranslationPreviewAlgorithm extends TranslationServiceJpa
   }
 
   /**
-   * Returns the staged translation.
+   * Returns the staged refset.
    *
-   * @return the staged translation
+   * @return the staged refset
    * @throws Exception the exception
    */
-  public Translation getPreviewTranslation() throws Exception {
+  public Refset getBetaRefset() throws Exception {
     // Reload
-    return getTranslation(stagedTranslation.getId());
+    return getRefset(stagedRefset.getId());
   }
 
   /**
-   * Sets the translation.
+   * Sets the refset.
    *
-   * @param translation the translation
+   * @param refset the refset
    */
-  public void setTranslation(Translation translation) {
-    this.translation = translation;
+  public void setRefset(Refset refset) {
+    this.refset = refset;
   }
 
   /**

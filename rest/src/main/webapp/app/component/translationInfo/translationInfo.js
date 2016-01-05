@@ -1,5 +1,5 @@
 // Translation Info directive
-// e.g. <div translation-info translation="translation" form="long" ></div>
+// e.g. <div translation-info translation='translation' form='long' ></div>
 tsApp.directive('translationInfo', [ '$uibModal', 'utilService', function($uibModal, utilService) {
   console.debug('configure conceptInfo directive');
   return {

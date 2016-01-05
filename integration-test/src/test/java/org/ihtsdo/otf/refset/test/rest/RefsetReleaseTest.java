@@ -323,7 +323,7 @@ public class RefsetReleaseTest {
   }
 
   /**
-   * Test refset release including begin, validate, preview and cancel.
+   * Test refset release including begin, validate, beta and cancel.
    *
    * @throws Exception the exception
    */
@@ -343,8 +343,8 @@ public class RefsetReleaseTest {
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
-    // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
@@ -354,7 +354,7 @@ public class RefsetReleaseTest {
   }
 
   /**
-   * Test refset release including begin, validate, preview and finish.
+   * Test refset release including begin, validate, beta and finish.
    *
    * @throws Exception the exception
    */
@@ -374,8 +374,8 @@ public class RefsetReleaseTest {
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
-    // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
@@ -385,7 +385,7 @@ public class RefsetReleaseTest {
   }
 
   /**
-   * Test refset release including begin, validate, preview, finish and delta.
+   * Test refset release including begin, validate, beta, finish and delta.
    *
    * @throws Exception the exception
    */
@@ -405,8 +405,8 @@ public class RefsetReleaseTest {
         adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
-    // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
@@ -433,8 +433,8 @@ public class RefsetReleaseTest {
         ConfigUtility.DATE_FORMAT.format(calendar), adminAuthToken);
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
-    // Preview release
-    releaseService.previewRefsetRelease(refset1.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
         adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
@@ -682,8 +682,8 @@ public class RefsetReleaseTest {
         ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
         adminAuthToken);
     releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
-    // Preview release
-    releaseService.previewRefsetRelease(refset.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaRefsetRelease(refset.getId(), "DEFAULT",
         adminAuthToken);
 
     /*
@@ -805,7 +805,6 @@ public class RefsetReleaseTest {
    * @param refsetId the refset id
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed

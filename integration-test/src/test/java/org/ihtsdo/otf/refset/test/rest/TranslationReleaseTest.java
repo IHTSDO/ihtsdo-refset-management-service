@@ -365,7 +365,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testRelease002() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -395,11 +395,11 @@ public class TranslationReleaseTest {
   }
 
   /**
-   * Test translation release including begin, validate, preview and cancel.
+   * Test translation release including begin, validate, beta and cancel.
    *
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testRelease003() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -418,8 +418,8 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
-    // Preview release
-    releaseService.previewTranslationRelease(translation1.getId(), "DEFAULT",
+    // Beta release
+    releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
         adminAuthToken);
     // Cancel release
     releaseService.cancelTranslationRelease(translation1.getId(),
@@ -432,11 +432,11 @@ public class TranslationReleaseTest {
   }
 
   /**
-   * Test translation release including begin, validate, preview and finish.
+   * Test translation release including begin, validate, beta and finish.
    *
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testRelease004() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -455,10 +455,10 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
-    // Preview release
+    // Beta release
     Translation stagedTranslation =
-        releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -476,11 +476,11 @@ public class TranslationReleaseTest {
   }
 
   /**
-   * Test translation release including begin, validate, preview and finish.
+   * Test translation release including begin, validate, beta and finish.
    *
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testRelease005() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -499,10 +499,10 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
-    // Preview release
+    // Beta release
     Translation stagedTranslation =
-        releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -530,10 +530,10 @@ public class TranslationReleaseTest {
     // Validate release
     releaseService.validateTranslationRelease(translation1.getId(),
         adminAuthToken);
-    // Preview release
+    // Beta release
     Translation stagedTranslation2 =
-        releaseService.previewTranslationRelease(translation1.getId(),
-            "DEFAULT", adminAuthToken);
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
     // Finish release
     releaseService.finishTranslationRelease(translation1.getId(),
         adminAuthToken);
@@ -623,10 +623,10 @@ public class TranslationReleaseTest {
         adminAuthToken);
     releaseService.validateTranslationRelease(translation.getId(),
         adminAuthToken);
-    // Preview release
+    // Beta release
     Translation stagedTranslation =
-        releaseService.previewTranslationRelease(translation.getId(),
-            "DEFAULT", adminAuthToken);
+        releaseService.betaTranslationRelease(translation.getId(), "DEFAULT",
+            adminAuthToken);
 
     /*
      * While release still in process
@@ -751,7 +751,7 @@ public class TranslationReleaseTest {
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
-  
+
   /**
    * Make concept refset member.
    *
