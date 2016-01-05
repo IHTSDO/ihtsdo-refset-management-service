@@ -94,4 +94,9 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
     ReleaseArtifact artifact = getHasLastModified(id, ReleaseArtifactJpa.class);
     return artifact;
   }
+
+  @Override
+  public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception {
+    releaseInfo.getArtifacts().size();
+  }
 }
