@@ -40,13 +40,17 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Relationship;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -828,6 +832,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setTerminology("N/A");
         member.setVersion("N/A");
         member.setId(null);
+        if(member.getEffectiveTime() == null)
+          member.setEffectiveTime(effectiveTime);
         addMember(member);
       }
     }
@@ -1176,7 +1182,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   }
 
-  public void recoveryRefset(Long refsetId) throws Exception {
+  /**
+   * Recovery refset.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  @Override
+  public Refset recoveryRefset(Long refsetId) throws Exception {
     AuditReader reader = AuditReaderFactory.get(manager);
     AuditQuery query =
         reader.createQuery()
@@ -1192,8 +1205,38 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
     if(refset != null) {
       RefsetJpa refsetJpa = new RefsetJpa(refset);
-      addRefset(refsetJpa);
-    }
+      refsetJpa.setId(null);
+      Refset recoveredRefset = addRefset(refsetJpa);
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        ConceptRefsetMember memberJpa = new ConceptRefsetMemberJpa(member);
+        memberJpa.setId(null);
+        memberJpa.setRefset(recoveredRefset);
+        addMember(memberJpa);
+      }
+      for(Translation translation: refset.getTranslations()) {
+        TranslationJpa translationJpa = new TranslationJpa(translation);
+        translationJpa.setId(null);
+        translationJpa.setRefset(recoveredRefset);
+        recoveredRefset.getTranslations().add(translationJpa);
+        for(Concept concept : translation.getConcepts()) {
+          ConceptJpa conceptJpa = new ConceptJpa(concept, true);
+          conceptJpa.setId(null);
+          conceptJpa.setTranslation(translationJpa);
+          translation.getConcepts().add(conceptJpa);
+          for (Description description : concept.getDescriptions()) {
+            description.setId(null);
+          }
+          for (Relationship rel : concept.getRelationships()) {
+            rel.setId(null);
+          }
+          for (Note note : concept.getNotes()) {
+            note.setId(null);
+          }
 
+        }
+    }
+      return recoveredRefset;
+    } else 
+      throw new Exception("Cannot find the refset to recover");
   }
 }

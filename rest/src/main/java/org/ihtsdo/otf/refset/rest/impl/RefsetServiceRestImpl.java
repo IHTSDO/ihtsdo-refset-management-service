@@ -218,6 +218,45 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  @Override
+  @GET
+  @Path("/recovery/{refsetId}")
+  @ApiOperation(value = "Get refset for id", notes = "Gets the refset for the specified id", response = RefsetJpa.class)
+  public Refset recoveryRefset(
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): recover refset for id, refsetId:" + refsetId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      final Refset refset = refsetService.recoveryRefset(refsetId);
+      for(Translation translation : refset.getTranslations()) {
+        translationService.addTranslation(translation);
+        for(Concept concept : translation.getConcepts()) {
+          translationService.addConcept(concept);
+        }
+      }
+      if (refset.isPublic()) {
+        authorizeApp(securityService, authToken, "recover refset for id",
+            UserRole.VIEWER);
+      } else {
+        authorizeProject(projectService, refset.getProject().getId(),
+            securityService, authToken, "recover refset for id", UserRole.AUTHOR);
+      }
+      return refset;
+    } catch (Exception e) {
+      handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      refsetService.close();
+      translationService.close();
+      securityService.close();
+    }
+  }
+
   /* see superclass */
   @Override
   @GET

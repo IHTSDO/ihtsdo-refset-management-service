@@ -553,4 +553,14 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public void optimizeDefinition(Long refsetId, String authToken) throws Exception;
+
+  /**
+   * Recovery refset.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  Refset recoveryRefset(Long refsetId, String authToken) throws Exception;
 }
