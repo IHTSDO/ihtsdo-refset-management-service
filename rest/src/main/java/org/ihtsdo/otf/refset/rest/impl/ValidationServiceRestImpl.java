@@ -64,9 +64,6 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
   /** The security service. */
   private SecurityService securityService;
 
-  /** The project service. */
-  private ProjectService projectService;
-
   /**
    * Instantiates an empty {@link ValidationServiceRestImpl}.
    *
@@ -74,7 +71,6 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
    */
   public ValidationServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
-    projectService = new ProjectServiceJpa();
   }
 
   /* see superclass */
@@ -93,10 +89,10 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     final ValidationService validationService = new ValidationServiceJpa();
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeProject(projectService, projectId, securityService, authToken,
-          "validate concept", UserRole.AUTHOR);
+      authorizeProject(translationService, projectId, securityService,
+          authToken, "validate concept", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
+      final Project project = translationService.getProject(projectId);
       return validationService.validateConcept(concept, project,
           translationService);
     } catch (Exception e) {
@@ -126,11 +122,13 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
 
     try {
-      authorizeProject(projectService, refset.getProjectId(), securityService,
+      authorizeProject(refsetService, refset.getProjectId(), securityService,
           authToken, "validate a refset", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
-      return validationService.validateRefset(refset, project, refsetService);
+      final Project project = refsetService.getProject(projectId);
+      final ValidationResult result =
+          validationService.validateRefset(refset, project, refsetService);
+      return result;
     } catch (Exception e) {
       e.printStackTrace();
       handleException(e, "trying to validate refset");
@@ -160,10 +158,10 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      authorizeProject(projectService, projectId, securityService, authToken,
-          "validate translation", UserRole.AUTHOR);
+      authorizeProject(translationService, projectId, securityService,
+          authToken, "validate translation", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
+      final Project project = translationService.getProject(projectId);
       return validationService.validateTranslation(translation, project,
           translationService);
     } catch (Exception e) {
@@ -193,10 +191,10 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     final ValidationService validationService = new ValidationServiceJpa();
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeProject(projectService, projectId, securityService, authToken,
+      authorizeProject(refsetService, projectId, securityService, authToken,
           "validate member", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
+      final Project project = refsetService.getProject(projectId);
       return validationService.validateMember(member, project, refsetService);
     } catch (Exception e) {
       handleException(e, "trying to validate refset member");
@@ -227,7 +225,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     try {
       Translation translation =
           translationService.getTranslation(translationId);
-      authorizeProject(projectService, translation.getProject().getId(),
+      authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "validate all concepts", UserRole.AUTHOR);
 
       authorizeApp(securityService, authToken, "validate all concepts",
@@ -276,7 +274,7 @@ public class ValidationServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       final Refset refset = refsetService.getRefset(refsetId);
-      authorizeProject(projectService, refset.getProject().getId(),
+      authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "validate all members", UserRole.AUTHOR);
 
       final MemberValidationResultList list =
