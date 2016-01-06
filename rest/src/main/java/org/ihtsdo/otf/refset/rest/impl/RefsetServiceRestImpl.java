@@ -53,7 +53,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
-import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -61,7 +60,6 @@ import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -93,9 +91,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /** The security service. */
   private SecurityService securityService;
 
-  /** The project service. */
-  private ProjectService projectService;
-
   /** The members in common map. */
   private static Map<String, List<ConceptRefsetMember>> membersInCommonMap =
       new HashMap<>();
@@ -111,7 +106,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
    */
   public RefsetServiceRestImpl() throws Exception {
     securityService = new SecurityServiceJpa();
-    projectService = new ProjectServiceJpa();
   }
 
   /* see superclass */
@@ -210,7 +204,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeApp(securityService, authToken, "get refset for id",
             UserRole.VIEWER);
       } else {
-        authorizeProject(projectService, refset.getProject().getId(),
+        authorizeProject(refsetService, refset.getProject().getId(),
             securityService, authToken, "get refset for id", UserRole.AUTHOR);
       }
       refsetService.handleLazyInit(refset);
@@ -235,10 +229,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (Refset): recover refset for id, refsetId:" + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa();
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final Refset refset = refsetService.recoveryRefset(refsetId);
+      final Refset refset = translationService.recoveryRefset(refsetId);
       for (Translation translation : refset.getTranslations()) {
         translationService.addTranslation(translation);
         for (Concept concept : translation.getConcepts()) {
@@ -249,7 +242,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeApp(securityService, authToken, "recover refset for id",
             UserRole.VIEWER);
       } else {
-        authorizeProject(projectService, refset.getProject().getId(),
+        authorizeProject(translationService, refset.getProject().getId(),
             securityService, authToken, "recover refset for id",
             UserRole.AUTHOR);
       }
@@ -258,7 +251,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to recover a refset");
       return null;
     } finally {
-      refsetService.close();
       translationService.close();
       securityService.close();
     }
@@ -283,9 +275,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeApp(securityService, authToken, "get refset for id",
             UserRole.VIEWER);
       } else {
-        authorizeProject(projectService, member.getRefset().getProject()
-            .getId(), securityService, authToken, "get refset for id",
-            UserRole.AUTHOR);
+        authorizeProject(refsetService,
+            member.getRefset().getProject().getId(), securityService,
+            authToken, "get refset for id", UserRole.AUTHOR);
       }
       refsetService.handleLazyInit(member);
       return member;

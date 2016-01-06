@@ -929,7 +929,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (concept): /concept/add " + concept);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -1346,7 +1346,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call Post (Add Batch Spelling Entries): /spelling/add/batch "
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
 
     try {
       Translation translation =
@@ -1764,8 +1764,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "RESTful call POST (Batch Translation Suggestions): /phrasememory/suggest/batch/"
                 + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
-
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       Translation translation =
@@ -2027,7 +2026,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Translation): /export/phrasememory "
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       final Translation translation =
@@ -2071,7 +2070,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + " " + entry);
 
     final TranslationService translationService = new TranslationServiceJpa();
-
     try {
       // Load translation
       final Translation translation =
@@ -2118,8 +2116,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Batch Spelling Suggestions): /spelling/suggest/batch/"
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
-
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       Translation translation =

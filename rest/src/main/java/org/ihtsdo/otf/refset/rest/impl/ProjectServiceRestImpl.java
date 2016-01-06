@@ -550,6 +550,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to check for any project role");
     } finally {
+      projectService.close();
       securityService.close();
     }
     return false;
@@ -580,6 +581,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to get all terminologies");
     } finally {
+      projectService.close();
       securityService.close();
     }
     return null;
@@ -612,6 +614,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to get versions");
     } finally {
+      projectService.close();
       securityService.close();
     }
     return null;
@@ -946,6 +949,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to get versions");
     } finally {
+      projectService.close();
       securityService.close();
     }
     return null;

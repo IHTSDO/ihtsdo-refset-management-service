@@ -41,14 +41,6 @@ tsApp
           workflowPaths : []
         }
 
-        // Test for empty accordion state
-        $scope.isAccordionStateEmpty = function() {
-          for (key in $scope.accordionState) {
-            if ($scope.accordionState.hasOwnProperty(key))
-              return false;
-          }
-          return true;
-        };
 
         // Get $scope.projects
         $scope.getProjects = function() {

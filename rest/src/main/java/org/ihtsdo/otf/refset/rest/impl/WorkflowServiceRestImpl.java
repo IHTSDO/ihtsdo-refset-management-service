@@ -30,7 +30,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
-import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
@@ -38,7 +37,6 @@ import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -527,10 +525,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     }
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
-    final RefsetService refsetService = new RefsetServiceJpa();
-
     try {
-      final Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = workflowService.getRefset(refsetId);
 
       authorizeProject(workflowService, refset.getProject().getId(),
           securityService, authToken, "perform workflow action on refset",
@@ -548,7 +544,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     } finally {
       workflowService.close();
       securityService.close();
-      refsetService.close();
     }
     return null;
   }
