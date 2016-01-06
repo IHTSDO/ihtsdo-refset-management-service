@@ -239,9 +239,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       final Refset refset = refsetService.recoveryRefset(refsetId);
-      for(Translation translation : refset.getTranslations()) {
+      for (Translation translation : refset.getTranslations()) {
         translationService.addTranslation(translation);
-        for(Concept concept : translation.getConcepts()) {
+        for (Concept concept : translation.getConcepts()) {
           translationService.addConcept(concept);
         }
       }
@@ -250,7 +250,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             UserRole.VIEWER);
       } else {
         authorizeProject(projectService, refset.getProject().getId(),
-            securityService, authToken, "recover refset for id", UserRole.AUTHOR);
+            securityService, authToken, "recover refset for id",
+            UserRole.AUTHOR);
       }
       return refset;
     } catch (Exception e) {

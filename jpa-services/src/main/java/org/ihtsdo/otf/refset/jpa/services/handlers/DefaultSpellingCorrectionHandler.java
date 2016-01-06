@@ -32,7 +32,7 @@ import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
  * IHTSDO SpellingCorrection server to the extent possible for interacting with
  * SpellingCorrection components. Uses local storage where not possible.
  */
-public class DefaultSpellingCorrectionHandler extends RootServiceJpa implements
+public class DefaultSpellingCorrectionHandler implements
     SpellingCorrectionHandler {
 
   /** The spell checker. */

@@ -739,6 +739,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
 
+    rootService.close();
     return list;
 
   }
@@ -779,6 +780,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final ConceptListJpa list = new ConceptListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+    rootService.close();
 
     return list;
   }
@@ -816,6 +818,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+    rootService.close();
 
     return list;
   }
@@ -851,6 +854,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+    rootService.close();
 
     return list;
   }
