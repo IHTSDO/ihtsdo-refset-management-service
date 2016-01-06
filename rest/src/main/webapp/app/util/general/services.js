@@ -15,9 +15,38 @@ tsApp
         this.tinymceOptions = {
           menubar : false,
           statusbar : false,
-          plugins : "autolink autoresize link image charmap searchreplace lists paste",
-          toolbar : "undo redo | styleselect lists | bold italic underline strikethrough | charmap link image",
+          plugins : 'autolink autoresize link image charmap searchreplace lists paste',
+          toolbar : 'undo redo | styleselect lists | bold italic underline strikethrough | charmap link image',
           forced_root_block : ''
+        }
+
+        // Prep query
+        this.prepQuery = function(query) {
+          if (!query) {
+            return '';
+          }
+
+          // Add a * to the filter if set and doesn't contain a :
+          if (query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+            var query2 = query.concat('*');
+            return encodeURIComponent(query2);
+          }
+          return encodeURIComponent(query);
+        }
+
+        // Prep pfs filter
+        this.prepPfs = function(pfs) {
+          if (!pfs) {
+            return {};
+          }
+
+          // Add a * to the filter if set and doesn't contain a :
+          if (pfs.filter && pfs.filter.indexOf(":") == -1 && pfs.filter.indexOf("\"") == -1) {
+            var pfs2 = angular.copy(pfs);
+            pfs2.filter += "*";
+            return pfs2;
+          }
+          return pfs;
         }
 
         // Sets the error
@@ -31,87 +60,71 @@ tsApp
         }
         // Handle error message
         this.handleError = function(response) {
-          console.debug("Handle error: ", response);
+          console.debug('Handle error: ', response);
           this.error.message = response.data;
           // If authtoken expired, relogin
-          if (this.error.message && this.error.message.indexOf("AuthToken") != -1) {
-            // Reroute back to login page with "auth token has
-            // expired" message
-            $location.path("/");
+          if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
+            // Reroute back to login page with 'auth token has
+            // expired' message
+            $location.path('/');
           }
         }
 
         // Convert date to a string
         this.toDate = function(lastModified) {
           var date = new Date(lastModified);
-          var year = "" + date.getFullYear();
-          var month = "" + (date.getMonth() + 1);
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
-            month = "0" + month;
+            month = '0' + month;
           }
-          var day = "" + date.getDate();
+          var day = '' + date.getDate();
           if (day.length == 1) {
-            day = "0" + day;
+            day = '0' + day;
           }
-          var hour = "" + date.getHours();
+          var hour = '' + date.getHours();
           if (hour.length == 1) {
-            hour = "0" + hour;
+            hour = '0' + hour;
           }
-          var minute = "" + date.getMinutes();
+          var minute = '' + date.getMinutes();
           if (minute.length == 1) {
-            minute = "0" + minute;
+            minute = '0' + minute;
           }
-          var second = "" + date.getSeconds();
+          var second = '' + date.getSeconds();
           if (second.length == 1) {
-            second = "0" + second;
+            second = '0' + second;
           }
-          return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+          return year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + second;
         }
 
         // Convert date to a short string
         this.toShortDate = function(lastModified) {
           var date = new Date(lastModified);
-          var year = "" + date.getFullYear();
-          var month = "" + (date.getMonth() + 1);
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
-            month = "0" + month;
+            month = '0' + month;
           }
-          var day = "" + date.getDate();
+          var day = '' + date.getDate();
           if (day.length == 1) {
-            day = "0" + day;
+            day = '0' + day;
           }
-          return year + "-" + month + "-" + day;
+          return year + '-' + month + '-' + day;
         }
 
         // Convert date to a simple string
         this.toSimpleDate = function(lastModified) {
           var date = new Date(lastModified);
-          var year = "" + date.getFullYear();
-          var month = "" + (date.getMonth() + 1);
+          var year = '' + date.getFullYear();
+          var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
-            month = "0" + month;
+            month = '0' + month;
           }
-          var day = "" + date.getDate();
+          var day = '' + date.getDate();
           if (day.length == 1) {
-            day = "0" + day;
+            day = '0' + day;
           }
           return year + month + day;
-        }
-
-        // Utility for cleaning a query
-        this.cleanQuery = function(queryStr) {
-          if (queryStr == null) {
-            return "";
-          }
-          var cleanQuery = queryStr;
-          // Replace all slash characters
-          cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
-          // Remove brackets if not using a fielded query
-          if (queryStr.indexOf(':') == -1) {
-            cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
-          }
-
-          return cleanQuery;
         }
 
         // Table sorting mechanism
@@ -137,13 +150,13 @@ tsApp
         // Return up or down sort chars if sorted
         this.getSortIndicator = function(table, field, paging) {
           if (paging[table].ascending == null) {
-            return "";
+            return '';
           }
           if (paging[table].sortField == field && paging[table].ascending) {
-            return "▴";
+            return '▴';
           }
           if (paging[table].sortField == field && !paging[table].ascending) {
-            return "▾";
+            return '▾';
           }
         };
 
@@ -295,8 +308,14 @@ tsApp.service('gpService', function() {
 });
 
 // Security service
-tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', 'utilService',
-  'gpService', function($http, $location, $q, $cookieStore, utilService, gpService) {
+tsApp.service('securityService', [
+  '$http',
+  '$location',
+  '$q',
+  '$cookieStore',
+  'utilService',
+  'gpService',
+  function($http, $location, $q, $cookieStore, utilService, gpService) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -320,10 +339,10 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
       // Determine if page has been reloaded
       if (!$http.defaults.headers.common.Authorization) {
-        console.debug("no header", $cookieStore.get("user"));
-        if ($cookieStore.get("user")) {
-          // Retrieve cookie
-          var cookieUser = JSON.parse($cookieStore.get("user"));
+        console.debug('no header');
+        // Retrieve cookie
+        if ($cookieStore.get('user')) {
+          var cookieUser = JSON.parse($cookieStore.get('user'));
           // If there is a user cookie, load it
           if (cookieUser) {
             this.setUser(cookieUser);
@@ -339,12 +358,12 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       user.userName = data.userName;
       user.name = data.name;
       user.authToken = data.authToken;
-      user.password = "";
+      user.password = '';
       user.applicationRole = data.applicationRole;
       user.userPreferences = data.userPreferences;
 
       // Whenver set user is called, we should save a cookie
-      $cookieStore.put("user", JSON.stringify(user));
+      $cookieStore.put('user', JSON.stringify(user));
 
     }
 
@@ -356,6 +375,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       user.password = null;
       user.applicationRole = null;
       user.userPreferences = null;
+      $cookieStore.remove('user');
     }
 
     var httpClearUser = this.clearUser;
@@ -378,7 +398,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
     // Logout
     this.logout = function() {
       if (user.authToken == null) {
-        alert("You are not currently logged in");
+        alert('You are not currently logged in');
         return;
       }
       gpService.increment();
@@ -390,11 +410,11 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
         // clear scope variables
         httpClearUser();
-
+        
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
-        window.location.href = "${logout.url}";
+        window.location.href = '${logout.url}';
       },
       // error
       function(response) {
@@ -410,7 +430,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // get all users
     this.getUsers = function() {
-      console.debug("getUsers");
+      console.debug('getUsers');
       var deferred = $q.defer();
 
       // Get users
@@ -418,7 +438,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       $http.get(securityUrl + 'user/users').then(
       // success
       function(response) {
-        console.debug("  users = ", response.data);
+        console.debug('  users = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -433,7 +453,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // get user for auth token
     this.getUserForAuthToken = function() {
-      console.debug("getUserforAuthToken");
+      console.debug('getUserforAuthToken');
       var deferred = $q.defer();
 
       // Get users
@@ -454,7 +474,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
     }
     // add user
     this.addUser = function(user) {
-      console.debug("addUser");
+      console.debug('addUser');
       var deferred = $q.defer();
 
       // Add user
@@ -462,7 +482,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       $http.put(securityUrl + 'user/add', user).then(
       // success
       function(response) {
-        console.debug("  user = ", response.data);
+        console.debug('  user = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -477,7 +497,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // update user
     this.updateUser = function(user) {
-      console.debug("updateUser");
+      console.debug('updateUser');
       var deferred = $q.defer();
 
       // Add user
@@ -485,7 +505,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       $http.post(securityUrl + 'user/update', user).then(
       // success
       function(response) {
-        console.debug("  user = ", response.data);
+        console.debug('  user = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -500,15 +520,15 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // remove user
     this.removeUser = function(user) {
-      console.debug("removeUser");
+      console.debug('removeUser');
       var deferred = $q.defer();
 
       // Add user
       gpService.increment();
-      $http['delete'](securityUrl + 'user/remove' + "/" + user.id).then(
+      $http['delete'](securityUrl + 'user/remove' + '/' + user.id).then(
       // success
       function(response) {
-        console.debug("  user = ", response.data);
+        console.debug('  user = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -523,7 +543,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // get application roles
     this.getApplicationRoles = function() {
-      console.debug("getApplicationRoles");
+      console.debug('getApplicationRoles');
       var deferred = $q.defer();
 
       // Get application roles
@@ -531,7 +551,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       $http.get(securityUrl + 'roles').then(
       // success
       function(response) {
-        console.debug("  roles = ", response.data);
+        console.debug('  roles = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -545,19 +565,18 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
     }
 
     // Finds users as a list
-    this.findUsersAsList = function(queryStr, pfs) {
-      console.debug("findUsersAsList", queryStr, pfs);
+    this.findUsersAsList = function(query, pfs) {
+      console.debug('findUsersAsList', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(securityUrl + "user/find" + "?query=" + queryStr, pfs)
-      //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
-      .then(
+      $http.post(securityUrl + 'user/find' + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
-        console.debug("  output = ", response.data);
+        console.debug('  output = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -573,14 +592,14 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
     // update user preferences
     this.updateUserPreferences = function(userPreferences) {
-      console.debug("updateUserPreferences");
+      console.debug('updateUserPreferences');
       // skip if user preferences is not set
       if (!userPreferences) {
         return;
       }
 
       // Whenever we update user preferences, we need to update the cookie
-      $cookieStore.put("user", JSON.stringify(user));
+      $cookieStore.put('user', JSON.stringify(user));
 
       var deferred = $q.defer();
 
@@ -588,7 +607,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       $http.post(securityUrl + 'user/preferences/update', userPreferences).then(
       // success
       function(response) {
-        console.debug("  userPreferences = ", response.data);
+        console.debug('  userPreferences = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -627,7 +646,7 @@ tsApp.service('tabService', [ '$location', 'utilService', 'gpService', 'security
 
     // Show admin tab for admins only
     this.showTab = function(tab) {
-      console.debug("tab label", tab.label);
+      console.debug('tab label', tab.label);
       return tab.label != 'Admin' || securityService.getUser().applicationRole == 'ADMIN';
     }
 
@@ -667,8 +686,8 @@ tsApp.service('websocketService', [ '$location', 'utilService', 'gpService',
       url = url.replace('http', 'ws');
       url = url.replace('index.html', '');
       url = url.substring(0, url.indexOf('#'));
-      url = url + "/websocket";
-      console.debug("url = " + url);
+      url = url + '/websocket';
+      console.debug('url = ' + url);
       return url;
 
     }
@@ -693,7 +712,7 @@ tsApp.service('websocketService', [ '$location', 'utilService', 'gpService',
     // handle receipt of a message
     this.connection.onmessage = function(e) {
       var message = e.data;
-      console.log("MESSAGE: " + message);
+      console.log('MESSAGE: ' + message);
       // TODO: what else to do?
     }
 

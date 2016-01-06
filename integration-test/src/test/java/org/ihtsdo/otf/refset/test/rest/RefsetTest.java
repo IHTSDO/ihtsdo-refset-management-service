@@ -21,12 +21,14 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
@@ -46,9 +48,6 @@ import org.junit.Test;
  * Test case for refset.
  */
 public class RefsetTest {
-
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
 
   /** The admin auth token. */
   protected static String adminAuthToken;
@@ -91,6 +90,9 @@ public class RefsetTest {
 
   /** The assign names. */
   private static Boolean backgroundLookup;
+  
+  /** The translation ct. */
+  private int translationCt = 0;
 
   /**
    * Create test fixtures for class.
@@ -166,7 +168,6 @@ public class RefsetTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -296,12 +297,86 @@ public class RefsetTest {
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
-    member.setTerminology(refset.getTerminology());
-    member.setVersion(refset.getVersion());
     member.setRefset(refset);
     return member;
   }
 
+  /**
+   * Make translation.
+   *
+   * @param name the name
+   * @param refset the refset
+   * @param project the project
+   * @param auth the auth
+   * @return the translation jpa
+   * @throws Exception the exception
+   */
+  private TranslationJpa makeTranslation(String name, Refset refset,
+    Project project, User auth) throws Exception {
+    ++translationCt;
+    TranslationJpa translation = new TranslationJpa();
+    translation.setName(name);
+    translation.setDescription("Description of translation "
+        + translation.getName());
+    translation.setActive(true);
+    translation.setEffectiveTime(new Date());
+    translation.setLastModified(new Date());
+    translation.setLanguage("es");
+    translation.setModuleId("731000124108");
+    translation.setProject(project);
+    translation.setPublic(true);
+    translation.setPublishable(true);
+    translation.setRefset(refset);
+    translation.setTerminology(refset.getTerminology());
+    translation.setTerminologyId(refset.getTerminologyId());
+    translation.setWorkflowPath("DEFAULT");
+    translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+    translation.setVersion(refset.getVersion());
+
+    // Validate translation
+    ValidationResult result =
+        validationService.validateTranslation(translation, project.getId(),
+            auth.getAuthToken());
+    if (!result.isValid()) {
+      Logger.getLogger(getClass()).error(result.toString());
+      throw new Exception("translation does not pass validation.");
+    }
+    // Add translation
+    translation =
+        (TranslationJpa) translationService.addTranslation(translation,
+            auth.getAuthToken());
+
+    // Import members (from file) - switch file based on counter
+    if (translationCt % 2 == 0) {
+      ValidationResult vr =
+          translationService.beginImportConcepts(translation.getId(),
+              "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      InputStream in =
+          new FileInputStream(new File(
+              "../config/src/main/resources/data/translation2/translation.zip"));
+      translationService.finishImportConcepts(null, in, translation.getId(),
+          "DEFAULT", auth.getAuthToken());
+      in.close();
+    } else {
+      ValidationResult vr =
+          translationService.beginImportConcepts(translation.getId(),
+              "DEFAULT", auth.getAuthToken());
+      if (!vr.isValid()) {
+        throw new Exception("translation staging is not valid - " + vr);
+      }
+      InputStream in =
+          new FileInputStream(new File(
+              "../config/src/main/resources/data/translation2/translation.zip"));
+      translationService.finishImportConcepts(null, in, translation.getId(),
+          "DEFAULT", auth.getAuthToken());
+      in.close();
+    }
+
+    return translation;
+  }
   /**
    * Test getting a specific member from a refset.
    *
@@ -457,7 +532,6 @@ public class RefsetTest {
     clause.setNegated(false);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     ConceptRefsetMemberList members =
@@ -472,7 +546,6 @@ public class RefsetTest {
     clause.setNegated(false);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
@@ -487,7 +560,6 @@ public class RefsetTest {
     clause.setNegated(true);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
@@ -503,7 +575,6 @@ public class RefsetTest {
     clause.setNegated(true);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
@@ -634,8 +705,8 @@ public class RefsetTest {
     // Thus Old & New again the same size
     ConceptRefsetMemberJpa createdMember2 =
         makeConceptRefsetMember("TestMember", "1234567", janRefset);
-    ConceptRefsetMember addIdenticalMember =
-        refsetService.addRefsetMember(createdMember2, adminAuthToken);
+    // ConceptRefsetMember addIdenticalMember =
+    refsetService.addRefsetMember(createdMember2, adminAuthToken);
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     reportToken =
@@ -691,13 +762,63 @@ public class RefsetTest {
   }
 
   /**
+   * Test adding a member to a refset via an expression
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testRecoveryRefset() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST recoveryRefset");
+
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    RefsetJpa refset =
+        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
+            .randomUUID().toString(), true);
+
+    refsetService = new RefsetClientRest(properties);
+    refset =
+        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
+
+    // Verify number of members to begin with
+    List<ConceptRefsetMember> foundMembers =
+        refsetService.findRefsetMembersForQuery(refset.getId(), "",
+            new PfsParameterJpa(), adminAuthToken).getObjects();
+
+    assertEquals(21, foundMembers.size());
+
+    // Create translation
+    TranslationJpa translation =
+        makeTranslation("translation99", refset, project, admin);
+    
+//    int translationConcepts = translation.getConcepts().size();
+    
+    translationService.removeTranslation(translation.getId(), true, adminAuthToken);
+    
+    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+    
+    Refset recoveryRefset = refsetService.recoveryRefset(refset.getId(), adminAuthToken);
+    
+    // Verify number of members recovered
+   foundMembers =
+        refsetService.findRefsetMembersForQuery(recoveryRefset.getId(), "",
+            new PfsParameterJpa(), adminAuthToken).getObjects();
+
+    assertEquals(21, foundMembers.size());
+
+//    assertEquals(translationConcepts, recoveryRefset.getTranslations().get(0).getConcepts().size());
+    
+  }
+
+  /**
    * Ensure refset completed prior to shutting down test to avoid lookupName
    * issues.
    *
    * @param refsetId the refset id
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed

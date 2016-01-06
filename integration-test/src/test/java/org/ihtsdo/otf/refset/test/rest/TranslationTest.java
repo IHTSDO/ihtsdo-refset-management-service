@@ -52,9 +52,6 @@ import org.junit.Test;
  */
 public class TranslationTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
-
   /** The admin auth token. */
   private static String adminAuthToken;
 
@@ -170,7 +167,6 @@ public class TranslationTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -350,11 +346,11 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -395,10 +391,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -426,7 +422,8 @@ public class TranslationTest {
 
     // cleanup
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
@@ -436,10 +433,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -463,7 +460,8 @@ public class TranslationTest {
     assertEquals(2, suggestTranslation.getTotalCount());
 
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
@@ -479,7 +477,7 @@ public class TranslationTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset(extensional)
-    Project project = projectService.getProject(52L, adminAuthToken);
+    Project project = projectService.getProject(2L, adminAuthToken);
     Refset refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString(), admin);
@@ -499,7 +497,8 @@ public class TranslationTest {
 
     // clean up
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }

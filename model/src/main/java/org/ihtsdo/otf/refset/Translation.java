@@ -25,14 +25,11 @@ public interface Translation extends Component, Searchable {
    * Enum of staging types.
    */
   public enum StagingType {
-    /** The import. */
+    /** The import type. */
     IMPORT,
 
-    /** The migration. */
-    MIGRATION,
-
-    /** The preview. */
-    PREVIEW;
+    /** The beta. */
+    BETA;
   }
 
   /**
@@ -218,18 +215,32 @@ public interface Translation extends Component, Searchable {
   public void setSpellingDictionary(SpellingDictionary dictionary);
 
   /**
-   * Returns the spelling dictionary entry count.
+   * Is spelling dictionary empty.
    *
-   * @return the spelling dictionary entry count
+   * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  public int getSpellingDictionarySize();
+  public boolean isSpellingDictionaryEmpty();
+  
+  /**
+   * Sets the spelling dictionary empty.
+   *
+   * @param spellingEmpty the spelling dictionary empty
+   */
+  public void setSpellingDictionaryEmpty(boolean spellingEmpty);
 
   /**
-   * Returns the phrase memory entry count.
+   * Indicates whether or not phrase memory empty is the case.
    *
-   * @return the phrase memory entry count
+   * @return <code>true</code> if so, <code>false</code> otherwise
    */
-  public int getPhraseMemorySize();
+  public boolean isPhraseMemoryEmpty();
+  
+  /**
+   * Sets the phrase memory empty.
+   *
+   * @param memoryEmpty the phrase memory empty
+   */
+  public void setPhraseMemoryEmpty(boolean memoryEmpty);
 
   /**
    * Returns the phrase memory.

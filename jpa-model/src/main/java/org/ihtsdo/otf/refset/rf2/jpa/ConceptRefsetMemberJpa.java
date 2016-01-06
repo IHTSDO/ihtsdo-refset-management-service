@@ -34,7 +34,6 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
 /**
@@ -42,7 +41,8 @@ import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
  */
 @Entity
 @Table(name = "concept_refset_members", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "refset_id", "conceptId", "memberType"
+    // at most one member per concept per refset
+    "refset_id", "conceptId"
 }))
 @Audited
 @Indexed
@@ -97,8 +97,8 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     conceptName = member.getConceptName();
     conceptActive = member.isConceptActive();
     memberType = member.getMemberType();
-    for (Note note : refset.getNotes()) {
-      getNotes().add(new RefsetNoteJpa((RefsetNoteJpa) note));
+    for (Note note : member.getNotes()) {
+      getNotes().add(new ConceptRefsetMemberNoteJpa((ConceptRefsetMemberNoteJpa) note));
     }
   }
 

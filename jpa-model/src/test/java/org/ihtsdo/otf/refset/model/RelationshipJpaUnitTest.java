@@ -82,9 +82,7 @@ public class RelationshipJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
-    tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
     tester.include("characteristicTypeId");
     tester.include("destinationConcept");
     tester.include("modifierId");
@@ -135,9 +133,7 @@ public class RelationshipJpaUnitTest extends ModelUnitSupport {
     // Set up objects
     Concept c = new ConceptJpa();
     c.setId(1L);
-    c.setTerminology("1");
     c.setTerminologyId("1");
-    c.setVersion("1");
     c.setName("1");
     tester.proxy(Concept.class, 1, c);
 
@@ -160,8 +156,6 @@ public class RelationshipJpaUnitTest extends ModelUnitSupport {
     tester.include("publishable");
     tester.include("moduleId");
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
     tester.include("inferred");
     tester.include("stated");
 

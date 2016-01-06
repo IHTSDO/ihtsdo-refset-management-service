@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.hibernate.envers.AuditReader;
 import org.hibernate.envers.AuditReaderFactory;
 import org.hibernate.envers.query.AuditEntity;
+import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
@@ -39,13 +40,17 @@ import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
+import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
+import org.ihtsdo.otf.refset.rf2.Relationship;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -53,6 +58,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
 /**
@@ -83,7 +89,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       if (config == null)
         config = ConfigUtility.getConfigProperties();
       String key = "import.refset.handler";
-      for (String handlerName : config.getProperty(key).split(",")) {
+      for (final String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
         // Add handlers to map
@@ -93,7 +99,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         importRefsetHandlers.put(handlerName, handlerService);
       }
       key = "export.refset.handler";
-      for (String handlerName : config.getProperty(key).split(",")) {
+      for (final String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
         // Add handlers to map
@@ -138,11 +144,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public Refset getRefset(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get refset " + id);
-    Refset refset = getHasLastModified(id, RefsetJpa.class);
-    if (refset != null) {
-      handleLazyInit(refset);
-    }
-    return refset;
+    return getHasLastModified(id, RefsetJpa.class);
   }
 
   /* see superclass */
@@ -173,11 +175,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     // Add component
-    Refset newRefset = addHasLastModified(refset);
+    final Refset newRefset = addHasLastModified(refset);
 
     // Inform listeners
     if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
+      for (final WorkflowListener listener : workflowListeners) {
         listener.refsetChanged(newRefset, WorkflowListener.Action.ADD);
       }
     }
@@ -207,11 +209,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
     // update component
-    this.updateHasLastModified(refset);
+    updateHasLastModified(refset);
 
     // Inform listeners
     if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
+      for (final WorkflowListener listener : workflowListeners) {
         listener.refsetChanged(refset, WorkflowListener.Action.UPDATE);
       }
     }
@@ -231,18 +233,21 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     Refset refset = getRefset(id);
     if (cascade) {
+      if (getTransactionPerOperation())
+        throw new Exception(
+            "Unable to remove refset, transactionPerOperation must be disabled to perform cascade remove.");
       // fail if there are translations
       if (refset.getTranslations().size() > 0) {
         throw new Exception(
             "Unable to remove refset, embedded translations must first be removed.");
       }
-      for (ConceptRefsetMember member : refset.getMembers()) {
+      for (final ConceptRefsetMember member : refset.getMembers()) {
         removeMember(member.getId());
       }
     }
 
     // Remove notes
-    for (Note note : refset.getNotes()) {
+    for (final Note note : refset.getNotes()) {
       removeNote(note.getId(), RefsetNoteJpa.class);
     }
 
@@ -256,7 +261,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
+      for (final WorkflowListener listener : workflowListeners) {
         listener.refsetChanged(refset, WorkflowListener.Action.REMOVE);
       }
     }
@@ -281,13 +286,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                 + " AND provisional:false", RefsetJpa.class, RefsetJpa.class,
             pfs, totalCt);
 
-    RefsetList result = new RefsetListJpa();
+    final RefsetList result = new RefsetListJpa();
 
     if (pfs.getLatestOnly()) {
       List<Refset> resultList = new ArrayList<>();
 
       Map<String, Refset> latestList = new HashMap<>();
-      for (Refset refset : list) {
+      for (final Refset refset : list) {
         if (refset.getEffectiveTime() == null) {
           resultList.add(refset);
         } else if (!latestList.containsKey(refset.getName())) {
@@ -308,9 +313,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     } else {
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
-    }
-    for (Refset refset : result.getObjects()) {
-      handleLazyInit(refset);
     }
     return result;
   }
@@ -344,79 +346,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   /* see superclass */
   @Override
-  public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember member) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Service - add member " + member);
-    // Assign id
-    IdentifierAssignmentHandler idHandler = null;
-    if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
-      if (idHandler == null) {
-        throw new Exception("Unable to find id handler for "
-            + member.getTerminology());
-      }
-      String id = idHandler.getTerminologyId(member);
-      member.setTerminologyId(id);
-    }
-
-    // Add component
-    RefsetDescriptorRefsetMember newMember = addHasLastModified(member);
-
-    // Inform listeners
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(newMember,
-            WorkflowListener.Action.ADD);
-      }
-    }
-    return newMember;
-  }
-
-  /* see superclass */
-  @Override
-  public void updateRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember member) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - update member " + member);
-
-    // Id assignment should not change
-    final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(member.getTerminology());
-    if (assignIdentifiersFlag) {
-      if (!idHandler.allowIdChangeOnUpdate()) {
-        RefsetDescriptorRefsetMember member2 =
-            getRefsetDescriptorRefsetMember(member.getId());
-        if (!idHandler.getTerminologyId(member).equals(
-            idHandler.getTerminologyId(member2))) {
-          throw new Exception(
-              "Update cannot be used to change object identity.");
-        }
-      } else {
-        // set member id on update
-        member.setTerminologyId(idHandler.getTerminologyId(member));
-      }
-    }
-    // update component
-    this.updateHasLastModified(member);
-
-    // Inform listeners
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(member,
-            WorkflowListener.Action.UPDATE);
-      }
-    }
-  }
-
-  /* see superclass */
-  @Override
   public void updateMember(ConceptRefsetMember member) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - update member " + member);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(member.getTerminology());
+        getIdentifierAssignmentHandler(member.getRefset().getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         ConceptRefsetMember member2 = getMember(member.getId());
@@ -435,24 +371,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     // Inform listeners
     if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
+      for (final WorkflowListener listener : workflowListeners) {
         listener.memberChanged(member, WorkflowListener.Action.UPDATE);
-      }
-    }
-  }
-
-  /* see superclass */
-  @Override
-  public void removeRefsetDescriptorRefsetMember(Long id) throws Exception {
-    Logger.getLogger(getClass()).debug("Refset Service - remove member " + id);
-    // Remove the component
-    RefsetDescriptorRefsetMember member =
-        removeHasLastModified(id, RefsetDescriptorRefsetMemberJpa.class);
-
-    if (listenersEnabled) {
-      for (WorkflowListener listener : workflowListeners) {
-        listener.refsetDescriptorRefsetMemberChanged(member,
-            WorkflowListener.Action.REMOVE);
       }
     }
   }
@@ -465,10 +385,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
+      idHandler =
+          getIdentifierAssignmentHandler(member.getRefset().getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
-            + member.getTerminology());
+            + member.getRefset().getTerminology());
       }
       String id = idHandler.getTerminologyId(member);
       member.setTerminologyId(id);
@@ -496,8 +417,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     // Remove notes
-    ConceptRefsetMember member = getMember(id);
-    for (Note note : member.getNotes()) {
+    final ConceptRefsetMember member = getMember(id);
+    for (final Note note : member.getNotes()) {
       removeNote(note.getId(), ConceptRefsetMemberNoteJpa.class);
     }
 
@@ -517,10 +438,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public ConceptRefsetMember getMember(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Refset Service - get member " + id);
-    ConceptRefsetMember member =
-        getHasLastModified(id, ConceptRefsetMemberJpa.class);
-    handleLazyInit(member);
-    return member;
+    return getHasLastModified(id, ConceptRefsetMemberJpa.class);
   }
 
   /* see superclass */
@@ -532,7 +450,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         "Refset Service - find members " + "/" + query + " refsetId "
             + refsetId);
 
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
     }
@@ -543,16 +461,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     int[] totalCt = new int[1];
-    List<ConceptRefsetMember> list =
+    final List<ConceptRefsetMember> list =
         (List<ConceptRefsetMember>) getQueryResults(sb.toString(),
             ConceptRefsetMemberJpa.class, ConceptRefsetMemberJpa.class, pfs,
             totalCt);
-    ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
+    final ConceptRefsetMemberList result = new ConceptRefsetMemberListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
-    for (ConceptRefsetMember member : result.getObjects()) {
-      handleLazyInit(member);
-    }
     return result;
   }
 
@@ -582,7 +497,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     try {
       // Get transaction and object
       tx = manager.getTransaction();
-      StagedRefsetChange change = manager.find(StagedRefsetChangeJpa.class, id);
+      final StagedRefsetChange change =
+          manager.find(StagedRefsetChangeJpa.class, id);
       // Remove
       if (getTransactionPerOperation()) {
         // remove refset member
@@ -614,15 +530,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - get staged change for refset " + refsetId);
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager.createQuery("select a from StagedRefsetChangeJpa a where "
             + "originRefset.id = :refsetId");
     try {
       query.setParameter("refsetId", refsetId);
-      StagedRefsetChange change = (StagedRefsetChange) query.getSingleResult();
-      handleLazyInit(change.getOriginRefset());
-      handleLazyInit(change.getStagedRefset());
-      return change;
+      return (StagedRefsetChange) query.getSingleResult();
     } catch (NoResultException e) {
       return null;
     }
@@ -636,8 +549,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         "Refset Service - get refset revision for date :"
             + ConfigUtility.DATE_FORMAT.format(date));
     // make envers call for date = lastModifiedDate
-    AuditReader reader = AuditReaderFactory.get(manager);
-    List<Refset> revisions = reader.createQuery()
+    final AuditReader reader = AuditReaderFactory.get(manager);
+    final List<Refset> revisions = reader.createQuery()
 
     // all revisions, returned as objects, not finding deleted entries
         .forRevisionsOfEntity(RefsetJpa.class, true, false)
@@ -657,8 +570,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         .getResultList();
 
     // get the most recent of the revisions that precede the date parameter
-    Refset refset = revisions.get(0);
-    handleLazyInit(refset);
+    final Refset refset = revisions.get(0);
     return refset;
   }
 
@@ -667,7 +579,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void handleLazyInit(Refset refset) {
     // handle all lazy initializations
     refset.getProject().getName();
-    for (Translation translation : refset.getTranslations()) {
+    for (final Translation translation : refset.getTranslations()) {
       translation.getDescriptionTypes().size();
       translation.getWorkflowStatus().name();
     }
@@ -724,7 +636,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public IoHandlerInfoList getImportRefsetHandlerInfo() throws Exception {
     IoHandlerInfoList list = new IoHandlerInfoListJpa();
-    for (Map.Entry<String, ImportRefsetHandler> entry : importRefsetHandlers
+    for (final Map.Entry<String, ImportRefsetHandler> entry : importRefsetHandlers
         .entrySet()) {
       final IoHandlerInfo info = new IoHandlerInfoJpa();
       info.setId(entry.getKey());
@@ -748,7 +660,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public IoHandlerInfoList getExportRefsetHandlerInfo() throws Exception {
     IoHandlerInfoList list = new IoHandlerInfoListJpa();
-    for (Map.Entry<String, ExportRefsetHandler> entry : exportRefsetHandlers
+    for (final Map.Entry<String, ExportRefsetHandler> entry : exportRefsetHandlers
         .entrySet()) {
       final IoHandlerInfo info = new IoHandlerInfoJpa();
       info.setId(entry.getKey());
@@ -776,10 +688,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         "Refset Service - stage refset " + refset.getId());
 
     // Clone the refset and call set it provisional
-    Refset refsetCopy = new RefsetJpa(refset);
+    final Refset refsetCopy = new RefsetJpa(refset);
 
-    // Mark as provisional if staging type isn't preview
-    if (stagingType == Refset.StagingType.PREVIEW) {
+    // Mark as provisional if staging type isn't beta
+    if (stagingType == Refset.StagingType.BETA) {
       refsetCopy.setEffectiveTime(effectiveTime);
       refsetCopy.setProvisional(false);
     } else {
@@ -789,7 +701,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // null its id and all of its components ids
     // then call addXXX on each component
     refsetCopy.setId(null);
-    for (DefinitionClause clause : refsetCopy.getDefinitionClauses()) {
+    for (final DefinitionClause clause : refsetCopy.getDefinitionClauses()) {
       clause.setId(null);
     }
 
@@ -801,9 +713,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     addRefset(refsetCopy);
 
-    // copy notes - yes for MIGRATION, not for PREVIEW
+    // copy notes - yes for MIGRATION, not for BETA
     if (stagingType == Refset.StagingType.MIGRATION) {
-      for (Note note : refset.getNotes()) {
+      for (final Note note : refset.getNotes()) {
         RefsetNoteJpa noteCopy = new RefsetNoteJpa((RefsetNoteJpa) note);
         noteCopy.setRefset(refsetCopy);
         this.addNote(noteCopy);
@@ -811,19 +723,19 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
 
-    // Copy members for EXTENSIONAL staging, or for PREVIEW staging
+    // Copy members for EXTENSIONAL staging, or for BETA staging
     if (refsetCopy.getType() == Refset.Type.EXTENSIONAL
-        || stagingType == Refset.StagingType.PREVIEW) {
+        || stagingType == Refset.StagingType.BETA) {
       // without doing the copy constructor, we get the following errors:
       // identifier of an instance of
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
       // 6901 to null
-      for (ConceptRefsetMember originMember : refset.getMembers()) {
+      for (final ConceptRefsetMember originMember : refset.getMembers()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
         member.setRefset(refsetCopy);
-        member.setTerminology("N/A");
-        member.setVersion("N/A");
         member.setId(null);
+        if (member.getEffectiveTime() == null)
+          member.setEffectiveTime(effectiveTime);
         addMember(member);
       }
     }
@@ -833,7 +745,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     refset.setStagingType(stagingType);
     updateRefset(refset);
 
-    StagedRefsetChange stagedChange = new StagedRefsetChangeJpa();
+    final StagedRefsetChange stagedChange = new StagedRefsetChangeJpa();
     stagedChange.setType(stagingType);
     stagedChange.setOriginRefset(refset);
     stagedChange.setStagedRefset(refsetCopy);
@@ -874,7 +786,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             + ", " + projectId);
 
     // Get all release info for this terminologyId and projectId
-    List<ReleaseInfo> results =
+    final List<ReleaseInfo> results =
         findRefsetReleasesForQuery(
             null,
             "refsetTerminologyId:" + terminologyId + " AND projectId:"
@@ -888,7 +800,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     });
     // Find the max one that is published and not planned
-    for (ReleaseInfo info : results) {
+    for (final ReleaseInfo info : results) {
       if (!info.isPlanned()) {
         return info;
       }
@@ -905,7 +817,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         "Release Service - find refset release infos " + "/" + query
             + " refsetId " + refsetId);
 
-    StringBuilder sb = new StringBuilder();
+    final StringBuilder sb = new StringBuilder();
     if (query != null && !query.equals("")) {
       sb.append(query).append(" AND ");
     }
@@ -916,10 +828,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     int[] totalCt = new int[1];
-    List<ReleaseInfo> list =
+    final List<ReleaseInfo> list =
         (List<ReleaseInfo>) getQueryResults(sb.toString(),
             ReleaseInfoJpa.class, ReleaseInfoJpa.class, pfs, totalCt);
-    ReleaseInfoList result = new ReleaseInfoListJpa();
+    final ReleaseInfoList result = new ReleaseInfoListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
@@ -950,7 +862,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   /* see superclass */
   @Override
   public int getLookupProgress(Long refsetId) throws Exception {
-    Refset refset = getRefset(refsetId);
+    final Refset refset = getRefset(refsetId);
 
     Logger.getLogger(getClass()).info(
         "Refset Service - getLookupProgress - " + refset.getId() + ", " + 
@@ -1011,10 +923,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         RefsetServiceJpa refsetService = new RefsetServiceJpa();
 
         // Refset may not be ready yet in DB, wait for 250ms until ready
-        Refset refset = refsetService.getRefset(refsetId);
+        Refset refset = null;
+        int ms = 250;
+        while (refset == null) {
+          Thread.sleep(ms);
+          refsetService.close();
+          refsetService = new RefsetServiceJpa();
+          refset = refsetService.getRefset(refsetId);
+          ms = (ms > 2000) ? ms + 2000 : ms * 2;
+          if (ms > 60000) {
+            Exception e =
+                new Exception("Unable to load refset after too many tries");
+            ExceptionHandler.handleException(e,
+                "looking up refset member names - " + refsetId, null);
+            throw e;
+          }
+        }
+
         refset.setLookupInProgress(true);
         refsetService.updateRefset(refset);
-		refsetService.clear();
+        refsetService.clear();
 
         refset = refsetService.getRefset(refsetId);
         refsetService.setTransactionPerOperation(false);
@@ -1038,6 +966,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           final String version = refset.getVersion();
 
           // Execute for all members
+          boolean missingConcepts = false;
           while (i < numberOfMembers) {
             final List<String> termIds = new ArrayList<>();
 
@@ -1046,21 +975,23 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
-            ConceptList cons =
-                getTerminologyHandler().getConcepts(termIds, terminology,
-                    version);
+            final TerminologyHandler handler = getTerminologyHandler();
+            final ConceptList cons =
+                handler.getConcepts(termIds, terminology, version);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
-            if (cons.getTotalCount() != termIds.size()) {
+            if (cons.getTotalCount() != termIds.size() && !missingConcepts) {
+              missingConcepts = true;
               // log and email an exception and continue
               ExceptionHandler.handleException(
-                  new Exception("Missing concepts"), "looking up names", null);
+                  new Exception("Missing concepts"),
+                  "looking up refset member names - " + refsetId, null);
             }
 
             // Populate member's names/statuses from results of Term
             // Server
-            for (Concept con : cons.getObjects()) {
+            for (final Concept con : cons.getObjects()) {
               // Reread the member as we don't know if it has changed
               final ConceptRefsetMember member =
                   refsetService.getMember(memberMap.get(con.getTerminologyId())
@@ -1084,6 +1015,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         refset.setLookupInProgress(false);
         refsetService.updateRefset(refset);
         refsetService.commit();
+        refsetService.close();
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);
@@ -1104,12 +1036,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         "Release Service - resolve refset definition " + " refsetId "
             + refset.getId());
 
-    Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
-    Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
+    final Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
+    final Map<String, ConceptRefsetMember> beforeMembersExclusions =
+        new HashMap<>();
 
-    List<String> resolvedConcepts = new ArrayList<>();
-    for (ConceptRefsetMember member : findMembersForRefset(refset.getId(),
-        null, null).getObjects()) {
+    final List<String> resolvedConcepts = new ArrayList<>();
+    for (final ConceptRefsetMember member : findMembersForRefset(
+        refset.getId(), null, null).getObjects()) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION) {
         beforeInclusions.put(member.getConceptId(), member);
       }
@@ -1118,26 +1051,26 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         beforeMembersExclusions.put(member.getConceptId(), member);
       }
     }
-    String definition = refset.computeDefinition();
+    final String definition = refset.computeDefinition();
     if (definition.equals("")) {
       return;
     }
-    ConceptList resolvedFromExpression =
+    final ConceptList resolvedFromExpression =
         getTerminologyHandler().resolveExpression(definition,
             refset.getTerminology(), refset.getVersion(), null);
 
-    for (Concept concept : resolvedFromExpression.getObjects()) {
+    for (final Concept concept : resolvedFromExpression.getObjects()) {
       resolvedConcepts.add(concept.getTerminologyId());
     }
 
     // concepts that are properly resolved by the definition that are not
     // already covered by regular members (or prior exclusions, which stay
     // in place as exclusions)
-    Date startDate = new Date();
-    for (Concept concept : resolvedFromExpression.getObjects()) {
+    final Date startDate = new Date();
+    for (final Concept concept : resolvedFromExpression.getObjects()) {
       if (!beforeMembersExclusions.keySet()
           .contains(concept.getTerminologyId())) {
-        ConceptRefsetMember member = new ConceptRefsetMemberJpa();
+        final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member.setModuleId(concept.getModuleId());
         member.setActive(true);
         member.setConceptActive(concept.isActive());
@@ -1146,12 +1079,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setConceptName(concept.getName());
         member.setLastModified(startDate);
         member.setLastModifiedBy(refset.getLastModifiedBy());
-        member.setTerminology(concept.getTerminology());
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
-        member.setTerminologyId("N/A");
-        member.setVersion("N/A");
+        // assign new member id
+        member.setTerminologyId(null);
         member.setId(null);
         addMember(member);
       }
@@ -1161,17 +1093,75 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // definition normally ,doesn’t need to be an inclusion anymore – because
     // it can just be a regular member. Thus we can remove the INCLUSION.
     beforeInclusions.keySet().removeAll(resolvedConcepts);
-    for (ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
+    for (final ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
       removeMember(beforeInclusion.getId());
     }
 
     // Delete all previous members and exclusions that are not resolved from
     // the current definition.
     beforeMembersExclusions.keySet().removeAll(resolvedConcepts);
-    for (ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions
+    for (final ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions
         .values()) {
       removeMember(beforeMemberExclusion.getId());
     }
 
+  }
+
+  /**
+   * Recovery refset.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  @Override
+  public Refset recoveryRefset(Long refsetId) throws Exception {
+    final AuditReader reader = AuditReaderFactory.get(manager);
+    final AuditQuery query =
+        reader.createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(RefsetJpa.class, false, false)
+            .addProjection(AuditEntity.revisionNumber().max())
+            // add id and owner as constraints
+            .add(AuditEntity.property("id").eq(refsetId));
+    final Number revision = (Number) query.getSingleResult();
+    final RefsetJpa refset =
+        (RefsetJpa) reader.createQuery()
+            .forEntitiesAtRevision(RefsetJpa.class, revision)
+            .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
+    if (refset != null) {
+      final RefsetJpa refsetJpa = new RefsetJpa(refset);
+      refsetJpa.setId(null);
+      final Refset recoveredRefset = addRefset(refsetJpa);
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        ConceptRefsetMember memberJpa = new ConceptRefsetMemberJpa(member);
+        memberJpa.setId(null);
+        memberJpa.setRefset(recoveredRefset);
+        addMember(memberJpa);
+      }
+      for (final Translation translation : refset.getTranslations()) {
+        final TranslationJpa translationJpa = new TranslationJpa(translation);
+        translationJpa.setId(null);
+        translationJpa.setRefset(recoveredRefset);
+        recoveredRefset.getTranslations().add(translationJpa);
+        for (final Concept concept : translation.getConcepts()) {
+          ConceptJpa conceptJpa = new ConceptJpa(concept, true);
+          conceptJpa.setId(null);
+          conceptJpa.setTranslation(translationJpa);
+          translation.getConcepts().add(conceptJpa);
+          for (final Description description : concept.getDescriptions()) {
+            description.setId(null);
+          }
+          for (final Relationship rel : concept.getRelationships()) {
+            rel.setId(null);
+          }
+          for (final Note note : concept.getNotes()) {
+            note.setId(null);
+          }
+
+        }
+      }
+      return recoveredRefset;
+    } else
+      throw new Exception("Cannot find the refset to recover");
   }
 }

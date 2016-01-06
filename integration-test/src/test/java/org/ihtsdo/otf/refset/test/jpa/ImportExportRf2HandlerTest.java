@@ -101,7 +101,7 @@ public class ImportExportRf2HandlerTest {
     refset.setTerminologyId("sampleTerminologyId");
     translation.setRefset(refset);
     translation.setLanguage("en");
-    translation.setVersion("20140731");
+    translation.setVersion("2014-07-31");
 
     // Import sample translation file
     ImportTranslationRf2Handler importHandler =

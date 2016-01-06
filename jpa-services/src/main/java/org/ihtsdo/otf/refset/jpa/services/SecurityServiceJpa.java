@@ -93,20 +93,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     if (authUser == null)
       return null;
 
-    // check if authenticated user matches one of our users
-    final UserList userList = getUsers();
-    User userFound = null;
-    for (final User user : userList.getObjects()) {
-      if (user.getUserName().equals(authUser.getUserName())) {
-        userFound = user;
-        break;
-      }
-    }
+    // check if authenticated user exists
+    User userFound = getUser(authUser.getUserName());
 
     // if user was found, update to match settings
     if (userFound != null) {
-      Logger.getLogger(getClass()).info(
-          "Update user = " + authUser.getUserName());
       userFound.setEmail(authUser.getEmail());
       userFound.setName(authUser.getName());
       userFound.setUserName(authUser.getUserName());
@@ -120,19 +111,16 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     }
     // if User not found, create one for our use
     else {
-      Logger.getLogger(getClass()).info("Add user = " + authUser.getUserName());
-      final User newUser = new UserJpa();
+      User newUser = new UserJpa();
       newUser.setEmail(authUser.getEmail());
       newUser.setName(authUser.getName());
       newUser.setUserName(authUser.getUserName());
       newUser.setApplicationRole(authUser.getApplicationRole());
-      addUser(newUser);
-      if (newUser.getUserPreferences() == null) {
-        UserPreferences newUserPreferences = new UserPreferencesJpa();
-        newUserPreferences.setUser(newUser);
-        addUserPreferences(newUserPreferences);
-      }
-      clear();
+      newUser = addUser(newUser);
+
+      UserPreferences newUserPreferences = new UserPreferencesJpa();
+      newUserPreferences.setUser(newUser);
+      addUserPreferences(newUserPreferences);
     }
 
     // Generate application-managed token
@@ -140,10 +128,12 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     tokenUsernameMap.put(token, authUser.getUserName());
     tokenTimeoutMap.put(token, new Date(new Date().getTime() + timeout));
 
-    Logger.getLogger(getClass()).debug("User = " + authUser.getUserName());
+    Logger.getLogger(getClass()).debug(
+        "User = " + authUser.getUserName() + ", " + authUser);
 
     // Reload the user to populate UserPreferences
     final User result = getUser(authUser.getUserName());
+    handleLazyInit(result);
     result.setAuthToken(token);
 
     return result;
@@ -165,7 +155,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
           "Attempt to access a service without an AuthToken, the user is likely not logged in.");
 
     // Replace double quotes in auth token.
-    String parsedToken = authToken.replace("\"", "");
+    final String parsedToken = authToken.replace("\"", "");
 
     // Check auth token against the userName map
     if (tokenUsernameMap.containsKey(parsedToken)) {
@@ -198,14 +188,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       throw new LocalException(
           "Attempt to access a service without an AuthToken, the user is likely not logged in.");
     }
-    String parsedToken = authToken.replace("\"", "");
-    String userName = getUsernameForToken(parsedToken);
+    final String parsedToken = authToken.replace("\"", "");
+    final String userName = getUsernameForToken(parsedToken);
 
     // check for null userName
     if (userName == null) {
       throw new LocalException("Unable to find user for the AuthToken");
     }
-    User user = getUser(userName.toLowerCase());
+    final User user = getUser(userName.toLowerCase());
     if (user == null) {
       return UserRole.VIEWER;
       // throw new
@@ -227,8 +217,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       throw new Exception("Unexpected null project id");
     }
 
-    String userName = getUsernameForToken(authToken);
-    ProjectService service = new ProjectServiceJpa();
+    final String userName = getUsernameForToken(authToken);
+    final ProjectService service = new ProjectServiceJpa();
     UserRole result =
         service.getProject(projectId).getUserRoleMap().get(getUser(userName));
     service.close();
@@ -247,13 +237,16 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   /* see superclass */
   @Override
   public User getUser(String userName) throws Exception {
-    javax.persistence.Query query =
+    final javax.persistence.Query query =
         manager
             .createQuery("select u from UserJpa u where userName = :userName");
     query.setParameter("userName", userName);
     try {
-      User u = (User) query.getResultList().iterator().next();
-      return u;
+      final List<?> list = query.getResultList();
+      if (list.isEmpty()) {
+        return null;
+      }
+      return (User) list.iterator().next();
     } catch (NoResultException e) {
       return null;
     }
@@ -288,7 +281,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     Logger.getLogger(getClass()).debug("Security Service - remove user " + id);
     tx = manager.getTransaction();
     // retrieve this user
-    User mu = manager.find(UserJpa.class, id);
+    final User mu = manager.find(UserJpa.class, id);
     try {
       if (getTransactionPerOperation()) {
         tx.begin();
@@ -343,8 +336,8 @@ public class SecurityServiceJpa extends RootServiceJpa implements
   public UserList getUsers() {
     javax.persistence.Query query =
         manager.createQuery("select u from UserJpa u");
-    List<User> m = query.getResultList();
-    UserListJpa mapUserList = new UserListJpa();
+    final List<User> m = query.getResultList();
+    final UserListJpa mapUserList = new UserListJpa();
     mapUserList.setObjects(m);
     mapUserList.setTotalCount(m.size());
     return mapUserList;
@@ -359,10 +352,10 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         "Security Service - find users " + query + ", pfs= " + pfs);
 
     int[] totalCt = new int[1];
-    List<User> list =
+    final List<User> list =
         (List<User>) getQueryResults(query == null || query.isEmpty()
             ? "id:[* TO *]" : query, UserJpa.class, UserJpa.class, pfs, totalCt);
-    UserList result = new UserListJpa();
+    final UserList result = new UserListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     return result;
@@ -399,7 +392,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         "Security Service - remove user preferences " + id);
     tx = manager.getTransaction();
     // retrieve this user
-    UserPreferences mu = manager.find(UserPreferencesJpa.class, id);
+    final UserPreferences mu = manager.find(UserPreferencesJpa.class, id);
     try {
       if (getTransactionPerOperation()) {
         tx.begin();
@@ -455,6 +448,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
    */
   @Override
   public void handleLazyInit(User user) {
+    if (user.getUserPreferences() != null) {
+      user.getUserPreferences().getLastProjectId();
+    }
     if (user.getUserPreferences() != null
         && user.getUserPreferences().getLanguageDescriptionTypes() != null
         && user.getUserPreferences().getLanguageDescriptionTypes().size() > 0) {

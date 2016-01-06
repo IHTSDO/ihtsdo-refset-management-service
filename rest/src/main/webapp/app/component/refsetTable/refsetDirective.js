@@ -1,5 +1,5 @@
 // Refset Table directive
-// e.g. <div refset-table value="PUBLISHED" />
+// e.g. <div refset-table value='PUBLISHED' />
 tsApp
   .directive(
     'refsetTable',
@@ -20,8 +20,8 @@ tsApp
         return {
           restrict : 'A',
           scope : {
-            // Legal "value" settings include
-            // For directory tab: PUBLISHED, PREVIEW
+            // Legal 'value' settings include
+            // For directory tab: PUBLISHED, BETA
             // For refset tab: AVAILABLE, ASSIGNED, ASSIGNED_ALL,
             // RELEASE
             value : '@',
@@ -39,7 +39,9 @@ tsApp
               $scope.selected = {
                 refset : null,
                 member : null,
-                concept : null
+                concept : null,
+                terminology : null,
+                version : null
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
@@ -49,7 +51,7 @@ tsApp
               $scope.showLatest = true;
 
               // Page metadata
-              $scope.memberTypes = [ "Member", "Exclusion", "Inclusion" ];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion' ];
 
               // Used for project admin to know what users are assigned to something.
               $scope.refsetAuthorsMap = {};
@@ -58,37 +60,38 @@ tsApp
               // Paging variables
               $scope.pageSize = 10;
               $scope.paging = {};
-              $scope.paging["refset"] = {
+              $scope.paging['refset'] = {
                 page : 1,
-                filter : "",
-                sortField : 'name',
+                filter : '',
+                sortField : $scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL' ? 'refsetName'
+                  : 'name',
                 ascending : null
               }
-              $scope.paging["member"] = {
+              $scope.paging['member'] = {
                 page : 1,
-                filter : "",
-                typeFilter : "",
+                filter : '',
+                typeFilter : '',
                 sortField : 'lastModified',
                 ascending : true
               }
-              $scope.paging["membersInCommon"] = {
+              $scope.paging['membersInCommon'] = {
                 page : 1,
-                filter : "",
-                typeFilter : "",
+                filter : '',
+                typeFilter : '',
                 sortField : 'name',
                 ascending : null
               }
-              $scope.paging["oldRegularMembers"] = {
+              $scope.paging['oldRegularMembers'] = {
                 page : 1,
-                filter : "",
-                typeFilter : "",
+                filter : '',
+                typeFilter : '',
                 sortField : 'name',
                 ascending : null
               }
-              $scope.paging["newRegularMembers"] = {
+              $scope.paging['newRegularMembers'] = {
                 page : 1,
-                filter : "",
-                typeFilter : "",
+                filter : '',
+                typeFilter : '',
                 sortField : 'name',
                 ascending : null
               }
@@ -124,19 +127,19 @@ tsApp
               // Logic for this depends on the $scope.value and $scope.projects.role
               $scope.getRefsets = function() {
                 var pfs = {
-                  startIndex : ($scope.paging["refset"].page - 1) * $scope.pageSize,
+                  startIndex : ($scope.paging['refset'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
-                  sortField : $scope.paging["refset"].sortField,
-                  ascending : $scope.paging["refset"].ascending == null ? true
-                    : $scope.paging["refset"].ascending,
+                  sortField : $scope.paging['refset'].sortField,
+                  ascending : $scope.paging['refset'].ascending == null ? true
+                    : $scope.paging['refset'].ascending,
                   queryRestriction : null,
                   latestOnly : false
                 };
 
-                if ($scope.value == 'PUBLISHED' || $scope.value == 'PREVIEW') {
+                if ($scope.value == 'PUBLISHED' || $scope.value == 'BETA') {
                   pfs.queryRestriction = 'workflowStatus:' + $scope.value;
                   pfs.latestOnly = $scope.showLatest;
-                  refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
+                  refsetService.findRefsetsForQuery($scope.paging['refset'].filter, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
@@ -170,45 +173,47 @@ tsApp
                 }
                 if ($scope.value == 'ASSIGNED_ALL' && $scope.projects.role == 'ADMIN') {
                   workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
-                    function(data) {
-                      $scope.refsets = data.refsets;
-                      $scope.refsets.totalCount = data.totalCount;
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
+                    $scope.refsets.totalCount = data.totalCount;
 
-                      // get refset tracking records in order to get refset authors
-                      for (var i = 0; i < $scope.refsets.length; i++) {
-                        workflowService.getTrackingRecordForRefset($scope.refsets[i].id).then(
-                          function(data) {
-                            if (data.authors.length > 0) {
-                              $scope.refsetAuthorsMap[data.refsetId] = data.authors;
-                            }
-                            if (data.reviewers.length > 0) {
-                              $scope.refsetReviewersMap[data.refsetId] = data.reviewers;
-                            }
-                          });
+                    // get refset tracking records in order to get refset authors
+                    for (var i = 0; i < data.length; i++) {
+                      if (data.authors.length > 0) {
+                        $scope.refsetAuthorsMap[data.refset.id] = data.authors;
                       }
-                      $scope.reselect();
-                    })
+                      if (data.reviewers.length > 0) {
+                        $scope.refsetReviewersMap[data.refset.id] = data.reviewers;
+                      }
+                    }
+                    $scope.reselect();
+                  })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
                   workflowService.findAssignedEditingRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
+                    $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
                   workflowService.findAssignedReviewRefsets($scope.project.id,
-                    $scope.user.userName, pfs).then(function(data) {
-                    $scope.refsets = data.refsets;
+                    $scope.user.userName, pfs).then(
+                  // Success
+                  function(data) {
+                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
                     $scope.reselect();
                   })
                 }
                 if ($scope.value == 'RELEASE') {
-                  pfs.queryRestriction = "(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:PREVIEW  OR workflowStatus:PUBLISHED)";
+                  pfs.queryRestriction = '(workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
-                  refsetService.findRefsetsForQuery($scope.paging["refset"].filter, pfs).then(
+                  refsetService.findRefsetsForQuery($scope.paging['refset'].filter, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
@@ -216,6 +221,15 @@ tsApp
                     })
                 }
               };
+
+              // Convert an array of tracking records to an array of refsets.
+              $scope.getRefsetsFromRecords = function(records) {
+                var refsets = [];
+                for (var i = 0; i < records.length; i++) {
+                  refsets.push(records[i].refset);
+                }
+                return refsets;
+              }
 
               // Reselect selected refset to refresh
               $scope.reselect = function() {
@@ -238,7 +252,7 @@ tsApp
                   }
                 }
 
-                // If "lookup in progress" is set, get progress
+                // If 'lookup in progress' is set, get progress
                 for (var i = 0; i < $scope.refsets.length; i++) {
                   if ($scope.refsets[i].lookupInProgress) {
                     $scope.refreshLookupProgress($scope.refsets[i]);
@@ -251,7 +265,7 @@ tsApp
                 projectService.getStandardDescriptionTypes(terminology, version).then(
                 // Success
                 function(data) {
-                  // Populate "selected" for refsetTable.html
+                  // Populate 'selected' for refsetTable.html
                   // and metadata for addMember.html
                   $scope.selected.descriptionTypes = data.types;
                   $scope.metadata.descriptionTypes = data.types;
@@ -262,22 +276,22 @@ tsApp
               $scope.getMembers = function(refset) {
 
                 var pfs = {
-                  startIndex : ($scope.paging["member"].page - 1) * $scope.pageSize,
+                  startIndex : ($scope.paging['member'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
-                  sortField : $scope.paging["member"].sortField,
-                  ascending : $scope.paging["member"].ascending == null ? true
-                    : $scope.paging["member"].ascending,
+                  sortField : $scope.paging['member'].sortField,
+                  ascending : $scope.paging['member'].ascending == null ? true
+                    : $scope.paging['member'].ascending,
                   queryRestriction : null
                 };
 
-                if ($scope.paging["member"].typeFilter) {
-                  var value = $scope.paging["member"].typeFilter;
+                if ($scope.paging['member'].typeFilter) {
+                  var value = $scope.paging['member'].typeFilter;
                   // Handle inactive
-                  value = value.replace(" ", "_").toUpperCase();
-                  pfs.queryRestriction = "memberType:" + value;
+                  value = value.replace(' ', '_').toUpperCase();
+                  pfs.queryRestriction = 'memberType:' + value;
                 }
 
-                refsetService.findRefsetMembersForQuery(refset.id, $scope.paging["member"].filter,
+                refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
                   pfs).then(
                 // Success
                 function(data) {
@@ -316,6 +330,19 @@ tsApp
 
               // Table sorting mechanism
               $scope.setSortField = function(table, field, object) {
+
+                // handle 'ASSIGNED' vs 'AVAILABLE' fields
+                // refsetTable.html expresses the fields in terms of available
+                var lfield = field;
+                if (value = 'ASSIGNED' || value == 'ASSIGNED_ALL') {
+                  if (field == 'terminologyId') {
+                    lfield = 'refsetId';
+                  } else {
+                    // uppercase and prepend refset in all other cases
+                    lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);
+                  }
+                }
+
                 utilService.setSortField(table, field, $scope.paging);
                 // retrieve the correct table
                 if (table === 'refset') {
@@ -335,6 +362,8 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                $scope.selected.terminology = refset.terminology;
+                $scope.selected.version = refset.version;
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
@@ -355,7 +384,7 @@ tsApp
               // Member type style
               $scope.getMemberStyle = function(member) {
                 if (member.memberType == 'MEMBER') {
-                  return "";
+                  return '';
                 }
                 return member.memberType.replace('_STAGED', '');
               }
@@ -363,8 +392,8 @@ tsApp
               // Remove a refset
               $scope.removeRefset = function(refset) {
 
-                if (refset.members != null) {
-                  if (!confirm("The refset has members that will also be deleted.")) {
+                if (refset.members && refset.members.totalCount > 0) {
+                  if (!confirm('The refset has members that will also be deleted.')) {
                     return;
                   }
                 }
@@ -381,6 +410,7 @@ tsApp
                 refsetService.removeRefsetMember(member.id).then(
                 // Success 
                 function() {
+                  $scope.selected.concept = null;
                   $scope.getMembers(refset);
                 });
               };
@@ -413,7 +443,7 @@ tsApp
 
               // Unassign refset from user
               $scope.unassign = function(refset, userName) {
-                $scope.performWorkflowAction(refset, "UNASSIGN", userName);
+                $scope.performWorkflowAction(refset, 'UNASSIGN', userName);
               }
 
               // Performs a workflow action
@@ -473,7 +503,7 @@ tsApp
                 // Success
                 function(data) {
                   if (data > 0 && data < 101) {
-                    window.alert("Progress is " + data + " % complete.");
+                    window.alert('Progress is ' + data + ' % complete.');
                   }
                   $scope.refsetLookupProgress[refset.id] = data;
                 });
@@ -485,11 +515,11 @@ tsApp
                   return $sce.trustAsHtml(refset.notes
                     .sort(utilService.sort_by('lastModified', -1))[0].value);
                 }
-                return $sce.trustAsHtml("");
+                return $sce.trustAsHtml('');
               }
 
               // Initialize if project setting isn't used
-              if ($scope.value == 'PREVIEW' || $scope.value == 'PUBLISHED') {
+              if ($scope.value == 'BETA' || $scope.value == 'PUBLISHED') {
                 $scope.getRefsets();
               }
 
@@ -499,7 +529,7 @@ tsApp
 
               // Definition clauses modal
               $scope.openDefinitionClausesModal = function(lrefset, lvalue) {
-                console.debug("openDefinitionClausesModal ", lrefset, lvalue);
+                console.debug('openDefinitionClausesModal ', lrefset, lvalue);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/definitionClauses.html',
@@ -526,7 +556,7 @@ tsApp
               // Definition clauses controller
               var DefinitionClausesModalCtrl = function($scope, $uibModalInstance, $sce, refset,
                 value) {
-                console.debug("Entered definition clauses modal control", refset, value);
+                console.debug('Entered definition clauses modal control', refset, value);
 
                 $scope.errors = [];
 
@@ -538,11 +568,11 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.pagedClauses = [];
                 $scope.paging = {};
-                $scope.paging["clauses"] = {
+                $scope.paging['clauses'] = {
                   page : 1,
-                  filter : "",
-                  typeFilter : "",
-                  sortField : "lastModified",
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
                   ascending : true
                 }
 
@@ -605,7 +635,7 @@ tsApp
 
               // Notes modal
               $scope.openNotesModal = function(lobject, ltype) {
-                console.debug("openNotesModal ", lobject, ltype);
+                console.debug('openNotesModal ', lobject, ltype);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/notes.html',
@@ -635,7 +665,7 @@ tsApp
               // Notes controller
               var NotesModalCtrl = function($scope, $uibModalInstance, $sce, object, type,
                 tinymceOptions) {
-                console.debug("Entered notes modal control", object, type);
+                console.debug('Entered notes modal control', object, type);
 
                 $scope.errors = [];
 
@@ -648,11 +678,11 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.pagedNotes = [];
                 $scope.paging = {};
-                $scope.paging["notes"] = {
+                $scope.paging['notes'] = {
                   page : 1,
-                  filter : "",
-                  typeFilter : "",
-                  sortField : "lastModified",
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
                   ascending : true
                 }
 
@@ -775,7 +805,7 @@ tsApp
 
               // Clone Refset modal
               $scope.openCloneRefsetModal = function(lrefset) {
-                console.debug("cloneRefsetModal ", lrefset);
+                console.debug('cloneRefsetModal ', lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
@@ -805,7 +835,7 @@ tsApp
               // Clone Refset controller
               var CloneRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 projects) {
-                console.debug("Entered clone refset modal control", refset, projects);
+                console.debug('Entered clone refset modal control', refset, projects);
 
                 $scope.action = 'Clone';
                 $scope.errors = [];
@@ -819,7 +849,7 @@ tsApp
                 $scope.submitRefset = function(refset) {
 
                   if (!refset.project) {
-                    $scope.errors[0] = "A project must be chosen from the picklist.";
+                    $scope.errors[0] = 'A project must be chosen from the picklist.';
                     return;
                   }
                   // validate refset before cloning it
@@ -836,7 +866,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -870,7 +900,7 @@ tsApp
 
               // Import/Export modal
               $scope.openImportExportModal = function(lrefset, loperation, ltype) {
-                console.debug("exportModal ", lrefset);
+                console.debug('exportModal ', lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/importExport.html',
@@ -906,7 +936,7 @@ tsApp
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, refset, operation,
                 type, ioHandlers) {
-                console.debug("Entered import export modal control", refset.id, ioHandlers,
+                console.debug('Entered import export modal control', refset.id, ioHandlers,
                   operation, type);
 
                 $scope.refset = refset;
@@ -1032,7 +1062,7 @@ tsApp
                     refsetService.fireRefsetChanged($scope.refset);
                   });
                 }
-                if (refset.stagingType == 'PREVIEW') {
+                if (refset.stagingType == 'BETA') {
                   releaseService.cancelRefsetRelease($scope.refset.id).then(
                   // Success
                   function() {
@@ -1044,7 +1074,7 @@ tsApp
               // Release Process modal
               $scope.openReleaseProcessModal = function(lrefset) {
 
-                console.debug("releaseProcessModal ", lrefset);
+                console.debug('releaseProcessModal ', lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/release.html',
@@ -1075,7 +1105,7 @@ tsApp
               var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers,
                 utilService) {
 
-                console.debug("Entered release process modal", refset.id, ioHandlers);
+                console.debug('Entered release process modal', refset.id, ioHandlers);
 
                 $scope.errors = [];
                 $scope.refset = refset;
@@ -1089,7 +1119,7 @@ tsApp
                   opened : false
                 };
 
-                if (refset.stagingType == 'PREVIEW') {
+                if (refset.stagingType == 'BETA') {
                   releaseService.resumeRelease(refset.id).then(
                   // Success
                   function(data) {
@@ -1134,14 +1164,14 @@ tsApp
                   });
                 };
 
-                $scope.previewRefsetRelease = function(refset) {
+                $scope.betaRefsetRelease = function(refset) {
 
-                  releaseService.previewRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
+                  releaseService.betaRefsetRelease(refset.id, $scope.selectedIoHandler.id).then(
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
                     $uibModalInstance.close($scope.stagedRefset);
-                    alert("The PREVIEW refset has been added .");
+                    alert('The BETA refset has been added .');
                   },
                   // Error
                   function(data) {
@@ -1193,7 +1223,7 @@ tsApp
 
               // Assign refset modal
               $scope.openAssignRefsetModal = function(lrefset, laction) {
-                console.debug("openAssignRefsetModal ", lrefset, laction);
+                console.debug('openAssignRefsetModal ', lrefset, laction);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/assignRefset.html',
@@ -1219,7 +1249,7 @@ tsApp
                       return $scope.projects.role;
                     },
                     tinymceOptions : function() {
-                      return utilService.inymceOptions;
+                      return utilService.tinymceOptions;
                     }
                   }
 
@@ -1236,7 +1266,7 @@ tsApp
               var AssignRefsetModalCtrl = function($scope, $uibModalInstance, $sce, refset, action,
                 currentUserName, assignedUsers, project, role, tinymceOptions) {
 
-                console.debug("Entered assign refset modal control", assignedUsers, project.id);
+                console.debug('Entered assign refset modal control', assignedUsers, project.id);
 
                 $scope.refset = refset;
                 $scope.action = action;
@@ -1256,7 +1286,7 @@ tsApp
 
                 $scope.assignRefset = function() {
                   if (!$scope.userName) {
-                    $scope.errors[0] = "The user must be selected. ";
+                    $scope.errors[0] = 'The user must be selected. ';
                     return;
                   }
 
@@ -1343,7 +1373,7 @@ tsApp
 
               // Add Refset modal
               $scope.openAddRefsetModal = function() {
-                console.debug("openAddRefsetModal ");
+                console.debug('openAddRefsetModal ');
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
@@ -1369,7 +1399,7 @@ tsApp
               // Add Refset controller
               var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project) {
 
-                console.debug("Entered add refset modal control", metadata);
+                console.debug('Entered add refset modal control', metadata);
 
                 $scope.action = 'Add';
                 $scope.errors = [];
@@ -1410,7 +1440,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -1447,7 +1477,7 @@ tsApp
               // Edit refset modal
               $scope.openEditRefsetModal = function(lrefset) {
 
-                console.debug("openEditRefsetModal ");
+                console.debug('openEditRefsetModal ');
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/editRefset.html',
@@ -1477,7 +1507,7 @@ tsApp
               var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
                 project) {
 
-                console.debug("Entered edit refset modal control");
+                console.debug('Entered edit refset modal control');
 
                 $scope.action = 'Edit';
                 $scope.errors = [];
@@ -1507,7 +1537,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -1519,7 +1549,7 @@ tsApp
                       // Success - update refset
                       function(data) {
                         if (refset.definition != $scope.originalDefinition) {
-                          $scope.error = "Definition is not allowed to change with refset edit.";
+                          $scope.error = 'Definition is not allowed to change with refset edit.';
                         } else {
                           $uibModalInstance.close(refset);
                         }
@@ -1547,7 +1577,7 @@ tsApp
 
               $scope.openAddMemberModal = function(lrefset) {
 
-                console.debug("openAddMemberModal ", lrefset);
+                console.debug('openAddMemberModal ', lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/addMember.html',
@@ -1578,19 +1608,21 @@ tsApp
               var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset,
                 project) {
 
-                console.debug("Entered add member modal control");
+                console.debug('Entered add member modal control');
                 $scope.pageSize = 10;
                 $scope.errors = [];
                 $scope.searchResults = null;
                 $scope.data = {
                   concept : null,
-                  descriptionTypes : metadata.descriptionTypes
+                  descriptionTypes : metadata.descriptionTypes,
+                  terminology : refset.terminology,
+                  version : refset.version
                 };
                 $scope.pageSize = 10;
                 $scope.paging = {};
-                $scope.paging["search"] = {
+                $scope.paging['search'] = {
                   page : 1,
-                  filter : "",
+                  filter : '',
                   sortField : null,
                   ascending : null
                 }
@@ -1610,8 +1642,6 @@ tsApp
                     conceptName : concept.name,
                     conceptActive : concept.active,
                     memberType : $scope.memberType,
-                    terminology : refset.terminology,
-                    version : refset.version,
                     moduleId : refset.moduleId,
                   };
                   member.refsetId = refset.id;
@@ -1679,18 +1709,18 @@ tsApp
                 $scope.getSearchResults = function(search, clearPaging) {
 
                   if (clearPaging) {
-                    $scope.paging["search"].page = 1;
+                    $scope.paging['search'].page = 1;
                   }
 
                   if (!search) {
-                    $scope.errors[0] = "The search field cannot be empty. ";
+                    $scope.errors[0] = 'The search field cannot be empty. ';
                     return;
                   }
                   // clear data structures
                   $scope.errors = [];
 
                   var pfs = {
-                    startIndex : ($scope.paging["search"].page - 1) * $scope.pageSize,
+                    startIndex : ($scope.paging['search'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
                     sortField : null,
                     ascending : null,
@@ -1766,7 +1796,7 @@ tsApp
               var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset, definition,
                 paging, metadata) {
 
-                console.debug("Entered migration modal control");
+                console.debug('Entered migration modal control');
 
                 // set up variables
                 $scope.refset = refset;
@@ -1828,13 +1858,13 @@ tsApp
                   });
                 };
 
-                // Load "old regular members" with paging
+                // Load 'old regular members' with paging
                 $scope.getOldRegularMembers = function() {
                   var pfs = {
-                    startIndex : ($scope.paging["oldRegularMembers"].page - 1) * $scope.pageSize,
+                    startIndex : ($scope.paging['oldRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
                     sortField : null,
-                    queryRestriction : $scope.paging["oldRegularMembers"].filter != undefined ? $scope.paging["oldRegularMembers"].filter
+                    queryRestriction : $scope.paging['oldRegularMembers'].filter != undefined ? $scope.paging['oldRegularMembers'].filter
                       : null
                   };
                   refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
@@ -1850,13 +1880,13 @@ tsApp
                   });
                 };
 
-                // Load "new regular members" with paging
+                // Load 'new regular members' with paging
                 $scope.getNewRegularMembers = function() {
                   var pfs = {
-                    startIndex : ($scope.paging["newRegularMembers"].page - 1) * $scope.pageSize,
+                    startIndex : ($scope.paging['newRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
                     sortField : null,
-                    queryRestriction : $scope.paging["newRegularMembers"].filter != undefined ? $scope.paging["newRegularMembers"].filter
+                    queryRestriction : $scope.paging['newRegularMembers'].filter != undefined ? $scope.paging['newRegularMembers'].filter
                       : null
                   };
                   refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
@@ -1872,13 +1902,13 @@ tsApp
                   });
                 };
 
-                // Load "members in common" with paging
+                // Load 'members in common' with paging
                 $scope.findMembersInCommon = function() {
                   var pfs = {
-                    startIndex : ($scope.paging["membersInCommon"].page - 1) * $scope.pageSize,
+                    startIndex : ($scope.paging['membersInCommon'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
                     sortField : null,
-                    queryRestriction : $scope.paging["membersInCommon"].filter != undefined ? $scope.paging["membersInCommon"].filter
+                    queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
                   };
                   refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(
@@ -2134,7 +2164,7 @@ tsApp
                 // Used for styling - coordinated with css file
                 $scope.getMemberStyle = function(member) {
                   if (member.memberType == 'MEMBER') {
-                    return "";
+                    return '';
                   }
                   return member.memberType.replace('_STAGED', '');
                 }
@@ -2166,7 +2196,7 @@ tsApp
 
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
-                console.debug("Open feedbackModal ", lrefset);
+                console.debug('Open feedbackModal ', lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/feedback.html',
@@ -2192,7 +2222,7 @@ tsApp
 
               // Feedback controller
               var FeedbackModalCtrl = function($scope, $uibModalInstance, refset, tinymceOptions) {
-                console.debug("Entered feedback modal control", refset);
+                console.debug('Entered feedback modal control', refset);
 
                 $scope.errors = [];
                 $scope.refset = JSON.parse(JSON.stringify(refset));
@@ -2201,19 +2231,19 @@ tsApp
                 $scope.addFeedback = function(refset, name, email, message) {
 
                   if (message == null || message == undefined || message === '') {
-                    window.alert("The message cannot be empty. ");
+                    window.alert('The message cannot be empty. ');
                     return;
                   }
 
                   if (name == null || name == undefined || name === '' || email == null
                     || email == undefined || email === '') {
-                    window.alert("Name and email must be provided.");
+                    window.alert('Name and email must be provided.');
                     return;
                   }
 
                   if (!validateEmail(email)) {
                     window
-                      .alert("Invalid email address provided (e.g. should be like someone@example.com)");
+                      .alert('Invalid email address provided (e.g. should be like someone@example.com)');
                     return;
                   }
 

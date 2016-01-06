@@ -270,20 +270,24 @@ public interface TranslationService extends RefsetService {
    * Adds the language refset member.
    *
    * @param member the member
+   * @param terminology the terminology, needed because member doesn't carry
+   *          this, passed in from the corresponding refset
    * @return the language refset member
    * @throws Exception the exception
    */
   public LanguageRefsetMember addLanguageRefsetMember(
-    LanguageRefsetMember member) throws Exception;
+    LanguageRefsetMember member, String terminology) throws Exception;
 
   /**
    * Update language refset member.
    *
    * @param member the member
+   * @param terminology the terminology, needed because member doesn't carry
+   *          this, passed in from the corresponding refset
    * @throws Exception the exception
    */
-  public void updateLanguageRefsetMember(LanguageRefsetMember member)
-    throws Exception;
+  public void updateLanguageRefsetMember(LanguageRefsetMember member,
+    String terminology) throws Exception;
 
   /**
    * Removes the language refset member.

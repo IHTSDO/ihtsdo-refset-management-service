@@ -39,6 +39,7 @@ import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
 import org.ihtsdo.otf.refset.rest.client.WorkflowClientRest;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
+import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -49,9 +50,6 @@ import org.junit.Test;
  * Test case for refset.
  */
 public class WorkflowTest {
-
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
 
   /** The adminAuthToken auth token. */
   protected static String adminAuthToken;
@@ -152,7 +150,6 @@ public class WorkflowTest {
   @After
   public void teardown() throws Exception {
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -297,6 +294,13 @@ public class WorkflowTest {
     return project;
   }
 
+  /**
+   * Removes the project.
+   *
+   * @param project the project
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
   private void removeProject(Project project) throws Exception {
     ProjectService service = new ProjectServiceJpa();
 
@@ -331,7 +335,7 @@ public class WorkflowTest {
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
     // Nothing returned to start with
-    RefsetList assignedRefsets =
+    TrackingRecordList assignedRefsets =
         workflowService.findAllAssignedRefsets(project.getId(), null,
             adminAuthToken);
     assertEquals(0, availableRefsets.getCount());
@@ -610,7 +614,6 @@ public class WorkflowTest {
    * @param refsetId the refset id
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
     if (assignNames && backgroundLookup) {
       // Ensure that all lookupNames routines completed

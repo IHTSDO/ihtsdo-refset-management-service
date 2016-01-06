@@ -522,7 +522,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Antibiotic measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<58427002 | Antibiotic measurement (procedure) |
@@ -535,7 +535,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Ampicillin measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<105070004 | Ampicillin measurement (procedure) |
@@ -561,7 +561,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Pneumonia reference set reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       // START: <<233604007 | Pneumonia (disorder) | + !<<78895009 |
@@ -582,7 +582,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Antibiotic measurement reference set", null, 0,
               "US1000124", Refset.Type.INTENSIONAL, project3, "", "1000124",
               "731000124108", reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<58427002 | Antibiotic measurement (procedure) |",
@@ -593,7 +593,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Azole anitfungal reference set", null, 0, "US1000124",
               Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
               reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<373236000 | Azole antifungal (substance) |",
@@ -604,7 +604,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeRefset("Polyderma reference set", null, 0, "US1000124",
               Refset.Type.INTENSIONAL, project3, "", "1000124", "731000124108",
               reviewer3);
-      refset.setWorkflowStatus(WorkflowStatus.PREVIEW);
+      refset.setWorkflowStatus(WorkflowStatus.BETA);
       new RefsetServiceRestImpl()
           .updateRefset(refset, reviewer3.getAuthToken());
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
@@ -620,6 +620,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       TranslationJpa translation =
           makeTranslation("Danish language reference set", "554461000005103",
               refset, project3, 20, "INT", "da", reviewer3);
+      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      new TranslationServiceRestImpl().updateTranslation(translation,
+          reviewer3.getAuthToken());
+
+      // Make dutch refset and translation
+      refset =
+          makeTranslationRefset("Netherlands Translation scope reference set",
+              22, "INT", project3, "31000146106", "1000005", "11000146104",
+              reviewer3);
+
+      // Make dutch translation
+      translation =
+          makeTranslation("Netherlands Dutch language reference set",
+              "31000146106", refset, project3, 22, "INT", "da", reviewer3);
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
       new TranslationServiceRestImpl().updateTranslation(translation,
           reviewer3.getAuthToken());
@@ -1016,12 +1030,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setPublishable(true);
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
+    translation.setVersion(refset.getVersion());
     translation.setTerminologyId(terminologyId);
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    translation.setVersion(refset.getVersion());
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
-
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();
     ValidationServiceRest validation = new ValidationServiceRestImpl();
@@ -1073,8 +1086,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // completes
       createdTranslations.add(translation.getId());
     }
-    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-        translation.getId(), auth.getAuthToken());
+    final TranslationJpa retval =
+        (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
+            translation.getId(), auth.getAuthToken());
+    retval.setSpellingDictionary(null);
+    retval.setPhraseMemory(null);
+    return retval;
   }
 
   /**

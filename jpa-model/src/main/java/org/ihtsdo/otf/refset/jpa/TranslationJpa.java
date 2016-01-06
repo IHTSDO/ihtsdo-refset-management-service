@@ -67,6 +67,14 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @XmlRootElement(name = "translation")
 public class TranslationJpa extends AbstractComponent implements Translation {
 
+  /** The terminology. */
+  @Column(nullable = false)
+  private String terminology;
+
+  /** The version. */
+  @Column(nullable = false)
+  private String version;
+
   /** The name. */
   @Column(nullable = false)
   private String name;
@@ -99,6 +107,14 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /** The provisional flag. */
   @Column(nullable = false)
   private boolean provisional;
+
+  /** The spelling dictionary empty. */
+  @Column(nullable = false)
+  private boolean spellingDictionaryEmpty = true;
+
+  /** The phrase memory empty. */
+  @Column(nullable = false)
+  private boolean phraseMemoryEmpty = true;
 
   /** The in publication process. */
   @Column(nullable = false)
@@ -159,10 +175,14 @@ public class TranslationJpa extends AbstractComponent implements Translation {
    */
   public TranslationJpa(Translation translation) {
     super(translation);
+    terminology = translation.getTerminology();
+    version = translation.getVersion();
     name = translation.getName();
     description = translation.getDescription();
     isPublic = translation.isPublic();
     provisional = translation.isProvisional();
+    spellingDictionaryEmpty = translation.isSpellingDictionaryEmpty();
+    phraseMemoryEmpty = translation.isPhraseMemoryEmpty();
     inPublicationProcess = translation.isInPublicationProcess();
     lookupInProgress = translation.isLookupInProgress();
     stagingType = translation.getStagingType();
@@ -235,6 +255,28 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setProvisional(boolean provisional) {
     this.provisional = provisional;
+  }
+
+  @Override
+  public boolean isSpellingDictionaryEmpty() {
+    return spellingDictionaryEmpty;
+  }
+
+  /* see superclass */
+  @Override
+  public void setSpellingDictionaryEmpty(boolean spellingDictionaryEmpty) {
+    this.spellingDictionaryEmpty = spellingDictionaryEmpty;
+  }
+
+  @Override
+  public boolean isPhraseMemoryEmpty() {
+    return phraseMemoryEmpty;
+  }
+
+  /* see superclass */
+  @Override
+  public void setPhraseMemoryEmpty(boolean phraseMemoryEmpty) {
+    this.phraseMemoryEmpty = phraseMemoryEmpty;
   }
 
   /* see superclass */
@@ -478,6 +520,28 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     this.notes = notes;
   }
 
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getTerminology() {
+    return terminology;
+  }
+
+  @Override
+  public void setTerminology(String terminology) {
+    this.terminology = terminology;
+  }
+
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getVersion() {
+    return version;
+  }
+
+  @Override
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
   /* see superclass */
   @Override
   public int hashCode() {
@@ -490,6 +554,9 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + ((language == null) ? 0 : language.hashCode());
     result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result =
+        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    // not version
     result =
         prime * result + ((stagingType == null) ? 0 : stagingType.hashCode());
     return result;
@@ -528,6 +595,12 @@ public class TranslationJpa extends AbstractComponent implements Translation {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (terminology == null) {
+      if (other.terminology != null)
+        return false;
+    } else if (!terminology.equals(other.terminology))
+      return false;
+    // not version
     return true;
   }
 
@@ -566,39 +639,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   @Override
   public void setPhraseMemory(PhraseMemory phraseMemory) {
     this.phraseMemory = phraseMemory;
-  }
-
-  /* see superclass */
-  @XmlElement
-  @Override
-  public int getSpellingDictionarySize() {
-    return spellingDictionary != null ? spellingDictionary.getEntries().size()
-        : 0;
-  }
-
-  /**
-   * Sets the spelling dictionary size.
-   *
-   * @param size the spelling dictionary size
-   */
-  public void setSpellingDictionarySize(int size) {
-    // n/a - only for JAXB conversion
-  }
-
-  /* see superclass */
-  @XmlElement
-  @Override
-  public int getPhraseMemorySize() {
-    return phraseMemory != null ? phraseMemory.getEntries().size() : 0;
-  }
-
-  /**
-   * Sets the phrase memory size.
-   *
-   * @param size the phrase memory size
-   */
-  public void setPhraseMemorySize(int size) {
-    // n/a - only for JAXB conversion
   }
 
 }

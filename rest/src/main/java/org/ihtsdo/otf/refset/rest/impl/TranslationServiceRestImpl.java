@@ -60,7 +60,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
-import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
@@ -71,7 +70,6 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
-import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -132,11 +130,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/{translationId}/{date}")
-  @ApiOperation(value = "Get translation for id and date", notes = "Gets the translation with the given date.", response = TranslationJpa.class)
+  @ApiOperation(value = "Get translation for id and date", notes = "Gets the translation with the given date", response = TranslationJpa.class)
   public Translation getTranslationRevision(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Translation id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): /" + translationId + " " + date);
@@ -153,7 +151,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation translation =
           translationService.getTranslationRevision(translationId,
               ConfigUtility.DATE_FORMAT.parse(date));
-
+      translationService.handleLazyInit(translation);
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a translation");
@@ -169,12 +167,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/{translationId}/{date}/concepts")
-  @ApiOperation(value = "Finds concepts for translation revision", notes = "Finds concepts for translation with the given date based on pfs parameter and query", response = ConceptListJpa.class)
+  @ApiOperation(value = "Finds concepts for translation revision", notes = "Finds concepts for translation for the specified parameters", response = ConceptListJpa.class)
   public ConceptList findTranslationRevisionConceptsForQuery(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Translation id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
     @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): /" + translationId + " " + date);
@@ -188,8 +186,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       if (!date.matches("([0-9]{8})"))
         throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
 
-      return translationService.findConceptsForTranslationRevision(
-          translationId, ConfigUtility.DATE_FORMAT.parse(date), pfs);
+      final ConceptList list =
+          translationService.findConceptsForTranslationRevision(translationId,
+              ConfigUtility.DATE_FORMAT.parse(date), pfs);
+      for (Concept c : list.getObjects()) {
+        translationService.handleLazyInit(c);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a translation");
       return null;
@@ -206,8 +209,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/{translationId}")
   @ApiOperation(value = "Get translation for id", notes = "Gets the translation for the specified id", response = TranslationJpa.class)
   public Translation getTranslation(
-    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Translation id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -220,7 +223,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       final Translation translation =
           translationService.getTranslation(translationId);
-
+      translationService.handleLazyInit(translation);
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a translation");
@@ -237,8 +240,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Path("/concept/{conceptId}")
   @ApiOperation(value = "Get concept for id", notes = "Gets the concept for the specified id", response = ConceptJpa.class)
   public Concept getConcept(
-    @ApiParam(value = "Concept internal id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Concept id, e.g. 2", required = true) @PathParam("conceptId") Long conceptId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -264,27 +267,27 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translations/{refsetId}")
+  @ApiOperation(value = "Get translations for refset", notes = "Gets the translations associated with the specified refset", response = TranslationListJpa.class)
   public TranslationList getTranslationsForRefset(
-    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): get translations for refset, refsetId:"
             + refsetId);
 
-    final RefsetService refsetService = new RefsetServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the refset",
           UserRole.VIEWER);
 
-      final Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = translationService.getRefset(refsetId);
 
       TranslationList result = new TranslationListJpa();
       final List<Translation> translations = refset.getTranslations();
       for (final Translation t : translations) {
-        t.getDescriptionTypes().size();
-        t.getConcepts().size();
+        translationService.handleLazyInit(t);
       }
       result.setObjects(translations);
       result.setTotalCount(translations.size());
@@ -293,7 +296,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to retrieve a refset");
       return null;
     } finally {
-      refsetService.close();
+      translationService.close();
       securityService.close();
     }
   }
@@ -302,11 +305,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/translations")
-  @ApiOperation(value = "Finds translations", notes = "Finds translations based on pfs parameter and query", response = TranslationListJpa.class)
+  @ApiOperation(value = "Finds translations", notes = "Finds translations for the specified query", response = TranslationListJpa.class)
   public TranslationList findTranslationsForQuery(
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -317,7 +320,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find translations",
           UserRole.VIEWER);
 
-      return translationService.findTranslationsForQuery(query, pfs);
+      final TranslationList list =
+          translationService.findTranslationsForQuery(query, pfs);
+      for (Translation t : list.getObjects()) {
+        translationService.handleLazyInit(t);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve translations ");
       return null;
@@ -332,10 +340,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/add")
-  @ApiOperation(value = "Add new translation", notes = "Creates a new translation", response = TranslationJpa.class)
+  @ApiOperation(value = "Add new translation", notes = "Adds the new translation", response = TranslationJpa.class)
   public Translation addTranslation(
     @ApiParam(value = "Translation, e.g. newTranslation", required = true) TranslationJpa translation,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Translation): /add " + translation);
@@ -386,7 +394,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Update translation", notes = "Updates the specified translation")
   public void updateTranslation(
     @ApiParam(value = "Translation, e.g. existingTranslation", required = true) TranslationJpa translation,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /update " + translation);
@@ -394,12 +402,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeProject(translationService, translation.getProjectId(),
-          securityService, authToken, "update translation", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService, translation.getProjectId(),
+              securityService, authToken, "update translation", UserRole.AUTHOR);
 
       // Update translation
-      translation.setLastModifiedBy(securityService
-          .getUsernameForToken(authToken));
+      translation.setLastModifiedBy(userName);
+      System.out.println("TRANSLATION SPELLING="
+          + translation.getSpellingDictionary());
+      System.out.println("TRANSLATION MEMORY=" + translation.getPhraseMemory());
       translationService.updateTranslation(translation);
 
     } catch (Exception e) {
@@ -418,7 +429,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Remove translation", notes = "Removes the translation with the specified id")
   public void removeTranslation(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Cascade, e.g. true", required = true) @QueryParam("cascade") boolean cascade,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /remove/" + translationId);
@@ -435,26 +447,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
-      // remove the spelling dictionary
-      if (translation.getSpellingDictionary() != null) {
-        translationService.removeSpellingDictionary(translation
-            .getSpellingDictionary().getId());
-      }
-
-      // remove memory entry
-      if (translation.getPhraseMemory() != null) {
-        for (final MemoryEntry entry : translation.getPhraseMemory()
-            .getEntries()) {
-          translationService.removeMemoryEntry(entry.getId());
-        }
-
-        // remove phrase memory
-        translationService.removePhraseMemory(translation.getPhraseMemory()
-            .getId());
-      }
-
       // Create service and configure transaction scope
-      translationService.removeTranslation(translationId, true);
+      translationService.removeTranslation(translationId, cascade);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");
@@ -470,11 +464,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Produces("application/octet-stream")
   @Path("/export")
-  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts for the specified translation.", response = InputStream.class)
+  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts for the specified translation", response = InputStream.class)
   public InputStream exportConcepts(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -519,12 +513,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concepts")
-  @ApiOperation(value = "Finds translation concepts", notes = "Finds translation concepts based on translation id, pfs parameter and query", response = ConceptListJpa.class)
+  @ApiOperation(value = "Finds translation concepts", notes = "Finds translation concepts for the specified parameters", response = ConceptListJpa.class)
   public ConceptList findTranslationConceptsForQuery(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -557,9 +551,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/handlers")
-  @ApiOperation(value = "Get import translation handlers", notes = "Get import translation handlers", response = IoHandlerInfoListJpa.class)
+  @ApiOperation(value = "Get import translation handlers", notes = "Gets the import translation handlers", response = IoHandlerInfoListJpa.class)
   public IoHandlerInfoList getImportTranslationHandlers(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): get import translation handlers:");
@@ -583,9 +577,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/export/handlers")
-  @ApiOperation(value = "Get export translation handlers", notes = "Get export translation handlers", response = IoHandlerInfoListJpa.class)
+  @ApiOperation(value = "Get export translation handlers", notes = "Gets the export translation handlers", response = IoHandlerInfoListJpa.class)
   public IoHandlerInfoList getExportTranslationHandlers(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): get export translation handlers:");
@@ -609,11 +603,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/begin")
-  @ApiOperation(value = "Begin translation concept import", notes = "Begins the import process by validating the translation for import and marking the translation as staged.", response = ValidationResultJpa.class)
+  @ApiOperation(value = "Begin translation concept import", notes = "Begins the import process by validating the translation for import and staging the refset", response = ValidationResultJpa.class)
   public ValidationResult beginImportConcepts(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -684,11 +678,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/resume")
-  @ApiOperation(value = "Resume translation concept import", notes = "Resumes the import process by re-validating the translation for import.", response = ValidationResultJpa.class)
+  @ApiOperation(value = "Resume translation concept import", notes = "Resumes the import process by re-validating the translation for import", response = ValidationResultJpa.class)
   public ValidationResult resumeImportConcepts(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -740,13 +734,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/import/finish")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation.")
+  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation")
   public void finishImportConcepts(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of concepts file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Import handler id, e.g. \"DEFAULT\"", required = true) @QueryParam("handlerId") String ioHandlerInfoId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -811,6 +805,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setPublished(false);
         concept.setName("TBD");
         concept.setActive(true);
+        concept.setTranslation(translation);
         translationService.addConcept(concept);
 
         for (final Description description : concept.getDescriptions()) {
@@ -824,7 +819,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             member.setPublishable(true);
             member.setPublished(false);
             member.setDescriptionId(description.getTerminologyId());
-            translationService.addLanguageRefsetMember(member);
+            translationService.addLanguageRefsetMember(member,
+                translation.getTerminology());
             description.getLanguageRefsetMembers().add(member);
           }
           description.setId(null);
@@ -875,10 +871,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/import/cancel")
-  @ApiOperation(value = "Cancel translation concept import", notes = "Cancels the translation concept import process.")
+  @ApiOperation(value = "Cancel translation concept import", notes = "Cancels the translation concept import process")
   public void cancelImportConcepts(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -925,15 +921,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @PUT
   @Path("/concept/add")
-  @ApiOperation(value = "Add new translation concept", notes = "Creates a new translation concept", response = ConceptJpa.class)
+  @ApiOperation(value = "Add new translation concept", notes = "Adds the new translation concept", response = ConceptJpa.class)
   public Concept addTranslationConcept(
     @ApiParam(value = "Concept, e.g. newConcept", required = true) ConceptJpa concept,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (concept): /concept/add " + concept);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
@@ -961,6 +957,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Add translation concept
       concept.setLastModifiedBy(userName);
+      concept.setTranslation(translation);
       final Concept newConcept = translationService.addConcept(concept);
 
       // Add descriptions
@@ -975,7 +972,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             .getLanguageRefsetMembers()) {
           member.setDescriptionId(newDescription.getTerminologyId());
           member.setLastModifiedBy(userName);
-          translationService.addLanguageRefsetMember(member);
+          translationService.addLanguageRefsetMember(member,
+              translation.getTerminology());
           description.getLanguageRefsetMembers().add(member);
         }
       }
@@ -996,10 +994,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concept/update")
-  @ApiOperation(value = "Update concept", notes = "Updates the specified concept")
+  @ApiOperation(value = "Update concept", notes = "Updates the specified concept. This also synchronizes the definitions and language refset members")
   public void updateTranslationConcept(
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /concept/update " + concept);
@@ -1018,6 +1016,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Get translation reference
       final Translation translation =
           translationService.getTranslation(concept.getTranslationId());
+      // so translation is available lower down
+      concept.setTranslation(translation);
 
       // Add descriptions/languages that haven't been added yet.
       for (final Description desc : concept.getDescriptions()) {
@@ -1030,9 +1030,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         desc.setPublishable(true);
         desc.setPublished(false);
         desc.setModuleId(translation.getModuleId());
-        // leave terminologyId as-is
-        desc.setTerminology(translation.getTerminology());
-        desc.setVersion(translation.getVersion());
 
         // new
         if (desc.getId() == null) {
@@ -1048,11 +1045,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             member.setPublishable(true);
             member.setPublished(false);
             member.setRefsetId(translation.getTerminologyId());
-            member.setTerminology("N/A");
-            member.setVersion("N/A");
             member.setDescriptionId(desc.getTerminologyId());
             member.setLastModifiedBy(userName);
-            translationService.addLanguageRefsetMember(member);
+            translationService.addLanguageRefsetMember(member,
+                translation.getTerminology());
           }
         }
       }
@@ -1082,7 +1078,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
                 member.getAcceptabilityId())) {
               oldMember.setAcceptabilityId(member.getAcceptabilityId());
               oldMember.setLastModifiedBy(userName);
-              translationService.updateLanguageRefsetMember(member);
+              translationService.updateLanguageRefsetMember(member,
+                  translation.getTerminology());
             }
 
             // update the description in case other fields changed
@@ -1128,7 +1125,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Remove translation concept", notes = "Removes the translation concept with the specified id")
   public void removeTranslationConcept(
     @ApiParam(value = "Concept id, e.g. 3", required = true) @PathParam("conceptId") Long conceptId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation concept): /concept/remove/"
@@ -1167,9 +1164,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translations/spellingdictionary")
-  @ApiOperation(value = "Get translations with spelling dictionary", notes = "Get translations with spelling dictionary", response = TranslationListJpa.class)
+  @ApiOperation(value = "Get translations with spelling dictionary", notes = "Gets translations having a spelling dictionary", response = TranslationListJpa.class)
   public TranslationList getTranslationsWithSpellingDictionary(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /translations/spellingdictionary");
@@ -1186,6 +1183,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (final Translation translation : allTranslations.getObjects()) {
         if (!translation.getSpellingDictionary().getEntries().isEmpty()) {
           translationsWithSpellingDictionary.addObject(translation);
+          translationService.handleLazyInit(translation);
         }
       }
 
@@ -1203,11 +1201,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/spelling/copy")
-  @ApiOperation(value = "Copy spelling dictionary from one translation to another", notes = "Copy spelling dictionary from one translation to another")
+  @ApiOperation(value = "Copy spelling dictionary", notes = "Copies spelling dictionary from one translation to another")
   public void copySpellingDictionary(
     @ApiParam(value = "from translation id, e.g. 3", required = true) @QueryParam("fromTranslationId") Long fromTranslationId,
     @ApiParam(value = "to translation id, e.g. 3", required = true) @QueryParam("toTranslationId") Long toTranslationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /spelling/copy/" + fromTranslationId
@@ -1261,6 +1259,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       toEntries.addAll(fromEntries);
       toSpelling.setEntries(toEntries);
 
+      final SpellingCorrectionHandler handler =
+          getSpellingCorrectionHandler(toTranslation);
+      handler.reindex(toSpelling.getEntries(), false);
+
       // Create service and configure transaction scope
       translationService.updateSpellingDictionary(toSpelling);
 
@@ -1279,11 +1281,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @PUT
   @Consumes("text/plain")
   @Path("/spelling/add")
-  @ApiOperation(value = "Add new entry to the spelling dictionary", notes = "Add new entry to the spelling dictionary")
+  @ApiOperation(value = "Add spelling entry", notes = "Adds the new entry to the spelling dictionary for the specified translation")
   public void addSpellingDictionaryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "entry, e.g. word", required = true) String entry,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Spelling Entry): /spelling/add/" + translationId
@@ -1315,6 +1317,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
+      translationService.updateSpellingDictionary(spelling);
+
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to add a spelling entry");
     } finally {
@@ -1326,17 +1336,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/spelling/add/batch")
-  @ApiOperation(value = "Add a batch of entries to the spelling dictionary", notes = "Add a batch of entries to the spelling dictionary")
+  @ApiOperation(value = "Add batch spelling entries", notes = "Adds a batch of entries to the spelling dictionary for the specified translation")
   public void addBatchSpellingDictionaryEntries(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList entries,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call Post (Add Batch Spelling Entries): /spelling/add/batch "
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
 
     try {
       Translation translation =
@@ -1368,6 +1378,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to add multiple spelling entries");
     } finally {
@@ -1380,11 +1396,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/spelling/remove")
-  @ApiOperation(value = "Remove entry from spelling dictionary", notes = "Removes an entry from translation's spelling dictionary")
+  @ApiOperation(value = "Remove spelling entry", notes = "Removes the entry from the spelling dictionary for the specified translation")
   public void removeSpellingDictionaryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Spelling Entry): /spelling/remove/"
@@ -1417,6 +1433,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       handler.reindex(spelling.getEntries(), false);
       translationService.updateSpellingDictionary(spelling);
 
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1430,10 +1452,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/spelling/clear")
-  @ApiOperation(value = "Clear spelling dictionary entries", notes = "Removes all spelling dictionary entries for this translation")
+  @ApiOperation(value = "Clear spelling entries", notes = "Removes all spelling dictionary entries for the specified translation")
   public void clearSpellingDictionary(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /spelling/clear/" + translationId);
@@ -1461,8 +1483,20 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
+
+        final SpellingCorrectionHandler handler =
+            getSpellingCorrectionHandler(translation);
+        handler.reindex(spelling.getEntries(), false);
+
         translationService.updateSpellingDictionary(spelling);
       }
+
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to remove all spelling dictionary entries");
     } finally {
@@ -1475,9 +1509,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translations/phrasememory")
-  @ApiOperation(value = "Get translations with phrase memory", notes = "Get translations with phrase memory", response = TranslationListJpa.class)
+  @ApiOperation(value = "Get translations with phrase memory", notes = "Gets translations having a phrase memory", response = TranslationListJpa.class)
   public TranslationList findTranslationsWithPhraseMemory(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /translations/phrasememory");
@@ -1494,6 +1528,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (final Translation translation : allTranslations.getObjects()) {
         if (!translation.getPhraseMemory().getEntries().isEmpty()) {
           translationsWithPhraseMemory.addObject(translation);
+          translationService.handleLazyInit(translation);
         }
       }
 
@@ -1511,11 +1546,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/phrasememory/copy")
-  @ApiOperation(value = "Copy phrase memory from one translation to another", notes = "Copy phrase memory from one translation to another")
+  @ApiOperation(value = "Copy phrase memory", notes = "Copies the phrase memory from one translation to another")
   public void copyPhraseMemory(
     @ApiParam(value = "from translation id, e.g. 3", required = true) @QueryParam("fromTranslationId") Long fromTranslationId,
     @ApiParam(value = "to translation id, e.g. 3", required = true) @QueryParam("toTranslationId") Long toTranslationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /phrasememory/copy/"
@@ -1575,12 +1610,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @PUT
   @Consumes("text/plain")
   @Path("/phrasememory/add")
-  @ApiOperation(value = "Add new entry to phrase memory", notes = "Add new entry to the phrase memory", response = MemoryEntryJpa.class)
+  @ApiOperation(value = "Add memory entry", notes = "Adds the new entry to the phrase memory for the specified translation", response = MemoryEntryJpa.class)
   public MemoryEntry addPhraseMemoryEntry(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "name, e.g. phrase", required = true) @QueryParam("name") String name,
     @ApiParam(value = "translated name, e.g. translation1", required = true) String translatedName,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Translation): /phrasememory/add/" + translationId
@@ -1601,6 +1636,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       entry.setName(name);
       entry.setTranslatedName(translatedName);
       entry.setPhraseMemory(translation.getPhraseMemory());
+
+      if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
+          .getEntries().isEmpty()) {
+        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
       // Create service and configure transaction scope
       return translationService.addMemoryEntry(entry);
     } catch (Exception e) {
@@ -1616,12 +1659,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/phrasememory/remove")
-  @ApiOperation(value = "Remove phrase memory entry", notes = "Removes the phrase memory entry for this translation")
+  @ApiOperation(value = "Remove memory entry", notes = "Removes the phrase memory entry for the specified translation")
   public void removePhraseMemoryEntry(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Name, e.g. phrase", required = true) @QueryParam("name") String name,
     @ApiParam(value = "Translated name, e.g. phrase", required = true) @QueryParam("translatedName") String translatedName,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /phrasememory/remove/name "
@@ -1646,6 +1689,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (MemoryEntry entry : entries) {
         translationService.removeMemoryEntry(entry.getId());
       }
+
+      if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
+          .getEntries().isEmpty()) {
+        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
     } finally {
@@ -1660,11 +1711,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/phrasememory/suggest")
-  @ApiOperation(value = "Get translation suggestions", notes = "Returns list of suggested translated name", response = StringList.class)
+  @ApiOperation(value = "Get translation suggestions", notes = "Gets list of suggested translated names for the specified name", response = StringList.class)
   public StringList suggestTranslation(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "name, e.g. name", required = true) @QueryParam("name") String name,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Spelling Entry): /translation/phrasememory/suggest"
@@ -1701,11 +1752,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/phrasememory/suggest/batch")
-  @ApiOperation(value = "Get batch translation sugestions", notes = "Returns map containing a list (values) of suggested replacements from phrase memory per phrase", response = KeyValuesMap.class)
+  @ApiOperation(value = "Get batch translation sugestions", notes = "Gets a batch of suggested translated names for the specified names", response = KeyValuesMap.class)
   public KeyValuesMap suggestBatchTranslation(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList phrases,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger
         .getLogger(getClass())
@@ -1713,8 +1764,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "RESTful call POST (Batch Translation Suggestions): /phrasememory/suggest/batch/"
                 + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
-
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       Translation translation =
@@ -1764,10 +1814,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/phrasememory/clear")
-  @ApiOperation(value = "Clear phrase memory entries", notes = "Removes all phrase memory entries for this translation")
+  @ApiOperation(value = "Clear phrase memory", notes = "Removes all phrase memory entries for the specified translation")
   public void clearPhraseMemory(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /phraseMemory/clear/"
@@ -1803,12 +1853,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/spelling/import")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import a spelling entries", notes = "Imports a spelling entries onto an empty translation.")
+  @ApiOperation(value = "Import spelling entries", notes = "Imports spelling entries onto an empty dictionary for the specified translation")
   public void importSpellingDictionary(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of definition file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (SpellingEntries): /spelling/import" + translationId);
@@ -1858,10 +1908,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Produces("application/octet-stream")
   @Path("/spelling/export")
-  @ApiOperation(value = "Export translation concepts", notes = "Exports the concepts as InputStream for the specified translation.", response = String.class)
+  @ApiOperation(value = "Export spelling dictionary", notes = "Exports the spelling dictionary for the specified translation", response = InputStream.class)
   public InputStream exportSpellingDictionary(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -1909,12 +1959,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/phrasememory/import")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Import Phrase Memory", notes = "Imports the phrase memory into the specified translation")
+  @ApiOperation(value = "Import phrase memory", notes = "Imports the phrase memory into the specified translation")
   public void importPhraseMemory(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of phrase memory file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /import/phrasememory "
@@ -1967,16 +2017,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Produces("application/octet-stream")
   @Path("/phrasememory/export")
-  @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation.", response = InputStream.class)
+  @ApiOperation(value = "Export phrase memory", notes = "Exports the phrase memory for the specified translation", response = InputStream.class)
   public InputStream exportPhraseMemory(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /export/phrasememory "
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       final Translation translation =
@@ -2009,18 +2059,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/spelling/suggest")
-  @ApiOperation(value = "Get spelling suggestions", notes = "Returns list of suggested replacements from dictionary", response = StringList.class)
+  @ApiOperation(value = "Get spelling suggestions", notes = "Gets a list of suggestions from the spelling dictionary for the specified translation and entry", response = StringList.class)
   public StringList suggestSpelling(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "entry, e.g. word", required = true) @QueryParam("entry") String entry,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call PUT (Spelling Entry): /spelling/suggest/" + translationId
             + " " + entry);
 
     final TranslationService translationService = new TranslationServiceJpa();
-
     try {
       // Load translation
       final Translation translation =
@@ -2057,18 +2106,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Override
   @Path("/spelling/suggest/batch")
-  @ApiOperation(value = "Get batch spelling suggestions", notes = "Returns map containing a list (values) of suggested replacements from dictionary per term (key)", response = KeyValuesMap.class)
+  @ApiOperation(value = "Get batch spelling suggestions", notes = "Gets a batch of lists of suggestions from the spelling dictionary for the specified translation and entries", response = KeyValuesMap.class)
   public KeyValuesMap suggestBatchSpelling(
     @ApiParam(value = "translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "StringList, e.g. foo bar", required = true) StringList lookupTerms,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Batch Spelling Suggestions): /spelling/suggest/batch/"
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
-
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       Translation translation =
@@ -2111,11 +2159,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/compare")
-  @ApiOperation(value = "Compares two translations", notes = "Compares two translations and returns a reportToken key to the comparison report data.", response = String.class)
+  @ApiOperation(value = "Compare two translations", notes = "Compares two translations and returns a report token key to the comparison report data", response = String.class)
   public String compareTranslations(
     @ApiParam(value = "Translation id 1, e.g. 3", required = true) @QueryParam("translationId1") Long translationId1,
     @ApiParam(value = "Translation id 2, e.g. 4", required = true) @QueryParam("translationId2") Long translationId2,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Translation): compare");
 
@@ -2179,12 +2227,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
   })
   @Path("/common/concepts")
-  @ApiOperation(value = "Finds concepts in common", notes = "Finds concepts in common given a reportToken based on pfs parameter and query", response = ConceptListJpa.class)
+  @ApiOperation(value = "Find concepts in common", notes = "Finds concepts in common for the specified report token and query", response = ConceptListJpa.class)
   public ConceptList findConceptsInCommon(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -2225,10 +2273,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/diff/concepts")
-  @ApiOperation(value = "Returns diff report", notes = "Returns a diff report indicating differences between two translations.", response = ConceptDiffReportJpa.class)
+  @ApiOperation(value = "Get diff report", notes = "Gets a diff report indicating differences between two translations", response = ConceptDiffReportJpa.class)
   public ConceptDiffReport getDiffReport(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(
@@ -2261,10 +2309,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/release/report")
-  @ApiOperation(value = "Releases a report and token", notes = "Deletes a report.")
+  @ApiOperation(value = "Release report token", notes = "Releases the report token and frees up any memory associated with it")
   public void releaseReportToken(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call (Translation): /release/report: " + reportToken);
@@ -2289,11 +2337,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @PUT
   @Path("/add/note")
   @Consumes("text/plain")
-  @ApiOperation(value = "Add a translation note", notes = "Adds a note to the specified translation", response = TranslationNoteJpa.class)
+  @ApiOperation(value = "Add a translation note", notes = "Adds the note to the specified translation", response = TranslationNoteJpa.class)
   public Note addTranslationNote(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Translation): /add/note " + translationId + ", "
@@ -2340,11 +2388,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/remove/note")
-  @ApiOperation(value = "Remove a translation note", notes = "Removes the specified note from its translation")
+  @ApiOperation(value = "Remove a translation note", notes = "Removes the note from the specified translation")
   public void removeTranslationNote(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /remove/note " + translationId
@@ -2388,12 +2436,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @PUT
   @Consumes("text/plain")
   @Path("/concept/add/note")
-  @ApiOperation(value = "Add a concept note", notes = "Adds a note to the translation concept", response = ConceptNoteJpa.class)
+  @ApiOperation(value = "Add a concept note", notes = "Adds the note to the specified translation concept", response = ConceptNoteJpa.class)
   public Note addTranslationConceptNote(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Concept id, e.g. 3", required = true) @QueryParam("conceptId") Long conceptId,
     @ApiParam(value = "The note, e.g. \"this is a sample note\"", required = true) String note,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Translation): /concept/add/note " + translationId
@@ -2447,11 +2495,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/concept/remove/note")
-  @ApiOperation(value = "Remove a concept note", notes = "Removes specified note from its concept.")
+  @ApiOperation(value = "Remove a concept note", notes = "Removes specified note from its concept")
   public void removeTranslationConceptNote(
     @ApiParam(value = "Concept id, e.g. 3", required = true) @QueryParam("conceptId") Long conceptId,
     @ApiParam(value = "Note id, e.g. 3", required = true) @QueryParam("noteId") Long noteId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Translation): /concept/remove/note " + conceptId
@@ -2495,10 +2543,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Produces("text/plain")
   @Path("/lookup/status")
-  @ApiOperation(value = "Get translation lookup progress", notes = "Returns the percentage completed of the translation lookup process.", response = Integer.class)
+  @ApiOperation(value = "Get translation lookup progress", notes = "Gets the percentage completed of the translation lookup process", response = Integer.class)
   public Integer getLookupProgress(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /lookup/status " + translationId);
@@ -2527,10 +2575,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/lookup/start")
-  @ApiOperation(value = "Start lookup of concept names", notes = "Starts a process for looking up concept names and concept active status.")
+  @ApiOperation(value = "Start lookup of concept names", notes = "Starts a process for looking up concept names and concept active status")
   public void startLookupConceptNames(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call GET (Translation): /lookup/start " + translationId);
@@ -2561,9 +2609,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/langpref")
-  @ApiOperation(value = "Get unique language description types", notes = "Returns all unique language description types.", response = LanguageDescriptionTypeListJpa.class)
+  @ApiOperation(value = "Get unique language description types", notes = "Returns all unique language description types, combining standard types, translation types, and user preferences", response = LanguageDescriptionTypeListJpa.class)
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
     Logger.getLogger(getClass()).info(

@@ -36,7 +36,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
  */
 @Entity
 @Table(name = "descriptions", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "terminology", "version", "id"
+    "terminologyId", "id"
 }))
 @Audited
 @XmlRootElement(name = "description")
@@ -259,8 +259,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
       concept = new ConceptJpa();
     }
     concept.setTerminologyId(conceptId);
-    concept.setTerminology(getTerminology());
-    concept.setVersion(getVersion());
   }
 
   /* see superclass */

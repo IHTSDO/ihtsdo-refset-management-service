@@ -354,6 +354,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // Clear contents
     translationService.clearSpellingDictionary(tid, adminAuthToken);
+    translationService = new TranslationClientRest(properties);
 
     // Test SuggestSpelling with empty dictionary
     results = translationService.suggestSpelling(tid, "Word3", adminAuthToken);
@@ -362,7 +363,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    translationService.removeTranslation(tid, adminAuthToken);
+    translationService.removeTranslation(tid, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -439,12 +440,12 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tidOrig);
-    translationService.removeTranslation(tidOrig, adminAuthToken);
+    translationService.removeTranslation(tidOrig, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidNew);
-    translationService.removeTranslation(tidNew, adminAuthToken);
+    translationService.removeTranslation(tidNew, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
@@ -497,35 +498,53 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
     translationService.addSpellingDictionaryEntry(tidTo, "Word2",
         adminAuthToken);
 
-    // Test SuggestSpelling on second dictionary with entry that does not reside
-    // in dictionary
+    // Test SuggestSpelling before the copy operation on both dictionaries
     StringList results =
+        translationService.suggestSpelling(tidFrom, "Word1", adminAuthToken);
+    assertEquals(3, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidFrom, "Word5", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidTo, "Word1", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    results =
         translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
     assertEquals(2, results.getTotalCount());
 
-    // Copy contgents of first dictionary to second dictionary. This does not
+    // Copy contents of first dictionary to second dictionary. This does not
     // replace but rather appends contents of second dictionary
     translationService.copySpellingDictionary(tidFrom, tidTo, adminAuthToken);
 
-    // Test SuggestSpelling with same entry post-copy routine
+    // Verify the From dictionary hasn't changed
+    results =
+        translationService.suggestSpelling(tidFrom, "Word1", adminAuthToken);
+    assertEquals(3, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidFrom, "Word5", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    // Verify the To dictionary has it's old contents and the copied contents
     results =
         translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
     assertEquals(0, results.getTotalCount());
 
-    // Verify original contents still reside in second dictionary by testing an
-    // original entry
     results =
         translationService.suggestSpelling(tidTo, "Word1", adminAuthToken);
     assertEquals(0, results.getTotalCount());
 
     // clean up
     verifyTranslationLookupCompleted(tidFrom);
-    translationService.removeTranslation(tidFrom, adminAuthToken);
+    translationService.removeTranslation(tidFrom, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidTo);
-    translationService.removeTranslation(tidTo, adminAuthToken);
+    translationService.removeTranslation(tidTo, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
@@ -623,7 +642,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    translationService.removeTranslation(tid, adminAuthToken);
+    translationService.removeTranslation(tid, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }

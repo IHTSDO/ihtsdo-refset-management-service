@@ -99,11 +99,12 @@ public interface TranslationServiceRest {
    * Removes the translation.
    *
    * @param translationId the translation id
+   * @param cascade the cascade
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void removeTranslation(Long translationId, String authToken)
-    throws Exception;
+  public void removeTranslation(Long translationId, boolean cascade,
+    String authToken) throws Exception;
 
   /**
    * Export translation.

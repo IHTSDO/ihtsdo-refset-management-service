@@ -94,7 +94,7 @@ public interface ReleaseServiceRest {
     String authToken) throws Exception;
 
   /**
-   * Perform refset preview.
+   * Perform refset beta.
    *
    * @param refsetId the refset id
    * @param ioHandlerId the io handler id
@@ -102,7 +102,7 @@ public interface ReleaseServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset previewRefsetRelease(Long refsetId,
+  public Refset betaRefsetRelease(Long refsetId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**
@@ -150,7 +150,7 @@ public interface ReleaseServiceRest {
     String authToken) throws Exception;
 
   /**
-   * Perform translation preview.
+   * Perform translation beta.
    *
    * @param translationId the translation id
    * @param ioHandlerId the io handler id
@@ -158,7 +158,7 @@ public interface ReleaseServiceRest {
    * @return the translation translation
    * @throws Exception the exception
    */
-  public Translation previewTranslationRelease(Long translationId,
+  public Translation betaTranslationRelease(Long translationId,
     String ioHandlerId, String authToken) throws Exception;
 
   /**

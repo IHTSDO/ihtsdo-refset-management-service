@@ -82,15 +82,17 @@ public interface Refset extends Component, Searchable {
    * Enum of staging types.
    */
   public enum StagingType {
-    /** The import. */
+    /** The import type. */
     IMPORT,
-    /** The migration. */
+
+    /** The migration type. */
     MIGRATION,
 
-    /** The preview. */
-    PREVIEW;
+    /** The beta type. */
+    BETA;
   }
 
+  
   /**
    * Returns the description.
    * 

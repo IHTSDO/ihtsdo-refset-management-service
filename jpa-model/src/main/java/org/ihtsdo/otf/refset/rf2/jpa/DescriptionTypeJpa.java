@@ -30,17 +30,9 @@ public class DescriptionTypeJpa implements DescriptionType {
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
-  /** The terminology. */
-  @Column(nullable = false)
-  private String terminology;
-
   /** The terminology id. */
   @Column(nullable = false)
   private String terminologyId;
-
-  /** The version. */
-  @Column(nullable = false)
-  private String version;
 
   /** The type. */
   @Column(nullable = false)
@@ -80,9 +72,7 @@ public class DescriptionTypeJpa implements DescriptionType {
    */
   public DescriptionTypeJpa(DescriptionType type) {
     id = type.getId();
-    terminology = type.getTerminology();
     terminologyId = type.getTerminologyId();
-    version = type.getVersion();
     refsetId = type.getRefsetId();
     typeId = type.getTypeId();
     acceptabilityId = type.getAcceptabilityId();
@@ -177,30 +167,6 @@ public class DescriptionTypeJpa implements DescriptionType {
 
   /* see superclass */
   @Override
-  public String getTerminology() {
-    return terminology;
-  }
-
-  /* see superclass */
-  @Override
-  public void setTerminology(String terminology) {
-    this.terminology = terminology;
-  }
-
-  /* see superclass */
-  @Override
-  public String getVersion() {
-    return version;
-  }
-
-  /* see superclass */
-  @Override
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-  /* see superclass */
-  @Override
   public String getRefsetId() {
     return refsetId;
   }
@@ -225,8 +191,6 @@ public class DescriptionTypeJpa implements DescriptionType {
     result = prime * result + descriptionLength;
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((refsetId == null) ? 0 : refsetId.hashCode());
-    result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result =
         prime * result
             + ((terminologyId == null) ? 0 : terminologyId.hashCode());
@@ -266,11 +230,6 @@ public class DescriptionTypeJpa implements DescriptionType {
         return false;
     } else if (!refsetId.equals(other.refsetId))
       return false;
-    if (terminology == null) {
-      if (other.terminology != null)
-        return false;
-    } else if (!terminology.equals(other.terminology))
-      return false;
     if (terminologyId == null) {
       if (other.terminologyId != null)
         return false;
@@ -287,8 +246,7 @@ public class DescriptionTypeJpa implements DescriptionType {
   /* see superclass */
   @Override
   public String toString() {
-    return "DescriptionTypeJpa [id=" + id + ", terminology=" + terminology
-        + ", terminologyId=" + terminologyId + ", version=" + version
+    return "DescriptionTypeJpa [id=" + id + ", terminologyId=" + terminologyId
         + ", refsetId=" + refsetId + ", typeId=" + typeId
         + ", acceptabilityId=" + acceptabilityId + ", name=" + name
         + ", descriptionFormat=" + descriptionFormat + ", descriptionLength="

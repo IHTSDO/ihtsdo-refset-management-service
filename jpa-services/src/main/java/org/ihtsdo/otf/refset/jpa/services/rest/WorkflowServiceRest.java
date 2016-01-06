@@ -48,11 +48,11 @@ public interface WorkflowServiceRest {
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
-   * @return the refset list
+   * @return the tracking record list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedEditingRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public TrackingRecordList findAssignedEditingRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Find available review refsets.
@@ -74,11 +74,11 @@ public interface WorkflowServiceRest {
    * @param userName the user name
    * @param pfs the pfs
    * @param authToken the auth token
-   * @return the refset list
+   * @return the tracking record list
    * @throws Exception the exception
    */
-  public RefsetList findAssignedReviewRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception;
+  public TrackingRecordList findAssignedReviewRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Perform workflow action for a {@link Refset}.
@@ -219,10 +219,10 @@ public interface WorkflowServiceRest {
    * @param projectId the project id
    * @param pfs the pfs
    * @param authToken the auth token
-   * @return the refset list
+   * @return the tracking record list
    * @throws Exception the exception
    */
-  public RefsetList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
+  public TrackingRecordList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
     String authToken) throws Exception;
 
   /**

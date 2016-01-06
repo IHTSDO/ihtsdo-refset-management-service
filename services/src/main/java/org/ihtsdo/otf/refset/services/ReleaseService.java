@@ -56,6 +56,14 @@ public interface ReleaseService extends ProjectService {
     throws Exception;
 
   /**
+   * Handle lazy initialization for a releaseInfo.
+   *
+   * @param releaseInfo the releaseInfo
+   * @throws Exception the exception
+   */
+  public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception;
+
+  /**
    * Update release artifact.
    *
    * @param releaseArtifact the release artifact

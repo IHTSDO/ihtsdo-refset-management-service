@@ -399,8 +399,8 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAssignedEditingRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
+  public TrackingRecordList findAssignedEditingRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - find assigned editing refsets - " + userName);
 
@@ -428,8 +428,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */
@@ -469,8 +469,8 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAssignedReviewRefsets(Long projectId, String userName,
-    PfsParameterJpa pfs, String authToken) throws Exception {
+  public TrackingRecordList findAssignedReviewRefsets(Long projectId,
+    String userName, PfsParameterJpa pfs, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Client - find assigned review refsets - " + userName);
 
@@ -498,8 +498,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */
@@ -525,7 +525,7 @@ public class WorkflowClientRest extends RootClientRest implements
       Logger.getLogger(getClass()).debug(resultString);
     } else {
       throw new Exception(resultString);
-    }
+  }
 
     // converting to object
     return (TrackingRecord) ConfigUtility.getGraphForString(resultString,
@@ -558,7 +558,7 @@ public class WorkflowClientRest extends RootClientRest implements
       Logger.getLogger(getClass()).debug(resultString);
     } else {
       throw new Exception(resultString);
-    }
+  }
 
     // converting to object
     return (RefsetList) ConfigUtility.getGraphForString(resultString,
@@ -567,10 +567,8 @@ public class WorkflowClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public RefsetList findAllAssignedRefsets(Long projectId, PfsParameterJpa pfs,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Workflow Client - find all assigned refsets: " + projectId);
+  public TrackingRecordList findAllAssignedRefsets(Long projectId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
 
     validateNotEmpty(projectId, "projectId");
 
@@ -594,8 +592,8 @@ public class WorkflowClientRest extends RootClientRest implements
     }
 
     // converting to object
-    return (RefsetList) ConfigUtility.getGraphForString(resultString,
-        RefsetListJpa.class);
+    return (TrackingRecordList) ConfigUtility.getGraphForString(resultString,
+        TrackingRecordListJpa.class);
   }
 
   /* see superclass */

@@ -1,5 +1,5 @@
 // Translation Table directive
-// e.g. <div flag-icon obj="refset"></div>
+// e.g. <div flag-icon obj='refset'></div>
 tsApp.directive('flagIcon', [ 'projectService', function(projectService) {
   console.debug('configure flagIcon directive');
   return {

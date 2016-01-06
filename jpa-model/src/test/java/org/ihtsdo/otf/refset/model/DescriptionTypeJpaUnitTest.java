@@ -82,9 +82,7 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
   public void testModelEqualsHashcode017() throws Exception {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
-    tester.include("terminology");
     tester.include("terminologyId");
-    // tester.include("version");
     tester.include("refsetId");
     tester.include("name");
     tester.include("typeId");
@@ -134,9 +132,7 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
     // Set up some objects
     Concept c = new ConceptJpa();
     c.setId(1L);
-    c.setTerminology("1");
     c.setTerminologyId("1");
-    c.setVersion("1");
     c.setName("1");
     tester.proxy(Concept.class, 1, c);
 
@@ -153,9 +149,6 @@ public class DescriptionTypeJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     NullableFieldTester tester = new NullableFieldTester(object);
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
-
     tester.include("refsetId");
     tester.include("name");
     tester.include("typeId");

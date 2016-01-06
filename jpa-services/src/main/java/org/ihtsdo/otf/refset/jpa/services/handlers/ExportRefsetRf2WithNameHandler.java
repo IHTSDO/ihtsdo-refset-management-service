@@ -12,15 +12,13 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 
 /**
  * Implementation of an algorithm to export a refset definition.
  */
-public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
-    ExportRefsetHandler {
+public class ExportRefsetRf2WithNameHandler implements ExportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -134,12 +132,6 @@ public class ExportRefsetRf2WithNameHandler extends RootServiceJpa implements
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-  }
-
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
   }
 
   /* see superclass */

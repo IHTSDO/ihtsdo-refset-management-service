@@ -248,8 +248,8 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void removeTranslation(Long translationId, String authToken)
-    throws Exception {
+  public void removeTranslation(Long translationId, boolean cascade,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - remove translation " + translationId);
     validateNotEmpty(translationId, "translationId");
@@ -257,7 +257,7 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/translation/remove/"
-            + translationId);
+            + translationId + "?cascade=" + cascade);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -600,8 +600,12 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - Batch add new entries to the spelling dictionary "
             + " " + translationId);
     validateNotEmpty(translationId, "translationId");
-    for (String s : entries.getObjects()) {
-      validateNotEmpty(s, "entry");
+    if (entries != null) {
+      for (String s : entries.getObjects()) {
+        validateNotEmpty(s, "entry");
+      }
+    } else {
+      throw new Exception("entries cannot be null");
     }
 
     Client client = ClientBuilder.newClient();

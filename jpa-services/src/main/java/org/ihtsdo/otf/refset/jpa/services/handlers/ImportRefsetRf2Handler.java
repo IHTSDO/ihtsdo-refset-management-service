@@ -201,7 +201,5 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     c.setPublishable(true);
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
-    c.setTerminology(refset.getTerminology());
-    c.setVersion(refset.getVersion());
   }
 }

@@ -11,7 +11,7 @@ a SNOMED CT data model. The API is fully documented with Swagger (http://swagger
 
 
 A reference deployment of the system exists here:
-https://refset.ihtsdotools.org/
+https://uat-refset.ihtsdotools.org/
 
 Project Structure
 -----------------
@@ -32,7 +32,7 @@ Project Structure
 
 Documentation
 -------------
-Find comprehensive documentation here: https://confluence.ihtsdotools.org/TBD
+Find comprehensive documentation here: https://confluence.ihtsdotools.org/display/REFSET
 
 License
 -------

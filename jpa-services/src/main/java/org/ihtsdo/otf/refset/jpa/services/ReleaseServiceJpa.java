@@ -30,7 +30,7 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
   public ReleaseInfo getReleaseInfo(Long releaseInfoId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Release Service - get release info " + releaseInfoId);
-    ReleaseInfo info = manager.find(ReleaseInfoJpa.class, releaseInfoId);
+    final ReleaseInfo info = manager.find(ReleaseInfoJpa.class, releaseInfoId);
     // lazy init
     info.getProperties().size();
     info.getArtifacts().size();
@@ -91,7 +91,11 @@ public class ReleaseServiceJpa extends ProjectServiceJpa implements
   public ReleaseArtifact getReleaseArtifact(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
         "ReleaseArtifact Service - get artifact " + id);
-    ReleaseArtifact artifact = getHasLastModified(id, ReleaseArtifactJpa.class);
-    return artifact;
+    return getHasLastModified(id, ReleaseArtifactJpa.class);
+  }
+
+  @Override
+  public void handleLazyInit(ReleaseInfo releaseInfo) throws Exception {
+    releaseInfo.getArtifacts().size();
   }
 }

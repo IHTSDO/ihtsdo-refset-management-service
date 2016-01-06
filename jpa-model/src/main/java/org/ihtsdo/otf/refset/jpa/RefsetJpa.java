@@ -58,7 +58,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * JPA enabled implementation of {@link Refset}. This object extends
  * {@link AbstractComponent} and uses effectiveTime in a special way. For
  * refsets that are being edited the effectiveTime will always be null. During
- * the release process, the effectiveTime is set when the staging of PREVIEW
+ * the release process, the effectiveTime is set when the staging of BETA
  * begins. Thus the unique key below works to allow multiple releases and an
  * editing copy of the same refset with the same terminologyId to simultaneously
  * exist.
@@ -72,6 +72,14 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @XmlRootElement(name = "refset")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RefsetJpa extends AbstractComponent implements Refset {
+
+  /** The terminology. */
+  @Column(nullable = false)
+  private String terminology;
+
+  /** The version. */
+  @Column(nullable = false)
+  private String version;
 
   /** The name. */
   @Column(nullable = false)
@@ -194,6 +202,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
    */
   public RefsetJpa(Refset refset) {
     super(refset);
+    terminology = refset.getTerminology();
+    version = refset.getVersion();
     name = refset.getName();
     description = refset.getDescription();
     isPublic = refset.isPublic();
@@ -639,6 +649,28 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return getProject().getUserRoleMap();
   }
 
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getTerminology() {
+    return terminology;
+  }
+
+  @Override
+  public void setTerminology(String terminology) {
+    this.terminology = terminology;
+  }
+
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Override
+  public String getVersion() {
+    return version;
+  }
+
+  @Override
+  public void setVersion(String version) {
+    this.version = version;
+  }
+
   /* see superclass */
   @Override
   public int hashCode() {
@@ -655,6 +687,9 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
+    result =
+        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
+    // not version
     result = prime * result + ((name == null) ? 0 : name.hashCode());
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((project == null) ? 0 : project.hashCode());
@@ -701,6 +736,12 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         return false;
     } else if (!name.equals(other.name))
       return false;
+    if (terminology == null) {
+      if (other.terminology != null)
+        return false;
+    } else if (!terminology.equals(other.terminology))
+      return false;
+    // not version
     if (namespace == null) {
       if (other.namespace != null)
         return false;

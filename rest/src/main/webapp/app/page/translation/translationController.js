@@ -14,7 +14,7 @@ tsApp
         workflowService) {
         console.debug('configure TranslationCtrl');
 
-        // Handle resetting tabs on "back" button
+        // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Translation') {
           tabService.setSelectedTabByLabel('Translation');
         }
@@ -41,14 +41,6 @@ tsApp
           workflowPaths : []
         }
 
-        // Test for empty accordion state
-        $scope.isAccordionStateEmpty = function() {
-          for (key in $scope.accordionState) {
-            if ($scope.accordionState.hasOwnProperty(key))
-              return false;
-          }
-          return true;
-        };
 
         // Get $scope.projects
         $scope.getProjects = function() {
@@ -60,7 +52,7 @@ tsApp
             sortField : 'name',
             queryRestriction : 'userAnyRole:' + $scope.user.userName
           };
-          projectService.findProjectsAsList("", pfs).then(function(data) {
+          projectService.findProjectsAsList('', pfs).then(function(data) {
             $scope.projects.data = data.projects;
             $scope.projects.totalCount = data.totalCount;
             if ($scope.user.userPreferences.lastProjectId) {
@@ -82,7 +74,7 @@ tsApp
 
         };
 
-        // Fire a "projectChanged" event after looking up role
+        // Fire a 'projectChanged' event after looking up role
         $scope.setProject = function(project) {
           $scope.project = project;
           if (!$scope.project) {
@@ -94,7 +86,7 @@ tsApp
           var pfs = {};
           // Find role
           projectService
-            .findAssignedUsersForProject($scope.project.id, "", pfs)
+            .findAssignedUsersForProject($scope.project.id, '', pfs)
             .then(
               // Success
               function(data) {
@@ -150,8 +142,10 @@ tsApp
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
-          $scope.user.userPreferences.lastTranslationAccordion = data;
-          securityService.updateUserPreferences($scope.user.userPreferences);
+          if ($scope.user.userPreferences) {
+            $scope.user.userPreferences.lastTranslationAccordion = data;
+            securityService.updateUserPreferences($scope.user.userPreferences);
+          }
         }
 
         // Configure tab and accordion

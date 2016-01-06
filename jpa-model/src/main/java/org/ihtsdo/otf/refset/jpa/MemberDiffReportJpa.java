@@ -273,7 +273,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     List<ConceptRefsetMember> invalidExclusions = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.EXCLUSION &&
-          !nowNotExcluded.contains(member)) {
+          !nowNotExcluded.contains(member.getConceptId())) {
         invalidExclusions.add(member);
       }
     }   
@@ -296,7 +296,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     List<String> oldRegularMembers = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
       if (member.getMemberType() == Refset.MemberType.MEMBER &&
-          !exclusionStaged.contains(member)) {
+          !exclusionStaged.contains(member.getConceptId())) {
         oldRegularMembers.add(member.getConceptId());
       }
     }  

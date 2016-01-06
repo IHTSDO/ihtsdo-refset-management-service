@@ -30,7 +30,7 @@
 
       <button type="button" class="btn btn-xs btn-primary"
         ng-show="translations.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'PREVIEW' || value == 'PUBLISHED')"
+        (value == 'RELEASE' || value == 'BETA' || value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getTranslations()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
@@ -48,7 +48,13 @@
         </th>
         <th class="col-md-4 col-xs-4"
           ng-click="setSortField('translation','name', null)">Name<span
-            ng-bind="getSortIndicator('translation','name',null)"></span></th>
+            ng-bind="getSortIndicator('translation','name',null)"></span>/<span
+            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
+            <span ng-click="setSortField('translation','effectiveTime', null)">
+              Effective Time
+              <span ng-bind="getSortIndicator('translation','effectiveTime',null)"></span>
+            </span>
+          </span></th>
         <th class="col-md-3 col-xs-3"
           ng-click="setSortField('translation','module', null)">Module<span
             ng-bind="getSortIndicator('translation','module',null)"></span></th>
@@ -56,7 +62,7 @@
           ng-click="setSortField('translation','language', null)">Lang<span
             ng-bind="getSortIndicator('translation','language',null)"></span></th>
         <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
-          <span ng-show="value != 'PUBLISHED' && value != 'PREVIEW'"
+          <span ng-show="value != 'PUBLISHED' && value != 'BETA'"
             style="float: right;">
             <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
               title="Add translation" class="noul material-icons md-18">add</i>
@@ -81,16 +87,16 @@
             <span flag-icon obj="translation"></span>
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" /> {{translation.organization}}
-            <span ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">
+            <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
               <br />{{refset.workflowStatus}}
             </span>
 
           </td>
           <td>{{translation.language}}</td>
 
-          <!-- PUBLISHED/PREVIEW actions -->
+          <!-- PUBLISHED/BETA actions -->
           <td class="nobreak"
-            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'PREVIEW')">
+            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'BETA')">
             <i
               ng-click="openFeedbackModal(translation); $event.stopPropagation()"
               title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
@@ -108,18 +114,18 @@
 
             <!-- Start release -->
             <i
-              ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
+              ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='BETA'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
               title="Start release process" class="noul material-icons md-18">open_in_new</i>
 
             <i
-              ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='PREVIEW'"
+              ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='BETA'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
             <!-- Cancel staging operation -->
-            <span ng-show="translation.stagingType == 'PREVIEW'">
+            <span ng-show="translation.stagingType == 'BETA'">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(translation)"
@@ -195,7 +201,7 @@
             </td>
             <td>{{selected.translation.description}}</td>
           </tr>
-          <tr ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">
+          <tr ng-show="value != 'PUBLISHED' && value != 'BETA'">
             <td>
               <b>Notes</b>
             </td>
@@ -267,19 +273,19 @@
                 ng-model="user.userPreferences.spellingEnabled">
               <span ng-show="user.userPreferences.spellingEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.spellingEnabled">DISABLED</span>
-              <i ng-show="selected.translation.spellingDictionarySize > 0"
+              <i ng-show="!selected.translation.spellingDictionaryEmpty"
                 ng-click="openImportExportModal(selected.translation,'Export','Spelling Dictionary'); $event.stopPropagation()"
                 title="Export spelling dictionary"
                 class="noul material-icons md-18">file_download</i>
-              <i ng-show="selected.translation.spellingDictionarySize == 0"
+              <i ng-show="selected.translation.spellingDictionaryEmpty"
                 ng-click="openImportExportModal(selected.translation,'Import','Spelling Dictionary'); $event.stopPropagation()"
                 title="Import spelling dictionary"
                 class="noul material-icons md-18">file_upload</i>
-              <i ng-show="selected.translation.spellingDictionarySize == 0"
+              <i ng-show="selected.translation.spellingDictionaryEmpty"
                 ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"
                 title="Copy spelling dictionary from another translation"
                 class="noul material-icons md-18">content_copy</i>
-              <i ng-show="selected.translation.spellingDictionarySize > 0"
+              <i ng-show="!selected.translation.spellingDictionaryEmpty"
                 ng-click="clearSpellingDictionary(selected.translation)"
                 title="Clear spelling dictionary entries"
                 class="noul material-icons md-18">delete</i>
@@ -294,17 +300,17 @@
                 ng-model="user.userPreferences.memoryEnabled">
               <span ng-show="user.userPreferences.memoryEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.memoryEnabled">DISABLED</span>
-              <i ng-show="selected.translation.phraseMemorySize > 0"
+              <i ng-show="!selected.translation.phraseMemoryEmpty"
                 ng-click="openImportExportModal(selected.translation,'Export', 'Phrase Memory'); $event.stopPropagation()"
                 title="Export phrase memory" class="noul material-icons md-18">file_download</i>
-              <i ng-show="selected.translation.phraseMemorySize == 0"
+              <i ng-show="selected.translation.phraseMemoryEmpty"
                 ng-click="openImportExportModal(selected.translation,'Import', 'Phrase Memory'); $event.stopPropagation()"
                 title="Import phrase memory" class="noul material-icons md-18">file_upload</i>
-              <i ng-show="selected.translation.phraseMemorySize == 0"
+              <i ng-show="selected.translation.phraseMemoryEmpty"
                 ng-click="openCopyModal(selected.translation,'Phrase Memory'); $event.stopPropagation()"
                 title="Copy phrase memory from another translation"
                 class="noul material-icons md-18">content_copy</i>
-              <i ng-show="selected.translation.phraseMemorySize > 0"
+              <i ng-show="!selected.translation.phraseMemoryEmpty"
                 ng-click="clearPhraseMemory(selected.translation)"
                 title="Clear phrase memory entries"
                 class="noul material-icons md-18">delete</i>
@@ -317,7 +323,7 @@
             </td>
             <td
               ng-show="!translationReleaseInfo.published && !translationReleaseInfo.planned">
-              <b>PREVIEW</b>
+              <b>BETA</b>
             </td>
             <td>{{translationReleaseInfo.name}}
           </tr>
@@ -369,7 +375,7 @@
 <hr ng-show="selected.translation && value == 'EDITING'"
   style="width: 100%; color: lightgrey; height: 1px; background-color: lightgrey;" />
 
-<!-- R2 (for "preview/published") -->
+<!-- R2 (for "beta/published") -->
 <div ng-show="value == 'EDITING'" class="row">
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
@@ -443,7 +449,7 @@
 
   <!-- R2C2 -->
   <div class="col-md-6 col-xs-12">
-    <!-- Assigned Concepts-->
+    <!-- assigned Concepts-->
     <div class="col-md-12 col-xs-12"></div>
 
     <h4 ng-show="selected.translation">
@@ -642,12 +648,12 @@
               ng-click="setSortField('concept','name', selected.translation)">Name<span
                 ng-bind="getSortIndicator('concept','name')"></span>
             </th>
-            <th ng-show="value != 'PUBLISHED' && value != 'PREVIEW'"
+            <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
               class="col-md-2 col-xs-2"
               ng-click="setSortField('concept','lastModified', selected.translation)">Last
               Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
             </th>
-            <th ng-show="value == 'PUBLISHED' || value == 'PREVIEW'"
+            <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
               class="col-md-2 col-xs-2"
               ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
               Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
@@ -666,8 +672,8 @@
                   <br /> &bull;&nbsp;{{desc.term}}
                 </span>
               </td>
-              <td ng-show="value != 'PUBLISHED' && value != 'PREVIEW'">{{toDate(concept.lastModified)}}</td>
-              <td ng-show="value == 'PUBLISHED' || value == 'PREVIEW'">{{toShortDate(concept.effectiveTime)}}</td>
+              <td ng-show="value != 'PUBLISHED' && value != 'BETA'">{{toDate(concept.lastModified)}}</td>
+              <td ng-show="value == 'PUBLISHED' || value == 'BETA'">{{toShortDate(concept.effectiveTime)}}</td>
               <td>
                 <!-- Assign (for error fixing) -->
                 <i ng-show="value == 'EDITING' && projects.role != 'ADMIN'"

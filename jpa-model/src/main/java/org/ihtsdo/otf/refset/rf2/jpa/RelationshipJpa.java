@@ -23,7 +23,7 @@ import org.ihtsdo.otf.refset.rf2.Relationship;
 // @UniqueConstraint here is being used to create an index, not to enforce
 // uniqueness
 @Table(name = "relationships", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "terminology", "version", "id"
+    "terminologyId", "id"
 }))
 @Audited
 @XmlRootElement(name = "relationship")
@@ -181,8 +181,6 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
       sourceConcept = new ConceptJpa();
     }
     sourceConcept.setTerminologyId(sourceTerminologyId);
-    sourceConcept.setTerminology(getTerminology());
-    sourceConcept.setVersion(getVersion());
   }
 
   /**
@@ -262,8 +260,7 @@ public class RelationshipJpa extends AbstractComponent implements Relationship {
       destinationConcept = new ConceptJpa();
     }
     destinationConcept.setTerminologyId(destinationConceptId);
-    destinationConcept.setTerminology(getTerminology());
-    destinationConcept.setVersion(getVersion());
+
   }
 
   /**

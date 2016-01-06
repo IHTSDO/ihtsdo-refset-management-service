@@ -11,7 +11,7 @@ tsApp.controller('DirectoryCtrl', [
     workflowService) {
     console.debug('configure DirectoryCtrl');
 
-    // Handle resetting tabs on "back" button
+    // Handle resetting tabs on 'back' button
     if (tabService.selectedTab.label != 'Directory') {
       tabService.setSelectedTabByLabel('Directory');
     }
@@ -52,7 +52,7 @@ tsApp.controller('DirectoryCtrl', [
         sortField : 'name',
         queryRestriction : 'userAnyRole:' + $scope.user.userName
       };
-      projectService.findProjectsAsList("", pfs).then(
+      projectService.findProjectsAsList('', pfs).then(
       // Success
       function(data) {
         $scope.projects.data = data.projects;
@@ -61,14 +61,6 @@ tsApp.controller('DirectoryCtrl', [
 
     };
 
-    // Test for empty accordion state
-    $scope.isAccordionStateEmpty = function() {
-      for (key in $scope.accordionState) {
-        if ($scope.accordionState.hasOwnProperty(key))
-          return false;
-      }
-      return true;
-    };
 
     // Get $scope.refsetTypes - for picklist
     $scope.getRefsetTypes = function() {
@@ -112,8 +104,10 @@ tsApp.controller('DirectoryCtrl', [
 
     // Set the current accordion
     $scope.setAccordion = function(data) {
-      $scope.user.userPreferences.lastDirectoryAccordion = data;
-      securityService.updateUserPreferences($scope.user.userPreferences);
+      if ($scope.user.userPreferences) {
+        $scope.user.userPreferences.lastDirectoryAccordion = data;
+        securityService.updateUserPreferences($scope.user.userPreferences);
+      }
     };
 
     // Configure tab and accordion

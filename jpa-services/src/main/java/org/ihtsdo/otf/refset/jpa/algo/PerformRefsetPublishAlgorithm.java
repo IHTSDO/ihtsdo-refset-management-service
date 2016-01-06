@@ -22,7 +22,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * the release process.
  * 
  * <pre>
- * 1. Converts the preview release into a published release 
+ * 1. Converts the beta release into a published release 
  * 2. Separates the published release from the origin READY_FOR_PUBLICATION release.
  * </pre>
  * 
@@ -64,10 +64,10 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
       throw new Exception("refset workflowstatus is not staged for "
           + refset.getId());
     stagedRefsetChange = getStagedRefsetChange(refset.getId());
-    if (!WorkflowStatus.PREVIEW.equals(stagedRefsetChange.getStagedRefset()
+    if (!WorkflowStatus.BETA.equals(stagedRefsetChange.getStagedRefset()
         .getWorkflowStatus())) {
       throw new Exception(
-          "Refset must be staged and with a workflow status of PREVIEW");
+          "Refset must be staged and with a workflow status of BETA");
     }
   }
 
