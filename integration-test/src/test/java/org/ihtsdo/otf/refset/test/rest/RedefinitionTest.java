@@ -398,7 +398,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 

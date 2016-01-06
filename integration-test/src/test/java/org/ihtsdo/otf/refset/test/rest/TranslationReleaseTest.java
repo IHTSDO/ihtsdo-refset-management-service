@@ -568,7 +568,7 @@ public class TranslationReleaseTest {
   public void testReleaseReportToken() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testReleaseReportToken");
 
-    Project project = projectService.getProject(52L, adminAuthToken);
+    Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset (extensional)
