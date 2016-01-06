@@ -20,6 +20,36 @@ tsApp
           forced_root_block : ''
         }
 
+        // Prep query
+        this.prepQuery = function(query) {
+          if (!query) {
+            return '';
+          }
+
+          // Add a * to the filter if set and doesn't contain a :
+          if (query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+            var query2 = query;
+            query2 += "*";
+            return encodeURIComponent(query2);
+          }
+          return encodeURIComponent(query);
+        }
+
+        // Prep pfs filter
+        this.prepPfs = function(pfs) {
+          if (!pfs) {
+            return {};
+          }
+
+          // Add a * to the filter if set and doesn't contain a :
+          if (pfs.filter && pfs.filter.indexOf(":") == -1 && pfs.filter.indexOf("\"") == -1) {
+            var pfs2 = angular.copy(pfs);
+            pfs2.filter += "*";
+            return pfs2;
+          }
+          return pfs;
+        }
+
         // Sets the error
         this.setError = function(message) {
           this.error.message = message;
@@ -96,22 +126,6 @@ tsApp
             day = '0' + day;
           }
           return year + month + day;
-        }
-
-        // Utility for cleaning a query
-        this.cleanQuery = function(queryStr) {
-          if (queryStr == null) {
-            return '';
-          }
-          var cleanQuery = queryStr;
-          // Replace all slash characters
-          cleanQuery = queryStr.replace(new RegExp('[/\\\\]', 'g'), ' ');
-          // Remove brackets if not using a fielded query
-          if (queryStr.indexOf(':') == -1) {
-            cleanQuery = queryStr.replace(new RegExp('[^a-zA-Z0-9:\\.\\-\'\\*]', 'g'), ' ');
-          }
-
-          return cleanQuery;
         }
 
         // Table sorting mechanism
@@ -295,8 +309,14 @@ tsApp.service('gpService', function() {
 });
 
 // Security service
-tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', 'utilService',
-  'gpService', function($http, $location, $q, $cookieStore, utilService, gpService) {
+tsApp.service('securityService', [
+  '$http',
+  '$location',
+  '$q',
+  '$cookieStore',
+  'utilService',
+  'gpService',
+  function($http, $location, $q, $cookieStore, utilService, gpService) {
     console.debug('configure securityService');
 
     // Declare the user
@@ -322,11 +342,13 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       if (!$http.defaults.headers.common.Authorization) {
         console.debug('no header');
         // Retrieve cookie
-        var cookieUser = JSON.parse($cookieStore.get('user'));
-        // If there is a user cookie, load it
-        if (cookieUser) {
-          this.setUser(cookieUser);
-          $http.defaults.headers.common.Authorization = user.authToken;
+        if ($cookieStore.get('user')) {
+          var cookieUser = JSON.parse($cookieStore.get('user'));
+          // If there is a user cookie, load it
+          if (cookieUser) {
+            this.setUser(cookieUser);
+            $http.defaults.headers.common.Authorization = user.authToken;
+          }
         }
       }
       return user;
@@ -354,6 +376,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
       user.password = null;
       user.applicationRole = null;
       user.userPreferences = null;
+      $cookieStore.remove('user');
     }
 
     var httpClearUser = this.clearUser;
@@ -388,7 +411,7 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
         // clear scope variables
         httpClearUser();
-
+        
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
@@ -543,16 +566,15 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
     }
 
     // Finds users as a list
-    this.findUsersAsList = function(queryStr, pfs) {
-      console.debug('findUsersAsList', queryStr, pfs);
+    this.findUsersAsList = function(query, pfs) {
+      console.debug('findUsersAsList', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(securityUrl + 'user/find' + '?query=' + queryStr, pfs)
-      //+ encodeURIComponent(utilService.cleanQuery(queryStr)), pfs)
-      .then(
+      $http.post(securityUrl + 'user/find' + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);

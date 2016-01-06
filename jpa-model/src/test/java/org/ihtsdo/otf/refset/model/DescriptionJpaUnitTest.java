@@ -81,9 +81,7 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
-    tester.include("terminology");
     tester.include("terminologyId");
-    // tester.include("version");
     tester.include("caseSignificanceId");
     tester.include("translationOfId");
     tester.include("concept");
@@ -143,8 +141,6 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("publishable");
     tester.include("moduleId");
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
     tester.include("caseSignificanceId");
     tester.include("languageCode");
     tester.include("term");
@@ -171,8 +167,6 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
     tester.include("effectiveTime");
     tester.include("lastModified");
     tester.include("lastModifiedBy");

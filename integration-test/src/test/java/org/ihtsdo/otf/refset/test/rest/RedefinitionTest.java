@@ -44,9 +44,6 @@ import org.junit.Test;
  */
 public class RedefinitionTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
-
   /** The admin auth token. */
   private static String adminAuthToken;
 
@@ -540,7 +537,6 @@ public class RedefinitionTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 

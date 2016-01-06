@@ -132,9 +132,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Translation Service - get translation " + id);
     Translation translation = getHasLastModified(id, TranslationJpa.class);
-    if (translation != null) {
-      handleLazyInit(translation);
-    }
     return translation;
   }
 
@@ -324,9 +321,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       result.setObjects(list);
     }
 
-    for (Translation translation : result.getObjects()) {
-      handleLazyInit(translation);
-    }
     return result;
   }
 
@@ -359,9 +353,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     ConceptList result = new ConceptListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
-    for (Concept concept : result.getObjects()) {
-      handleLazyInit(concept);
-    }
+
     return result;
   }
 
@@ -371,15 +363,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // handle all lazy initializations
     if (translation.getDescriptionTypes() != null)
       translation.getDescriptionTypes().size();
-    translation.getRefset().getName();
+    handleLazyInit(translation.getRefset());
     translation.getWorkflowStatus().name();
     translation.getConcepts().size();
     translation.getNotes().size();
+    // don't initialize phrase memory and spelling dictionary
     if (translation.getPhraseMemory() != null) {
-      translation.getPhraseMemory().getEntries().size();
+      translation.setPhraseMemory(new PhraseMemoryJpa());
     }
     if (translation.getSpellingDictionary() != null) {
-      translation.getSpellingDictionary().getEntries().size();
+      translation.setSpellingDictionary(new SpellingDictionaryJpa());
     }
   }
 
@@ -424,7 +417,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // get the most recent of the revisions that preceed the date parameter
     Translation translation = revisions.get(0);
-    handleLazyInit(translation);
     return translation;
   }
 
@@ -519,10 +511,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(concept.getTerminology());
+      idHandler =
+          getIdentifierAssignmentHandler(concept.getTranslation()
+              .getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
-            + concept.getTerminology());
+            + concept.getTranslation().getTerminology());
       }
       String id = idHandler.getTerminologyId(concept);
       concept.setTerminologyId(id);
@@ -541,7 +535,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(concept.getTerminology());
+        getIdentifierAssignmentHandler(concept.getTranslation()
+            .getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         Concept concept2 = getConcept(concept.getId());
@@ -603,7 +598,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Translation Service - get concept " + id);
     Concept concept = getHasLastModified(id, ConceptJpa.class);
-    handleLazyInit(concept);
     return concept;
   }
 
@@ -624,10 +618,12 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(description.getTerminology());
+      idHandler =
+          getIdentifierAssignmentHandler(description.getConcept()
+              .getTranslation().getTerminology());
       if (idHandler == null) {
         throw new Exception("Unable to find id handler for "
-            + description.getTerminology());
+            + description.getConcept().getTranslation().getTerminology());
       }
       String id = idHandler.getTerminologyId(description);
       description.setTerminologyId(id);
@@ -646,7 +642,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(description.getTerminology());
+        getIdentifierAssignmentHandler(description.getConcept()
+            .getTranslation().getTerminology());
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         Description description2 = getDescription(description.getId());
@@ -693,16 +690,15 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   @Override
   public LanguageRefsetMember addLanguageRefsetMember(
-    LanguageRefsetMember member) throws Exception {
+    LanguageRefsetMember member, String terminology) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - add language refset member " + member);
     // Assign id
     IdentifierAssignmentHandler idHandler = null;
     if (assignIdentifiersFlag) {
-      idHandler = getIdentifierAssignmentHandler(member.getTerminology());
+      idHandler = getIdentifierAssignmentHandler(terminology);
       if (idHandler == null) {
-        throw new Exception("Unable to find id handler for "
-            + member.getTerminology());
+        throw new Exception("Unable to find id handler for " + terminology);
       }
       String id = idHandler.getTerminologyId(member);
       member.setTerminologyId(id);
@@ -714,14 +710,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   @Override
-  public void updateLanguageRefsetMember(LanguageRefsetMember member)
-    throws Exception {
+  public void updateLanguageRefsetMember(LanguageRefsetMember member,
+    String terminology) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - update language refset member " + member);
 
     // Id assignment should not change
     final IdentifierAssignmentHandler idHandler =
-        getIdentifierAssignmentHandler(member.getTerminology());
+        getIdentifierAssignmentHandler(terminology);
     if (assignIdentifiersFlag) {
       if (!idHandler.allowIdChangeOnUpdate()) {
         LanguageRefsetMember member2 = getLanguageRefsetMember(member.getId());
@@ -825,8 +821,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       query.setParameter("translationId", translationId);
       StagedTranslationChange change =
           (StagedTranslationChange) query.getSingleResult();
-      handleLazyInit(change.getOriginTranslation());
-      handleLazyInit(change.getStagedTranslation());
       return change;
     } catch (NoResultException e) {
       return null;
@@ -1008,8 +1002,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       // member.setLastModifiedBy(userName);
       // member.setPublishable(true);
       concept.setTranslation(translationCopy);
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
       concept.setId(null);
       translationCopy.getConcepts().add(concept);
       addConcept(concept);
@@ -1017,8 +1009,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     for (DescriptionType originType : translation.getDescriptionTypes()) {
       DescriptionType type = new DescriptionTypeJpa(originType);
-      type.setTerminology(translationCopy.getTerminology());
-      type.setVersion(translationCopy.getVersion());
       type.setId(null);
       translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
@@ -1181,8 +1171,23 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
         TranslationServiceJpa translationService = new TranslationServiceJpa();
         // Translation may not be ready yet in DB, wait for 250ms until ready
-        Translation translation =
-            translationService.getTranslation(translationId);
+        Translation translation = null;
+        int ms = 250;
+        while (translation == null) {
+          Thread.sleep(ms);
+          translationService.close();
+          translationService = new TranslationServiceJpa();
+          translation = translationService.getTranslation(translationId);
+          ms = (ms > 2000) ? ms + 2000 : ms * 2;
+          if (ms > 60000) {
+            Exception e =
+                new Exception("Unable to load translation after too many tries");
+            ExceptionHandler.handleException(e,
+                "looking up translation concept names - " + translationId, null);
+            throw e;
+          }
+        }
+
         translation.setLookupInProgress(true);
         translationService.updateTranslation(translation);
 
@@ -1206,7 +1211,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         if (numberOfConcepts > 0) {
           int i = 0;
           final String terminology = translation.getTerminology();
-          final String version = translation.getVersion();
+          final String version = translation.getRefset().getVersion();
 
           // Execute for all concepts
           while (i < numberOfConcepts) {
@@ -1226,7 +1231,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             if (cons.getTotalCount() != termIds.size()) {
               // log and email an exception and continue
               ExceptionHandler.handleException(
-                  new Exception("Missing concepts"), "looking up names", null);
+                  new Exception("Missing concepts"),
+                  "looking up translation concept names - " + translationId,
+                  null);
             }
 
             // Populate concept's names/statuses from results of Term
@@ -1299,10 +1306,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
     Translation translation, UserPreferences prefs) throws Exception {
     Logger.getLogger(getClass()).debug("resolveLanguageDescriptionTypes");
+
     // Get standard language desc types
     final List<LanguageDescriptionType> standardTypes =
         getTerminologyHandler().getStandardLanguageDescriptionTypes(
-            translation.getRefset().getTerminology());
+            translation != null ? translation.getTerminology() : "");
 
     // Get translation-specific desc types
     final List<LanguageDescriptionType> translationTypes = new ArrayList<>();

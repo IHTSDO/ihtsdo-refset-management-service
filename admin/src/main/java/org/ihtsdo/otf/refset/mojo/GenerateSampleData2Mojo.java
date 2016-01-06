@@ -624,6 +624,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       new TranslationServiceRestImpl().updateTranslation(translation,
           reviewer3.getAuthToken());
 
+      // Make dutch refset and translation
+      refset =
+          makeTranslationRefset("Netherlands Translation scope reference set",
+              22, "INT", project3, "31000146106", "1000005", "11000146104",
+              reviewer3);
+
+      // Make dutch translation
+      translation =
+          makeTranslation("Netherlands Dutch language reference set",
+              "31000146106", refset, project3, 22, "INT", "da", reviewer3);
+      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      new TranslationServiceRestImpl().updateTranslation(translation,
+          reviewer3.getAuthToken());
+
       if (assignNames) {
         // Ensure that all lookup names routines completed
         boolean completed = false;
@@ -1016,12 +1030,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     translation.setPublishable(true);
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
+    translation.setVersion(refset.getVersion());
     translation.setTerminologyId(terminologyId);
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    translation.setVersion(refset.getVersion());
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
-
     TranslationServiceRest translationService =
         new TranslationServiceRestImpl();
     ValidationServiceRest validation = new ValidationServiceRestImpl();
@@ -1073,8 +1086,12 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // completes
       createdTranslations.add(translation.getId());
     }
-    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-        translation.getId(), auth.getAuthToken());
+    final TranslationJpa retval =
+        (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
+            translation.getId(), auth.getAuthToken());
+    retval.setSpellingDictionary(null);
+    retval.setPhraseMemory(null);
+    return retval;
   }
 
   /**

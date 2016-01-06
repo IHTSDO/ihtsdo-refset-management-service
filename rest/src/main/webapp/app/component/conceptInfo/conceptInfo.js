@@ -69,8 +69,8 @@ tsApp.directive('conceptInfo', [
             if (!concept) {
               return;
             }
-            projectService.getConceptParents(concept.terminologyId, concept.terminology,
-              concept.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
+            projectService.getConceptParents(concept.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
             // Success
             function(data) {
               $scope.parents = data.concepts;
@@ -88,8 +88,8 @@ tsApp.directive('conceptInfo', [
           $scope.getConceptChildren = function(concept) {
 
             // No PFS, get all children - term server doesn't handle paging of children
-            projectService.getConceptChildren(concept.terminologyId, concept.terminology,
-              concept.version, ($scope.data.translation ? $scope.data.translation.id : null), {})
+            projectService.getConceptChildren(concept.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {})
               .then(
               // Success
               function(data) {
@@ -107,8 +107,8 @@ tsApp.directive('conceptInfo', [
 
           // get concept with descriptions
           $scope.getFullConcept = function(concept) {
-            projectService.getFullConcept(concept.terminologyId, concept.terminology,
-              concept.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
+            projectService.getFullConcept(concept.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
               // Success
               function(data) {
                 // Needed to communicate phrase memory info back to the translation editing.
@@ -256,7 +256,7 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get child trees
-            projectService.getConceptChildren(tree.terminologyId, tree.terminology, tree.version,
+            projectService.getConceptChildren(tree.terminologyId, $scope.data.terminology, $scope.data.version,
               ($scope.data.translation ? $scope.data.translation.id : null), {
                 startIndex : -1
               }).then(function(data) {
@@ -308,7 +308,7 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get parent trees
-            projectService.getConceptParents(tree.terminologyId, tree.terminology, tree.version,
+            projectService.getConceptParents(tree.terminologyId, $scope.data.terminology, $scope.data.version,
               ($scope.data.translation ? $scope.data.translation.id : null)).then(function(data) {
 
               // cycle over parents, and construct tree nodes

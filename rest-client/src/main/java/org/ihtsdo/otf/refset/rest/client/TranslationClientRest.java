@@ -600,8 +600,12 @@ public class TranslationClientRest extends RootClientRest implements
         "Translation Client - Batch add new entries to the spelling dictionary "
             + " " + translationId);
     validateNotEmpty(translationId, "translationId");
-    for (String s : entries.getObjects()) {
-      validateNotEmpty(s, "entry");
+    if (entries != null) {
+      for (String s : entries.getObjects()) {
+        validateNotEmpty(s, "entry");
+      }
+    } else {
+      throw new Exception("entries cannot be null");
     }
 
     Client client = ClientBuilder.newClient();

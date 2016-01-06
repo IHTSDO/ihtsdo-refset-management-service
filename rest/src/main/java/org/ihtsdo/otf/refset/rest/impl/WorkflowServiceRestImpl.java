@@ -215,7 +215,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "projectId:" + projectId + " AND " + "authorUserNames:"
               + user.getUserName() + " AND translationId:" + translationId
               + " AND forAuthoring:true AND forReview:false";
-
+      
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {

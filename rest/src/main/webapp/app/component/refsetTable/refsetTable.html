@@ -172,7 +172,7 @@
             <i ng-click="performWorkflowAction(refset, 'SAVE', user.userName)"
               title="Save" class="noul material-icons md-18">save</i>
             <i
-              ng-show="refset.workflowStatus != 'REVIEW_DONE' && refset.workflowStatus !='NEW'"
+              ng-show="refset.workflowStatus != 'REVIEW_NEW' && refset.workflowStatus != 'REVIEW_DONE' && refset.workflowStatus !='NEW'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"

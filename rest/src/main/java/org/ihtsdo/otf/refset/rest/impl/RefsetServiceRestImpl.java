@@ -139,7 +139,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final Refset refset =
           refsetService.getRefsetRevision(refsetId,
               ConfigUtility.DATE_FORMAT.parse(date));
-
+      refsetService.handleLazyInit(refset);
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -174,8 +174,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (!date.matches("([0-9]{8})"))
         throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
 
-      return refsetService.findMembersForRefsetRevision(refsetId,
-          ConfigUtility.DATE_FORMAT.parse(date), pfs);
+      final ConceptRefsetMemberList list =
+          refsetService.findMembersForRefsetRevision(refsetId,
+              ConfigUtility.DATE_FORMAT.parse(date), pfs);
+      for (ConceptRefsetMember member : list.getObjects()) {
+        refsetService.handleLazyInit(member);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
       return null;
@@ -208,6 +213,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         authorizeProject(projectService, refset.getProject().getId(),
             securityService, authToken, "get refset for id", UserRole.AUTHOR);
       }
+      refsetService.handleLazyInit(refset);
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -271,6 +277,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(totalCt[0]);
       result.setObjects(refsetService.getProject(projectId).getRefsets());
+      for (Refset refset : result.getObjects()) {
+        refsetService.handleLazyInit(refset);
+      }
       return result;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
@@ -298,7 +307,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       authorizeApp(securityService, authToken,
           "finds refsets based on pfs parameter and query", UserRole.VIEWER);
-      return refsetService.findRefsetsForQuery(query, pfs);
+      final RefsetList list = refsetService.findRefsetsForQuery(query, pfs);
+      for (Refset refset : list.getObjects()) {
+        refsetService.handleLazyInit(refset);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve refsets ");
       return null;
@@ -390,8 +403,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
         member.setMemberType(Refset.MemberType.MEMBER);
-        member.setTerminology("N/A");
-        member.setVersion("N/A");
         member.setModuleId(concept.getModuleId());
         member.setLastModifiedBy(userName);
         member.setRefset(refset);
@@ -519,9 +530,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refset.setId(null);
       refset.setWorkflowStatus(WorkflowStatus.NEW);
+      // copy definition clauses
       for (DefinitionClause clause : refset.getDefinitionClauses()) {
         clause.setId(null);
       }
+      // clear notes
+      refset.setNotes(new ArrayList<Note>());
       refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
 
@@ -535,8 +549,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setPublished(false);
           member.setPublishable(true);
           member.setRefset(newRefset);
-          member.setTerminology("N/A");
-          member.setVersion("N/A");
           // Insert new members
           member.setId(null);
           member.setLastModifiedBy(userName);
@@ -853,7 +865,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Invalid refset id " + refsetId);
       }
 
-      return refsetService.findMembersForRefset(refsetId, query, pfs);
+      final ConceptRefsetMemberList list =
+          refsetService.findMembersForRefset(refsetId, query, pfs);
+      for (ConceptRefsetMember member : list.getObjects()) {
+        refsetService.handleLazyInit(member);
+      }
+      return list;
     } catch (Exception e) {
       handleException(e, "trying to retrieve members ");
       return null;
@@ -923,8 +940,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setPublishable(true);
       inclusion.setPublished(false);
       inclusion.setRefset(refset);
-      inclusion.setTerminology(refset.getTerminology());
-      inclusion.setVersion(refset.getVersion());
       inclusion.setLastModifiedBy(userName);
       return refsetService.addMember(inclusion);
 
@@ -1187,8 +1202,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setMemberType(Refset.MemberType.MEMBER);
           member.setPublishable(true);
           member.setRefset(refsetCopy);
-          member.setTerminology("N/A");
-          member.setVersion("N/A");
           member.setId(null);
           refsetService.addMember(member);
 
@@ -1922,8 +1935,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // recovering the previously saved state of the staged refset
-      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
-
+      final Refset stagedRefset =
+          refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+      refsetService.handleLazyInit(stagedRefset);
+      return stagedRefset;
     } catch (Exception e) {
       handleException(e, "trying to resume refset migration");
     } finally {

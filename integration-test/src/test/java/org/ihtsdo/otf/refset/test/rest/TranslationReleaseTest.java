@@ -51,8 +51,6 @@ import org.junit.Test;
  */
 public class TranslationReleaseTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -170,7 +168,6 @@ public class TranslationReleaseTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -770,8 +767,6 @@ public class TranslationReleaseTest {
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
-    member.setTerminology("N/A");
-    member.setVersion("N/A");
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;

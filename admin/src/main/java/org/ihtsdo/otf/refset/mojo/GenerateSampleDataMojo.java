@@ -715,8 +715,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(),
-          "DEFAULT", reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
 
@@ -728,8 +728,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(),
-          "DEFAULT", reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
 
@@ -882,8 +882,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setConceptId(conceptId);
     member.setConceptName(conceptName);
     member.setMemberType(memberType);
-    member.setTerminology("N/A");
-    member.setVersion("N/A");
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);
     member.setRefset(refset);
@@ -920,7 +918,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
     info.setTerminology("SNOMEDCT");
-    info.setVersion("latest");
+    info.setVersion("2015-01-31");
     info.setPlanned(false);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
@@ -1113,10 +1111,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setPublishable(true);
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
+    translation.setVersion(refset.getVersion());
     translation.setTerminologyId(refset.getTerminologyId());
     translation.setWorkflowPath("DEFAULT");
     translation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
-    translation.setVersion(refset.getVersion());
     translation.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
 
     TranslationServiceRest translationService =

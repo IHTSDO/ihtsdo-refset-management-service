@@ -52,8 +52,6 @@ import org.junit.Test;
  */
 public class TranslationTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -170,7 +168,6 @@ public class TranslationTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 

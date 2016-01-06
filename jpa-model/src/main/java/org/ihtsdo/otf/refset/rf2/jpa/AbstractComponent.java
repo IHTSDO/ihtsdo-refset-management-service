@@ -64,17 +64,9 @@ public abstract class AbstractComponent implements Component {
   @Column(nullable = false)
   private String moduleId;
 
-  /** The terminology. */
-  @Column(nullable = false)
-  private String terminology;
-
   /** The terminology id. */
   @Column(nullable = false)
   private String terminologyId;
-
-  /** The version. */
-  @Column(nullable = false)
-  private String version;
 
   /**
    * Instantiates an empty {@link AbstractComponent}.
@@ -95,9 +87,7 @@ public abstract class AbstractComponent implements Component {
     lastModified = component.getLastModified();
     lastModifiedBy = component.getLastModifiedBy();
     moduleId = component.getModuleId();
-    terminology = component.getTerminology();
     terminologyId = component.getTerminologyId();
-    version = component.getVersion();
   }
 
   /* see superclass */
@@ -208,12 +198,11 @@ public abstract class AbstractComponent implements Component {
     result = prime * result + (active ? 1231 : 1237);
     result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
     result =
-        prime * result + ((terminology == null) ? 0 : terminology.hashCode());
-    result =
         prime * result
             + ((terminologyId == null) ? 0 : terminologyId.hashCode());
-    // Removed bc was preventing compare on migrations from returning anything in common
-    //result = prime * result + ((version == null) ? 0 : version.hashCode());
+    // Removed bc was preventing compare on migrations from returning anything
+    // in common
+    // result = prime * result + ((version == null) ? 0 : version.hashCode());
     return result;
   }
 
@@ -234,50 +223,14 @@ public abstract class AbstractComponent implements Component {
         return false;
     } else if (!moduleId.equals(other.moduleId))
       return false;
-    if (terminology == null) {
-      if (other.terminology != null)
-        return false;
-    } else if (!terminology.equals(other.terminology))
-      return false;
+
     if (terminologyId == null) {
       if (other.terminologyId != null)
         return false;
     } else if (!terminologyId.equals(other.terminologyId))
       return false;
 
-    // Removed bc was preventing compare on migrations from returning anything in common
-    /*if (version == null) {
-      if (other.version != null)
-        return false;
-    } else if (!version.equals(other.version))
-      return false;*/
     return true;
-  }
-
-  /* see superclass */
-  @Override
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  public String getVersion() {
-    return version;
-  }
-
-  /* see superclass */
-  @Override
-  public void setVersion(String version) {
-    this.version = version;
-  }
-
-  /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  @Override
-  public String getTerminology() {
-    return terminology;
-  }
-
-  /* see superclass */
-  @Override
-  public void setTerminology(String terminology) {
-    this.terminology = terminology;
   }
 
   /* see superclass */
@@ -296,10 +249,11 @@ public abstract class AbstractComponent implements Component {
   /* see superclass */
   @Override
   public String toString() {
-
-    return id + "," + terminology + "," + terminologyId + "," + version + ","
-        + effectiveTime + "," + active + "," + moduleId + ", " + lastModifiedBy
-        + ", " + lastModified + " ";
+    return "AbstractComponent [id=" + id + ", effectiveTime=" + effectiveTime
+        + ", lastModified=" + lastModified + ", lastModifiedBy="
+        + lastModifiedBy + ", active=" + active + ", published=" + published
+        + ", publishable=" + publishable + ", moduleId=" + moduleId
+        + ", terminologyId=" + terminologyId + "]";
   }
 
 }

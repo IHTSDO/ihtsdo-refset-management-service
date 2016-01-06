@@ -5,12 +5,25 @@ package org.ihtsdo.otf.refset.rf2;
 
 import org.ihtsdo.otf.refset.helpers.HasId;
 import org.ihtsdo.otf.refset.helpers.HasName;
-import org.ihtsdo.otf.refset.helpers.HasTerminologyId;
 
 /**
  * Represents a description type reference set member.
  */
-public interface DescriptionType extends HasName, HasId, HasTerminologyId {
+public interface DescriptionType extends HasName, HasId {
+
+  /**
+   * Returns the terminology id.
+   *
+   * @return the terminology id
+   */
+  public String getTerminologyId();
+
+  /**
+   * Sets the terminology id.
+   *
+   * @param terminologyId the terminology id
+   */
+  public void setTerminologyId(String terminologyId);
 
   /**
    * Returns the refset id.

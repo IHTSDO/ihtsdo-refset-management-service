@@ -178,19 +178,16 @@ tsApp.service('projectService', [
     }
 
     // Finds projects as a list
-    this.findProjectsAsList = function(queryStr, pfs) {
+    this.findProjectsAsList = function(query, pfs) {
 
-      var query = (queryStr == null) ? '' : queryStr;
       console.debug('findProjectsAsList', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(projectUrl + 'projects' + '?query=' + query, pfs)
-      // + encodeURIComponent(utilService.cleanQuery(queryStr)),
-      // pfs)
-      .then(
+      $http.post(projectUrl + 'projects' + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -216,7 +213,8 @@ tsApp.service('projectService', [
 
       // Make PUT call
       gpService.increment();
-      $http.put(projectUrl + 'users/' + projectId + '?query=' + query, pfs).then(
+      $http.put(projectUrl + 'users/' + projectId + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -242,7 +240,9 @@ tsApp.service('projectService', [
 
       // Make PUT call
       gpService.increment();
-      $http.put(projectUrl + 'users/' + projectId + '/unassigned?query=' + query, pfs).then(
+      $http.put(
+        projectUrl + 'users/' + projectId + '/unassigned?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -354,9 +354,8 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
 
-    this.findConceptsForQuery = function(queryStr, terminology, version, pfs) {
+    this.findConceptsForQuery = function(query, terminology, version, pfs) {
 
-      var query = (queryStr == null) ? '' : queryStr;
       console.debug('findConceptsForQuery', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
@@ -364,8 +363,8 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + 'concepts' + '?query=' + encodeURIComponent(utilService.cleanQuery(queryStr))
-          + '&terminology=' + terminology + '&version=' + version, pfs)
+        projectUrl + 'concepts' + '?query=' + utilService.prepQuery(query) +
+          + '&terminology=' + terminology + '&version=' + version, utilService.prepPfs(pfs))
 
       .then(
       // success
@@ -423,7 +422,8 @@ tsApp.service('projectService', [
       $http.post(
         projectUrl + 'concept/children' + '?terminologyId=' + terminologyId + '&terminology='
           + terminology + '&version=' + version
-          + (translationId != null ? '&translationId=' + translationId : ''), pfs ? pfs : {}).then(
+          + (translationId != null ? '&translationId=' + translationId : ''),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -533,4 +533,6 @@ tsApp.service('projectService', [
         });
       return deferred.promise;
     }
+
+    //end
   } ]);

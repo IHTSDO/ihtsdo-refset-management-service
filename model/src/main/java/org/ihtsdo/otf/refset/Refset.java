@@ -92,6 +92,7 @@ public interface Refset extends Component, Searchable {
     BETA;
   }
 
+  
   /**
    * Returns the description.
    * 

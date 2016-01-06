@@ -51,9 +51,6 @@ import org.junit.Test;
  */
 public class WorkflowTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
-
   /** The adminAuthToken auth token. */
   protected static String adminAuthToken;
 
@@ -153,7 +150,6 @@ public class WorkflowTest {
   @After
   public void teardown() throws Exception {
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 

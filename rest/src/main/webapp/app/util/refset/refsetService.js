@@ -15,12 +15,6 @@ tsApp.service('refsetService', [
       $rootScope.$broadcast('refset:refsetChanged', refset);
     }
 
-    // TODO: will this help with updating concept info?
-    /*
-         * this.fireConceptChanged = fuction(concept) { $rootScope.$broadcast('data.concept',
-         * concept); }
-         */
-
     // get refset revision
     this.getRefsetRevision = function(refsetId, date) {
       console.debug('getRefsetRevision');
@@ -50,19 +44,20 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(refsetUrl + refsetId + '/' + date + '/' + 'members', pfs).then(
-      // success
-      function(response) {
-        console.debug('  members = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      $http.post(refsetUrl + refsetId + '/' + date + '/' + 'members', utilService.prepPfs(pfs))
+        .then(
+        // success
+        function(response) {
+          console.debug('  members = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
@@ -133,15 +128,14 @@ tsApp.service('refsetService', [
     }
 
     // Finds refsets based on pfs parameter and query
-    this.findRefsetsForQuery = function(queryStr, pfs) {
-
-      var query = (queryStr == null) ? '' : queryStr;
+    this.findRefsetsForQuery = function(query, pfs) {
       console.debug('findRefsetsForQuery', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + 'refsets' + '?query=' + query, pfs).then(
+      $http.post(refsetUrl + 'refsets' + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -347,7 +341,9 @@ tsApp.service('refsetService', [
 
       // find members
       gpService.increment()
-      $http.post(refsetUrl + 'members' + '?refsetId=' + refsetId + '&query=' + query, pfs).then(
+      $http.post(
+        refsetUrl + 'members' + '?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  members = ', response.data);
@@ -505,17 +501,16 @@ tsApp.service('refsetService', [
     }
 
     // find members in common
-    this.findMembersInCommon = function(reportToken, queryStr, pfs) {
-
-      var query = (queryStr == null) ? '' : queryStr;
+    this.findMembersInCommon = function(reportToken, query, pfs) {
       console.debug('findMembersInCommon', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
 
       // Make POST call
       gpService.increment();
-      $http.post(refsetUrl + 'common/members' + '?reportToken=' + reportToken + '&query=' + query,
-        pfs).then(
+      $http.post(
+        refsetUrl + 'common/members' + '?reportToken=' + reportToken + '&query='
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -632,21 +627,21 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http
-        .post(refsetUrl + 'old/members' + '?reportToken=' + reportToken + '&query=' + query, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug('  output = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        refsetUrl + 'old/members' + '?reportToken=' + reportToken + '&query='
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -658,21 +653,21 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http
-        .post(refsetUrl + 'new/members' + '?reportToken=' + reportToken + '&query=' + query, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug('  output = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(
+        refsetUrl + 'new/members' + '?reportToken=' + reportToken + '&query='
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 

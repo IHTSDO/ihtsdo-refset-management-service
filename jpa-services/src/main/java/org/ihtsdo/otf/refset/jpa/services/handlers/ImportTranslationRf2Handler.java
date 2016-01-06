@@ -125,7 +125,8 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             final Description description = new DescriptionJpa();
             setCommonFields(description, translation.getRefset());
             description.setTerminologyId(fields[0]);
-            description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+            description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                .parse(fields[1]));
             description.setLanguageCode(fields[5].intern());
             description.setTypeId(fields[6].intern());
             description.setTerm(fields[7]);
@@ -138,7 +139,8 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
             }
             concept = conceptCache.get(fields[4]);
             setCommonFields(concept, translation.getRefset());
-            concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+            concept
+                .setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
             concept.setTerminologyId(fields[4]);
             concept.setDefinitionStatusId("unknown");
             concept.setTranslation(translation);
@@ -227,13 +229,12 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     // Connect descriptions and language refset member objects
     for (Description description : descriptions.values()) {
 
-
       // Connect language and description
       if (descLangMap.containsKey(description.getTerminologyId())) {
         LanguageRefsetMember member =
             descLangMap.get(description.getTerminologyId());
         member.setDescriptionId(description.getTerminologyId());
-        description.getLanguageRefsetMembers().add(member);      
+        description.getLanguageRefsetMembers().add(member);
 
         descLangMap.remove(description.getTerminologyId());
       }
@@ -283,7 +284,5 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     c.setPublishable(true);
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
-    c.setTerminology("N/A");
-    c.setVersion("N/A");
   }
 }

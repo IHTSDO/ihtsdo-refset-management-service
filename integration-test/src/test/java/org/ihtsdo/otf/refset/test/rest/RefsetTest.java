@@ -47,9 +47,6 @@ import org.junit.Test;
  */
 public class RefsetTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
-
   /** The admin auth token. */
   protected static String adminAuthToken;
 
@@ -166,7 +163,6 @@ public class RefsetTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -296,8 +292,6 @@ public class RefsetTest {
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
     member.setModuleId(refset.getModuleId());
-    member.setTerminology(refset.getTerminology());
-    member.setVersion(refset.getVersion());
     member.setRefset(refset);
     return member;
   }
@@ -457,7 +451,6 @@ public class RefsetTest {
     clause.setNegated(false);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     ConceptRefsetMemberList members =
@@ -472,7 +465,6 @@ public class RefsetTest {
     clause.setNegated(false);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
@@ -487,7 +479,6 @@ public class RefsetTest {
     clause.setNegated(true);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =
@@ -503,7 +494,6 @@ public class RefsetTest {
     clause.setNegated(true);
     refset.getDefinitionClauses().add(clause);
     refsetService.updateRefset(refset, adminAuthToken);
-    refsetService = new RefsetClientRest(properties);
     refset =
         (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
     members =

@@ -72,32 +72,6 @@ public interface RefsetService extends ReleaseService {
    */
   public void removeRefset(Long id, boolean cascade) throws Exception;
 
-  /**
-   * Removes the refset descriptor ref set member.
-   *
-   * @param id the id
-   * @throws Exception the exception
-   */
-  public void removeRefsetDescriptorRefsetMember(Long id) throws Exception;
-
-  /**
-   * Update refset descriptor ref set member.
-   *
-   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
-   * @throws Exception the exception
-   */
-  public void updateRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
-
-  /**
-   * Adds the refset descriptor ref set member.
-   *
-   * @param refsetDescriptorRefsetMember the refset descriptor ref set member
-   * @return the refset descriptor ref set member
-   * @throws Exception the exception
-   */
-  public RefsetDescriptorRefsetMember addRefsetDescriptorRefsetMember(
-    RefsetDescriptorRefsetMember refsetDescriptorRefsetMember) throws Exception;
 
   /**
    * Adds the refset member.

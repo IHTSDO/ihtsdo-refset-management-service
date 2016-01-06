@@ -49,19 +49,21 @@ tsApp.service('translationService', [
 
       // Finds concepts for translation revision
       gpService.increment();
-      $http.post(translationUrl + translationId + '/' + date + '/' + 'concepts', pfs).then(
-      // success
-      function(response) {
-        console.debug('  concepts ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      $http.post(translationUrl + translationId + '/' + date + '/' + 'concepts', 
+        utilService.prepPfs(pfs))
+        .then(
+        // success
+        function(response) {
+          console.debug('  concepts ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
@@ -139,7 +141,8 @@ tsApp.service('translationService', [
 
       // Finds translations
       gpService.increment();
-      $http.post(translationUrl + 'translations' + '?query=' + query, pfs).then(
+      $http.post(translationUrl + 'translations' + '?query=' + utilService.prepQuery(query),
+        utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  translations ', response.data);
@@ -232,20 +235,20 @@ tsApp.service('translationService', [
       // find concepts
       gpService.increment();
       $http.post(
-        translationUrl + 'concepts' + '?query=' + query + '&translationId=' + translationId, pfs)
-        .then(
-        // success
-        function(response) {
-          console.debug('  concepts = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+        translationUrl + 'concepts' + '?query=' + utilService.prepQuery(query) + '&translationId='
+          + translationId, utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  concepts = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -764,7 +767,7 @@ tsApp.service('translationService', [
       gpService.increment();
       $http.post(
         translationUrl + 'common' + '/' + 'concepts' + '?reportToken=' + reportToken + '&query='
-          + query, pfs).then(
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  concepts ', response.data);
@@ -1112,6 +1115,9 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     }
+
+
+
     // end    
 
   } ]);

@@ -247,9 +247,9 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     assertTrue(tester.testAnalyzedIndexedFields());
     tester = new IndexedFieldTester(object);
     tester.include("effectiveTime");
-    tester.include("terminologyId");
     tester.include("terminology");
     tester.include("version");
+    tester.include("terminologyId");
     tester.include("lastModified");
     tester.include("lastModifiedBy");
     tester.include("moduleId");

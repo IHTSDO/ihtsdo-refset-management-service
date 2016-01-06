@@ -551,8 +551,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             concept.setTranslation(translation);
             concept.setModuleId(translation.getModuleId());
             concept.setEffectiveTime(null);
-            concept.setTerminology(translation.getTerminology());
-            concept.setVersion(translation.getVersion());
             concept.setDefinitionStatusId("UNKNOWN");
             service.addConcept(concept);
           }
@@ -735,8 +733,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       Concept concept = new ConceptJpa();
       concept.setActive(member.isActive());
       concept.setModuleId(member.getModuleId());
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
       concept.setTerminologyId(member.getConceptId());
       concept.setName(member.getConceptName());
       list.getObjects().add(concept);

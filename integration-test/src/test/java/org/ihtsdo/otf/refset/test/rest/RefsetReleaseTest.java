@@ -55,9 +55,6 @@ import org.junit.Test;
  */
 public class RefsetReleaseTest {
 
-  /** The viewer auth token. */
-  private static String viewerAuthToken;
-
   /** The admin auth token. */
   private static String adminAuthToken;
 
@@ -170,7 +167,6 @@ public class RefsetReleaseTest {
   public void teardown() throws Exception {
 
     // logout
-    securityService.logout(viewerAuthToken);
     securityService.logout(adminAuthToken);
   }
 
@@ -344,8 +340,8 @@ public class RefsetReleaseTest {
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-        adminAuthToken);
+    releaseService
+        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
     // Cancel release
     releaseService.cancelRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
@@ -375,8 +371,8 @@ public class RefsetReleaseTest {
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-        adminAuthToken);
+    releaseService
+        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
@@ -406,8 +402,8 @@ public class RefsetReleaseTest {
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-        adminAuthToken);
+    releaseService
+        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // Add 5 members to refset
@@ -434,8 +430,8 @@ public class RefsetReleaseTest {
     // Validate release
     releaseService.validateRefsetRelease(refset1.getId(), adminAuthToken);
     // Beta release
-    releaseService.betaRefsetRelease(refset1.getId(), "DEFAULT",
-        adminAuthToken);
+    releaseService
+        .betaRefsetRelease(refset1.getId(), "DEFAULT", adminAuthToken);
     // Finish release
     releaseService.finishRefsetRelease(refset1.getId(), adminAuthToken);
     // clean up
@@ -543,10 +539,9 @@ public class RefsetReleaseTest {
             adminAuthToken);
 
     // Import ReleaseArtifact
-    //    ReleaseArtifact processedRelease =
-        releaseService.importReleaseArtifact(null, artifactStream,
-            refsetReleaseInfo.getId(), adminAuthToken);
-    releaseService = new ReleaseClientRest(properties);
+    // ReleaseArtifact processedRelease =
+    releaseService.importReleaseArtifact(null, artifactStream,
+        refsetReleaseInfo.getId(), adminAuthToken);
 
     // Verify Refset now has two ReleaseArtifact objects
     processedRefsetReleaseInfo =
@@ -655,8 +650,6 @@ public class RefsetReleaseTest {
     member.setConceptName(name);
     member.setEffectiveTime(new Date());
     member.setMemberType(Refset.MemberType.MEMBER);
-    member.setTerminology("N/A");
-    member.setVersion("N/A");
     member.setModuleId(refset.getModuleId());
     member.setRefset(refset);
     return member;
@@ -667,7 +660,7 @@ public class RefsetReleaseTest {
    * 
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testFindRefsetReleasesForQuery() throws Exception {
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -683,8 +676,7 @@ public class RefsetReleaseTest {
         adminAuthToken);
     releaseService.validateRefsetRelease(refset.getId(), adminAuthToken);
     // Beta release
-    releaseService.betaRefsetRelease(refset.getId(), "DEFAULT",
-        adminAuthToken);
+    releaseService.betaRefsetRelease(refset.getId(), "DEFAULT", adminAuthToken);
 
     /*
      * While release still in process

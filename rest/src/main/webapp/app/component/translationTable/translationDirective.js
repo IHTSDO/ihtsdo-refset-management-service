@@ -39,7 +39,9 @@ tsApp
               $scope.selected = {
                 concept : null,
                 translation : null,
-                descriptionTypes : []
+                descriptionTypes : [],
+                terminology : null,
+                version : null,
               };
               $scope.translations = null;
               $scope.translationLookupProgress = {};
@@ -392,6 +394,8 @@ tsApp
               $scope.selectTranslation = function(translation) {
                 $scope.selected.translation = translation;
                 $scope.selected.descriptionTypes = translation.descriptionTypes;
+                $scope.selected.terminology = translation.terminology;
+                $scope.selected.version = translation.version;
                 $scope.getTranslationReleaseInfo(translation);
                 $scope.getConcepts(translation);
                 $scope.getAvailableConcepts(translation);
@@ -1381,7 +1385,9 @@ tsApp
                 $scope.data = {
                   concept : null,
                   descriptionTypes : translation.descriptionTypes,
-                  translation : translation
+                  translation : translation,
+                  terminology : translation.terminology,
+                  version : translation.version
                 }
 
                 // scope variables
@@ -2005,10 +2011,10 @@ tsApp
                         continue;
                       }
                       if (type == 'Spelling Dictionary'
-                        && data.translations[i].spellingDictionarySize > 0) {
+                        && !data.translations[i].spellingDictionaryEmpty) {
                         list.push(data.translations[i]);
                       }
-                      if (type == 'Phrase Memory' && data.translations[i].phraseMemorySize > 0) {
+                      if (type == 'Phrase Memory' && !data.translations[i].phraseMemoryEmpty) {
                         list.push(data.translations[i]);
                       }
                     }
@@ -2143,19 +2149,19 @@ tsApp
 
                 $scope.betaTranslationRelease = function(translation) {
 
-                  releaseService.betaTranslationRelease(translation.id,
-                    $scope.selectedIoHandler.id).then(
-                  // Success
-                  function(data) {
-                    $scope.stagedTranslation = data;
-                    $uibModalInstance.close($scope.stagedTranslation);
-                    alert('The BETA translation has been added .');
-                  },
-                  // Error
-                  function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
-                  });
+                  releaseService
+                    .betaTranslationRelease(translation.id, $scope.selectedIoHandler.id).then(
+                    // Success
+                    function(data) {
+                      $scope.stagedTranslation = data;
+                      $uibModalInstance.close($scope.stagedTranslation);
+                      alert('The BETA translation has been added .');
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                 };
 
                 $scope.finishTranslationRelease = function(translation) {

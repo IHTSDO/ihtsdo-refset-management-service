@@ -84,9 +84,7 @@ public class RefsetDescriptorRefsetMemberJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
-    tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
     tester.include("refsetId");
     tester.include("conceptId");
     // needed for generic refset class
@@ -136,9 +134,7 @@ public class RefsetDescriptorRefsetMemberJpaUnitTest extends ModelUnitSupport {
     // Set up some objects
     Concept c = new ConceptJpa();
     c.setId(1L);
-    c.setTerminology("1");
     c.setTerminologyId("1");
-    c.setVersion("1");
     c.setName("1");
     tester.proxy(Concept.class, 1, c);
 
@@ -161,8 +157,6 @@ public class RefsetDescriptorRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("publishable");
     tester.include("moduleId");
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
 
     tester.include("refsetId");
     tester.include("conceptId");

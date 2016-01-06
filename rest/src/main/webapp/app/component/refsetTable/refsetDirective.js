@@ -39,7 +39,9 @@ tsApp
               $scope.selected = {
                 refset : null,
                 member : null,
-                concept : null
+                concept : null,
+                terminology : null,
+                version : null
               };
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
@@ -360,6 +362,8 @@ tsApp
               // Looks up current release info and members.
               $scope.selectRefset = function(refset) {
                 $scope.selected.refset = refset;
+                $scope.selected.terminology = refset.terminology;
+                $scope.selected.version = refset.version;
                 $scope.getCurrentRefsetReleaseInfo(refset);
                 $scope.getMembers(refset);
                 $scope.getStandardDescriptionTypes(refset.terminology, refset.version);
@@ -1609,7 +1613,9 @@ tsApp
                 $scope.searchResults = null;
                 $scope.data = {
                   concept : null,
-                  descriptionTypes : metadata.descriptionTypes
+                  descriptionTypes : metadata.descriptionTypes,
+                  terminology: refset.terminology,
+                  version: refset.version
                 };
                 $scope.pageSize = 10;
                 $scope.paging = {};

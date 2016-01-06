@@ -84,9 +84,7 @@ public class LanguageRefsetMemberJpaUnitTest extends ModelUnitSupport {
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
     tester.include("moduleId");
-    tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
     tester.include("refsetId");
     tester.include("descriptionId");
     // needed for generic refset class
@@ -134,9 +132,7 @@ public class LanguageRefsetMemberJpaUnitTest extends ModelUnitSupport {
     // Set up some objects
     Description d = new DescriptionJpa();
     d.setId(1L);
-    d.setTerminology("1");
     d.setTerminologyId("1");
-    d.setVersion("1");
     d.setTerm("1");
     tester.proxy(Description.class, 1, d);
 
@@ -159,8 +155,6 @@ public class LanguageRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("publishable");
     tester.include("moduleId");
     tester.include("terminologyId");
-    tester.include("terminology");
-    tester.include("version");
     tester.include("refsetId");
     tester.include("descriptionId");
     tester.include("acceptabilityId");

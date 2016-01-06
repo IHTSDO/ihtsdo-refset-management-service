@@ -13,20 +13,6 @@ import org.ihtsdo.otf.refset.helpers.HasLastModified;
 public interface Component extends HasLastModified {
 
   /**
-   * Returns the terminology.
-   * 
-   * @return the terminology
-   */
-  public String getTerminology();
-
-  /**
-   * Sets the terminology.
-   * 
-   * @param terminology the terminology
-   */
-  public void setTerminology(String terminology);
-
-  /**
    * Returns the effective time.
    * 
    * @return the effective time
@@ -97,20 +83,6 @@ public interface Component extends HasLastModified {
    * @param moduleId the module id
    */
   public void setModuleId(String moduleId);
-
-  /**
-   * Returns the version.
-   * 
-   * @return the version
-   */
-  public String getVersion();
-
-  /**
-   * Sets the version.
-   * 
-   * @param version the version
-   */
-  public void setVersion(String version);
 
   /**
    * Returns the terminology id.

@@ -279,8 +279,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       final Concept concept = new ConceptJpa();
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
       concept.setTerminologyId(conceptNode.get("id").asText());
       concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
           "effectiveTime").asText()));
@@ -325,8 +323,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         final Concept concept = new ConceptJpa();
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
-        concept.setTerminology("N/A");
-        concept.setVersion("N/A");
         concept.setTerminologyId(conceptNode.get("id").asText());
         concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode
             .get("effectiveTime").asText()));
@@ -429,8 +425,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
     concept.setActive(doc.get("active").asText().equals("true"));
-    concept.setTerminology("N/A");
-    concept.setVersion("N/A");
     concept.setTerminologyId(doc.get("conceptId").asText());
     // Reuse as id if only digits, othrwise dummy id
     if (concept.getTerminologyId().matches("^\\d+$")) {
@@ -473,9 +467,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         description.setPublishable(true);
         description.setPublished(true);
         description.setTerm(desc.get("term").asText());
-        description.setTerminology("N/A");
         description.setTerminologyId(desc.get("descriptionId").asText());
-        description.setVersion("N/A");
+
         description.setTypeId(desc.get("type").asText());
         // Hardcoded SNOMED CT ID - due to terminology server values returned
         if (description.getTypeId().equals("FSN")) {
@@ -538,9 +531,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         rel.setLastModifiedBy(terminology);
         rel.setPublishable(true);
         rel.setPublished(true);
-        rel.setTerminology(terminology);
         rel.setTerminologyId(relNode.get("relationshipId").asText());
-        rel.setVersion(version);
 
         Concept destination = new ConceptJpa();
         destination.setTerminologyId(relNode.get("target").get("conceptId")
@@ -551,8 +542,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         } else {
           destination.setId(1L);
         }
-        destination.setTerminology("N/A");
-        destination.setVersion("N/A");
         destination.setName(relNode.get("target").get("fsn").asText());
         destination.setDefinitionStatusId(relNode.get("target")
             .get("definitionStatus").asText());
@@ -635,8 +624,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     }
     final Concept concept = new ConceptJpa();
     concept.setActive(conceptNode.get("active").asText().equals("true"));
-    concept.setTerminology("N/A");
-    concept.setVersion("N/A");
+
     concept.setTerminologyId(conceptNode.get("id").asText());
     concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
         "effectiveTime").asText()));
@@ -748,8 +736,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
       final Concept concept = new ConceptJpa();
       concept.setActive(conceptNode.get("active").asText().equals("true"));
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
+
       concept.setTerminologyId(conceptNode.get("id").asText());
       concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
           "effectiveTime").asText()));
@@ -812,8 +799,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
       // Assuming active
       concept.setActive(true);
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
       concept.setTerminologyId(entry.get("conceptId").asText());
       // no effective time information
       concept.setEffectiveTime(new Date(0));
@@ -880,8 +865,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
 
       // Assuming active
       concept.setActive(entry.get("active").asText().equals("true"));
-      concept.setTerminology("N/A");
-      concept.setVersion("N/A");
+
       concept.setTerminologyId(entry.get("conceptId").asText());
       // no effective time supplied
       concept.setEffectiveTime(new Date(0));
@@ -921,8 +905,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      */
     for (int i = 0; i < 4; i++) {
       DescriptionType type = new DescriptionTypeJpa();
-      type.setTerminology(terminology);
-      type.setVersion("N/A");
       type.setRefsetId("900000000000538005");
       type.setDescriptionFormat("900000000000540000");
       if (i == 0) {

@@ -53,7 +53,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 // @UniqueConstraint here is being used to create an index, not to enforce
 // uniqueness
 @Table(name = "concepts", uniqueConstraints = @UniqueConstraint(columnNames = {
-    "terminologyId", "terminology", "version", "id"
+    "terminologyId", "id"
 }))
 @Audited
 @Indexed
