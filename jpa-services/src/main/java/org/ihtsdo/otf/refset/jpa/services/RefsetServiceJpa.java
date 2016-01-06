@@ -736,7 +736,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
         member.setRefset(refsetCopy);
         member.setId(null);
-        if(member.getEffectiveTime() == null)
+        if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
         addMember(member);
       }
@@ -965,6 +965,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           final String version = refset.getVersion();
 
           // Execute for all members
+          boolean missingConcepts = false;
           while (i < numberOfMembers) {
             final List<String> termIds = new ArrayList<>();
 
@@ -979,7 +980,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
-            if (cons.getTotalCount() != termIds.size()) {
+            if (cons.getTotalCount() != termIds.size() && !missingConcepts) {
+              missingConcepts = true;
               // log and email an exception and continue
               ExceptionHandler.handleException(
                   new Exception("Missing concepts"),
@@ -1123,7 +1125,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         (RefsetJpa) reader.createQuery()
             .forEntitiesAtRevision(RefsetJpa.class, revision)
             .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
-    if(refset != null) {
+    if (refset != null) {
       RefsetJpa refsetJpa = new RefsetJpa(refset);
       refsetJpa.setId(null);
       Refset recoveredRefset = addRefset(refsetJpa);
@@ -1133,12 +1135,12 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         memberJpa.setRefset(recoveredRefset);
         addMember(memberJpa);
       }
-      for(Translation translation: refset.getTranslations()) {
+      for (Translation translation : refset.getTranslations()) {
         TranslationJpa translationJpa = new TranslationJpa(translation);
         translationJpa.setId(null);
         translationJpa.setRefset(recoveredRefset);
         recoveredRefset.getTranslations().add(translationJpa);
-        for(Concept concept : translation.getConcepts()) {
+        for (Concept concept : translation.getConcepts()) {
           ConceptJpa conceptJpa = new ConceptJpa(concept, true);
           conceptJpa.setId(null);
           conceptJpa.setTranslation(translationJpa);
@@ -1154,9 +1156,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           }
 
         }
-    }
+      }
       return recoveredRefset;
-    } else 
+    } else
       throw new Exception("Cannot find the refset to recover");
   }
 }

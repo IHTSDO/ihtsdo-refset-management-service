@@ -610,19 +610,19 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       redefine(refset, "<<70759006 | Pyoderma (disorder) |", reviewer3);
       migrate(refset, reviewer3);
 
-//      // Make danish refset and translation
-//      refset =
-//          makeTranslationRefset("Danish Translation scope reference set", 20,
-//              "INT", project3, "554461000005103", "1000005", "554471000005108",
-//              reviewer3);
-//
-//      // Make Swedish translation
-//      TranslationJpa translation =
-//          makeTranslation("Danish language reference set", "554461000005103",
-//              refset, project3, 20, "INT", "da", reviewer3);
-//      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-//      new TranslationServiceRestImpl().updateTranslation(translation,
-//          reviewer3.getAuthToken());
+      // Make danish refset and translation
+      refset =
+          makeTranslationRefset("Danish Translation scope reference set", 20,
+              "INT", project3, "554461000005103", "1000005", "554471000005108",
+              reviewer3);
+
+      // Make Swedish translation
+      TranslationJpa translation =
+          makeTranslation("Danish language reference set", "554461000005103",
+              refset, project3, 20, "INT", "da", reviewer3);
+      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      new TranslationServiceRestImpl().updateTranslation(translation,
+          reviewer3.getAuthToken());
 
       // Make dutch refset and translation
       refset =
@@ -631,7 +631,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
               reviewer3);
 
       // Make dutch translation
-      TranslationJpa translation =
+      translation =
           makeTranslation("Netherlands Dutch language reference set",
               "31000146106", refset, project3, 22, "INT", "da", reviewer3);
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);

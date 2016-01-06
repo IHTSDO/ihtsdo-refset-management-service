@@ -1232,6 +1232,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           final String version = translation.getRefset().getVersion();
 
           // Execute for all concepts
+          boolean missingConcepts = false;
           while (i < numberOfConcepts) {
             final List<String> termIds = new ArrayList<>();
 
@@ -1246,7 +1247,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
-            if (cons.getTotalCount() != termIds.size()) {
+            if (cons.getTotalCount() != termIds.size() && !missingConcepts) {
+              missingConcepts = true;
               // log and email an exception and continue
               ExceptionHandler.handleException(
                   new Exception("Missing concepts"),

@@ -72,7 +72,6 @@ public interface RefsetService extends ReleaseService {
    */
   public void removeRefset(Long id, boolean cascade) throws Exception;
 
-
   /**
    * Adds the refset member.
    *
@@ -352,7 +351,7 @@ public interface RefsetService extends ReleaseService {
    * Recovery refset.
    *
    * @param refsetId the refset id
-   * @return 
+   * @return the refset
    * @throws Exception the exception
    */
   public Refset recoveryRefset(Long refsetId) throws Exception;
