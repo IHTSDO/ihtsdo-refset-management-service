@@ -462,9 +462,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
-      list =
-          ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
-              Refset.class, pfs);
+      list = workflowService.applyPfsToList(list, Refset.class, pfs);
       result.setObjects(list);
       for (final Refset refset : result.getObjects()) {
         workflowService.handleLazyInit(refset);
@@ -499,9 +497,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         .getWorkflowHandlers()) {
       list.addAll(handler.findAvailableEditingRefsets(projectId, user, null,
           workflowService).getObjects());
-    }
-    for (final Refset r : list) {
-      workflowService.handleLazyInit(r);
     }
     return list;
 
