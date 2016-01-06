@@ -412,7 +412,7 @@
               <b>RELEASED</b>
             </td>
             <td
-              ng-show="!refsetReleaseInfo.published && !refsetReleaseInfo.planned">
+              ng-show="refsetReleaseInfo && !refsetReleaseInfo.published && !refsetReleaseInfo.planned">
               <b>BETA</b>
             </td>
             <td>{{refsetReleaseInfo.name}}
