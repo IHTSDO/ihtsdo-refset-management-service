@@ -279,7 +279,7 @@
                 ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"
                 title="Copy spelling dictionary from another translation"
                 class="noul material-icons md-18">content_copy</i>
-              <i ng-show="selected.translation.!spellingDictionaryEmpty"
+              <i ng-show="!selected.translation.spellingDictionaryEmpty"
                 ng-click="clearSpellingDictionary(selected.translation)"
                 title="Clear spelling dictionary entries"
                 class="noul material-icons md-18">delete</i>

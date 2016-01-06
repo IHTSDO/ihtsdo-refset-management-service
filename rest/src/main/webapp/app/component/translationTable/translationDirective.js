@@ -838,6 +838,8 @@ tsApp
                       }
 
                       // if data.warnings is set and doesn't match $scope.warnings
+                      console.debug("data.warnings",data.warnings);
+                      console.debug("scope.warnings",$scope.warnings);
                       if (data.warnings && data.warnings.length > 0
                         && $scope.warnings !== data.warnings) {
                         $scope.warnings = data.warnings;
