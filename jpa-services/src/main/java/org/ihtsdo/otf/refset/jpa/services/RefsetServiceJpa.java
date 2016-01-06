@@ -864,6 +864,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public int getLookupProgress(Long refsetId) throws Exception {
     final Refset refset = getRefset(refsetId);
 
+    Logger.getLogger(getClass()).info(
+        "Refset Service - getLookupProgress - " + refset.getId() + ", " + 
+        refset.isLookupInProgress());
     int retval = 100;
     if (refset.isLookupInProgress()) {
       if (lookupProgressMap.containsKey(refsetId)) {
@@ -878,7 +881,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     } else {
       retval = 100;
     }
-    Logger.getLogger(getClass()).debug(
+    Logger.getLogger(getClass()).info(
         "Refset Service - getLookupProgress - " + retval);
 
     return retval;

@@ -1263,8 +1263,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
+      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+        refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
           ConfigUtility.isBackgroundLookup());
+      }
 
       return refsetCopy;
 
@@ -1322,30 +1324,44 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Get origin and staged members
       final Refset stagedRefset = change.getStagedRefset();
       final Refset originRefset = change.getOriginRefset();
-      final Set<ConceptRefsetMember> originMembers =
-          new HashSet<>(originRefset.getMembers());
-      final Set<ConceptRefsetMember> stagedMembers =
-          new HashSet<>(stagedRefset.getMembers());
+      final Map<String, ConceptRefsetMember> originMembers =
+          new HashMap<>();
+      for (ConceptRefsetMember member : originRefset.getMembers()) {
+        originMembers.put(member.getConceptId(), member);
+      }
+      final Map<String, ConceptRefsetMember> stagedMembers =
+          new HashMap<>();
+      for (ConceptRefsetMember member : stagedRefset.getMembers()) {
+        stagedMembers.put(member.getConceptId(), member);
+      }
 
       // Remove origin-not-staged members
-      for (final ConceptRefsetMember originMember : originMembers) {
-        if (!stagedMembers.contains(originMember)) {
-          refsetService.removeMember(originMember.getId());
+      for (final String key : originMembers.keySet()) {
+        if (!stagedMembers.containsKey(key)) {
+          refsetService.removeMember(originMembers.get(key).getId());
+        }
+        if (stagedMembers.containsKey(key) && 
+            stagedMembers.get(key).getMemberType() != originMembers.get(key).getMemberType()) {
+          refsetService.removeMember(originMembers.get(key).getId());
         }
       }
 
       // rewire staged-not-origin members
-      for (final ConceptRefsetMember stagedMember : stagedMembers) {
+      for (final String key : stagedMembers.keySet()) {
 
         // New member, rewire to origin - this moves the content back to the
         // origin refset
-        if (!originMembers.contains(stagedMember)) {
-          stagedMember.setRefset(refset);
-          refsetService.updateMember(stagedMember);
+        if (!originMembers.containsKey(key)) {
+          stagedMembers.get(key).setRefset(refset);
+          refsetService.updateMember(stagedMembers.get(key));
+        } else if (originMembers.containsKey(key) && 
+            stagedMembers.get(key).getMemberType() != originMembers.get(key).getMemberType()) {
+          stagedMembers.get(key).setRefset(refset);
+          refsetService.updateMember(stagedMembers.get(key));
         }
         // Member matches one in origin - remove it
         else {
-          refsetService.removeMember(stagedMember.getId());
+          refsetService.removeMember(stagedMembers.get(key).getId());
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());

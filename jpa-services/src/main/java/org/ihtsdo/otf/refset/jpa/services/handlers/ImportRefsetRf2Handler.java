@@ -102,7 +102,9 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         member.setConceptActive(true);
         member.setRefset(refset);
         member.setConceptId(fields[5]);
-        member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+        if (!fields[1].equals("")) {
+          member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+        }
 
         // Add member
         list.add(member);

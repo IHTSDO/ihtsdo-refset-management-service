@@ -1763,9 +1763,9 @@ tsApp
               };
 
               // Migration modal
-              $scope.openMigrationModal = function(lrefset, ltype) {
+              $scope.openMigrationModal = function(lrefset) {
 
-                console.debug('openMigrationModal ', lrefset, ltype);
+                console.debug("openMigrationModal ", lrefset);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/refsetTable/migration.html',
@@ -1779,9 +1779,6 @@ tsApp
                     },
                     paging : function() {
                       return $scope.paging;
-                    },
-                    type : function() {
-                      return ltype;
                     },
                     metadata : function() {
                       return $scope.metadata;
@@ -1797,26 +1794,29 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, refset, paging, type,
-                metadata) {
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset, definition,
+                paging, metadata) {
 
-                console.debug('Entered refactor modal control');
+                console.debug('Entered migration modal control');
 
                 // set up variables
                 $scope.refset = refset;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 10;
                 $scope.paging = paging;
-                $scope.type = type;
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
-
+                var stop;
+                
+                // Initialize
                 if ($scope.refset.stagingType == 'MIGRATION') {
                   refsetService.resumeMigration($scope.refset.id).then(
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
+                    $scope.refset.newTerminology = $scope.stagedRefset.terminology;
+                    $scope.refset.newVersion = $scope.stagedRefset.version;
                     refsetService.compareRefsets($scope.refset.id, data.id).then(
                     // Success
                     function(data) {
@@ -1925,15 +1925,16 @@ tsApp
                   });
                 };
 
-                // Begin migration and compare refsets and get diff report
-                $scope.beginMigration = function(newTerminology, newVersion) {
-
-                  refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
+                $scope.refreshLookupProgress = function() {
+                  refsetService.getLookupProgress($scope.stagedRefset.id).then(
                   // Success
                   function(data) {
-                    $scope.stagedRefset = data;
-                    $scope.refset.stagingType = 'MIGRATION';
-                    refsetService.compareRefsets(refset.id, data.id).then(
+                      $scope.lookupProgress = data;
+                      if (data >= 100) {
+                        $scope.stopRefreshLookupProgress();
+                        $scope.stagedRefset.lookupInProgress = false;
+                        
+                          refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
                     // Success
                     function(data) {
                       $scope.reportToken = data;
@@ -1944,6 +1945,39 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     });
+                      } /*else if (data < 100) {
+                        window.alert("Progress is " + data + " % complete.");
+                      }*/
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+                }
+                
+                $scope.stopRefreshLookupProgress = function() {
+                  if (angular.isDefined(stop)) {
+                    $interval.cancel(stop);
+                    stop = undefined;
+                  }
+                };
+                
+                // Begin migration and compare refsets and get diff report
+                $scope.beginMigration = function(newTerminology, newVersion) {
+
+                  refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
+                  // Success
+                  function(data) {
+                    $scope.stagedRefset = data;
+                    $scope.stagedRefset.lookupInProgress = true;
+                    // TODO read this from the refset using a service
+                    $scope.refset.stagingType = 'MIGRATION';
+                    $scope.lookupProgress = 0;
+                    
+                    stop = $interval(function() {
+                      $scope.refreshLookupProgress();
+                    }, 2000);
                   },
                   // Error
                   function(data) {
@@ -1955,7 +1989,6 @@ tsApp
                 // Finish migration
                 $scope.finish = function(refset) {
 
-                  if ($scope.type == 'Migration') {
                     refsetService.finishMigration(refset.id).then(
                     // Success
                     function(data) {
@@ -1966,7 +1999,7 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     });
-                  }
+
                 };
 
                 // Save for later, allow state to be resumed
@@ -2139,7 +2172,9 @@ tsApp
 
                 // Cancel migration
                 $scope.cancel = function(refset) {
-                  if ($scope.type == 'Migration') {
+                  /*if (!confirm("Are you sure you want to cancel the migration?")) {
+                    return;
+                  }*/
                     refsetService.cancelMigration(refset.id).then(
                     // Success
                     function(data) {
@@ -2150,7 +2185,7 @@ tsApp
                       $scope.errors[0] = data;
                       utilService.clearError();
                     });
-                  }
+
                   $uibModalInstance.dismiss('cancel');
                 };
 
