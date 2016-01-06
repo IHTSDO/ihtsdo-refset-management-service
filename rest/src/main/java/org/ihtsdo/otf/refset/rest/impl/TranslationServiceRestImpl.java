@@ -1244,6 +1244,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       toEntries.addAll(fromEntries);
       toSpelling.setEntries(toEntries);
 
+      final SpellingCorrectionHandler handler =
+          getSpellingCorrectionHandler(toTranslation);
+      handler.reindex(toSpelling.getEntries(), false);
+
       // Create service and configure transaction scope
       translationService.updateSpellingDictionary(toSpelling);
 
@@ -1444,6 +1448,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
+
+        final SpellingCorrectionHandler handler =
+            getSpellingCorrectionHandler(translation);
+        handler.reindex(spelling.getEntries(), false);
+
         translationService.updateSpellingDictionary(spelling);
       }
     } catch (Exception e) {

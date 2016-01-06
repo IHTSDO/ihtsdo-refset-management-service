@@ -354,6 +354,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // Clear contents
     translationService.clearSpellingDictionary(tid, adminAuthToken);
+    translationService = new TranslationClientRest(properties);
 
     // Test SuggestSpelling with empty dictionary
     results = translationService.suggestSpelling(tid, "Word3", adminAuthToken);
@@ -497,23 +498,41 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
     translationService.addSpellingDictionaryEntry(tidTo, "Word2",
         adminAuthToken);
 
-    // Test SuggestSpelling on second dictionary with entry that does not reside
-    // in dictionary
+    // Test SuggestSpelling before the copy operation on both dictionaries
     StringList results =
+        translationService.suggestSpelling(tidFrom, "Word1", adminAuthToken);
+    assertEquals(3, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidFrom, "Word5", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidTo, "Word1", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    results =
         translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
     assertEquals(2, results.getTotalCount());
 
-    // Copy contgents of first dictionary to second dictionary. This does not
+    // Copy contents of first dictionary to second dictionary. This does not
     // replace but rather appends contents of second dictionary
     translationService.copySpellingDictionary(tidFrom, tidTo, adminAuthToken);
 
-    // Test SuggestSpelling with same entry post-copy routine
+    // Verify the From dictionary hasn't changed
+    results =
+        translationService.suggestSpelling(tidFrom, "Word1", adminAuthToken);
+    assertEquals(3, results.getTotalCount());
+
+    results =
+        translationService.suggestSpelling(tidFrom, "Word5", adminAuthToken);
+    assertEquals(0, results.getTotalCount());
+
+    // Verify the To dictionary has it's old contents and the copied contents
     results =
         translationService.suggestSpelling(tidTo, "Word5", adminAuthToken);
     assertEquals(0, results.getTotalCount());
 
-    // Verify original contents still reside in second dictionary by testing an
-    // original entry
     results =
         translationService.suggestSpelling(tidTo, "Word1", adminAuthToken);
     assertEquals(0, results.getTotalCount());
