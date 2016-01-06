@@ -63,7 +63,7 @@ tsApp
               $scope.paging['refset'] = {
                 page : 1,
                 filter : '',
-                sortField : $scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNE_ALL' ? 'refsetName'
+                sortField : $scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL' ? 'refsetName'
                   : 'name',
                 ascending : null
               }
@@ -410,6 +410,7 @@ tsApp
                 refsetService.removeRefsetMember(member.id).then(
                 // Success 
                 function() {
+                  $scope.selected.concept = null;
                   $scope.getMembers(refset);
                 });
               };
@@ -865,7 +866,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -1439,7 +1440,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -1536,7 +1537,7 @@ tsApp
 
                       // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {
@@ -1614,8 +1615,8 @@ tsApp
                 $scope.data = {
                   concept : null,
                   descriptionTypes : metadata.descriptionTypes,
-                  terminology: refset.terminology,
-                  version: refset.version
+                  terminology : refset.terminology,
+                  version : refset.version
                 };
                 $scope.pageSize = 10;
                 $scope.paging = {};
@@ -1641,8 +1642,6 @@ tsApp
                     conceptName : concept.name,
                     conceptActive : concept.active,
                     memberType : $scope.memberType,
-                    terminology : refset.terminology,
-                    version : refset.version,
                     moduleId : refset.moduleId,
                   };
                   member.refsetId = refset.id;

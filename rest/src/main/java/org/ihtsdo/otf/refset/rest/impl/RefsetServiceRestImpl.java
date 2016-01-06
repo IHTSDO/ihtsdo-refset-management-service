@@ -286,6 +286,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             .getId(), securityService, authToken, "get refset for id",
             UserRole.AUTHOR);
       }
+      refsetService.handleLazyInit(member);
       return member;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a member");

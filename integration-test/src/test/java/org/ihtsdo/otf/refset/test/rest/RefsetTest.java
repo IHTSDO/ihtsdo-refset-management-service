@@ -795,7 +795,7 @@ public class RefsetTest {
     
 //    int translationConcepts = translation.getConcepts().size();
     
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true, adminAuthToken);
     
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
     

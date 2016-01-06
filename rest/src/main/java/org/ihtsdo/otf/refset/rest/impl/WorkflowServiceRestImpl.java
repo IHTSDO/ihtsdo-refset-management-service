@@ -36,6 +36,7 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.WorkflowServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
@@ -174,8 +175,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService.getWorkflowHandlerForPath(translation
               .getWorkflowPath());
       // Find available editing work
-      return handler.findAvailableEditingConcepts(translation, user, pfs,
-          workflowService);
+      final ConceptList list =
+          handler.findAvailableEditingConcepts(translation, user, pfs,
+              workflowService);
+      for (final Concept concept : list.getObjects()) {
+        concept.setDescriptions(new ArrayList<Description>());
+      }
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find available editing work");
@@ -215,7 +221,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "projectId:" + projectId + " AND " + "authorUserNames:"
               + user.getUserName() + " AND translationId:" + translationId
               + " AND forAuthoring:true AND forReview:false";
-      
+
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
@@ -263,8 +269,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService.getWorkflowHandlerForPath(translation
               .getWorkflowPath());
       // Find available editing work
-      return handler.findAvailableReviewConcepts(translation, user, pfs,
-          workflowService);
+      final ConceptList list =
+          handler.findAvailableReviewConcepts(translation, user, pfs,
+              workflowService);
+      for (final Concept concept : list.getObjects()) {
+        concept.setDescriptions(new ArrayList<Description>());
+      }
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find available review work");
@@ -354,9 +365,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           workflowService.performWorkflowAction(translationId, userName,
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
               concept);
-      if (record != null) {
-        handleLazyInit(record, workflowService);
-      }
+      handleLazyInit(record, workflowService);
 
       return record;
     } catch (Exception e) {
@@ -459,6 +468,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
       result.setObjects(list);
+      for (final Refset refset : result.getObjects()) {
+        workflowService.handleLazyInit(refset);
+      }
       return result;
 
     } catch (Exception e) {
@@ -624,8 +636,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               Refset.class, pfs);
       result.setObjects(list);
 
-      for (Refset r : list) {
-        workflowService.handleLazyInit(r);
+      for (final Refset refset : list) {
+        workflowService.handleLazyInit(refset);
       }
       return result;
 
@@ -746,7 +758,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.setTotalCount(refsets.size());
       list.getObjects().addAll(
           workflowService.applyPfsToList(refsets, Refset.class, pfs));
-
+      for (final Refset refset : list.getObjects()) {
+        workflowService.handleLazyInit(refset);
+      }
       return list;
     } catch (Exception e) {
       handleException(e, "trying to find available review work");
@@ -910,10 +924,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find non release process translations", UserRole.AUTHOR);
 
-      return workflowService.findTranslationsForQuery("projectId:" + projectId
-          + " AND NOT workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION
-          + " AND NOT workflowStatus:" + WorkflowStatus.BETA
-          + " AND NOT workflowStatus:" + WorkflowStatus.PUBLISHED, pfs);
+      TranslationList list =
+          workflowService.findTranslationsForQuery("projectId:" + projectId
+              + " AND NOT workflowStatus:"
+              + WorkflowStatus.READY_FOR_PUBLICATION
+              + " AND NOT workflowStatus:" + WorkflowStatus.BETA
+              + " AND NOT workflowStatus:" + WorkflowStatus.PUBLISHED, pfs);
+      for (Translation translation : list.getObjects()) {
+        workflowService.handleLazyInit(translation);
+      }
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find non release process translations");

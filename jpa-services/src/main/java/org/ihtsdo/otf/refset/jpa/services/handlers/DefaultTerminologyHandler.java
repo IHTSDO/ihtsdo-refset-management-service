@@ -82,7 +82,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   /* see superclass */
   @Override
   public TerminologyHandler copy() throws Exception {
-    DefaultTerminologyHandler handler = new DefaultTerminologyHandler();
+    final DefaultTerminologyHandler handler = new DefaultTerminologyHandler();
     handler.url = this.url;
     handler.branch = this.branch;
     handler.authHeader = this.authHeader;
@@ -137,15 +137,15 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public List<Terminology> getTerminologyVersions(String edition)
     throws Exception {
-    List<Terminology> list = new ArrayList<Terminology>();
+    final List<Terminology> list = new ArrayList<Terminology>();
     if (edition.equals("SNOMEDCT")) {
       // Make a webservice call to SnowOwl
-      Client client = ClientBuilder.newClient();
-      WebTarget target = client.target(url + "/branches");
-      Response response =
+      final Client client = ClientBuilder.newClient();
+      final WebTarget target = client.target(url + "/branches");
+      final Response response =
           target.request(accept).header("Authorization", authHeader)
               .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-      String resultString = response.readEntity(String.class);
+      final String resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
@@ -166,12 +166,12 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
        * }
        * </pre>
        */
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode doc = mapper.readTree(resultString);
+      final ObjectMapper mapper = new ObjectMapper();
+      final JsonNode doc = mapper.readTree(resultString);
       if (doc.get("items") == null) {
         return list;
       }
-      for (JsonNode item : doc.get("items")) {
+      for (final JsonNode item : doc.get("items")) {
         final String version = item.get("name").asText();
         if (version.matches("\\d\\d\\d\\d-\\d\\d-\\d\\d")) {
           Terminology terminology = new TerminologyJpa();
@@ -192,7 +192,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         "  resolve expression - " + terminology + ", " + version + ", " + expr
             + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
-    Client client = ClientBuilder.newClient();
+    final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
@@ -275,7 +275,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     if (doc.get("items") == null) {
       return conceptList;
     }
-    for (JsonNode conceptNode : doc.get("items")) {
+    for (final JsonNode conceptNode : doc.get("items")) {
       final Concept concept = new ConceptJpa();
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
@@ -319,7 +319,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       if (doc.get("items") == null) {
         return conceptList;
       }
-      for (JsonNode conceptNode : doc.get("items")) {
+      for (final JsonNode conceptNode : doc.get("items")) {
         final Concept concept = new ConceptJpa();
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
@@ -349,14 +349,14 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   public Concept getFullConcept(String terminologyId, String terminology,
     String version) throws Exception {
     // Make a webservice call to SnowOwl to get concept
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId);
-    Response response =
+    final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -421,9 +421,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * 
      * </pre>
      */
-    Concept concept = new ConceptJpa();
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final Concept concept = new ConceptJpa();
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
     concept.setActive(doc.get("active").asText().equals("true"));
     concept.setTerminologyId(doc.get("conceptId").asText());
     // Reuse as id if only digits, othrwise dummy id
@@ -445,7 +445,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     concept.setPublished(true);
 
     if (doc.get("descriptions") != null) {
-      for (JsonNode desc : doc.get("descriptions")) {
+      for (final JsonNode desc : doc.get("descriptions")) {
         final Description description = new DescriptionJpa();
 
         description.setActive(desc.get("active").asText().equals("true"));
@@ -476,7 +476,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         } else if (description.getTypeId().equals("SYNONYM")) {
           description.setTypeId("900000000000013009");
         }
-        for (JsonNode language : desc.findValues("acceptabilityMap")) {
+        for (final JsonNode language : desc.findValues("acceptabilityMap")) {
           final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
           member.setActive(true);
           member.setDescriptionId(terminologyId);
@@ -496,7 +496,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     }
 
     if (doc.get("relationships") != null) {
-      for (JsonNode relNode : doc.get("relationships")) {
+      for (final JsonNode relNode : doc.get("relationships")) {
         final Relationship rel = new RelationshipJpa();
 
         rel.setActive(relNode.get("active").asText().equals("true"));
@@ -533,7 +533,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
         rel.setPublished(true);
         rel.setTerminologyId(relNode.get("relationshipId").asText());
 
-        Concept destination = new ConceptJpa();
+        final Concept destination = new ConceptJpa();
         destination.setTerminologyId(relNode.get("target").get("conceptId")
             .asText());
         // Reuse as id if only digits, otherwise dummy id
@@ -559,14 +559,14 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
     // Make a webservice call to SnowOwl
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?escg="
             + terminologyId + "&expand=pt()");
-    Response response =
+    final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -608,8 +608,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * }
      * </pre>
      */
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
     if (doc.get("items") == null) {
       return null;
     }
@@ -646,8 +646,8 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   public ConceptList getConcepts(List<String> terminologyIds,
     String terminology, String version) throws Exception {
 
-    StringBuilder query = new StringBuilder();
-    for (String terminologyId : terminologyIds) {
+    final StringBuilder query = new StringBuilder();
+    for (final String terminologyId : terminologyIds) {
       if (query.length() != 0) {
         query.append(" UNION ");
       }
@@ -661,9 +661,9 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    ConceptList conceptList = new ConceptListJpa();
+    final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
-    Client client = ClientBuilder.newClient();
+    final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = pfs;
     if (localPfs == null) {
@@ -677,15 +677,15 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
-    WebTarget target =
+    final WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?term="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()");
-    Response response =
+    final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -727,12 +727,12 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * }
      * </pre>
      */
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
     if (doc.get("items") == null) {
       return conceptList;
     }
-    for (JsonNode conceptNode : doc.get("items")) {
+    for (final JsonNode conceptNode : doc.get("items")) {
 
       final Concept concept = new ConceptJpa();
       concept.setActive(conceptNode.get("active").asText().equals("true"));
@@ -762,16 +762,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public ConceptList getConceptParents(String terminologyId,
     String terminology, String version) throws Exception {
-    ConceptList conceptList = new ConceptListJpa();
+    final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId + "/parents");
-    Response response =
+    final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -789,13 +789,13 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * ]
      * </pre>
      */
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
 
     JsonNode entry = null;
     int index = 0;
     while ((entry = doc.get(index++)) != null) {
-      Concept concept = new ConceptJpa();
+      final Concept concept = new ConceptJpa();
 
       // Assuming active
       concept.setActive(true);
@@ -822,16 +822,16 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version) throws Exception {
-    ConceptList conceptList = new ConceptListJpa();
+    final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
+    final Client client = ClientBuilder.newClient();
+    final WebTarget target =
         client.target(url + "browser/" + branch + "/" + version + "/concepts/"
             + terminologyId + "/children?form=inferred");
-    Response response =
+    final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -855,13 +855,13 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * ]
      * </pre>
      */
-    ObjectMapper mapper = new ObjectMapper();
-    JsonNode doc = mapper.readTree(resultString);
+    final ObjectMapper mapper = new ObjectMapper();
+    final JsonNode doc = mapper.readTree(resultString);
 
     JsonNode entry = null;
     int index = 0;
     while ((entry = doc.get(index++)) != null) {
-      Concept concept = new ConceptJpa();
+      final Concept concept = new ConceptJpa();
 
       // Assuming active
       concept.setActive(entry.get("active").asText().equals("true"));
@@ -895,7 +895,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public List<DescriptionType> getStandardDescriptionTypes(String terminology)
     throws Exception {
-    List<DescriptionType> list = new ArrayList<>();
+    final List<DescriptionType> list = new ArrayList<>();
     /**
      * <pre>
      * 0f928c01-b245-5907-9758-a46cbeed2674    20020131        1       900000000000207008      900000000000538005      900000000000003001      900000000000540000      255
@@ -904,7 +904,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
      * </pre>
      */
     for (int i = 0; i < 4; i++) {
-      DescriptionType type = new DescriptionTypeJpa();
+      final DescriptionType type = new DescriptionTypeJpa();
       type.setRefsetId("900000000000538005");
       type.setDescriptionFormat("900000000000540000");
       if (i == 0) {
@@ -949,7 +949,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
     final List<DescriptionType> descriptionTypes =
         getStandardDescriptionTypes(terminology);
     final List<LanguageDescriptionType> types = new ArrayList<>();
-    for (DescriptionType descriptionType : descriptionTypes) {
+    for (final DescriptionType descriptionType : descriptionTypes) {
       // don't include definition
       if (descriptionType.getName().equals("DEF")) {
         continue;
@@ -969,7 +969,7 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public Map<String, String> getStandardCaseSensitivityTypes(String terminology)
     throws Exception {
-    Map<String, String> map = new HashMap<>();
+    final Map<String, String> map = new HashMap<>();
 
     // For now this is hard-coded but could be looked up if term server had an
     // API

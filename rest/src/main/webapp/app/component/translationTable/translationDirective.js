@@ -413,14 +413,19 @@ tsApp
               $scope.removeTranslation = function(translation) {
 
                 // warn about concepts
-                if (translation.concepts) {
+                if (translation.assigned && translation.assigned.totalCount > 0) {
+                  confirm('The translation has assigned concepts you must unassign all first.');
+                  return;
+                }
+
+                if (translation.concepts && translation.concepts.totalCount > 0) {
                   if (!confirm('The translation has concepts that will also be deleted.')) {
                     return;
                   }
                 }
 
                 // IF concepts are not loaded, load, check, and re-confirm
-                else {
+                if (!translation.concepts) {
                   // Test for concept
                   translationService.findTranslationConceptsForQuery(translation.id, '', {
                     startIndex : 0,
@@ -838,10 +843,10 @@ tsApp
                       }
 
                       // if data.warnings is set and doesn't match $scope.warnings
-                      console.debug("data.warnings",data.warnings);
-                      console.debug("scope.warnings",$scope.warnings);
+                      console.debug("data.warnings", data.warnings);
+                      console.debug("scope.warnings", $scope.warnings);
                       if (data.warnings && data.warnings.length > 0
-                        && $scope.warnings !== data.warnings) {
+                        && $scope.warnings.join() !== data.warnings.join()) {
                         $scope.warnings = data.warnings;
                         return;
                       } else {

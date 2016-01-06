@@ -529,7 +529,7 @@ tsApp.directive('conceptInfo', [
 
                   // if $scope.warnings is empty, and data.warnings is not, show warnings and stop
                   if (data.warnings && data.warnings.length > 0
-                    && $scope.warnings !== data.warnings) {
+                    && $scope.warnings.join() !== data.warnings.join()) {
                     $scope.warnings = data.warnings;
                     return;
                   } else {

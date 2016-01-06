@@ -49,21 +49,20 @@ tsApp.service('translationService', [
 
       // Finds concepts for translation revision
       gpService.increment();
-      $http.post(translationUrl + translationId + '/' + date + '/' + 'concepts', 
-        utilService.prepPfs(pfs))
-        .then(
-        // success
-        function(response) {
-          console.debug('  concepts ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(translationUrl + translationId + '/' + date + '/' + 'concepts',
+        utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  concepts ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -211,10 +210,9 @@ tsApp.service('translationService', [
 
       // Remove translation
       gpService.increment();
-      $http['delete'](translationUrl + 'remove' + '/' + translationId).then(
+      $http['delete'](translationUrl + 'remove' + '/' + translationId + '?cascade=true').then(
       // success
       function(response) {
-        console.debug('  project = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -1115,8 +1113,6 @@ tsApp.service('translationService', [
       });
       return deferred.promise;
     }
-
-
 
     // end    
 

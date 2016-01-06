@@ -363,7 +363,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    translationService.removeTranslation(tid, adminAuthToken);
+    translationService.removeTranslation(tid, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -440,12 +440,12 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tidOrig);
-    translationService.removeTranslation(tidOrig, adminAuthToken);
+    translationService.removeTranslation(tidOrig, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidNew);
-    translationService.removeTranslation(tidNew, adminAuthToken);
+    translationService.removeTranslation(tidNew, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
@@ -539,12 +539,12 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tidFrom);
-    translationService.removeTranslation(tidFrom, adminAuthToken);
+    translationService.removeTranslation(tidFrom, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
     verifyTranslationLookupCompleted(tidTo);
-    translationService.removeTranslation(tidTo, adminAuthToken);
+    translationService.removeTranslation(tidTo, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
@@ -642,7 +642,7 @@ public class SpellingCorrectionRestTest extends RestIntegrationSupport {
 
     // clean up
     verifyTranslationLookupCompleted(tid);
-    translationService.removeTranslation(tid, adminAuthToken);
+    translationService.removeTranslation(tid, true, adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }

@@ -52,7 +52,6 @@ import org.junit.Test;
  */
 public class TranslationTest {
 
-
   /** The admin auth token. */
   private static String adminAuthToken;
 
@@ -423,7 +422,8 @@ public class TranslationTest {
 
     // cleanup
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
@@ -460,7 +460,8 @@ public class TranslationTest {
     assertEquals(2, suggestTranslation.getTotalCount());
 
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
@@ -496,7 +497,8 @@ public class TranslationTest {
 
     // clean up
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }

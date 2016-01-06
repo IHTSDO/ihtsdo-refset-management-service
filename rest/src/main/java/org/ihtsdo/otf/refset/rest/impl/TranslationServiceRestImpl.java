@@ -429,6 +429,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Remove translation", notes = "Removes the translation with the specified id")
   public void removeTranslation(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Cascade, e.g. true", required = true) @QueryParam("cascade") boolean cascade,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -447,7 +448,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
       // Create service and configure transaction scope
-      translationService.removeTranslation(translationId, true);
+      translationService.removeTranslation(translationId, cascade);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");

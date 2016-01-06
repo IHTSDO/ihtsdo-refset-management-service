@@ -39,12 +39,12 @@ public class ValidationServiceJpa extends RootServiceJpa implements
     try {
       if (config == null)
         config = ConfigUtility.getConfigProperties();
-      String key = "validation.service.handler";
-      for (String handlerName : config.getProperty(key).split(",")) {
+      final String key = "validation.service.handler";
+      for (final String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
         // Add handlers to map
-        ValidationCheck handlerService =
+        final ValidationCheck handlerService =
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, ValidationCheck.class);
         validationHandlersMap.put(handlerName, handlerService);
@@ -72,12 +72,12 @@ public class ValidationServiceJpa extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public ValidationResult validateConcept(Concept concept,
-    Project project, TranslationService service) throws Exception {
-    
-    ValidationResult result = new ValidationResultJpa();
-    for (String key : validationHandlersMap.keySet()) {
-      if (project.getValidationChecks().contains(key)) {  
+  public ValidationResult validateConcept(Concept concept, Project project,
+    TranslationService service) throws Exception {
+
+    final ValidationResult result = new ValidationResultJpa();
+    for (final String key : validationHandlersMap.keySet()) {
+      if (project.getValidationChecks().contains(key)) {
         result.merge(validationHandlersMap.get(key).validate(concept, service));
       }
     }
@@ -87,15 +87,13 @@ public class ValidationServiceJpa extends RootServiceJpa implements
   /* see superclass */
   @Override
   public ValidationResult validateTranslation(Translation translation,
-    Project project, TranslationService service)
-    throws Exception {
-    
-    
-    ValidationResult result = new ValidationResultJpa();
-    for (String key : validationHandlersMap.keySet()) {
-      if (project.getValidationChecks().contains(key)) {  
-        result.merge(validationHandlersMap.get(key)
-          .validate(translation, service));
+    Project project, TranslationService service) throws Exception {
+
+    final ValidationResult result = new ValidationResultJpa();
+    for (final String key : validationHandlersMap.keySet()) {
+      if (project.getValidationChecks().contains(key)) {
+        result.merge(validationHandlersMap.get(key).validate(translation,
+            service));
       }
     }
     return result;
@@ -105,28 +103,29 @@ public class ValidationServiceJpa extends RootServiceJpa implements
   @Override
   public ValidationResult validateMember(ConceptRefsetMember member,
     Project project, RefsetService service) throws Exception {
-    
-    ValidationResult result = new ValidationResultJpa();
-    for (String key : validationHandlersMap.keySet()) {
-      if (project.getValidationChecks().contains(key)) {  
+
+    final ValidationResult result = new ValidationResultJpa();
+    for (final String key : validationHandlersMap.keySet()) {
+      if (project.getValidationChecks().contains(key)) {
         result.merge(validationHandlersMap.get(key).validate(member, service));
       }
     }
-    //service.close();
+    // service.close();
     return result;
   }
 
   /* see superclass */
   @Override
-  public ValidationResult validateRefset(Refset refset, Project project, RefsetService service) throws Exception {
-    
-    ValidationResult result = new ValidationResultJpa();
-    for (String key : validationHandlersMap.keySet()) {
-      if (project.getValidationChecks().contains(key)) {  
+  public ValidationResult validateRefset(Refset refset, Project project,
+    RefsetService service) throws Exception {
+
+    final ValidationResult result = new ValidationResultJpa();
+    for (final String key : validationHandlersMap.keySet()) {
+      if (project.getValidationChecks().contains(key)) {
         result.merge(validationHandlersMap.get(key).validate(refset, service));
       }
     }
-    //service.close();
+    // service.close();
     return result;
   }
 
@@ -137,9 +136,11 @@ public class ValidationServiceJpa extends RootServiceJpa implements
    */
   @Override
   public KeyValuePairList getValidationCheckNames() {
-    KeyValuePairList keyValueList = new KeyValuePairList();
-    for (Entry<String, ValidationCheck> entry : validationHandlersMap.entrySet()) {
-      KeyValuePair pair = new KeyValuePair(entry.getKey(), entry.getValue().getName());
+    final KeyValuePairList keyValueList = new KeyValuePairList();
+    for (final Entry<String, ValidationCheck> entry : validationHandlersMap
+        .entrySet()) {
+      final KeyValuePair pair =
+          new KeyValuePair(entry.getKey(), entry.getValue().getName());
       keyValueList.addKeyValuePair(pair);
     }
     return keyValueList;

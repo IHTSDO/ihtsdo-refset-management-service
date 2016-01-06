@@ -50,12 +50,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     try {
       if (config == null)
         config = ConfigUtility.getConfigProperties();
-      String key = "workflow.action.handler";
-      for (String handlerName : config.getProperty(key).split(",")) {
+      final String key = "workflow.action.handler";
+      for (final String handlerName : config.getProperty(key).split(",")) {
         if (handlerName.isEmpty())
           continue;
         // Add handlers to map
-        WorkflowActionHandler handlerService =
+        final WorkflowActionHandler handlerService =
             ConfigUtility.newStandardHandlerInstanceWithConfiguration(key,
                 handlerName, WorkflowActionHandler.class);
         workflowHandlerMap.put(handlerName, handlerService);
@@ -91,13 +91,13 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
             + refsetId);
-    Refset refset = this.getRefset(refsetId);
-    User user = getUser(userName);
+    final Refset refset = this.getRefset(refsetId);
+    final User user = getUser(userName);
     // Obtain the handler
-    WorkflowActionHandler handler =
+    final WorkflowActionHandler handler =
         getWorkflowHandlerForPath(refset.getWorkflowPath());
     // Validate the action
-    ValidationResult result =
+    final ValidationResult result =
         handler.validateWorkflowAction(refset, user, projectRole, action, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
@@ -116,10 +116,10 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         "Workflow Service - get tracking records " + translationId + ", "
             + userName);
     // Get object references
-    Translation translation = getTranslation(translationId);
+    final Translation translation = getTranslation(translationId);
     // Get tracking records
-    User user = getUser(userName);
-    TrackingRecordList list =
+    final User user = getUser(userName);
+    final TrackingRecordList list =
         findTrackingRecordsForQuery("translation.id:" + translation.getId()
             + " AND user.id:" + user.getId(), new PfsParameterJpa());
     return list;
@@ -132,7 +132,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Workflow Service - get tracking record " + refsetId + ", " + userName);
     // Get object references
-    Refset refset = getRefset(refsetId);
+    final Refset refset = getRefset(refsetId);
     // Get tracking records
     TrackingRecordList list = null;
     if (userName != null && !userName.equals("")) {
@@ -147,7 +147,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     }
     if (list.getCount() == 1) {
       // lazy initialization
-      TrackingRecord record = list.getObjects().get(0);
+      final TrackingRecord record = list.getObjects().get(0);
       record.getAuthors().size();
       record.getReviewers().size();
       return record;
@@ -169,13 +169,13 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         "Workflow Service - perform workflow action " + action + ", "
             + concept.getTerminologyId() + ", " + translationId);
     // Get object references
-    Translation translation = getTranslation(translationId);
-    User user = getUser(userName);
+    final Translation translation = getTranslation(translationId);
+    final User user = getUser(userName);
     // Obtain the handler
-    WorkflowActionHandler handler =
+    final WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
     // Validate the action
-    ValidationResult result =
+    final ValidationResult result =
         handler.validateWorkflowAction(translation, user, projectRole, action,
             concept, this);
     if (!result.isValid()) {
@@ -191,12 +191,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public StringList getWorkflowPaths() {
     Logger.getLogger(getClass()).debug("Workflow Service - get workflow paths");
-    List<String> paths = new ArrayList<>();
-    for (String path : workflowHandlerMap.keySet()) {
+    final List<String> paths = new ArrayList<>();
+    for (final String path : workflowHandlerMap.keySet()) {
       paths.add(path);
     }
     Collections.sort(paths);
-    StringList list = new StringList();
+    final StringList list = new StringList();
     list.setTotalCount(paths.size());
     list.setObjects(paths);
     return list;
@@ -206,7 +206,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   @Override
   public WorkflowActionHandler getWorkflowHandlerForPath(String path)
     throws Exception {
-    WorkflowActionHandler handler = workflowHandlerMap.get(path);
+    final WorkflowActionHandler handler = workflowHandlerMap.get(path);
     if (handler == null) {
       throw new Exception("Unable to find workflow handler for path " + path);
     }
@@ -258,7 +258,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
         "Workflow Service - find tracking records " + query + ", " + pfs);
 
     // Build query for pfs conditions
-    StringBuilder pfsQuery = new StringBuilder();
+    final StringBuilder pfsQuery = new StringBuilder();
 
     if (query != null && !query.isEmpty()) {
       pfsQuery.append(query);
@@ -272,7 +272,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
               TrackingRecordJpa.class, pfsQuery.toString(), pfs, manager);
     } catch (ParseException e) {
       // / Try performing an escaped search here
-      StringBuilder escapedPfsQuery = new StringBuilder();
+      final StringBuilder escapedPfsQuery = new StringBuilder();
       if (query != null && !query.isEmpty()) {
         escapedPfsQuery.append(QueryParserBase.escape(query));
       }
@@ -284,11 +284,11 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     }
 
     // execute the query
-    List<TrackingRecord> results = fullTextQuery.getResultList();
+    final List<TrackingRecord> results = fullTextQuery.getResultList();
 
     // Convert to search result list
-    TrackingRecordList list = new TrackingRecordListJpa();
-    for (TrackingRecord result : results) {
+    final TrackingRecordList list = new TrackingRecordListJpa();
+    for (final TrackingRecord result : results) {
       list.getObjects().add(result);
     }
     list.setTotalCount(fullTextQuery.getResultSize());
@@ -314,7 +314,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
       feedbackEmail = translation.getRefset().getFeedbackEmail();
     }
 
-    Properties config = ConfigUtility.getConfigProperties();
+    final Properties config = ConfigUtility.getConfigProperties();
     if (config.getProperty("mail.enabled") != null
         && config.getProperty("mail.enabled").equals("true")
         && feedbackEmail != null) {

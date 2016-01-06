@@ -79,7 +79,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     // Validate tracking record
-    TrackingRecordList recordList =
+    final TrackingRecordList recordList =
         service.findTrackingRecordsForQuery("refsetId:" + refset.getId(), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
@@ -219,7 +219,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     throws Exception {
 
     // Validate tracking record
-    TrackingRecordList recordList =
+    final TrackingRecordList recordList =
         service.findTrackingRecordsForQuery("refsetId:" + refset.getId(), null);
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
@@ -691,7 +691,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         && !(action == WorkflowAction.FINISH && concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
       service.updateTrackingRecord(record);
     }
-    return null;
+    return record;
   }
 
   /* see superclass */
@@ -725,12 +725,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    final Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("refsetId", translation.getRefset().getId());
     final List<ConceptRefsetMember> results = query.getResultList();
     final ConceptListJpa list = new ConceptListJpa();
-    for (ConceptRefsetMember member : results) {
-      Concept concept = new ConceptJpa();
+    for (final ConceptRefsetMember member : results) {
+      final Concept concept = new ConceptJpa();
       concept.setActive(member.isActive());
       concept.setModuleId(member.getModuleId());
       concept.setTerminologyId(member.getConceptId());
@@ -749,20 +749,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public ConceptList findAvailableReviewConcepts(Translation translation,
     User user, PfsParameter pfs, WorkflowService service) throws Exception {
 
-    RootServiceJpa rootService = new RootServiceJpa() {
+    final RootServiceJpa rootService = new RootServiceJpa() {
       // n/a
     };
 
     // Concepts of the translation with
     // workflow status in a certain state
     // that do not yet have tracking records
-    String queryStr =
+    final String queryStr =
         "select a from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
             + "where a.translation = b and c.translation = b "
             + "and a = c.concept and a.workflowStatus = :editingDone "
             + "and b.id = :translationId";
 
-    Query ctQuery =
+    final Query ctQuery =
         rootService.getEntityManager().createQuery(
             "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
                 + "where a.translation = b and c.translation = b "
@@ -772,11 +772,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     ctQuery.setParameter("translationId", translation.getId());
 
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    final Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     query.setParameter("translationId", translation.getId());
-    List<Concept> results = query.getResultList();
-    ConceptListJpa list = new ConceptListJpa();
+    final List<Concept> results = query.getResultList();
+    final ConceptListJpa list = new ConceptListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
 
@@ -789,7 +789,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public RefsetList findAvailableEditingRefsets(Long projectId, User user,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
-    RootServiceJpa rootService = new RootServiceJpa() {
+    final RootServiceJpa rootService = new RootServiceJpa() {
       // n/a
     };
 
@@ -797,23 +797,23 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // workflow status does not have to be 'NEW' because sometimes work
     // that is in progress is unassigned
     // For sure, ready, beta, or published refsets are not available
-    String queryStr =
+    final String queryStr =
         "select a from RefsetJpa a where " // workflowStatus = 'NEW' "
             + " a.project.id = :projectId "
             + "and a not in (select refset from TrackingRecordJpa) "
             + "and workflowStatus not in ('READY_FOR_PUBLICATION','BETA','PUBLISHED')";
 
-    Query ctQuery =
+    final Query ctQuery =
         rootService.getEntityManager().createQuery(
             "select count(*) from RefsetJpa a where a.project.id = :projectId "
                 + "and a not in (select refset from TrackingRecordJpa)");
 
     ctQuery.setParameter("projectId", projectId);
 
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    final Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
-    List<Refset> results = query.getResultList();
-    RefsetListJpa list = new RefsetListJpa();
+    final List<Refset> results = query.getResultList();
+    final RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
 
@@ -825,16 +825,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @Override
   public RefsetList findAvailableReviewRefsets(Long projectId, User user,
     PfsParameter pfs, WorkflowService service) throws Exception {
-    RootServiceJpa rootService = new RootServiceJpa() {
+    final RootServiceJpa rootService = new RootServiceJpa() {
       // n/a
     };
 
     // Refsets for this project that are ready for review
-    String queryStr =
+    final String queryStr =
         "select a from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId and "
             + "b.refset = a and a.workflowStatus = :editingDone";
 
-    Query ctQuery =
+    final Query ctQuery =
         rootService
             .getEntityManager()
             .createQuery(
@@ -844,11 +844,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ctQuery.setParameter("projectId", projectId);
     ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
 
-    Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
+    final Query query = rootService.applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
-    List<Refset> results = query.getResultList();
-    RefsetListJpa list = new RefsetListJpa();
+    final List<Refset> results = query.getResultList();
+    final RefsetListJpa list = new RefsetListJpa();
     list.setObjects(results);
     list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
 

@@ -51,7 +51,6 @@ import org.junit.Test;
  */
 public class TranslationReleaseTest {
 
-
   /** The admin auth token. */
   private static String adminAuthToken;
 
@@ -352,7 +351,8 @@ public class TranslationReleaseTest {
         adminAuthToken);
     // clean up
     verifyTranslationLookupCompleted(translation1.getId());
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -386,7 +386,8 @@ public class TranslationReleaseTest {
         adminAuthToken);
     // clean up
     verifyTranslationLookupCompleted(translation1.getId());
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -423,7 +424,8 @@ public class TranslationReleaseTest {
         adminAuthToken);
     // clean up
     verifyTranslationLookupCompleted(translation1.getId());
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -465,8 +467,9 @@ public class TranslationReleaseTest {
             stagedTranslation.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     verifyTranslationLookupCompleted(translation1.getId());
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(),
+    translationService.removeTranslation(translation1.getId(), true,
+        adminAuthToken);
+    translationService.removeTranslation(stagedTranslation.getId(), true,
         adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
@@ -544,13 +547,14 @@ public class TranslationReleaseTest {
             stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
     verifyTranslationLookupCompleted(stagedTranslation.getId());
-    translationService.removeTranslation(stagedTranslation.getId(),
+    translationService.removeTranslation(stagedTranslation.getId(), true,
         adminAuthToken);
     verifyTranslationLookupCompleted(stagedTranslation2.getId());
-    translationService.removeTranslation(stagedTranslation2.getId(),
+    translationService.removeTranslation(stagedTranslation2.getId(), true,
         adminAuthToken);
     verifyTranslationLookupCompleted(translation1.getId());
-    translationService.removeTranslation(translation1.getId(), adminAuthToken);
+    translationService.removeTranslation(translation1.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
@@ -589,8 +593,8 @@ public class TranslationReleaseTest {
 
     // clean up
     verifyTranslationLookupCompleted(janTranslation.getId());
-    translationService
-        .removeTranslation(janTranslation.getId(), adminAuthToken);
+    translationService.removeTranslation(janTranslation.getId(), true,
+        adminAuthToken);
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
@@ -741,9 +745,10 @@ public class TranslationReleaseTest {
             stagedTranslation.getId(), adminAuthToken);
 
     verifyTranslationLookupCompleted(translation.getId());
-    translationService.removeTranslation(translation.getId(), adminAuthToken);
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    translationService.removeTranslation(stagedTranslation.getId(),
+    translationService.removeTranslation(stagedTranslation.getId(), true,
         adminAuthToken);
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);

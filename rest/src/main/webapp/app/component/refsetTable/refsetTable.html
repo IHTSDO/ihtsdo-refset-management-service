@@ -54,7 +54,7 @@
             ng-click="setSortField('refset','name', null)">
             Name
             <span ng-bind="getSortIndicator('refset','name',null)"></span>
-          </span> <span
+          </span>/<span
             ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
             <span ng-click="setSortField('refset','effectiveTime', null)">
               Effective Time
@@ -496,14 +496,15 @@
           <i
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
-            ng-click="removeAllRefsetMembers(selected.refset)"
+            ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
         </div>
       </h4>
       <span
         ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
         <br />
-        <span class="alert alert-warning">Refset has no members</span>
+        <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset has no members</span>
+        <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No members, assign refset to edit</span>
       </span>
 
       <span>
@@ -586,13 +587,13 @@
                 <i
                   confirm="Are you sure you want to remove the inclusion ({{member.conceptName}})?"
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType =='INCLUSION'"
-                  ng-click="removeRefsetInclusion(selected.refset,member);"
+                  ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
                   title="Remove inclusion" class="noul material-icons md-18">delete</i>
 
                 <i
                   confirm="Are you sure you want to remove the member ({{member.conceptName}})?"
                   ng-show="selected.refset.type == 'EXTENSIONAL'"
-                  ng-click="removeRefsetMember(selected.refset,member); "
+                  ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
                   title="Remove" class="noul material-icons md-18">delete</i>
 
                 <i

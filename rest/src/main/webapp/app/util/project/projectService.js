@@ -363,8 +363,8 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + 'concepts' + '?query=' + utilService.prepQuery(query) +
-          + '&terminology=' + terminology + '&version=' + version, utilService.prepPfs(pfs))
+        projectUrl + 'concepts' + '?query=' + utilService.prepQuery(query) + '&terminology='
+          + terminology + '&version=' + version, utilService.prepPfs(pfs))
 
       .then(
       // success
