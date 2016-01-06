@@ -89,8 +89,6 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminologyId");
     tester.include("conceptId");
-    tester.include("conceptName");
-    tester.include("conceptActive");
     tester.include("refset");
 
     tester.proxy(Refset.class, 1, r1);

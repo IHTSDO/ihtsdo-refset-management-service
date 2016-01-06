@@ -5,7 +5,7 @@ tsApp
     'refsetTable',
     [
       '$uibModal',
-      '$rootScope',
+      '$window',
       '$sce',
       'utilService',
       'securityService',
@@ -14,7 +14,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, utilService, securityService, projectService,
         refsetService, releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
@@ -393,7 +393,7 @@ tsApp
               $scope.removeRefset = function(refset) {
 
                 if (refset.members && refset.members.totalCount > 0) {
-                  if (!confirm('The refset has members that will also be deleted.')) {
+                  if (!$window.confirm('The refset has members that will also be deleted.')) {
                     return;
                   }
                 }
@@ -502,9 +502,9 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
-                  if (data > 0 && data < 101) {
-                    window.alert('Progress is ' + data + ' % complete.');
-                  }
+//                  if (data > 0 && data < 101) {
+//                    window.alert('Progress is ' + data + ' % complete.');
+//                  }
                   $scope.refsetLookupProgress[refset.id] = data;
                 });
               }
@@ -1428,6 +1428,9 @@ tsApp
 
                   refset.projectId = project.id;
                   // Setup definition if configured
+                  if (refset.type == 'EXTENSIONAL') {
+                    $scope.defintiion = null;
+                  }
                   if ($scope.definition) {
                     refset.definitionClauses = [ {
                       value : $scope.definition,
@@ -2171,10 +2174,7 @@ tsApp
 
                 // Cancel migration
                 $scope.cancel = function(refset) {
-                  /*
-                                     * if (!confirm("Are you sure you want to cancel the
-                                     * migration?")) { return; }
-                                     */
+
                   refsetService.cancelMigration(refset.id).then(
                   // Success
                   function(data) {

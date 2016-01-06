@@ -209,7 +209,8 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="refreshLookupProgress(refset)"
-                uib-tooltip="Click to refresh lookup progress">Refresh</button>
+                uib-tooltip="Click to refresh lookup progress">Refresh<span ng-show="refsetLookupProgress[refset.id]"> {{refsetLookupProgress[refset.id]}}%</span>
+                </button>
             </span>
           </td>
 

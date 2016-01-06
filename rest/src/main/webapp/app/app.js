@@ -193,7 +193,7 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
   } ]);
 
 // Confirm dialog conroller and directive
-tsApp.controller('ConfirmModalController', function($scope, $uibModalInstance, data) {
+tsApp.controller('ConfirmModalCtrl', function($scope, $uibModalInstance, data) {
   // Local data for scope
   $scope.data = angular.copy(data);
 
@@ -212,7 +212,7 @@ tsApp
     '$confirmModalDefaults',
     {
       template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><button class="btn btn-primary" ng-click="ok()">OK</button><button class="btn btn-warning" ng-click="cancel()">Cancel</button></div>',
-      controller : 'ConfirmModalController'
+      controller : 'ConfirmModalCtrl'
     });
 
 tsApp.factory('$confirm', function($uibModal, $confirmModalDefaults) {

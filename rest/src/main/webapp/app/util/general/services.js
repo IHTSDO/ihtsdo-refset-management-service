@@ -4,7 +4,8 @@ tsApp
     'utilService',
     [
       '$location',
-      function($location) {
+      '$uibModal',
+      function($location, $uibModal) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -349,7 +350,7 @@ tsApp.service('securityService', [
             $http.defaults.headers.common.Authorization = user.authToken;
           }
         }
-        
+
         // If no cookie, just come in as "guest" user
         else {
           this.setGuestUser();
@@ -428,7 +429,7 @@ tsApp.service('securityService', [
 
         // clear scope variables
         httpClearUser();
-        
+
         // clear http authorization header
         $http.defaults.headers.common.Authorization = null;
         gpService.decrement();
