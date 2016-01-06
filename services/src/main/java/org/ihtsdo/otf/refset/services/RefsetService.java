@@ -347,4 +347,13 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void resolveRefsetDefinition(Refset refset) throws Exception;
+
+  /**
+   * Recovery refset.
+   *
+   * @param refsetId the refset id
+   * @return 
+   * @throws Exception the exception
+   */
+  public Refset recoveryRefset(Long refsetId) throws Exception;
 }

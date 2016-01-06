@@ -6,9 +6,7 @@ package org.ihtsdo.otf.refset.rest.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -116,10 +114,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfoList releaseInfoList =
           refsetService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
-      for (ReleaseInfo rel : releaseInfoList.getObjects()) {
-        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
-        rel.setArtifacts(lazyInitList);
+      for (ReleaseInfo info : releaseInfoList.getObjects()) {
+        refsetService.handleLazyInit(info);
       }
+
       return releaseInfoList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve release history for a refset");
@@ -154,9 +152,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           translationService.findTranslationReleasesForQuery(translationId,
               query, pfs);
 
-      for (ReleaseInfo rel : releaseInfoList.getObjects()) {
-        List<ReleaseArtifact> lazyInitList = new ArrayList<ReleaseArtifact>();
-        rel.setArtifacts(lazyInitList);
+      RefsetService refsetService = new RefsetServiceJpa();
+      for (ReleaseInfo info : releaseInfoList.getObjects()) {
+        refsetService.handleLazyInit(info);
       }
 
       return releaseInfoList;
@@ -213,6 +211,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Finish transaction
       algo.commit();
+
+      RefsetService refsetService = new RefsetServiceJpa();
+      refsetService.handleLazyInit(algo.getReleaseInfo());
 
       return algo.getReleaseInfo();
     } catch (Exception e) {
@@ -486,6 +487,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Finish transaction
       algo.commit();
+
+      RefsetService refsetService = new RefsetServiceJpa();
+      refsetService.handleLazyInit(algo.getReleaseInfo());
+
       return algo.getReleaseInfo();
     } catch (Exception e) {
       algo.rollback();
@@ -732,9 +737,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo info =
           refsetService.getCurrentRefsetReleaseInfo(refset.getTerminologyId(),
               refset.getProject().getId());
+
       if (info != null) {
-        info.getArtifacts().size();
+        refsetService.handleLazyInit(info);
+      } else {
+        info = new ReleaseInfoJpa();
       }
+
       return info;
     } catch (Exception e) {
       handleException(e, "trying to get current refset release info");
@@ -772,8 +781,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       ReleaseInfo info =
           translationService.getCurrentTranslationReleaseInfo(
               translation.getTerminologyId(), translation.getProject().getId());
+
       if (info != null) {
-        info.getArtifacts().size();
+        RefsetService refsetService = new RefsetServiceJpa();
+        refsetService.handleLazyInit(info);
+      } else {
+        info = new ReleaseInfoJpa();
       }
 
       return info;
