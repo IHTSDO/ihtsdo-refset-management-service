@@ -66,7 +66,7 @@ tsApp
           if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
             // Reroute back to login page with 'auth token has
             // expired' message
-            $location.path('/');
+            $location.path('/login');
           }
         }
 
@@ -349,6 +349,11 @@ tsApp.service('securityService', [
             $http.defaults.headers.common.Authorization = user.authToken;
           }
         }
+        
+        // If no cookie, just come in as "guest" user
+        else {
+          this.setGuestUser();
+        }
       }
       return user;
     }
@@ -363,6 +368,19 @@ tsApp.service('securityService', [
       user.userPreferences = data.userPreferences;
 
       // Whenver set user is called, we should save a cookie
+      $cookieStore.put('user', JSON.stringify(user));
+
+    }
+
+    this.setGuestUser = function() {
+      user.userName = 'guest';
+      user.name = 'Guest';
+      user.authToken = 'guest';
+      user.password = 'guest';
+      user.applicationRole = 'VIEWER';
+      user.userPreferences = {};
+
+      // Whenever set user is called, we should save a cookie
       $cookieStore.put('user', JSON.stringify(user));
 
     }
@@ -382,7 +400,7 @@ tsApp.service('securityService', [
 
     // isLoggedIn function
     this.isLoggedIn = function() {
-      return user.authToken;
+      return user.authToken && user.authToken != 'guest';
     }
 
     // isAdmin function

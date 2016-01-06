@@ -61,7 +61,6 @@ tsApp.controller('DirectoryCtrl', [
 
     };
 
-
     // Get $scope.refsetTypes - for picklist
     $scope.getRefsetTypes = function() {
       refsetService.getRefsetTypes().then(function(data) {
@@ -104,6 +103,11 @@ tsApp.controller('DirectoryCtrl', [
 
     // Set the current accordion
     $scope.setAccordion = function(data) {
+      // skip guest user
+      if ($http.defaults.headers.common.Authorization == 'guest') {
+        return;
+      }
+
       if ($scope.user.userPreferences) {
         $scope.user.userPreferences.lastDirectoryAccordion = data;
         securityService.updateUserPreferences($scope.user.userPreferences);
@@ -112,6 +116,11 @@ tsApp.controller('DirectoryCtrl', [
 
     // Configure tab and accordion
     $scope.configureTab = function() {
+      // skip guest user
+      if ($http.defaults.headers.common.Authorization == 'guest') {
+        $scope.accordionState['PUBLISHED'] = true;
+        return;
+      }
       $scope.user.userPreferences.lastTab = '/directory';
       if ($scope.user.userPreferences.lastDirectoryAccordion) {
         $scope.accordionState[$scope.user.userPreferences.lastDirectoryAccordion] = true;

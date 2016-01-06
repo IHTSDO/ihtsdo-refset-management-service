@@ -612,7 +612,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Make danish refset and translation
       refset =
-          makeTranslationRefset("Danish Translation scope reference set", 20,
+          makeTranslationRefset("Danish translation scope reference set", 20,
               "INT", project3, "554461000005103", "1000005", "554471000005108",
               reviewer3);
 
@@ -626,17 +626,14 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Make dutch refset and translation
       refset =
-          makeTranslationRefset("Netherlands Translation scope reference set",
+          makeTranslationRefset("Netherlands translation scope reference set",
               22, "INT", project3, "31000146106", "1000005", "11000146104",
               reviewer3);
 
       // Make dutch translation
       translation =
           makeTranslation("Netherlands Dutch language reference set",
-              "31000146106", refset, project3, 22, "INT", "da", reviewer3);
-      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-      new TranslationServiceRestImpl().updateTranslation(translation,
-          reviewer3.getAuthToken());
+              "31000146106", refset, project3, 22, "INT", "nl", reviewer3);
 
       if (assignNames) {
         // Ensure that all lookup names routines completed

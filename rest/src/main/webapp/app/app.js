@@ -29,7 +29,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
 
   // Set reloadOnSearch so that $location.hash() calls do not reload the
   // controller
-  $routeProvider.when('/', {
+  $routeProvider.when('/login', {
     templateUrl : 'app/page/login/login.html',
     controller : 'LoginCtrl',
     reloadOnSearch : false
@@ -54,7 +54,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
       return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
     }
   }).otherwise({
-    redirectTo : '/'
+    redirectTo : '/directory'
   });
 
   // $locationProvider.html5Mode(true);
@@ -153,6 +153,10 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
       securityService.logout();
     }
 
+    $scope.login = function() {
+      $location.path('/login');
+    }
+
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
@@ -165,7 +169,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     };
 
     // for ng-show
-    $scope.isShowing = function() {
+    $scope.isLoggedIn = function() {
       return securityService.isLoggedIn();
     }
 

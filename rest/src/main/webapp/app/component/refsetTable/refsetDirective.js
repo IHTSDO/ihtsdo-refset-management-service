@@ -1403,6 +1403,7 @@ tsApp
 
                 $scope.action = 'Add';
                 $scope.errors = [];
+                $scope.definition = null;
                 $scope.metadata = metadata;
                 $scope.project = project;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
@@ -1416,6 +1417,7 @@ tsApp
                   terminology : $scope.project.terminology,
                   feedbackEmail : $scope.project.feedbackEmail,
                   type : metadata.refsetTypes[0],
+                  definitionClauses : []
                 };
 
                 $scope.terminologySelected = function(terminology) {
@@ -1425,6 +1427,13 @@ tsApp
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
+                  // Setup definition if configured
+                  if ($scope.definition) {
+                    refset.definitionClauses = [ {
+                      value : $scope.definition,
+                      negated : false
+                    } ];
+                  }
 
                   // validate refset before adding it
                   validationService.validateRefset(refset).then(
@@ -1513,7 +1522,6 @@ tsApp
                 $scope.errors = [];
                 $scope.refset = refset;
                 $scope.project = project;
-                $scope.originalDefinition = $scope.refset.definition;
                 $scope.metadata = metadata;
                 $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
 
@@ -1548,11 +1556,7 @@ tsApp
                       refsetService.updateRefset(refset).then(
                       // Success - update refset
                       function(data) {
-                        if (refset.definition != $scope.originalDefinition) {
-                          $scope.error = 'Definition is not allowed to change with refset edit.';
-                        } else {
-                          $uibModalInstance.close(refset);
-                        }
+                        $uibModalInstance.close(refset);
                       },
                       // Error - update refset
                       function(data) {
@@ -1773,9 +1777,6 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
-                    definition : function() {
-                      return lrefset.definition;
-                    },
                     paging : function() {
                       return $scope.paging;
                     },
@@ -1796,8 +1797,8 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, refset, definition,
-                paging, type, metadata) {
+              var MigrationModalCtrl = function($scope, $uibModalInstance, refset, paging, type,
+                metadata) {
 
                 console.debug('Entered refactor modal control');
 
