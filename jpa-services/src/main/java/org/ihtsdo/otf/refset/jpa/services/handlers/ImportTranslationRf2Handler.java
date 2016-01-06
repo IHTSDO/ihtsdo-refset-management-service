@@ -17,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -30,8 +29,7 @@ import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 /**
  * Implementation of an algorithm to import a refset definition.
  */
-public class ImportTranslationRf2Handler extends RootServiceJpa implements
-    ImportTranslationHandler {
+public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -259,12 +257,6 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
 
   /* see superclass */
   @Override
-  public void refreshCaches() throws Exception {
-    // n/a
-  }
-
-  /* see superclass */
-  @Override
   public void setProperties(Properties p) throws Exception {
     // n/a
 
@@ -285,4 +277,5 @@ public class ImportTranslationRf2Handler extends RootServiceJpa implements
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
   }
+
 }

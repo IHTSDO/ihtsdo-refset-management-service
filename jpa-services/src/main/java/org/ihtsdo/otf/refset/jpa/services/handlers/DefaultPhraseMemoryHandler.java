@@ -16,7 +16,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
@@ -27,8 +26,7 @@ import com.google.common.collect.Lists;
 /**
  * Default implementation of {@link PhraseMemoryHandler}.
  */
-public class DefaultPhraseMemoryHandler extends RootServiceJpa implements
-    PhraseMemoryHandler {
+public class DefaultPhraseMemoryHandler implements PhraseMemoryHandler {
   /**
    * Instantiates an empty {@link DefaultPhraseMemoryHandler}.
    *

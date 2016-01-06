@@ -24,8 +24,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 /**
  * Implementation of an algorithm to export a refset definition.
  */
-public class ExportTranslationRf2Handler extends RootServiceJpa implements
-    ExportTranslationHandler {
+public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -49,7 +48,7 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
   public String getMimeType() {
     return "application/zip";
   }
-  
+
   /* see superclass */
   @Override
   public String getName() {
@@ -124,7 +123,8 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
               .append("\t");
           langSb.append(member.isActive() ? "1" : "0").append("\t");
           langSb.append(translation.getRefset().getModuleId()).append("\t");
-          langSb.append(translation.getRefset().getTerminologyId()).append("\t");
+          langSb.append(translation.getRefset().getTerminologyId())
+              .append("\t");
           langSb.append(description.getTerminologyId()).append("\t");
           langSb.append(member.getAcceptabilityId()).append("\t");
           langSb.append("\r\n");
@@ -158,11 +158,6 @@ public class ExportTranslationRf2Handler extends RootServiceJpa implements
 
   @Override
   public void setProperties(Properties p) throws Exception {
-    // n/a
-  }
-
-  @Override
-  public void refreshCaches() throws Exception {
     // n/a
   }
 

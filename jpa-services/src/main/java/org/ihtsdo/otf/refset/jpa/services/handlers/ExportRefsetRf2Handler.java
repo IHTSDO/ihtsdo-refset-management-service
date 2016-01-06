@@ -20,8 +20,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 /**
  * Implementation of an algorithm to export a refset definition.
  */
-public class ExportRefsetRf2Handler extends RootServiceJpa implements
-    ExportRefsetHandler {
+public class ExportRefsetRf2Handler implements ExportRefsetHandler {
 
   /** The request cancel flag. */
   boolean requestCancel = false;
@@ -139,12 +138,6 @@ public class ExportRefsetRf2Handler extends RootServiceJpa implements
     sb.append("\r\n");
 
     return new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-  }
-
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
   }
 
   /* see superclass */
