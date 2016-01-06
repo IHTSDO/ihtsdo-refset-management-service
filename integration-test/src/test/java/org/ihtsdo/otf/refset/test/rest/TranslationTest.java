@@ -350,7 +350,7 @@ public class TranslationTest {
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -394,7 +394,7 @@ public class TranslationTest {
    @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -436,7 +436,7 @@ public class TranslationTest {
    @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
-    Project project1 = projectService.getProject(51L, adminAuthToken);
+    Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
     Refset janRefset =
@@ -477,7 +477,7 @@ public class TranslationTest {
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset(extensional)
-    Project project = projectService.getProject(52L, adminAuthToken);
+    Project project = projectService.getProject(2L, adminAuthToken);
     Refset refset =
         makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
             .randomUUID().toString(), admin);
