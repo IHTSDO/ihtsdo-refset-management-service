@@ -271,13 +271,11 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
     final int prime = 31;
     int result = super.hashCode();
     result = prime * result + ((conceptId == null) ? 0 : conceptId.hashCode());
-    result =
-        prime * result + ((conceptName == null) ? 0 : conceptName.hashCode());
-    result = prime * result + (conceptActive ? 1231 : 1237);
-    /*
-     * result = prime * result + ((memberType == null) ? 0 :
-     * memberType.hashCode());
-     */
+    
+    // This is removed to support memberDiffReport
+    /*result = prime * result + ((memberType == null) ? 0 :
+     memberType.hashCode());*/
+     
     result =
         prime
             * result
@@ -308,13 +306,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
         return false;
     } else if (!conceptId.equals(other.conceptId))
       return false;
-    if (conceptName == null) {
-      if (other.conceptName != null)
-        return false;
-    } else if (!conceptName.equals(other.conceptName))
-      return false;
-    if (conceptActive != other.conceptActive)
-      return false;
+    // no memberType due to memberDiffReport
     if (refset == null) {
       if (other.refset != null)
         return false;

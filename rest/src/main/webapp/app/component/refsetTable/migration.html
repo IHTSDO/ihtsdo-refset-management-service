@@ -5,34 +5,40 @@
 
 
     <!-- Migration - choose terminology/version -->
-    <table>
+    <table  class="table">
       <tbody>
         <tr>
           <td>
-            <h5>Terminology, Version:</h5>
+            <h5>Current Terminology:</h5>
           </td>
-          <td>{{refset.terminology}}, {{refset.version}}</td>
+          <td>{{refset.terminology}}</td>
+          <td>
+            <h5>Current Version:</h5>
+          </td>
+          <td>{{refset.version}}</td>
         </tr>
         <tr>
           <td>
-            <h5><b>New Terminology:</b></h5>
+            <h5>New Terminology:</h5>
           </td>
           <td>
             <select ng-model="refset.newTerminology"
               ng-change="terminologySelected(refset.terminology)"
-              ng-options="item for item in metadata.terminologies"></select> <b>New
-              Version:</b> <select ng-model="refset.newVersion"
-              ng-options="item for item in versions"></select>
-            {{refset.lookupInProgress}}
-            <button class="btn btn-primary"
-              ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>
-            <button class="btn btn-primary" ng-show="refset.lookupInProgress == true"
-              ng-click="refreshLookupProgress(refset);">Refresh</button>
-            <uib-progressbar animate="false" ng-show="refset.lookupInProgress == true" value="lookupProgress" type="success"><b>{{lookupProgress}}%</b></uib-progressbar> 
+              ng-options="item for item in metadata.terminologies"></select> 
           </td>
-        </tr>
+          <td>
+            <h5>New Version:</h5>
+          </td>
+          <td>   
+            <select ng-model="refset.newVersion"
+              ng-options="item for item in versions"></select>
+            <button class="btn btn-primary" ng-disabled="refset.stagingType != null"
+              ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>            
+          </td>
+        </tr>        
       </tbody>
     </table>
+    <uib-progressbar animate="false" ng-show="stagedRefset.lookupInProgress == true" value="lookupProgress" type="success"><b>{{lookupProgress}}%</b></uib-progressbar>      
   </div>
 </div>
 
@@ -65,7 +71,7 @@
       <div class="row">
         <div class="col-md-12 col-xs-12">
 
-          <h5 ng-show="refset.stagingType != null">
+          <h5 ng-show="refset.stagingType != null && membersInCommon.length > 0">
             <b>Members In Common</b>
           </h5>
           <span ng-show="membersInCommon.length == 0"
@@ -85,12 +91,15 @@
           <table ng-show="membersInCommon.length > 0" class="table">
             <thead>
               <th class="col-md-4 col-xs-4">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
+              <th class="col-md-7 col-xs-7">Concept name</th>
+              <th class="col-md-1 col-xs-1">Inactive</th>
             </thead>
             <tbody>
               <tr ng-repeat="member in membersInCommon">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
+                <td><span ng-show="member.active == false"><i uib-tooltip="Inactive"
+                      class="noul material-icons md-18">warning</i></span></td>
               </tr>
             </tbody>
           </table>
@@ -286,6 +295,8 @@
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
             <td>
+              <span ng-show="member.active == false"><i uib-tooltip="Inactive"
+                      class="noul material-icons md-18">warning</i></span>
               <a ng-click="exclude(refset, member, 'false')">
                 <i uib-tooltip="Exclude new member."
                   class="noul material-icons md-18">remove_circle_outline</i>
@@ -321,6 +332,8 @@
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
             <td>
+              <span ng-show="member.active == false"><i uib-tooltip="Inactive"
+                      class="noul material-icons md-18">warning</i></span>
               <a ng-show="member.memberType == 'MEMBER'"
                 ng-click="include(member, false)">
                 <i uib-tooltip="Include old member."
@@ -341,10 +354,10 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-disabled="refset.stagingType == null"
+  <button class="btn btn-primary" ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     ng-click="saveForLater(refset);
     ">Save for later</button>
-  <button class="btn btn-primary" ng-disabled="refset.stagingType == null"
+  <button class="btn btn-primary" ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     ng-click="finish(refset); 
     ">Finish</button>
   <button confirm="Are you sure you want to cancel migration?"

@@ -320,13 +320,15 @@ tsApp.service('securityService', [ '$http', '$location', '$q', '$cookieStore', '
 
       // Determine if page has been reloaded
       if (!$http.defaults.headers.common.Authorization) {
-        console.debug("no header");
-        // Retrieve cookie
-        var cookieUser = JSON.parse($cookieStore.get("user"));
-        // If there is a user cookie, load it
-        if (cookieUser) {
-          this.setUser(cookieUser);
-          $http.defaults.headers.common.Authorization = user.authToken;
+        console.debug("no header", $cookieStore.get("user"));
+        if ($cookieStore.get("user")) {
+          // Retrieve cookie
+          var cookieUser = JSON.parse($cookieStore.get("user"));
+          // If there is a user cookie, load it
+          if (cookieUser) {
+            this.setUser(cookieUser);
+            $http.defaults.headers.common.Authorization = user.authToken;
+          }
         }
       }
       return user;
