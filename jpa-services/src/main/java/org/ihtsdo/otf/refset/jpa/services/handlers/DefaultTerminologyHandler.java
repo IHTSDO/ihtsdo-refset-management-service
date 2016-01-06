@@ -27,7 +27,6 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
@@ -51,8 +50,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * components. Uses local storage where not possible.
  * 
  */
-public class DefaultTerminologyHandler extends RootServiceJpa implements
-    TerminologyHandler {
+public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /**
    * Instantiates an empty {@link DefaultTerminologyHandler}.
@@ -117,12 +115,6 @@ public class DefaultTerminologyHandler extends RootServiceJpa implements
   @Override
   public String getName() {
     return "Default terminology handler";
-  }
-
-  /* see superclass */
-  @Override
-  public void refreshCaches() throws Exception {
-    // n/a
   }
 
   /* see superclass */

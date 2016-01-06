@@ -58,6 +58,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowListener;
 
 /**
@@ -971,9 +972,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list
+            final TerminologyHandler handler = getTerminologyHandler();
             final ConceptList cons =
-                getTerminologyHandler().getConcepts(termIds, terminology,
-                    version);
+                handler.getConcepts(termIds, terminology, version);
 
             // IF the number of concepts returned doesn't match
             // the size of termIds, there was a problem
@@ -1032,7 +1033,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             + refset.getId());
 
     final Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
-    final Map<String, ConceptRefsetMember> beforeMembersExclusions = new HashMap<>();
+    final Map<String, ConceptRefsetMember> beforeMembersExclusions =
+        new HashMap<>();
 
     final List<String> resolvedConcepts = new ArrayList<>();
     for (final ConceptRefsetMember member : findMembersForRefset(
@@ -1109,7 +1111,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    */
   @Override
   public Refset recoveryRefset(Long refsetId) throws Exception {
-    final  AuditReader reader = AuditReaderFactory.get(manager);
+    final AuditReader reader = AuditReaderFactory.get(manager);
     final AuditQuery query =
         reader.createQuery()
             // last updated revision
