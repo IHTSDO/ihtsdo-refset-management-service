@@ -1012,6 +1012,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         refset.setLookupInProgress(false);
         refsetService.updateRefset(refset);
         refsetService.commit();
+        refsetService.close();
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);

@@ -1280,6 +1280,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         translation.setLookupInProgress(false);
         translationService.updateTranslation(translation);
         translationService.commit();
+        translationService.close();
         lookupProgressMap.remove(translationId);
         Logger.getLogger(TranslationServiceJpa.this.getClass()).info(
             "Finished lookupConceptNamesThread - " + translationId);
