@@ -346,7 +346,7 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testImportExportPhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
 
@@ -391,7 +391,7 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testaddRemovePhraseMemory() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
     Project project1 = projectService.getProject(51L, adminAuthToken);
@@ -433,7 +433,7 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  // @Test
+   @Test
   public void testSuggestTranslation() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
     Project project1 = projectService.getProject(51L, adminAuthToken);
