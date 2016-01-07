@@ -462,6 +462,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
+      // any query restriction has already been handled, dont use here
+      pfs.setQueryRestriction(null);
       list = workflowService.applyPfsToList(list, Refset.class, pfs);
       result.setObjects(list);
       for (final Refset refset : result.getObjects()) {
@@ -621,6 +623,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
+      // any query restriction has already been handled, dont use here
+      pfs.setQueryRestriction(null);
       list =
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
@@ -746,6 +750,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       final RefsetList list = new RefsetListJpa();
       list.setTotalCount(refsets.size());
+      // any query restriction has already been handled, dont use here
+      pfs.setQueryRestriction(null);
       list.getObjects().addAll(
           workflowService.applyPfsToList(refsets, Refset.class, pfs));
       for (final Refset refset : list.getObjects()) {
@@ -884,6 +890,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       final ConceptList list = new ConceptListJpa();
       list.setTotalCount(concepts.size());
+      // any query restriction has already been handled, dont use here
+      pfs.setQueryRestriction(null);
       list.getObjects().addAll(
           workflowService.applyPfsToList(concepts, Concept.class, pfs));
 
