@@ -14,11 +14,6 @@ tsApp
         workflowService) {
         console.debug('configure RefsetCtrl');
 
-        // If not logged in, redirect
-        if ($http.defaults.headers.common.Authorization == 'guest') {
-          $location.path('/');
-        }
-
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Refset') {
           tabService.setSelectedTabByLabel('Refset');
@@ -26,6 +21,12 @@ tsApp
 
         // Initialize
         $scope.user = securityService.getUser();
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+        }
+
+        
         projectService.getUserHasAnyRole();
         projectService.prepareIconConfig();
         $scope.accordionState = {};

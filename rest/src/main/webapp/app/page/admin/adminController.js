@@ -18,11 +18,6 @@ tsApp
         securityService, projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
-        // If not logged in, redirect
-        if ($http.defaults.headers.common.Authorization == 'guest') {
-          $location.path('/');
-        }
-
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
@@ -32,6 +27,11 @@ tsApp
         // Scope Variables
         //
         $scope.user = securityService.getUser();
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+        }
+
         projectService.getUserHasAnyRole();
 
         $scope.selectedProject = null;
