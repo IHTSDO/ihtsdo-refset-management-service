@@ -54,8 +54,8 @@
             ng-click="setSortField('refset','name', null)">
             Name
             <span ng-bind="getSortIndicator('refset','name',null)"></span>
-          </span>/<span
-            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
+          </span><span
+            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">/
             <span ng-click="setSortField('refset','effectiveTime', null)">
               Effective Time
               <span ng-bind="getSortIndicator('refset','effectiveTime',null)"></span>
