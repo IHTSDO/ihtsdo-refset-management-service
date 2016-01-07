@@ -88,6 +88,18 @@
               ng-change="findMembersInCommon()"></uib-pagination>
           </span>
 
+          <input class="input-filter" placeholder="Enter filter text"
+            ng-show="membersInCommon.totalCount > pageSize || paging['membersInCommon'].filter"
+            type="text" ng-model="paging['membersInCommon'].filter"
+            ng-model-options="{ debounce: 300 }"
+            ng-change="findMembersInCommon()">
+
+          <button class="btn btn-xs btn-warning"
+            ng-show="paging['membersInCommon'].filter"
+            ng-click="paging['membersInCommon'].filter = ''; findMembersInCommon()"
+            title="Click to clear filter text">Clear</button>
+
+
           <table ng-show="membersInCommon.length > 0" class="table">
             <thead>
               <th class="col-md-4 col-xs-4">Concept id</th>
@@ -362,6 +374,7 @@
     ">Finish</button>
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-warning" ng-show="refset.stagingType != null"
+    ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
   <button class="btn btn-warning" ng-show="refset.stagingType == null"
     title="Close" ng-click="close();">Close</button>
