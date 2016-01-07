@@ -992,7 +992,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     } else {
       refset.setDefinitionClauses(null);
     }
-    refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     refset.setExternalUrl(null);
     refset.setFeedbackEmail("***REMOVED***");
     refset.getEnabledFeedbackEvents().add(FeedbackEvent.MEMBER_ADD);
@@ -1013,8 +1012,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setWorkflowPath("DEFAULT");
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
+      refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     } else {
       refset.setWorkflowStatus(WorkflowStatus.NEW);
+      refset.setEffectiveTime(null);
     }
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {

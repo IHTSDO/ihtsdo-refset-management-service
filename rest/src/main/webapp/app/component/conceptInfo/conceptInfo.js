@@ -49,6 +49,12 @@ tsApp.directive('conceptInfo', [
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptChildren($scope.data.concept);
               $scope.memberTypes = {};
+            } else {
+              // clear data structure
+              $scope.orderedDescriptions = null;
+              $scope.orderedRelationships = null;
+              $scope.children = [];
+              $scope.parents = [];
             }
           });
 

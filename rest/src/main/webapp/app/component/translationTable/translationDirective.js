@@ -203,6 +203,7 @@ tsApp
                   }
                   if (!found) {
                     $scope.selected.translation = null;
+                    $scope.selected.concept = null;
                   }
                 }
 

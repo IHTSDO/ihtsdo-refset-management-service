@@ -148,7 +148,7 @@
     ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
     ng-click="finishRefsetRelease(refset)">Finish</button>
   <button confirm="Are you sure you want to cancel the refset release?"
-    class="btn btn-error" ng-show="refset.inPublicationProcess"
+    class="btn btn-warning" ng-show="refset.inPublicationProcess"
     ng-click="cancel(refset)">Cancel</button>
-  <button class="btn btn-warning" ng-click="close()">Close</button>
+  <button class="btn" ng-click="close()">Close</button>
 </div>

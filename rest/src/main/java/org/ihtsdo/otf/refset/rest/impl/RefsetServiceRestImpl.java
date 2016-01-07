@@ -1259,13 +1259,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("Refset type must be extensional or intensional.");
       }
 
+      // If we're going to call lookupNames, set lookupInProgress first
+      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
+      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
+        refsetCopy.setLookupInProgress(true);
+      }
       refsetService.updateRefset(refsetCopy);
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
+      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
-          ConfigUtility.isBackgroundLookup());
+            ConfigUtility.isBackgroundLookup());
       }
 
       return refsetCopy;
@@ -1324,13 +1329,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Get origin and staged members
       final Refset stagedRefset = change.getStagedRefset();
       final Refset originRefset = change.getOriginRefset();
-      final Map<String, ConceptRefsetMember> originMembers =
-          new HashMap<>();
+      final Map<String, ConceptRefsetMember> originMembers = new HashMap<>();
       for (ConceptRefsetMember member : originRefset.getMembers()) {
         originMembers.put(member.getConceptId(), member);
       }
-      final Map<String, ConceptRefsetMember> stagedMembers =
-          new HashMap<>();
+      final Map<String, ConceptRefsetMember> stagedMembers = new HashMap<>();
       for (ConceptRefsetMember member : stagedRefset.getMembers()) {
         stagedMembers.put(member.getConceptId(), member);
       }
@@ -1340,8 +1343,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         if (!stagedMembers.containsKey(key)) {
           refsetService.removeMember(originMembers.get(key).getId());
         }
-        if (stagedMembers.containsKey(key) && 
-            stagedMembers.get(key).getMemberType() != originMembers.get(key).getMemberType()) {
+        if (stagedMembers.containsKey(key)
+            && stagedMembers.get(key).getMemberType() != originMembers.get(key)
+                .getMemberType()) {
           refsetService.removeMember(originMembers.get(key).getId());
         }
       }
@@ -1354,8 +1358,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         if (!originMembers.containsKey(key)) {
           stagedMembers.get(key).setRefset(refset);
           refsetService.updateMember(stagedMembers.get(key));
-        } else if (originMembers.containsKey(key) && 
-            stagedMembers.get(key).getMemberType() != originMembers.get(key).getMemberType()) {
+        } else if (originMembers.containsKey(key)
+            && stagedMembers.get(key).getMemberType() != originMembers.get(key)
+                .getMemberType()) {
           stagedMembers.get(key).setRefset(refset);
           refsetService.updateMember(stagedMembers.get(key));
         }
@@ -2145,14 +2150,20 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
+      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
+      if (assignNames) {
+        refset.setLookupInProgress(true);
+      }
       refsetService.updateRefset(refset);
 
       // End transaction
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
-      refsetService.lookupMemberNames(refsetId, "finish import members",
-          ConfigUtility.isBackgroundLookup());
+      if (assignNames) {
+        refsetService.lookupMemberNames(refsetId, "finish import members",
+            ConfigUtility.isBackgroundLookup());
+      }
     } catch (Exception e) {
       handleException(e, "trying to import members");
     } finally {

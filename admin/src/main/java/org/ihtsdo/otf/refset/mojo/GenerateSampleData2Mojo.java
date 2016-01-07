@@ -391,7 +391,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
        *     - Refset 16: extensional (imported)
        *     - Refset *: external
        *     - Translation Refset es: extensional (imported)
-       *     - Translation Refset sv: extensional (imported)
+       *     - Translation Refset se: extensional (imported)
        *  - Project 3
        *     - Refset 17: extensional (imported)
        *     - Refest *: intensional - for testing redefinition
@@ -505,8 +505,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Make Swedish translation
       makeTranslation(
-          "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, "INT", "sv", reviewer2);
+          "Swedish language reference set",
+          "46011000052107", refset, project2, 3, "INT", "se", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -621,6 +621,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeTranslation("Danish language reference set", "554461000005103",
               refset, project3, 20, "INT", "da", reviewer3);
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      translation.setEffectiveTime(null);
       new TranslationServiceRestImpl().updateTranslation(translation,
           reviewer3.getAuthToken());
 

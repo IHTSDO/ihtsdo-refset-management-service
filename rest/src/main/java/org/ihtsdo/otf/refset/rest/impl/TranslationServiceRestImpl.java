@@ -849,14 +849,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
+      boolean assignNames =
+          translationService.getTerminologyHandler().assignNames();
+      if (assignNames) {
+        translation.setLookupInProgress(true);
+      }
       translationService.updateTranslation(translation);
 
       // close transaction
       translationService.commit();
 
       // Lookup names and active status of concepts
-      translationService.lookupConceptNames(translationId,
-          "finish import concepts", ConfigUtility.isBackgroundLookup());
+      if (assignNames) {
+        translationService.lookupConceptNames(translationId,
+            "finish import concepts", ConfigUtility.isBackgroundLookup());
+      }
 
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");

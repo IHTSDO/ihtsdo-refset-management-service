@@ -249,6 +249,7 @@ tsApp
                   }
                   if (!found) {
                     $scope.selected.refset = null;
+                    $scope.selected.concept = null;
                   }
                 }
 

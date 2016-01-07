@@ -62,7 +62,7 @@
           ng-click="setSortField('translation','language', null)">Lang<span
             ng-bind="getSortIndicator('translation','language',null)"></span></th>
         <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
-          <span ng-show="value != 'PUBLISHED' && value != 'BETA'"
+          <span ng-show="value == 'EDITING'"
             style="float: right;">
             <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
               title="Add translation" class="noul material-icons md-18">add</i>
@@ -338,11 +338,11 @@
     <!-- release info -->
     <div class="col-md-12 col-xs-12">
       <span
-        ng-show="translationReleaseInfo && !translationReleaseInfo.artifacts"
+        ng-show="selected.translation && translationReleaseInfo && !translationReleaseInfo.artifacts"
         class="alert alert-warning">Release has no associated artifacts</span>
       <div class="col-md-12 col-xs-12">
         <table
-          ng-show="translationReleaseInfo && translationReleaseInfo.artifacts"
+          ng-show="selected.translation && translationReleaseInfo && translationReleaseInfo.artifacts"
           class="table">
           <thead>
             <th class="col-md-6 col-xs-6">Release File</th>

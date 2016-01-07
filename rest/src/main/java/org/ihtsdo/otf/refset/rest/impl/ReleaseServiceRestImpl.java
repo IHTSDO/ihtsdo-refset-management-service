@@ -106,15 +106,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Release): /refset with query:" + query + ", refsetId:"
             + refsetId);
 
-    RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "retrieve the release history for the refset", UserRole.VIEWER);
 
-      ReleaseInfoList releaseInfoList =
+      final ReleaseInfoList releaseInfoList =
           refsetService.findRefsetReleasesForQuery(refsetId, query, pfs);
 
-      for (ReleaseInfo info : releaseInfoList.getObjects()) {
+      for (final ReleaseInfo info : releaseInfoList.getObjects()) {
         refsetService.handleLazyInit(info);
       }
 
@@ -143,20 +143,16 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Release): /translationId with query:" + query
             + ", translationId:" + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
-
-      ReleaseInfoList releaseInfoList =
+      final ReleaseInfoList releaseInfoList =
           translationService.findTranslationReleasesForQuery(translationId,
               query, pfs);
-
-      RefsetService refsetService = new RefsetServiceJpa();
-      for (ReleaseInfo info : releaseInfoList.getObjects()) {
-        refsetService.handleLazyInit(info);
+      for (final ReleaseInfo info : releaseInfoList.getObjects()) {
+        translationService.handleLazyInit(info);
       }
-
       return releaseInfoList;
     } catch (Exception e) {
       handleException(e, "trying to retrieve release history for a translation");
@@ -182,19 +178,18 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Refset): /refset/begin " + refsetId + ", "
             + effectiveTime);
 
-    BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
+    final BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
-
     try {
       // Load refset
-      Refset refset = algo.getRefset(refsetId);
+      final Refset refset = algo.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, refset.getProject().getId(), securityService,
               authToken, "begin refset release", UserRole.AUTHOR);
 
@@ -212,12 +207,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      RefsetService refsetService = new RefsetServiceJpa();
-      refsetService.handleLazyInit(algo.getReleaseInfo());
+      final ReleaseInfo info =
+          algo.getReleaseInfo(algo.getReleaseInfo().getId());
+      algo.handleLazyInit(info);
+      algo.handleLazyInit(info.getRefset());
 
-      return algo.getReleaseInfo();
+      return info;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to begin release of refset");
     } finally {
       securityService.close();
@@ -239,11 +235,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refset/validate " + refsetId);
 
-    RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
+    final ValidationServiceJpa validationService = new ValidationServiceJpa();
     try {
 
       // Load refset
-      Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -257,12 +254,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           UserRole.AUTHOR);
 
       // Get the release info
-      ReleaseInfoList releaseInfoList =
+      final ReleaseInfoList releaseInfoList =
           refsetService.findRefsetReleasesForQuery(refsetId, null, null);
       if (releaseInfoList.getCount() != 1) {
         throw new Exception("Cannot find release info for refset " + refsetId);
       }
-      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      final ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
 
       // Verify that begin has completed
       if (releaseInfo == null || !releaseInfo.isPlanned()
@@ -277,8 +274,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
             + WorkflowStatus.READY_FOR_PUBLICATION + " for " + refsetId);
 
       // Perform validation
-      ValidationServiceJpa validationService = new ValidationServiceJpa();
-      ValidationResult result =
+      final ValidationResult result =
           validationService.validateRefset(refset, refset.getProject(),
               refsetService);
       if (result.isValid()) {
@@ -294,6 +290,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to validate release of refset");
     } finally {
+      validationService.close();
       refsetService.close();
       securityService.close();
     }
@@ -313,20 +310,20 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refset/beta " + refsetId);
 
-    PerformRefsetBetaAlgorithm algo = new PerformRefsetBetaAlgorithm();
+    final PerformRefsetBetaAlgorithm algo = new PerformRefsetBetaAlgorithm();
     // Manage transaction
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
 
       // Load refset
-      Refset refset = algo.getRefset(refsetId);
+      final Refset refset = algo.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, refset.getProject().getId(), securityService,
               authToken, "beta refset release", UserRole.AUTHOR);
 
@@ -339,9 +336,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      return algo.getBetaRefset();
+      final Refset result = algo.getRefset(algo.getBetaRefset().getId());
+      algo.handleLazyInit(result);
+
+      return result;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to beta release of refset");
     } finally {
       algo.close();
@@ -363,18 +362,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refset/finish " + refsetId);
 
-    PerformRefsetPublishAlgorithm algo = new PerformRefsetPublishAlgorithm();
+    final PerformRefsetPublishAlgorithm algo =
+        new PerformRefsetPublishAlgorithm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
       // Load refset
-      Refset refset = algo.getRefset(refsetId);
+      final Refset refset = algo.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, refset.getProject().getId(), securityService,
               authToken, "finish refset release", UserRole.AUTHOR);
 
@@ -386,9 +386,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      return algo.getPublishedRefset();
+      final Refset result = algo.getRefset(algo.getPublishedRefset().getId());
+      algo.handleLazyInit(result);
+
+      return result;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to finish release of refset");
     } finally {
       algo.close();
@@ -409,18 +411,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /refset/cancel " + refsetId);
 
-    CancelRefsetReleaseAlgorithm algo = new CancelRefsetReleaseAlgorithm();
+    final CancelRefsetReleaseAlgorithm algo =
+        new CancelRefsetReleaseAlgorithm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
     try {
       // Load refset
-      Refset refset = algo.getRefset(refsetId);
+      final Refset refset = algo.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, refset.getProject().getId(), securityService,
               authToken, "cancel refset release", UserRole.AUTHOR);
 
@@ -433,7 +436,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.commit();
 
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to cancel release of refset");
     } finally {
       algo.close();
@@ -456,20 +458,20 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Translation): /translation/begin " + translationId
             + ", " + effectiveTime);
 
-    BeginTranslationReleaseAlgorthm algo =
+    final BeginTranslationReleaseAlgorthm algo =
         new BeginTranslationReleaseAlgorthm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
 
     try {
       // Load translation
-      Translation translation = algo.getTranslation(translationId);
+      final Translation translation = algo.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, translation.getProject().getId(),
               securityService, authToken, "begin translation release",
               UserRole.AUTHOR);
@@ -488,12 +490,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      RefsetService refsetService = new RefsetServiceJpa();
-      refsetService.handleLazyInit(algo.getReleaseInfo());
+      final ReleaseInfo info =
+          algo.getReleaseInfo(algo.getReleaseInfo().getId());
+      algo.handleLazyInit(info);
+      algo.handleLazyInit(info.getTranslation());
 
-      return algo.getReleaseInfo();
+      return info;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to begin release of translation");
     } finally {
       algo.close();
@@ -515,7 +518,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Translation): /translation/validate "
             + translationId);
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final ValidationServiceJpa validationService = new ValidationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
       Translation translation =
@@ -529,20 +533,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "validate translation release",
           UserRole.AUTHOR);
 
-      ReleaseInfoList releaseInfoList =
+      final ReleaseInfoList releaseInfoList =
           translationService.findTranslationReleasesForQuery(translationId,
               null, null);
       if (releaseInfoList.getCount() != 1) {
         throw new Exception("Cannot find release info for translation "
             + translationId);
       }
-      ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
+      final ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new Exception("translation release is not ready to validate "
             + translationId);
-      ValidationServiceJpa validationService = new ValidationServiceJpa();
-      ValidationResult result =
+      final ValidationResult result =
           validationService.validateTranslation(translation,
               translation.getProject(), translationService);
       if (result.isValid()) {
@@ -555,6 +558,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     } catch (Exception e) {
       handleException(e, "trying to validate release of translation");
     } finally {
+      validationService.close();
       translationService.close();
       securityService.close();
     }
@@ -573,7 +577,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Translation): /translation/beta " + translationId);
-    PerformTranslationBetaAlgorithm algo =
+    final PerformTranslationBetaAlgorithm algo =
         new PerformTranslationBetaAlgorithm();
     // Manage transaction
     algo.setTransactionPerOperation(false);
@@ -581,13 +585,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     try {
 
       // Load translation
-      Translation translation = algo.getTranslation(translationId);
+      final Translation translation = algo.getTranslation(translationId);
       if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, translation.getProject().getId(),
               securityService, authToken, "beta translation release",
               UserRole.AUTHOR);
@@ -601,9 +605,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      return algo.getBetaTranslation();
+      final Translation result =
+          algo.getTranslation(algo.getBetaTranslation().getId());
+      algo.handleLazyInit(result);
+
+      return result;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to beta release of translation");
     } finally {
       algo.close();
@@ -627,7 +634,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
             "RESTful call POST (Translation): /translation/finish "
                 + translationId);
 
-    PerformTranslationPublishAlgorithm algo =
+    final PerformTranslationPublishAlgorithm algo =
         new PerformTranslationPublishAlgorithm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
@@ -639,7 +646,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeProject(algo, translation.getProject().getId(),
               securityService, authToken, "finish translation release",
               UserRole.AUTHOR);
@@ -652,9 +659,12 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
 
-      return algo.getPublishedTranslation();
+      final Translation result =
+          algo.getTranslation(algo.getPublishedTranslation().getId());
+      algo.handleLazyInit(result);
+
+      return result;
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to finish release of translation");
     } finally {
       algo.close();
@@ -677,7 +687,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
             "RESTful call POST (Translation): /translation/cancel "
                 + translationId);
 
-    CancelTranslationReleaseAlgorithm algo =
+    final CancelTranslationReleaseAlgorithm algo =
         new CancelTranslationReleaseAlgorithm();
     algo.setTransactionPerOperation(false);
     algo.beginTransaction();
@@ -702,7 +712,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Finish transaction
       algo.commit();
     } catch (Exception e) {
-      algo.rollback();
       handleException(e, "trying to cancel release of translation");
     } finally {
       algo.close();
@@ -727,9 +736,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       handleException(new Exception("Refset id has a null value"), "");
     }
 
-    RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = refsetService.getRefset(refsetId);
 
       authorizeApp(securityService, authToken,
           "get current refset release info", UserRole.VIEWER);
@@ -771,9 +780,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       handleException(new Exception("Translation id has a null value"), "");
     }
 
-    TranslationService translationService = new TranslationServiceJpa();
+    final TranslationService translationService = new TranslationServiceJpa();
     try {
-      Translation translation =
+      final Translation translation =
           translationService.getTranslation(translationId);
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
@@ -783,8 +792,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
               translation.getTerminologyId(), translation.getProject().getId());
 
       if (info != null) {
-        RefsetService refsetService = new RefsetServiceJpa();
-        refsetService.handleLazyInit(info);
+        translationService.handleLazyInit(info);
       } else {
         info = new ReleaseInfoJpa();
       }
@@ -812,10 +820,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Refset): /release/resume " + refsetId);
 
-    RefsetService refsetService = new RefsetServiceJpa();
+    final RefsetService refsetService = new RefsetServiceJpa();
     try {
       // Load refset
-      Refset refset = refsetService.getRefset(refsetId);
+      final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -831,8 +839,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // recovering the previously saved state of the staged refset
-      return refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+      final Refset result =
+          refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+      refsetService.handleLazyInit(result);
 
+      return result;
     } catch (Exception e) {
       handleException(e, "trying to resume refset release");
     } finally {
@@ -854,9 +865,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Release): /remove/" + releaseInfoId);
 
-    ReleaseService releaseService = new ReleaseServiceJpa();
+    final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      ReleaseInfo releaseInfo = releaseService.getReleaseInfo(releaseInfoId);
+      final ReleaseInfo releaseInfo =
+          releaseService.getReleaseInfo(releaseInfoId);
 
       if (releaseInfo == null) {
         throw new Exception("ReleaseInfo does not exist");
@@ -895,9 +907,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call DELETE (Release): /remove/artifact/" + artifactId);
 
-    ReleaseService releaseService = new ReleaseServiceJpa();
+    final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
-      ReleaseArtifact artifact = releaseService.getReleaseArtifact(artifactId);
+      final ReleaseArtifact artifact =
+          releaseService.getReleaseArtifact(artifactId);
 
       if (artifact == null) {
         throw new Exception("Artifact does not exist");
@@ -940,26 +953,26 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call POST (Release): /import/artifact: releaseInfoId");
 
-    ReleaseService releaseService = new ReleaseServiceJpa();
+    final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       // Load refset
-      ReleaseInfo info = releaseService.getReleaseInfo(releaseInfoId);
+      final ReleaseInfo info = releaseService.getReleaseInfo(releaseInfoId);
       if (info == null) {
         throw new Exception("Invalid release info id " + info);
       }
 
       // Authorize the call
-      String userName =
+      final String userName =
           authorizeApp(securityService, authToken, "import release artifact",
               UserRole.VIEWER);
 
       // Create an populate
-      ReleaseArtifact artifact = new ReleaseArtifactJpa();
+      final ReleaseArtifact artifact = new ReleaseArtifactJpa();
       artifact.setLastModifiedBy(userName);
       artifact.setName(contentDispositionHeader.getFileName());
       artifact.setReleaseInfo(info);
       artifact.setTimestamp(new Date());
-      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
       int nRead;
       byte[] data = new byte[16384];
       while ((nRead = in.read(data, 0, data.length)) != -1) {
@@ -994,19 +1007,15 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info(
         "RESTful call (Release):  /export/" + artifactId);
 
-    ReleaseService releaseService = new ReleaseServiceJpa();
-
+    final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
       // authorize call
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
-
-      ReleaseArtifact artifact = releaseService.getReleaseArtifact(artifactId);
-
-      InputStream in = new ByteArrayInputStream(artifact.getData());
-
+      final ReleaseArtifact artifact =
+          releaseService.getReleaseArtifact(artifactId);
+      final InputStream in = new ByteArrayInputStream(artifact.getData());
       return in;
-
     } catch (Exception e) {
       handleException(e, "trying to export release artifact");
       return null;
