@@ -313,8 +313,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       list = new ArrayList<Refset>(latestList.values());
       list.addAll(resultList);
       pfs.setStartIndex(origStartIndex);
+      String queryRestriction = pfs.getQueryRestriction();
+      pfs.setQueryRestriction(null);
       result.setObjects(applyPfsToList(list, Refset.class, pfs));
       result.setTotalCount(list.size());
+      pfs.setQueryRestriction(queryRestriction);
     } else {
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
