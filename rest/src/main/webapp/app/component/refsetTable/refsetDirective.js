@@ -46,6 +46,7 @@ tsApp
               $scope.refsetReleaseInfo = null;
               $scope.refsets = null;
               $scope.refsetLookupProgress = {};
+              $scope.lookupInterval = null;
               $scope.project = null;
 
               $scope.showLatest = true;
@@ -372,7 +373,7 @@ tsApp
 
               // Selects a member (setting $scope.selected.member)
               $scope.selectMember = function(member) {
-                $scope.selected.member = member
+                $scope.selected.member = member;
                 // Set the concept for display in concept-info
                 $scope.selected.concept = {
                   terminologyId : member.conceptId,
@@ -495,21 +496,34 @@ tsApp
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
+                  $scope.lookupInterval = $interval(function() {
+                    $scope.refreshLookupProgress();
+                  }, 2000);
                 });
               }
 
               // Refresh lookup progress
               $scope.refreshLookupProgress = function(refset) {
+                console.debug("Refresh lookup progress", $scope.refsetLookupProgress);
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
-//                  if (data > 0 && data < 101) {
-//                    window.alert('Progress is ' + data + ' % complete.');
-//                  }
                   $scope.refsetLookupProgress[refset.id] = data;
+
+                  // If all lookups in progress are at 100%, stop interval
+                  var found = true;
+                  for ( var key in $scope.refsetLookupProgress) {
+                    if ($scope.refsetLookupProgress[key] < 100) {
+                      found = false;
+                      break;
+                    }
+                  }
+                  if (found) {
+                    $interval.cancel($scope.lookupInterval);
+                  }
+
                 });
               }
-
               // Get the most recent note for display
               $scope.getLatestNote = function(refset) {
                 if (refset && refset.notes && refset.notes.length > 0) {
