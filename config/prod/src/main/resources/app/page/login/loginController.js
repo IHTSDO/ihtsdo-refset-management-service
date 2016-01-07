@@ -52,7 +52,7 @@ tsApp
                   function(response) {
                     utilService.handleError(response);
                     $scope.message = "Authentication error, log in at ${security.handler.IMS.url}";
-                    window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F#%2Flogin";
+                    window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Flogin";
                   });
 
             },
@@ -60,7 +60,7 @@ tsApp
             function(response) {
               utilService.handleError(response);
               $scope.message = "Authentication error, log in at ${security.handler.IMS.url}";
-              window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F#%2Flogin";
+              window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Flogin";
             });
 
       } ])
