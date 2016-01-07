@@ -4,8 +4,8 @@ tsApp
   .directive(
     'translationTable',
     [
-      '$uibModal',
-      '$rootScope',
+      '$uibModal', 
+      '$window',
       '$sce',
       'utilService',
       'securityService',
@@ -15,7 +15,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, utilService, securityService, projectService,
         translationService, refsetService, releaseService, workflowService, validationService) {
         console.debug('configure translationTable directive');
         return {
@@ -203,6 +203,7 @@ tsApp
                   }
                   if (!found) {
                     $scope.selected.translation = null;
+                    $scope.selected.concept = null;
                   }
                 }
 
@@ -414,12 +415,12 @@ tsApp
 
                 // warn about concepts
                 if (translation.assigned && translation.assigned.totalCount > 0) {
-                  confirm('The translation has assigned concepts you must unassign all first.');
+                  $window.confirm('The translation has assigned concepts you must unassign all first.');
                   return;
                 }
 
                 if (translation.concepts && translation.concepts.totalCount > 0) {
-                  if (!confirm('The translation has concepts that will also be deleted.')) {
+                  if (!$window.confirm('The translation has concepts that will also be deleted.')) {
                     return;
                   }
                 }
@@ -432,7 +433,7 @@ tsApp
                     maxResults : 1
                   }).then(function(data) {
                     if (data.concepts.length == 1) {
-                      if (!confirm('The translation has concepts that will also be deleted.')) {
+                      if (!$window.confirm('The translation has concepts that will also be deleted.')) {
                         return;
                       }
                     }

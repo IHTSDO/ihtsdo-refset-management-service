@@ -5,7 +5,7 @@ tsApp
     'refsetTable',
     [
       '$uibModal',
-      '$rootScope',
+      '$window',
       '$sce',
       'utilService',
       'securityService',
@@ -14,7 +14,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $rootScope, $sce, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, utilService, securityService, projectService,
         refsetService, releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
@@ -249,6 +249,7 @@ tsApp
                   }
                   if (!found) {
                     $scope.selected.refset = null;
+                    $scope.selected.concept = null;
                   }
                 }
 
@@ -393,7 +394,7 @@ tsApp
               $scope.removeRefset = function(refset) {
 
                 if (refset.members && refset.members.totalCount > 0) {
-                  if (!confirm('The refset has members that will also be deleted.')) {
+                  if (!$window.confirm('The refset has members that will also be deleted.')) {
                     return;
                   }
                 }
@@ -502,9 +503,9 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
-                  if (data > 0 && data < 101) {
-                    window.alert('Progress is ' + data + ' % complete.');
-                  }
+//                  if (data > 0 && data < 101) {
+//                    window.alert('Progress is ' + data + ' % complete.');
+//                  }
                   $scope.refsetLookupProgress[refset.id] = data;
                 });
               }
@@ -1403,6 +1404,7 @@ tsApp
 
                 $scope.action = 'Add';
                 $scope.errors = [];
+                $scope.definition = null;
                 $scope.metadata = metadata;
                 $scope.project = project;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
@@ -1416,6 +1418,7 @@ tsApp
                   terminology : $scope.project.terminology,
                   feedbackEmail : $scope.project.feedbackEmail,
                   type : metadata.refsetTypes[0],
+                  definitionClauses : []
                 };
 
                 $scope.terminologySelected = function(terminology) {
@@ -1425,6 +1428,16 @@ tsApp
                 $scope.submitRefset = function(refset) {
 
                   refset.projectId = project.id;
+                  // Setup definition if configured
+                  if (refset.type == 'EXTENSIONAL') {
+                    $scope.defintiion = null;
+                  }
+                  if ($scope.definition) {
+                    refset.definitionClauses = [ {
+                      value : $scope.definition,
+                      negated : false
+                    } ];
+                  }
 
                   // validate refset before adding it
                   validationService.validateRefset(refset).then(
@@ -1513,7 +1526,6 @@ tsApp
                 $scope.errors = [];
                 $scope.refset = refset;
                 $scope.project = project;
-                $scope.originalDefinition = $scope.refset.definition;
                 $scope.metadata = metadata;
                 $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
 
@@ -1548,11 +1560,7 @@ tsApp
                       refsetService.updateRefset(refset).then(
                       // Success - update refset
                       function(data) {
-                        if (refset.definition != $scope.originalDefinition) {
-                          $scope.error = 'Definition is not allowed to change with refset edit.';
-                        } else {
-                          $uibModalInstance.close(refset);
-                        }
+                        $uibModalInstance.close(refset);
                       },
                       // Error - update refset
                       function(data) {
@@ -1773,9 +1781,6 @@ tsApp
                     refset : function() {
                       return lrefset;
                     },
-                    definition : function() {
-                      return lrefset.definition;
-                    },
                     paging : function() {
                       return $scope.paging;
                     },
@@ -1793,7 +1798,7 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset, definition,
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset,
                 paging, metadata) {
 
                 console.debug('Entered migration modal control');
@@ -1807,33 +1812,31 @@ tsApp
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
                 var stop;
-                
+
                 // Initialize
-                if ($scope.refset.stagingType == 'MIGRATION') {
-                  refsetService.resumeMigration($scope.refset.id).then(
+                refsetService.resumeMigration($scope.refset.id).then(
+                // Success
+                function(data) {
+                  $scope.stagedRefset = data;
+                  $scope.refset.newTerminology = $scope.stagedRefset.terminology;
+                  $scope.refset.newVersion = $scope.stagedRefset.version;
+                  refsetService.compareRefsets($scope.refset.id, data.id).then(
                   // Success
                   function(data) {
-                    $scope.stagedRefset = data;
-                    $scope.refset.newTerminology = $scope.stagedRefset.terminology;
-                    $scope.refset.newVersion = $scope.stagedRefset.version;
-                    refsetService.compareRefsets($scope.refset.id, data.id).then(
-                    // Success
-                    function(data) {
-                      $scope.reportToken = data;
-                      $scope.getDiffReport();
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
+                    $scope.reportToken = data;
+                    $scope.getDiffReport();
                   },
                   // Error
                   function(data) {
                     $scope.errors[0] = data;
                     utilService.clearError();
                   });
-                }
+                },
+                // Error
+                function(data) {
+                  $scope.errors[0] = data;
+                  utilService.clearError();
+                });
 
                 //
                 $scope.getDiffReport = function() {
@@ -1926,42 +1929,43 @@ tsApp
 
                 $scope.refreshLookupProgress = function() {
                   refsetService.getLookupProgress($scope.stagedRefset.id).then(
-                    // Success
-                    function(data) {
-                      $scope.lookupProgress = data;
-                      if (data >= 100) {
-                        $scope.stopRefreshLookupProgress();
-                        $scope.stagedRefset.lookupInProgress = false;
-                        
-                          refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                            // Success
-                            function(data) {
-                              $scope.reportToken = data;
-                              $scope.getDiffReport();
-                            },
-                            // Error
-                            function(data) {
-                              $scope.errors[0] = data;
-                              utilService.clearError();
-                            });
-                      } /*else if (data < 100) {
-                        window.alert("Progress is " + data + " % complete.");
-                      }*/
-                    },
-                    // Error
-                    function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
-                    });
+                  // Success
+                  function(data) {
+                    $scope.lookupProgress = data;
+                    if (data >= 100) {
+                      $scope.stopRefreshLookupProgress();
+                      $scope.stagedRefset.lookupInProgress = false;
+
+                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                      // Success
+                      function(data) {
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                    } /*
+                                             * else if (data < 100) { window.alert("Progress is " +
+                                             * data + " % complete."); }
+                                             */
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
                 }
-                
+
                 $scope.stopRefreshLookupProgress = function() {
                   if (angular.isDefined(stop)) {
                     $interval.cancel(stop);
                     stop = undefined;
                   }
                 };
-                
+
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
 
@@ -1973,7 +1977,7 @@ tsApp
                     // TODO read this from the refset using a service
                     $scope.refset.stagingType = 'MIGRATION';
                     $scope.lookupProgress = 0;
-                    
+
                     stop = $interval(function() {
                       $scope.refreshLookupProgress();
                     }, 2000);
@@ -2171,9 +2175,7 @@ tsApp
 
                 // Cancel migration
                 $scope.cancel = function(refset) {
-                  /*if (!confirm("Are you sure you want to cancel the migration?")) {
-                    return;
-                  }*/
+
                   refsetService.cancelMigration(refset.id).then(
                   // Success
                   function(data) {

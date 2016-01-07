@@ -148,8 +148,8 @@
   <button class="btn btn-primary"
     ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"
     ng-click="finishTranslationRelease(translation)">Finish</button>
-  <button class="btn btn-error" ng-show="translation.inPublicationProcess"
+  <button class="btn btn-warning" ng-show="translation.inPublicationProcess"
     confirm="Are you sure you want to cancel the translation release?"
     ng-click="cancel(translation)">Cancel</button>
-  <button class="btn btn-warning" ng-click="close()">Close</button>
+  <button class="btn" ng-click="close()">Close</button>
 </div>

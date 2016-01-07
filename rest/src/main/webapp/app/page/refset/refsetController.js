@@ -4,13 +4,13 @@ tsApp
     'RefsetCtrl',
     [
       '$scope',
-      '$http',
+      '$http', '$location',
       'tabService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, tabService, securityService, projectService, refsetService,
+      function($scope, $http,$location, tabService, securityService, projectService, refsetService,
         workflowService) {
         console.debug('configure RefsetCtrl');
 
@@ -21,6 +21,13 @@ tsApp
 
         // Initialize
         $scope.user = securityService.getUser();
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+          return;
+        }
+
+        
         projectService.getUserHasAnyRole();
         projectService.prepareIconConfig();
         $scope.accordionState = {};

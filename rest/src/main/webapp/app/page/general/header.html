@@ -29,12 +29,15 @@
         </td>
         <td style="text-align: right;">
           <div class="nobreak">
-            <span class="hidden-xs header-footer-text" ng-show="isShowing()">
+            <span class="hidden-xs header-footer-text" ng-show="isLoggedIn()">
               {{user.name}}&nbsp;&nbsp;
               <a class="header-footer-link" ng-click="logout()">Logout</a>
-              &nbsp;
+            </span>
+            <span class="hidden-xs header-footer-text" ng-show="!isLoggedIn()">
+              <span class="header-footer-link" ng-click="login()">Login</span>
             </span>
             <!-- Help icon -->
+            &nbsp;
             <span class="header-footer-text header-footer-link"
               ng-click="goToHelp()">
               <i title="Help" class="noul material-icons md-18">help</i>

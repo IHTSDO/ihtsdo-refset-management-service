@@ -155,6 +155,10 @@ tsApp.service('releaseService', [
       // success
       function(response) {
         console.debug('  release info = ', response.data);
+        // Service sends back an empty container - for client layer
+        if (!response.data.id) {
+          response.data = null;
+        }
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -177,6 +181,10 @@ tsApp.service('releaseService', [
       // success
       function(response) {
         console.debug('  translation info = ', response.data);
+        // Service sends back an empty container - for client layer
+        if (!response.data.id) {
+          response.data = null;
+        } 
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -242,20 +250,20 @@ tsApp.service('releaseService', [
 
       gpService.increment()
       $http.get(
-        releaseUrl + 'translation/begin' + '?translationId=' + translationId + '&effectiveTime=' + effectiveTime)
-        .then(
-        // success
-        function(response) {
-          console.debug('  release info = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+        releaseUrl + 'translation/begin' + '?translationId=' + translationId + '&effectiveTime='
+          + effectiveTime).then(
+      // success
+      function(response) {
+        console.debug('  release info = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -266,20 +274,19 @@ tsApp.service('releaseService', [
 
       gpService.increment()
       $http.get(
-        releaseUrl + 'refset/beta' + '?refsetId=' + refsetId + '&ioHandlerId=' + ioHandlerId)
-        .then(
-        // success
-        function(response) {
-          console.debug('  release info = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+        releaseUrl + 'refset/beta' + '?refsetId=' + refsetId + '&ioHandlerId=' + ioHandlerId).then(
+      // success
+      function(response) {
+        console.debug('  release info = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -391,7 +398,7 @@ tsApp.service('releaseService', [
       });
       return deferred.promise;
     }
-    
+
     this.finishTranslationRelease = function(translationId) {
       console.debug('finishTranslationRelease');
       var deferred = $q.defer();

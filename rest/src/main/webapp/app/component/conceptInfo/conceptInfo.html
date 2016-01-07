@@ -11,7 +11,7 @@
   </div>
 
   <div class="col-md-12 col-xs-12">
-    <h4 ng-show="concept">
+    <h4 ng-show="data.concept && concept">
       <b>Concept Details</b>
     </h4>
 
@@ -89,10 +89,10 @@
     </p>
 
 
-    <p ng-show="concept && !disableMemberTypes">
+    <p ng-show="data.concept && concept && !disableMemberTypes">
       <b>Descriptions</b>
     </p>
-    <p ng-show="concept && disableMemberTypes" style="margin-top: 5px;">
+    <p ng-show="data.concept && concept && disableMemberTypes" style="margin-top: 5px;">
       <b>Descriptions</b>
     </p>
     <div ng-show="concept.descriptions.length > 0"
@@ -108,7 +108,7 @@
       active descriptions</span>
 
 
-    <p ng-show="concept.relationships.length > 0" style="margin-top: 10px">
+    <p ng-show="data.concept && concept && concept.relationships.length > 0" style="margin-top: 10px">
       <b>Attributes</b>
     </p>
 

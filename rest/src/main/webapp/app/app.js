@@ -29,7 +29,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
 
   // Set reloadOnSearch so that $location.hash() calls do not reload the
   // controller
-  $routeProvider.when('/', {
+  $routeProvider.when('/login', {
     templateUrl : 'app/page/login/login.html',
     controller : 'LoginCtrl',
     reloadOnSearch : false
@@ -54,7 +54,7 @@ tsApp.config([ '$routeProvider', '$logProvider', function($routeProvider, $logPr
       return 'app/page/' + params.type + '/help/' + params.type + 'Help.html';
     }
   }).otherwise({
-    redirectTo : '/'
+    redirectTo : '/directory'
   });
 
   // $locationProvider.html5Mode(true);
@@ -153,6 +153,12 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
       securityService.logout();
     }
 
+    // clear "guest" user cookie and redirect to login path
+    $scope.login = function() {
+      securityService.clearUser();
+      $location.path('/login');
+    }
+
     // Open help page dynamically
     $scope.goToHelp = function() {
       var path = $location.path();
@@ -165,7 +171,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     };
 
     // for ng-show
-    $scope.isShowing = function() {
+    $scope.isLoggedIn = function() {
       return securityService.isLoggedIn();
     }
 
@@ -189,7 +195,7 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
   } ]);
 
 // Confirm dialog conroller and directive
-tsApp.controller('ConfirmModalController', function($scope, $uibModalInstance, data) {
+tsApp.controller('ConfirmModalCtrl', function($scope, $uibModalInstance, data) {
   // Local data for scope
   $scope.data = angular.copy(data);
 
@@ -208,7 +214,7 @@ tsApp
     '$confirmModalDefaults',
     {
       template : '<div class="modal-header"><h3 class="modal-title">Confirm</h3></div><div class="modal-body">{{data.text}}</div><div class="modal-footer"><button class="btn btn-primary" ng-click="ok()">OK</button><button class="btn btn-warning" ng-click="cancel()">Cancel</button></div>',
-      controller : 'ConfirmModalController'
+      controller : 'ConfirmModalCtrl'
     });
 
 tsApp.factory('$confirm', function($uibModal, $confirmModalDefaults) {

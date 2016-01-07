@@ -293,11 +293,16 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
       Map<String, Refset> latestList = new HashMap<>();
       for (final Refset refset : list) {
+        // This should pick up "READY_FOR_PUBLICATION" entries
         if (refset.getEffectiveTime() == null) {
           resultList.add(refset);
-        } else if (!latestList.containsKey(refset.getName())) {
+        } 
+        // This should catch the first encountered
+        else if (!latestList.containsKey(refset.getName())) {
           latestList.put(refset.getName(), refset);
-        } else {
+        } 
+        // This should update it effectiveTime is later
+        else {
           Date effectiveTime =
               latestList.get(refset.getName()).getEffectiveTime();
           if (refset.getEffectiveTime().after(effectiveTime)) {
@@ -865,8 +870,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     final Refset refset = getRefset(refsetId);
 
     Logger.getLogger(getClass()).info(
-        "Refset Service - getLookupProgress - " + refset.getId() + ", " + 
-        refset.isLookupInProgress());
+        "Refset Service - getLookupProgress - " + refset.getId() + ", "
+            + refset.isLookupInProgress());
     int retval = 100;
     if (refset.isLookupInProgress()) {
       if (lookupProgressMap.containsKey(refsetId)) {
@@ -940,9 +945,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           }
         }
 
-        refset.setLookupInProgress(true);
-        refsetService.updateRefset(refset);
-        refsetService.clear();
+        if (!refset.isLookupInProgress()) {
+          refset.setLookupInProgress(true);
+          refsetService.updateRefset(refset);
+          refsetService.clear();
+        }
 
         refset = refsetService.getRefset(refsetId);
         refsetService.setTransactionPerOperation(false);

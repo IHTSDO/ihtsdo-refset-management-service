@@ -322,11 +322,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
       final Map<String, Translation> latestList = new HashMap<>();
       for (final Translation translation : list) {
+        // This should pick up "READY_FOR_PUBLICATION" entries
         if (translation.getEffectiveTime() == null) {
           resultList.add(translation);
-        } else if (!latestList.containsKey(translation.getName())) {
+        }
+        // This should catch the first encountered
+        else if (!latestList.containsKey(translation.getName())) {
           latestList.put(translation.getName(), translation);
-        } else {
+        }
+        // This should update it effectiveTime is later
+        else {
           Date effectiveTime =
               latestList.get(translation.getName()).getEffectiveTime();
           if (translation.getEffectiveTime().after(effectiveTime)) {
@@ -1205,8 +1210,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           }
         }
 
-        translation.setLookupInProgress(true);
-        translationService.updateTranslation(translation);
+        if (!translation.isLookupInProgress()) {
+          translation.setLookupInProgress(true);
+          translationService.updateTranslation(translation);
+          translationService.clear();
+        }
 
         translationService = new TranslationServiceJpa();
         translation = translationService.getTranslation(translationId);
@@ -1353,19 +1361,22 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // Add translation types if user prefs don't have any for this refset
     // by user types
-    boolean found = false;
-    for (final LanguageDescriptionType type : translationTypes) {
-      for (final LanguageDescriptionType type2 : prefs
-          .getLanguageDescriptionTypes()) {
-        if (type.getRefsetId().equals(type2.getRefsetId())) {
-          found = true;
-          break;
+    if (prefs != null && prefs.getLanguageDescriptionTypes() != null) {
+      boolean found = false;
+      for (final LanguageDescriptionType type : translationTypes) {
+        for (final LanguageDescriptionType type2 : prefs
+            .getLanguageDescriptionTypes()) {
+          if (type.getRefsetId().equals(type2.getRefsetId())) {
+            found = true;
+            break;
+          }
         }
       }
+      if (!found) {
+        result.addAll(translationTypes);
+      }
+      // otherwise - just let user prefs language win
     }
-    if (!found) {
-      result.addAll(translationTypes);
-    } // otherwise - just let user prefs language win
 
     // Add in all the user types
     if (prefs != null) {

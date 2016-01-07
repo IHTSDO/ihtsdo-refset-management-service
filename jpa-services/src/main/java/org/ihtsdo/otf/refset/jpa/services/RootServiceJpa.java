@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.jpa.services;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -301,6 +302,22 @@ public abstract class RootServiceJpa implements RootService {
       });
     }
 
+    // Handle filtering based on toString()
+    if (pfs != null
+        && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction().isEmpty())) {
+
+      List<T> filteredResult = new ArrayList<T>();
+      for (T t : result) {
+        if (t.toString().indexOf(pfs.getQueryRestriction()) != -1) {
+          filteredResult.add(t);
+        }
+      }
+      
+      if (filteredResult.size() != result.size() ) {
+        result = filteredResult;
+      }
+    }    
+    
     // get the start and end indexes based on paging parameters
     int startIndex = 0;
     int toIndex = result.size();

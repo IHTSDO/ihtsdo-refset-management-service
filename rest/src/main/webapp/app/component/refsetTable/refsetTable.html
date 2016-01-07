@@ -54,8 +54,8 @@
             ng-click="setSortField('refset','name', null)">
             Name
             <span ng-bind="getSortIndicator('refset','name',null)"></span>
-          </span>/<span
-            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
+          </span><span
+            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">/
             <span ng-click="setSortField('refset','effectiveTime', null)">
               Effective Time
               <span ng-bind="getSortIndicator('refset','effectiveTime',null)"></span>
@@ -69,7 +69,7 @@
             ng-bind="getSortIndicator('refset','type',null)"></span></th>
         <!-- Actions header -->
         <th class="col-md-2 col-xs-2"
-          ng-show="value != 'PUBLISHED' && value != 'BETA' &&projects.role != 'ADMIN'">Actions
+          ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'">Actions
           <span style="float: right;">
             <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
               title="Add refset" class="noul material-icons md-18">add</i>
@@ -106,8 +106,7 @@
           </td>
 
           <!-- PUBLISHED/BETA actions -->
-          <td class="nobreak"
-            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'BETA')">
+          <td class="nobreak" ng-show="value == 'PUBLISHED' || value == 'BETA'">
             <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               ng-show="userProjectsInfo.anyRole" title="Clone"
               class="noul material-icons md-18">content_copy</i>
@@ -164,7 +163,8 @@
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset);" title="Remove"
               class="noul material-icons md-18">delete</i>
-            <i ng-click="unassign(refset, user.userName);" title="Unassign"
+            <i confirm="Are you sure you want to unassign the refset?"
+              ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
               ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
@@ -209,7 +209,11 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="refreshLookupProgress(refset)"
-                uib-tooltip="Click to refresh lookup progress">Refresh</button>
+                uib-tooltip="Click to refresh lookup progress">
+                Refresh
+                <span ng-show="refsetLookupProgress[refset.id]">
+                  {{refsetLookupProgress[refset.id]}}%</span>
+              </button>
             </span>
           </td>
 
@@ -411,7 +415,7 @@
               <b>RELEASED</b>
             </td>
             <td
-              ng-show="!refsetReleaseInfo.published && !refsetReleaseInfo.planned">
+              ng-show="refsetReleaseInfo && !refsetReleaseInfo.published && !refsetReleaseInfo.planned">
               <b>BETA</b>
             </td>
             <td>{{refsetReleaseInfo.name}}
@@ -427,10 +431,12 @@
 
     <!-- release info -->
     <div class="col-md-12 col-xs-12">
-      <span ng-show="refsetReleaseInfo && !refsetReleaseInfo.artifacts"
+      <span
+        ng-show="selected.refset && refsetReleaseInfo && !refsetReleaseInfo.artifacts"
         class="alert alert-warning">Release has no associated artifacts</span>
       <div class="col-md-12 col-xs-12">
-        <table ng-show="refsetReleaseInfo && refsetReleaseInfo.artifacts"
+        <table
+          ng-show="selected.refset && refsetReleaseInfo && refsetReleaseInfo.artifacts"
           class="table">
           <thead>
             <th class="col-md-6 col-xs-6">Release File</th>
@@ -503,8 +509,10 @@
       <span
         ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
         <br />
-        <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset has no members</span>
-        <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No members, assign refset to edit</span>
+        <span ng-show="value !='AVAILABLE'" class="alert alert-warning">Refset
+          has no members</span>
+        <span ng-show="value =='AVAILABLE'" class="alert alert-warning">No
+          members, assign refset to edit</span>
       </span>
 
       <span>

@@ -85,8 +85,11 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     // TODO: need to get this working
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
+    tester.include("active");
+    tester.include("moduleId");
     tester.include("terminologyId");
     tester.include("conceptId");
+    tester.include("refset");
 
     tester.proxy(Refset.class, 1, r1);
     tester.proxy(Refset.class, 2, r2);

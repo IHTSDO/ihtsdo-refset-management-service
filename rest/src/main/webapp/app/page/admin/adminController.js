@@ -5,6 +5,7 @@ tsApp
     [
       '$scope',
       '$http',
+      '$location',
       '$uibModal',
       'gpService',
       'utilService',
@@ -13,21 +14,27 @@ tsApp
       'projectService',
       'validationService',
       'translationService',
-      function($scope, $http, $uibModal, gpService, utilService, tabService, securityService,
-        projectService, validationService, translationService) {
+      function($scope, $http, $location, $uibModal, gpService, utilService, tabService,
+        securityService, projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
         }
-        
+
         //
         // Scope Variables
         //
         $scope.user = securityService.getUser();
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+          return;
+        }
+
         projectService.getUserHasAnyRole();
-        
+
         $scope.selectedProject = null;
         $scope.projectRoles = [];
 

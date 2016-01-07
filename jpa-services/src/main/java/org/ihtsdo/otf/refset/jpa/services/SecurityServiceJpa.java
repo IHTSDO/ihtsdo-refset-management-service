@@ -97,7 +97,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     User userFound = getUser(authUser.getUserName());
 
     // if user was found, update to match settings
+    Long userId = null;
     if (userFound != null) {
+      Logger.getLogger(getClass()).info("update");
       userFound.setEmail(authUser.getEmail());
       userFound.setName(authUser.getName());
       userFound.setUserName(authUser.getUserName());
@@ -108,9 +110,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         newUserPreferences.setUser(userFound);
         addUserPreferences(newUserPreferences);
       }
+      userId = userFound.getId();
     }
     // if User not found, create one for our use
     else {
+      Logger.getLogger(getClass()).info("add");
       User newUser = new UserJpa();
       newUser.setEmail(authUser.getEmail());
       newUser.setName(authUser.getName());
@@ -121,7 +125,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       UserPreferences newUserPreferences = new UserPreferencesJpa();
       newUserPreferences.setUser(newUser);
       addUserPreferences(newUserPreferences);
+      userId = newUser.getId();
     }
+    manager.clear();
 
     // Generate application-managed token
     String token = handler.computeTokenForUser(authUser.getUserName());
@@ -132,8 +138,11 @@ public class SecurityServiceJpa extends RootServiceJpa implements
         "User = " + authUser.getUserName() + ", " + authUser);
 
     // Reload the user to populate UserPreferences
-    final User result = getUser(authUser.getUserName());
+    final User result = getUser(userId);
     handleLazyInit(result);
+    Logger.getLogger(getClass()).info(
+        "Result = " + authUser.getUserName() + ", "
+            + result.getUserPreferences());
     result.setAuthToken(token);
 
     return result;
@@ -153,6 +162,13 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     if (authToken == null)
       throw new LocalException(
           "Attempt to access a service without an AuthToken, the user is likely not logged in.");
+
+    // handle guest user unless
+    if (authToken.equals("guest")
+        && !"false".equals(ConfigUtility.getConfigProperties().getProperty(
+            "security.guest.disabled"))) {
+      return "guest";
+    }
 
     // Replace double quotes in auth token.
     final String parsedToken = authToken.replace("\"", "");
@@ -188,6 +204,13 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       throw new LocalException(
           "Attempt to access a service without an AuthToken, the user is likely not logged in.");
     }
+    // Handle "guest" user
+    if (authToken.equals("guest")
+        && !"false".equals(ConfigUtility.getConfigProperties().getProperty(
+            "security.guest.disabled"))) {
+      return UserRole.VIEWER;
+    }
+
     final String parsedToken = authToken.replace("\"", "");
     final String userName = getUsernameForToken(parsedToken);
 

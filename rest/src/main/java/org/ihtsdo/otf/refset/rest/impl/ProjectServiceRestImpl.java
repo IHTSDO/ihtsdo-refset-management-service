@@ -876,25 +876,23 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   private void addDescriptionsHelper(String userName,
     TranslationService translationService, Translation translation,
     Concept concept, UserPreferences prefs) throws Exception {
-    // Get other language refset ids
-    Set<String> langRefsetIds = new HashSet<>();
-    for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
-      langRefsetIds.add(type.getRefsetId());
-    }
 
     // Find any concepts with this terminologyId
     // and a translation terminologyId matching any of the ids from above.
     final StringBuilder query = new StringBuilder();
+    final Set<String> langRefsetIds = new HashSet<>();
     query.append("terminologyId:" + concept.getTerminologyId());
     // Add in the translation
     query.append(" AND (");
     query.append("translationTerminologyId:" + translation.getTerminologyId());
-    for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
-      if (!langRefsetIds.contains(type.getRefsetId())) {
-        query.append(" OR translationTerminologyId:" + type.getRefsetId());
+    if (prefs != null && prefs.getLanguageDescriptionTypes() != null) {
+      for (LanguageDescriptionType type : prefs.getLanguageDescriptionTypes()) {
+        if (!langRefsetIds.contains(type.getRefsetId())) {
+          query.append(" OR translationTerminologyId:" + type.getRefsetId());
+        }
+        // do not repeat
+        langRefsetIds.add(type.getRefsetId());
       }
-      // do not repeat
-      langRefsetIds.add(type.getRefsetId());
     }
     query.append(")");
 

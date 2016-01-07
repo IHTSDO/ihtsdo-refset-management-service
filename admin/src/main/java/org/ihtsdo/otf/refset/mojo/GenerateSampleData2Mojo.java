@@ -391,7 +391,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
        *     - Refset 16: extensional (imported)
        *     - Refset *: external
        *     - Translation Refset es: extensional (imported)
-       *     - Translation Refset sv: extensional (imported)
+       *     - Translation Refset se: extensional (imported)
        *  - Project 3
        *     - Refset 17: extensional (imported)
        *     - Refest *: intensional - for testing redefinition
@@ -505,8 +505,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Make Swedish translation
       makeTranslation(
-          "Swedish [International Organization for Standardization 639-1 code sv] language reference set",
-          "46011000052107", refset, project2, 3, "INT", "sv", reviewer2);
+          "Swedish language reference set",
+          "46011000052107", refset, project2, 3, "INT", "se", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");
@@ -612,7 +612,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
 
       // Make danish refset and translation
       refset =
-          makeTranslationRefset("Danish Translation scope reference set", 20,
+          makeTranslationRefset("Danish translation scope reference set", 20,
               "INT", project3, "554461000005103", "1000005", "554471000005108",
               reviewer3);
 
@@ -621,22 +621,20 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
           makeTranslation("Danish language reference set", "554461000005103",
               refset, project3, 20, "INT", "da", reviewer3);
       translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+      translation.setEffectiveTime(null);
       new TranslationServiceRestImpl().updateTranslation(translation,
           reviewer3.getAuthToken());
 
       // Make dutch refset and translation
       refset =
-          makeTranslationRefset("Netherlands Translation scope reference set",
+          makeTranslationRefset("Netherlands translation scope reference set",
               22, "INT", project3, "31000146106", "1000005", "11000146104",
               reviewer3);
 
       // Make dutch translation
       translation =
           makeTranslation("Netherlands Dutch language reference set",
-              "31000146106", refset, project3, 22, "INT", "da", reviewer3);
-      translation.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-      new TranslationServiceRestImpl().updateTranslation(translation,
-          reviewer3.getAuthToken());
+              "31000146106", refset, project3, 22, "INT", "nl", reviewer3);
 
       if (assignNames) {
         // Ensure that all lookup names routines completed
