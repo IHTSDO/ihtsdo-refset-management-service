@@ -153,7 +153,9 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
       securityService.logout();
     }
 
+    // clear "guest" user cookie and redirect to login path
     $scope.login = function() {
+      securityService.clearUser();
       $location.path('/login');
     }
 

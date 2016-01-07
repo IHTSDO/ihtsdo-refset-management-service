@@ -30,6 +30,7 @@ tsApp
         // If not logged in, redirect
         if ($http.defaults.headers.common.Authorization == 'guest') {
           $location.path('/');
+          return;
         }
 
         projectService.getUserHasAnyRole();
