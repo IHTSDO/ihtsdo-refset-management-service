@@ -4,15 +4,20 @@ tsApp
     'TranslationCtrl',
     [
       '$scope',
-      '$http',
+      '$http','$location',
       'tabService',
       'securityService',
       'projectService',
       'translationService',
       'workflowService',
-      function($scope, $http, tabService, securityService, projectService, translationService,
+      function($scope, $http,$location, tabService, securityService, projectService, translationService,
         workflowService) {
         console.debug('configure TranslationCtrl');
+
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+        }
 
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Translation') {

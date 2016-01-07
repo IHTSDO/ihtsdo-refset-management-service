@@ -4,15 +4,20 @@ tsApp
     'RefsetCtrl',
     [
       '$scope',
-      '$http',
+      '$http', '$location',
       'tabService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http, tabService, securityService, projectService, refsetService,
+      function($scope, $http,$location, tabService, securityService, projectService, refsetService,
         workflowService) {
         console.debug('configure RefsetCtrl');
+
+        // If not logged in, redirect
+        if ($http.defaults.headers.common.Authorization == 'guest') {
+          $location.path('/');
+        }
 
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Refset') {
