@@ -9,7 +9,7 @@ tsApp.service('translationService', [
   function($http, $q, $rootScope, Upload, gpService, utilService) {
     console.debug('configure translationService');
 
-    // broadcasts a refset change
+    // broadcasts a translation change
     this.fireTranslationChanged = function(translation) {
       $rootScope.$broadcast('refset:translationChanged', translation);
     }
@@ -49,7 +49,7 @@ tsApp.service('translationService', [
 
       // Finds concepts for translation revision
       gpService.increment();
-      $http.post(translationUrl + translationId + '/' + date + '/' + 'concepts',
+      $http.post(translationUrl + translationId + '/' + date + '/concepts',
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -117,7 +117,7 @@ tsApp.service('translationService', [
 
       // Get translation for id
       gpService.increment();
-      $http.get(translationUrl + 'translations' + '/' + refsetId).then(
+      $http.get(translationUrl + 'translations/' + refsetId).then(
       // success
       function(response) {
         console.debug('  translations ', response.data);
@@ -140,7 +140,7 @@ tsApp.service('translationService', [
 
       // Finds translations
       gpService.increment();
-      $http.post(translationUrl + 'translations' + '?query=' + utilService.prepQuery(query),
+      $http.post(translationUrl + 'translations?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -210,9 +210,32 @@ tsApp.service('translationService', [
 
       // Remove translation
       gpService.increment();
-      $http['delete'](translationUrl + 'remove' + '/' + translationId + '?cascade=true').then(
+      $http['delete'](translationUrl + 'remove/' + translationId + '?cascade=true').then(
       // success
       function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // remove translation concepts
+    this.removeAllTranslationConcepts = function(translationId) {
+      console.debug('removeAllTranslationConcepts');
+      var deferred = $q.defer();
+
+      // remove translation concepts
+      gpService.increment()
+      $http['delete'](translationUrl + 'concept/remove/all/' + translationId).then(
+      // success
+      function(response) {
+        console.debug('  remove translation concepts = ', response.data);
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -233,7 +256,7 @@ tsApp.service('translationService', [
       // find concepts
       gpService.increment();
       $http.post(
-        translationUrl + 'concepts' + '?query=' + utilService.prepQuery(query) + '&translationId='
+        translationUrl + 'concepts?query=' + utilService.prepQuery(query) + '&translationId='
           + translationId, utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -256,7 +279,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'import' + '/' + 'handlers').then(
+      $http.get(translationUrl + 'import/handlers').then(
       // success
       function(response) {
         console.debug('  handlers ', response.data);
@@ -278,7 +301,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'export' + '/' + 'handlers').then(
+      $http.get(translationUrl + 'export/handlers').then(
       // success
       function(response) {
         console.debug('  handlers ', response.data);
@@ -300,7 +323,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.put(translationUrl + 'concept' + '/' + 'add', concept).then(
+      $http.put(translationUrl + 'concept/add', concept).then(
       // success
       function(response) {
         console.debug('  concept ', response.data);
@@ -345,7 +368,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http['delete'](translationUrl + 'concept' + '/' + 'remove' + '/' + conceptId).then(
+      $http['delete'](translationUrl + 'concept/remove/' + conceptId).then(
       // success
       function(response) {
         console.debug('  concept = ', response.data);
@@ -367,7 +390,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'translations' + '/' + 'spellingdictionary').then(
+      $http.get(translationUrl + 'translations/spellingdictionary').then(
       // success
       function(response) {
         console.debug('  handlers ', response.data);
@@ -390,7 +413,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.get(
-        translationUrl + 'spelling' + '/' + 'copy' + '?fromTranslationId=' + fromTranslationId
+        translationUrl + 'spelling/copy?fromTranslationId=' + fromTranslationId
           + '&toTranslationId=' + toTranslationId).then(
       // success
       function(response) {
@@ -413,12 +436,11 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.put(translationUrl + 'spelling' + '/' + 'add' + '?translationId=' + translationId,
-        entry, {
-          headers : {
-            'Content-type' : 'text/plain'
-          }
-        }).then(
+      $http.put(translationUrl + 'spelling/add?translationId=' + translationId, entry, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
       // success
       function(response) {
         console.debug('  entry ', response.data);
@@ -440,11 +462,9 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(
-        translationUrl + 'spelling' + '/' + 'add' + '/' + 'batch' + '?translationId='
-          + translationId, {
-          strings : entries
-        }).then(
+      $http.post(translationUrl + 'spelling/add/batch?translationId=' + translationId, {
+        strings : entries
+      }).then(
       // success
       function(response) {
         console.debug('  entry ', response.data);
@@ -467,8 +487,8 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http['delete'](
-        translationUrl + 'spelling' + '/' + 'remove' + '?translationId=' + translationId
-          + '&entry=' + encodeURIComponent(entry)).then(
+        translationUrl + 'spelling/remove?translationId=' + translationId + '&entry='
+          + encodeURIComponent(entry)).then(
       // success
       function(response) {
         console.debug('  entry = ', response.data);
@@ -489,23 +509,23 @@ tsApp.service('translationService', [
       console.debug('suggestSpelling');
       var deferred = $q.defer();
 
-      // Get refset types
+      // suggest spelling
       gpService.increment();
       $http.get(
-        translationUrl + 'spelling' + '/' + 'suggest' + '/' + translationId + '/'
-          + encodeURIComponent(entry)).then(
-      // success
-      function(response) {
-        console.debug('  suggest = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        translationUrl + 'spelling/suggest/' + translationId + '/' + encodeURIComponent(entry))
+        .then(
+        // success
+        function(response) {
+          console.debug('  suggest = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
@@ -516,11 +536,9 @@ tsApp.service('translationService', [
 
       // INTENSIONALLY doesn't use gp
       // gpService.increment();
-      $http.post(
-        translationUrl + 'spelling' + '/' + 'suggest' + '/' + 'batch?translationId='
-          + translationId, {
-          strings : lookupTerms
-        }).then(
+      $http.post(translationUrl + 'spelling/suggest/batch?translationId=' + translationId, {
+        strings : lookupTerms
+      }).then(
       // success
       function(response) {
         console.debug('  batch suggest = ', response.data);
@@ -541,23 +559,23 @@ tsApp.service('translationService', [
       console.debug('suggestTranslation');
       var deferred = $q.defer();
 
-      // Get refset types
+      // suggest translation
       gpService.increment();
       $http.get(
-        translationUrl + 'phrasememory' + '/' + 'suggest' + '/' + translationId + '/'
-          + encodeURIComponent(entry)).then(
-      // success
-      function(response) {
-        console.debug('  suggest = ', response.data);
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+        translationUrl + 'phrasememory/suggest/' + translationId + '/' + encodeURIComponent(entry))
+        .then(
+        // success
+        function(response) {
+          console.debug('  suggest = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
     }
 
@@ -568,11 +586,9 @@ tsApp.service('translationService', [
 
       // INTENSIONALLY doesn't use gp
       // gpService.increment();
-      $http.post(
-        translationUrl + 'phrasememory' + '/' + 'suggest' + '/' + 'batch?translationId='
-          + translationId, {
-          strings : phrases
-        }).then(
+      $http.post(translationUrl + 'phrasememory/suggest/batch?translationId=' + translationId, {
+        strings : phrases
+      }).then(
       // success
       function(response) {
         console.debug('  batch suggest = ', response.data);
@@ -594,20 +610,19 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http['delete'](translationUrl + 'spelling' + '/' + 'clear?translationId=' + translationId)
-        .then(
-        // success
-        function(response) {
-          console.debug('  spelling = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http['delete'](translationUrl + 'spelling/clear?translationId=' + translationId).then(
+      // success
+      function(response) {
+        console.debug('  spelling = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -617,7 +632,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'translations' + '/' + 'phrasememory').then(
+      $http.get(translationUrl + 'translations/phrasememory').then(
       // success
       function(response) {
         console.debug('  handlers ', response.data);
@@ -640,7 +655,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.get(
-        translationUrl + 'phrasememory' + '/' + 'copy?fromTranslationId=' + fromTranslationId
+        translationUrl + 'phrasememory/copy?fromTranslationId=' + fromTranslationId
           + '&toTranslationId=' + toTranslationId).then(
       // success
       function(response) {
@@ -664,7 +679,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.put(
-        translationUrl + 'phrasememory' + '/' + 'add?translationId=' + translationId + '&name='
+        translationUrl + 'phrasememory/add?translationId=' + translationId + '&name='
           + encodeURIComponent(name), translatedName, {
           headers : {
             'Content-type' : 'text/plain'
@@ -692,7 +707,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http['delete'](
-        translationUrl + 'phrasememory' + '/' + 'remove?translationId=' + translationId + '&name='
+        translationUrl + 'phrasememory/remove?translationId=' + translationId + '&name='
           + encodeURIComponent(name) + '&translatedName=' + encodeURIComponent(translatedName))
         .then(
         // success
@@ -716,8 +731,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http['delete'](
-        translationUrl + 'phrasememory' + '/' + 'clear?translationId=' + translationId).then(
+      $http['delete'](translationUrl + 'phrasememory/clear?translationId=' + translationId).then(
       // success
       function(response) {
         console.debug('  phraseMemory = ', response.data);
@@ -740,7 +754,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.get(
-        translationUrl + 'compare' + '?translationId1=' + translationId1 + '&translationId2='
+        translationUrl + 'compare?translationId1=' + translationId1 + '&translationId2='
           + translationId2).then(
       // success
       function(response) {
@@ -764,7 +778,7 @@ tsApp.service('translationService', [
 
       gpService.increment();
       $http.post(
-        translationUrl + 'common' + '/' + 'concepts' + '?reportToken=' + reportToken + '&query='
+        translationUrl + 'common/concepts?reportToken=' + reportToken + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -787,7 +801,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(translationUrl + 'diff/concepts' + '?reportToken=' + reportToken).then(
+      $http.get(translationUrl + 'diff/concepts?reportToken=' + reportToken).then(
       // success
       function(response) {
         console.debug('  diff ', response.data);
@@ -809,7 +823,7 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(translationUrl + 'release/report' + '?reportToken=' + reportToken).then(
+      $http.post(translationUrl + 'release/report?reportToken=' + reportToken).then(
       // success
       function(response) {
         console.debug('  release ', response.data);
@@ -1010,6 +1024,112 @@ tsApp.service('translationService', [
       });
     };
 
+    // Export concepts
+    this.exportConcepts = function(translationId, ioHandlerInfo, extension) {
+      console.debug('exportConcepts');
+      gpService.increment();
+      $http.get(
+        translationUrl + 'export?translationId=' + translationId + '&handlerId=' + ioHandlerInfoId)
+        .then(
+        // Success
+        function(response) {
+          var blob = new Blob([ response.data ], {
+            type : ''
+          });
+
+          // fake a file URL and download it
+          var fileURL = URL.createObjectURL(blob);
+          var a = document.createElement('a');
+          a.href = fileURL;
+          a.target = '_blank';
+          a.download = 'concepts.' + translation.terminologyId + '.' + extension;
+          document.body.appendChild(a);
+          gpService.decrement();
+          a.click();
+
+        },
+        // Error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+        });
+    };
+
+    // Begin import concepts - if validation is result, OK to proceed.
+    this.beginImportConcepts = function(translationId, handlerId) {
+      console.debug('begin import concepts');
+      var deferred = $q.defer();
+      gpService.increment()
+      $http.get(
+        translationUrl + 'import/begin?translationId=' + translationId + '&handlerId=' + handlerId)
+        .then(
+        // success
+        function(response) {
+          console.debug('  validation result = ', response.data);
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
+      return deferred.promise;
+    };
+
+    // Cancel import concepts
+    this.cancelImportConcepts = function(translationId) {
+      console.debug('cancel import concepts');
+      var deferred = $q.defer();
+      gpService.increment()
+      $http.get(translationUrl + 'import/cancel?translationId=' + translationId).then(
+      // success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+
+    // Finish import concepts - if validation is result, OK to proceed.
+    this.finishImportConcepts = function(translationId, handlerId, file) {
+      console.debug('finish import concepts');
+      var deferred = $q.defer();
+      gpService.increment()
+      Upload.upload(
+        {
+          url : translationUrl + 'import/finish?translationId=' + translationId + '&handlerId='
+            + handlerId,
+          data : {
+            file : file
+          }
+        }).then(
+      // Success
+      function(response) {
+        gpService.decrement();
+        deferred.resolve(response.data);
+
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      },
+      // event
+      function(evt) {
+        var progressPercentage = parseInt(100.0 * evt.loaded / evt.total);
+        console.debug('progress: ' + progressPercentage + '% ' + evt.config.data.file.name);
+      });
+      return deferred.promise;
+    };
     // Begin import phrase memory
     this.importPhraseMemory = function(translationId, file) {
       console.debug('import phrase memory');
@@ -1047,7 +1167,6 @@ tsApp.service('translationService', [
       // Setup deferred
       var deferred = $q.defer();
 
-      gpService.increment();
       $http.get(translationUrl + 'lookup/status?translationId=' + translationId, {
         headers : {
           'Content-type' : 'text/plain'
@@ -1056,13 +1175,11 @@ tsApp.service('translationService', [
       // success
       function(response) {
         console.debug('  output = ', response.data);
-        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
-        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;
@@ -1074,18 +1191,15 @@ tsApp.service('translationService', [
       var deferred = $q.defer();
 
       // get translation revision
-      gpService.increment()
       $http.get(translationUrl + 'lookup/start?translationId=' + translationId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);
-        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
-        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;

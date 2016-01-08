@@ -331,13 +331,14 @@ public interface RefsetService extends ReleaseService {
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been
-   * completed
-   * 
+   * completed.
+   *
    * @param objectId the object undergoing change
+   * @param lookupInProgress the lookup in progress flag
    * @return percentage completed
-   * @throws Exception
+   * @throws Exception the exception
    */
-  public int getLookupProgress(Long objectId) throws Exception;
+  public int getLookupProgress(Long objectId, boolean lookupInProgress) throws Exception;
 
   /**
    * Resolve refset definition.

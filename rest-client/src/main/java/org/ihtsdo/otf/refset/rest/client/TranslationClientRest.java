@@ -281,8 +281,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/export/members" + "?translationId=" + translationId
-            + "&handlerId=" + ioHandlerInfoId);
+            + "/translation/export/concepts" + "?translationId="
+            + translationId + "&handlerId=" + ioHandlerInfoId);
     Response response =
         target.request(MediaType.APPLICATION_OCTET_STREAM)
             .header("Authorization", authToken).get();
@@ -335,6 +335,30 @@ public class TranslationClientRest extends RootClientRest implements
     // converting to object
     return (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
         ConceptListJpa.class);
+  }
+
+  /* see superclass */
+  @Override
+  public void removeAllTranslationConcepts(Long translationId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - remove all translation concepts - " + translationId);
+    validateNotEmpty(translationId, "translationId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/concept/remove/all/"
+            + translationId);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // do nothing, successful
+    } else {
+      throw new Exception("Unexpected status - " + response.getStatus());
+    }
+
   }
 
   /* see superclass */
@@ -1145,7 +1169,7 @@ public class TranslationClientRest extends RootClientRest implements
   public ValidationResult beginImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - begin import members");
+        "Translation Client - begin import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
@@ -1176,7 +1200,7 @@ public class TranslationClientRest extends RootClientRest implements
   public ValidationResult resumeImportConcepts(Long translationId,
     String ioHandlerInfoId, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - resume import members");
+        "Translation Client - resume import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
@@ -1210,7 +1234,7 @@ public class TranslationClientRest extends RootClientRest implements
     throws Exception {
 
     Logger.getLogger(getClass()).debug(
-        "Translation Client - finish import members");
+        "Translation Client - finish import concepts");
     validateNotEmpty(translationId, "translationId");
     validateNotEmpty(ioHandlerInfoId, "ioHandlerInfoId");
 
@@ -1247,7 +1271,7 @@ public class TranslationClientRest extends RootClientRest implements
   public void cancelImportConcepts(Long translationId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Client - cancel import members");
+        "Translation Client - cancel import concepts");
     validateNotEmpty(translationId, "translationId");
 
     Client client = ClientBuilder.newClient();

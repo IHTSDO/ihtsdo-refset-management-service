@@ -6,8 +6,6 @@
 <div class="modal-body">
   <p ng-show="refset.type == 'INTENSIONAL'">Add clause to the definition:</p>
   <p ng-show="refset.type == 'EXTENSIONAL'">Add all members for clause:</p>
-
-  <p>Add inclusion clause to the definition:</p>
   <div class="row">
     <span class="col-md-1 col-xs-1">
       <input type="radio" ng-model="includeClause" name="selfAndDescendants"
@@ -31,7 +29,6 @@
 
   <p ng-show="refset.type == 'INTENSIONAL'">Add individual inclusion member:</p>
   <p ng-show="refset.type == 'EXTENSIONAL'">Add individual member:</p>
-  <p>OR, add individual member:</p>
   <div class="row">
     <span class="col-md-1 col-xs-1">
       <input type="radio" ng-model="includeClause" name="inclusion"

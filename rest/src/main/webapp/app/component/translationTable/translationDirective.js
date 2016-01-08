@@ -4,9 +4,10 @@ tsApp
   .directive(
     'translationTable',
     [
-      '$uibModal', 
+      '$uibModal',
       '$window',
       '$sce',
+      '$interval',
       'utilService',
       'securityService',
       'projectService',
@@ -15,7 +16,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $window, $sce, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, $interval, utilService, securityService, projectService,
         translationService, refsetService, releaseService, workflowService, validationService) {
         console.debug('configure translationTable directive');
         return {
@@ -45,6 +46,7 @@ tsApp
               };
               $scope.translations = null;
               $scope.translationLookupProgress = {};
+              $scope.lookupInterval = null;
               $scope.translationReleaseInfo = null;
               $scope.project = null;
               $scope.refsets = [];
@@ -335,9 +337,10 @@ tsApp
               };
               // get translation release info
               $scope.getTranslationReleaseInfo = function(translation) {
-                releaseService.getCurrentTranslationRelease(translation.id).then(function(data) {
-                  $scope.translationReleaseInfo = data;
-                })
+                releaseService.getCurrentTranslationReleaseInfo(translation.id).then(
+                  function(data) {
+                    $scope.translationReleaseInfo = data;
+                  })
               };
 
               // Save user preferences
@@ -352,6 +355,14 @@ tsApp
               // export release artifact
               $scope.exportReleaseArtifact = function(artifact) {
                 releaseService.exportReleaseArtifact(artifact);
+              };
+
+              // Removes all translation concepts
+              $scope.removeAllTranslationConcepts = function(translation) {
+                translationService.removeAllTranslationConcepts(translation.id).then(
+                  function(data) {
+                    translationService.fireTranslationChanged(translation)
+                  })
               };
 
               // Convert date to a string
@@ -412,10 +423,11 @@ tsApp
 
               // Remove a translation
               $scope.removeTranslation = function(translation) {
-
+                console.debug("remove translation", translation);
                 // warn about concepts
                 if (translation.assigned && translation.assigned.totalCount > 0) {
-                  $window.confirm('The translation has assigned concepts you must unassign all first.');
+                  $window
+                    .confirm('The translation has assigned concepts you must unassign all first.');
                   return;
                 }
 
@@ -431,29 +443,40 @@ tsApp
                   translationService.findTranslationConceptsForQuery(translation.id, '', {
                     startIndex : 0,
                     maxResults : 1
-                  }).then(function(data) {
-                    if (data.concepts.length == 1) {
-                      if (!$window.confirm('The translation has concepts that will also be deleted.')) {
-                        return;
-                      }
-                    }
-                    translationService.removeTranslation(translation.id).then(
-                    // Success
+                  }).then(
                     function(data) {
-                      $scope.selected.translation = null;
-                      translationService.fireTranslationChanged();
-                    });
+                      if (data.concepts.length == 1) {
+                        if (!$window
+                          .confirm('The translation has concepts that will also be deleted.')) {
+                          return;
+                        }
+                      }
+                      translationService.removeTranslation(translation.id).then(
+                      // Success
+                      function(data) {
+                        $scope.selected.translation = null;
+                        translationService.fireTranslationChanged();
+                      });
 
-                  })
+                    })
+                } else {
+
+                  translationService.removeTranslation(translation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.selected.translation = null;
+                    translationService.fireTranslationChanged();
+                  });
                 }
+              };
 
-                translationService.removeTranslation(translation.id).then(
-                // Success
-                function(data) {
-                  $scope.selected.translation = null;
-                  translationService.fireTranslationChanged();
+              // Remove concept
+              $scope.removeConcept = function(translation, concept) {
+                translationService.removeConcept(concept.id).then(
+                // Success 
+                function() {
+                  $scope.getConcepts(translation);
                 });
-
               };
 
               // Unassign the specified concept
@@ -530,23 +553,44 @@ tsApp
               };
 
               // Start lookup again
-              $scope.startLookup = function(refset) {
-                refsetService.startLookup(refset.id).then(
+              var startLookup = function(translation) {
+                translationService.startLookup(translation.id).then(
                 // Success
                 function(data) {
-                  $scope.refsetLookupProgress[refset.id] = 1;
+                  $scope.translationLookupProgress[translation.id] = 1;
+                  if (!$scope.lookupInterval) {
+                    $scope.lookupInterval = $interval(function() {
+                      $scope.refreshLookupProgress(translation);
+                    }, 2000);
+                  }
                 });
               }
 
               // Refresh lookup progress
-              $scope.refreshLookupProgress = function(refset) {
-                refsetService.getLookupProgress(refset.id).then(
+              $scope.refreshLookupProgress = function(translation) {
+                console.debug("Refresh lookup progress", $scope.translationLookupProgress);
+                translationService.getLookupProgress(translation.id).then(
                 // Success
                 function(data) {
-                  if (data > 0 && data < 101) {
-                    window.alert('Progress is ' + data + ' % complete.');
+                  $scope.translationLookupProgress[translation.id] = data;
+
+                  // If all lookups in progress are at 100%, stop interval
+                  var found = true;
+                  for ( var key in $scope.translationLookupProgress) {
+                    if ($scope.translationLookupProgress[key] < 100) {
+                      found = false;
+                      break;
+                    }
                   }
-                  $scope.refsetLookupProgress[refset.id] = data;
+                  if (found) {
+                    $interval.cancel($scope.lookupInterval);
+                  }
+
+                },
+                // Error
+                function(data) {
+                  // Cancel automated lookup on error
+                  $interval.cancel($scope.lookupInterval);
                 });
               }
 
@@ -592,6 +636,13 @@ tsApp
               // Directive scoped method for cancelling a release
               $scope.cancelAction = function(translation) {
                 $scope.translation = translation;
+                if (translation.stagingType == 'IMPORT') {
+                  translationService.cancelImportMembers($scope.translation.id).then(
+                  // Success
+                  function() {
+                    translationService.fireTranslationChanged($scope.translation);
+                  });
+                }
                 if (translation.stagingType == 'BETA') {
                   releaseService.cancelTranslationRelease($scope.translation.id).then(
                   // Success
@@ -854,6 +905,10 @@ tsApp
                         $scope.warnings = [];
                       }
 
+                      if (!translation.name || !translation.description || !translation.language) {
+                        $scope.data.errors[0] = "Translation name, description, and language must not be empty.";
+                        return;
+                      }
                       translationService.addTranslation(translation).then(
                       // Success - update translation
                       function(data) {
@@ -1905,6 +1960,13 @@ tsApp
                     },
                     type : function() {
                       return ltype;
+                    },
+                    ioHandlers : function() {
+                      if (loperation == 'Import') {
+                        return $scope.metadata.importHandlers;
+                      } else {
+                        return $scope.metadata.exportHandlers;
+                      }
                     }
                   }
                 });
@@ -1918,10 +1980,12 @@ tsApp
 
               // Import/Export controller
               var ImportExportModalCtrl = function($scope, $uibModalInstance, translation,
-                operation, type) {
+                operation, type, ioHandlers) {
                 console.debug('Entered import export modal control');
 
                 $scope.translation = translation;
+                $scope.ioHandlers = ioHandlers;
+                $scope.selectedIoHandler = $scope.ioHandlers[0];
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
@@ -1933,6 +1997,10 @@ tsApp
                   }
                   if (type == 'Phrase Memory') {
                     translationService.exportPhraseMemory($scope.translation.id);
+                  }
+                  if (type == 'Translation') {
+                    translationService.exportConcepts($scope.translation,
+                      $scope.selectedIoHandler.id, $scope.selectedIoHandler.fileTypeFilter);
                   }
                   $uibModalInstance.close();
                 };
@@ -1951,6 +2019,7 @@ tsApp
                       utilService.clearError();
                     });
                   }
+
                   if (type == 'Phrase Memory') {
                     translationService.importPhraseMemory($scope.translation.id, file).then(
                     // Success
@@ -1964,9 +2033,66 @@ tsApp
                     });
                   }
 
+                  if (type == 'Translation') {
+                    translationService.beginImportConcepts($scope.translation.id,
+                      $scope.selectedIoHandler.id).then(
+
+                      // Success
+                      function(data) {
+                        // data is a validation result, check for errors
+                        if (data.errors.length > 0) {
+                          $scope.errors = data.errors;
+                        } else {
+
+                          // If there are no errors, finish import
+                          translationService.finishImportConcepts($scope.translation.id,
+                            $scope.selectedIoHandler.id, file).then(
+                          // Success - close dialog
+                          function(data) {
+                            startLookup(translation);
+                            $uibModalInstance.close(translation);
+                          },
+                          // Failure - show error
+                          function(data) {
+                            $scope.errors[0] = data;
+                            utilService.clearError();
+                          });
+                        }
+                      },
+
+                      // Failure - show error, clear global error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                        // $uibModalInstance.close();
+                      });
+                  }
+                };
+
+                // Handle continue import
+                $scope.continueImport = function(file) {
+
+                  if (type == 'Translation') {
+                    translationService.finishImportConcepts($scope.translation.id,
+                      $scope.selectedIoHandler.id, file).then(
+                    // Success - close dialog
+                    function(data) {
+                      $uibModalInstance.close(translation);
+                    },
+                    // Failure - show error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                      // $uibModalInstance.close();
+                    });
+                  }
                 };
 
                 $scope.cancel = function() {
+                  // If there are lingering errors, cancel the import
+                  if (type == 'Translation' && $scope.errors.length > 0) {
+                    translationService.cancelImportConcepts($scope.translation.id);
+                  }
                   // dismiss the dialog
                   $uibModalInstance.dismiss('cancel');
                 };

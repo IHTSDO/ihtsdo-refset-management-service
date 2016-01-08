@@ -4,45 +4,30 @@
 
 <div class="modal-body">
   <div>
+    <!-- Translation info -->
+    <div translation-info translation="translation" form="long"></div>
     <table class="table">
       <tr>
+        <td>I/O Handler</td>
         <td>
-          <b>Translation Id</b>
+          <span ng-show="ioHandlers.length>1">
+            <select ng-model="selectedIoHandler"
+              ng-options="item.name for item in ioHandlers"></select>
+          </span>
+          <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
-        <td>{{translation.terminologyId}}</td>
       </tr>
-      <tr>
-        <td>
-          <b>Name</b>
-        </td>
-        <td>{{translation.name}}</td>
-      </tr>
-      <tr>
-        <td>
-          <b>Description</b>
-        </td>
-        <td>{{translation.description}}</td>
-      </tr>
-      <tr>
-        <td>Module Id</td>
-        <td>
-          {{translation.moduleId}}
-          <!-- Mobile friendly line-break -->
-          <br class="visible-xs-inline" />
-          <span flag-icon obj="translation"></span>
-        </td>
-      </tr>      
       <tr ng-show="operation == 'Import'">
         <td>Choose File</td>
         <td>
           <center>
             <button type="file" ngf-select ng-model="file" name="file"
-              ngf-pattern=".txt" ngf-max-size="10MB">Browse
-              for File</button>
+              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
+              ngf-max-size="200MB">Browse for File</button>
             <div ngf-drop ng-model="file" class="drop-box"
-              ngf-drag-over-class="'dragover'" ngf-max-size="10MB"
-              ngf-pattern=".txt">Drop file
-              here</div>
+              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
+              ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
+              file here</div>
             </div>
           </center>
         </td>
@@ -70,11 +55,18 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="operation == 'Export'"
-    ng-click="export(); 
-    ">Export</button>
+    ng-click="export();">Export</button>
+  <!-- spelling/memory import button -->
+  <button class="btn btn-primary" ng-disabled="!file"
+    ng-show="operation == 'Import' && type != 'Translation'"
+    ng-click="import(file);">Import</button>
+
+  <!--  translation import button -->
+  <button class="btn btn-primary" ng-disabled="!file"
+    ng-show="operation == 'Import' && errors.length == 0 && type == 'Translation'"
+    ng-click="import(file);">Import</button>
   <button class="btn btn-primary"
-    ng-show="operation == 'Import'"
-    ng-click="import(file); 
-    ">Import</button> 
+    ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
+    ng-click="continueImport(file);">Continue With Import</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

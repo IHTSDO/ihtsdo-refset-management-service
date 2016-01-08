@@ -342,7 +342,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       list = new ArrayList<Translation>(latestList.values());
       list.addAll(resultList);
       pfs.setStartIndex(origStartIndex);
+      String queryRestriction = pfs.getQueryRestriction();
+      pfs.setQueryRestriction(null);
       result.setObjects(applyPfsToList(list, Translation.class, pfs));
+      pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
     } else {
       result.setTotalCount(totalCt[0]);

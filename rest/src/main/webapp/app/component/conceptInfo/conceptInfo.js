@@ -98,7 +98,7 @@ tsApp.directive('conceptInfo', [
               $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {})
               .then(
               // Success
-              function(data) {
+              function(data) {                
                 $scope.children = data.concepts;
                 $scope.children.totalCount = data.totalCount;
                 $scope.getMemberTypes();

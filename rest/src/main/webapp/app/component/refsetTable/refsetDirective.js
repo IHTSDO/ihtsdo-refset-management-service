@@ -7,6 +7,7 @@ tsApp
       '$uibModal',
       '$window',
       '$sce',
+      '$interval',
       'utilService',
       'securityService',
       'projectService',
@@ -14,7 +15,7 @@ tsApp
       'releaseService',
       'workflowService',
       'validationService',
-      function($uibModal, $window, $sce, utilService, securityService, projectService,
+      function($uibModal, $window, $sce, $interval, utilService, securityService, projectService,
         refsetService, releaseService, workflowService, validationService) {
         console.debug('configure refsetTable directive');
         return {
@@ -393,17 +394,38 @@ tsApp
 
               // Remove a refset
               $scope.removeRefset = function(refset) {
-
+                console.debug("removeRefset", refset);
                 if (refset.members && refset.members.totalCount > 0) {
                   if (!$window.confirm('The refset has members that will also be deleted.')) {
                     return;
                   }
                 }
-                refsetService.removeRefset(refset.id).then(function() {
-                  $scope.selected.refset = null;
-                  refsetService.fireRefsetChanged(refset);
-                });
 
+                // IF members are not loaded, load, check, and re-confirm
+                if (!refset.members) {
+                  // Test for members
+                  refsetService.findRefsetMembersForQuery(refset.id, '', {
+                    startIndex : 0,
+                    maxResults : 1
+                  }).then(function(data) {
+                    if (data.concepts.length == 1) {
+                      if (!$window.confirm('The refset has members that will also be deleted.')) {
+                        return;
+                      }
+                    }
+                    refsetService.removeRefset(refset.id).then(function() {
+                      $scope.selected.refset = null;
+                      refsetService.fireRefsetChanged(refset);
+                    });
+
+                  })
+                } else {
+
+                  refsetService.removeRefset(refset.id).then(function() {
+                    $scope.selected.refset = null;
+                    refsetService.fireRefsetChanged(refset);
+                  });
+                }
               };
 
               // Remove refset member
@@ -460,8 +482,7 @@ tsApp
               // Removes all refset members
               $scope.removeAllRefsetMembers = function(refset) {
                 refsetService.removeAllRefsetMembers(refset.id).then(function(data) {
-                  refsetService.fireRefsetChanged($scope.project.id)
-                  $scope.selectRefset(refset);
+                  refsetService.fireRefsetChanged(refset)
                 })
               };
 
@@ -490,21 +511,24 @@ tsApp
                 }
               };
 
-              // Start lookup again
-              $scope.startLookup = function(refset) {
+              // Start lookup again - not $scope because modal must access it
+              var startLookup = function(refset) {
                 refsetService.startLookup(refset.id).then(
                 // Success
                 function(data) {
                   $scope.refsetLookupProgress[refset.id] = 1;
-                  $scope.lookupInterval = $interval(function() {
-                    $scope.refreshLookupProgress();
-                  }, 2000);
+                  // Start if not already running
+                  if (!$scope.lookupInterval) {
+                    $scope.lookupInterval = $interval(function() {
+                      $scope.refreshLookupProgress(refset);
+                    }, 2000);
+                  }
                 });
               }
 
               // Refresh lookup progress
               $scope.refreshLookupProgress = function(refset) {
-                console.debug("Refresh lookup progress", $scope.refsetLookupProgress);
+                console.debug("Refresh lookup progress", refset, $scope.refsetLookupProgress);
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
@@ -519,9 +543,15 @@ tsApp
                     }
                   }
                   if (found) {
+                    console.debug("cancel");
                     $interval.cancel($scope.lookupInterval);
                   }
 
+                },
+                // Error
+                function(data) {
+                  // Cancel automated lookup on error
+                  $interval.cancel($scope.lookupInterval);
                 });
               }
               // Get the most recent note for display
@@ -963,13 +993,10 @@ tsApp
 
                 // Handle export
                 $scope.export = function(file) {
-
                   if (type == 'Definition') {
                     refsetService.exportDefinition($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
-
                   }
-
                   if (type == 'Refset Members') {
                     refsetService.exportMembers($scope.refset, $scope.selectedIoHandler.id,
                       $scope.selectedIoHandler.fileTypeFilter);
@@ -1010,6 +1037,7 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
+                              startLookup(refset);
                               $uibModalInstance.close(refset);
                             },
                             // Failure - show error
@@ -1050,7 +1078,7 @@ tsApp
 
                 $scope.cancel = function() {
                   // If there are lingering errors, cancel the import
-                  if ($scope.errors.length > 0) {
+                  if ($scope.errors.length > 0 && type == 'Refset Members') {
                     refsetService.cancelImportMembers($scope.refset.id);
                   }
                   // dismiss the dialog
@@ -1472,6 +1500,11 @@ tsApp
                         return;
                       } else {
                         $scope.warnings = [];
+                      }
+
+                      if (!refset.name || !refset.description) {
+                        $scope.data.errors[0] = "Refset name and description must not be empty.";
+                        return;
                       }
 
                       // Success - validate refset

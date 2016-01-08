@@ -854,7 +854,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "remove member", UserRole.AUTHOR);
+          securityService, authToken, "remove all members", UserRole.AUTHOR);
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
       for (final ConceptRefsetMember member : refsetService
@@ -864,7 +864,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
     } catch (Exception e) {
-      handleException(e, "trying to remove a member ");
+      handleException(e, "trying to remove all members");
     } finally {
       refsetService.close();
       securityService.close();
@@ -2458,14 +2458,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      if (refsetService.getRefset(refsetId) == null) {
+      final Refset refset = refsetService.getRefset(refsetId);
+      if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
 
       authorizeApp(securityService, authToken, "get lookup status",
           UserRole.VIEWER);
 
-      return refsetService.getLookupProgress(refsetId);
+      return refsetService.getLookupProgress(refsetId,
+          refset.isLookupInProgress());
     } catch (Exception e) {
       handleException(e,
           "trying to find the status of the lookup of member names and statues");

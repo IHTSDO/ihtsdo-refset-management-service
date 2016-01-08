@@ -296,11 +296,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         // This should pick up "READY_FOR_PUBLICATION" entries
         if (refset.getEffectiveTime() == null) {
           resultList.add(refset);
-        } 
+        }
         // This should catch the first encountered
         else if (!latestList.containsKey(refset.getName())) {
           latestList.put(refset.getName(), refset);
-        } 
+        }
         // This should update it effectiveTime is later
         else {
           Date effectiveTime =
@@ -313,7 +313,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       list = new ArrayList<Refset>(latestList.values());
       list.addAll(resultList);
       pfs.setStartIndex(origStartIndex);
+      String queryRestriction = pfs.getQueryRestriction();
+      pfs.setQueryRestriction(null);
       result.setObjects(applyPfsToList(list, Refset.class, pfs));
+      pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
     } else {
       result.setTotalCount(totalCt[0]);
@@ -866,19 +869,18 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   /* see superclass */
   @Override
-  public int getLookupProgress(Long refsetId) throws Exception {
-    final Refset refset = getRefset(refsetId);
+  public int getLookupProgress(Long objectId, boolean lookupInProgress)
+    throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "Refset Service - getLookupProgress - " + refset.getId() + ", "
-            + refset.isLookupInProgress());
+        "Refset Service - getLookupProgress - " + objectId);
     int retval = 100;
-    if (refset.isLookupInProgress()) {
-      if (lookupProgressMap.containsKey(refsetId)) {
-        if (lookupProgressMap.get(refsetId).intValue() == LOOKUP_ERROR_CODE) {
+    if (lookupInProgress) {
+      if (lookupProgressMap.containsKey(objectId)) {
+        if (lookupProgressMap.get(objectId).intValue() == LOOKUP_ERROR_CODE) {
           throw new Exception("The lookup process unexpectedly failed");
         } else {
-          retval = lookupProgressMap.get(refsetId);
+          retval = lookupProgressMap.get(objectId);
         }
       } else {
         retval = -1;
