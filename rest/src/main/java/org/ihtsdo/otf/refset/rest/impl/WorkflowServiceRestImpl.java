@@ -624,7 +624,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
       // any query restriction has already been handled, dont use here
-      pfs.setQueryRestriction(null);
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
       list =
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
