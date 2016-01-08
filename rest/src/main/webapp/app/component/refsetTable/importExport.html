@@ -9,8 +9,8 @@
 
     <table class="table">
       <tr>
-        <td>I/O Handler</td>
-        <td>
+        <td class="col-md-4 col-xs-4"><b>I/O Handler</b></td>
+        <td class="col-md-8 col-xs-8">
           <span ng-show="ioHandlers.length> 1">
             <select ng-model="selectedIoHandler"
               ng-options="item.name for item in ioHandlers"></select>
@@ -19,12 +19,12 @@
         </td>
       </tr>
       <tr ng-show="operation == 'Import'">
-        <td>Choose File</td>
+        <td><b>Choose File</b></td>
         <td>
           <center>
             <button type="file" ngf-select ng-model="file" name="file"
-              ngf-pattern="selectedIoHandler.fileTypeFilter" ngf-max-size="200MB">Browse
-              for File</button>
+              ngf-pattern="selectedIoHandler.fileTypeFilter"
+              ngf-max-size="200MB">Browse for File</button>
             <div ngf-drop ng-model="file" class="drop-box"
               ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
               ngf-pattern="selectedIoHandler.fileTypeFilter">Drop file

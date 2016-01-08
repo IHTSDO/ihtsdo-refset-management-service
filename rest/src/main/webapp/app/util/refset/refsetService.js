@@ -44,20 +44,19 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(refsetUrl + refsetId + '/' + date + '/members', utilService.prepPfs(pfs))
-        .then(
-        // success
-        function(response) {
-          console.debug('  members = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(refsetUrl + refsetId + '/' + date + '/members', utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  members = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -159,8 +158,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http
-        .post(refsetUrl + 'members/add?refsetId=' + refset.id + '&expression=' + expression)
+      $http.post(refsetUrl + 'members/add?refsetId=' + refset.id + '&expression=' + expression)
         .then(
         // success
         function(response) {
@@ -803,7 +801,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.exportDefinition = function(refset, handlerId, extension) {
+    this.exportDefinition = function(refset, handlerId, extension, label) {
       console.debug('exportDefinition');
       gpService.increment()
       $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handlerId)
@@ -819,10 +817,11 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + '.' + extension;
+          a.download = 'definition.' + label + '.' + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
+          window.URL.revokeObjectURL(fileURL);
 
         },
         // Error

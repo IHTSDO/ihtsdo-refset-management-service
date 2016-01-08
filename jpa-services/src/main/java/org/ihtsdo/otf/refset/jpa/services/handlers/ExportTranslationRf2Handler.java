@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
@@ -132,26 +131,22 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     }
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+    ZipOutputStream zos = new ZipOutputStream(baos);
 
-      /*
-       * File is not on the disk, test.txt indicates only the file name to be
-       * put into the zip
-       */
-      ZipEntry descEntry = new ZipEntry(descriptionFileName);
-      zos.putNextEntry(descEntry);
-      zos.write(descSb.toString().getBytes());
-      zos.closeEntry();
+    /*
+     * File is not on the disk, test.txt indicates only the file name to be put
+     * into the zip
+     */
+    ZipEntry descEntry = new ZipEntry(descriptionFileName);
+    zos.putNextEntry(descEntry);
+    zos.write(descSb.toString().getBytes());
+    zos.closeEntry();
 
-      ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
-      zos.putNextEntry(langEntry);
-      zos.write(langSb.toString().getBytes());
-      zos.closeEntry();
-
-    } catch (IOException ioe) {
-      ioe.printStackTrace();
-    }
-
+    ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
+    zos.putNextEntry(langEntry);
+    zos.write(langSb.toString().getBytes());
+    zos.closeEntry();
+    zos.flush();
     return new ByteArrayInputStream(baos.toByteArray());
   }
 

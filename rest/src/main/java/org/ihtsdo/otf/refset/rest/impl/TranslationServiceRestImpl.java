@@ -1282,9 +1282,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + toTranslationId);
       }
 
-      final SpellingDictionary toSpelling =
-          toTranslation.getSpellingDictionary();
-      if (toSpelling == null) {
+      final SpellingDictionary spelling = toTranslation.getSpellingDictionary();
+      if (spelling == null) {
         throw new Exception(
             "The from-translation must have an associated spelling dictionary: "
                 + fromTranslationId);
@@ -1302,16 +1301,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Get to spelling dictionary
-      final List<String> toEntries = toSpelling.getEntries();
+      final List<String> toEntries = spelling.getEntries();
       toEntries.addAll(fromEntries);
-      toSpelling.setEntries(toEntries);
+      spelling.setEntries(toEntries);
 
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(toTranslation);
-      handler.reindex(toSpelling.getEntries(), false);
+      handler.reindex(spelling.getEntries(), false);
 
       // Create service and configure transaction scope
-      translationService.updateSpellingDictionary(toSpelling);
+      translationService.updateSpellingDictionary(spelling);
+
+      if (toTranslation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        toTranslation.setSpellingDictionaryEmpty(spelling.getEntries()
+            .isEmpty());
+        translationService.updateTranslation(toTranslation);
+      }
 
       // end transaction
       translationService.commit();
@@ -1641,6 +1647,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translationService.addMemoryEntry(newEntry);
       }
 
+      if (toTranslation.isPhraseMemoryEmpty() != toTranslation
+          .getPhraseMemory().getEntries().isEmpty()) {
+        toTranslation.setPhraseMemoryEmpty(toTranslation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(toTranslation);
+      }
+
       // End transaction
       translationService.commit();
 
@@ -1942,6 +1955,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       spelling.setEntries(handler.getEntriesAsList(in));
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
+
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to import spelling entries");
     } finally {
@@ -2050,6 +2070,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         memoryEntry.setPhraseMemory(phraseMemory);
         translationService.addMemoryEntry(memoryEntry);
       }
+
+      if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
+          .getEntries().isEmpty()) {
+        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to import translation phrase memory");
     } finally {

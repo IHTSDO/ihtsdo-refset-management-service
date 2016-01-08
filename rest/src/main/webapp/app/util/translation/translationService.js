@@ -936,10 +936,10 @@ tsApp.service('translationService', [
     }
 
     // Export spelling dictionary
-    this.exportSpellingDictionary = function(translationId) {
+    this.exportSpellingDictionary = function(translation) {
       console.debug('exportSpellingDictionary');
       gpService.increment();
-      $http.get(translationUrl + 'spelling/export?translationId=' + translationId).then(
+      $http.get(translationUrl + 'spelling/export?translationId=' + translation.id).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {
@@ -951,10 +951,11 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'spelling.' + translationId + '.txt';
+        a.download = 'spelling.' + translation.terminologyId + '.txt';
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
+        window.URL.revokeObjectURL(fileURL);
 
       },
       // Error
@@ -996,10 +997,10 @@ tsApp.service('translationService', [
     };
 
     // Export phrase memory
-    this.exportPhraseMemory = function(translationId) {
+    this.exportPhraseMemory = function(translation) {
       console.debug('exportPhraseMemory');
       gpService.increment();
-      $http.get(translationUrl + 'phrasememory/export?translationId=' + translationId).then(
+      $http.get(translationUrl + 'phrasememory/export?translationId=' + translation.id).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {
@@ -1011,10 +1012,11 @@ tsApp.service('translationService', [
         var a = document.createElement('a');
         a.href = fileURL;
         a.target = '_blank';
-        a.download = 'phraseMemory.' + translationId + '.txt';
+        a.download = 'phraseMemory.' + translation.terminologyId + '.txt';
         document.body.appendChild(a);
         gpService.decrement();
         a.click();
+        window.URL.revokeObjectURL(fileURL);
 
       },
       // Error
@@ -1025,34 +1027,37 @@ tsApp.service('translationService', [
     };
 
     // Export concepts
-    this.exportConcepts = function(translationId, ioHandlerInfo, extension) {
+    this.exportConcepts = function(translation, handler) {
       console.debug('exportConcepts');
+
       gpService.increment();
       $http.get(
-        translationUrl + 'export?translationId=' + translationId + '&handlerId=' + ioHandlerInfoId)
-        .then(
-        // Success
-        function(response) {
-          var blob = new Blob([ response.data ], {
-            type : ''
-          });
-
-          // fake a file URL and download it
-          var fileURL = URL.createObjectURL(blob);
-          var a = document.createElement('a');
-          a.href = fileURL;
-          a.target = '_blank';
-          a.download = 'concepts.' + translation.terminologyId + '.' + extension;
-          document.body.appendChild(a);
-          gpService.decrement();
-          a.click();
-
-        },
-        // Error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
+        translationUrl + 'export?translationId=' + translation.id + '&handlerId=' + handler.id, {
+          responseType : 'arraybuffer'
+        }).then(
+      // Success
+      function(response) {
+        var blob = new Blob([ response.data ], {
+          type : "application/octet-stream"
         });
+
+        // fake a file URL and download it
+        var fileURL = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = fileURL;
+        a.target = '_blank';
+        a.download = 'concepts.' + translation.terminologyId + handler.fileTypeFilter;
+        document.body.appendChild(a);
+        gpService.decrement();
+        a.click();
+        window.URL.revokeObjectURL(fileURL);
+
+      },
+      // Error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+      });
     };
 
     // Begin import concepts - if validation is result, OK to proceed.

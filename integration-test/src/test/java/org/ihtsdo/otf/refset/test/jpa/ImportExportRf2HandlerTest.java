@@ -181,8 +181,8 @@ public class ImportExportRf2HandlerTest {
     Assert.assertEquals(members.size(), 21);
     List<DefinitionClause> definitionClauses =
         importHandler.importDefinition(refset, definitionInputStream);
-    Assert.assertEquals("<<410675002|Route of administration|",
-        definitionClauses.get(0));
+    Assert.assertEquals("<<284009009|Route of administration|",
+        definitionClauses.get(0).getValue());
 
     ExportRefsetRf2Handler exportHandler = new ExportRefsetRf2Handler();
     BufferedReader reader =

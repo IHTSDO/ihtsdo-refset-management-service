@@ -276,7 +276,8 @@
             </td>
             <td>{{selected.translation.version}}</td>
           </tr>
-          <tr>
+          <tr
+            ng-show="translation.workflowStatus != 'BETA' && translation.workflowStatus != 'PUBLISHED'">
             <td>
               <b>Spelling Dictionary</b>
             </td>
@@ -303,7 +304,8 @@
                 class="noul material-icons md-18">delete</i>
             </td>
           </tr>
-          <tr>
+          <tr
+            ng-show="translation.workflowStatus != 'BETA' && translation.workflowStatus != 'PUBLISHED'">
             <td>
               <b>Phrase Memory</b>
             </td>

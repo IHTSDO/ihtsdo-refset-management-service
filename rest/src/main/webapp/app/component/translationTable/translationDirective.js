@@ -1993,14 +1993,14 @@ tsApp
                 // Handle export
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
-                    translationService.exportSpellingDictionary($scope.translation.id);
+                    translationService.exportSpellingDictionary($scope.translation);
                   }
                   if (type == 'Phrase Memory') {
-                    translationService.exportPhraseMemory($scope.translation.id);
+                    translationService.exportPhraseMemory($scope.translation);
                   }
                   if (type == 'Translation') {
                     translationService.exportConcepts($scope.translation,
-                      $scope.selectedIoHandler.id, $scope.selectedIoHandler.fileTypeFilter);
+                      $scope.selectedIoHandler);
                   }
                   $uibModalInstance.close();
                 };
