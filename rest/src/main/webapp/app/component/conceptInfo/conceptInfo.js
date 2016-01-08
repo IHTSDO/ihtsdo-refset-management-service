@@ -45,10 +45,10 @@ tsApp.directive('conceptInfo', [
             // Clear error
             $scope.error = null;
             if ($scope.data.concept) {
+              $scope.memberTypes = {};
               $scope.getFullConcept($scope.data.concept);
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptChildren($scope.data.concept);
-              $scope.memberTypes = {};
             } else {
               // clear data structure
               $scope.orderedDescriptions = null;
@@ -76,31 +76,11 @@ tsApp.directive('conceptInfo', [
               return;
             }
             projectService.getConceptParents(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
-            // Success
-            function(data) {
-              $scope.parents = data.concepts;
-              $scope.getMemberTypes();
-            },
-            // Error 
-            function(data) {
-              $scope.error = data;
-              utilService.clearError();
-            })
-
-          };
-
-          // get concept children
-          $scope.getConceptChildren = function(concept) {
-
-            // No PFS, get all children - term server doesn't handle paging of children
-            projectService.getConceptChildren(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {})
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
               .then(
               // Success
               function(data) {
-                $scope.children = data.concepts;
-                $scope.children.totalCount = data.totalCount;
+                $scope.parents = data.concepts;
                 $scope.getMemberTypes();
               },
               // Error 
@@ -111,33 +91,55 @@ tsApp.directive('conceptInfo', [
 
           };
 
+          // get concept children
+          $scope.getConceptChildren = function(concept) {
+
+            // No PFS, get all children - term server doesn't handle paging of children
+            projectService.getConceptChildren(concept.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null),
+              {}).then(
+            // Success
+            function(data) {
+              $scope.children = data.concepts;
+              $scope.children.totalCount = data.totalCount;
+              $scope.getMemberTypes();
+            },
+            // Error 
+            function(data) {
+              $scope.error = data;
+              utilService.clearError();
+            })
+
+          };
+
           // get concept with descriptions
           $scope.getFullConcept = function(concept) {
             projectService.getFullConcept(concept.terminologyId, $scope.data.terminology,
-              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null)).then(
-              // Success
-              function(data) {
-                // Needed to communicate phrase memory info back to the translation editing.
-                $scope.data.descriptions = data.descriptions;
-                // Needed for local scope
-                $scope.concept = data;
-                $scope.orderedDescriptions = [];
-                if ($scope.concept && $scope.concept.descriptions.length > 0) {
-                  $scope.orderedDescriptions = $scope.concept.descriptions
-                    .sort($scope.sortByDescriptionType);
-                }
-                $scope.orderedRelationships = [];
-                if ($scope.concept && $scope.concept.relationships.length > 0) {
-                  $scope.orderedRelationships = $scope.concept.relationships
-                    .sort($scope.sortByRelationshipGroup);
-                }
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
+              .then(
+                // Success
+                function(data) {
+                  // Needed to communicate phrase memory info back to the translation editing.
+                  $scope.data.descriptions = data.descriptions;
+                  // Needed for local scope
+                  $scope.concept = data;
+                  $scope.orderedDescriptions = [];
+                  if ($scope.concept && $scope.concept.descriptions.length > 0) {
+                    $scope.orderedDescriptions = $scope.concept.descriptions
+                      .sort($scope.sortByDescriptionType);
+                  }
+                  $scope.orderedRelationships = [];
+                  if ($scope.concept && $scope.concept.relationships.length > 0) {
+                    $scope.orderedRelationships = $scope.concept.relationships
+                      .sort($scope.sortByRelationshipGroup);
+                  }
 
-              },
-              // Error
-              function(data) {
-                $scope.error = data;
-                utilService.clearError();
-              });
+                },
+                // Error
+                function(data) {
+                  $scope.error = data;
+                  utilService.clearError();
+                });
 
           };
 
@@ -262,8 +264,8 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get child trees
-            projectService.getConceptChildren(tree.terminologyId, $scope.data.terminology, $scope.data.version,
-              ($scope.data.translation ? $scope.data.translation.id : null), {
+            projectService.getConceptChildren(tree.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null), {
                 startIndex : -1
               }).then(function(data) {
 
@@ -314,17 +316,18 @@ tsApp.directive('conceptInfo', [
             }
 
             // Get parent trees
-            projectService.getConceptParents(tree.terminologyId, $scope.data.terminology, $scope.data.version,
-              ($scope.data.translation ? $scope.data.translation.id : null)).then(function(data) {
+            projectService.getConceptParents(tree.terminologyId, $scope.data.terminology,
+              $scope.data.version, ($scope.data.translation ? $scope.data.translation.id : null))
+              .then(function(data) {
 
-              // cycle over parents, and construct tree nodes
-              for (var i = 0; i < data.concepts.length; i++) {
-                tree.inner.push(data.concepts[i]);
-              }
+                // cycle over parents, and construct tree nodes
+                for (var i = 0; i < data.concepts.length; i++) {
+                  tree.inner.push(data.concepts[i]);
+                }
 
-              $scope.getMemberTypes();
+                $scope.getMemberTypes();
 
-            });
+              });
           }
 
           // Function to find all concepts in the graph
@@ -453,7 +456,7 @@ tsApp.directive('conceptInfo', [
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
             $scope.descendants = '<';
-            $scope.includeClause = '';
+            $scope.includeClause = member.terminologyId + ' | ' + member.name + ' |';
 
             // Add button
             $scope.submitAdd = function(refset, concept, value) {
@@ -513,8 +516,6 @@ tsApp.directive('conceptInfo', [
                 conceptName : concept.name,
                 conceptActive : concept.active,
                 memberType : memberType,
-                terminology : refset.terminology,
-                version : refset.version,
                 moduleId : refset.moduleId,
               };
               member.refsetId = refset.id;
@@ -617,7 +618,7 @@ tsApp.directive('conceptInfo', [
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
             $scope.descendants = '<';
-            $scope.removeClause = '';
+            $scope.removeClause = member.conceptId + ' | ' + member.conceptName + ' |';
 
             // Handles removing a member or clause
             $scope.submitRemove = function(refset, concept, value) {

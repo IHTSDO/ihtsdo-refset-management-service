@@ -44,20 +44,19 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(refsetUrl + refsetId + '/' + date + '/' + 'members', utilService.prepPfs(pfs))
-        .then(
-        // success
-        function(response) {
-          console.debug('  members = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.post(refsetUrl + refsetId + '/' + date + '/members', utilService.prepPfs(pfs)).then(
+      // success
+      function(response) {
+        console.debug('  members = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -111,7 +110,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(refsetUrl + 'refsets' + '/' + projectId).then(
+      $http.get(refsetUrl + 'refsets/' + projectId).then(
       // success
       function(response) {
         console.debug('  projects = ', response.data);
@@ -134,7 +133,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.post(refsetUrl + 'refsets' + '?query=' + utilService.prepQuery(query),
+      $http.post(refsetUrl + 'refsets?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -159,8 +158,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http
-        .post(refsetUrl + 'members/add' + '?refsetId=' + refset.id + '&expression=' + expression)
+      $http.post(refsetUrl + 'members/add?refsetId=' + refset.id + '&expression=' + expression)
         .then(
         // success
         function(response) {
@@ -207,7 +205,7 @@ tsApp.service('refsetService', [
 
       // Clone refset
       gpService.increment()
-      $http.put(refsetUrl + 'clone' + '?&projectId=' + projectId, refset).then(
+      $http.put(refsetUrl + 'clone?projectId=' + projectId, refset).then(
       // success
       function(response) {
         console.debug('  refset = ', response.data);
@@ -251,7 +249,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http['delete'](refsetUrl + 'remove' + '/' + refsetId + '?cascade=true').then(
+      $http['delete'](refsetUrl + 'remove/' + refsetId + '?cascade=true').then(
       // success
       function(response) {
         gpService.decrement();
@@ -341,7 +339,7 @@ tsApp.service('refsetService', [
       // find members
       gpService.increment()
       $http.post(
-        refsetUrl + 'members' + '?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query),
+        refsetUrl + 'members?refsetId=' + refsetId + '&query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -479,7 +477,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(refsetUrl + 'compare' + '?refsetId1=' + refsetId1 + '&refsetId2=' + refsetId2, {
+      $http.get(refsetUrl + 'compare?refsetId1=' + refsetId1 + '&refsetId2=' + refsetId2, {
         headers : {
           'Content-type' : 'text/plain'
         }
@@ -508,7 +506,7 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'common/members' + '?reportToken=' + reportToken + '&query='
+        refsetUrl + 'common/members?reportToken=' + reportToken + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -533,7 +531,7 @@ tsApp.service('refsetService', [
 
       // Make POST call
       gpService.increment();
-      $http.get(refsetUrl + 'diff/members' + '?reportToken=' + reportToken).then(
+      $http.get(refsetUrl + 'diff/members?reportToken=' + reportToken).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -556,7 +554,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + 'release/report' + '?reportToken=' + reportToken).then(
+      $http.get(refsetUrl + 'release/report?reportToken=' + reportToken).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -579,7 +577,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + 'optimize' + '/' + refsetId).then(
+      $http.get(refsetUrl + 'optimize/' + refsetId).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -602,7 +600,7 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       gpService.increment();
-      $http.get(refsetUrl + 'definition' + '/' + refsetId).then(
+      $http.get(refsetUrl + 'definition/' + refsetId).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -627,7 +625,7 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'old/members' + '?reportToken=' + reportToken + '&query='
+        refsetUrl + 'old/members?reportToken=' + reportToken + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -653,7 +651,7 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'new/members' + '?reportToken=' + reportToken + '&query='
+        refsetUrl + 'new/members?reportToken=' + reportToken + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -803,7 +801,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.exportDefinition = function(refset, handlerId, extension) {
+    this.exportDefinition = function(refset, handlerId, extension, label) {
       console.debug('exportDefinition');
       gpService.increment()
       $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handlerId)
@@ -819,10 +817,11 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + '.' + extension;
+          a.download = 'definition.' + label + '.' + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
+          window.URL.revokeObjectURL(fileURL);
 
         },
         // Error
@@ -1154,7 +1153,6 @@ tsApp.service('refsetService', [
       // Setup deferred
       var deferred = $q.defer();
 
-      gpService.increment();
       $http.get(refsetUrl + 'lookup/status?refsetId=' + refsetId, {
         headers : {
           'Content-type' : 'text/plain'
@@ -1163,13 +1161,11 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  output = ', response.data);
-        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
-        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;
@@ -1181,18 +1177,15 @@ tsApp.service('refsetService', [
       var deferred = $q.defer();
 
       // get refset revision
-      gpService.increment()
       $http.get(refsetUrl + 'lookup/start?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  start lookup names = ', response.data);
-        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
-        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;

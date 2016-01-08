@@ -76,6 +76,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -511,6 +512,42 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
+  @DELETE
+  @Path("/concept/remove/all/{translationId}")
+  @ApiOperation(value = "Remove concepts", notes = "Removes all concepts for the specified translation")
+  public void removeAllTranslationConcepts(
+    @ApiParam(value = "Translation id, e.g. 3", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Translation): concept/remove/all/"
+            + translationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      authorizeProject(translationService, translation.getProject().getId(),
+          securityService, authToken, "remove all concepts", UserRole.AUTHOR);
+      translationService.setTransactionPerOperation(false);
+      translationService.beginTransaction();
+      for (final Concept concept : translationService
+          .findConceptsForTranslation(translationId, "", null).getObjects()) {
+        translationService.removeConcept(concept.getId(), true);
+      }
+      translationService.commit();
+
+    } catch (Exception e) {
+      handleException(e, "trying to remove all concepts");
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+
+  }
+
+  /* see superclass */
+  @Override
   @POST
   @Path("/concepts")
   @ApiOperation(value = "Finds translation concepts", notes = "Finds translation concepts for the specified parameters", response = ConceptListJpa.class)
@@ -806,6 +843,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setName("TBD");
         concept.setActive(true);
         concept.setTranslation(translation);
+        // Mark as ready for publication as they are imported and can be further
+        // worked on from there
+        concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
         translationService.addConcept(concept);
 
         for (final Description description : concept.getDescriptions()) {
@@ -1242,9 +1282,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             + toTranslationId);
       }
 
-      final SpellingDictionary toSpelling =
-          toTranslation.getSpellingDictionary();
-      if (toSpelling == null) {
+      final SpellingDictionary spelling = toTranslation.getSpellingDictionary();
+      if (spelling == null) {
         throw new Exception(
             "The from-translation must have an associated spelling dictionary: "
                 + fromTranslationId);
@@ -1262,16 +1301,23 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Get to spelling dictionary
-      final List<String> toEntries = toSpelling.getEntries();
+      final List<String> toEntries = spelling.getEntries();
       toEntries.addAll(fromEntries);
-      toSpelling.setEntries(toEntries);
+      spelling.setEntries(toEntries);
 
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(toTranslation);
-      handler.reindex(toSpelling.getEntries(), false);
+      handler.reindex(spelling.getEntries(), false);
 
       // Create service and configure transaction scope
-      translationService.updateSpellingDictionary(toSpelling);
+      translationService.updateSpellingDictionary(spelling);
+
+      if (toTranslation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        toTranslation.setSpellingDictionaryEmpty(spelling.getEntries()
+            .isEmpty());
+        translationService.updateTranslation(toTranslation);
+      }
 
       // end transaction
       translationService.commit();
@@ -1601,6 +1647,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translationService.addMemoryEntry(newEntry);
       }
 
+      if (toTranslation.isPhraseMemoryEmpty() != toTranslation
+          .getPhraseMemory().getEntries().isEmpty()) {
+        toTranslation.setPhraseMemoryEmpty(toTranslation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(toTranslation);
+      }
+
       // End transaction
       translationService.commit();
 
@@ -1902,6 +1955,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       spelling.setEntries(handler.getEntriesAsList(in));
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
+
+      if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
+          .isEmpty()) {
+        translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to import spelling entries");
     } finally {
@@ -2010,6 +2070,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         memoryEntry.setPhraseMemory(phraseMemory);
         translationService.addMemoryEntry(memoryEntry);
       }
+
+      if (translation.isPhraseMemoryEmpty() != translation.getPhraseMemory()
+          .getEntries().isEmpty()) {
+        translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
+            .getEntries().isEmpty());
+        translationService.updateTranslation(translation);
+      }
+
     } catch (Exception e) {
       handleException(e, "trying to import translation phrase memory");
     } finally {
@@ -2192,6 +2260,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // are different
       for (final Concept concept1 : translation1.getConcepts()) {
         if (translation2.getConcepts().contains(concept1)) {
+          // Lazy-initialze parts of concept
+          concept1.toString();
           conceptsInCommon.add(concept1);
         }
       }
@@ -2204,11 +2274,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       for (final Concept concept1 : translation1.getConcepts()) {
         if (!translation2.getConcepts().contains(concept1)) {
+          translationService.handleLazyInit(concept1);
           oldNotNew.add(concept1);
         }
       }
       for (final Concept concept2 : translation2.getConcepts()) {
         if (!translation1.getConcepts().contains(concept2)) {
+          translationService.handleLazyInit(concept2);
           newNotOld.add(concept2);
         }
       }
@@ -2560,14 +2632,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      if (translationService.getTranslation(translationId) == null) {
+      final Translation translation =
+          translationService.getTranslation(translationId);
+      if (translation == null) {
         throw new Exception("Invalid translation id " + translationId);
       }
 
       authorizeApp(securityService, authToken, "get lookup status",
           UserRole.VIEWER);
 
-      return translationService.getLookupProgress(translationId);
+      return translationService.getLookupProgress(translationId,
+          translation.isLookupInProgress());
     } catch (Exception e) {
       handleException(e,
           "trying to find the status of the lookup of member names and statues");

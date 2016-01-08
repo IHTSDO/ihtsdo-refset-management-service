@@ -11,7 +11,7 @@
           <b>From Translation</b>
         </td>
         <td>
-          <select ng-model="translation" 
+          <select ng-model="translation"
             ng-options="item.name.concat(' (',item.id,')') for item in translations"></select>
           <span ng-show="translation">
             <br /> {{translation.moduleId}}
@@ -30,25 +30,26 @@
       </tr>
       <tr>
         <td>
-          <b>Name</b>
-        </td>
-        <td>{{toTranslation.name}}</td>
-      </tr>
-      <tr>
-        <td>
           <b>Description</b>
         </td>
-        <td>{{toTranslation.description}}</td>
+        <td>{{translation.description}}</td>
       </tr>
       <tr>
-        <td>Module Id</td>
         <td>
-          {{toTranslation.moduleId}}
-          <!-- Mobile friendly line-break -->
-          <br class="visible-xs-inline" />
-          <span flag-icon obj="toTranslation"></span>
+          <b>Module Id</b>
+        </td>
+        <td>
+          {{translation.moduleId}}
+          <span flag-icon obj="translation"></span>
         </td>
       </tr>
+      <tr>
+        <td>
+          <b>Language</b>
+        </td>
+        <td>{{translation.language}}</td>
+      </tr>
+
       <tr ng-show="errors.length > 0">
         <td>&nbsp;</td>
         <td>

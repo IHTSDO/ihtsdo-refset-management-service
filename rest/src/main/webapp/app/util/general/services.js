@@ -28,7 +28,7 @@ tsApp
           }
 
           // Add a * to the filter if set and doesn't contain a :
-          if (query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+          if (query.indexOf("(") == -1 && query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }
@@ -544,7 +544,7 @@ tsApp.service('securityService', [
 
       // Add user
       gpService.increment();
-      $http['delete'](securityUrl + 'user/remove' + '/' + user.id).then(
+      $http['delete'](securityUrl + 'user/remove/' + user.id).then(
       // success
       function(response) {
         console.debug('  user = ', response.data);
@@ -591,7 +591,7 @@ tsApp.service('securityService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(securityUrl + 'user/find' + '?query=' + utilService.prepQuery(query),
+      $http.post(securityUrl + 'user/find?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {

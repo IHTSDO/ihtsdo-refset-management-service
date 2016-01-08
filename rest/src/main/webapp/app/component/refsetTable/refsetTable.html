@@ -589,6 +589,7 @@
                 <button class="btn btn-xs retired"
                   ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
               </td>
+              <!-- ASSIGNED actions -->
               <td class="nobreak"
                 ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
 
@@ -604,7 +605,7 @@
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
                   title="Remove" class="noul material-icons md-18">delete</i>
 
-                <i
+                <i 
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>

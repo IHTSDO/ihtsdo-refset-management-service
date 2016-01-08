@@ -161,7 +161,7 @@ tsApp.service('projectService', [
 
       // Add project
       gpService.increment()
-      $http['delete'](projectUrl + 'remove' + '/' + project.id).then(
+      $http['delete'](projectUrl + 'remove/' + project.id).then(
       // success
       function(response) {
         console.debug('  project = ', response.data);
@@ -186,7 +186,7 @@ tsApp.service('projectService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(projectUrl + 'projects' + '?query=' + utilService.prepQuery(query),
+      $http.post(projectUrl + 'projects?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
@@ -267,7 +267,7 @@ tsApp.service('projectService', [
       // Assign user to project
       gpService.increment()
       $http.get(
-        projectUrl + 'assign' + '?projectId=' + projectId + '&userName=' + userName + '&role='
+        projectUrl + 'assign?projectId=' + projectId + '&userName=' + userName + '&role='
           + projectRole).then(
       // success
       function(response) {
@@ -291,7 +291,7 @@ tsApp.service('projectService', [
 
       // Unassign user from project
       gpService.increment()
-      $http.get(projectUrl + 'unassign' + '?projectId=' + projectId + '&userName=' + userName)
+      $http.get(projectUrl + 'unassign?projectId=' + projectId + '&userName=' + userName)
         .then(
         // success
         function(response) {
@@ -363,7 +363,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + 'concepts' + '?query=' + utilService.prepQuery(query) + '&terminology='
+        projectUrl + 'concepts?query=' + utilService.prepQuery(query) + '&terminology='
           + terminology + '&version=' + version, utilService.prepPfs(pfs))
 
       .then(
@@ -392,7 +392,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + 'parents' + '?terminologyId=' + terminologyId + '&terminology=' + terminology
+        projectUrl + 'parents?terminologyId=' + terminologyId + '&terminology=' + terminology
           + '&version=' + version
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
@@ -420,7 +420,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        projectUrl + 'concept/children' + '?terminologyId=' + terminologyId + '&terminology='
+        projectUrl + 'concept/children?terminologyId=' + terminologyId + '&terminology='
           + terminology + '&version=' + version
           + (translationId != null ? '&translationId=' + translationId : ''),
         utilService.prepPfs(pfs)).then(
@@ -450,7 +450,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + 'concept' + '?terminologyId=' + terminologyId + '&terminology=' + terminology
+        projectUrl + 'concept?terminologyId=' + terminologyId + '&terminology=' + terminology
           + '&version=' + version
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
