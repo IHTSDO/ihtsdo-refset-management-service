@@ -286,10 +286,7 @@ public class WorkflowTest {
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
 
-    ProjectService service = new ProjectServiceJpa();
-
-    project = (ProjectJpa) service.addProject(project);
-    service.close();
+    project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
     return project;
   }
