@@ -276,7 +276,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     int[] totalCt = new int[1];
     // NOTE: this method ignores provisional refsets
     int origStartIndex = pfs.getStartIndex();
-    if (pfs.getLatestOnly()) {
+    if (pfs != null && pfs.getLatestOnly()) {
       pfs.setStartIndex(-1);
     }
     // this will do filtering and sorting, but not paging
@@ -288,7 +288,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     final RefsetList result = new RefsetListJpa();
 
-    if (pfs.getLatestOnly()) {
+    if (pfs != null && pfs.getLatestOnly()) {
       List<Refset> resultList = new ArrayList<>();
 
       Map<String, Refset> latestList = new HashMap<>();
