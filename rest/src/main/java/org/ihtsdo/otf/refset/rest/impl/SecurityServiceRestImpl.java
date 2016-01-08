@@ -123,7 +123,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve the user",
           UserRole.VIEWER);
       final User user = securityService.getUser(id);
-      user.setUserPreferences(null);
+
+      if (user != null) {
+        securityService.handleLazyInit(user);
+      }
 
       return user;
     } catch (Exception e) {
@@ -150,7 +153,11 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "retrieve the user by userName",
           UserRole.VIEWER);
       final User user = securityService.getUser(userName);
-      user.setUserPreferences(null);
+
+      if (user != null) {
+        securityService.handleLazyInit(user);
+      }
+
       return user;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a user by userName");

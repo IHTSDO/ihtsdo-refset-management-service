@@ -369,7 +369,11 @@ public class ProjectJpa implements Project {
   /* see superclass */
   @Override
   public String getTerminologyId() {
-    return id.toString();
+    // This is here b/c it Project extends Searchable class
+    if (id != null) {
+      return id.toString();
+    }
+    return null;
   }
 
   /* see superclass */

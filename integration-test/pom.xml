@@ -77,12 +77,21 @@
 <!--                
  <include>**/org/ihtsdo/otf/refset/test/rest/TranslationTest.java</include>
  
-                    <include>**/org/ihtsdo/otf/refset/test/rest/RefsetReleaseTest.java</include> 
 
-<include>**/org/ihtsdo/otf/refset/test/rest/TranslationReleaseTest.java</include>
+
+                    
+              
+          <include>**/org/ihtsdo/otf/refset/test/rest/TranslationReleaseTest.java</include>
+                     
+                    <include>**/org/ihtsdo/otf/refset/test/rest/WorkflowTest.java</include>
+                    <include>**/org/ihtsdo/otf/refset/test/rest/RefsetTest.java</include>
+
+  <include>**/org/ihtsdo/otf/refset/test/rest/RefsetReleaseTest.java</include>
+
+  <include>**/org/ihtsdo/otf/refset/test/rest/Spelling*Test.java</include>
 
 -->               
-                    <include>**/org/ihtsdo/otf/refset/test/rest/RefsetTest.java</include>
+  <include>**/org/ihtsdo/otf/refset/test/rest/*.java</include>
 
            </includes>
               <additionalClasspathElements>

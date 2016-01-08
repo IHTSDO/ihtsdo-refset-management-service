@@ -8,7 +8,10 @@ package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -69,7 +72,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     project.setVersion("latest");
 
     try {
-      projectService.addProject(project, viewerAuthToken);
+      project = (ProjectJpa) projectService.addProject(project, viewerAuthToken);
       fail("Attempt to add a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
@@ -85,18 +88,20 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     }
 
     // Attempt to remove an existing project with viewer authorization level
-    // first add the project with valid admin authentication
-    ProjectJpa project2 =
-        (ProjectJpa) projectService.addProject(project, adminAuthToken);
     try {
-      projectService.removeProject(project2.getId(), viewerAuthToken);
+      projectService.removeProject(project.getId(), viewerAuthToken);
       fail("Attempt to remove a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
     }
 
-    // remove the project with valid admin authentication
-    projectService.removeProject(project2.getId(), adminAuthToken);
+    // Even with admin privaleges, as project never created, nothing to remove
+    try {
+      projectService.removeProject(project.getId(), adminAuthToken);
+      fail("Attempt to remove a project with viewer authorization level passed.");
+    } catch (Exception e) {
+      // do nothing
+    }
   }
 
   /**

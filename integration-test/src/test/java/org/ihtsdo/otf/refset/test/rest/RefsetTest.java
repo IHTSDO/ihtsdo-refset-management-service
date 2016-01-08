@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
+import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.User;
@@ -216,7 +217,7 @@ public class RefsetTest {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     refset.setVersion("2015-01-31");
-    refset.setWorkflowPath("DFEAULT");
+    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {
@@ -793,8 +794,6 @@ public class RefsetTest {
     TranslationJpa translation =
         makeTranslation("translation99", refset, project, admin);
     
-//    int translationConcepts = translation.getConcepts().size();
-    
     translationService.removeTranslation(translation.getId(), true, adminAuthToken);
     
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
@@ -807,9 +806,6 @@ public class RefsetTest {
             new PfsParameterJpa(), adminAuthToken).getObjects();
 
     assertEquals(21, foundMembers.size());
-
-//    assertEquals(translationConcepts, recoveryRefset.getTranslations().get(0).getConcepts().size());
-    
   }
 
   /**
@@ -838,5 +834,70 @@ public class RefsetTest {
         }
       }
     }
+  }
+
+  /**
+   * Test full migration of intensional refset and all reportToken-based methods
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testFullMigration() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testFullMigration");
+    Project project = projectService.getProject(3L, adminAuthToken);
+
+    // Create refset (intensional) and add definition
+    Refset janRefset =
+        makeRefset("refset", null, Refset.Type.INTENSIONAL, project, null, true);
+
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue("<<70759006 | Pyoderma (disorder) |");
+    clause.setNegated(false);
+    janRefset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset((RefsetJpa) janRefset, adminAuthToken);
+    refsetService = new RefsetClientRest(properties);
+
+    janRefset = refsetService.getRefset(janRefset.getId(), adminAuthToken);
+
+    // Begin migration
+    Refset julyStagedRefset =
+        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+
+    // Obtain reportToken via compareRefsets
+    String reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    // Verify common members as expected
+    ConceptRefsetMemberList commonMembers =
+        refsetService
+            .findMembersInCommon(reportToken, "", null, adminAuthToken);
+    assertEquals(254, commonMembers.getCount());
+
+    // Verify diffReport as expected
+    MemberDiffReport diffReport =
+        refsetService.getDiffReport(reportToken, adminAuthToken);
+    assertEquals(7, diffReport.getOldNotNew().size());
+    assertEquals(56, diffReport.getNewNotOld().size());
+
+    // Verify oldNewRegular Member Calls as expected
+    ConceptRefsetMemberList oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    ConceptRefsetMemberList newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+
+    assertEquals(diffReport.getOldNotNew().size(), oldRegularMembers.getCount());
+    assertEquals(diffReport.getNewNotOld().size(), newRegularMembers.getCount());
+
+    // Complete process
+    refsetService.releaseReportToken(reportToken, adminAuthToken);
+    refsetService.finishMigration(janRefset.getId(), adminAuthToken);
+
+    // cleanup
+    verifyRefsetLookupCompleted(janRefset.getId());
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 }

@@ -198,7 +198,7 @@ public class WorkflowTest {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     refset.setVersion("2015-01-31");
-    refset.setWorkflowPath("DFEAULT");
+    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {

@@ -134,6 +134,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       handleLazyInit(record, workflowService);
 
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
     } finally {
@@ -596,7 +597,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
+  @POST
   @Path("/refset/available/review")
   @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user", response = RefsetListJpa.class)
   public RefsetList findAvailableReviewRefsets(

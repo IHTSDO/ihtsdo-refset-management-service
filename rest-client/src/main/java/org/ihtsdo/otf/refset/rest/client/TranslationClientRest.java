@@ -783,7 +783,9 @@ public class TranslationClientRest extends RootClientRest implements
         client.target(config.getProperty("base.url")
             + "/translation/phrasememory/remove?translationId=" + translationId
             + "&name="
-            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
+            + "&translatedName="
+            + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)

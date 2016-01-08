@@ -107,15 +107,18 @@ public class SecurityServiceRestNormalUseTest extends SecurityServiceRestTest {
         "  Procedure 5: authenticate a user that does not exist");
 
     // get the existing test user if it exists
-    user = service.getUser(viewerUserName, adminAuthToken);
+    user = service.getUser(badUserName, adminAuthToken);
 
     // if user exists, remove it
     if (user != null) {
+      if (user.getUserPreferences() != null) {
+        service.removeUserPreferences(user.getId(), adminAuthToken);
+      }
       service.removeUser(user.getId(), adminAuthToken);
     }
 
     // verify user does not exist
-    user = service.getUser(viewerUserName, adminAuthToken);
+    user = service.getUser(badUserName, adminAuthToken);
     assertTrue(user == null);
 
     // authenticate user based on config parameters
