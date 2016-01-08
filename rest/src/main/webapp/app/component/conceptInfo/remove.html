@@ -30,8 +30,10 @@
       {{member.conceptName}} |</span>
   </div>
 
-  <p ng-show="refset.type == 'INTENSIONAL'">OR, exclude individual member:</p>
-  <p ng-show="refset.type == 'EXTENSIONAL'">OR, remove individual member:</p>
+  <p ng-show="refset.type == 'INTENSIONAL'" style="margin-top: 10px">OR,
+    exclude individual member:</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'" style="margin-top: 10px">OR,
+    remove individual member:</p>
   <div class="row">
     <span class="col-md-1 col-xs-1">
       <input type="radio" ng-model="removeClause"
