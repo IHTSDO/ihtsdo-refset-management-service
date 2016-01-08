@@ -413,7 +413,7 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/all/"
+        client.target(config.getProperty("base.url") + "/refset/member/remove/all/"
             + refsetId);
 
     Response response =

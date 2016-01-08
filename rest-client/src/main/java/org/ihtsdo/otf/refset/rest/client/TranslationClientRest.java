@@ -346,7 +346,7 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/concept/remove/all/"
+        client.target(config.getProperty("base.url") + "/translation/concept/remove/all/"
             + translationId);
 
     Response response =

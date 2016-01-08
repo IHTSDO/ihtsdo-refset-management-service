@@ -319,7 +319,7 @@ public class ProjectClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/users/"
+            + "/project/users/"
             + projectId
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
@@ -355,7 +355,7 @@ public class ProjectClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/users/"
+            + "/project/users/"
             + projectId
             + "/unassigned"
             + "?query="
