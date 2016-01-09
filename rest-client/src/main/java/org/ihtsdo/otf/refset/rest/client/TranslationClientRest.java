@@ -88,6 +88,10 @@ public class TranslationClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -115,6 +119,10 @@ public class TranslationClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -346,7 +354,7 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/concept/remove/all/"
+        client.target(config.getProperty("base.url") + "/translation/concept/remove/all/"
             + translationId);
 
     Response response =
@@ -807,7 +815,9 @@ public class TranslationClientRest extends RootClientRest implements
         client.target(config.getProperty("base.url")
             + "/translation/phrasememory/remove?translationId=" + translationId
             + "&name="
-            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20"));
+            + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
+            + "&translatedName="
+            + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+", "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1416,6 +1426,11 @@ public class TranslationClientRest extends RootClientRest implements
             .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {

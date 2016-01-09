@@ -6,8 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -198,7 +197,7 @@ public class WorkflowTest {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     refset.setVersion("2015-01-31");
-    refset.setWorkflowPath("DFEAULT");
+    refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
 
     if (type == Refset.Type.INTENSIONAL && definition == null) {
@@ -286,10 +285,7 @@ public class WorkflowTest {
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
 
-    ProjectService service = new ProjectServiceJpa();
-
-    project = (ProjectJpa) service.addProject(project);
-    service.close();
+    project = (ProjectJpa) projectService.addProject(project, adminAuthToken);
 
     return project;
   }
@@ -605,6 +601,29 @@ public class WorkflowTest {
     projectService.unassignUserFromProject(project.getId(),
         author1.getUserName(), adminAuthToken);
     removeProject(project);
+  }
+
+  /**
+   * Test obtaining nonexistent tracking record
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentTrackingRecordsAccess() throws Exception {
+    // Test Null Refset
+    TrackingRecord record =
+        workflowService.getTrackingRecordForRefset(1234567890L, adminAuthToken);
+    assertNull(record);
+
+    // Test Null Record for actual refset
+    Project project = projectService.getProject(1L, adminAuthToken);
+    Refset refset =
+        makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project, null,
+            false);
+    record =
+        workflowService.getTrackingRecordForRefset(refset.getId(),
+            adminAuthToken);
+    assertNull(record);
   }
 
   /**

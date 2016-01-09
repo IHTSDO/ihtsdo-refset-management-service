@@ -134,6 +134,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       handleLazyInit(record, workflowService);
 
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
     } finally {
@@ -529,17 +530,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     try {
       final Refset refset = workflowService.getRefset(refsetId);
 
-      authorizeProject(workflowService, refset.getProject().getId(),
-          securityService, authToken, "perform workflow action on refset",
-          UserRole.AUTHOR);
+      if (refset != null) {
+        authorizeProject(workflowService, refset.getProject().getId(),
+            securityService, authToken, "perform workflow action on refset",
+            UserRole.AUTHOR);
 
-      TrackingRecord record =
-          workflowService.getTrackingRecordsForRefset(refsetId, null);
-      if (record != null) {
-        handleLazyInit(record, workflowService);
+        TrackingRecord record =
+            workflowService.getTrackingRecordsForRefset(refsetId, null);
+        if (record != null) {
+          handleLazyInit(record, workflowService);
+
+          return record;
+        }
       }
 
-      return record;
+      return null;
     } catch (Exception e) {
       handleException(e, "trying to get tracking records for refset");
     } finally {
@@ -600,7 +605,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
+  @POST
   @Path("/refset/available/review")
   @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user", response = RefsetListJpa.class)
   public RefsetList findAvailableReviewRefsets(

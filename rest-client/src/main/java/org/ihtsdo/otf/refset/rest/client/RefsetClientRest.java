@@ -111,6 +111,10 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -386,7 +390,7 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(memberId, "memberId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/"
+        client.target(config.getProperty("base.url") + "/refset/member/remove/"
             + memberId);
 
     Response response =
@@ -410,7 +414,7 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/all/"
+        client.target(config.getProperty("base.url") + "/refset/member/remove/all/"
             + refsetId);
 
     Response response =
@@ -1309,6 +1313,10 @@ public class RefsetClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {

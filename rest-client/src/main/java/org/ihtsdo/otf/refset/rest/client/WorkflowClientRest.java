@@ -128,7 +128,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/available/editing" + "?projectId="
-            + projectId + "?translationId=" + translationId + "?userName="
+            + projectId + "&translationId=" + translationId + "&userName="
             + userName);
 
     String pfsStr =
@@ -167,7 +167,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/assigned/editing" + "?projectId="
-            + projectId + "?translationId=" + translationId + "?userName="
+            + projectId + "&translationId=" + translationId + "&userName="
             + userName);
 
     String pfsStr =
@@ -206,7 +206,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/available/review" + "?projectId="
-            + projectId + "?translationId=" + translationId + "?userName="
+            + projectId + "&translationId=" + translationId + "&userName="
             + userName);
 
     String pfsStr =
@@ -245,7 +245,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/assigned/review" + "?projectId="
-            + projectId + "?translationId=" + translationId + "?userName="
+            + projectId + "&translationId=" + translationId + "&userName="
             + userName);
 
     String pfsStr =
@@ -285,8 +285,8 @@ public class WorkflowClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/translation/"
-            + action + "?projectId=" + projectId + "?translationId="
-            + translationId + "?userName=" + userName + "&projectRole="
+            + action + "?projectId=" + projectId + "&translationId="
+            + translationId + "&userName=" + userName + "&projectRole="
             + projectRole);
 
     String conceptStr =
@@ -339,8 +339,8 @@ public class WorkflowClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/workflow/translation/"
-            + action + "/batch?projectId=" + projectId + "?translationId="
-            + translationId + "?userName=" + userName + "&projectRole="
+            + action + "/batch?projectId=" + projectId + "&translationId="
+            + translationId + "&userName=" + userName + "&projectRole="
             + projectRole);
 
     String conceptStr =
@@ -376,7 +376,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/refset/available/editing" + "?projectId=" + projectId
-            + "?userName=" + userName);
+            + "&userName=" + userName);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -411,7 +411,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/refset/assigned/editing" + "?projectId=" + projectId
-            + "?userName=" + userName);
+            + "&userName=" + userName);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -446,7 +446,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/refset/available/review" + "?projectId=" + projectId
-            + "?userName=" + userName);
+            + "&userName=" + userName);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -481,7 +481,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/refset/assigned/review" + "?projectId=" + projectId
-            + "?userName=" + userName);
+            + "&userName=" + userName);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -519,6 +519,10 @@ public class WorkflowClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -643,7 +647,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/available/all" + "?projectId=" + projectId
-            + "?translationId=" + translationId);
+            + "&translationId=" + translationId);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -677,7 +681,7 @@ public class WorkflowClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/workflow/translation/assigned/all" + "?projectId=" + projectId
-            + "?translationId=" + translationId);
+            + "&translationId=" + translationId);
 
     String pfsStr =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()

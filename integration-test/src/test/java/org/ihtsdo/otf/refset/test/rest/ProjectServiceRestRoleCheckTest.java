@@ -6,15 +6,18 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +72,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     project.setVersion("latest");
 
     try {
-      projectService.addProject(project, viewerAuthToken);
+      project = (ProjectJpa) projectService.addProject(project, viewerAuthToken);
       fail("Attempt to add a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
@@ -85,18 +88,53 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     }
 
     // Attempt to remove an existing project with viewer authorization level
-    // first add the project with valid admin authentication
-    ProjectJpa project2 =
-        (ProjectJpa) projectService.addProject(project, adminAuthToken);
     try {
-      projectService.removeProject(project2.getId(), viewerAuthToken);
+      projectService.removeProject(project.getId(), viewerAuthToken);
       fail("Attempt to remove a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
     }
 
-    // remove the project with valid admin authentication
-    projectService.removeProject(project2.getId(), adminAuthToken);
+    // Even with admin privaleges, as project never created, nothing to remove
+    try {
+      projectService.removeProject(project.getId(), adminAuthToken);
+      fail("Attempt to remove a project with viewer authorization level passed.");
+    } catch (Exception e) {
+      // do nothing
+    }
+  }
+
+  /**
+   * Test obtaining nonexistent project returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentProjectAccess() throws Exception {
+    Project project =
+        projectService.getProject(123456789123456789L, adminAuthToken);
+    assertNull(project);
+  }
+
+  /**
+   * Test obtaining nonexistent concepts
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentProjectConceptAccess() throws Exception {
+    Concept concept =
+        projectService.getFullConcept("1234567890", "SNOMEDCT", "2015-01-31",
+            null, adminAuthToken);
+    assertNull(concept);
+    ConceptList conceptList =
+        projectService.getConceptChildren("1234567890", "SNOMEDCT",
+            "2015-01-31", null, null, adminAuthToken);
+    assertEquals(0, conceptList.getCount());
+    conceptList =
+        projectService.getConceptParents("1234567890", "SNOMEDCT",
+            "2015-01-31", null, adminAuthToken);
+    assertEquals(0, conceptList.getCount());
   }
 
   /**

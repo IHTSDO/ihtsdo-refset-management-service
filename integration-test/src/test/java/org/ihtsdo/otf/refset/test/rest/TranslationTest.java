@@ -6,7 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
@@ -408,17 +409,42 @@ public class TranslationTest {
         new FileInputStream(
             new File(
                 "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
-    translationService.importPhraseMemory(null, in, translation.getId(),
-        adminAuthToken);
-    translationService.addPhraseMemoryEntry(translation.getId(), "test1",
-        "translated test2", adminAuthToken);
-    translationService.removePhraseMemoryEntry(translation.getId(), "test1",
-        "translated test2", adminAuthToken);
+
+    // Verify phrase memory is empty to start with
     InputStream inputStream =
         translationService.exportPhraseMemory(translation.getId(),
             adminAuthToken);
     List<MemoryEntry> entries = parsePhraseMemory(translation, inputStream);
-    assertEquals(1, entries.size());
+    assertEquals(0, entries.size());
+
+    // Import phrase memory
+    translationService.importPhraseMemory(null, in, translation.getId(),
+        adminAuthToken);
+
+    inputStream =
+        translationService.exportPhraseMemory(translation.getId(),
+            adminAuthToken);
+    entries = parsePhraseMemory(translation, inputStream);
+    assertEquals(2, entries.size());
+
+    // Add another phrase memory entry
+    translationService.addPhraseMemoryEntry(translation.getId(), "test1",
+        "translated test2", adminAuthToken);
+
+    inputStream =
+        translationService.exportPhraseMemory(translation.getId(),
+            adminAuthToken);
+    entries = parsePhraseMemory(translation, inputStream);
+    assertEquals(3, entries.size());
+
+    // remove single phrase memory
+    translationService.removePhraseMemoryEntry(translation.getId(), "test1",
+        "translated test2", adminAuthToken);
+    inputStream =
+        translationService.exportPhraseMemory(translation.getId(),
+            adminAuthToken);
+    entries = parsePhraseMemory(translation, inputStream);
+    assertEquals(2, entries.size());
 
     // cleanup
     verifyTranslationLookupCompleted(translation.getId());
@@ -491,9 +517,7 @@ public class TranslationTest {
 
     // Verify that translation has the number of description types as returned
     // during query
-    assertEquals(translation.getDescriptionTypes().size() - 1,
-        types.getTotalCount());
-    assertEquals(3, types.getTotalCount());
+    assertTrue(types.getTotalCount() >= 3);
 
     // clean up
     verifyTranslationLookupCompleted(translation.getId());
@@ -541,6 +565,29 @@ public class TranslationTest {
     }
     pbr.close();
     return list;
+  }
+
+  /**
+   * Test obtaining nonexistent translation returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentTranslationAccess() throws Exception {
+    Translation translation =
+        translationService.getTranslation(123456789123456789L, adminAuthToken);
+    assertNull(translation);
+  }
+
+  /**
+   * Test obtaining nonexistent concepts
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentTranslationConceptAccess() throws Exception {
+    Concept concept = translationService.getConcept(1234567890L, adminAuthToken);
+    assertNull(concept);
   }
 
   /**

@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
@@ -398,7 +399,7 @@ public class RedefinitionTest {
    *
    * @throws Exception the exception
    */
-   @Test
+  @Test
   public void testMigration001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testMigration001");
 
@@ -488,6 +489,7 @@ public class RedefinitionTest {
     Refset janRefset =
         makeRefset("refset1", null, Refset.Type.EXTENSIONAL, project1, null,
             admin);
+    janRefset = refsetService.getRefset(janRefset.getId(), adminAuthToken);
 
     // Begin migration
     Refset julyStagedRefset =
@@ -505,18 +507,95 @@ public class RedefinitionTest {
 
     MemberDiffReport diffReport =
         refsetService.getDiffReport(reportToken, adminAuthToken);
-    assertEquals(1, diffReport.getOldNotNew().size());
-    assertEquals(1, diffReport.getNewNotOld().size());
+    assertEquals(0, diffReport.getOldNotNew().size());
+    assertEquals(0, diffReport.getNewNotOld().size());
 
     ConceptRefsetMemberList commonList =
         refsetService.findMembersInCommon(reportToken, null, null,
             adminAuthToken);
-    assertEquals(20, commonList.getObjects().size());
+    assertEquals(21, commonList.getObjects().size());
 
     // Finish migration
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
     assertEquals(
-        20,
+        21,
+        refsetService
+            .findRefsetMembersForQuery(janRefset.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+    // cleanup
+    verifyRefsetLookupCompleted(janRefset.getId());
+//    verifyRefsetLookupCompleted(julyStagedRefset.getId());
+    refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test proper handling of diffReporting on INTENSIONAL refset
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testIntensionalMigration() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testIntensionalMigration");
+
+    Project project = projectService.getProject(1L, adminAuthToken);
+    User admin = securityService.authenticate(adminUser, adminPassword);
+
+    Refset janRefset =
+        makeRefset("refset", "", Refset.Type.INTENSIONAL, project, null, admin);
+
+    DefinitionClause clause = new DefinitionClauseJpa();
+    clause.setValue("<<70759006 | Pyoderma (disorder) |");
+    clause.setNegated(false);
+    janRefset.getDefinitionClauses().add(clause);
+    refsetService.updateRefset((RefsetJpa) janRefset, adminAuthToken);
+
+    refsetService = new RefsetClientRest(properties);
+    janRefset = refsetService.getRefset(janRefset.getId(), adminAuthToken);
+
+    // Begin migration
+    Refset julyStagedRefset =
+        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+            "2015-07-31", adminAuthToken);
+
+    // Verify expected number of members
+    assertEquals(
+        164,
+        refsetService
+            .findRefsetMembersForQuery(julyStagedRefset.getId(), "",
+                new PfsParameterJpa(), adminAuthToken).getObjects().size());
+
+    // Compare
+    String reportToken =
+        refsetService.compareRefsets(janRefset.getId(),
+            julyStagedRefset.getId(), adminAuthToken);
+
+    // Verify common members as expected
+    ConceptRefsetMemberList commonList =
+        refsetService.findMembersInCommon(reportToken, null, null,
+            adminAuthToken);
+    assertEquals(111, commonList.getObjects().size());
+
+    // Verify proper generation of Diff Report
+    MemberDiffReport diffReport =
+        refsetService.getDiffReport(reportToken, adminAuthToken);
+    assertEquals(7, diffReport.getOldNotNew().size());
+    assertEquals(53, diffReport.getNewNotOld().size());
+
+    // Verify proper oldNew member access
+    ConceptRefsetMemberList oldRegularMembers =
+        refsetService.getOldRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    ConceptRefsetMemberList newRegularMembers =
+        refsetService.getNewRegularMembers(reportToken, "", null,
+            adminAuthToken);
+    assertEquals(diffReport.getOldNotNew().size(), oldRegularMembers.getCount());
+    assertEquals(diffReport.getNewNotOld().size(), newRegularMembers.getCount());
+
+    // Finish migration
+    refsetService.finishMigration(janRefset.getId(), adminAuthToken);
+    assertEquals(
+        164,
         refsetService
             .findRefsetMembersForQuery(janRefset.getId(), "",
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
@@ -524,7 +603,6 @@ public class RedefinitionTest {
     // cleanup
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
-
   }
 
   /**
@@ -563,11 +641,14 @@ public class RedefinitionTest {
     if (type == Refset.Type.INTENSIONAL) {
       List<DefinitionClause> definitionClauses =
           new ArrayList<DefinitionClause>();
-      DefinitionClause clause = new DefinitionClauseJpa();
-      clause.setValue(definition);
-      clause.setNegated(false);
-      definitionClauses.add(clause);
-      refset.setDefinitionClauses(definitionClauses);
+      // Only add clause if definition is not null nor empty
+      if (definition != null && !definition.isEmpty()) {
+        DefinitionClause clause = new DefinitionClauseJpa();
+        clause.setValue(definition);
+        clause.setNegated(false);
+        definitionClauses.add(clause);
+        refset.setDefinitionClauses(definitionClauses);
+      }
     } else {
       refset.setDefinitionClauses(null);
     }

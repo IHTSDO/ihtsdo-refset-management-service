@@ -200,14 +200,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       final Refset refset = refsetService.getRefset(refsetId);
-      if (refset.isPublic()) {
-        authorizeApp(securityService, authToken, "get refset for id",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(refsetService, refset.getProject().getId(),
-            securityService, authToken, "get refset for id", UserRole.AUTHOR);
+
+      if (refset != null) {
+        if (refset.isPublic()) {
+          authorizeApp(securityService, authToken, "get refset for id",
+              UserRole.VIEWER);
+        } else {
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "get refset for id", UserRole.AUTHOR);
+        }
+        refsetService.handleLazyInit(refset);
       }
-      refsetService.handleLazyInit(refset);
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset");
@@ -271,15 +274,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
-      if (member.getRefset().isPublic()) {
-        authorizeApp(securityService, authToken, "get refset for id",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(refsetService,
-            member.getRefset().getProject().getId(), securityService,
-            authToken, "get refset for id", UserRole.AUTHOR);
+
+      if (member != null) {
+        if (member.getRefset().isPublic()) {
+          authorizeApp(securityService, authToken, "get refset for id",
+              UserRole.VIEWER);
+        } else {
+          authorizeProject(refsetService, member.getRefset().getProject()
+              .getId(), securityService, authToken, "get refset for id",
+              UserRole.AUTHOR);
+        }
+        refsetService.handleLazyInit(member);
       }
-      refsetService.handleLazyInit(member);
+
       return member;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a member");

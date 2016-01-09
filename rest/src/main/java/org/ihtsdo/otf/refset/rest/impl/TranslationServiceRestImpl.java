@@ -226,7 +226,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       final Translation translation =
           translationService.getTranslation(translationId);
-      translationService.handleLazyInit(translation);
+      if (translation != null) {
+        translationService.handleLazyInit(translation);
+      }
+
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to retrieve a translation");
