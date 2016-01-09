@@ -383,7 +383,7 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
 
-    this.getConceptParents = function(terminologyId, terminology, version, translationId) {
+    this.getConcept = function(terminologyId, terminology, version, translationId) {
 
       console.debug('getConceptParents', terminologyId);
       // Setup deferred
@@ -392,7 +392,7 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + 'parents?terminologyId=' + terminologyId + '&terminology=' + terminology
+        projectUrl + 'concept/parents?terminologyId=' + terminologyId + '&terminology=' + terminology
           + '&version=' + version
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
