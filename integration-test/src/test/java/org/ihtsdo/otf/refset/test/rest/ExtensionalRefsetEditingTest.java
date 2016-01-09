@@ -212,13 +212,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     Refset pulledRefset = null;
 
-    try {
-      pulledRefset =
-          refsetService.getRefset(currentRefset.getId(), adminAuthToken);
-      fail("Getting non-existant refset");
-    } catch (Exception e) {
-      // do nothing
-    }
+    pulledRefset =
+        refsetService.getRefset(currentRefset.getId(), adminAuthToken);
 
     assertTrue(pulledRefset == null);
   }
