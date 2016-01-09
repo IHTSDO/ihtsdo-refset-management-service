@@ -410,7 +410,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Produces("text/plain")
+  @Consumes("text/plain")
   @Path("/members/add")
   @ApiOperation(value = "Add members for expression", notes = "Adds the members that are defined by the expression to the specified extensional refset", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList addRefsetMembersForExpression(
@@ -925,7 +925,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Produces("text/plain")
+  @Consumes("text/plain")
   @Path("/inclusion/add")
   @ApiOperation(value = "Add new inclusion", notes = "Adds the new inclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetInclusion(
