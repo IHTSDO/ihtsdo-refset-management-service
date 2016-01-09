@@ -109,6 +109,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentProjectAccess() throws Exception {
     Project project =
@@ -121,6 +122,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentProjectConceptAccess() throws Exception {
     Concept concept =

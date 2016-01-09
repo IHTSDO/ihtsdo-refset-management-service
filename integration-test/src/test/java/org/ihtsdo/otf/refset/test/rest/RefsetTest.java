@@ -817,6 +817,7 @@ public class RefsetTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentRefsetAccess() throws Exception {
     Refset refset =
@@ -829,6 +830,7 @@ public class RefsetTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentRefsetMemberAccess() throws Exception {
     ConceptRefsetMember member =

@@ -758,6 +758,7 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentTranslationReleaseAccess() throws Exception {
     ReleaseInfo info =

@@ -808,6 +808,7 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentRefsetReleaseAccess() throws Exception {
     ReleaseInfo info =

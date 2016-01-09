@@ -33,7 +33,6 @@ import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
 import org.junit.Before;
