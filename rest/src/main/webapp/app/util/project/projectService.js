@@ -383,7 +383,7 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
 
-    this.getConcept = function(terminologyId, terminology, version, translationId) {
+    this.getConceptParents = function(terminologyId, terminology, version, translationId) {
 
       console.debug('getConceptParents', terminologyId);
       // Setup deferred
