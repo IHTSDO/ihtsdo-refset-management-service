@@ -520,6 +520,10 @@ public class WorkflowClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       Logger.getLogger(getClass()).debug(resultString);

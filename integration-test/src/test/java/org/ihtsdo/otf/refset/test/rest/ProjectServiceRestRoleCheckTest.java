@@ -6,18 +6,18 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -102,6 +102,39 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     } catch (Exception e) {
       // do nothing
     }
+  }
+
+  /**
+   * Test obtaining nonexistent project returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentProjectAccess() throws Exception {
+    Project project =
+        projectService.getProject(123456789123456789L, adminAuthToken);
+    assertNull(project);
+  }
+
+  /**
+   * Test obtaining nonexistent concepts
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentProjectConceptAccess() throws Exception {
+    Concept concept =
+        projectService.getFullConcept("1234567890", "SNOMEDCT", "2015-01-31",
+            null, adminAuthToken);
+    assertNull(concept);
+    ConceptList conceptList =
+        projectService.getConceptChildren("1234567890", "SNOMEDCT",
+            "2015-01-31", null, null, adminAuthToken);
+    assertEquals(0, conceptList.getCount());
+    conceptList =
+        projectService.getConceptParents("1234567890", "SNOMEDCT",
+            "2015-01-31", null, adminAuthToken);
+    assertEquals(0, conceptList.getCount());
   }
 
   /**

@@ -144,6 +144,10 @@ public class ProjectClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -543,7 +547,7 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/concepts?"
+        client.target(config.getProperty("base.url") + "/project/concept?"
             + "terminologyId=" + terminologyId + "&terminology=" + terminology
             + "&version=" + version
             + (translationId != null ? "&translationId=" + translationId : ""));
@@ -551,6 +555,10 @@ public class ProjectClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -560,10 +568,10 @@ public class ProjectClientRest extends RootClientRest implements
     }
 
     // converting to object
-    ConceptJpa list =
+    ConceptJpa con =
         (ConceptJpa) ConfigUtility.getGraphForString(resultString,
             ConceptJpa.class);
-    return list;
+    return con;
   }
 
   /* see superclass */

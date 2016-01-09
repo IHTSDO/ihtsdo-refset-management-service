@@ -743,6 +743,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken,
           "get current refset release info", UserRole.VIEWER);
 
+      if (refset == null) {
+        return null;
+      }
+
       ReleaseInfo info =
           refsetService.getCurrentRefsetReleaseInfo(refset.getTerminologyId(),
               refset.getProject().getId());
@@ -786,6 +790,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
+
+      if (translation == null) {
+        return null;
+      }
 
       ReleaseInfo info =
           translationService.getCurrentTranslationReleaseInfo(

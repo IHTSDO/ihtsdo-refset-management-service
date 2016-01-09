@@ -88,6 +88,10 @@ public class TranslationClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -115,6 +119,10 @@ public class TranslationClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1418,6 +1426,11 @@ public class TranslationClientRest extends RootClientRest implements
             .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {

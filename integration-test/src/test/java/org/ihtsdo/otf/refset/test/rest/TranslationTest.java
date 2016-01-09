@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.helpers.PushBackReader;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 import org.junit.After;
@@ -564,6 +565,29 @@ public class TranslationTest {
     }
     pbr.close();
     return list;
+  }
+
+  /**
+   * Test obtaining nonexistent translation returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentTranslationAccess() throws Exception {
+    Translation translation =
+        translationService.getTranslation(123456789123456789L, adminAuthToken);
+    assertNull(translation);
+  }
+
+  /**
+   * Test obtaining nonexistent concepts
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentTranslationConceptAccess() throws Exception {
+    Concept concept = translationService.getConcept(1234567890L, adminAuthToken);
+    assertNull(concept);
   }
 
   /**

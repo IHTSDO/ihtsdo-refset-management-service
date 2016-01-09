@@ -7,6 +7,7 @@
 package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +23,8 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
@@ -91,7 +92,7 @@ public class RefsetTest {
 
   /** The assign names. */
   private static Boolean backgroundLookup;
-  
+
   /** The translation ct. */
   private int translationCt = 0;
 
@@ -378,6 +379,7 @@ public class RefsetTest {
 
     return translation;
   }
+
   /**
    * Test getting a specific member from a refset.
    *
@@ -792,16 +794,18 @@ public class RefsetTest {
 
     // Create translation
     TranslationJpa translation =
-        makeTranslation("translation99", refset, project, admin);
-    
-    translationService.removeTranslation(translation.getId(), true, adminAuthToken);
-    
+        makeTranslation("translation", refset, project, admin);
+
+    translationService.removeTranslation(translation.getId(), true,
+        adminAuthToken);
+
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
-    
-    Refset recoveryRefset = refsetService.recoveryRefset(refset.getId(), adminAuthToken);
-    
+
+    Refset recoveryRefset =
+        refsetService.recoveryRefset(refset.getId(), adminAuthToken);
+
     // Verify number of members recovered
-   foundMembers =
+    foundMembers =
         refsetService.findRefsetMembersForQuery(recoveryRefset.getId(), "",
             new PfsParameterJpa(), adminAuthToken).getObjects();
 
@@ -809,31 +813,27 @@ public class RefsetTest {
   }
 
   /**
-   * Ensure refset completed prior to shutting down test to avoid lookupName
-   * issues.
+   * Test obtaining nonexistent refset returns null gracefully
    *
-   * @param refsetId the refset id
    * @throws Exception the exception
    */
-  protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      refsetService = new RefsetClientRest(properties);
+  @Test
+  public void testNonexistentRefsetAccess() throws Exception {
+    Refset refset =
+        refsetService.getRefset(123456789123456789L, adminAuthToken);
+    assertNull(refset);
+  }
 
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
-        if (r.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info("Inside wait-loop");
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-    }
+  /**
+   * Test obtaining nonexistent member
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testNonexistentRefsetMemberAccess() throws Exception {
+    ConceptRefsetMember member =
+        refsetService.getMember(1234567890L, adminAuthToken);
+    assertNull(member);
   }
 
   /**
@@ -899,5 +899,33 @@ public class RefsetTest {
     // cleanup
     verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Ensure refset completed prior to shutting down test to avoid lookupName
+   * issues.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
+    if (assignNames && backgroundLookup) {
+      // Ensure that all lookupNames routines completed
+      boolean completed = false;
+      refsetService = new RefsetClientRest(properties);
+
+      while (!completed) {
+        // Assume process has completed
+        completed = true;
+
+        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
+        if (r.isLookupInProgress()) {
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info("Inside wait-loop");
+          completed = false;
+          Thread.sleep(250);
+        }
+      }
+    }
   }
 }
