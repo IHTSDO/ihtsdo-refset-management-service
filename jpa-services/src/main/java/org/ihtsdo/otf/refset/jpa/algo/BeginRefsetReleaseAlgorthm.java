@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -73,7 +74,7 @@ public class BeginRefsetReleaseAlgorthm extends RefsetServiceJpa implements
     if (releaseInfoList.getCount() != 0) {
       ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo != null && releaseInfo.isPublished())
-        throw new Exception("refset release is already in progress "
+        throw new LocalException("refset release is already in progress "
             + refset.getId());
     }
   }

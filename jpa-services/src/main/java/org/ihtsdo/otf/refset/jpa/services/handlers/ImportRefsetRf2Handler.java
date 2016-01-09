@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -83,7 +84,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       if (fields.length < 6) {
         pbr.close();
         Logger.getLogger(getClass()).error("line = " + line);
-        throw new Exception(
+        throw new LocalException(
             "Unexpected field count in simple refset member file "
                 + fields.length);
       }
@@ -136,7 +137,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       // Check fields
       if (fields.length != 7) {
         pbr.close();
-        throw new Exception("Unexpected field count in refset definition file.");
+        throw new LocalException("Unexpected field count in refset definition file.");
       }
 
       // skip header

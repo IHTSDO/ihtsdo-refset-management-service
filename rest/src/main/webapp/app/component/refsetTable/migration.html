@@ -5,7 +5,7 @@
 
 
     <!-- Migration - choose terminology/version -->
-    <table  class="table">
+    <table class="table">
       <tbody>
         <tr>
           <td>
@@ -24,21 +24,24 @@
           <td>
             <select ng-model="refset.newTerminology"
               ng-change="terminologySelected(refset.terminology)"
-              ng-options="item for item in metadata.terminologies"></select> 
+              ng-options="item for item in metadata.terminologies"></select>
           </td>
           <td>
             <h5>New Version:</h5>
           </td>
-          <td>   
+          <td>
             <select ng-model="refset.newVersion"
               ng-options="item for item in versions"></select>
-            <button class="btn btn-primary" ng-disabled="refset.stagingType != null"
-              ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>            
+            <button class="btn btn-primary"
+              ng-disabled="refset.stagingType != null"
+              ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>
           </td>
-        </tr>        
+        </tr>
       </tbody>
     </table>
-    <uib-progressbar animate="false" ng-show="stagedRefset.lookupInProgress == true" value="lookupProgress" type="success"><b>{{lookupProgress}}%</b></uib-progressbar>      
+    <uib-progressbar animate="false"
+      ng-show="stagedRefset.lookupInProgress == true" value="lookupProgress"
+      type="success"> <b>{{lookupProgress}}%</b></uib-progressbar>
   </div>
 </div>
 
@@ -48,18 +51,20 @@
   <div class="row">
 
     <!-- Errors table -->
-    <div class="col-md-8 col-md-12" ng-show="errors.length > 0">
+    <div class="col-md-12 col-md-12" ng-show="errors.length > 0">
       <table>
         <tr ng-show="errors.length > 0">
-          <td>&nbsp;</td>
           <td>
-            <div class="alert alert-danger alert-error"
-              ng-repeat="error in errors">
-              {{error}}
-              <!-- DO NOT SUPPORT clearing error for now <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+            <div class="alert alert-danger alert-error">
+              {{errors[0]}}
+              <div style="display: inline; float: right;">
+                <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                  class="noul material-icons md-18"
+                  ng-click="error.expand=true;">attach_file</i>
+              </div>
+              <p ng-show="errors[1] && error.expand">
+                <br />{{errors[1]}}
+              </p>
             </div>
           </td>
         </tr>
@@ -110,8 +115,11 @@
               <tr ng-repeat="member in membersInCommon">
                 <td>{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><span ng-show="member.active == false"><i uib-tooltip="Inactive"
-                      class="noul material-icons md-18">warning</i></span></td>
+                <td>
+                  <span ng-show="member.active == false">
+                    <i uib-tooltip="Inactive" class="noul material-icons md-18">warning</i>
+                  </span>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -307,8 +315,9 @@
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
             <td>
-              <span ng-show="member.active == false"><i uib-tooltip="Inactive"
-                      class="noul material-icons md-18">warning</i></span>
+              <span ng-show="member.active == false">
+                <i uib-tooltip="Inactive" class="noul material-icons md-18">warning</i>
+              </span>
               <a ng-click="exclude(refset, member, 'false')">
                 <i uib-tooltip="Exclude new member."
                   class="noul material-icons md-18">remove_circle_outline</i>
@@ -344,8 +353,9 @@
             <td>{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
             <td>
-              <span ng-show="member.active == false"><i uib-tooltip="Inactive"
-                      class="noul material-icons md-18">warning</i></span>
+              <span ng-show="member.active == false">
+                <i uib-tooltip="Inactive" class="noul material-icons md-18">warning</i>
+              </span>
               <a ng-show="member.memberType == 'MEMBER'"
                 ng-click="include(member, false)">
                 <i uib-tooltip="Include old member."
@@ -366,16 +376,18 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
+  <button class="btn btn-primary"
+    ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     ng-click="saveForLater(refset);
     ">Save for later</button>
-  <button class="btn btn-primary" ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
+  <button class="btn btn-primary"
+    ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     ng-click="finish(refset); 
     ">Finish</button>
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-warning" ng-show="refset.stagingType != null"
     ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
-    title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
+    title="Cancel migration" ng-click="cancel();">Cancel</button>
   <button class="btn btn-warning" ng-show="refset.stagingType == null"
     title="Close" ng-click="close();">Close</button>
 </div>

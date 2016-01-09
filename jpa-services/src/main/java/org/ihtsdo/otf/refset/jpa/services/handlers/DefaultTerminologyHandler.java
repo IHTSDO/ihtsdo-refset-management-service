@@ -674,11 +674,29 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
+    boolean useTerm = true;
+    String localQuery = query;
+    if (localQuery.matches("\\d+[01]0\\d")) {
+      useTerm = false;
+    } else if (localQuery.matches("\\d+[01]0\\d\\*")) {
+      localQuery = localQuery.replace("*", "");
+      useTerm = false;
+    }
+    // Use "escg" if it's a concept id, otherwise search term
     final WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?term="
-            + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
+        useTerm ? client.target(url + "/" + branch + "/"
+            + version + "/concepts?term="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
+            + "&offset=" + localPfs.getStartIndex() + "&limit="
+            + localPfs.getMaxResults() + "&expand=pt()")
+
+        :
+
+        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
+            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()");
+
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();

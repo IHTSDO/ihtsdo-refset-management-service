@@ -36,20 +36,26 @@
     <uib-accordion> <uib-accordion-group
       is-open="accordionState['AVAILABLE']" ng-show="!isProjectAdmin()">
     <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('AVAILABLE');">Available</h5>
+    <h5 class="section-header" ng-click="setAccordion('AVAILABLE');">
+      Available
+      <span ng-show="projects.role"> ({{projects.role}})</span>
+    </h5>
     </uib-accordion-heading>
     <div refset-table value="AVAILABLE" projects="projects" metadata="metadata"></div>
     </uib-accordion-group> <!-- do not show for admins --> <uib-accordion-group
       is-open="accordionState['ASSIGNED']" ng-show="!isProjectAdmin()">
     <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('ASSIGNED');">Assigned</h5>
+    <h5 class="section-header" ng-click="setAccordion('ASSIGNED');">
+      Assigned
+      <span ng-show="projects.role"> ({{projects.role}})</span>
+    </h5>
     </uib-accordion-heading> <!-- TODO project="{{project.id}}" -->
     <div refset-table value="ASSIGNED" projects="projects" metadata="metadata"></div>
     </uib-accordion-group> <!-- show only for admins --> <uib-accordion-group
       is-open="accordionState['ASSIGNED_ALL']" ng-show="isProjectAdmin()">
     <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('ASSIGNED_ALL');">Assigned
-      All</h5>
+      (All)</h5>
     </uib-accordion-heading>
     <div refset-table value="ASSIGNED_ALL" projects="projects"
       metadata="metadata"></div>

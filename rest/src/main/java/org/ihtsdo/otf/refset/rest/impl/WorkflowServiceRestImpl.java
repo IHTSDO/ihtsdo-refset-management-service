@@ -178,6 +178,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
+        concept.getNotes().size();
       }
       return list;
 
@@ -272,6 +273,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
+        concept.getNotes().size();
       }
       return list;
 
@@ -1014,9 +1016,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       workflowService.handleLazyInit(record.getRefset());
     }
     for (final User author : record.getAuthors()) {
+      author.getProjectRoleMap().size();
       author.setUserPreferences(null);
     }
     for (final User reviewer : record.getReviewers()) {
+      reviewer.getProjectRoleMap().size();
       reviewer.setUserPreferences(null);
     }
   }

@@ -18,6 +18,9 @@ tsApp
         securityService, projectService, validationService, translationService) {
         console.debug('configure AdminCtrl');
 
+        // Clear error
+        utilService.clearError();
+
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Admin') {
           tabService.setSelectedTabByLabel('Admin');
@@ -416,7 +419,7 @@ tsApp
         // remove user from project
         $scope.unassignUserFromProject = function(projectId, userName) {
           projectService.unassignUserFromProject(projectId, userName).then(function(data) {
-            // Update 'anyrole'
+            // Update 'anyrole' in case user removed themselves from the project
             projectService.getUserHasAnyRole();
             $scope.getProjects();
             $scope.selectedProject = data;
@@ -494,7 +497,12 @@ tsApp
           $scope.errors = [];
 
           for (var i = 0; i < $scope.validationChecks.length; i++) {
-            $scope.availableChecks.push($scope.validationChecks[i].value);
+            if ($scope.validationChecks[i].value == 'Default validation check') {
+
+              $scope.selectedChecks.push($scope.validationChecks[i].value);
+            } else {
+              $scope.availableChecks.push($scope.validationChecks[i].value);
+            }
           }
 
           $scope.selectValidationCheck = function(check) {

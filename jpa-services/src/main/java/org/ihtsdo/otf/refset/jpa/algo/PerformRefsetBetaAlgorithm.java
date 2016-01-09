@@ -14,6 +14,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.StagingType;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -79,18 +80,18 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     ReleaseInfoList releaseInfoList =
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new Exception("Cannot find release info for refset "
+      throw new LocalException("Cannot find release info for refset "
           + refset.getId());
     }
 
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
         || releaseInfo.isPublished())
-      throw new Exception("refset release is not ready to beta "
+      throw new LocalException("refset release is not ready to beta "
           + refset.getId());
 
     if (refset.isStaged())
-      throw new Exception("refset is staged for " + refset.getId());
+      throw new LocalException("refset is staged for " + refset.getId());
 
   }
 

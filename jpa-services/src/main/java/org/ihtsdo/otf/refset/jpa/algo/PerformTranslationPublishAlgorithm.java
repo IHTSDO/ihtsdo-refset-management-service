@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
@@ -61,7 +62,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
   @Override
   public void checkPreconditions() throws Exception {
     if (!translation.isStaged())
-      throw new Exception("translation workflowstatus is not staged for "
+      throw new LocalException("translation workflowstatus is not staged for "
           + translation.getId());
     stagedTranslationChange = getStagedTranslationChange(translation.getId());
     if (!WorkflowStatus.BETA.equals(stagedTranslationChange
@@ -87,7 +88,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new Exception("Cannot find release info for translation "
+      throw new LocalException("Cannot find release info for translation "
           + translation.getId());
     }
     ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
@@ -104,7 +105,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     releaseInfoList =
         findTranslationReleasesForQuery(stagedTranslation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new Exception("Cannot find release info for translation "
+      throw new LocalException("Cannot find release info for translation "
           + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);

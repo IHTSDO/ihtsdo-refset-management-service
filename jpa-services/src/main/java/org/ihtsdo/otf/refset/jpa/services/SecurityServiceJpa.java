@@ -181,7 +181,7 @@ public class SecurityServiceJpa extends RootServiceJpa implements
       if (handler.timeoutUser(userName)) {
 
         if (tokenTimeoutMap.get(parsedToken) == null) {
-          throw new Exception("No login timeout set for authToken.");
+          throw new LocalException("No login timeout set for authToken.");
         }
 
         if (tokenTimeoutMap.get(parsedToken).before(new Date())) {
@@ -381,6 +381,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     final UserList result = new UserListJpa();
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
+    for (final User user : result.getObjects()) {
+      handleLazyInit(user);
+    }
     return result;
   }
 
@@ -471,6 +474,9 @@ public class SecurityServiceJpa extends RootServiceJpa implements
    */
   @Override
   public void handleLazyInit(User user) {
+    if (user.getProjectRoleMap() != null) {
+      user.getProjectRoleMap().size();
+    }
     if (user.getUserPreferences() != null) {
       user.getUserPreferences().getLastProjectId();
     }

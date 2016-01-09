@@ -144,12 +144,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(projectService, projectId, securityService, authToken,
           "add user to project", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
-      final User user = securityService.getUser(userName);
+      User user = securityService.getUser(userName);
+      Project project = projectService.getProject(projectId);
       project.getUserRoleMap().put(user, UserRole.valueOf(role));
+      projectService.updateProject(project);
+
       user.getProjectRoleMap().put(project, UserRole.valueOf(role));
       securityService.updateUser(user);
-      projectService.updateProject(project);
+
       return project;
 
     } catch (Exception e) {
@@ -171,9 +173,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /removeuser " + projectId + ", "
-            + userName);
+    Logger.getLogger(getClass())
+        .info(
+            "RESTful POST call (Project): /unassign " + projectId + ", "
+                + userName);
 
     // Test preconditions
     if (projectId == null || userName == null) {
@@ -192,14 +195,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             "unassign user from project", UserRole.AUTHOR);
       }
 
-      final Project project = projectService.getProject(projectId);
       final User user = securityService.getUser(userName);
+      final Project project = projectService.getProject(projectId);
       project.getUserRoleMap().remove(user);
+      projectService.updateProject(project);
+
       user.getProjectRoleMap().remove(project);
       securityService.updateUser(user);
-      projectService.updateProject(project);
-      return project;
 
+      return project;
     } catch (Exception e) {
       handleException(e, "trying to remove user from project");
     } finally {

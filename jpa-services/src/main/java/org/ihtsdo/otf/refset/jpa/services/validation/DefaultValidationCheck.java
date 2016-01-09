@@ -84,8 +84,7 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
   public ValidationResult validate(ConceptRefsetMember member,
     RefsetService service) throws Exception {
     ValidationResult result = new ValidationResultJpa();
-    Refset refset =
-        service.getRefset(member.getRefset().getId());
+    Refset refset = service.getRefset(member.getRefset().getId());
     if (member.getMemberType() == Refset.MemberType.INCLUSION
         && refset.getType() != Refset.Type.INTENSIONAL) {
       result.addError("Inclusion member attached to non-intensional refset.");
@@ -149,6 +148,12 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     // The language should be a 2 letter code matching a language
     if (translation.getLanguage() == null) {
       result.addError("Translation language must be set");
+    }
+
+    // The language should be a 2 letter code matching a language
+    if (!translation.getLanguage().toLowerCase()
+        .equals(translation.getLanguage())) {
+      result.addError("Translation language must be lowercase");
     }
 
     if (translation.getLanguage() != null

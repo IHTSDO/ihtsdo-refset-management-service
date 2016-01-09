@@ -23,8 +23,9 @@
         title="Click to clear filter text">Clear</button>
       <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
         <div style="float: right;">
-          <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
-            title="Add translation" class="noul material-icons md-24">add</i>
+          <button ng-click="openAddTranslationModal(); $event.stopPropagation()"
+            title="Add translation" class="btn btn-xs btn-primary">Add
+            Translation</button>
         </div>
       </h4>
 
@@ -48,13 +49,19 @@
         </th>
         <th class="col-md-4 col-xs-4"
           ng-click="setSortField('translation','name', null)">Name<span
-            ng-bind="getSortIndicator('translation','name',null)"></span> <span
+            ng-bind="getSortIndicator('translation','name',null)"></span> / <span
             ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
-            /
             <span ng-click="setSortField('translation','effectiveTime', null)">
               Effective Time
               <span
                 ng-bind="getSortIndicator('translation','effectiveTime',null)"></span>
+            </span>
+          </span> <span
+            ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
+            <span ng-click="setSortField('translation','lastModified', null)">
+              Last Modified
+              <span
+                ng-bind="getSortIndicator('translation','lastModified',null)"></span>
             </span>
           </span></th>
         <th class="col-md-3 col-xs-3"
@@ -80,6 +87,9 @@
             <span ng-show="translation.effectiveTime">
               <br />{{toShortDate(translation.effectiveTime)}}
             </span>
+            <span ng-show="!translation.effectiveTime">
+              <br />{{toDate(translation.lastModified)}}
+            </span>
           </td>
           <td>
             {{translation.moduleId}}
@@ -87,9 +97,8 @@
             <br class="visible-xs-inline" />
             <span flag-icon obj="translation"></span>
             <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" /> {{translation.organization}}
-            <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
-              <br />{{refset.workflowStatus}}
+            <br class="visible-xs-inline" />
+            {{getTranslationOrganization(translation)}}
             </span>
 
           </td>
@@ -277,7 +286,7 @@
             <td>{{selected.translation.version}}</td>
           </tr>
           <tr
-            ng-show="translation.workflowStatus != 'BETA' && translation.workflowStatus != 'PUBLISHED'">
+            ng-show="selected.translation.workflowStatus != 'BETA' && selected.translation.workflowStatus != 'PUBLISHED'">
             <td>
               <b>Spelling Dictionary</b>
             </td>
@@ -305,7 +314,7 @@
             </td>
           </tr>
           <tr
-            ng-show="translation.workflowStatus != 'BETA' && translation.workflowStatus != 'PUBLISHED'">
+            ng-show="selected.translation.workflowStatus != 'BETA' && selected.translation.workflowStatus != 'PUBLISHED'">
             <td>
               <b>Phrase Memory</b>
             </td>
@@ -559,8 +568,8 @@
               title="Reassign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- Finish -->
-            <i
-              ng-show="record.concept.workflowStatus != 'REVIEW_DONE' && record.concept.workflowStatus != 'NEW' && record.concept.workflowStatus != 'REVIEW_NEW' && record.concept.workflowStatus != 'READY_FOR_PUBLICATION' "
+            <i confirm="Are you sure you want to finalize editing/review?"
+              ng-show="record.concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || record.concept.workflowStatus=='REVIEW_NEW'"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
@@ -702,12 +711,13 @@
                   <br /> &bull;&nbsp;{{desc.term}}
                 </span>
               </td>
-              <td ng-show="value != 'PUBLISHED' && value != 'BETA'">{{toDate(concept.lastModified)}}</td>
-              <td ng-show="value == 'PUBLISHED' || value == 'BETA'">{{toShortDate(concept.effectiveTime)}}</td>
+              <td
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">{{toDate(concept.lastModified)}}</td>
+              <td ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
               <td>
                 <!-- Assign (for error fixing) -->
                 <i ng-show="value == 'EDITING' && projects.role != 'ADMIN'"
-                  ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
+                  ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
                 <!-- Remove -->
                 <i

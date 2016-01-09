@@ -9,7 +9,9 @@
 
     <table class="table">
       <tr>
-        <td class="col-md-4 col-xs-4"><b>I/O Handler</b></td>
+        <td class="col-md-4 col-xs-4">
+          <b>I/O Handler</b>
+        </td>
         <td class="col-md-8 col-xs-8">
           <span ng-show="ioHandlers.length> 1">
             <select ng-model="selectedIoHandler"
@@ -19,7 +21,9 @@
         </td>
       </tr>
       <tr ng-show="operation == 'Import'">
-        <td><b>Choose File</b></td>
+        <td>
+          <b>Choose File</b>
+        </td>
         <td>
           <center>
             <button type="file" ngf-select ng-model="file" name="file"
@@ -38,15 +42,16 @@
         <td>{{file.name}}</td>
       </tr>
       <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+        <td colspa="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
           </div>
         </td>
       </tr>

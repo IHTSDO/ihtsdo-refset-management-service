@@ -153,7 +153,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
   public Project getProject(Long id) throws Exception {
     Logger.getLogger(getClass()).debug("Project Service - get project " + id);
     Project project = getHasLastModified(id, ProjectJpa.class);
-    handleLazyInitialization(project);
+    handleLazyInit(project);
     return project;
   }
 
@@ -169,7 +169,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
       ProjectList projectList = new ProjectListJpa();
       projectList.setObjects(projects);
       for (Project project : projectList.getObjects()) {
-        handleLazyInitialization(project);
+        handleLazyInit(project);
       }
       return projectList;
     } catch (NoResultException e) {
@@ -224,7 +224,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     result.setTotalCount(totalCt[0]);
     result.setObjects(list);
     for (Project project : result.getObjects()) {
-      handleLazyInitialization(project);
+      handleLazyInit(project);
     }
     return result;
   }
@@ -235,7 +235,7 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
    * @param project the project
    */
   @SuppressWarnings("static-method")
-  private void handleLazyInitialization(Project project) {
+  private void handleLazyInit(Project project) {
     if (project == null) {
       return;
     }
@@ -247,6 +247,9 @@ public class ProjectServiceJpa extends RootServiceJpa implements ProjectService 
     }
     if (project.getValidationChecks() != null) {
       project.getValidationChecks().size();
+    }
+    if (project.getUserRoleMap() != null) {
+      project.getUserRoleMap().size();
     }
   }
 

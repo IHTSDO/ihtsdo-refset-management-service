@@ -23,6 +23,7 @@ import org.apache.lucene.util.Version;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
 
@@ -125,10 +126,14 @@ public class DefaultSpellingCorrectionHandler implements
     BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
     while ((line = reader.readLine()) != null) {
+      // bad format
+      if (line.length() > 500) {
+        throw new LocalException("Line is too long, > 500 chars, likely bad format.");
+      }
       line = line.replace("\r", "");
       // If the line contains any whitespace, reject the format
       if (line.matches("\\s")) {
-        throw new Exception(
+        throw new LocalException(
             "Badly formatted spelling file, no whitespace allowed, words only.");
       }
       entries.add(line);
@@ -141,7 +146,7 @@ public class DefaultSpellingCorrectionHandler implements
   @Override
   public StringList suggestSpelling(String term, int amt) throws Exception {
     if (checker == null) {
-      throw new Exception(
+      throw new LocalException(
           "Set translation must be called prior to calling suggest spelling");
     }
     // Assume terms of length 1 or 2 always exist
@@ -158,7 +163,7 @@ public class DefaultSpellingCorrectionHandler implements
   public KeyValuesMap suggestBatchSpelling(StringList lookupTerms, int amount)
     throws Exception {
     if (checker == null) {
-      throw new Exception(
+      throw new LocalException(
           "Set translation must be called prior to calling suggest batch spelling");
     }
     KeyValuesMap retMap = new KeyValuesMap();

@@ -8,8 +8,10 @@
     <div translation-info translation="translation" form="long"></div>
 
     <table class="table">
-      <tr >
-        <td class="col-md-4 col-xs-4"><b>I/O Handler</b></td>
+      <tr ng-show="type == 'Translation'">
+        <td class="col-md-4 col-xs-4">
+          <b>I/O Handler</b>
+        </td>
         <td class="col-md-8 col-xs-8">
           <span ng-show="ioHandlers.length>1">
             <select ng-model="selectedIoHandler"
@@ -18,9 +20,11 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
-      <tr ng-show="operation == 'Import'" >
-        <td><b>Choose File</b></td>
-        <td>
+      <tr ng-show="operation == 'Import'">
+        <td class="col-md-4 col-xs-4">
+          <b>Choose File</b>
+        </td>
+        <td class="col-md-8 col-xs-8">
           <center>
             <button type="file" ngf-select ng-model="file" name="file"
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
@@ -33,20 +37,29 @@
           </center>
         </td>
       </tr>
+      <tr ng-show="!file && type != 'Translation'">
+        <td>&nbsp</td>
+        <td ng-show="type == 'Spelling Dictionary'">Format is a file with
+          one single correctly spelled word per line.</td>
+        <td ng-show="type == 'Phrase Memory'">Format is a vertical bar
+          (e.g. |) delimited file with one "phrase|translated phrase" per line.
+          Multiple entries for the same phrase are allowed.</td>
+      </tr>
       <tr ng-show="file">
         <td>Selected File</td>
         <td>{{file.name}}</td>
       </tr>
       <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
           </div>
         </td>
       </tr>

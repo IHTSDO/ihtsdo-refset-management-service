@@ -156,7 +156,7 @@ tsApp.service('releaseService', [
       function(response) {
         console.debug('  release info = ', response.data);
         // Service sends back an empty container - for client layer
-        if (!response.data.id) {
+        if (response.data && !response.data.id) {
           response.data = null;
         }
         gpService.decrement();
@@ -182,7 +182,7 @@ tsApp.service('releaseService', [
       function(response) {
         console.debug('  translation info = ', response.data);
         // Service sends back an empty container - for client layer
-        if (!response.data.id) {
+        if (response.data && !response.data.id) {
           response.data = null;
         } 
         gpService.decrement();

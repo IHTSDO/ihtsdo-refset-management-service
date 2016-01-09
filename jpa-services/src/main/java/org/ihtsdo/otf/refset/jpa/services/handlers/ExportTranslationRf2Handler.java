@@ -139,14 +139,17 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
      */
     ZipEntry descEntry = new ZipEntry(descriptionFileName);
     zos.putNextEntry(descEntry);
-    zos.write(descSb.toString().getBytes());
+    byte[] bytes = descSb.toString().getBytes("UTF-8");
+    zos.write(bytes, 0, bytes.length);
     zos.closeEntry();
 
     ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
     zos.putNextEntry(langEntry);
-    zos.write(langSb.toString().getBytes());
+    
+    bytes = langSb.toString().getBytes("UTF-8");
+    zos.write(bytes, 0, bytes.length);
     zos.closeEntry();
-    zos.flush();
+    zos.close();
     return new ByteArrayInputStream(baos.toByteArray());
   }
 

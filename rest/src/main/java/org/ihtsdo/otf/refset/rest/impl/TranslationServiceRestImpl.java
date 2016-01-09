@@ -147,7 +147,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final Translation translation =
           translationService.getTranslationRevision(translationId,
@@ -185,7 +186,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final ConceptList list =
           translationService.findConceptsForTranslationRevision(translationId,
@@ -496,7 +498,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception("invalid handler id " + ioHandlerInfoId);
       }
 
-      // export the concepts
       return handler.exportConcepts(translation, translationService
           .findConceptsForTranslation(translation.getId(), "", null)
           .getObjects());
@@ -654,6 +655,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
+      System.out.println("b");
       final Translation translation =
           translationService.getTranslation(translationId);
       if (translation == null) {
@@ -685,6 +687,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setStagingType(Translation.StagingType.IMPORT);
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
+      
 
       final StagedTranslationChange change = new StagedTranslationChangeJpa();
       change.setOriginTranslation(translation);
@@ -701,6 +704,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       } else {
         return result;
       }
+      
+      return result;
 
     } catch (Exception e) {
       handleException(e, "trying to begin import translation concepts");
@@ -1931,13 +1936,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
 
       if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
+        throw new LocalException("Invalid translation id " + translationId);
       }
 
       SpellingDictionary spelling = translation.getSpellingDictionary();
       if (spelling == null) {
-        throw new Exception(
-            "translation must have an associated spelling dictionary.");
+        throw new LocalException(
+            "Translation must have an associated spelling dictionary.");
       }
 
       // Authorize the call
@@ -1946,8 +1951,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           UserRole.AUTHOR);
 
       if (!spelling.getEntries().isEmpty()) {
-        throw new Exception(
-            "First clear Spelling Dictionary's existing entries prior to importing new ones");
+        throw new LocalException(
+            "First clear spelling dictionary's existing entries prior to importing new ones");
       }
 
       final SpellingCorrectionHandler handler =
@@ -2059,8 +2064,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final List<MemoryEntry> fromEntries =
           translation.getPhraseMemory().getEntries();
       if (fromEntries == null) {
-        throw new Exception("The phrase memory entries must be empty to import"
-            + translation.getPhraseMemory().getId());
+        throw new LocalException(
+            "The phrase memory entries must be empty to import"
+                + translation.getPhraseMemory().getId());
       }
       // Load PhraseMemory
       PhraseMemoryHandler handler = getPhraseMemoryHandler(translation);

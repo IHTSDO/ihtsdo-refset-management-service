@@ -115,7 +115,9 @@
         <td>
           <select ng-show="action == 'Add'" ng-model="refset.type"
             ng-options="item for item in metadata.refsetTypes"></select> &nbsp;
-          <span refset-type-icon refset="refset"></span>
+          <span ng-show="action != 'Add'" refset-type-icon refset="refset"></span>
+          <span ng-show="action == 'Add'" style="margin-left: 35px;"
+            refset-type-icon refset="refset"></span>
         </td>
       </tr>
       <tr ng-show="refset.type == 'EXTERNAL'">
@@ -142,21 +144,41 @@
             {{warning}}</div>
         </td>
       </tr>
-      <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+
+      <!-- Errors and warnings-->
+      <tr
+        ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
           </div>
         </td>
       </tr>
+      <tr
+        ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">{{error}}</div>
+        </td>
+      </tr>
+      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+        <td colspan="2">
+          <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+        </td>
+      </tr>
+
     </table>
   </div>
+  <p ng-show="action == 'Add'" class="info-text">
+    <br />NOTE: Import features only work with EXTENSIONAL refsets
+  </p>
 
   <div class="modal-footer">
     <button ng-show="action == 'Add'" class="btn btn-primary"

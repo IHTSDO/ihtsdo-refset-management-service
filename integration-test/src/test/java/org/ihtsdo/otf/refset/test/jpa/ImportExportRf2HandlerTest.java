@@ -6,6 +6,7 @@ package org.ihtsdo.otf.refset.test.jpa;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashSet;
@@ -126,7 +127,18 @@ public class ImportExportRf2HandlerTest {
     ExportTranslationRf2Handler exportHandler =
         new ExportTranslationRf2Handler();
     InputStream is = exportHandler.exportConcepts(translation, concepts);
-    ZipInputStream zin = new ZipInputStream(is);
+
+    byte[] buffer = new byte[is.available()];
+
+    File f = new File("c:/Users/Brian Carlsen/Desktop/x.zip");
+    FileOutputStream out = new FileOutputStream(f);
+    while ((is.read(buffer)) != -1) {
+      out.write(buffer);
+    }
+    out.flush();
+    out.close();
+
+    ZipInputStream zin = new ZipInputStream(new FileInputStream(f));
 
     descCt = 0;
     langCt = 0;
@@ -172,7 +184,7 @@ public class ImportExportRf2HandlerTest {
     refset.setModuleId("sampleModuleId");
     refset.setTerminology("sampleTerminologyId");
     refset.setProject(new ProjectJpa());
-    
+
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
     List<ConceptRefsetMember> members =
         importHandler.importMembers(refset, membersInputStream);

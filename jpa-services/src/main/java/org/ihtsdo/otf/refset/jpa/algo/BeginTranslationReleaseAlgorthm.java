@@ -13,6 +13,7 @@ import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -72,7 +73,7 @@ public class BeginTranslationReleaseAlgorthm extends TranslationServiceJpa
     if (releaseInfoList.getCount() != 0) {
       releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo != null && releaseInfo.isPublished())
-        throw new Exception("translation release is already in progress "
+        throw new LocalException("translation release is already in progress "
             + translation.getId());
     }
   }

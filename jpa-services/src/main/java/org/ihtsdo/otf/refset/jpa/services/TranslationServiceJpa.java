@@ -986,6 +986,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.setProvisional(true);
     }
 
+    // NOTE: when staging BETA do not copy phrase memory/spelling
+    // leave them empty.
+    
     // null its id and all of its components ids
     // then call addXXX on each component
     translationCopy.setId(null);

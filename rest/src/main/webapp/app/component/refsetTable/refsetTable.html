@@ -34,8 +34,9 @@
       <h4
         ng-show="value == 'AVAILABLE' && refsets.totalCount == 0 && projects.role != 'ADMIN'">
         <div style="float: right;">
-          <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
-            title="Add refset" class="noul material-icons md-24">add</i>
+          <button ng-click="openAddRefsetModal(); $event.stopPropagation()"
+            title="Add refset" class="btn btn-xs btn-primary">Add
+            Refset</button>
         </div>
       </h4>
     </span>
@@ -54,11 +55,17 @@
             ng-click="setSortField('refset','name', null)">
             Name
             <span ng-bind="getSortIndicator('refset','name',null)"></span>
-          </span><span
-            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">/
+          </span> / <span
+            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
             <span ng-click="setSortField('refset','effectiveTime', null)">
               Effective Time
               <span ng-bind="getSortIndicator('refset','effectiveTime',null)"></span>
+            </span>
+          </span> <span
+            ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
+            <span ng-click="setSortField('refset','lastModified', null)">
+              Last Modified
+              <span ng-bind="getSortIndicator('refset','lastModified',null)"></span>
             </span>
           </span></th>
         <th class="col-md-3 col-xs-3"
@@ -89,6 +96,9 @@
             <span ng-show="refset.effectiveTime">
               <br />{{toShortDate(refset.effectiveTime)}}
             </span>
+            <span ng-show="!refset.effectiveTime">
+              <br />{{toDate(refset.lastModified)}}
+            </span>
           </td>
           <td>
             {{refset.moduleId}}
@@ -107,11 +117,12 @@
 
           <!-- PUBLISHED/BETA actions -->
           <td class="nobreak" ng-show="value == 'PUBLISHED' || value == 'BETA'">
-            <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
-              ng-show="userProjectsInfo.anyRole" title="Clone"
-              class="noul material-icons md-18">content_copy</i>
             <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
               title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+            <i ng-show="refset.type != 'EXTERNAL'"
+              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
+              ng-show="userProjectsInfo.anyRole" title="Clone"
+              class="noul material-icons md-18">content_copy</i>
           </td>
 
           <!-- AVAILABLE actions -->
@@ -125,7 +136,8 @@
             <i
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
-            <i ng-show="projects.role != 'ADMIN'"
+            <i ng-show="refset.type != 'EXTERNAL'"
+              ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               title="Clone" class="noul material-icons md-18">content_copy</i>
             <!-- ASSIGNED_ALL actions -->
@@ -145,7 +157,7 @@
                 class="noul material-icons md-18">assignment_return</i>
               <i ng-show="refsetReviewersMap[refset.id]"
                 uib-tooltip="Author: {{author.userName}}, unassign reviewer first"
-                class="md-grey material-icons md-18">assignment_ind</i>
+                class="md-grey material-icons md-18">assignment_return</i>
             </span>
             <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
               <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
@@ -169,10 +181,8 @@
             <i ng-show="projects.role == 'REVIEWER'"
               ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
               title="Reassign" class="noul material-icons md-18">assignment_ind</i>
-            <i ng-click="performWorkflowAction(refset, 'SAVE', user.userName)"
-              title="Save" class="noul material-icons md-18">save</i>
-            <i
-              ng-show="refset.workflowStatus != 'REVIEW_NEW' && refset.workflowStatus != 'REVIEW_DONE' && refset.workflowStatus !='NEW'"
+            <i confirm="Are you sure you want to finalize editing/review?"
+              ng-show="refset.workflowStatus.indexOf('IN_PROGRESS') != -1 || refset.workflowStatus=='REVIEW_NEW'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
@@ -226,9 +236,8 @@
               ng-click="removeRefset(refset);" title="Remove"
               class="noul material-icons md-18">delete</i>
 
-            <i
-              ng-show="projects.role != 'ADMIN' && refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
+            <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
+              ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
@@ -498,7 +507,7 @@
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
           <i ng-show="value == 'ASSIGNED'"
             ng-click="openAddMemberModal(selected.refset); $event.stopPropagation()"
-            title="Add refset member" class="noul material-icons md-18">add</i>
+            title="Add refset {{selected.refset.type == 'EXTENSIONAL' ? 'member' : 'inclusion'}}" class="noul material-icons md-18">add</i>
           <i
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
@@ -575,8 +584,8 @@
               ng-class="{selected : member.id == selected.member.id}">
               <td>{{member.conceptId}}</td>
               <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
-              <td ng-show="value != 'PUBLISHED' && value != 'BETA'">{{toDate(member.lastModified)}}</td>
-              <td ng-show="value == 'PUBLISHED' || value == 'BETA'">{{toShortDate(member.effectiveTime)}}</td>
+              <td ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}</td>
+              <td ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(member.effectiveTime)}}</td>
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-show="member.memberType == 'MEMBER'" uib-tooltip="Member">M</button>
@@ -605,7 +614,7 @@
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
                   title="Remove" class="noul material-icons md-18">delete</i>
 
-                <i 
+                <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>

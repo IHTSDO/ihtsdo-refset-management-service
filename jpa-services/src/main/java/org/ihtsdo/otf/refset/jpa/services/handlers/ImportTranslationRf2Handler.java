@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -97,7 +98,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
         // Verify we haven't seen it already
         if (descSeen) {
-          throw new Exception(
+          throw new LocalException(
               "More than one description file in translation import zip file.");
         }
         descSeen = true;
@@ -110,7 +111,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
           final String fields[] = line.split("\t");
           if (fields.length != 9) {
             sc.close();
-            throw new Exception("Unexpected field count in descriptions file.");
+            throw new LocalException(
+                "Unexpected field count in descriptions file.");
           }
           if (!fields[0].equals(id)) {
 
@@ -164,7 +166,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
         // Verify we have not encountered this already
         if (langSeen) {
-          throw new Exception(
+          throw new LocalException(
               "More than one language file in translation import zip file.");
         }
         langSeen = true;
@@ -178,7 +180,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
           if (fields.length != 7) {
             sc.close();
-            throw new Exception("Unexpected field count in language file.");
+            throw new LocalException("Unexpected field count in language file.");
           }
 
           if (!fields[0].equals(id)) { // header
@@ -204,7 +206,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
             if (!descLangMap.containsKey(fields[5])) {
               descLangMap.put(fields[5], member);
             } else {
-              throw new Exception(
+              throw new LocalException(
                   "Unexpected description with multiple langauges - " + line);
             }
             Logger.getLogger(getClass()).debug("    member = " + member);
@@ -218,10 +220,10 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
     // Verify that data was found
     if (!descSeen || descriptions.isEmpty()) {
-      throw new Exception("Missing or empty description file.");
+      throw new LocalException("Missing or empty description file.");
     }
     if (!langSeen) {
-      throw new Exception("Missing or empty language file.");
+      throw new LocalException("Missing or empty language file.");
     }
 
     // Connect descriptions and language refset member objects
@@ -238,7 +240,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
       }
 
       else {
-        throw new Exception("Unexpected description without language - "
+        throw new LocalException("Unexpected description without language - "
             + description.getTerminologyId());
       }
 
@@ -247,8 +249,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     // If any references are left in descLangMap, we've got a language without a
     // desc
     if (!descLangMap.isEmpty()) {
-      throw new Exception("Languages without corresponding descriptions - "
-          + descLangMap);
+      throw new LocalException(
+          "Languages without corresponding descriptions - " + descLangMap);
     }
 
     // Return list of concepts

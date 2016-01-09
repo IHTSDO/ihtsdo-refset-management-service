@@ -12,7 +12,7 @@
     ng-show="validationResult && translation.stagingType != 'BETA' &&
     validationResult.warnings.length == 0 &&
     validationResult.errors.length == 0"
-    class="alert alert-warning">Validation passed with no errors or
+    class="alert alert-success">Validation passed with no errors or
     warnings.</span>
 
   <span
@@ -25,12 +25,6 @@
     class="alert alert-warning">Click 'Finish' to complete the release.</span>
 
   <div ng-show="validationResult && translation.stagingType != 'BETA'">
-    <h4 ng-show="validationResult.comments.length > 0">Comments</h4>
-    <table class="table">
-      <tr ng-repeat="comment in validationResult.comments">
-        <td>{{comment}}</td>
-      </tr>
-    </table>
     <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>
     <table class="table">
       <tr ng-repeat="warning in validationResult.warnings">
@@ -118,20 +112,23 @@
           <span ng-show="ioHandlers.length == 1">{{ioHandlers[0].name}}</span>
         </td>
       </tr>
+
       <!-- Errors -->
       <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
           </div>
         </td>
       </tr>
+
     </table>
   </div>
 </div>
@@ -150,6 +147,6 @@
     ng-click="finishTranslationRelease(translation)">Finish</button>
   <button class="btn btn-warning" ng-show="translation.inPublicationProcess"
     confirm="Are you sure you want to cancel the translation release?"
-    ng-click="cancel(translation)">Cancel</button>
+    ng-click="cancel()">Cancel</button>
   <button class="btn" ng-click="close()">Close</button>
 </div>

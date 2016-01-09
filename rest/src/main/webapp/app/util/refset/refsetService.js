@@ -10,6 +10,9 @@ tsApp.service('refsetService', [
   function($http, $rootScope, $q, Upload, gpService, utilService, projectService) {
     console.debug('configure refsetService');
 
+    // Clear error
+    utilService.clearError();
+
     // broadcasts a refset change
     this.fireRefsetChanged = function(refset) {
       $rootScope.$broadcast('refset:refsetChanged', refset);
@@ -157,21 +160,25 @@ tsApp.service('refsetService', [
       // Setup deferred
       var deferred = $q.defer();
 
+      console.debug("EXPRESSION", encodeURIComponent(expression));
       gpService.increment();
-      $http.post(refsetUrl + 'members/add?refsetId=' + refset.id + '&expression=' + expression)
-        .then(
-        // success
-        function(response) {
-          console.debug('  output = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      $http.put(refsetUrl + 'members/add?refsetId=' + refset.id, expression, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
     }
 
@@ -363,7 +370,7 @@ tsApp.service('refsetService', [
 
       // Add refset inclusion
       gpService.increment()
-      $http.post(refsetUrl + 'inclusion/add?staged=' + staged, member).then(
+      $http.put(refsetUrl + 'inclusion/add?staged=' + staged, member).then(
       // success
       function(response) {
         console.debug('  inclusion = ', response.data);
@@ -386,9 +393,13 @@ tsApp.service('refsetService', [
 
       // Add refset exclusion
       gpService.increment()
-      $http.get(
-        refsetUrl + 'exclusion/add/' + refset.id + '?conceptId=' + conceptId + '&refsetId='
-          + refset.id + '&staged=' + staged).then(
+      $http.put(
+        refsetUrl + 'exclusion/add/' + refset.id + '?&refsetId=' + refset.id + '&staged=' + staged,
+        conceptId, {
+          headers : {
+            'Content-type' : 'text/plain'
+          }
+        }).then(
       // success
       function(response) {
         console.debug('  exclusion = ', response.data);
@@ -411,7 +422,7 @@ tsApp.service('refsetService', [
 
       // Remove refset inclusion
       gpService.increment()
-      $http.get(refsetUrl + 'exclusion/remove/' + memberId).then(
+      $http['delete'](refsetUrl + 'exclusion/remove/' + memberId).then(
       // success
       function(response) {
         console.debug('  exclusion = ', response.data);

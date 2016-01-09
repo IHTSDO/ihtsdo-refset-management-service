@@ -4,15 +4,20 @@ tsApp
     'TranslationCtrl',
     [
       '$scope',
-      '$http','$location',
+      '$http',
+      '$location',
       'tabService',
+      'utilService',
       'securityService',
       'projectService',
       'translationService',
       'workflowService',
-      function($scope, $http,$location, tabService, securityService, projectService, translationService,
-        workflowService) {
+      function($scope, $http, $location, tabService, utilService, securityService, projectService,
+        translationService, workflowService) {
         console.debug('configure TranslationCtrl');
+
+        // Clear error
+        utilService.clearError();
 
         // Handle resetting tabs on 'back' button
         if (tabService.selectedTab.label != 'Translation') {
@@ -46,7 +51,6 @@ tsApp
           exportHandlers : [],
           workflowPaths : []
         }
-
 
         // Get $scope.projects
         $scope.getProjects = function() {

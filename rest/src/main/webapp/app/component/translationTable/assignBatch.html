@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4>Assign Concepts</h4>
+  <h4>ASSIGN Concepts</h4>
 </div>
 
 <div class="modal-body">
@@ -9,10 +9,10 @@
 
   <table class="table">
     <tr>
-      <td>
+      <td class="col-md-4 col-xs-4">
         <b>Batch size</b>
       </td>
-      <td>
+      <td class="col-md-8 col-xs-8">
         <select ng-model="batchSize">
           <option>5</option>
           <option>10</option>
@@ -26,8 +26,7 @@
         <b>Select user</b>
       </td>
       <td>
-        <select ng-model="userName"
-          ng-options="item for item in assignedUserNames"></select>
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
       </td>
     </tr>
     <!-- No notes because we dont know concept id yet
@@ -41,9 +40,17 @@
     </tr>
  -->
     <tr ng-show="errors.length > 0">
-      <td>&nbsp;</td>
-      <td>
-        <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
+      <td colspan="2">
+        <div class="alert alert-danger alert-error">
+          {{errors[0]}}
+          <div style="display: inline; float: right;">
+            <i ng-show="errors[1] && !error.expand" title="Show long eror"
+              class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+          </div>
+          <p ng-show="errors[1] && error.expand">
+            <br />{{errors[1]}}
+          </p>
+        </div>
       </td>
     </tr>
   </table>

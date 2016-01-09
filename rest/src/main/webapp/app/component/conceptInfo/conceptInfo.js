@@ -502,10 +502,10 @@ tsApp.directive('conceptInfo', [
               }
             }
 
-            // close the modal
-            $scope.close = function() {
-              $uibModalInstance.close();
-            }
+            // Dismiss modal
+            $scope.cancel = function() {
+              $uibModalInstance.dismiss('cancel');
+            };
 
             // Add the member
             $scope.addMember = function(concept, memberType) {
@@ -688,12 +688,14 @@ tsApp.directive('conceptInfo', [
               }
             }
 
-            // close the modal
-            $scope.close = function() {
-              $uibModalInstance.close();
-            }
+            // Dismiss modal
+            $scope.cancel = function() {
+              $uibModalInstance.dismiss('cancel');
+            };
           };
+
           // end
+
         } ]
     }
 

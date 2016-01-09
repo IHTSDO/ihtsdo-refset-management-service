@@ -115,7 +115,7 @@ public class ProjectJpa implements Project {
   private String exclusionClause;
 
   /** The role map. */
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
+  @ElementCollection
   @MapKeyClass(value = UserJpa.class)
   @Enumerated(EnumType.STRING)
   @MapKeyJoinColumn(name = "user_id")

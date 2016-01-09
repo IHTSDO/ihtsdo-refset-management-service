@@ -195,7 +195,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Verify date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:"
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
             + effectiveTime);
 
       algo.setRefset(refset);
@@ -264,13 +264,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Verify that begin has completed
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
-        throw new Exception("refset release is not ready to validate "
+        throw new LocalException("Refset release is not ready to validate "
             + refsetId);
 
       // Verify the workflow status
       if (!WorkflowStatus.READY_FOR_PUBLICATION.equals(refset
           .getWorkflowStatus()))
-        throw new Exception("refset workflowstatus is not "
+        throw new LocalException("Refset workflowstatus is not "
             + WorkflowStatus.READY_FOR_PUBLICATION + " for " + refsetId);
 
       // Perform validation
@@ -543,7 +543,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       final ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
-        throw new Exception("translation release is not ready to validate "
+        throw new LocalException("Translation release is not ready to validate "
             + translationId);
       final ValidationResult result =
           validationService.validateTranslation(translation,

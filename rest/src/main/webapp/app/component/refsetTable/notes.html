@@ -23,15 +23,12 @@
       <td>{{object.description}}</td>
     </tr>
   </table>
+
   <div class="row">
     <!--  Left hand side -->
     <div class="col-md-12 col-xs-12">
 
-      <!-- Errors -->
-      <div class="alert alert-danger alert-error" ng-repeat="error in errors">
-        {{error}}</div>
-
-      <span>
+      <div>
 
         <h5 ng-show="object.notes.length > 0">
           <b>Notes<span ng-show="pagedNotes.length > 0">
@@ -88,10 +85,34 @@
             </tr>
           </tbody>
         </table>
-      </span>
+      </div>
       <textarea rows="4" cols="40" ng-model="newNote"
         ui-tinymce="tinymceOptions"></textarea>
+
+      <!-- Errors -->
+      <table class="table">
+        <tr ng-show="errors.length > 0">
+          <td>&nbsp;</td>
+          <td>
+
+            <div class="alert alert-danger alert-error">
+              {{errors[0]}}
+              <div style="display: inline; float: right;">
+                <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                  class="noul material-icons md-18"
+                  ng-click="error.expand=true;">attach_file</i>
+              </div>
+              <p ng-show="errors[1] && error.expand">
+                <br />{{errors[1]}}
+              </p>
+            </div>
+
+          </td>
+        </tr>
+      </table>
+
     </div>
+
 
 
   </div>
