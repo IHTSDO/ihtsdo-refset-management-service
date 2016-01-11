@@ -986,7 +986,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
-  @Consumes("text/plain")
   @Path("/inclusion/add")
   @ApiOperation(value = "Add new inclusion", notes = "Adds the new inclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetInclusion(
@@ -1059,6 +1058,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @PUT
+  @Consumes("text/plain")
   @Path("/exclusion/add/{refsetId}")
   @ApiOperation(value = "Add new exclusion", notes = "Adds the new exclusion", response = ConceptRefsetMemberJpa.class)
   public ConceptRefsetMember addRefsetExclusion(
