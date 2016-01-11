@@ -509,7 +509,7 @@ public class RedefinitionTest {
     assertEquals(1, diffReport.getNewNotOld().size());
 
     ConceptRefsetMemberList commonList =
-        refsetService.findMembersInCommon(reportToken, null, null,
+        refsetService.findMembersInCommon(reportToken, null, null, null,
             adminAuthToken);
     assertEquals(20, commonList.getObjects().size());
 

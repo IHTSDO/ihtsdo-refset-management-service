@@ -327,7 +327,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
    */
   @Override
   public String toString() {
-    return "ConceptRefsetMemberJpa [refset=" + refset + ", conceptId="
+    return "ConceptRefsetMemberJpa [refset.id=" + refset.getId() + ", conceptId="
         + conceptId + ", conceptName=" + conceptName + ", type=" + memberType
         + ", conceptActive=" + conceptActive + "] " + super.toString();
   }

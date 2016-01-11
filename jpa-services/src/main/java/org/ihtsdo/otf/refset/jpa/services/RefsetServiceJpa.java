@@ -600,6 +600,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
+    
   }
 
   /* see superclass */

@@ -322,8 +322,11 @@ public abstract class RootServiceJpa implements RootService {
     int startIndex = 0;
     int toIndex = result.size();
     if (pfs != null && pfs.getStartIndex() != -1) {
-      startIndex = pfs.getStartIndex();
+        startIndex = pfs.getStartIndex();
       toIndex = Math.min(result.size(), startIndex + pfs.getMaxResults());
+      if (startIndex > toIndex) {
+        startIndex = 0;
+      }
       result = result.subList(startIndex, toIndex);
     }
 

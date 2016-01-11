@@ -746,7 +746,7 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
     validateNotEmpty(reportToken, "reportToken");
 
     Client client = ClientBuilder.newClient();
@@ -759,7 +759,8 @@ public class RefsetClientRest extends RootClientRest implements
             + "&reportToken="
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20"));
+                .replaceAll("\\+", "%20")
+            + "&conceptActive=" + conceptActive.toString());
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
             : pfs);
@@ -1072,7 +1073,7 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - get old regular members: " + reportToken + ", "
             + query);
@@ -1090,7 +1091,9 @@ public class RefsetClientRest extends RootClientRest implements
             + "&reportToken="
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20"));
+                .replaceAll("\\+", "%20")
+            + "&conceptActive="
+            + conceptActive);
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -1115,7 +1118,7 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - get new regular members: " + reportToken + ", "
             + query);
@@ -1133,7 +1136,9 @@ public class RefsetClientRest extends RootClientRest implements
             + "&reportToken="
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20"));
+                .replaceAll("\\+", "%20")
+            + "&conceptActive="
+            + conceptActive);
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
