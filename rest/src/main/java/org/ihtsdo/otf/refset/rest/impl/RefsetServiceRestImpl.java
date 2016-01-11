@@ -398,6 +398,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           && !refset.getDefinitionClauses().isEmpty()) {
         refsetService.resolveRefsetDefinition(newRefset);
       }
+
+      refsetService.handleLazyInit(newRefset);
+
       refsetService.commit();
 
       return newRefset;
@@ -1632,7 +1635,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info("RESTful call (Refset): common/members");
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): common/members - " + reportToken + ", " + query
+            + ", " + conceptActive);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {

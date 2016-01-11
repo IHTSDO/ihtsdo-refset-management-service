@@ -767,7 +767,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         + externalUrl + ", forTranslation=" + forTranslation
         + ", workflowStatus=" + workflowStatus + ", workflowPath="
         + workflowPath + ", namespace=" + namespace + ", refsetDescriptorUuid="
-        + refsetDescriptorUuid + ", project=" + project
+        + refsetDescriptorUuid + ", project=" + project.getId()
         + ", enabledFeedbackEvents=" + enabledFeedbackEvents
         + ", inPublicationProcess=" + inPublicationProcess
         + ", lookupInProgress=" + lookupInProgress + "]";
