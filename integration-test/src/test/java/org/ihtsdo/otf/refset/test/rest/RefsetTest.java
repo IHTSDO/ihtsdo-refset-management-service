@@ -668,10 +668,10 @@ public class RefsetTest {
             julyStagedRefset.getId(), adminAuthToken);
 
     ConceptRefsetMemberList oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
             adminAuthToken);
     ConceptRefsetMemberList newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
             adminAuthToken);
 
     assertEquals(0, oldRegularMembers.getCount());
@@ -691,10 +691,10 @@ public class RefsetTest {
             julyStagedRefset.getId(), adminAuthToken);
 
     oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
             adminAuthToken);
     newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
             adminAuthToken);
 
     assertEquals(0, oldRegularMembers.getCount());
@@ -718,10 +718,10 @@ public class RefsetTest {
 
     oldRegularMembers =
         refsetService.getOldRegularMembers(reportToken, "", null,
-            adminAuthToken);
+            null, adminAuthToken);
     newRegularMembers =
         refsetService.getNewRegularMembers(reportToken, "", null,
-            adminAuthToken);
+            null, adminAuthToken);
 
     assertEquals(0, oldRegularMembers.getCount());
     assertEquals(0, newRegularMembers.getCount());
@@ -742,10 +742,10 @@ public class RefsetTest {
 
     oldRegularMembers =
         refsetService.getOldRegularMembers(reportToken, "", null,
-            adminAuthToken);
+            null, adminAuthToken);
     newRegularMembers =
         refsetService.getNewRegularMembers(reportToken, "", null,
-            adminAuthToken);
+            null, adminAuthToken);
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     assertEquals(1, oldRegularMembers.getCount());

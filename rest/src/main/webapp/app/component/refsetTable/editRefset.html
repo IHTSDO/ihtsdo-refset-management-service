@@ -135,6 +135,22 @@
         <td>
           <textarea ng-show="action == 'Add'" rows="4" cols="40"
             ng-model="definition"></textarea>
+          <div ng-show="action == 'Clone' || action == 'Edit'" 
+            style="max-height: 400px; overflow-y: scroll;">
+                <table class="table">
+                  <tbody>
+                    <tr ng-repeat="clause in refset.definitionClauses">
+                      <td>{{clause.value}}</td>
+                      <td>
+                        <button class="btn btn-xs btn-primary"
+                          ng-show="!clause.negated" uib-tooltip="Union">+</button>
+                        <button class="btn btn-xs btn-danger"
+                          ng-show="clause.negated" uib-tooltip="Minus">-</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
         </td>
       </tr>
       <tr ng-show="warnings.length > 0">

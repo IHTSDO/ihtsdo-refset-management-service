@@ -347,6 +347,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       result.setObjects(applyPfsToList(list, Translation.class, pfs));
       pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
+      pfs.setQueryRestriction(queryRestriction);
     } else {
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);

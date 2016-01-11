@@ -1570,14 +1570,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // creates a "members in common" list (where reportToken is the key)
       final List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-      for (final ConceptRefsetMember member1 : refset1.getMembers()) {
-        refsetService.handleLazyInit(member1);
-        if (member1.getMemberType() == Refset.MemberType.MEMBER
-            && refset2.getMembers().contains(member1)) {
-          membersInCommon.add(member1);
+      // adding member2s to the list instead of member1 because it has the new retired information
+      for (final ConceptRefsetMember member2 : refset2.getMembers()) {
+        refsetService.handleLazyInit(member2);
+        if (member2.getMemberType() == Refset.MemberType.MEMBER
+            && refset1.getMembers().contains(member2)) {
+          // lazy initialize
+          member2.toString();
+          membersInCommon.add(member2);
         }
       }
       membersInCommonMap.put(reportToken, membersInCommon);
+      
 
       // creates a "diff report"
       final MemberDiffReport diffReport = new MemberDiffReportJpa();
@@ -1622,6 +1626,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1633,7 +1638,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeApp(securityService, authToken, "find members in common",
           UserRole.VIEWER);
 
-      final List<ConceptRefsetMember> commonMembersList =
+      List<ConceptRefsetMember> commonMembersList =
           membersInCommonMap.get(reportToken);
 
       // if the value is null, throw an exception
@@ -1641,10 +1646,27 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new LocalException("No members in common map was found.");
       }
 
+      // if conceptActive is indicated, filter the member list by active/retired
+      if (conceptActive != null) {
+        List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
+        for (ConceptRefsetMember member : commonMembersList) {
+          if ((conceptActive && member.isConceptActive()) ||
+              (!conceptActive && !member.isConceptActive())) {
+            matchingActiveList.add(member);
+          }
+        }
+        commonMembersList = matchingActiveList;
+      }
+      
+
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
-      list.setTotalCount(commonMembersList.size());
       list.setObjects(refsetService.applyPfsToList(commonMembersList,
           ConceptRefsetMember.class, pfs));
+      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+        list.setTotalCount(commonMembersList.size());
+      else
+        list.setTotalCount(list.getObjects().size());
+      
       return list;
 
     } catch (Exception e) {
@@ -1702,6 +1724,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1717,23 +1740,35 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final MemberDiffReport memberDiffReport =
           memberDiffReportMap.get(reportToken);
-      final ConceptRefsetMemberList oldMembers =
-          new ConceptRefsetMemberListJpa();
+      List<ConceptRefsetMember> oldMembers = memberDiffReport.getOldRegularMembers();
 
       // if the value is null, throw an exception
       if (memberDiffReport == null) {
         throw new LocalException("No member diff report was found.");
       }
 
-      // apply pfs and query
-      oldMembers.setTotalCount(memberDiffReport.getOldRegularMembers().size());
-      oldMembers.setObjects(refsetService.applyPfsToList(
-          memberDiffReport.getOldRegularMembers(), ConceptRefsetMember.class,
-          pfs));
-      for (final ConceptRefsetMember member : oldMembers.getObjects()) {
-        refsetService.handleLazyInit(member);
+      // if conceptActive is indicated, filter the member list by active/retired
+      if (conceptActive != null) {
+        List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
+        for (ConceptRefsetMember member : oldMembers) {
+          if ((conceptActive && member.isConceptActive()) ||
+              (!conceptActive && !member.isConceptActive())) {
+            matchingActiveList.add(member);
+          }
+        }
+        oldMembers = matchingActiveList;
       }
-      return oldMembers;
+
+      final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      list.setObjects(refsetService.applyPfsToList(oldMembers,
+          ConceptRefsetMember.class, pfs));
+      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+        list.setTotalCount(oldMembers.size());
+      else
+        list.setTotalCount(list.getObjects().size());
+      
+      
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to get old regular members");
@@ -1753,6 +1788,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
+    // TODO: do we need the active/retired flag for new members since we aren't sorting by status?  If so, add filtering logic below.
+    @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 

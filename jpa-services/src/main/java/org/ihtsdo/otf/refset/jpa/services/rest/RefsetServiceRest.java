@@ -391,12 +391,13 @@ public interface RefsetServiceRest {
    * @param reportToken the report token
    * @param query the query
    * @param pfs the pfs
+   * @param conceptActive the concept active
    * @param authToken the auth token
    * @return the concept refset member list
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
 
   /**
    * Returns the diff report.
@@ -468,12 +469,13 @@ public interface RefsetServiceRest {
    * @param reportToken the report token
    * @param query the query
    * @param pfs the pfs
+   * @param conceptActive the concept active
    * @param authToken the auth token
    * @return the old regular members
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
 
   /**
    * Returns the new regular members.
@@ -481,12 +483,13 @@ public interface RefsetServiceRest {
    * @param reportToken the report token
    * @param query the query
    * @param pfs the pfs
+   * @param conceptActive the concept active
    * @param authToken the auth token
    * @return the new regular members
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
 
   /**
    * Removes the refset exclusion.

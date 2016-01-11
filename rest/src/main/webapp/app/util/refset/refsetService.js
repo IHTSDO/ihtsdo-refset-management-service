@@ -509,7 +509,7 @@ tsApp.service('refsetService', [
     }
 
     // find members in common
-    this.findMembersInCommon = function(reportToken, query, pfs) {
+    this.findMembersInCommon = function(reportToken, query, pfs, conceptActive) {
       console.debug('findMembersInCommon', query, pfs);
       // Setup deferred
       var deferred = $q.defer();
@@ -517,7 +517,8 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'common/members?reportToken=' + reportToken + '&query='
+        refsetUrl + 'common/members' + '?reportToken=' + reportToken + 
+          '&conceptActive=' + conceptActive + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {

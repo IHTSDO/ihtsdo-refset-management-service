@@ -292,23 +292,24 @@
             </td>
             <td>
               <input type="checkbox" ng-change="saveUserPreferences()"
+                ng-disabled="user.applicationRole == 'ADMIN' && user.applicationRole != 'VIEWER'"
                 ng-model="user.userPreferences.spellingEnabled">
               <span ng-show="user.userPreferences.spellingEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.spellingEnabled">DISABLED</span>
-              <i ng-show="!selected.translation.spellingDictionaryEmpty"
-                ng-click="openImportExportModal(selected.translation,'Export','Spelling Dictionary'); $event.stopPropagation()"
+              <i ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-click="openImportExportModal(selected.translation,'Export','Spelling Dictionary'); $event.stopPropagation()"                
                 title="Export spelling dictionary"
                 class="noul material-icons md-18">file_download</i>
-              <i ng-show="selected.translation.spellingDictionaryEmpty"
-                ng-click="openImportExportModal(selected.translation,'Import','Spelling Dictionary'); $event.stopPropagation()"
+              <i ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-click="openImportExportModal(selected.translation,'Import','Spelling Dictionary'); $event.stopPropagation()"                
                 title="Import spelling dictionary"
                 class="noul material-icons md-18">file_upload</i>
-              <i ng-show="selected.translation.spellingDictionaryEmpty"
-                ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"
+              <i ng-show="selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-click="openCopyModal(selected.translation,'Spelling Dictionary'); $event.stopPropagation()"                
                 title="Copy spelling dictionary from another translation"
                 class="noul material-icons md-18">content_copy</i>
-              <i ng-show="!selected.translation.spellingDictionaryEmpty"
-                ng-click="clearSpellingDictionary(selected.translation)"
+              <i ng-show="!selected.translation.spellingDictionaryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
+                ng-click="clearSpellingDictionary(selected.translation)" 
                 title="Clear spelling dictionary entries"
                 class="noul material-icons md-18">delete</i>
             </td>
@@ -319,21 +320,22 @@
               <b>Phrase Memory</b>
             </td>
             <td>
-              <input type="checkbox" ng-change="saveUserPreferences()"
+              <input type="checkbox" ng-change="saveUserPreferences()"           
+                ng-disabled="user.applicationRole == 'ADMIN' && user.applicationRole != 'VIEWER'"
                 ng-model="user.userPreferences.memoryEnabled">
               <span ng-show="user.userPreferences.memoryEnabled">ENABLED</span>
               <span ng-show="!user.userPreferences.memoryEnabled">DISABLED</span>
-              <i ng-show="!selected.translation.phraseMemoryEmpty"
+              <i ng-show="!selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"                
                 ng-click="openImportExportModal(selected.translation,'Export', 'Phrase Memory'); $event.stopPropagation()"
                 title="Export phrase memory" class="noul material-icons md-18">file_download</i>
-              <i ng-show="selected.translation.phraseMemoryEmpty"
+              <i ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"                
                 ng-click="openImportExportModal(selected.translation,'Import', 'Phrase Memory'); $event.stopPropagation()"
                 title="Import phrase memory" class="noul material-icons md-18">file_upload</i>
-              <i ng-show="selected.translation.phraseMemoryEmpty"
+              <i ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"               
                 ng-click="openCopyModal(selected.translation,'Phrase Memory'); $event.stopPropagation()"
                 title="Copy phrase memory from another translation"
                 class="noul material-icons md-18">content_copy</i>
-              <i ng-show="!selected.translation.phraseMemoryEmpty"
+              <i ng-show="!selected.translation.phraseMemoryEmpty && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"            
                 ng-click="clearPhraseMemory(selected.translation)"
                 title="Clear phrase memory entries"
                 class="noul material-icons md-18">delete</i>

@@ -560,6 +560,9 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // publication stages
       // test10: same as test 2 advanced in workflow to review new and then
       // reassign
+      // test11: migration test - intensional with exclusion that becomes inactive
+      // from 20150131 -> 20150731
+      // test12: migration test - extensional
       //
       //
       Logger.getLogger(getClass()).info("Create test refsets");
@@ -763,6 +766,41 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test10.getId(), "author1", "AUTHOR", "REASSIGN",
           reviewer1.getAuthToken());
 
+      // test 11
+      RefsetJpa test11 =
+          makeRefset("test11", "<<129456006 | Specific enzyme deficiency (disorder) |",
+              Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
+              false);
+      // add invalid exclusion for migration
+      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
+          "124627000", false, author1.getAuthToken());
+      // add valid exclusion for migration
+      new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
+          "10406007", false, author1.getAuthToken());
+      // add valid inclusion for migration
+      inclusion = new ConceptRefsetMemberJpa();
+      inclusion.setConceptId("115377001");
+      inclusion.setRefsetId(test11.getId());
+      new RefsetServiceRestImpl().addRefsetInclusion(inclusion, false,
+          author1.getAuthToken());
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test11.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
+
+      // test 12
+      RefsetJpa test12 =
+          makeRefset("test12", null, Refset.Type.EXTENSIONAL, project1,
+              "121212121212", "1000124", author1, false);
+      ConceptRefsetMemberJpa test12member1 =
+          makeRefsetMember(test12, "129456006", "Specific enzyme deficiency (disorder)",
+              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              "731000124108", "129456006", author1.getName(), author1);
+      ConceptRefsetMemberJpa test12member2 =
+          makeRefsetMember(test12, "124627000", "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
+              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              "731000124108", "124627000", author1.getName(), author1);
+      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
+          test12.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
+      
       if (assignNames) {
         // Ensure that all lookupMemberNames routines completed
         boolean completed = false;

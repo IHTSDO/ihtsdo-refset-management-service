@@ -97,6 +97,34 @@ tsApp
                 sortField : 'name',
                 ascending : null
               }
+              $scope.paging['validInclusions'] = {
+                page : 1,
+                filter : '',
+                typeFilter : '',
+                sortField : 'name',
+                ascending : null
+              }
+              $scope.paging['invalidInclusions'] = {
+                page : 1,
+                filter : '',
+                typeFilter : '',
+                sortField : 'name',
+                ascending : null
+              }
+              $scope.paging['validExclusions'] = {
+                page : 1,
+                filter : '',
+                typeFilter : '',
+                sortField : 'name',
+                ascending : null
+              }
+              $scope.paging['invalidExclusions'] = {
+                page : 1,
+                filter : '',
+                typeFilter : '',
+                sortField : 'name',
+                ascending : null
+              }
 
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
@@ -1845,20 +1873,28 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
+                $scope.statusTypes = [ 'Active', 'Retired' ];
                 var stop;
 
                 // Initialize
-                refsetService.resumeMigration($scope.refset.id).then(
-                // Success
-                function(data) {
-                  $scope.stagedRefset = data;
-                  $scope.refset.newTerminology = $scope.stagedRefset.terminology;
-                  $scope.refset.newVersion = $scope.stagedRefset.version;
-                  refsetService.compareRefsets($scope.refset.id, data.id).then(
+                if ($scope.refset.stagingType == 'MIGRATION') {
+                  refsetService.resumeMigration($scope.refset.id).then(
                   // Success
                   function(data) {
-                    $scope.reportToken = data;
-                    $scope.getDiffReport();
+                    $scope.stagedRefset = data;
+                    $scope.refset.newTerminology = $scope.stagedRefset.terminology;
+                    $scope.refset.newVersion = $scope.stagedRefset.version;
+                    refsetService.compareRefsets($scope.refset.id, data.id).then(
+                    // Success
+                    function(data) {
+                      $scope.reportToken = data;
+                      $scope.getDiffReport();
+                    },
+                    // Error
+                    function(data) {
+                      $scope.errors[0] = data;
+                      utilService.clearError();
+                    });
                   },
                   // Error
                   function(data) {
@@ -1901,6 +1937,18 @@ tsApp
                     queryRestriction : $scope.paging['oldRegularMembers'].filter != undefined ? $scope.paging['oldRegularMembers'].filter
                       : null
                   };
+                  
+                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
+                  // currently all values are converted to false
+                  var conceptActive;
+                  if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
+                    conceptActive = 'true';
+                  } else if($scope.paging['oldRegularMembers'].typeFilter == 'Retired') {
+                    conceptActive = 'false';
+                  } else {
+                    conceptActive = 'null';
+                  }
+                  
                   refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
                   // Success
                   function(data) {
@@ -1943,7 +1991,19 @@ tsApp
                     queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
                   };
-                  refsetService.findMembersInCommon($scope.reportToken, null, pfs).then(
+                  
+                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
+                  // currently all values are converted to false
+                  var conceptActive;
+                  if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
+                    conceptActive = 'true';
+                  } else if($scope.paging['membersInCommon'].typeFilter == 'Retired') {
+                    conceptActive = 'false';
+                  } else {
+                    conceptActive = 'null';
+                  }
+                                   
+                  refsetService.findMembersInCommon($scope.reportToken, null, pfs, conceptActive).then(
                   // Succcess
                   function(data) {
                     $scope.membersInCommon = data.members;
@@ -1974,10 +2034,7 @@ tsApp
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                    } /*
-                                             * else if (data < 100) { window.alert("Progress is " +
-                                             * data + " % complete."); }
-                                             */
+                    } 
                   },
                   // Error
                   function(data) {
@@ -2028,6 +2085,31 @@ tsApp
                   });
 
                 };
+                
+                $scope.removeMember = function(member) {
+
+                  refsetService.removeRefsetMember(member.id).then(
+                  // Success
+                  function(data) {
+                    refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                      // Success
+                      function(data) {
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
+                      },
+                      // Error
+                      function(data) {
+                        $scope.errors[0] = data;
+                        utilService.clearError();
+                      });
+                  },
+                  // Error
+                  function(data) {
+                    $scope.errors[0] = data;
+                    utilService.clearError();
+                  });
+
+                };
 
                 // Save for later, allow state to be resumed
                 $scope.saveForLater = function(refset) {
@@ -2067,14 +2149,20 @@ tsApp
                 }
 
                 // add inclusion
-                $scope.include = function(member, staged) {
-                  refsetService.addRefsetInclusion(member, staged).then(
+                $scope.include = function(refset, member, staged) {
+                  // TODO: take refsetId as extra param
+                  // copy the member and set the refsetId to the refsetId that is passed in (in this case staged) angular.copy
+                  // look at exclude also
+                  // TODO: did this, but it still isn't showing up as staged inclusions, no exception at least
+                  var stagedMember = angular.copy(member);
+                  stagedMember.refsetId = refset.id
+                  refsetService.addRefsetInclusion(stagedMember, staged).then(
                   // Success
                   function() {
                     refsetService.releaseReportToken($scope.reportToken).then(
                     // Success
                     function() {
-                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                      refsetService.compareRefsets(member.refsetId, $scope.stagedRefset.id).then(
                       // Success
                       function(data) {
                         $scope.reportToken = data;
