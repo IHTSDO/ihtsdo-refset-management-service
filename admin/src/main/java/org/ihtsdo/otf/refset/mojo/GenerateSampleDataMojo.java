@@ -716,29 +716,29 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "reviewer1", "REVIEWER", "FINISH",
           reviewer1.getAuthToken());
 
-  //    new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-//          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-//          reviewer1.getAuthToken());
-//            new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
-//          reviewer1.getAuthToken());
-//      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
-//          reviewer1.getAuthToken());
-//      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
-//          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+          reviewer1.getAuthToken());
+            new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
 
       // calculate date for tomorrow to ensure different release date than above
-//      Calendar c = Calendar.getInstance();
-//      c.add(Calendar.DATE, 1);
-//      // TODO: come back to this
-//      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-//          ConfigUtility.DATE_FORMAT.format(c.getTime()),
-//          reviewer1.getAuthToken());
-//      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
-//          reviewer1.getAuthToken());
-//      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
-//          reviewer1.getAuthToken());
-//      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
-//          reviewer1.getAuthToken());
+      Calendar c = Calendar.getInstance();
+      c.add(Calendar.DATE, 1);
+      // TODO: come back to this
+      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+          ConfigUtility.DATE_FORMAT.format(c.getTime()),
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+          reviewer1.getAuthToken());
+      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+          reviewer1.getAuthToken());
 
       // test 10
       test2Copy.setTerminologyId("101010101010");

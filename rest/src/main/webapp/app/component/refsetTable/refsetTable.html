@@ -482,7 +482,8 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected" value="value"></div>
+    <div ng-show="selected.member" concept-info data="selected" value="value"
+      handle-workflow="handleWorkflow(selected.refset)"></div>
 
     <!-- End R2C1 -->
   </div>
@@ -507,7 +508,8 @@
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
           <i ng-show="value == 'ASSIGNED'"
             ng-click="openAddMemberModal(selected.refset); $event.stopPropagation()"
-            title="Add refset {{selected.refset.type == 'EXTENSIONAL' ? 'member' : 'inclusion'}}" class="noul material-icons md-18">add</i>
+            title="Add refset {{selected.refset.type == 'EXTENSIONAL' ? 'member' : 'inclusion'}}"
+            class="noul material-icons md-18">add</i>
           <i
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
@@ -584,8 +586,10 @@
               ng-class="{selected : member.id == selected.member.id}">
               <td>{{member.conceptId}}</td>
               <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
-              <td ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}</td>
-              <td ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(member.effectiveTime)}}</td>
+              <td
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}</td>
+              <td
+                ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(member.effectiveTime)}}</td>
               <td>
                 <button class="btn btn-xs btn-primary"
                   ng-show="member.memberType == 'MEMBER'" uib-tooltip="Member">M</button>
