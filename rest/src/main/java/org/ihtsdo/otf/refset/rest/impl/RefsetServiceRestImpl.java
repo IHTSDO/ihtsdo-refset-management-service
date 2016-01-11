@@ -496,7 +496,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               refset.getTerminology(), refset.getVersion(), null);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
-
+        // TODO:
       }
 
       ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
@@ -1602,6 +1602,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refsetService.handleLazyInit(member2);
         if (!refset1.getMembers().contains(member2)) {
           newNotOld.add(member2);
+        }
+        // Always include stuff marked as STAGED
+        else if (member2.getMemberType() == Refset.MemberType.INCLUSION_STAGED
+            || member2.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
+          if (!refset1.getMembers().contains(member2)) {
+            newNotOld.add(member2);
+          }
         }
       }
       diffReport.setOldNotNew(oldNotNew);
