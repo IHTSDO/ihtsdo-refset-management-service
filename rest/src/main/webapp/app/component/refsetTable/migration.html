@@ -131,8 +131,8 @@
               </tr>
             </tbody>
           </table>
-          <span ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</span>
+          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
+            class="alert alert-warning"> No filter results</div>
         </div>
       </div>
       <div class="row">
@@ -169,10 +169,44 @@
         </div>
 
         <div class="col-md-6 col-xs-6">
+
           <h5
-            ng-show="stagedInclusions.length > 0 || validInclusions.length > 0">
-            <b>Staged Inclusions</b>
+            ng-show="stagedInclusions.length > 0  || validInclusions.length > 0">
+            <b>Staged Inclusions<span
+                ng-show="pagedStagedInclusions.length > 0">
+                ({{pagedStagedInclusions.totalCount}})</span></b>
           </h5>
+
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedStagedInclusions.totalCount > pageSize || paging['stagedInclusions'].filter"
+              total-items="pagedStagedInclusions.totalCount"
+              ng-model="paging['stagedInclusions'].page"
+              ng-change="getPagedStagedInclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedStagedInclusions.totalCount > pageSize || paging['stagedInclusions'].filter"
+              type="text" ng-model="paging['stagedInclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedStagedInclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['stagedInclusions'].filter"
+              ng-click="paging['stagedInclusions'].filter = ''; getPagedStagedInclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedStagedInclusions.length == 0 && paging['stagedInclusions'].filter"
+            class="alert alert-warning"> No staged inclusions matching
+            filter </span>
+          <span style="display: block"
+            ng-show="pagedStagedInclusions.length == 0 && !paging['stagedInclusions'].filter"
+            class="alert alert-warning"> No staged inclusions </span>
+
 
           <table
             ng-show="stagedInclusions.length > 0 || validInclusions.length > 0"
@@ -183,7 +217,7 @@
               <th class="col-md-1 col-xs-1"></th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in stagedInclusions">
+              <tr ng-repeat="member in pagedStagedInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
                 <td>
@@ -197,6 +231,8 @@
           </table>
         </div>
       </div>
+
+
       <div class="row">
         <div class="col-md-6 col-xs-6">
           <h5 ng-show="invalidInclusions.length > 0"
@@ -406,8 +442,8 @@
           </tr>
         </tbody>
       </table>
-      <span ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</span>
+      <div ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
+            class="alert alert-warning"> No filter results</div>
       <!-- end col-md-4 -->
     </div>
 
@@ -429,7 +465,7 @@
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-warning" ng-show="refset.stagingType != null"
     ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
-    title="Cancel migration" ng-click="cancel();">Cancel</button>
+    title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
   <button class="btn btn-warning" ng-show="refset.stagingType == null"
     title="Close" ng-click="close();">Close</button>
 </div>

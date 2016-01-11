@@ -97,34 +97,6 @@ tsApp
                 sortField : 'name',
                 ascending : null
               }
-              $scope.paging['validInclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['invalidInclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['validExclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['invalidExclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
 
               $scope.ioImportHandlers = [];
               $scope.ioExportHandlers = [];
@@ -1868,12 +1840,22 @@ tsApp
                 // set up variables
                 $scope.refset = refset;
                 $scope.membersInCommon = null;
-                $scope.pageSize = 10;
+                $scope.pageSize = 5;
                 $scope.paging = paging;
+                $scope.paging['membersInCommon'].typeFilter = '';
+                $scope.paging['oldRegularMembers'].typeFilter = '';
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
+                $scope.pagedStagedInclusions = [];
+                $scope.paging['stagedInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
                 var stop;
 
                 // Initialize
@@ -1914,8 +1896,9 @@ tsApp
                     $scope.stagedInclusions = data.stagedInclusions;
                     $scope.stagedExclusions = data.stagedExclusions;
                     $scope.findMembersInCommon();
-                    $scope.getOldRegularMembers();
                     $scope.getNewRegularMembers();
+                    $scope.getOldRegularMembers();
+                    $scope.getPagedStagedInclusions();
                   },
                   // Error
                   function(data) {
@@ -1933,8 +1916,6 @@ tsApp
                       : null
                   };
 
-                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
-                  // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
                     conceptActive = true;
@@ -1944,7 +1925,7 @@ tsApp
                     conceptActive = null;
                   }
 
-                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
+                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs, conceptActive).then(
                   // Success
                   function(data) {
                     $scope.oldRegularMembers = data.members;
@@ -1965,7 +1946,7 @@ tsApp
                     queryRestriction : $scope.paging['newRegularMembers'].filter != undefined ? $scope.paging['newRegularMembers'].filter
                       : null
                   };
-                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
+                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs, null).then(
                   // Success
                   function(data) {
                     $scope.newRegularMembers = data.members;
@@ -1987,8 +1968,6 @@ tsApp
                       : null
                   };
 
-                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
-                  // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
                     conceptActive = true;
@@ -2011,6 +1990,12 @@ tsApp
                     });
                 };
 
+                // Get paged staged inclusions (assume all are loaded)
+                $scope.getPagedStagedInclusions = function() {
+                  $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
+                    $scope.paging['stagedInclusions'], $scope.pageSize);
+                }
+                
                 $scope.refreshLookupProgress = function() {
                   refsetService.getLookupProgress($scope.stagedRefset.id).then(
                   // Success
@@ -2274,9 +2259,13 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = null;
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - cancel migration
+                  function(data) {
+                    handleError($scope.errors, data);
                   });
 
-                  $uibModalInstance.dismiss('cancel');
                 };
 
                 // Close modal
