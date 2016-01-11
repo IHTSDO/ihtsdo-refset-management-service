@@ -363,6 +363,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       throw new Exception("A translation must have an associated refset");
     }
     final TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
     try {
       final String userName =
           authorizeProject(translationService, translation.getProjectId(),
@@ -382,6 +384,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final PhraseMemory memory = new PhraseMemoryJpa();
       memory.setTranslation(newTranslation);
       translationService.addPhraseMemory(memory);
+         
+      translationService.commit();
 
       return newTranslation;
     } catch (Exception e) {

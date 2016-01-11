@@ -338,7 +338,7 @@ tsApp.service('workflowService', [
 
       // Finds refsets available for review by the specified user
       gpService.increment()
-      $http.get(
+      $http.post(
         workflowUrl + 'refset/available/review?projectId=' + projectId + '&userName=' + userName,
         utilService.prepPfs(pfs)).then(
       // success

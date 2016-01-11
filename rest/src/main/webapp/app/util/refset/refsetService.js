@@ -517,8 +517,8 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'common/members' + '?reportToken=' + reportToken + 
-          '&conceptActive=' + conceptActive + '&query='
+        refsetUrl + 'common/members' + '?reportToken=' + reportToken
+          + (conceptActive != null ? '&conceptActive=' + conceptActive : '') + '&query='
           + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {

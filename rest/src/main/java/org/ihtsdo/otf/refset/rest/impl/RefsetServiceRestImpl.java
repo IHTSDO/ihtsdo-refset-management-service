@@ -398,6 +398,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           && !refset.getDefinitionClauses().isEmpty()) {
         refsetService.resolveRefsetDefinition(newRefset);
       }
+
       refsetService.commit();
 
       return newRefset;
@@ -490,9 +491,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "add members for expression",
               UserRole.AUTHOR);
 
-      ConceptList resolvedFromExpression =
+      final ConceptList resolvedFromExpression =
           refsetService.getTerminologyHandler().resolveExpression(expression,
               refset.getTerminology(), refset.getVersion(), null);
+      final Set<String> conceptIds = new HashSet<>();
+      for (final Concept concept : resolvedFromExpression.getObjects()) {
+
+      }
 
       ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       for (Concept concept : resolvedFromExpression.getObjects()) {
@@ -633,6 +638,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // clear notes
       refset.setNotes(new ArrayList<Note>());
       refset.setLastModifiedBy(userName);
+      refset.setProject(refsetService.getProject(projectId));
       final Refset newRefset = refsetService.addRefset(refset);
 
       // Copy all the members if EXTENSIONAL
@@ -1628,7 +1634,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info("RESTful call (Refset): common/members");
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): common/members - " + reportToken + ", " + query
+            + ", " + conceptActive);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -1738,13 +1746,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final MemberDiffReport memberDiffReport =
           memberDiffReportMap.get(reportToken);
-      List<ConceptRefsetMember> oldMembers =
-          memberDiffReport.getOldRegularMembers();
 
       // if the value is null, throw an exception
       if (memberDiffReport == null) {
         throw new LocalException("No member diff report was found.");
       }
+
+      List<ConceptRefsetMember> oldMembers =
+          memberDiffReport.getOldRegularMembers();
 
       // if conceptActive is indicated, filter the member list by active/retired
       if (conceptActive != null) {
