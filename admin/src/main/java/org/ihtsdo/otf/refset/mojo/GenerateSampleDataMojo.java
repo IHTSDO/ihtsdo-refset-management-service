@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
@@ -560,7 +561,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // publication stages
       // test10: same as test 2 advanced in workflow to review new and then
       // reassign
-      // test11: migration test - intensional with exclusion that becomes inactive
+      // test11: migration test - intensional with exclusion that becomes
+      // inactive
       // from 20150131 -> 20150731
       // test12: migration test - extensional
       //
@@ -714,28 +716,29 @@ public class GenerateSampleDataMojo extends AbstractMojo {
           test9.getId(), "reviewer1", "REVIEWER", "FINISH",
           reviewer1.getAuthToken());
 
-      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
-          reviewer1.getAuthToken());
+  //    new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+//          ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+//          reviewer1.getAuthToken());
+//            new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
+//          reviewer1.getAuthToken());
+//      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+//          reviewer1.getAuthToken());
+//      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+//          reviewer1.getAuthToken());
 
       // calculate date for tomorrow to ensure different release date than above
-      Calendar c = Calendar.getInstance();
-      c.add(Calendar.DATE, 1);
-      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
-          ConfigUtility.DATE_FORMAT.format(c.getTime()),
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
-          reviewer1.getAuthToken());
-      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
-          reviewer1.getAuthToken());
+//      Calendar c = Calendar.getInstance();
+//      c.add(Calendar.DATE, 1);
+//      // TODO: come back to this
+//      new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
+//          ConfigUtility.DATE_FORMAT.format(c.getTime()),
+//          reviewer1.getAuthToken());
+//      new ReleaseServiceRestImpl().validateRefsetRelease(test9.getId(),
+//          reviewer1.getAuthToken());
+//      new ReleaseServiceRestImpl().betaRefsetRelease(test9.getId(), "DEFAULT",
+//          reviewer1.getAuthToken());
+//      new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
+//          reviewer1.getAuthToken());
 
       // test 10
       test2Copy.setTerminologyId("101010101010");
@@ -768,9 +771,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
       // test 11
       RefsetJpa test11 =
-          makeRefset("test11", "<<129456006 | Specific enzyme deficiency (disorder) |",
-              Refset.Type.INTENSIONAL, project1, "111111111111", "1000124", author1,
-              false);
+          makeRefset("test11",
+              "<<129456006 | Specific enzyme deficiency (disorder) |",
+              Refset.Type.INTENSIONAL, project1, "111111111111", "1000124",
+              author1, false);
       // add invalid exclusion for migration
       new RefsetServiceRestImpl().addRefsetExclusion(test11.getId(),
           "124627000", false, author1.getAuthToken());
@@ -783,24 +787,28 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       inclusion.setRefsetId(test11.getId());
       new RefsetServiceRestImpl().addRefsetInclusion(inclusion, false,
           author1.getAuthToken());
-      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test11.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
+      new WorkflowServiceRestImpl()
+          .performWorkflowAction(project1.getId(), test11.getId(), "author1",
+              "AUTHOR", "ASSIGN", author1.getAuthToken());
 
       // test 12
       RefsetJpa test12 =
           makeRefset("test12", null, Refset.Type.EXTENSIONAL, project1,
               "121212121212", "1000124", author1, false);
       ConceptRefsetMemberJpa test12member1 =
-          makeRefsetMember(test12, "129456006", "Specific enzyme deficiency (disorder)",
+          makeRefsetMember(test12, "129456006",
+              "Specific enzyme deficiency (disorder)",
               Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
               "731000124108", "129456006", author1.getName(), author1);
       ConceptRefsetMemberJpa test12member2 =
-          makeRefsetMember(test12, "124627000", "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
+          makeRefsetMember(test12, "124627000",
+              "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
               Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
               "731000124108", "124627000", author1.getName(), author1);
-      new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
-          test12.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
-      
+      new WorkflowServiceRestImpl()
+          .performWorkflowAction(project1.getId(), test12.getId(), "author1",
+              "AUTHOR", "ASSIGN", author1.getAuthToken());
+
       if (assignNames) {
         // Ensure that all lookupMemberNames routines completed
         boolean completed = false;
@@ -891,8 +899,11 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.setNamespace(namespace);
     project.setOrganization("IHTSDO");
     project.addValidationCheck("DEFAULT");
-    return (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
-        auth.getAuthToken());
+    ProjectJpa newProject =
+        (ProjectJpa) new ProjectServiceRestImpl().addProject(project,
+            auth.getAuthToken());
+    newProject.setUserRoleMap(new HashMap<User, UserRole>());
+    return newProject;
   }
 
   /**
@@ -923,6 +934,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     member.setMemberType(memberType);
     member.setModuleId(moduleId);
     member.setLastModifiedBy(lastModifiedBy);
+    refset.getProject().setUserRoleMap(new HashMap<User, UserRole>());
     member.setRefset(refset);
     member.setActive(true);
     member.setConceptActive(true);
@@ -1149,6 +1161,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     translation.setProject(project);
     translation.setPublic(true);
     translation.setPublishable(true);
+    refset.getProject().setUserRoleMap(new HashMap<User, UserRole>());
     translation.setRefset(refset);
     translation.setTerminology(refset.getTerminology());
     translation.setVersion(refset.getVersion());

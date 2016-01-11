@@ -393,11 +393,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void handleLazyInit(Translation translation) {
     // handle all lazy initializations
-    if (translation.getDescriptionTypes() != null)
+    if (translation.getDescriptionTypes() != null) {
       translation.getDescriptionTypes().size();
+    }
     handleLazyInit(translation.getRefset());
     translation.getWorkflowStatus().name();
-    translation.getConcepts().size();
     translation.getNotes().size();
     // don't initialize phrase memory and spelling dictionary
     if (translation.getPhraseMemory() != null) {
@@ -989,7 +989,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // NOTE: when staging BETA do not copy phrase memory/spelling
     // leave them empty.
-    
+
     // null its id and all of its components ids
     // then call addXXX on each component
     translationCopy.setId(null);

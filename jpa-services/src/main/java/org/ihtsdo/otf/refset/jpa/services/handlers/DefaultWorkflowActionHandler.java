@@ -323,13 +323,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
 
         // REVIEW_NEW, REVIEW_IN_PROGRESS => REVIEW_DONE
-        else if (refset.getWorkflowStatus() == WorkflowStatus.REVIEW_IN_PROGRESS) {
+        else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
+            WorkflowStatus.REVIEW_IN_PROGRESS).contains(
+            refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
 
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
-            WorkflowStatus.REVIEW_IN_PROGRESS).contains(
+        else if (EnumSet.of(WorkflowStatus.REVIEW_DONE).contains(
             refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());

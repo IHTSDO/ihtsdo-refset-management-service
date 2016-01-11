@@ -399,8 +399,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refsetService.resolveRefsetDefinition(newRefset);
       }
 
-      refsetService.handleLazyInit(newRefset);
-
       refsetService.commit();
 
       return newRefset;
@@ -640,6 +638,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // clear notes
       refset.setNotes(new ArrayList<Note>());
       refset.setLastModifiedBy(userName);
+      refset.setProject(refsetService.getProject(projectId));
       final Refset newRefset = refsetService.addRefset(refset);
 
       // Copy all the members if EXTENSIONAL
@@ -1747,13 +1746,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final MemberDiffReport memberDiffReport =
           memberDiffReportMap.get(reportToken);
-      List<ConceptRefsetMember> oldMembers =
-          memberDiffReport.getOldRegularMembers();
 
       // if the value is null, throw an exception
       if (memberDiffReport == null) {
         throw new LocalException("No member diff report was found.");
       }
+
+      List<ConceptRefsetMember> oldMembers =
+          memberDiffReport.getOldRegularMembers();
 
       // if conceptActive is indicated, filter the member list by active/retired
       if (conceptActive != null) {

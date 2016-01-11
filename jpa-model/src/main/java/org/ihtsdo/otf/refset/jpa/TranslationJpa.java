@@ -611,7 +611,8 @@ public class TranslationJpa extends AbstractComponent implements Translation {
     return "TranslationJpa [name=" + name + ", description=" + description
         + ", isPublic=" + isPublic + ", stagingType=" + stagingType
         + ", language=" + language + ", workflowStatus=" + workflowStatus
-        + ", workflowPath=" + workflowPath + ", refset=" + refset
+        + ", workflowPath=" + workflowPath + ", refset=" + (refset == null ? null : refset.getId())
+        + ", project =" + (refset != null && refset.getProject() != null ? refset.getProject().getId() : null)
         + ", descriptionTypes=" + descriptionTypes + ", caseSensitiveTypes="
         + caseSensitiveTypes + "]";
   }
