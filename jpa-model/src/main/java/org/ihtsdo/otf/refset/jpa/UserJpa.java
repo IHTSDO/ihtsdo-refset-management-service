@@ -12,7 +12,6 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -40,9 +39,9 @@ import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.jpa.helpers.MapIdBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
-import org.ihtsdo.otf.refset.jpa.helpers.MapIdBridge;
 
 /**
  * JPA enabled implementation of {@link User}.
@@ -88,7 +87,7 @@ public class UserJpa implements User {
   private UserPreferences userPreferences;
 
   /** The project role map. */
-  @ElementCollection(fetch = FetchType.EAGER, targetClass = UserRole.class)
+  @ElementCollection
   @MapKeyClass(value = ProjectJpa.class)
   @Enumerated(EnumType.STRING)
   @CollectionTable(name = "user_project_role_map")

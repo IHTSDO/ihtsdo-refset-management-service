@@ -51,7 +51,7 @@
           <b>Language</b>
         </td>
         <td>
-          <input ng-model="translation.language" placeholder="e.g. es, sv, da"
+          <input ng-model="translation.language" placeholder="e.g. es, se, da"
             size="15" />
         </td>
       </tr>
@@ -88,16 +88,31 @@
         </td>
       </tr>
 
-      <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
-        <td>
+      <!-- Errors and warnings-->
+      <tr
+        ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
+          </div>
+        </td>
+      </tr>
+      <tr
+        ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
+        <td colspan="2">
           <div class="alert alert-danger alert-error"
             ng-repeat="error in errors">{{error}}</div>
         </td>
       </tr>
-      <tr ng-show="warnings.length > 0">
-        <td>&nbsp;</td>
-        <td>
+      <tr class="alert alert-warning" ng-repeat="warning in warnings">
+        <td colspan="2">
           <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
         </td>
       </tr>

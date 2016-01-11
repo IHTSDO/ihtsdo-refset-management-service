@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
@@ -53,12 +54,12 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
     ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (list.getCount() != 1) {
-      throw new Exception("Cannot find release info for refset "
+      throw new LocalException("Cannot find release info for refset "
           + refset.getId());
     }
     releaseInfo = list.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned())
-      throw new Exception("refset release is not planned to cancel "
+      throw new LocalException("refset release is not planned to cancel "
           + refset.getId());
 
   }

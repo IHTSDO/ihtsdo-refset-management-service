@@ -11,7 +11,7 @@
           <b>From Translation</b>
         </td>
         <td>
-          <select ng-model="translation" 
+          <select ng-model="translation"
             ng-options="item.name.concat(' (',item.id,')') for item in translations"></select>
           <span ng-show="translation">
             <br /> {{translation.moduleId}}
@@ -30,35 +30,37 @@
       </tr>
       <tr>
         <td>
-          <b>Name</b>
-        </td>
-        <td>{{toTranslation.name}}</td>
-      </tr>
-      <tr>
-        <td>
           <b>Description</b>
         </td>
-        <td>{{toTranslation.description}}</td>
+        <td>{{translation.description}}</td>
       </tr>
       <tr>
-        <td>Module Id</td>
         <td>
-          {{toTranslation.moduleId}}
-          <!-- Mobile friendly line-break -->
-          <br class="visible-xs-inline" />
-          <span flag-icon obj="toTranslation"></span>
+          <b>Module Id</b>
+        </td>
+        <td>
+          {{translation.moduleId}}
+          <span flag-icon obj="translation"></span>
         </td>
       </tr>
-      <tr ng-show="errors.length > 0">
-        <td>&nbsp;</td>
+      <tr>
         <td>
-          <div class="alert alert-danger alert-error"
-            ng-repeat="error in errors">
-            {{error}}
-            <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
+          <b>Language</b>
+        </td>
+        <td>{{translation.language}}</td>
+      </tr>
+
+      <tr ng-show="errors.length > 0">
+        <td colspan="2">
+          <div class="alert alert-danger alert-error">
+            {{errors[0]}}
+            <div style="display: inline; float: right;">
+              <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+            </div>
+            <p ng-show="errors[1] && error.expand">
+              <br />{{errors[1]}}
+            </p>
           </div>
         </td>
       </tr>

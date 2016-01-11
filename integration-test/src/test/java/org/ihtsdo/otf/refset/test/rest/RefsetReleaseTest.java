@@ -804,6 +804,20 @@ public class RefsetReleaseTest {
   }
 
   /**
+   * Test obtaining nonexistent refset returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testNonexistentRefsetReleaseAccess() throws Exception {
+    ReleaseInfo info =
+        releaseService.getCurrentRefsetReleaseInfo(123456789123456789L,
+            adminAuthToken);
+    assertNull(info);
+  }
+
+  /**
    * Ensure refset completed prior to shutting down test to avoid lookupName
    * issues.
    *

@@ -31,6 +31,7 @@ import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
@@ -399,7 +400,7 @@ public class IndexUtility {
           && !t.field().isEmpty()
           && !IndexUtility.getIndexedFieldNames(fieldNamesKey, false).contains(
               t.field())) {
-        throw new Exception("Query references invalid field name " + t.field()
+        throw new LocalException("Query references invalid field name " + t.field()
             + ", " + IndexUtility.getIndexedFieldNames(fieldNamesKey, false));
       }
     }

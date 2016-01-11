@@ -145,6 +145,16 @@ public interface TranslationServiceRest {
     throws Exception;
 
   /**
+   * Removes the all translation concepts.
+   *
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeAllTranslationConcepts(Long translationId, String authToken)
+    throws Exception;
+
+  /**
    * Find translation concepts for query.
    *
    * @param translationId the translation id

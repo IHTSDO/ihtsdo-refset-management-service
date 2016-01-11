@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
@@ -77,16 +78,16 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new Exception("Cannot find release info for translation "
+      throw new LocalException("Cannot find release info for translation "
           + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
         || releaseInfo.isPublished())
-      throw new Exception("translation release is not ready to validate "
+      throw new LocalException("translation release is not ready to validate "
           + translation.getId());
     if (translation.isStaged())
-      throw new Exception("translation workflowstatus is staged for "
+      throw new LocalException("translation workflowstatus is staged for "
           + translation.getId());
   }
 

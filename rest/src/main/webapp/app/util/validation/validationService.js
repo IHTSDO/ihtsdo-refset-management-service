@@ -82,7 +82,7 @@ tsApp.service('validationService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.post(validationUrl + 'member' + '?projectId=' + projectId, member).then(
+      $http.post(validationUrl + 'member?projectId=' + projectId, member).then(
       // success
       function(response) {
         console.debug('  result = ', response.data);
@@ -104,7 +104,7 @@ tsApp.service('validationService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(validationUrl + 'concepts' + '?translationId=' + translationId)
+      $http.get(validationUrl + 'concepts?translationId=' + translationId)
         .then(
         // success
         function(response) {
@@ -127,7 +127,7 @@ tsApp.service('validationService', [
       var deferred = $q.defer();
 
       gpService.increment()
-      $http.get(validationUrl + 'members' + '?refsetId=' + refsetId).then(
+      $http.get(validationUrl + 'members?refsetId=' + refsetId).then(
       // success
       function(response) {
         console.debug('  resulta = ', response.data);

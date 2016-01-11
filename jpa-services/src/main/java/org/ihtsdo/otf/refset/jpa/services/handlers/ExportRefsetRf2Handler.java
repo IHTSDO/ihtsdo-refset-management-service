@@ -13,7 +13,6 @@ import java.util.UUID;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 

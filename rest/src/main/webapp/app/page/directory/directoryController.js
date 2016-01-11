@@ -3,13 +3,17 @@ tsApp.controller('DirectoryCtrl', [
   '$scope',
   '$http',
   'tabService',
+  'utilService',
   'securityService',
   'projectService',
   'refsetService',
   'workflowService',
-  function($scope, $http, tabService, securityService, projectService, refsetService,
+  function($scope, $http, tabService, utilService, securityService, projectService, refsetService,
     workflowService) {
     console.debug('configure DirectoryCtrl');
+
+    // Clear error
+    utilService.clearError();
 
     // Handle resetting tabs on 'back' button
     if (tabService.selectedTab.label != 'Directory') {

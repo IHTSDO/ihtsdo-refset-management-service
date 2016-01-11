@@ -345,6 +345,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       String queryRestriction = pfs.getQueryRestriction();
       pfs.setQueryRestriction(null);
       result.setObjects(applyPfsToList(list, Translation.class, pfs));
+      pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
       pfs.setQueryRestriction(queryRestriction);
     } else {
@@ -986,6 +987,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.setProvisional(true);
     }
 
+    // NOTE: when staging BETA do not copy phrase memory/spelling
+    // leave them empty.
+    
     // null its id and all of its components ids
     // then call addXXX on each component
     translationCopy.setId(null);

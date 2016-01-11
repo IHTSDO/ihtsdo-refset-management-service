@@ -165,6 +165,8 @@ public class TranslationNoteTest extends RestIntegrationSupport {
         translationService.findTranslationConceptsForQuery(translation.getId(),
             "", null, authToken);
     assertFalse(list2.getObjects().isEmpty());
+
+    // Get concept to work on during test
     Concept concept = list2.getObjects().get(0);
     Logger.getLogger(getClass()).debug("  concept = " + concept.getId());
     Note note =
@@ -173,15 +175,18 @@ public class TranslationNoteTest extends RestIntegrationSupport {
     assertEquals("TEST NOTE", note.getValue());
     Logger.getLogger(getClass()).debug("  note = " + note);
 
+    translationService = new TranslationClientRest(properties);
+
     // Check that the get call returns the note
     concept =
         translationService
-            .findTranslationConceptsForQuery(translation.getId(), "", null,
-                authToken).getObjects().get(0);
+            .findTranslationConceptsForQuery(translation.getId(),
+                "terminologyId:" + concept.getTerminologyId(), null, authToken)
+            .getObjects().get(0);
     assertEquals(1, concept.getNotes().size());
     assertEquals("TEST NOTE", concept.getNotes().get(0).getValue());
 
-    // Add another note
+    // Add another note to concept
     Note note2 =
         translationService.addTranslationConceptNote(translation.getId(),
             concept.getId(), "TEST NOTE2", authToken);
@@ -189,20 +194,23 @@ public class TranslationNoteTest extends RestIntegrationSupport {
     Logger.getLogger(getClass()).debug("  note2 = " + note2);
     concept =
         translationService
-            .findTranslationConceptsForQuery(translation.getId(), "", null,
-                authToken).getObjects().get(0);
+            .findTranslationConceptsForQuery(translation.getId(),
+                "terminologyId:" + concept.getTerminologyId(), null, authToken)
+            .getObjects().get(0);
     assertEquals(2, concept.getNotes().size());
 
-    // Remove the notes
+    // Remove all notes from concept
     for (Note note3 : concept.getNotes()) {
-      translationService.removeTranslationConceptNote(translation.getId(),
+      translationService.removeTranslationConceptNote(concept.getId(),
           note3.getId(), authToken);
     }
+
+    // Verify notes removed from concept
     concept =
         translationService
-            .findTranslationConceptsForQuery(translation.getId(), "", null,
-                authToken).getObjects().get(0);
+            .findTranslationConceptsForQuery(translation.getId(),
+                "terminologyId:" + concept.getTerminologyId(), null, authToken)
+            .getObjects().get(0);
     assertTrue(translation.getNotes().isEmpty());
-
   }
 }

@@ -88,6 +88,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private boolean isPublic;
 
   /** The staging type. */
+  @Enumerated(EnumType.STRING)
   @Column(nullable = true)
   private StagingType stagingType;
 

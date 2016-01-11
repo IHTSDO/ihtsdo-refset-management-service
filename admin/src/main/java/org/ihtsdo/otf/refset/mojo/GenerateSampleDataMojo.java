@@ -349,9 +349,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       project.assignUserToProject(project4.getId(), admin2.getUserName(),
           UserRole.ADMIN.toString(), admin.getAuthToken());
 
+      // give the user a different role than it has in other projects
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project4.getId(), reviewer2.getUserName(),
-          UserRole.REVIEWER.toString(), admin.getAuthToken());
+          UserRole.AUTHOR.toString(), admin.getAuthToken());
 
       project = new ProjectServiceRestImpl();
       project.assignUserToProject(project4.getId(), reviewer3.getUserName(),

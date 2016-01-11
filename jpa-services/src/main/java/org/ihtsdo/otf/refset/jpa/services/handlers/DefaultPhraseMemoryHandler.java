@@ -14,6 +14,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.MemoryEntry;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -61,6 +62,7 @@ public class DefaultPhraseMemoryHandler implements PhraseMemoryHandler {
   }
 
   /* see superclass */
+  @SuppressWarnings("resource")
   @Override
   public List<MemoryEntry> getEntriesAsList(InputStream content)
     throws Exception {
@@ -70,6 +72,11 @@ public class DefaultPhraseMemoryHandler implements PhraseMemoryHandler {
     final PushBackReader pbr = new PushBackReader(reader);
     while ((line = pbr.readLine()) != null) {
 
+      if (line.length() > 1000) {
+        throw new LocalException(
+            "Line is too long, > 1000 chars, likely bad format.");
+      }
+
       // Strip \r and split lines
       line = line.replace("\r", "");
       final String fields[] = line.split("\\|");
@@ -78,8 +85,8 @@ public class DefaultPhraseMemoryHandler implements PhraseMemoryHandler {
       if (fields.length != 2) {
         pbr.close();
         Logger.getLogger(getClass()).error("line = " + line);
-        throw new Exception("Unexpected field count in phrase memory file "
-            + fields.length);
+        throw new LocalException(
+            "Unexpected field count in phrase memory file " + fields.length);
       }
 
       // Instantiate and populate members

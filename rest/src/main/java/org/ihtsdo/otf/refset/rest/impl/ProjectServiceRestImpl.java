@@ -144,12 +144,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(projectService, projectId, securityService, authToken,
           "add user to project", UserRole.AUTHOR);
 
-      final Project project = projectService.getProject(projectId);
-      final User user = securityService.getUser(userName);
+      User user = securityService.getUser(userName);
+      Project project = projectService.getProject(projectId);
       project.getUserRoleMap().put(user, UserRole.valueOf(role));
+      projectService.updateProject(project);
+
       user.getProjectRoleMap().put(project, UserRole.valueOf(role));
       securityService.updateUser(user);
-      projectService.updateProject(project);
+
       return project;
 
     } catch (Exception e) {
@@ -171,9 +173,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /removeuser " + projectId + ", "
-            + userName);
+    Logger.getLogger(getClass())
+        .info(
+            "RESTful POST call (Project): /unassign " + projectId + ", "
+                + userName);
 
     // Test preconditions
     if (projectId == null || userName == null) {
@@ -192,14 +195,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             "unassign user from project", UserRole.AUTHOR);
       }
 
-      final Project project = projectService.getProject(projectId);
       final User user = securityService.getUser(userName);
+      final Project project = projectService.getProject(projectId);
       project.getUserRoleMap().remove(user);
+      projectService.updateProject(project);
+
       user.getProjectRoleMap().remove(project);
       securityService.updateUser(user);
-      projectService.updateProject(project);
-      return project;
 
+      return project;
     } catch (Exception e) {
       handleException(e, "trying to remove user from project");
     } finally {
@@ -704,9 +708,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): get concept with description, "
-            + terminologyId + ", " + terminology + ", " + version + ", "
-            + translationId);
+        "RESTful call (Project): get concept with conceptId, " + terminologyId
+            + ", " + terminology + ", " + version + ", " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -714,9 +717,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           authorizeApp(securityService, authToken,
               "retrieve concept with description", UserRole.VIEWER);
 
-      final Concept concept =
-          translationService.getTerminologyHandler().getFullConcept(
-              terminologyId, terminology, version);
+      Concept concept = null;
+
+      try {
+        concept =
+            translationService.getTerminologyHandler().getFullConcept(
+                terminologyId, terminology, version);
+      } catch (Exception e) {
+        Logger.getLogger(getClass()).info(
+            "No results in call to Terminology Handler with terminologyId: "
+                + terminologyId + ", terminology: " + terminology
+                + " and version: " + version);
+      }
 
       // If translationId is set, include descriptions from the translation
       // and from any language refsets in user prefs
@@ -748,7 +760,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
-  @Path("/parents")
+  @Path("/concept/parents")
   @ApiOperation(value = "Get concept parents", notes = "Gets parents concepts of the specified concept", response = ConceptListJpa.class)
   public ConceptList getConceptParents(
     @ApiParam(value = "Terminology id", required = true) @QueryParam("terminologyId") String terminologyId,

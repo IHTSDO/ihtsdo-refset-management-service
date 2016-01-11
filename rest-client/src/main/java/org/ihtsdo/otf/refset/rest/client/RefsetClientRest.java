@@ -111,6 +111,10 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -386,7 +390,7 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(memberId, "memberId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/"
+        client.target(config.getProperty("base.url") + "/refset/member/remove/"
             + memberId);
 
     Response response =
@@ -410,7 +414,7 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/member/remove/all/"
+        client.target(config.getProperty("base.url") + "/refset/member/remove/all/"
             + refsetId);
 
     Response response =
@@ -483,7 +487,7 @@ public class RefsetClientRest extends RootClientRest implements
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
-            .post(Entity.xml(inclusionString));
+            .put(Entity.xml(inclusionString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -512,10 +516,10 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/exclusion/add/"
-            + refsetId + "?conceptId=" + conceptId + "&staged=" + staged);
+            + refsetId + "?&staged=" + staged);
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken).put(Entity.text(conceptId));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1176,7 +1180,7 @@ public class RefsetClientRest extends RootClientRest implements
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken).delete();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1315,6 +1319,10 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
 
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -1392,11 +1400,11 @@ public class RefsetClientRest extends RootClientRest implements
 
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/members/add"
-            + "?refsetId=" + refsetId + "&expression=" + expression);
+            + "?refsetId=" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
+            .header("Authorization", authToken).put(Entity.text(expression));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1437,13 +1445,14 @@ public class RefsetClientRest extends RootClientRest implements
   @Override
   public Refset recoveryRefset(Long refsetId, String authToken)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Client - recovery refset " + refsetId);
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - recovery refset " + refsetId);
     validateNotEmpty(refsetId, "refsetId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/recovery/" + refsetId);
+        client.target(config.getProperty("base.url") + "/refset/recovery/"
+            + refsetId);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();

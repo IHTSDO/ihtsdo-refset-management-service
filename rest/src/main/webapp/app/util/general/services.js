@@ -9,7 +9,9 @@ tsApp
         console.debug('configure utilService');
         // declare the error
         this.error = {
-          message : null
+          message : null,
+          longMessage : null,
+          expand : false
         };
 
         // tinymce options
@@ -28,7 +30,7 @@ tsApp
           }
 
           // Add a * to the filter if set and doesn't contain a :
-          if (query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
+          if (query.indexOf("(") == -1 && query.indexOf(":") == -1 && query.indexOf("\"") == -1) {
             var query2 = query.concat('*');
             return encodeURIComponent(query2);
           }
@@ -58,16 +60,53 @@ tsApp
         // Clears the error
         this.clearError = function() {
           this.error.message = null;
+          this.error.longMessage = null;
+          this.error.expand = false;
         }
+
         // Handle error message
         this.handleError = function(response) {
           console.debug('Handle error: ', response);
-          this.error.message = response.data;
+          if (response.data && response.data.length > 100) {
+            this.error.message = "Unexpected error, click the icon to view attached full error";
+            this.error.longMessage = response.data
+          } else {
+            this.error.message = response.data;
+          }
+          // handle no message
+          if (!this.error.message) {
+            this.error.message = "Unexpected server side error.";
+          }
           // If authtoken expired, relogin
           if (this.error.message && this.error.message.indexOf('AuthToken') != -1) {
             // Reroute back to login page with 'auth token has
             // expired' message
             $location.path('/login');
+          }
+        }
+
+        this.handleDialogError = function(errors, error) {
+          console.debug('Handle dialog error: ', errors, error);
+          // handle long error
+          if (error && error.length > 100) {
+            errors[0] = "Unexpected error, click the icon to view attached full error";
+            errors[1] = error;
+          } else {
+            errors[0] = error;
+          }
+          // handle no message
+          if (!error) {
+            errors[0] = "Unexpected server side error.";
+          }
+          // If authtoken expired, relogin
+          if (error && error.indexOf('AuthToken') != -1) {
+            // Reroute back to login page with 'auth token has
+            // expired' message
+            $location.path('/login');
+          }
+          // otherwise clear the top-level error
+          else {
+            this.clearError();
           }
         }
 
@@ -242,6 +281,22 @@ tsApp
           }
 
           return false;
+        }
+
+        // Finds the object in a list by the field
+        this.findBy = function(list, obj, field) {
+
+          // key: function to return field value from object
+          var key = function(x) {
+            return x[field]
+          };
+
+          for (var i = 0; i < list.length; i++) {
+            if (key(list[i]) == key(obj)) {
+              return list[i];
+            }
+          }
+          return null;
         }
 
         // Get words of a string
@@ -544,7 +599,7 @@ tsApp.service('securityService', [
 
       // Add user
       gpService.increment();
-      $http['delete'](securityUrl + 'user/remove' + '/' + user.id).then(
+      $http['delete'](securityUrl + 'user/remove/' + user.id).then(
       // success
       function(response) {
         console.debug('  user = ', response.data);
@@ -591,7 +646,7 @@ tsApp.service('securityService', [
 
       // Make POST call
       gpService.increment();
-      $http.post(securityUrl + 'user/find' + '?query=' + utilService.prepQuery(query),
+      $http.post(securityUrl + 'user/find?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {

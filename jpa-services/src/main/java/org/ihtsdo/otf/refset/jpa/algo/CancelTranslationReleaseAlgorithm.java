@@ -11,6 +11,7 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.algo.Algorithm;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
@@ -53,12 +54,12 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
     ReleaseInfoList list =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (list.getCount() != 1) {
-      throw new Exception("Cannot find release info for translation "
+      throw new LocalException("Cannot find release info for translation "
           + translation.getId());
     }
     releaseInfo = list.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned())
-      throw new Exception("translation release is not planned to cancel "
+      throw new LocalException("translation release is not planned to cancel "
           + translation.getId());
 
   }

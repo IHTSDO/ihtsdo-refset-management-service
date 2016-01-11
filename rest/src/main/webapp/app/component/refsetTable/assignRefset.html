@@ -6,32 +6,16 @@
 </div>
 
 <div class="modal-body">
+  <!-- Refset info -->
+  <div refset-info refset="refset" form="short"></div>
+
   <table class="table">
-    <tr>
-      <td>
-        <b>Id</b>
-      </td>
-      <td>{{refset.terminologyId}}</td>
-    </tr>
-    <tr>
-      <td>
-        <b>Name</b>
-      </td>
-      <td>{{refset.name}}</td>
-    </tr>
-    <tr>
-      <td>
-        <b>Description</b>
-      </td>
-      <td>{{refset.description}}</td>
-    </tr>
     <tr ng-show="action == 'ASSIGN'">
       <td>
         <b>Select user</b>
       </td>
       <td>
-        <select ng-model="userName"
-          ng-options="item for item in assignedUserNames"></select>
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
       </td>
     </tr>
     <tr>
@@ -45,7 +29,16 @@
     <tr ng-show="errors.length > 0">
       <td>&nbsp;</td>
       <td>
-        <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
+        <div class="alert alert-danger alert-error">
+          {{errors[0]}}
+          <div style="display: inline; float: right;">
+            <i ng-show="errors[1] && !error.expand" title="Show long eror"
+              class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+          </div>
+          <p ng-show="errors[1] && error.expand">
+            <br />{{errors[1]}}
+          </p>
+        </div>
       </td>
     </tr>
   </table>

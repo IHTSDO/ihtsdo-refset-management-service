@@ -6,12 +6,16 @@
 </div>
 
 <div class="modal-body">
+  <!-- Translation info -->
+  <div translation-info translation="translation" form="short"></div>
+
   <table class="table">
     <tr>
-      <td>
+      <td class="col-md-4 col-xs-4">
         <b>Concept Id</b>
       </td>
-      <td>{{concept.terminologyId}}</td>
+      <td class="col-md-8 col-xs-8">{{concept.terminologyId}}</td>
+
     </tr>
     <tr>
       <td>
@@ -25,8 +29,7 @@
         <b>Select user</b>
       </td>
       <td>
-        <select ng-model="userName"
-          ng-options="item for item in assignedUserNames"></select>
+        <select ng-model="user" ng-options="item.name for item in assignedUsers"></select>
       </td>
     </tr>
     <!-- Show notes if we know the concept id -->
@@ -39,9 +42,17 @@
       </td>
     </tr>
     <tr ng-show="errors.length > 0">
-      <td>&nbsp;</td>
-      <td>
-        <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
+      <td colspan="2">
+        <div class="alert alert-danger alert-error">
+          {{errors[0]}}
+          <div style="display: inline; float: right;">
+            <i ng-show="errors[1] && !error.expand" title="Show long eror"
+              class="noul material-icons md-18" ng-click="error.expand=true;">attach_file</i>
+          </div>
+          <p ng-show="errors[1] && error.expand">
+            <br />{{errors[1]}}
+          </p>
+        </div>
       </td>
     </tr>
   </table>

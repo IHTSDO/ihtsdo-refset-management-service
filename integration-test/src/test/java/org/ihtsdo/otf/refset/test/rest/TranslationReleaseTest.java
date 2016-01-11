@@ -6,8 +6,7 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -546,10 +545,10 @@ public class TranslationReleaseTest {
         releaseService.getCurrentTranslationReleaseInfo(
             stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-    verifyTranslationLookupCompleted(stagedTranslation.getId());
+//    verifyTranslationLookupCompleted(stagedTranslation.getId());
     translationService.removeTranslation(stagedTranslation.getId(), true,
         adminAuthToken);
-    verifyTranslationLookupCompleted(stagedTranslation2.getId());
+//    verifyTranslationLookupCompleted(stagedTranslation2.getId());
     translationService.removeTranslation(stagedTranslation2.getId(), true,
         adminAuthToken);
     verifyTranslationLookupCompleted(translation1.getId());
@@ -752,6 +751,20 @@ public class TranslationReleaseTest {
         adminAuthToken);
     verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+  }
+
+  /**
+   * Test obtaining nonexistent translation returns null gracefully
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testNonexistentTranslationReleaseAccess() throws Exception {
+    ReleaseInfo info =
+        releaseService.getCurrentTranslationReleaseInfo(123456789123456789L,
+            adminAuthToken);
+    assertNull(info);
   }
 
   /**

@@ -15,14 +15,14 @@
 
     <!-- A1 - Projects --> <uib-accordion-group> <uib-accordion-heading>
     <h5>
-      <span uib-tooltip="Add, edit, and remove projects"> Projects </span>
+      <span uib-tooltip="Add, edit, and remove projects">Projects</span>
     </h5>
     </uib-accordion-heading>
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <i ng-click="openAddProjectModal()" title="Add project"
-            class="noul material-icons md-24">add</i>
+          <button ng-click="openAddProjectModal()" title="Add project"
+            class="btn btn-xs btn-primary">Add Project</button>
         </div>
       </h4>
 
@@ -94,8 +94,8 @@
     <div class="col-md-12 col-xs-12">
       <h4>
         <div style="float: right;">
-          <i ng-click="openAddUserModal(luser)" title="Add user"
-            class="noul material-icons md-24">add</i>
+          <button ng-click="openAddUserModal(luser)" title="Add user"
+            class="btn btn-xs btn-primary">Add User</button>
         </div>
       </h4>
 
@@ -408,18 +408,18 @@
               <th class="col-md-1 col-xs-1">&nbsp;</th>
             </thead>
             <tbody>
-              <tr ng-repeat="user in unassignedUsers">
-                <td>{{user.name}}</td>
-                <td>{{user.userName}}</td>
+              <tr ng-repeat="unassigned in unassignedUsers">
+                <td>{{unassigned.name}}</td>
+                <td>{{unassigned.userName}}</td>
                 <td>
-                  <select ng-model="user.projectRole"
-                    ng-init="user.projectRole='AUTHOR'"
+                  <select ng-model="unassigned.projectRole"
+                    ng-init="unassigned.projectRole='AUTHOR'"
                     ng-options="item for item in projectRoles"></select>
                 </td>
                 <td>
 
                   <i
-                    ng-click="assignUserToProject(selectedProject.id, user.userName, user.projectRole)"
+                    ng-click="assignUserToProject(selectedProject.id, unassigned.userName, unassigned.projectRole)"
                     title="Add user to project with selected role."
                     class="noul material-icons md-18">add</i>
                 </td>
@@ -474,13 +474,15 @@
               <th class="col-md-1 col-xs-1">&nbsp;</th>
             </thead>
             <tbody>
-              <tr ng-repeat="user in assignedUsers">
-                <td>{{user.name}}</td>
-                <td>{{user.userName}}</td>
-                <td>{{user.projectRoleMap[selectedProject.id]}}</td>
+              <tr ng-repeat="assigned in assignedUsers">
+                <td>{{assigned.name}}</td>
+                <td>{{assigned.userName}}</td>
+                <td>{{assigned.projectRoleMap[selectedProject.id]}}</td>
                 <td>
                   <i
-                    ng-click="unassignUserFromProject(selectedProject.id, user.userName);"
+                    confirm="Are you sure you want to unassign yourself from this project?"
+                    confirm-if="user.userName == assigned.userName"
+                    ng-click="unassignUserFromProject(selectedProject.id, assigned.userName);"
                     title="Unassign user" class="noul material-icons md-18">delete</i>
                 </td>
               </tr>

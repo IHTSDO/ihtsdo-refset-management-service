@@ -134,6 +134,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       handleLazyInit(record, workflowService);
 
+      return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
     } finally {
@@ -178,6 +179,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
+        concept.getNotes().size();
       }
       return list;
 
@@ -272,6 +274,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
+        concept.getNotes().size();
       }
       return list;
 
@@ -463,7 +466,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
       // any query restriction has already been handled, dont use here
-      pfs.setQueryRestriction(null);
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
       list = workflowService.applyPfsToList(list, Refset.class, pfs);
       result.setObjects(list);
       for (final Refset refset : result.getObjects()) {
@@ -525,17 +530,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     try {
       final Refset refset = workflowService.getRefset(refsetId);
 
-      authorizeProject(workflowService, refset.getProject().getId(),
-          securityService, authToken, "perform workflow action on refset",
-          UserRole.AUTHOR);
+      if (refset != null) {
+        authorizeProject(workflowService, refset.getProject().getId(),
+            securityService, authToken, "perform workflow action on refset",
+            UserRole.AUTHOR);
 
-      TrackingRecord record =
-          workflowService.getTrackingRecordsForRefset(refsetId, null);
-      if (record != null) {
-        handleLazyInit(record, workflowService);
+        TrackingRecord record =
+            workflowService.getTrackingRecordsForRefset(refsetId, null);
+        if (record != null) {
+          handleLazyInit(record, workflowService);
+
+          return record;
+        }
       }
 
-      return record;
+      return null;
     } catch (Exception e) {
       handleException(e, "trying to get tracking records for refset");
     } finally {
@@ -596,7 +605,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @GET
+  @POST
   @Path("/refset/available/review")
   @ApiOperation(value = "Find available review work", notes = "Finds refsets available for review by the specified user", response = RefsetListJpa.class)
   public RefsetList findAvailableReviewRefsets(
@@ -624,7 +633,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
       // any query restriction has already been handled, dont use here
-      pfs.setQueryRestriction(null);
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
       list =
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
@@ -751,7 +762,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final RefsetList list = new RefsetListJpa();
       list.setTotalCount(refsets.size());
       // any query restriction has already been handled, dont use here
-      pfs.setQueryRestriction(null);
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
       list.getObjects().addAll(
           workflowService.applyPfsToList(refsets, Refset.class, pfs));
       for (final Refset refset : list.getObjects()) {
@@ -891,7 +904,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final ConceptList list = new ConceptListJpa();
       list.setTotalCount(concepts.size());
       // any query restriction has already been handled, dont use here
-      pfs.setQueryRestriction(null);
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
       list.getObjects().addAll(
           workflowService.applyPfsToList(concepts, Concept.class, pfs));
 
@@ -1006,9 +1021,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       workflowService.handleLazyInit(record.getRefset());
     }
     for (final User author : record.getAuthors()) {
+      author.getProjectRoleMap().size();
       author.setUserPreferences(null);
     }
     for (final User reviewer : record.getReviewers()) {
+      reviewer.getProjectRoleMap().size();
       reviewer.setUserPreferences(null);
     }
   }

@@ -15,6 +15,7 @@ import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
@@ -85,19 +86,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
     } else if (recordList.getCount() > 1) {
-      throw new Exception("Unexpected number of tracking records for "
+      throw new LocalException("Unexpected number of tracking records for "
           + refset.getId());
     }
 
-    if (projectRole == UserRole.REVIEWER
-        && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-        && action == WorkflowAction.ASSIGN
-        && record.getAuthors().contains(user)) {
-      result
-          .addError("Reviewer cannot review work that was authored by him/her - "
-              + action + ", " + user);
-      return result;
-    }
+    // TODO: possibly support this
+    // if (projectRole == UserRole.REVIEWER
+    // && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+    // && action == WorkflowAction.ASSIGN
+    // && record.getAuthors().contains(user)) {
+    // result
+    // .addError("Reviewer cannot review work that was authored by him/her - "
+    // + action + ", " + user);
+    // return result;
+    // }
 
     // Validate actions that workflow status will allow
     boolean flag = false;
@@ -174,7 +176,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         reviewerFlag =
             projectRole == UserRole.REVIEWER
                 && record != null
-                && EnumSet.of(WorkflowStatus.REVIEW_IN_PROGRESS,
+                && EnumSet.of(WorkflowStatus.REVIEW_NEW,
+                    WorkflowStatus.REVIEW_IN_PROGRESS,
                     WorkflowStatus.REVIEW_DONE).contains(
                     refset.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
@@ -200,13 +203,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       default:
-        throw new Exception("Illegal workflow action");
+        throw new LocalException("Illegal workflow action - " + action);
     }
 
     if (!flag) {
       result.addError("Invalid action for refset workflow status: "
           + user.getUserName() + ", " + action + ", "
-          + refset.getWorkflowStatus() + ", " + record);
+          + refset.getWorkflowStatus() + ", " + record.getId());
     }
 
     return result;
@@ -225,7 +228,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
     } else if (recordList.getCount() > 1) {
-      throw new Exception("Unexpected number of tracking records for "
+      throw new LocalException("Unexpected number of tracking records for "
           + refset.getId());
     }
 
@@ -313,18 +316,21 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       case FINISH:
-        // EDITING_IN_PROGRESS => EDITING_DONE
+        // EDITING_IN_PROGRESS => EDITING_DONE (and mark as not for authoring)
         if (refset.getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+          record.setForAuthoring(false);
           refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
 
-        // REVIEW_IN_PROGRESS => REVIEW_DONE
+        // REVIEW_NEW, REVIEW_IN_PROGRESS => REVIEW_DONE
         else if (refset.getWorkflowStatus() == WorkflowStatus.REVIEW_IN_PROGRESS) {
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
 
         // REVIEW_DONE => READY_FOR_PUBLICATION
-        else if (refset.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
+        else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
+            WorkflowStatus.REVIEW_IN_PROGRESS).contains(
+            refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
         }
@@ -347,7 +353,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       default:
-        throw new Exception("Illegal workflow action");
+        throw new LocalException("Illegal workflow action - " + action);
     }
 
     refset.setLastModifiedBy(user.getUserName());
@@ -392,19 +398,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
     } else if (recordList.getCount() > 1) {
-      throw new Exception("Unexpected number of tracking records for "
+      throw new LocalException("Unexpected number of tracking records for "
           + concept.getTerminologyId());
     }
 
-    if (projectRole == UserRole.REVIEWER
-        && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
-        && action == WorkflowAction.ASSIGN
-        && record.getAuthors().contains(user)) {
-      result
-          .addError("Reviewer cannot review work that was authored by him/her - "
-              + action + ", " + user);
-      return result;
-    }
+    // TODO: possibly support this
+    // if (projectRole == UserRole.REVIEWER
+    // && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
+    // && action == WorkflowAction.ASSIGN
+    // && record.getAuthors().contains(user)) {
+    // result
+    // .addError("Reviewer cannot review work that was authored by him/her - "
+    // + action + ", " + user);
+    // return result;
+    // }
 
     // Validate actions that workflow status will allow
     boolean flag = false;
@@ -482,7 +489,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         reviewerFlag =
             projectRole == UserRole.REVIEWER
                 && record != null
-                && EnumSet.of(WorkflowStatus.REVIEW_IN_PROGRESS,
+                && EnumSet.of(WorkflowStatus.REVIEW_NEW,
+                    WorkflowStatus.REVIEW_IN_PROGRESS,
                     WorkflowStatus.REVIEW_DONE).contains(
                     concept.getWorkflowStatus());
         flag = authorFlag || reviewerFlag;
@@ -510,7 +518,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       default:
         // ASSUMPTION: should never happen
-        throw new Exception("Illegal workflow action");
+        throw new LocalException("Illegal workflow action - " + action);
 
     }
 
@@ -518,7 +526,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       result.addError("Invalid action for translation workflow status: "
           + user.getUserName() + ", " + action + ", "
           + concept.getTerminologyId() + ", " + concept.getWorkflowStatus()
-          + ", " + translation);
+          + ", " + translation.getId());
     }
 
     return result;
@@ -539,7 +547,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
     } else if (recordList.getCount() > 1) {
-      throw new Exception("Unexpected number of tracking records for "
+      throw new LocalException("Unexpected number of tracking records for "
           + concept.getTerminologyId());
     }
     switch (action) {
@@ -641,11 +649,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
         // EDITING_IN_PROGRESS => EDITING_DONE
         if (concept.getWorkflowStatus() == WorkflowStatus.EDITING_IN_PROGRESS) {
+          record.setForAuthoring(false);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
 
         // REVIEW_IN_PROGRESS => REVIEW_DONE
-        else if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_IN_PROGRESS) {
+        else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
+            WorkflowStatus.REVIEW_IN_PROGRESS).contains(
+            concept.getWorkflowStatus())) {
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_DONE);
         }
 
@@ -680,7 +691,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         break;
 
       default:
-        throw new Exception("Illegal workflow action");
+        throw new LocalException("Illegal workflow action - " + action);
     }
 
     // After UNASSIGN and deleting the tracking record,
@@ -746,7 +757,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public ConceptList findAvailableReviewConcepts(Translation translation,
     User user, PfsParameter pfs, WorkflowService service) throws Exception {
 
-
     // Concepts of the translation with
     // workflow status in a certain state
     // that do not yet have tracking records
@@ -757,7 +767,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + "and b.id = :translationId";
 
     final Query ctQuery =
-        ((RootServiceJpa)service).getEntityManager().createQuery(
+        ((RootServiceJpa) service).getEntityManager().createQuery(
             "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
                 + "where a.translation = b and c.translation = b "
                 + "and a = c.concept and a.workflowStatus = :editingDone "
@@ -766,7 +776,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     ctQuery.setParameter("translationId", translation.getId());
 
-    final Query query =  ((RootServiceJpa)service).applyPfsToJqlQuery(queryStr, pfs);
+    final Query query =
+        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     query.setParameter("translationId", translation.getId());
     final List<Concept> results = query.getResultList();
@@ -817,14 +828,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public RefsetList findAvailableReviewRefsets(Long projectId, User user,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
-
     // Refsets for this project that are ready for review
     final String queryStr =
         "select a from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId and "
             + "b.refset = a and a.workflowStatus = :editingDone";
 
     final Query ctQuery =
-        ((RootServiceJpa)service)
+        ((RootServiceJpa) service)
             .getEntityManager()
             .createQuery(
                 "select count(*) from RefsetJpa a, TrackingRecordJpa b where a.project.id = :projectId "
@@ -833,7 +843,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     ctQuery.setParameter("projectId", projectId);
     ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
 
-    final Query query =  ((RootServiceJpa)service).applyPfsToJqlQuery(queryStr, pfs);
+    final Query query =
+        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
     query.setParameter("projectId", projectId);
     query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
     final List<Refset> results = query.getResultList();

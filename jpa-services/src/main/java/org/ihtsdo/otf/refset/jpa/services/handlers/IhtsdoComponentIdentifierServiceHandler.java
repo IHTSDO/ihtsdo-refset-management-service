@@ -302,7 +302,7 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected failure to get termionlogy id: "
+      throw new Exception("Unexpected failure to get terminology id: "
           + resultString);
     }
     /**
