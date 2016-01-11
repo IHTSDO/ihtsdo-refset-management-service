@@ -5,14 +5,17 @@ tsApp.directive('conceptInfo', [
   'utilService',
   'projectService',
   'refsetService',
+  'workflowService',
   'validationService',
-  function($uibModal, utilService, projectService, refsetService, validationService) {
+  function($uibModal, utilService, projectService, refsetService, workflowService,
+    validationService) {
     console.debug('configure conceptInfo directive');
     return {
       restrict : 'A',
       scope : {
         data : '=',
-        value : '='
+        value : '=',
+        handleWorkflow : '&'
       },
       templateUrl : 'app/component/conceptInfo/conceptInfo.html',
       controller : [
@@ -57,6 +60,11 @@ tsApp.directive('conceptInfo', [
               $scope.parents = [];
             }
           });
+
+          // link to error handling
+          function handleError(errors, error) {
+            utilService.handleDialogError(errors, error);
+          }
 
           // Clear error
           $scope.clearError = function() {
@@ -418,6 +426,7 @@ tsApp.directive('conceptInfo', [
           };
 
           // Modals
+
           // Add modal
           $scope.openAddModal = function(lrefset, lmember) {
             console.debug('openAddModal ', lrefset, lmember);
@@ -439,7 +448,7 @@ tsApp.directive('conceptInfo', [
             modalInstance.result.then(
             // Success
             function(data) {
-              refsetService.fireRefsetChanged(data);
+              $scope.handleWorkflow();
               $scope.memberTypes = {};
               $scope.getMemberTypes();
             });
@@ -451,7 +460,6 @@ tsApp.directive('conceptInfo', [
             console.debug('Entered add modal control', refset, member);
 
             $scope.errors = [];
-
             $scope.refset = refset;
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
@@ -475,8 +483,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - add refset
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
               }
               // if extensional and clause defined, call addRefsetMembersForExpression
@@ -488,8 +495,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - add refset
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
               }
               // if intensional and clause undefined, call add inclusion
@@ -553,8 +559,7 @@ tsApp.directive('conceptInfo', [
                     },
                     // Error
                     function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
+                      handleError($scope.errors, data);
                     })
                   }
 
@@ -567,15 +572,13 @@ tsApp.directive('conceptInfo', [
                     },
                     // Error
                     function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
+                      handleError($scope.errors, data);
                     })
                   }
                 },
                 // Error - validate refset
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
             };
           };
@@ -601,7 +604,7 @@ tsApp.directive('conceptInfo', [
             modalInstance.result.then(
             // Success
             function(data) {
-              refsetService.fireRefsetChanged(data);
+              $scope.handleWorkflow();
               $scope.memberTypes = {};
               $scope.getMemberTypes();
             });
@@ -639,8 +642,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - update refset
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
               }
 
@@ -653,8 +655,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - add members for expression
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
               }
 
@@ -667,8 +668,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - add exclusion
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 });
               }
 
@@ -682,8 +682,7 @@ tsApp.directive('conceptInfo', [
                 },
                 // Error - remove member
                 function(data) {
-                  $scope.errors[0] = data;
-                  utilService.clearError();
+                  handleError($scope.errors, data);
                 })
               }
             }

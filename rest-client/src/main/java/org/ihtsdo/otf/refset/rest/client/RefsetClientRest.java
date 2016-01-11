@@ -1434,7 +1434,7 @@ public class RefsetClientRest extends RootClientRest implements
             + "/refset/members/remove"
             + "?refsetId="
             + refsetId
-            + "?query="
+            + "?expression="
             + URLEncoder.encode(expression == null ? "" : expression, "UTF-8")
                 .replaceAll("\\+", "%20"));
 

@@ -160,7 +160,6 @@ tsApp.service('refsetService', [
       // Setup deferred
       var deferred = $q.defer();
 
-      console.debug("EXPRESSION", encodeURIComponent(expression));
       gpService.increment();
       $http.put(refsetUrl + 'members/add?refsetId=' + refset.id, expression, {
         headers : {
@@ -170,6 +169,32 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  output = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
+
+    // Removes refset members resolved from expression
+    this.removeRefsetMembersForExpression = function(refset, expression) {
+
+      console.debug('removeRefsetmembersForExpression', refset, expression);
+      // Setup deferred
+      var deferred = $q.defer();
+
+      gpService.increment();
+      $http['delete'](
+        refsetUrl + 'members/remove?refsetId=' + refset.id + '&expression='
+          + encodeURIComponent(expression)).then(
+      // success
+      function(response) {
+        // empty response
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -259,6 +284,7 @@ tsApp.service('refsetService', [
       $http['delete'](refsetUrl + 'remove/' + refsetId + '?cascade=true').then(
       // success
       function(response) {
+        // empty response
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -303,6 +329,7 @@ tsApp.service('refsetService', [
       $http['delete'](refsetUrl + 'member/remove/' + memberId).then(
       // success
       function(response) {
+        // empty response
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -425,7 +452,7 @@ tsApp.service('refsetService', [
       $http['delete'](refsetUrl + 'exclusion/remove/' + memberId).then(
       // success
       function(response) {
-        console.debug('  exclusion = ', response.data);
+        // empty response
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -1147,6 +1174,7 @@ tsApp.service('refsetService', [
         .then(
         // success
         function(response) {
+          // empty response
           gpService.decrement();
           deferred.resolve(response.data);
         },

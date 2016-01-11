@@ -53,7 +53,7 @@ tsApp
               $scope.showLatest = true;
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion' ];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Retired' ];
 
               // Used for project admin to know what users are assigned to something.
               $scope.refsetAuthorsMap = {};
@@ -321,9 +321,20 @@ tsApp
 
                 if ($scope.paging['member'].typeFilter) {
                   var value = $scope.paging['member'].typeFilter;
+
                   // Handle inactive
-                  value = value.replace(' ', '_').toUpperCase();
-                  pfs.queryRestriction = 'memberType:' + value;
+                  if (value == 'Retired') {
+                    pfs.queryRestriction = 'conceptActive:false';
+                  } else if (value == 'Active') {
+                    pfs.queryRestriction = 'conceptActive:true';
+                  }
+
+                  else {
+                    // Handle member type
+
+                    value = value.replace(' ', '_').toUpperCase();
+                    pfs.queryRestriction = 'memberType:' + value;
+                  }
                 }
 
                 refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
@@ -513,7 +524,7 @@ tsApp
 
               // handle workflow advancement
               $scope.handleWorkflow = function(refset) {
-                if (refset && refset.workflowStatus == 'NEW') {
+                if ($scope.value == 'ASSIGNED' && refset && refset.workflowStatus == 'NEW') {
                   $scope.performWorkflowAction(refset, 'SAVE', $scope.user.userName);
                 } else {
                   refsetService.fireRefsetChanged(refset);
