@@ -490,9 +490,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "add members for expression",
               UserRole.AUTHOR);
 
-      ConceptList resolvedFromExpression =
+      final ConceptList resolvedFromExpression =
           refsetService.getTerminologyHandler().resolveExpression(expression,
               refset.getTerminology(), refset.getVersion(), null);
+      final Set<String> conceptIds = new HashSet<>();
+      for (final Concept concept : resolvedFromExpression.getObjects()) {
+
+      }
 
       ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       for (Concept concept : resolvedFromExpression.getObjects()) {
