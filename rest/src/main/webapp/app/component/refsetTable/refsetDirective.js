@@ -1937,11 +1937,11 @@ tsApp
                   // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
-                    conceptActive = 'true';
+                    conceptActive = true;
                   } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Retired') {
-                    conceptActive = 'false';
+                    conceptActive = false;
                   } else {
-                    conceptActive = 'null';
+                    conceptActive = null;
                   }
 
                   refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
@@ -1991,11 +1991,11 @@ tsApp
                   // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
-                    conceptActive = 'true';
+                    conceptActive = true;
                   } else if ($scope.paging['membersInCommon'].typeFilter == 'Retired') {
-                    conceptActive = 'false';
+                    conceptActive = false;
                   } else {
-                    conceptActive = 'null';
+                    conceptActive = null;
                   }
 
                   refsetService.findMembersInCommon($scope.reportToken, null, pfs, conceptActive)
