@@ -586,6 +586,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   }
 
   @Override
+  // TODO: eventaully this needs to be expressed in the standard expression syntax
   public String computeDefinition() {
     List<DefinitionClause> positiveClauses = new ArrayList<>();
     List<DefinitionClause> negativeClauses = new ArrayList<>();

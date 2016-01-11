@@ -1555,6 +1555,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Refset): compare");
 
+    // NOTE: this does not generically support comparing intensional refsets
+    // the logic assumes only refset1 has inclusions/exclusions    
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "compare refsets",
@@ -1584,6 +1586,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // retired information
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
         refsetService.handleLazyInit(member2);
+        // only for regular members of staged refset, not INCLUSION or EXCLUSION 
+        // or STAGED_INCLUSION, STAGED_EXCLUSION
         if (member2.getMemberType() == Refset.MemberType.MEMBER
             && refset1.getMembers().contains(member2)) {
           // lazy initialize
