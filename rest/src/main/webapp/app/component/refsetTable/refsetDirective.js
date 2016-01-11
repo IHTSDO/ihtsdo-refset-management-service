@@ -1892,19 +1892,14 @@ tsApp
                     },
                     // Error
                     function(data) {
-                      $scope.errors[0] = data;
-                      utilService.clearError();
+                      handleError($scope.errors, data);
                     });
                   },
                   // Error
                   function(data) {
                     handleError($scope.errors, data);
                   });
-                },
-                // Error
-                function(data) {
-                  handleError($scope.errors, data);
-                });
+                }
 
                 //
                 $scope.getDiffReport = function() {
@@ -1937,18 +1932,18 @@ tsApp
                     queryRestriction : $scope.paging['oldRegularMembers'].filter != undefined ? $scope.paging['oldRegularMembers'].filter
                       : null
                   };
-                  
+
                   // TODO: need to figure out how to get null value to be recognized in jersey conversion
                   // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
                     conceptActive = 'true';
-                  } else if($scope.paging['oldRegularMembers'].typeFilter == 'Retired') {
+                  } else if ($scope.paging['oldRegularMembers'].typeFilter == 'Retired') {
                     conceptActive = 'false';
                   } else {
                     conceptActive = 'null';
                   }
-                  
+
                   refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
                   // Success
                   function(data) {
@@ -1991,28 +1986,29 @@ tsApp
                     queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
                   };
-                  
+
                   // TODO: need to figure out how to get null value to be recognized in jersey conversion
                   // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
                     conceptActive = 'true';
-                  } else if($scope.paging['membersInCommon'].typeFilter == 'Retired') {
+                  } else if ($scope.paging['membersInCommon'].typeFilter == 'Retired') {
                     conceptActive = 'false';
                   } else {
                     conceptActive = 'null';
                   }
-                                   
-                  refsetService.findMembersInCommon($scope.reportToken, null, pfs, conceptActive).then(
-                  // Succcess
-                  function(data) {
-                    $scope.membersInCommon = data.members;
-                    $scope.membersInCommon.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
+
+                  refsetService.findMembersInCommon($scope.reportToken, null, pfs, conceptActive)
+                    .then(
+                    // Succcess
+                    function(data) {
+                      $scope.membersInCommon = data.members;
+                      $scope.membersInCommon.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
                 };
 
                 $scope.refreshLookupProgress = function() {
@@ -2034,7 +2030,7 @@ tsApp
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                    } 
+                    }
                   },
                   // Error
                   function(data) {
@@ -2085,28 +2081,26 @@ tsApp
                   });
 
                 };
-                
+
                 $scope.removeMember = function(member) {
 
                   refsetService.removeRefsetMember(member.id).then(
                   // Success
                   function(data) {
                     refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                      // Success
-                      function(data) {
-                        $scope.reportToken = data;
-                        $scope.getDiffReport();
-                      },
-                      // Error
-                      function(data) {
-                        $scope.errors[0] = data;
-                        utilService.clearError();
-                      });
+                    // Success
+                    function(data) {
+                      $scope.reportToken = data;
+                      $scope.getDiffReport();
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
                   },
                   // Error
                   function(data) {
-                    $scope.errors[0] = data;
-                    utilService.clearError();
+                    handleError($scope.errors, data);
                   });
 
                 };

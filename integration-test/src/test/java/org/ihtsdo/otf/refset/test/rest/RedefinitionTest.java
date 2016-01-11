@@ -524,7 +524,7 @@ public class RedefinitionTest {
 
     // cleanup
     verifyRefsetLookupCompleted(janRefset.getId());
-//    verifyRefsetLookupCompleted(julyStagedRefset.getId());
+    // verifyRefsetLookupCompleted(julyStagedRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 

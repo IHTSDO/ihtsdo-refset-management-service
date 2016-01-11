@@ -128,7 +128,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final Refset refset =
           refsetService.getRefsetRevision(refsetId,
@@ -166,7 +167,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final ConceptRefsetMemberList list =
           refsetService.findMembersForRefsetRevision(refsetId,
@@ -306,7 +308,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 2", required = true) Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Refset): refsets for project " + projectId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): refsets for project " + projectId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -460,6 +463,58 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/members/remove")
+  @ApiOperation(value = "Remove members for expression", notes = "Removes the members that are defined by the expression to the specified extensional refset")
+  public void removeRefsetMembersForExpression(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Expression", required = true) String expression,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /members/add for refsetId: " + refsetId
+            + ", expression: " + expression);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    Refset refset = refsetService.getRefset(refsetId);
+    try {
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "add members for expression",
+              UserRole.AUTHOR);
+
+      ConceptList resolvedFromExpression =
+          refsetService.getTerminologyHandler().resolveExpression(expression,
+              refset.getTerminology(), refset.getVersion(), null);
+
+      ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      for (Concept concept : resolvedFromExpression.getObjects()) {
+        final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+        member.setTerminologyId(concept.getTerminologyId());
+        member.setConceptId(concept.getTerminologyId());
+        member.setConceptName(concept.getName());
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setModuleId(concept.getModuleId());
+        member.setLastModifiedBy(userName);
+        member.setRefset(refset);
+        member.setActive(true);
+        member.setConceptActive(true);
+        list.addObject(refsetService.addMember(member));
+      }
+      refsetService.commit();
+    } catch (Exception e) {
+      handleException(e, "trying to update a refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
 
   /* see superclass */
@@ -1265,7 +1320,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           }
         }
       } else {
-        throw new LocalException("Refset type must be extensional or intensional.");
+        throw new LocalException(
+            "Refset type must be extensional or intensional.");
       }
 
       // If we're going to call lookupNames, set lookupInProgress first
@@ -1512,7 +1568,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // creates a "members in common" list (where reportToken is the key)
       final List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-      // adding member2s to the list instead of member1 because it has the new retired information
+      // adding member2s to the list instead of member1 because it has the new
+      // retired information
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
         refsetService.handleLazyInit(member2);
         if (member2.getMemberType() == Refset.MemberType.MEMBER
@@ -1523,7 +1580,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       membersInCommonMap.put(reportToken, membersInCommon);
-      
 
       // creates a "diff report"
       final MemberDiffReport diffReport = new MemberDiffReportJpa();
@@ -1592,23 +1648,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (conceptActive != null) {
         List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
         for (ConceptRefsetMember member : commonMembersList) {
-          if ((conceptActive && member.isConceptActive()) ||
-              (!conceptActive && !member.isConceptActive())) {
+          if ((conceptActive && member.isConceptActive())
+              || (!conceptActive && !member.isConceptActive())) {
             matchingActiveList.add(member);
           }
         }
         commonMembersList = matchingActiveList;
       }
-      
 
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       list.setObjects(refsetService.applyPfsToList(commonMembersList,
           ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+      if (pfs.getQueryRestriction() == null
+          || pfs.getQueryRestriction().equals(""))
         list.setTotalCount(commonMembersList.size());
       else
         list.setTotalCount(list.getObjects().size());
-      
+
       return list;
 
     } catch (Exception e) {
@@ -1682,7 +1738,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final MemberDiffReport memberDiffReport =
           memberDiffReportMap.get(reportToken);
-      List<ConceptRefsetMember> oldMembers = memberDiffReport.getOldRegularMembers();
+      List<ConceptRefsetMember> oldMembers =
+          memberDiffReport.getOldRegularMembers();
 
       // if the value is null, throw an exception
       if (memberDiffReport == null) {
@@ -1693,8 +1750,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (conceptActive != null) {
         List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
         for (ConceptRefsetMember member : oldMembers) {
-          if ((conceptActive && member.isConceptActive()) ||
-              (!conceptActive && !member.isConceptActive())) {
+          if ((conceptActive && member.isConceptActive())
+              || (!conceptActive && !member.isConceptActive())) {
             matchingActiveList.add(member);
           }
         }
@@ -1704,12 +1761,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       list.setObjects(refsetService.applyPfsToList(oldMembers,
           ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+      if (pfs.getQueryRestriction() == null
+          || pfs.getQueryRestriction().equals(""))
         list.setTotalCount(oldMembers.size());
       else
         list.setTotalCount(list.getObjects().size());
-      
-      
+
       return list;
 
     } catch (Exception e) {
@@ -1730,7 +1787,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    // TODO: do we need the active/retired flag for new members since we aren't sorting by status?  If so, add filtering logic below.
+    // TODO: do we need the active/retired flag for new members since we aren't
+    // sorting by status? If so, add filtering logic below.
     @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -2136,7 +2194,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // verify that staged
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {
-        throw new LocalException("Refset is not staged for import, cannot finish.");
+        throw new LocalException(
+            "Refset is not staged for import, cannot finish.");
       }
 
       // get the staged change tracking object

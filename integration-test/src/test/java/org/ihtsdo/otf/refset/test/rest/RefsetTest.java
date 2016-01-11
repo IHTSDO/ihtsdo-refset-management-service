@@ -717,11 +717,11 @@ public class RefsetTest {
             julyStagedRefset.getId(), adminAuthToken);
 
     oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
-            null, adminAuthToken);
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
+            adminAuthToken);
     newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
-            null, adminAuthToken);
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
+            adminAuthToken);
 
     assertEquals(0, oldRegularMembers.getCount());
     assertEquals(0, newRegularMembers.getCount());
@@ -741,11 +741,11 @@ public class RefsetTest {
             julyStagedRefset.getId(), adminAuthToken);
 
     oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
-            null, adminAuthToken);
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
+            adminAuthToken);
     newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
-            null, adminAuthToken);
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
+            adminAuthToken);
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     assertEquals(1, oldRegularMembers.getCount());
@@ -873,8 +873,8 @@ public class RefsetTest {
 
     // Verify common members as expected
     ConceptRefsetMemberList commonMembers =
-        refsetService
-            .findMembersInCommon(reportToken, "", null, null, adminAuthToken);
+        refsetService.findMembersInCommon(reportToken, "", null, null,
+            adminAuthToken);
     assertEquals(254, commonMembers.getCount());
 
     // Verify diffReport as expected
@@ -885,7 +885,7 @@ public class RefsetTest {
 
     // Verify oldNewRegular Member Calls as expected
     ConceptRefsetMemberList oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null, null, 
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
             adminAuthToken);
     ConceptRefsetMemberList newRegularMembers =
         refsetService.getNewRegularMembers(reportToken, "", null, null,
