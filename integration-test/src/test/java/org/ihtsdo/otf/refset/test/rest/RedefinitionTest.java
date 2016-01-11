@@ -571,7 +571,7 @@ public class RedefinitionTest {
 
     // Verify common members as expected
     ConceptRefsetMemberList commonList =
-        refsetService.findMembersInCommon(reportToken, null, null,
+        refsetService.findMembersInCommon(reportToken, null, null, null,
             adminAuthToken);
     assertEquals(111, commonList.getObjects().size());
 
@@ -583,10 +583,10 @@ public class RedefinitionTest {
 
     // Verify proper oldNew member access
     ConceptRefsetMemberList oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
+        refsetService.getOldRegularMembers(reportToken, "", null, null,
             adminAuthToken);
     ConceptRefsetMemberList newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
             adminAuthToken);
     assertEquals(diffReport.getOldNotNew().size(), oldRegularMembers.getCount());
     assertEquals(diffReport.getNewNotOld().size(), newRegularMembers.getCount());

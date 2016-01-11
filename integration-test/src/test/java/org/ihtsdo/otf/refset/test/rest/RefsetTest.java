@@ -874,7 +874,7 @@ public class RefsetTest {
     // Verify common members as expected
     ConceptRefsetMemberList commonMembers =
         refsetService
-            .findMembersInCommon(reportToken, "", null, adminAuthToken);
+            .findMembersInCommon(reportToken, "", null, null, adminAuthToken);
     assertEquals(254, commonMembers.getCount());
 
     // Verify diffReport as expected
@@ -885,10 +885,10 @@ public class RefsetTest {
 
     // Verify oldNewRegular Member Calls as expected
     ConceptRefsetMemberList oldRegularMembers =
-        refsetService.getOldRegularMembers(reportToken, "", null,
+        refsetService.getOldRegularMembers(reportToken, "", null, null, 
             adminAuthToken);
     ConceptRefsetMemberList newRegularMembers =
-        refsetService.getNewRegularMembers(reportToken, "", null,
+        refsetService.getNewRegularMembers(reportToken, "", null, null,
             adminAuthToken);
 
     assertEquals(diffReport.getOldNotNew().size(), oldRegularMembers.getCount());
