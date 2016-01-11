@@ -656,7 +656,7 @@ tsApp.service('refsetService', [
     }
 
     // get list of old regular members from diff report
-    this.getOldRegularMembers = function(reportToken, query, pfs) {
+    this.getOldRegularMembers = function(reportToken, query, pfs, conceptActive) {
       console.debug('getOldRegularMembers');
       // Setup deferred
       var deferred = $q.defer();
@@ -664,8 +664,9 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'old/members?reportToken=' + reportToken + '&query='
-          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+        refsetUrl + 'old/members?reportToken=' + reportToken
+          + (conceptActive != null ? '&conceptActive=' + conceptActive : '') 
+          + '&query=' + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -682,7 +683,7 @@ tsApp.service('refsetService', [
     }
 
     // get list of new regular members from diff report
-    this.getNewRegularMembers = function(reportToken, query, pfs) {
+    this.getNewRegularMembers = function(reportToken, query, pfs, conceptActive) {
       console.debug('getNewRegularMembers');
       // Setup deferred
       var deferred = $q.defer();
@@ -690,8 +691,9 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'new/members?reportToken=' + reportToken + '&query='
-          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+        refsetUrl + 'new/members?reportToken=' + reportToken 
+        + (conceptActive != null ? '&conceptActive=' + conceptActive : '') 
+        + '&query=' + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);

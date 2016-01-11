@@ -1589,7 +1589,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // only for regular members of staged refset, not INCLUSION or EXCLUSION 
         // or STAGED_INCLUSION, STAGED_EXCLUSION
         if (member2.getMemberType() == Refset.MemberType.MEMBER
-            && refset1.getMembers().contains(member2)) {
+            && refset1.getMembers().indexOf(member2) != -1
+            && refset1.getMembers().get(
+              refset1.getMembers().indexOf(member2)).getMemberType() == Refset.MemberType.MEMBER) {
           // lazy initialize
           member2.toString();
           membersInCommon.add(member2);
@@ -1606,6 +1608,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refsetService.handleLazyInit(member1);
         if (!refset2.getMembers().contains(member1)) {
           oldNotNew.add(member1);
+        // Always keep exclusions
+        } else if (member1.getMemberType() == Refset.MemberType.EXCLUSION) {
+          oldNotNew.add(member1);
         }
       }
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
@@ -1616,9 +1621,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // Always include stuff marked as STAGED
         else if (member2.getMemberType() == Refset.MemberType.INCLUSION_STAGED
             || member2.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
-          if (!refset1.getMembers().contains(member2)) {
             newNotOld.add(member2);
-          }
         }
       }
       diffReport.setOldNotNew(oldNotNew);
@@ -1813,8 +1816,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    // TODO: do we need the active/retired flag for new members since we aren't
-    // sorting by status? If so, add filtering logic below.
     @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
