@@ -128,7 +128,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final Refset refset =
           refsetService.getRefsetRevision(refsetId,
@@ -166,7 +167,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:" + date);
+        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
+            + date);
 
       final ConceptRefsetMemberList list =
           refsetService.findMembersForRefsetRevision(refsetId,
@@ -306,7 +308,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 2", required = true) Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Refset): refsets for project " + projectId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): refsets for project " + projectId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -414,6 +417,60 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Path("/members/add")
   @ApiOperation(value = "Add members for expression", notes = "Adds the members that are defined by the expression to the specified extensional refset", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList addRefsetMembersForExpression(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Expression", required = true) String expression,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Refset): /members/add for refsetId: " + refsetId
+            + ", expression: " + expression);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    Refset refset = refsetService.getRefset(refsetId);
+    try {
+      String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "add members for expression",
+              UserRole.AUTHOR);
+
+      ConceptList resolvedFromExpression =
+          refsetService.getTerminologyHandler().resolveExpression(expression,
+              refset.getTerminology(), refset.getVersion(), null);
+
+      ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      for (Concept concept : resolvedFromExpression.getObjects()) {
+        final ConceptRefsetMemberJpa member = new ConceptRefsetMemberJpa();
+        member.setTerminologyId(concept.getTerminologyId());
+        member.setConceptId(concept.getTerminologyId());
+        member.setConceptName(concept.getName());
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setModuleId(concept.getModuleId());
+        member.setLastModifiedBy(userName);
+        member.setRefset(refset);
+        member.setActive(true);
+        member.setConceptActive(true);
+        list.addObject(refsetService.addMember(member));
+      }
+      refsetService.commit();
+      return list;
+    } catch (Exception e) {
+      handleException(e, "trying to update a refset");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @Override
+  @DELETE
+  @Path("/members/remove")
+  @ApiOperation(value = "Remove members for expression", notes = "Removes the members that are defined by the expression to the specified extensional refset")
+  public vpod removeRefsetMembersForExpression(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Expression", required = true) String expression,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1265,7 +1322,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           }
         }
       } else {
-        throw new LocalException("Refset type must be extensional or intensional.");
+        throw new LocalException(
+            "Refset type must be extensional or intensional.");
       }
 
       // If we're going to call lookupNames, set lookupInProgress first
@@ -2099,7 +2157,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // verify that staged
       if (refset.getStagingType() != Refset.StagingType.IMPORT) {
-        throw new LocalException("Refset is not staged for import, cannot finish.");
+        throw new LocalException(
+            "Refset is not staged for import, cannot finish.");
       }
 
       // get the staged change tracking object

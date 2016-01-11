@@ -414,8 +414,8 @@ public class RefsetClientRest extends RootClientRest implements
     validateNotEmpty(refsetId, "refsetId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/member/remove/all/"
-            + refsetId);
+        client.target(config.getProperty("base.url")
+            + "/refset/member/remove/all/" + refsetId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1411,6 +1411,38 @@ public class RefsetClientRest extends RootClientRest implements
     // converting to object
     return (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
         resultString, ConceptRefsetMemberListJpa.class);
+  }
+
+  @Override
+  public void removeRefsetMembersForExpression(Long refsetId,
+    String expression, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - remove refset members For Expression: " + refsetId
+            + ", " + expression);
+    validateNotEmpty(refsetId, "refsetId");
+    validateNotEmpty(expression, "expression");
+
+    Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/refset/members/remove"
+            + "?refsetId="
+            + refsetId
+            + "?query="
+            + URLEncoder.encode(expression == null ? "" : expression, "UTF-8")
+                .replaceAll("\\+", "%20"));
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
+
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
   }
 
   @Override

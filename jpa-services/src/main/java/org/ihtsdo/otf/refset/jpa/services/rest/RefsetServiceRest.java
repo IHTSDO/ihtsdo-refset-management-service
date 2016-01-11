@@ -546,13 +546,25 @@ public interface RefsetServiceRest {
     String expression, String authToken) throws Exception;
 
   /**
+   * Removes the refset members for expression.
+   *
+   * @param refsetId the refset id
+   * @param expression the expression
+   * @param authToken the auth token
+   * @throws Exception the exception
+   */
+  public void removeRefsetMembersForExpression(Long refsetId,
+    String expression, String authToken) throws Exception;
+
+  /**
    * Optimize definition.
    *
    * @param refsetId the refset id
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void optimizeDefinition(Long refsetId, String authToken) throws Exception;
+  public void optimizeDefinition(Long refsetId, String authToken)
+    throws Exception;
 
   /**
    * Recovery refset.
