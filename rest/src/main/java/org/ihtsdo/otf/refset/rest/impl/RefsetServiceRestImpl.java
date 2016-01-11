@@ -470,7 +470,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @DELETE
   @Path("/members/remove")
   @ApiOperation(value = "Remove members for expression", notes = "Removes the members that are defined by the expression to the specified extensional refset")
-  public vpod removeRefsetMembersForExpression(
+  public void removeRefsetMembersForExpression(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Expression", required = true) String expression,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -509,14 +509,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         list.addObject(refsetService.addMember(member));
       }
       refsetService.commit();
-      return list;
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
     } finally {
       refsetService.close();
       securityService.close();
     }
-    return null;
   }
 
   /* see superclass */
@@ -1570,7 +1568,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // creates a "members in common" list (where reportToken is the key)
       final List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-      // adding member2s to the list instead of member1 because it has the new retired information
+      // adding member2s to the list instead of member1 because it has the new
+      // retired information
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
         refsetService.handleLazyInit(member2);
         if (member2.getMemberType() == Refset.MemberType.MEMBER
@@ -1581,7 +1580,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       membersInCommonMap.put(reportToken, membersInCommon);
-      
 
       // creates a "diff report"
       final MemberDiffReport diffReport = new MemberDiffReportJpa();
@@ -1650,23 +1648,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (conceptActive != null) {
         List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
         for (ConceptRefsetMember member : commonMembersList) {
-          if ((conceptActive && member.isConceptActive()) ||
-              (!conceptActive && !member.isConceptActive())) {
+          if ((conceptActive && member.isConceptActive())
+              || (!conceptActive && !member.isConceptActive())) {
             matchingActiveList.add(member);
           }
         }
         commonMembersList = matchingActiveList;
       }
-      
 
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       list.setObjects(refsetService.applyPfsToList(commonMembersList,
           ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+      if (pfs.getQueryRestriction() == null
+          || pfs.getQueryRestriction().equals(""))
         list.setTotalCount(commonMembersList.size());
       else
         list.setTotalCount(list.getObjects().size());
-      
+
       return list;
 
     } catch (Exception e) {
@@ -1740,7 +1738,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final MemberDiffReport memberDiffReport =
           memberDiffReportMap.get(reportToken);
-      List<ConceptRefsetMember> oldMembers = memberDiffReport.getOldRegularMembers();
+      List<ConceptRefsetMember> oldMembers =
+          memberDiffReport.getOldRegularMembers();
 
       // if the value is null, throw an exception
       if (memberDiffReport == null) {
@@ -1751,8 +1750,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (conceptActive != null) {
         List<ConceptRefsetMember> matchingActiveList = new ArrayList<>();
         for (ConceptRefsetMember member : oldMembers) {
-          if ((conceptActive && member.isConceptActive()) ||
-              (!conceptActive && !member.isConceptActive())) {
+          if ((conceptActive && member.isConceptActive())
+              || (!conceptActive && !member.isConceptActive())) {
             matchingActiveList.add(member);
           }
         }
@@ -1762,12 +1761,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
       list.setObjects(refsetService.applyPfsToList(oldMembers,
           ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null || pfs.getQueryRestriction().equals(""))
+      if (pfs.getQueryRestriction() == null
+          || pfs.getQueryRestriction().equals(""))
         list.setTotalCount(oldMembers.size());
       else
         list.setTotalCount(list.getObjects().size());
-      
-      
+
       return list;
 
     } catch (Exception e) {
@@ -1788,7 +1787,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    // TODO: do we need the active/retired flag for new members since we aren't sorting by status?  If so, add filtering logic below.
+    // TODO: do we need the active/retired flag for new members since we aren't
+    // sorting by status? If so, add filtering logic below.
     @ApiParam(value = "Concept active, e.g. true/false/null", required = false) @QueryParam("conceptActive") Boolean conceptActive,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
