@@ -308,7 +308,7 @@ public abstract class RootServiceJpa implements RootService {
 
       List<T> filteredResult = new ArrayList<T>();
       for (T t : result) {
-        if (t.toString().indexOf(pfs.getQueryRestriction()) != -1) {
+        if (t.toString().toLowerCase().indexOf(pfs.getQueryRestriction().toLowerCase()) != -1) {
           filteredResult.add(t);
         }
       }

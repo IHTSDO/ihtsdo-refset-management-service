@@ -488,6 +488,7 @@ tsApp
           $scope.project = {
             terminology : metadata.terminologies[0]
           };
+          $scope.clause = null;
           $scope.terminologies = metadata.terminologies;
           $scope.metadata = metadata;
           $scope.user = user;
@@ -531,6 +532,9 @@ tsApp
               }
             }
 
+            // copy clause - don't allow negation - it's implicitly negated
+            project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
+            
             // Add project
             projectService.addProject(project).then(
               // Success
@@ -596,6 +600,7 @@ tsApp
           validationChecks) {
 
           $scope.action = 'Edit';
+          $scope.clause = project.exclusionClause;
           $scope.project = project;
           $scope.metadata = metadata;
           $scope.terminologies = metadata.terminologies;
@@ -636,6 +641,9 @@ tsApp
                 project.validationChecks.push($scope.validationChecks[i].key);
               }
             }
+
+            // copy clause - don't allow negation - it's implicitly negated
+            project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
 
             projectService.updateProject(project).then(
             // Success

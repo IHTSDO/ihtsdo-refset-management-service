@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.services;
 
 import java.util.Date;
+import java.util.List;
 
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
@@ -330,6 +331,21 @@ public interface RefsetService extends ReleaseService {
     throws Exception;
 
   /**
+   * Perform member lookup names for a known list of members. This is to support
+   * migration
+   *
+   * @param refsetId the refset id
+   * @param members the members
+   * @param label the label
+   * @param saveMembers the save members
+   * @param background the background
+   * @throws Exception the exception
+   */
+  public void lookupMemberNames(Long refsetId,
+    List<ConceptRefsetMember> members, String label, boolean saveMembers, boolean background)
+    throws Exception;
+
+  /**
    * Returns the percentage of concepts within the refset whose lookup has been
    * completed.
    *
@@ -338,7 +354,8 @@ public interface RefsetService extends ReleaseService {
    * @return percentage completed
    * @throws Exception the exception
    */
-  public int getLookupProgress(Long objectId, boolean lookupInProgress) throws Exception;
+  public int getLookupProgress(Long objectId, boolean lookupInProgress)
+    throws Exception;
 
   /**
    * Resolve refset definition.

@@ -58,9 +58,9 @@
             <div class="alert alert-danger alert-error">
               {{errors[0]}}
               <div style="display: inline; float: right;">
-                <i ng-show="errors[1] && !error.expand" title="Show long eror"
+                <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long error"
                   class="noul material-icons md-18"
-                  ng-click="error.expand=true;">attach_file</i>
+                  ng-click="error.expand = !error.expand;">attach_file</i>
               </div>
               <p ng-show="errors[1] && error.expand">
                 <br />{{errors[1]}}
@@ -77,11 +77,8 @@
         <div class="col-md-12 col-xs-12">
 
           <h5 ng-show="refset.stagingType != null && (membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != '')">
-            <b>Members In Common</b>
+            <b>Members In Common ({{membersInCommon.totalCount}})</b>
           </h5>
-          <span ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
-            class="alert alert-warning"> Origin and staged refsets have
-            no members in common</span>
           <span style="display: block;">
             <uib-pagination items-per-page="pageSize" max-size="5"
               boundary-links="true" class="pagination-sm"
@@ -108,7 +105,7 @@
             <thead>
               <th class="col-md-4 col-xs-4">Concept id</th>
               <th class="col-md-7 col-xs-7">Concept name</th>
-              <th class="col-md-1 col-xs-1"><select
+              <th class="col-md-1 col-xs-1" ng-show="refset.type == 'EXTENSIONAL'"><select
               title="Filter by status" style="width: 60px;"
               ng-model="paging['membersInCommon'].typeFilter"
               ng-options="item for item in statusTypes"
@@ -121,7 +118,7 @@
               <tr ng-repeat="member in membersInCommon">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><button class="btn btn-xs retired"
+                <td ng-show="refset.type == 'EXTENSIONAL'"><button class="btn btn-xs retired"
                   ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
                 <td><i title="Remove"
               confirm="Are you sure you want to remove the retired member?"
@@ -131,17 +128,52 @@
               </tr>
             </tbody>
           </table>
-          <span ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</span>
+          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
+            class="alert alert-warning"> No filter results</div>            
+          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
+            class="alert alert-warning"> Origin and staged refsets have
+            no members in common</div>
         </div>
       </div>
+      
+      
       <div class="row">
         <div class="col-md-6 col-xs-6">
+          
           <h5
-            ng-show="validInclusions.length > 0 || stagedInclusions.length > 0"
-            uib-tooltip="Concepts that are not in migrated refset and user can choose to continue their explicit inclusion.">
-            <b>Valid Inclusions</b>
+            ng-show="validInclusions.length > 0  || stagedInclusions.length > 0"
+            uib-tooltip="Concepts not in migrated refset.  User can choose to continue their explicit inclusion.">
+            <b>Valid Inclusions<span
+                ng-show="pagedValidInclusions.length > 0">
+                ({{pagedValidInclusions.totalCount}})</span></b>
           </h5>
+
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedValidInclusions.totalCount > pageSize || paging['validInclusions'].filter"
+              total-items="pagedValidInclusions.totalCount"
+              ng-model="paging['validInclusions'].page"
+              ng-change="getPagedValidInclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedValidInclusions.totalCount > pageSize || paging['validInclusions'].filter"
+              type="text" ng-model="paging['validInclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedValidInclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['validInclusions'].filter"
+              ng-click="paging['validInclusions'].filter = ''; getPagedValidInclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedValidInclusions.length == 0 && paging['validInclusions'].filter"
+            class="alert alert-warning"> No valid inclusions matching
+            filter </span>
 
           <table
             ng-show="validInclusions.length > 0 || stagedInclusions.length > 0"
@@ -149,12 +181,21 @@
             <thead>
               <th class="col-md-3 col-xs-3">Concept id</th>
               <th class="col-md-8 col-xs-8">Concept name</th>
+              <th class="col-md-1 col-xs-1"><select
+              title="Filter by status" style="width: 60px;"
+              ng-model="paging['validInclusions'].typeFilter"
+              ng-options="item for item in statusTypes"
+              ng-change="getPagedValidInclusions()">
+                <option value="">All</option>
+              </select></th>
               <th class="col-md-1 col-xs-1"></th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in validInclusions">
+              <tr ng-repeat="member in pagedValidInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
+                <td><button class="btn btn-xs retired"
+                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
                 <td>
                   <a ng-click="include(stagedRefset, member, true)">
                     <i uib-tooltip="Add inclusion to staged refset."
@@ -165,27 +206,65 @@
             </tbody>
           </table>
 
-
         </div>
 
         <div class="col-md-6 col-xs-6">
+
           <h5
-            ng-show="stagedInclusions.length > 0 || validInclusions.length > 0">
-            <b>Staged Inclusions</b>
+            ng-show="stagedInclusions.length > 0  || validInclusions.length > 0">
+            <b>Staged Inclusions<span
+                ng-show="pagedStagedInclusions.length > 0">
+                ({{pagedStagedInclusions.totalCount}})</span></b>
           </h5>
 
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedStagedInclusions.totalCount > pageSize || paging['stagedInclusions'].filter"
+              total-items="pagedStagedInclusions.totalCount"
+              ng-model="paging['stagedInclusions'].page"
+              ng-change="getPagedStagedInclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedStagedInclusions.totalCount > pageSize || paging['stagedInclusions'].filter"
+              type="text" ng-model="paging['stagedInclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedStagedInclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['stagedInclusions'].filter"
+              ng-click="paging['stagedInclusions'].filter = ''; getPagedStagedInclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedStagedInclusions.length == 0 && paging['stagedInclusions'].filter"
+            class="alert alert-warning"> No staged inclusions matching
+            filter </span>
+          
           <table
             ng-show="stagedInclusions.length > 0 || validInclusions.length > 0"
             class="table">
             <thead>
               <th class="col-md-3 col-xs-3">Concept id</th>
               <th class="col-md-8 col-xs-8">Concept name</th>
+              <th class="col-md-1 col-xs-1"><select
+              title="Filter by status" style="width: 60px;"
+              ng-model="paging['stagedInclusions'].typeFilter"
+              ng-options="item for item in statusTypes"
+              ng-change="getPagedStagedInclusions()">
+                <option value="">All</option>
+              </select></th>
               <th class="col-md-1 col-xs-1"></th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in stagedInclusions">
+              <tr ng-repeat="member in pagedStagedInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
+                <td><button class="btn btn-xs retired"
+                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
                 <td>
                   <a ng-click="revert(refset, member)">
                     <i uib-tooltip="Revert staged inclusion."
@@ -197,12 +276,45 @@
           </table>
         </div>
       </div>
+
+
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          <h5 ng-show="invalidInclusions.length > 0"
+          
+          <h5
+            ng-show="invalidInclusions.length > 0"
             uib-tooltip="Concepts that were inclusions in origin refset, but now are regular members of the migrated refset.">
-            <b>Invalid Inclusions</b>
+            <b>Invalid Inclusions<span
+                ng-show="pagedInvalidInclusions.length > 0">
+                ({{pagedInvalidInclusions.totalCount}})</span></b>
           </h5>
+
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedInvalidInclusions.totalCount > pageSize || paging['invalidInclusions'].filter"
+              total-items="pagedInvalidInclusions.totalCount"
+              ng-model="paging['invalidInclusions'].page"
+              ng-change="getPagedInvalidInclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedInvalidInclusions.totalCount > pageSize || paging['invalidInclusions'].filter"
+              type="text" ng-model="paging['invalidInclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedInvalidInclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['invalidInclusions'].filter"
+              ng-click="paging['invalidInclusions'].filter = ''; getPagedInvalidInclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedInvalidInclusions.length == 0 && paging['invalidInclusions'].filter"
+            class="alert alert-warning"> No invalid inclusions matching
+            filter </span>
 
           <table ng-show="invalidInclusions.length > 0" class="table">
             <thead>
@@ -210,7 +322,7 @@
               <th class="col-md-8 col-xs-8">Concept name</th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in invalidInclusions">
+              <tr ng-repeat="member in pagedInvalidInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
               </tr>
@@ -218,29 +330,60 @@
           </table>
         </div>
       </div>
+      
       <div class="row">
         <div class="col-md-6 col-xs-6">
+          
           <h5
-            ng-show="validExclusions.length > 0 || stagedExclusions.length > 0"
-            uib-tooltip="Concepts that are in migrated refset and user can choose to continue their exclusion.">
-            <b>Valid Exclusions</b>
+            ng-show="validExclusions.length > 0  || stagedExclusions.length > 0"
+            uib-tooltip="Concepts that are in migrated refset.  User can choose to continue their exclusion.">
+            <b>Valid Exclusions<span
+                ng-show="pagedValidExclusions.length > 0">
+                ({{pagedValidExclusions.totalCount}})</span></b>
           </h5>
+
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedValidExclusions.totalCount > pageSize || paging['validExclusions'].filter"
+              total-items="pagedValidExclusions.totalCount"
+              ng-model="paging['validExclusions'].page"
+              ng-change="getPagedValidExclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedValidExclusions.totalCount > pageSize || paging['validExclusions'].filter"
+              type="text" ng-model="paging['validExclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedValidExclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['validExclusions'].filter"
+              ng-click="paging['validExclusions'].filter = ''; getPagedValidExclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedValidExclusions.length == 0 && paging['validExclusions'].filter"
+            class="alert alert-warning"> No valid exclusions matching
+            filter </span>
 
           <table
             ng-show="validExclusions.length > 0 || stagedExclusions.length > 0"
             class="table">
             <thead>
-              <th class="col-md-4 col-xs-4">Concept id</th>
-              <th class="col-md-7 col-xs-7">Concept name</th>
+              <th class="col-md-3 col-xs-3">Concept id</th>
+              <th class="col-md-8 col-xs-8">Concept name</th>
               <th class="col-md-1 col-xs-1"></th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in validExclusions">
+              <tr ng-repeat="member in pagedValidExclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
                 <td>
-                  <a ng-click="exclude(refset, member, 'true')">
-                    <i uib-tooltip="Add inclusion to staged refset."
+                  <a ng-click="include(stagedRefset, member, true)">
+                    <i uib-tooltip="Add exclusion to staged refset."
                       class="noul material-icons md-18">arrow_forward</i>
                   </a>
                 </td>
@@ -249,12 +392,43 @@
           </table>
 
         </div>
+
         <div class="col-md-6 col-xs-6">
+
           <h5
-            ng-show="stagedExclusions.length > 0 || validExclusions.length > 0">
-            <b>Staged Exclusions</b>
+            ng-show="stagedExclusions.length > 0  || validExclusions.length > 0">
+            <b>Staged Exclusions<span
+                ng-show="pagedStagedExclusions.length > 0">
+                ({{pagedStagedExclusions.totalCount}})</span></b>
           </h5>
 
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedStagedExclusions.totalCount > pageSize || paging['stagedExclusions'].filter"
+              total-items="pagedStagedExclusions.totalCount"
+              ng-model="paging['stagedExclusions'].page"
+              ng-change="getPagedStagedExclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedStagedExclusions.totalCount > pageSize || paging['stagedExclusions'].filter"
+              type="text" ng-model="paging['stagedExclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedStagedExclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['stagedExclusions'].filter"
+              ng-click="paging['stagedExclusions'].filter = ''; getPagedStagedExclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedStagedExclusions.length == 0 && paging['stagedExclusions'].filter"
+            class="alert alert-warning"> No staged exclusions matching
+            filter </span>
+          
           <table
             ng-show="stagedExclusions.length > 0 || validExclusions.length > 0"
             class="table">
@@ -264,12 +438,12 @@
               <th class="col-md-1 col-xs-1"></th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in stagedExclusions">
+              <tr ng-repeat="member in pagedStagedExclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
                 <td>
                   <a ng-click="revert(refset, member)">
-                    <i uib-tooltip="Revert staged inclusion."
+                    <i uib-tooltip="Revert staged exclusion."
                       class="noul material-icons md-18">arrow_back</i>
                   </a>
                 </td>
@@ -278,12 +452,45 @@
           </table>
         </div>
       </div>
+
+
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          <h5 ng-show="invalidExclusions.length > 0" 
+          
+          <h5
+            ng-show="invalidExclusions.length > 0"
             uib-tooltip="Concepts that can no longer be excluded, because they are not in migrated refset.">
-            <b>Invalid Exclusions</b>
+            <b>Invalid Exclusions<span
+                ng-show="pagedInvalidExclusions.length > 0">
+                ({{pagedInvalidExclusions.totalCount}})</span></b>
           </h5>
+
+          <span style="display: block;">
+            <uib-pagination items-per-page="pageSize" max-size="5"
+              boundary-links="true" class="pagination-sm"
+              previous-text="&lsaquo;" next-text="&rsaquo;" first-text="&laquo;"
+              last-text="&raquo;"
+              ng-show="pagedInvalidExclusions.totalCount > pageSize || paging['invalidExclusions'].filter"
+              total-items="pagedInvalidExclusions.totalCount"
+              ng-model="paging['invalidExclusions'].page"
+              ng-change="getPagedInvalidExclusions()"></uib-pagination>
+
+            <input class="input-filter" placeholder="Enter filter text"
+              ng-show="pagedInvalidExclusions.totalCount > pageSize || paging['invalidExclusions'].filter"
+              type="text" ng-model="paging['invalidExclusions'].filter"
+              ng-model-options="{ debounce: 300 }"
+              ng-change="getPagedInvalidExclusions()">
+
+            <button class="btn btn-xs btn-warning"
+              ng-show="paging['invalidExclusions'].filter"
+              ng-click="paging['invalidExclusions'].filter = ''; getPagedInvalidExclusions()"
+              title="Click to clear filter text">Clear</button>
+          </span>
+
+          <span style="display: block"
+            ng-show="pagedInvalidExclusions.length == 0 && paging['invalidExclusions'].filter"
+            class="alert alert-warning"> No invalid exclusions matching
+            filter </span>
 
           <table ng-show="invalidExclusions.length > 0" class="table">
             <thead>
@@ -291,14 +498,14 @@
               <th class="col-md-8 col-xs-8">Concept name</th>
             </thead>
             <tbody>
-              <tr ng-repeat="member in invalidExclusions">
+              <tr ng-repeat="member in pagedInvalidExclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
               </tr>
             </tbody>
           </table>
         </div>
-      </div>
+      </div>      
 
       <!-- End col-md-8 -->
     </div>
@@ -306,7 +513,7 @@
     <div class="col-md-4 col-xs-12">
       <h5 ng-show="newRegularMembers.length > 0 || paging['newRegularMembers'].filter != ''"
             uib-tooltip="New concepts in migrated refset, that were not members in origin refset.">
-        <b>New Members</b>
+        <b>New Members ({{newRegularMembers.totalCount}})</b>
       </h5>
       <span style="display: block;">
         <uib-pagination items-per-page="pageSize" max-size="5"
@@ -354,7 +561,7 @@
 
       <h5 ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''"
             uib-tooltip="Concepts that were in origin refset, but are no longer members in migrated refset.">
-        <b>Old Members</b>
+        <b>Old Members ({{oldRegularMembers.totalCount}})</b>
       </h5>
       <span style="display: block;">
         <uib-pagination items-per-page="pageSize" max-size="5"
@@ -406,8 +613,8 @@
           </tr>
         </tbody>
       </table>
-      <span ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</span>
+      <div ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
+            class="alert alert-warning"> No filter results</div>
       <!-- end col-md-4 -->
     </div>
 
@@ -429,7 +636,7 @@
   <button confirm="Are you sure you want to cancel migration?"
     class="btn btn-warning" ng-show="refset.stagingType != null"
     ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
-    title="Cancel migration" ng-click="cancel();">Cancel</button>
+    title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
   <button class="btn btn-warning" ng-show="refset.stagingType == null"
     title="Close" ng-click="close();">Close</button>
 </div>

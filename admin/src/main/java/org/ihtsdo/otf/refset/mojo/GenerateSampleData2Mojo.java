@@ -506,7 +506,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
       // Make Swedish translation
       makeTranslation(
           "Swedish language reference set",
-          "46011000052107", refset, project2, 3, "INT", "se", reviewer2);
+          "46011000052107", refset, project2, 3, "INT", "sv", reviewer2);
 
       // Create a refset (extensional) and a translation refset in project 3
       Logger.getLogger(getClass()).info("Create US refsets");

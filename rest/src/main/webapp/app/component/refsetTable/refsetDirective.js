@@ -53,7 +53,7 @@ tsApp
               $scope.showLatest = true;
 
               // Page metadata
-              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion' ];
+              $scope.memberTypes = [ 'Member', 'Exclusion', 'Inclusion', 'Active', 'Retired' ];
 
               // Used for project admin to know what users are assigned to something.
               $scope.refsetAuthorsMap = {};
@@ -91,34 +91,6 @@ tsApp
                 ascending : null
               }
               $scope.paging['newRegularMembers'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['validInclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['invalidInclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['validExclusions'] = {
-                page : 1,
-                filter : '',
-                typeFilter : '',
-                sortField : 'name',
-                ascending : null
-              }
-              $scope.paging['invalidExclusions'] = {
                 page : 1,
                 filter : '',
                 typeFilter : '',
@@ -321,9 +293,20 @@ tsApp
 
                 if ($scope.paging['member'].typeFilter) {
                   var value = $scope.paging['member'].typeFilter;
+
                   // Handle inactive
-                  value = value.replace(' ', '_').toUpperCase();
-                  pfs.queryRestriction = 'memberType:' + value;
+                  if (value == 'Retired') {
+                    pfs.queryRestriction = 'conceptActive:false';
+                  } else if (value == 'Active') {
+                    pfs.queryRestriction = 'conceptActive:true';
+                  }
+
+                  else {
+                    // Handle member type
+
+                    value = value.replace(' ', '_').toUpperCase();
+                    pfs.queryRestriction = 'memberType:' + value;
+                  }
                 }
 
                 refsetService.findRefsetMembersForQuery(refset.id, $scope.paging['member'].filter,
@@ -436,21 +419,34 @@ tsApp
               // Remove a refset
               $scope.removeRefset = function(refset) {
                 console.debug("removeRefset", refset);
-                if (refset.members && refset.members.totalCount > 0) {
-                  if (!$window.confirm('The refset has members that will also be deleted.')) {
-                    return;
-                  }
-                }
 
-                // IF members are not loaded, load, check, and re-confirm
-                if (!refset.members) {
-                  // Test for members
-                  refsetService.findRefsetMembersForQuery(refset.id, '', {
-                    startIndex : 0,
-                    maxResults : 1
-                  }).then(function(data) {
-                    if (data.concepts.length == 1) {
-                      if (!$window.confirm('The refset has members that will also be deleted.')) {
+                workflowService.findAllAssignedRefsets($scope.project.id, {
+                  startIndex : 0,
+                  maxResults : 1,
+                  queryRestriction : 'refsetId:' + refset.id
+                }).then(
+                  // Success
+                  function(data) {
+                    if (data.records.length > 0
+                      && !$window
+                        .confirm('The refset is assigned, are you sure you want to proceed?')) {
+                      return;
+                    }
+                    $scope.removeRefsetHelper(refset);
+                  });
+              }
+
+              // Helper for removing a refest
+              $scope.removeRefsetHelper = function(refset) {
+
+                refsetService.findRefsetMembersForQuery(refset.id, '', {
+                  startIndex : 0,
+                  maxResults : 1
+                }).then(
+                  function(data) {
+                    if (data.members.length == 1) {
+                      if (!$window
+                        .confirm('The refset has members, are you sure you want to proceed.')) {
                         return;
                       }
                     }
@@ -458,15 +454,7 @@ tsApp
                       $scope.selected.refset = null;
                       refsetService.fireRefsetChanged();
                     });
-
-                  })
-                } else {
-
-                  refsetService.removeRefset(refset.id).then(function() {
-                    $scope.selected.refset = null;
-                    refsetService.fireRefsetChanged();
                   });
-                }
               };
 
               // Remove refset member
@@ -513,7 +501,7 @@ tsApp
 
               // handle workflow advancement
               $scope.handleWorkflow = function(refset) {
-                if (refset && refset.workflowStatus == 'NEW') {
+                if ($scope.value == 'ASSIGNED' && refset && refset.workflowStatus == 'NEW') {
                   $scope.performWorkflowAction(refset, 'SAVE', $scope.user.userName);
                 } else {
                   refsetService.fireRefsetChanged(refset);
@@ -561,6 +549,10 @@ tsApp
                 }
               };
 
+              // Need a scope verison and a non-scope one for modals
+              $scope.startLookup = function(refset) {
+                startLookup(refset);
+              }
               // Start lookup again - not $scope because modal must access it
               var startLookup = function(refset) {
                 refsetService.startLookup(refset.id).then(
@@ -593,8 +585,8 @@ tsApp
                     }
                   }
                   if (found) {
-                    console.debug("cancel");
                     $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
                   }
 
                 },
@@ -657,6 +649,7 @@ tsApp
                 $scope.newClause = null;
 
                 // Paging parameters
+                $scope.newClauses = angular.copy($scope.refset.definitionClauses);
                 $scope.pageSize = 5;
                 $scope.pagedClauses = [];
                 $scope.paging = {};
@@ -671,37 +664,59 @@ tsApp
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
-                  $scope.pagedClauses = utilService.getPagedArray($scope.refset.definitionClauses,
+                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses,
                     $scope.paging['clauses'], $scope.pageSize);
+                }
+
+                // identify whether defintion has changed
+                $scope.isDefinitionDirty = function() {
+                  console.debug("isdefdirty", $scope.newClauses, $scope.refset.definitionClauses);
+                  if ($scope.newClauses.length != $scope.refset.definitionClauses.length) {
+                    return true;
+                  }
+
+                  // Compare scope.refset.definitionClauses to newClauses
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    if ($scope.newClauses[i].value != $scope.refset.definitionClauses[i].value) {
+                      return true;
+                    }
+                    if ($scope.newClauses[i].negated != $scope.refset.definitionClauses[i].negated) {
+                      return true;
+                    }
+                  }
+                  return false;
                 }
 
                 // remove clause
                 $scope.removeClause = function(refset, clause) {
-                  for (var i = 0; i < refset.definitionClauses.length; i++) {
-                    var index = refset.definitionClauses.indexOf(clause);
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    var index = $scope.newClauses.indexOf(clause);
                     if (index != -1) {
-                      refset.definitionClauses.splice(index, 1);
+                      $scope.newClauses.splice(index, 1);
                     }
                   }
                   $scope.getPagedClauses();
                 };
 
                 // add new clause
-                $scope.submitClause = function(refset, clause) {
+                $scope.addClause = function(refset, clause) {
+                  $scope.errors = [];
 
                   // Confirm clauses are unique, skip if not
-                  for (var i = 0; i < refset.definitionClauses.length; i++) {
-                    if (refset.definitionClauses[i] == clause) {
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    if ($scope.newClauses[i].value == clause.value) {
+                      $scope.errors[0] = "Duplicate definition clause";
                       return;
                     }
                   }
-                  refset.definitionClauses.push(clause);
+                  $scope.newClauses.push(clause);
                   $scope.getPagedClauses();
                   $scope.newClause = null;
                 };
 
                 // Save refset
                 $scope.save = function(refset) {
+                  refset.definitionClauses = $scope.newClauses;
                   refsetService.updateRefset(refset).then(
                   // Success - add refset
                   function(data) {
@@ -1528,7 +1543,7 @@ tsApp
                       }
 
                       if (!refset.name || !refset.description) {
-                        $scope.data.errors[0] = "Refset name and description must not be empty.";
+                        $scope.errors[0] = "Refset name and description must not be empty.";
                         return;
                       }
 
@@ -1868,12 +1883,62 @@ tsApp
                 // set up variables
                 $scope.refset = refset;
                 $scope.membersInCommon = null;
-                $scope.pageSize = 10;
+                $scope.pageSize = 5;
                 $scope.paging = paging;
+                $scope.paging['membersInCommon'].typeFilter = '';
+                $scope.paging['oldRegularMembers'].typeFilter = '';
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
+                $scope.pagedStagedInclusions = [];
+                $scope.paging['stagedInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedValidInclusions = [];
+                $scope.paging['validInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedInvalidInclusions = [];
+                $scope.paging['invalidInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedStagedExclusions = [];
+                $scope.paging['stagedExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedValidExclusions = [];
+                $scope.paging['validExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedInvalidExclusions = [];
+                $scope.paging['invalidExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
                 var stop;
 
                 // Initialize
@@ -1914,8 +1979,14 @@ tsApp
                     $scope.stagedInclusions = data.stagedInclusions;
                     $scope.stagedExclusions = data.stagedExclusions;
                     $scope.findMembersInCommon();
-                    $scope.getOldRegularMembers();
                     $scope.getNewRegularMembers();
+                    $scope.getOldRegularMembers();
+                    $scope.getPagedStagedInclusions();
+                    $scope.getPagedValidInclusions();
+                    $scope.getPagedInvalidInclusions();
+                    $scope.getPagedStagedExclusions();
+                    $scope.getPagedValidExclusions();
+                    $scope.getPagedInvalidExclusions();
                   },
                   // Error
                   function(data) {
@@ -1933,8 +2004,6 @@ tsApp
                       : null
                   };
 
-                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
-                  // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['oldRegularMembers'].typeFilter == 'Active') {
                     conceptActive = true;
@@ -1944,16 +2013,17 @@ tsApp
                     conceptActive = null;
                   }
 
-                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs).then(
-                  // Success
-                  function(data) {
-                    $scope.oldRegularMembers = data.members;
-                    $scope.oldRegularMembers.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
+                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs, conceptActive)
+                    .then(
+                    // Success
+                    function(data) {
+                      $scope.oldRegularMembers = data.members;
+                      $scope.oldRegularMembers.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
                 };
 
                 // Load 'new regular members' with paging
@@ -1965,7 +2035,7 @@ tsApp
                     queryRestriction : $scope.paging['newRegularMembers'].filter != undefined ? $scope.paging['newRegularMembers'].filter
                       : null
                   };
-                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs).then(
+                  refsetService.getNewRegularMembers($scope.reportToken, null, pfs, null).then(
                   // Success
                   function(data) {
                     $scope.newRegularMembers = data.members;
@@ -1987,8 +2057,6 @@ tsApp
                       : null
                   };
 
-                  // TODO: need to figure out how to get null value to be recognized in jersey conversion
-                  // currently all values are converted to false
                   var conceptActive;
                   if ($scope.paging['membersInCommon'].typeFilter == 'Active') {
                     conceptActive = true;
@@ -2010,6 +2078,42 @@ tsApp
                       handleError($scope.errors, data);
                     });
                 };
+
+                // Get paged staged inclusions (assume all are loaded)
+                $scope.getPagedStagedInclusions = function() {
+                  $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
+                    $scope.paging['stagedInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged valid inclusions (assume all are loaded)
+                $scope.getPagedValidInclusions = function() {
+                  $scope.pagedValidInclusions = utilService.getPagedArray($scope.validInclusions,
+                    $scope.paging['validInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged invalid inclusions (assume all are loaded)
+                $scope.getPagedInvalidInclusions = function() {
+                  $scope.pagedInvalidInclusions = utilService.getPagedArray($scope.invalidInclusions,
+                    $scope.paging['invalidInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged staged exclusions (assume all are loaded)
+                $scope.getPagedStagedExclusions = function() {
+                  $scope.pagedStagedExclusions = utilService.getPagedArray($scope.stagedExclusions,
+                    $scope.paging['stagedExclusions'], $scope.pageSize);
+                }
+                
+                // Get paged valid exclusions (assume all are loaded)
+                $scope.getPagedValidExclusions = function() {
+                  $scope.pagedValidExclusions = utilService.getPagedArray($scope.validExclusions,
+                    $scope.paging['validExclusions'], $scope.pageSize);
+                }
+                
+                // Get paged invalid exclusions (assume all are loaded)
+                $scope.getPagedInvalidExclusions = function() {
+                  $scope.pagedInvalidExclusions = utilService.getPagedArray($scope.invalidExclusions,
+                    $scope.paging['invalidExclusions'], $scope.pageSize);
+                }
 
                 $scope.refreshLookupProgress = function() {
                   refsetService.getLookupProgress($scope.stagedRefset.id).then(
@@ -2274,9 +2378,13 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = null;
+                    $uibModalInstance.close(refset);
+                  },
+                  // Error - cancel migration
+                  function(data) {
+                    handleError($scope.errors, data);
                   });
 
-                  $uibModalInstance.dismiss('cancel');
                 };
 
                 // Close modal

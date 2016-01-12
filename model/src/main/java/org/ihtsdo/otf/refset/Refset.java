@@ -400,6 +400,14 @@ public interface Refset extends Component, Searchable {
    * @return the string
    */
   public String computeDefinition();
+  
+  /**
+   * Compute expression by considering the project exclusion clause.
+   *
+   * @param expression the expression
+   * @return the string
+   */
+  public String computeExpression(String expression);
 
   /**
    * Updates whether a lookup of member concepts names and statuses is in

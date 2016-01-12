@@ -107,6 +107,8 @@ tsApp.controller('DirectoryCtrl', [
 
     // Set the current accordion
     $scope.setAccordion = function(data) {
+      utilService.clearError();
+
       // skip guest user
       if ($http.defaults.headers.common.Authorization == 'guest') {
         return;
@@ -135,11 +137,22 @@ tsApp.controller('DirectoryCtrl', [
       securityService.updateUserPreferences($scope.user.userPreferences);
     }
 
+    // Get $scope.metadata.{import,export}Handlers
+    $scope.getIOHandlers = function() {
+      refsetService.getImportRefsetHandlers().then(function(data) {
+        $scope.metadata.importHandlers = data.handlers;
+      });
+      refsetService.getExportRefsetHandlers().then(function(data) {
+        $scope.metadata.exportHandlers = data.handlers;
+      });
+    }
+
     // Initialize
     $scope.getRefsetTypes();
     $scope.getProjects();
     $scope.getTerminologyEditions();
     $scope.getWorkflowPaths();
+    $scope.getIOHandlers();
     // Handle users with user preferences
     if ($scope.user.userPreferences) {
       $scope.configureTab();

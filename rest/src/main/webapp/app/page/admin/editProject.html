@@ -74,15 +74,14 @@
             ng-options="item for item in terminologies"></select>
         </td>
       </tr>
-      <tr ng-show="error">
-        <td>&nbsp;</td>
-        <td>
-          <b>Terminology</b>
+      <tr>
+        <td
+          title="Project level exclusion clause for intensional definitions">
+          <b>Exclusion Clause</b>
         </td>
         <td>
-          <select ng-model="project.terminology"
-            ng-change="terminologySelected(project.terminology)"
-            ng-options="item for item in metadata.terminologies"></select>
+          <div definition-clause clause="clause" allow-negation="false"
+            mode="edit"></div>
         </td>
       </tr>
     </table>

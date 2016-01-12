@@ -62,6 +62,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.TranslationServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -72,10 +73,12 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
+import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
@@ -356,11 +359,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     if (translation.getProject() == null
         || translation.getProject().getId() == null) {
-      throw new Exception("A translation must have an associated project");
+      throw new LocalException("A translation must have an associated project");
     }
     if (translation.getRefset() == null
         || translation.getRefset().getId() == null) {
-      throw new Exception("A translation must have an associated refset");
+      throw new LocalException("A translation must have an associated refset");
     }
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
@@ -384,7 +387,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final PhraseMemory memory = new PhraseMemoryJpa();
       memory.setTranslation(newTranslation);
       translationService.addPhraseMemory(memory);
-         
+
       translationService.commit();
 
       return newTranslation;
@@ -457,6 +460,25 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
+      // If cascade is true, remove any tracking records associated with this
+      // translation
+      if (cascade) {
+        final WorkflowService workflowService = new WorkflowServiceJpa();
+        try {
+          // Find and remove any tracking records for concepts in this
+          // translation
+          for (final TrackingRecord record : workflowService
+              .findTrackingRecordsForQuery("translationId:" + translationId,
+                  null).getObjects()) {
+            workflowService.removeTrackingRecord(record.getId());
+          }
+
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          workflowService.close();
+        }
+      }
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId, cascade);
 
@@ -694,7 +716,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setStagingType(Translation.StagingType.IMPORT);
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-      
 
       final StagedTranslationChange change = new StagedTranslationChangeJpa();
       change.setOriginTranslation(translation);
@@ -711,7 +732,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       } else {
         return result;
       }
-      
+
       return result;
 
     } catch (Exception e) {
@@ -1492,7 +1513,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove spelling dictionary entry",
           UserRole.AUTHOR);
 
-      spelling.removeEntry(entry);
+      spelling.removeEntry(entry.toLowerCase());
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), false);
