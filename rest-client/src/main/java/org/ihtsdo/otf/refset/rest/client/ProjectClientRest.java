@@ -288,7 +288,7 @@ public class ProjectClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/project"
+            + "/project/projects"
             + "?query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
                 .replaceAll("\\+", "%20"));

@@ -13,11 +13,17 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
-import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
+import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
-import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,6 +61,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
+  @SuppressWarnings("static-method")
   @Test
   public void testRoleCheckRestProject001() throws Exception {
     Logger.getLogger(getClass()).debug("RUN testRoleCheckRestProject001");
@@ -72,7 +79,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
     project.setVersion("latest");
 
     try {
-      project = (ProjectJpa) projectService.addProject(project, viewerAuthToken);
+      project =
+          (ProjectJpa) projectService.addProject(project, viewerAuthToken);
       fail("Attempt to add a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
@@ -112,31 +120,171 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
   @SuppressWarnings("static-method")
   @Test
   public void testNonexistentProjectAccess() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testNonexistentProjectAccess");
+
+    // Retrieve a nonexistent project
     Project project =
         projectService.getProject(123456789123456789L, adminAuthToken);
     assertNull(project);
   }
 
   /**
-   * Test obtaining nonexistent concepts
+   * Test retrieving projects based on successful, bad, and invalid bad query
+   * key/value pairs
    *
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
   @Test
-  public void testNonexistentProjectConceptAccess() throws Exception {
-    Concept concept =
-        projectService.getFullConcept("1234567890", "SNOMEDCT", "2015-01-31",
-            null, adminAuthToken);
-    assertNull(concept);
-    ConceptList conceptList =
-        projectService.getConceptChildren("1234567890", "SNOMEDCT",
-            "2015-01-31", null, null, adminAuthToken);
-    assertEquals(0, conceptList.getCount());
-    conceptList =
-        projectService.getConceptParents("1234567890", "SNOMEDCT",
-            "2015-01-31", null, adminAuthToken);
-    assertEquals(0, conceptList.getCount());
+  public void testFindProjectsForQuery() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST findProjectsForQuery");
+
+    // Retrieve projects via a number of valid queries with values in DB
+    ProjectList projects =
+        projectService.findProjectsForQuery("terminology:SNOMEDCT", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() > 0);
+
+    projects =
+        projectService.findProjectsForQuery("organization:IHTSDO", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() > 0);
+
+    projects =
+        projectService.findProjectsForQuery("namespace:1000001", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() > 0);
+
+    // Attempt to retrieve projects via valid queries with values not in DB
+    projects =
+        projectService.findProjectsForQuery("terminology:IHTSDO", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() == 0);
+
+    projects =
+        projectService.findProjectsForQuery("organization:IHTSD", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() == 0);
+
+    projects =
+        projectService.findProjectsForQuery("namespace:IHTSDO", null,
+            adminAuthToken);
+    assertTrue(projects.getCount() == 0);
+
+    // Attempt to retrieve projects via invalid query
+    try {
+      projects =
+          projectService.findProjectsForQuery("dumbkey:dumbValue", null,
+              adminAuthToken);
+      fail("Exception expected due to invalid query key.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
+  }
+
+  /**
+   * Test retrieving terminology editions and versions
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testGetTerminologyVersionsEditions() throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "TEST testGetTerminologyVersionsEditions");
+
+    // Verify have at least one Terminology (specifically SNOMEDCT)
+    StringList editions = projectService.getTerminologyEditions(adminAuthToken);
+    assertTrue(editions.getCount() > 0);
+
+    boolean expectedSnomedEditionFound = false;
+    for (String s : editions.getObjects()) {
+      if (s.equalsIgnoreCase("SNOMEDCT")) {
+        expectedSnomedEditionFound = true;
+        break;
+      }
+    }
+    assertTrue(expectedSnomedEditionFound);
+
+    // Verify return multiple versions of SNOMEDCT
+    TerminologyList versions =
+        projectService.getTerminologyVersions("SNOMEDCT", adminAuthToken);
+    assertTrue(versions.getCount() > 1);
+
+    boolean expectedVersionFound = false;
+    for (Terminology s : versions.getObjects()) {
+      if (s.getTerminology().equals("SNOMEDCT")
+          && s.getVersion().equals("2016-01-31")) {
+        expectedVersionFound = true;
+        break;
+      }
+    }
+    assertTrue(expectedVersionFound);
+
+    // Verify that a nonsensical terminology will not retrieve any versions
+    versions = projectService.getTerminologyVersions("IHTSDO", adminAuthToken);
+    assertTrue(versions.getCount() == 0);
+  }
+
+  /**
+   * Test retrieving project-based objects Icons and Description Types
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testAccessingProjectObjects() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testAccessingProjectObjects");
+
+    /* Test Accessing Project Config Icons */
+    KeyValuePairList iconConfig = projectService.getIconConfig(adminAuthToken);
+    assertTrue(iconConfig.getKeyValuePairs().size() > 0);
+
+    // Verify at least one key's value ends with ".png"
+    boolean pngFound = false;
+    for (KeyValuePair pair : iconConfig.getKeyValuePairs()) {
+      if (pair.getValue().endsWith(".png")) {
+        pngFound = true;
+        break;
+      }
+    }
+
+    assertTrue(pngFound);
+
+    /* Test Accessing Project Description Types */
+    DescriptionTypeList types =
+        projectService.getStandardDescriptionTypes("SNOMEDCT", "2016-01-31",
+            adminAuthToken);
+    assertTrue(types.getCount() > 3);
+
+    // verify FSN returned
+    boolean fsnFound = false;
+    for (DescriptionType type : types.getObjects()) {
+      if (type.getName().equals("FSN")
+          && type.getAcceptabilityId().equals("900000000000548007")
+          && type.getTypeId().equals("900000000000003001")) {
+        fsnFound = true;
+      }
+    }
+
+    assertTrue(fsnFound);
+  }
+
+  /**
+   * Test re-indexing lucene indices.
+   *
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testluceneReindex() throws Exception {
+    Logger.getLogger(getClass()).debug("RUN testluceneReindex");
+
+    /* Test force full re-indexing of all Lucene indices */
+    projectService.luceneReindex(null, adminAuthToken);
+
+    /* Test force re-indexing for only two specific Lucene indices */
+    projectService.luceneReindex("UserJpa, ConceptJpa", adminAuthToken);
   }
 
   /**
