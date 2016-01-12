@@ -619,7 +619,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           workflowService.close();
         }
       }
-      
+
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
 
@@ -780,19 +780,13 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
+      authorizeApp(securityService, authToken, "export definition",
+          UserRole.VIEWER);
+
       // Load refset
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
-      }
-
-      // Authorize the call
-      if (refset.isPublic()) {
-        authorizeApp(securityService, authToken, "export definition",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(refsetService, refset.getProject().getId(),
-            securityService, authToken, "export definition", UserRole.AUTHOR);
       }
 
       // Obtain the export handler
@@ -840,13 +834,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      if (refset.isPublic()) {
-        authorizeApp(securityService, authToken, "export members",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(refsetService, refset.getProject().getId(),
-            securityService, authToken, "export members", UserRole.AUTHOR);
-      }
+      authorizeApp(securityService, authToken, "export members",
+          UserRole.VIEWER);
 
       // Obtain the export handler
       final ExportRefsetHandler handler =

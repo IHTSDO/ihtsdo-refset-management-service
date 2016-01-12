@@ -478,25 +478,27 @@ tsApp
                 console.debug("remove translation", translation);
 
                 // Test for concept
-                translationService.findTranslationConceptsForQuery(translation.id, '', {
-                  startIndex : 0,
-                  maxResults : 1
-                }).then(
-                  function(data) {
-                    if (data.concepts.length == 1) {
-                      if (!$window
-                        .confirm('The translation has concepts, are you sure you want to proceed?')) {
-                        return;
-                      }
-                    }
-                    translationService.removeTranslation(translation.id).then(
-                    // Success
-                    function(data) {
-                      $scope.selected.translation = null;
-                      translationService.fireTranslationChanged();
-                    });
-
+                translationService
+                  .findTranslationConceptsForQuery(translation.id, '', {
+                    startIndex : 0,
+                    maxResults : 1
                   })
+                  .then(
+                    function(data) {
+                      if (data.concepts.length == 1) {
+                        if (!$window
+                          .confirm('The translation has concepts, are you sure you want to proceed?')) {
+                          return;
+                        }
+                      }
+                      translationService.removeTranslation(translation.id).then(
+                      // Success
+                      function(data) {
+                        $scope.selected.translation = null;
+                        translationService.fireTranslationChanged();
+                      });
+
+                    })
 
               };
 
@@ -933,7 +935,11 @@ tsApp
                         }
 
                         if (!translation.name || !translation.description || !translation.language) {
-                          $scope.data.errors[0] = "Translation name, description, and language must not be empty.";
+                          $scope.errors[0] = "Translation name, description, and language must not be empty.";
+                          return;
+                        }
+                        if (!translation.refsetId) {
+                          $scope.errors[0] = "A refset must be selected";
                           return;
                         }
                         translationService.addTranslation(translation).then(

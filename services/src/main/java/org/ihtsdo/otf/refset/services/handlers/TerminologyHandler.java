@@ -112,6 +112,19 @@ public interface TerminologyHandler extends Configurable {
     String version, PfsParameter pfs) throws Exception;
 
   /**
+   * Find refsets for query.
+   *
+   * @param query the query
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the concept list
+   * @throws Exception the exception
+   */
+  public ConceptList findRefsetsForQuery(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception;
+
+  /**
    * Assign names.
    *
    * @return true, if successful

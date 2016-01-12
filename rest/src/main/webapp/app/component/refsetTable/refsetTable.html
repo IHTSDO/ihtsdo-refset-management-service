@@ -119,10 +119,9 @@
           <td class="nobreak" ng-show="value == 'PUBLISHED' || value == 'BETA'">
             <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
               title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
-            <i ng-show="refset.type != 'EXTERNAL'"
-              ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
-              ng-show="userProjectsInfo.anyRole" title="Clone"
-              class="noul material-icons md-18">content_copy</i>
+            <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
+              ng-show="userProjectsInfo.anyRole && refset.type != 'EXTERNAL'"
+              title="Clone" class="noul material-icons md-18">content_copy</i>
           </td>
 
           <!-- AVAILABLE actions -->
@@ -371,10 +370,11 @@
               <b>Definition</b>
             </td>
             <td>
-              <!-- definition actions -->
+              <!-- edit/view/optimize definition -->
               <i ng-show="value != 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
-                title="View definition" class="noul material-icons md-18">list</i>
+                title="View definition, assign refset to edit"
+                class="noul material-icons md-18">list</i>
               <i ng-show="value == 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
@@ -382,14 +382,19 @@
                 confirm="The definition will be optimized, thereby eliminating superfluous definition clauses."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
                 title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
+              <!-- Export -->
+              <i
+                ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
+                title="Export definition" class="noul material-icons md-18">file_download</i>
+              <!-- Import -->
               <i ng-show="value == 'ASSIGNED'"
                 confirm="The refset already has a definition, importing will override it. Do you want to continue?"
                 confirm-if="selected.refset.definitionClauses.length>0"
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
-              <i
-                ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
-                title="Export definition" class="noul material-icons md-18">file_download</i>
+              <i ng-show="value == 'AVAILABLE'"
+                title="Assign refset to edit definition"
+                class="md-grey material-icons md-18">file_upload</i>
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
                   <tbody>
@@ -488,18 +493,28 @@
           ({{selected.refset.members.totalCount}})</span>
 
         <div style="float: right;">
-
+          <!-- Export -->
           <i
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); $event.stopPropagation()"
             title="Export refset members" class="noul material-icons md-18">file_download</i>
+          <!-- Import -->
           <i
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); $event.stopPropagation()"
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
+          <i
+            ng-show="value == 'AVAILABLE' && selected.refset.type == 'EXTENSIONAL'"
+            title="Assign refset to make changes to members"
+            class="md-grey material-icons md-18">file_upload</i>
+          <!-- Add member -->
+
           <i ng-show="value == 'ASSIGNED'"
             ng-click="openAddMemberModal(selected.refset); $event.stopPropagation()"
-            title="Add refset {{selected.refset.type == 'EXTENSIONAL' ? 'member' : 'inclusion'}}"
-            class="noul material-icons md-18">add</i>
+            title="Add refset member" class="noul material-icons md-18">add</i>
+          <i ng-show="value == 'AVAILABLE'"
+            title="Assign refset to make changes to members"
+            class="md-grey material-icons md-18">add</i>
+          <!-- Remove all members -->
           <i
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"

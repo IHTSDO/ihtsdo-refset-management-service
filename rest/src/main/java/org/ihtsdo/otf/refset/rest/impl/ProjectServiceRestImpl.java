@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -322,7 +323,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       for (Project p : projectService.getProjects().getObjects()) {
         if (p.getName().equals(project.getName())
             && p.getDescription().equals(project.getDescription())) {
-          throw new Exception(
+          throw new LocalException(
               "A project with this name and description already exists");
         }
       }
@@ -884,11 +885,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
    * @param prefs the prefs
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   private void addDescriptionsHelper(String userName,
     TranslationService translationService, Translation translation,
     Concept concept, UserPreferences prefs) throws Exception {
 
+    if (concept == null) {
+      Logger.getLogger(getClass()).warn(
+          "  Add description helper = concept unexpectedly null");
+      return;
+    }
     // Find any concepts with this terminologyId
     // and a translation terminologyId matching any of the ids from above.
     final StringBuilder query = new StringBuilder();
