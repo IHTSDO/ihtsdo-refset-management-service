@@ -213,7 +213,7 @@ tsApp.service('projectService', [
 
       // Make PUT call
       gpService.increment();
-      $http.put(projectUrl + 'users/' + projectId + '?query=' + utilService.prepQuery(query),
+      $http.post(projectUrl + 'users/' + projectId + '?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success
       function(response) {
