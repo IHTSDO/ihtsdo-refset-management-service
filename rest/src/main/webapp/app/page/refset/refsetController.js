@@ -4,14 +4,16 @@ tsApp
     'RefsetCtrl',
     [
       '$scope',
-      '$http', '$location',
-      'tabService', 'utilService',
+      '$http',
+      '$location',
+      'tabService',
+      'utilService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http,$location, tabService, utilService, securityService, projectService, refsetService,
-        workflowService) {
+      function($scope, $http, $location, tabService, utilService, securityService, projectService,
+        refsetService, workflowService) {
         console.debug('configure RefsetCtrl');
 
         // Handle resetting tabs on 'back' button
@@ -27,7 +29,6 @@ tsApp
           return;
         }
 
-        
         projectService.getUserHasAnyRole();
         projectService.prepareIconConfig();
         $scope.accordionState = {};
@@ -88,8 +89,13 @@ tsApp
           if (!$scope.project) {
             return;
           }
+          // Only save lastProjectRole if lastProject is the same
+          console.debug("start last project", $scope.user.userPreferences.lastProjectId,
+            $scope.user.userPreferences.lastProjectRole);
+          if (!$scope.user.userPreferences.lastProjectId != $scope.project.id) {
+            $scope.user.userPreferences.lastProjectRole = null;
+          }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
-          securityService.updateUserPreferences($scope.user.userPreferences);
           // Empty PFS
           var pfs = {};
           // Find role
@@ -101,6 +107,8 @@ tsApp
                 $scope.projects.assignedUsers = data.users;
                 for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
                   if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
+                    console.debug("--project role",$scope.projects.role);
+                    console.debug("--project role",$scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id]);
                     $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
                     if ($scope.projects.role == 'ADMIN') {
                       $scope.roleOptions = [ 'ADMIN', 'REVIEWER', 'AUTHOR' ];
@@ -115,12 +123,16 @@ tsApp
                     break;
                   }
                 }
-
+                console.debug("project role", $scope.projects.role);
+                $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+                console.debug("end last project", $scope.user.userPreferences.lastProjectId,
+                  $scope.user.userPreferences.lastProjectRole);
+                securityService.updateUserPreferences($scope.user.userPreferences);
                 projectService.fireProjectChanged($scope.project);
               })
         }
 
-        $scope.updateRole = function() {
+        $scope.setRole = function() {
           $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
           securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);

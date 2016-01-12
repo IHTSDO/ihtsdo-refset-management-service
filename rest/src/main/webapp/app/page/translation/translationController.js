@@ -90,8 +90,11 @@ tsApp
           if (!$scope.project) {
             return;
           }
+          // Only save lastProjectRole if lastProject is the same
+          if (!$scope.user.userPreferences.lastProjectId != $scope.project.id) {
+            $scope.user.userPreferences.lastProjectRole = null;
+          }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
-          securityService.updateUserPreferences($scope.user.userPreferences);
           // Empty PFS
           var pfs = {};
           // Find role
@@ -117,12 +120,13 @@ tsApp
                     break;
                   }
                 }
-
+                $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
+                securityService.updateUserPreferences($scope.user.userPreferences);
                 projectService.fireProjectChanged($scope.project);
               })
         }
 
-        $scope.updateRole = function() {
+        $scope.setRole = function() {
           $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
           securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
