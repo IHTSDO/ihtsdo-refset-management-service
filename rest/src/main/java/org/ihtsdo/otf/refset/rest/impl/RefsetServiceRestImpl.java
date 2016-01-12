@@ -1648,7 +1648,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // in refset2 or do exist in refset2 with a different type
       for (final ConceptRefsetMember member1 : refset1.getMembers()) {
         refsetService.handleLazyInit(member1);
-        if (!refset2Map.containsKey(member1.getClass())) {
+        if (!refset2Map.containsKey(member1.getConceptId())) {
           oldNotNew.add(member1);
           // Always keep exclusions
         } else if (refset2Map.containsKey(member1.getConceptId())
