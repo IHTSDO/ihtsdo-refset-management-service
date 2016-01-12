@@ -216,7 +216,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @POST
   @Path("/users/{projectId}")
   @ApiOperation(value = "Find users assigned to project", notes = "Finds users with assigned roles on the specified project", response = UserListJpa.class)
   public UserList findAssignedUsersForProject(
@@ -260,7 +260,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @POST
   @Path("/users/{projectId}/unassigned")
   @ApiOperation(value = "Find candidate users for project", notes = "Finds users who do not yet have assigned roles on the specified project", response = UserListJpa.class)
   public UserList findUnassignedUsersForProject(
@@ -494,6 +494,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/reindex")
+  @Consumes("text/plain")
   @ApiOperation(value = "Reindexes specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,

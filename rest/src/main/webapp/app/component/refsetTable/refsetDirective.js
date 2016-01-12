@@ -1901,6 +1901,46 @@ tsApp
                   sortField : 'lastModified',
                   ascending : true
                 }
+                $scope.pagedValidInclusions = [];
+                $scope.paging['validInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedInvalidInclusions = [];
+                $scope.paging['invalidInclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedStagedExclusions = [];
+                $scope.paging['stagedExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedValidExclusions = [];
+                $scope.paging['validExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
+                $scope.pagedInvalidExclusions = [];
+                $scope.paging['invalidExclusions'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                }
                 var stop;
 
                 // Initialize
@@ -1944,6 +1984,11 @@ tsApp
                     $scope.getNewRegularMembers();
                     $scope.getOldRegularMembers();
                     $scope.getPagedStagedInclusions();
+                    $scope.getPagedValidInclusions();
+                    $scope.getPagedInvalidInclusions();
+                    $scope.getPagedStagedExclusions();
+                    $scope.getPagedValidExclusions();
+                    $scope.getPagedInvalidExclusions();
                   },
                   // Error
                   function(data) {
@@ -2040,6 +2085,36 @@ tsApp
                 $scope.getPagedStagedInclusions = function() {
                   $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
                     $scope.paging['stagedInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged valid inclusions (assume all are loaded)
+                $scope.getPagedValidInclusions = function() {
+                  $scope.pagedValidInclusions = utilService.getPagedArray($scope.validInclusions,
+                    $scope.paging['validInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged invalid inclusions (assume all are loaded)
+                $scope.getPagedInvalidInclusions = function() {
+                  $scope.pagedInvalidInclusions = utilService.getPagedArray($scope.invalidInclusions,
+                    $scope.paging['invalidInclusions'], $scope.pageSize);
+                }
+                
+                // Get paged staged exclusions (assume all are loaded)
+                $scope.getPagedStagedExclusions = function() {
+                  $scope.pagedStagedExclusions = utilService.getPagedArray($scope.stagedExclusions,
+                    $scope.paging['stagedExclusions'], $scope.pageSize);
+                }
+                
+                // Get paged valid exclusions (assume all are loaded)
+                $scope.getPagedValidExclusions = function() {
+                  $scope.pagedValidExclusions = utilService.getPagedArray($scope.validExclusions,
+                    $scope.paging['validExclusions'], $scope.pageSize);
+                }
+                
+                // Get paged invalid exclusions (assume all are loaded)
+                $scope.getPagedInvalidExclusions = function() {
+                  $scope.pagedInvalidExclusions = utilService.getPagedArray($scope.invalidExclusions,
+                    $scope.paging['invalidExclusions'], $scope.pageSize);
                 }
 
                 $scope.refreshLookupProgress = function() {

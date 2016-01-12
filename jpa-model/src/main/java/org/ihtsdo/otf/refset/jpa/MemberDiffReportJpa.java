@@ -273,6 +273,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
       // EXCLUSION_STAGED not included here because that's a valid inclusion
       // that's being staged
       if (member.getMemberType() == Refset.MemberType.MEMBER
+          || member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED
           || member.getMemberType() == Refset.MemberType.EXCLUSION) {
         nowNotExcluded.add(member.getConceptId());
       }

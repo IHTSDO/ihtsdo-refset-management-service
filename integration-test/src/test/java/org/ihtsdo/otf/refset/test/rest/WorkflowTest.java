@@ -291,20 +291,6 @@ public class WorkflowTest {
   }
 
   /**
-   * Removes the project.
-   *
-   * @param project the project
-   * @throws Exception the exception
-   */
-  @SuppressWarnings("static-method")
-  private void removeProject(Project project) throws Exception {
-    ProjectService service = new ProjectServiceJpa();
-
-    service.removeProject(project.getId());
-    service.close();
-  }
-
-  /**
    * Test adding a member to a refset via an expression
    *
    * @throws Exception the exception
@@ -504,7 +490,7 @@ public class WorkflowTest {
         author1.getUserName(), adminAuthToken);
     projectService.unassignUserFromProject(project.getId(),
         reviewer1.getUserName(), adminAuthToken);
-    removeProject(project);
+    projectService.removeProject(project.getId(), adminAuthToken);
   }
 
   /**
@@ -600,7 +586,7 @@ public class WorkflowTest {
 
     projectService.unassignUserFromProject(project.getId(),
         author1.getUserName(), adminAuthToken);
-    removeProject(project);
+    projectService.removeProject(project.getId(), adminAuthToken);
   }
 
   /**
