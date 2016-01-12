@@ -549,6 +549,10 @@ tsApp
                 }
               };
 
+              // Need a scope verison and a non-scope one for modals
+              $scope.startLookup = function(refset) {
+                startLookup(refset);
+              }
               // Start lookup again - not $scope because modal must access it
               var startLookup = function(refset) {
                 refsetService.startLookup(refset.id).then(
@@ -581,8 +585,8 @@ tsApp
                     }
                   }
                   if (found) {
-                    console.debug("cancel");
                     $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
                   }
 
                 },

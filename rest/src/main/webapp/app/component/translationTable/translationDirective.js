@@ -582,6 +582,10 @@ tsApp
                 })
               };
 
+              // Need both a $scope version and a non one for modals.
+              $scope.startLookup = function(translation) {
+                startLookup(translation);
+              }
               // Start lookup again
               var startLookup = function(translation) {
                 translationService.startLookup(translation.id).then(
@@ -614,6 +618,7 @@ tsApp
                   }
                   if (found) {
                     $interval.cancel($scope.lookupInterval);
+                    $scope.lookupInterval = null;
                   }
 
                 },
