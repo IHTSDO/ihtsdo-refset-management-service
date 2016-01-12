@@ -205,6 +205,7 @@ public class ConceptRefsetMemberJpa extends AbstractComponent implements
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public boolean isConceptActive() {
     return conceptActive;
   }
