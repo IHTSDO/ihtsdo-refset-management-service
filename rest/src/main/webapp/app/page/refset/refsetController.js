@@ -90,9 +90,7 @@ tsApp
             return;
           }
           // Only save lastProjectRole if lastProject is the same
-          console.debug("start last project", $scope.user.userPreferences.lastProjectId,
-            $scope.user.userPreferences.lastProjectRole);
-          if (!$scope.user.userPreferences.lastProjectId != $scope.project.id) {
+          if ($scope.user.userPreferences.lastProjectId != $scope.project.id) {
             $scope.user.userPreferences.lastProjectRole = null;
           }
           $scope.user.userPreferences.lastProjectId = $scope.project.id;
