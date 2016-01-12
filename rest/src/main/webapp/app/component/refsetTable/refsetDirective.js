@@ -1882,6 +1882,8 @@ tsApp
 
                 // set up variables
                 $scope.refset = refset;
+                $scope.newTerminology = refset.terminology;
+                $scope.newVersion = null;
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
@@ -1907,8 +1909,8 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
-                    $scope.refset.newTerminology = $scope.stagedRefset.terminology;
-                    $scope.refset.newVersion = $scope.stagedRefset.version;
+                    $scope.newTerminology = $scope.stagedRefset.terminology;
+                    $scope.newVersion = $scope.stagedRefset.version;
                     refsetService.compareRefsets($scope.refset.id, data.id).then(
                     // Success
                     function(data) {
@@ -2076,7 +2078,17 @@ tsApp
 
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
-
+                  $scope.errors =[];
+                  if (newTerminology == $scope.refset.terminology &&
+                    newVersion == $scope.refset.version) {
+                    $scope.errors[0] = "New terminology and version cannot match existing values";
+                    return
+                  } 
+                  if (newTerminology == $scope.refset.terminology &&
+                    newVersion < $scope.refset.version) {
+                    $scope.errors[0] = "New version must be greater than existing version";
+                    return
+                  } 
                   refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
                   // Success
                   function(data) {

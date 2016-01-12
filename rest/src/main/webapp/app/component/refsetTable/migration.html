@@ -9,32 +9,28 @@
       <tbody>
         <tr>
           <td>
-            <h5>Current Terminology:</h5>
+            <b>Current Terminology:</b>
           </td>
           <td>{{refset.terminology}}</td>
           <td>
-            <h5>Current Version:</h5>
-          </td>
-          <td>{{refset.version}}</td>
-        </tr>
-        <tr>
-          <td>
-            <h5>New Terminology:</h5>
+            <b>New Terminology:</b>
           </td>
           <td>
-            <select ng-model="refset.newTerminology"
+            <select ng-model="newTerminology"
               ng-change="terminologySelected(refset.terminology)"
               ng-options="item for item in metadata.terminologies"></select>
           </td>
+        </tr>
+        <tr>
           <td>
-            <h5>New Version:</h5>
+            <b>Current Version:</b>
+          </td>
+          <td>{{refset.version}}</td>
+          <td>
+            <b>New Version:</b>
           </td>
           <td>
-            <select ng-model="refset.newVersion"
-              ng-options="item for item in versions"></select>
-            <button class="btn btn-primary"
-              ng-disabled="refset.stagingType != null"
-              ng-click="beginMigration(refset.newTerminology, refset.newVersion);">Migrate</button>
+            <select ng-model="newVersion" ng-options="item for item in versions"></select>
           </td>
         </tr>
       </tbody>
@@ -58,7 +54,8 @@
             <div class="alert alert-danger alert-error">
               {{errors[0]}}
               <div style="display: inline; float: right;">
-                <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long error"
+                <i ng-show="errors[1]"
+                  title="{{error.expand ? 'Show' : 'Hide'}} long error"
                   class="noul material-icons md-18"
                   ng-click="error.expand = !error.expand;">attach_file</i>
               </div>
@@ -76,10 +73,12 @@
       <div class="row">
         <div class="col-md-12 col-xs-12">
 
-          <h5 ng-show="refset.stagingType != null && (membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != '')">
+          <h5
+            ng-show="refset.stagingType != null && (membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != '')">
             <b>Members In Common</b>
           </h5>
-          <span ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
+          <span
+            ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
             class="alert alert-warning"> Origin and staged refsets have
             no members in common</span>
           <span style="display: block;">
@@ -104,16 +103,18 @@
               title="Click to clear filter text">Clear</button>
           </span>
 
-          <table ng-show="membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != ''" class="table">
+          <table
+            ng-show="membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != ''"
+            class="table">
             <thead>
               <th class="col-md-4 col-xs-4">Concept id</th>
               <th class="col-md-7 col-xs-7">Concept name</th>
               <th class="col-md-1 col-xs-1"><select
-              title="Filter by status" style="width: 60px;"
-              ng-model="paging['membersInCommon'].typeFilter"
-              ng-options="item for item in statusTypes"
-              ng-change="findMembersInCommon()">
-                <option value="">All</option>
+                title="Filter by status" style="width: 60px;"
+                ng-model="paging['membersInCommon'].typeFilter"
+                ng-options="item for item in statusTypes"
+                ng-change="findMembersInCommon()">
+                  <option value="">All</option>
               </select></th>
               <th class="col-md-1 col-xs-1"></th>
             </thead>
@@ -121,18 +122,23 @@
               <tr ng-repeat="member in membersInCommon">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
-                <td><i title="Remove"
-              confirm="Are you sure you want to remove the retired member?"
-              ng-show="!member.conceptActive && refset.type == 'EXTENSIONAL'"
-              ng-click="removeMember(member); $event.stopPropagation()"
-              class="noul material-icons md-18">delete</i></td>
+                <td>
+                  <button class="btn btn-xs retired"
+                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                </td>
+                <td>
+                  <i title="Remove"
+                    confirm="Are you sure you want to remove the retired member?"
+                    ng-show="!member.conceptActive && refset.type == 'EXTENSIONAL'"
+                    ng-click="removeMember(member); $event.stopPropagation()"
+                    class="noul material-icons md-18">delete</i>
+                </td>
               </tr>
             </tbody>
           </table>
-          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</div>
+          <div
+            ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
+            class="alert alert-warning">No filter results</div>
         </div>
       </div>
       <div class="row">
@@ -316,7 +322,7 @@
       </div>
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          <h5 ng-show="invalidExclusions.length > 0" 
+          <h5 ng-show="invalidExclusions.length > 0"
             uib-tooltip="Concepts that can no longer be excluded, because they are not in migrated refset.">
             <b>Invalid Exclusions</b>
           </h5>
@@ -340,8 +346,9 @@
     </div>
 
     <div class="col-md-4 col-xs-12">
-      <h5 ng-show="newRegularMembers.length > 0 || paging['newRegularMembers'].filter != ''"
-            uib-tooltip="New concepts in migrated refset, that were not members in origin refset.">
+      <h5
+        ng-show="newRegularMembers.length > 0 || paging['newRegularMembers'].filter != ''"
+        uib-tooltip="New concepts in migrated refset, that were not members in origin refset.">
         <b>New Members</b>
       </h5>
       <span style="display: block;">
@@ -356,7 +363,8 @@
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="newRegularMembers.totalCount > pageSize || paging['newRegularMembers'].filter"
           type="text" ng-model="paging['newRegularMembers'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="getNewRegularMembers()">
+          ng-model-options="{ debounce: 300 }"
+          ng-change="getNewRegularMembers()">
 
         <button class="btn btn-xs btn-warning"
           ng-show="paging['newRegularMembers'].filter"
@@ -376,8 +384,8 @@
             <td style="word-break: break-word;">{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
             <td>
-              <button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+              <button class="btn btn-xs retired" ng-show="!member.conceptActive"
+                uib-tooltip="Retired">R</button>
               <a ng-click="exclude(refset, member, 'false')">
                 <i uib-tooltip="Exclude new member."
                   class="noul material-icons md-18">remove_circle_outline</i>
@@ -388,8 +396,9 @@
       </table>
 
 
-      <h5 ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''"
-            uib-tooltip="Concepts that were in origin refset, but are no longer members in migrated refset.">
+      <h5
+        ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''"
+        uib-tooltip="Concepts that were in origin refset, but are no longer members in migrated refset.">
         <b>Old Members</b>
       </h5>
       <span style="display: block;">
@@ -404,25 +413,28 @@
         <input class="input-filter" placeholder="Enter filter text"
           ng-show="oldRegularMembers.totalCount > pageSize || paging['oldRegularMembers'].filter"
           type="text" ng-model="paging['oldRegularMembers'].filter"
-          ng-model-options="{ debounce: 300 }" ng-change="getOldRegularMembers()">
+          ng-model-options="{ debounce: 300 }"
+          ng-change="getOldRegularMembers()">
 
         <button class="btn btn-xs btn-warning"
           ng-show="paging['oldRegularMembers'].filter"
           ng-click="paging['oldRegularMembers'].filter = ''; getOldRegularMembers()"
           title="Click to clear filter text">Clear</button>
       </span>
-      
-      <table ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''" class="table">
+
+      <table
+        ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''"
+        class="table">
         <thead>
           <th class="col-md-3 col-xs-3">Concept id</th>
           <th class="col-md-7 col-xs-7">Concept name</th>
-          <th class="col-md-1 col-xs-1"><select
-              title="Filter by status" style="width: 45px;"
-              ng-model="paging['oldRegularMembers'].typeFilter"
-              ng-options="item for item in statusTypes"
-              ng-change="getOldRegularMembers()">
-                <option value="">All</option>
-            </select></th>
+          <th class="col-md-1 col-xs-1"><select title="Filter by status"
+            style="width: 45px;"
+            ng-model="paging['oldRegularMembers'].typeFilter"
+            ng-options="item for item in statusTypes"
+            ng-change="getOldRegularMembers()">
+              <option value="">All</option>
+          </select></th>
           <th class="col-md-1 col-xs-1"></th>
         </thead>
         <tbody>
@@ -430,9 +442,11 @@
             ng-class="getMemberStyle(member)">
             <td style="word-break: break-word;">{{member.conceptId}}</td>
             <td>{{member.conceptName}}</td>
-            <td><button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
-            <td>             
+            <td>
+              <button class="btn btn-xs retired" ng-show="!member.conceptActive"
+                uib-tooltip="Retired">R</button>
+            </td>
+            <td>
               <a ng-show="member.memberType == 'MEMBER'"
                 ng-click="include(stagedRefset, member, false)">
                 <i uib-tooltip="Include old member."
@@ -442,8 +456,9 @@
           </tr>
         </tbody>
       </table>
-      <div ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</div>
+      <div
+        ng-show="oldRegularMembers.length == 0 && paging['oldRegularMembers'].typeFilter != ''"
+        class="alert alert-warning">No filter results</div>
       <!-- end col-md-4 -->
     </div>
 
@@ -454,6 +469,8 @@
 </div>
 
 <div class="modal-footer">
+  <button class="btn btn-primary" ng-disabled="refset.stagingType != null"
+    ng-click="beginMigration(newTerminology, newVersion);">Migrate</button>
   <button class="btn btn-primary"
     ng-disabled="refset.stagingType == null || stagedRefset.lookupInProgress == true"
     ng-click="saveForLater(refset);

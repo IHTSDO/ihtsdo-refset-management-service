@@ -1,0 +1,22 @@
+<div ng-show="mode == 'view'">
+  <span style="float: left">{{clause.value}}</span>
+  <span style="float: right; margin-right: 25px">
+    <button class="btn btn-xs btn-primary" ng-show="!clause.negated"
+      uib-tooltip="Union">+</button>
+    <button class="btn btn-xs btn-danger" ng-show="clause.negated"
+      uib-tooltip="Minus">-</button>
+  </span>
+</div>
+
+<div ng-show="mode == 'edit'">
+  <span style="float: left">
+    <input ng-model="clause.value" size="40"> &nbsp;
+  </span>
+  <span style="float: right; margin-right: 25px">
+    <input type="checkbox" title="Clause to be negated"
+      ng-model="clause.negated">
+    <!-- Later
+  <button class="btn btn-xs btn-primary
+ -->
+  </span>
+</div>
