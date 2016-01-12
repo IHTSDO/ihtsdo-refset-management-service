@@ -910,7 +910,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       list.getObjects().addAll(
           workflowService.applyPfsToList(concepts, Concept.class, pfs));
 
+      for (final Concept concept : list.getObjects()) {
+        workflowService.handleLazyInit(concept);
+      }
       return list;
+
     } catch (Exception e) {
       handleException(e, "trying to find available review work");
     } finally {

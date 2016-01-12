@@ -152,6 +152,7 @@ tsApp
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
+          utilService.clearError();
           if ($scope.user.userPreferences) {
             $scope.user.userPreferences.lastTranslationAccordion = data;
             securityService.updateUserPreferences($scope.user.userPreferences);

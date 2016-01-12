@@ -56,6 +56,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -63,8 +64,10 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
@@ -432,7 +435,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     refsetService.beginTransaction();
     Refset refset = refsetService.getRefset(refsetId);
     try {
-      String userName =
+      final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "add members for expression",
               UserRole.AUTHOR);
@@ -441,9 +444,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         throw new LocalException(
             "Adding members based on an expression can only be done for EXTENSIONAL refsets.");
       }
-      ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler().resolveExpression(expression,
-              refset.getTerminology(), refset.getVersion(), null);
+      final ConceptList resolvedFromExpression =
+          refsetService.getTerminologyHandler().resolveExpression(
+              refset.computeExpression(expression), refset.getTerminology(),
+              refset.getVersion(), null);
 
       final Set<String> conceptIds = new HashSet<>();
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -507,8 +511,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final ConceptList resolvedFromExpression =
-          refsetService.getTerminologyHandler().resolveExpression(expression,
-              refset.getTerminology(), refset.getVersion(), null);
+          refsetService.getTerminologyHandler().resolveExpression(
+              refset.computeExpression(expression), refset.getTerminology(),
+              refset.getVersion(), null);
       final Set<String> conceptIds = new HashSet<>();
       for (final Concept concept : resolvedFromExpression.getObjects()) {
         conceptIds.add(concept.getTerminologyId());
@@ -596,6 +601,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "remove refset", UserRole.AUTHOR);
 
+      // If cascade is true, remove any tracking records associated with this
+      // refset
+      if (cascade) {
+        final WorkflowService workflowService = new WorkflowServiceJpa();
+        try {
+          // Find and remove any tracking records for this refset
+          for (final TrackingRecord record : workflowService
+              .findTrackingRecordsForQuery("refsetId:" + refsetId, null)
+              .getObjects()) {
+            workflowService.removeTrackingRecord(record.getId());
+          }
+
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          workflowService.close();
+        }
+      }
+      
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
 
@@ -1274,6 +1298,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         // Compute the expression
         // add members from expression results
+        // No need to "resolvExpression" because definition computation includes
+        // project exclude logic
         ConceptList conceptList =
             refsetService.getTerminologyHandler().resolveExpression(
                 refsetCopy.computeDefinition(), refsetCopy.getTerminology(),
@@ -1963,6 +1989,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         } else {
           posClauses.add(clause);
         }
+        // No need to "resolvExpression" because it doesn't affect the logic
         ConceptList concepts =
             refsetService.getTerminologyHandler().resolveExpression(
                 clause.getValue(), refset.getTerminology(),

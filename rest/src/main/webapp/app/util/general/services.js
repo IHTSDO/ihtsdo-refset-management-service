@@ -4,8 +4,9 @@ tsApp
     'utilService',
     [
       '$location',
+      '$anchorScroll',
       '$uibModal',
-      function($location, $uibModal) {
+      function($location, $anchorScroll, $uibModal) {
         console.debug('configure utilService');
         // declare the error
         this.error = {
@@ -82,6 +83,10 @@ tsApp
             // Reroute back to login page with 'auth token has
             // expired' message
             $location.path('/login');
+          } else {
+            // scroll to top of page
+            $location.hash('top');
+            $anchorScroll();
           }
         }
 

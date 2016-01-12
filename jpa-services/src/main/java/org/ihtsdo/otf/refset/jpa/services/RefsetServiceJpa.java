@@ -30,6 +30,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
@@ -238,7 +239,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             "Unable to remove refset, transactionPerOperation must be disabled to perform cascade remove.");
       // fail if there are translations
       if (refset.getTranslations().size() > 0) {
-        throw new Exception(
+        throw new LocalException(
             "Unable to remove refset, embedded translations must first be removed.");
       }
       for (final ConceptRefsetMember member : refset.getMembers()) {
@@ -1067,7 +1068,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       return;
     }
     final ConceptList resolvedFromExpression =
-        getTerminologyHandler().resolveExpression(definition,
+        getTerminologyHandler().resolveExpression(refset.computeDefinition(),
             refset.getTerminology(), refset.getVersion(), null);
 
     for (final Concept concept : resolvedFromExpression.getObjects()) {

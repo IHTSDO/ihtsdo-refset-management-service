@@ -107,6 +107,8 @@ tsApp.controller('DirectoryCtrl', [
 
     // Set the current accordion
     $scope.setAccordion = function(data) {
+      utilService.clearError();
+
       // skip guest user
       if ($http.defaults.headers.common.Authorization == 'guest') {
         return;

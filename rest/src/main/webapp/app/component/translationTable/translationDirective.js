@@ -283,13 +283,13 @@ tsApp
                     translation.available.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'ADMIN') {
-                  workflowService.findAllAvailableConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.available = data.concepts;
-                    translation.available.totalCount = data.totalCount;
-                  });
+                  workflowService.findAllAvailableConcepts($scope.project.id, translation.id, pfs)
+                    .then(
+                    // Success
+                    function(data) {
+                      translation.available = data.concepts;
+                      translation.available.totalCount = data.totalCount;
+                    });
 
                 } else {
                   window.alert('Unexpected role attempting to get available concepts');
@@ -329,13 +329,13 @@ tsApp
                     translation.assigned.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'ADMIN') {
-                  workflowService.findAllAssignedConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.assigned = data.records;
-                    translation.assigned.totalCount = data.totalCount;
-                  });
+                  workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
+                    .then(
+                    // Success
+                    function(data) {
+                      translation.assigned = data.records;
+                      translation.assigned.totalCount = data.totalCount;
+                    });
 
                 } else {
                   window.alert('Unexpected role attempting to get available concepts');
@@ -438,26 +438,38 @@ tsApp
 
               // Remove a translation
               $scope.removeTranslation = function(translation) {
-                // quick check before calling service
-                if (translation.assigned && translation.assigned.totalCount > 0) {
-                  $window
-                    .confirm('The translation has assigned concepts you must unassign all concepts first.');
-                  return;
-                }
-                // Check whether there are ANY assigned concepts
+
                 workflowService
-                  .findAllAssignedConcepts($scope.project.id, translation.id, $scope.user.userName,
-                    pfs)
+                  .findAllAssignedConcepts($scope.project.id, translation.id, {
+                    startIndex : 0,
+                    maxResults : 1
+                  })
                   .then(
                     // Success
                     function(data) {
-                      if (data.records.length > 0) {
-                        $window
-                          .confirm('The translation has assigned concepts you must unassign all concepts first.');
+                      if (data.records.length > 0
+                        && !$window
+                          .confirm('The translation has assigned concepts, are you sure you want to proceed?')) {
                         return;
-                      } else {
-                        $scope.removeTranslationHelper(translation);
                       }
+
+                      // Now check for available concepts
+                      workflowService
+                        .findAllAvailableConcepts($scope.project.id, translation.id, {
+                          startIndex : 0,
+                          maxResults : 1
+                        })
+                        .then(
+                          // Success
+                          function(data) {
+                            if (data.concepts.length > 0
+                              && !$window
+                                .confirm('The translation has available concepts, are you sure you want to proceed?')) {
+                              return;
+                            }
+
+                            $scope.removeTranslationHelper(translation);
+                          });
 
                     });
 
@@ -465,43 +477,27 @@ tsApp
               $scope.removeTranslationHelper = function(translation) {
                 console.debug("remove translation", translation);
 
-                if (translation.concepts && translation.concepts.totalCount > 0) {
-                  if (!$window.confirm('The translation has concepts that will also be deleted.')) {
-                    return;
-                  }
-                }
-
-                // IF concepts are not loaded, load, check, and re-confirm
-                if (!translation.concepts) {
-                  // Test for concept
-                  translationService.findTranslationConceptsForQuery(translation.id, '', {
-                    startIndex : 0,
-                    maxResults : 1
-                  }).then(
-                    function(data) {
-                      if (data.concepts.length == 1) {
-                        if (!$window
-                          .confirm('The translation has concepts that will also be deleted.')) {
-                          return;
-                        }
-                      }
-                      translationService.removeTranslation(translation.id).then(
-                      // Success
-                      function(data) {
-                        $scope.selected.translation = null;
-                        translationService.fireTranslationChanged();
-                      });
-
-                    })
-                } else {
-
-                  translationService.removeTranslation(translation.id).then(
-                  // Success
+                // Test for concept
+                translationService.findTranslationConceptsForQuery(translation.id, '', {
+                  startIndex : 0,
+                  maxResults : 1
+                }).then(
                   function(data) {
-                    $scope.selected.translation = null;
-                    translationService.fireTranslationChanged();
-                  });
-                }
+                    if (data.concepts.length == 1) {
+                      if (!$window
+                        .confirm('The translation has concepts, are you sure you want to proceed?')) {
+                        return;
+                      }
+                    }
+                    translationService.removeTranslation(translation.id).then(
+                    // Success
+                    function(data) {
+                      $scope.selected.translation = null;
+                      translationService.fireTranslationChanged();
+                    });
+
+                  })
+
               };
 
               // Remove concept

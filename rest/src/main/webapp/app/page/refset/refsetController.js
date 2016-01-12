@@ -5,12 +5,12 @@ tsApp
     [
       '$scope',
       '$http', '$location',
-      'tabService',
+      'tabService', 'utilService',
       'securityService',
       'projectService',
       'refsetService',
       'workflowService',
-      function($scope, $http,$location, tabService, securityService, projectService, refsetService,
+      function($scope, $http,$location, tabService, utilService, securityService, projectService, refsetService,
         workflowService) {
         console.debug('configure RefsetCtrl');
 
@@ -180,6 +180,7 @@ tsApp
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
+          utilService.clearError();
           if ($scope.user.userPreferences) {
             $scope.user.userPreferences.lastRefsetAccordion = data;
             securityService.updateUserPreferences($scope.user.userPreferences);

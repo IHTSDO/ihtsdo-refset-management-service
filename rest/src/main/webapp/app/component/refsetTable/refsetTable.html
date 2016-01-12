@@ -394,22 +394,12 @@
                 <table class="table">
                   <tbody>
                     <tr ng-repeat="clause in selected.refset.definitionClauses">
-                      <td>{{clause.value}}</td>
                       <td>
-                        <button class="btn btn-xs btn-primary"
-                          ng-show="!clause.negated" uib-tooltip="Union">+</button>
-                        <button class="btn btn-xs btn-danger"
-                          ng-show="clause.negated" uib-tooltip="Minus">-</button>
-                      </td>
+                        <div definition-clause clause="clause" mode="view"></div>
+                      <td>
                     </tr>
                   </tbody>
                 </table>
-              </div>
-              <div ng-show="selected.refset.definitionClauses.length > 4"
-                class="truncate">
-                <span ng-show="selected.refset.definitionClauses.length > 1">
-                  <br />{{selected.refset.definitionClauses.length-4}} more...
-                </span>
               </div>
             </td>
           </tr>

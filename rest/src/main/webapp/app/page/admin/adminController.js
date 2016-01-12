@@ -488,6 +488,7 @@ tsApp
           $scope.project = {
             terminology : metadata.terminologies[0]
           };
+          $scope.exclusionClause = clause;
           $scope.terminologies = metadata.terminologies;
           $scope.metadata = metadata;
           $scope.user = user;
@@ -531,6 +532,9 @@ tsApp
               }
             }
 
+            // copy clause - don't allow negation - it's implicitly negated
+            project.exclusionClause = $scope.clause.value;
+            
             // Add project
             projectService.addProject(project).then(
               // Success

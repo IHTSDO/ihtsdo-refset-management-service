@@ -27,7 +27,7 @@
     </div>
 
     <!-- concept header -->
-    <p ng-show="concept" style="margin-top: 5px;">
+    <p ng-show="data.concept && concept" style="margin-top: 5px;">
       <b>Concept</b>
     </p>
     <p ng-show="concept && !disableMemberTypes" class="info-text">
@@ -87,7 +87,7 @@
 
     </p>
     <!-- Show concept info when not editing -->
-    <p ng-show="concept && disableMemberTypes" class="info-text">
+    <p ng-show="data.concept && concept && disableMemberTypes" class="info-text">
       <span style="color: black">{{concept.terminologyId}}
         {{concept.name}}</span>
     </p>

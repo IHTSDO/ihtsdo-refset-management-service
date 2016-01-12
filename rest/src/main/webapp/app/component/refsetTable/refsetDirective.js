@@ -419,21 +419,34 @@ tsApp
               // Remove a refset
               $scope.removeRefset = function(refset) {
                 console.debug("removeRefset", refset);
-                if (refset.members && refset.members.totalCount > 0) {
-                  if (!$window.confirm('The refset has members that will also be deleted.')) {
-                    return;
-                  }
-                }
 
-                // IF members are not loaded, load, check, and re-confirm
-                if (!refset.members) {
-                  // Test for members
-                  refsetService.findRefsetMembersForQuery(refset.id, '', {
-                    startIndex : 0,
-                    maxResults : 1
-                  }).then(function(data) {
-                    if (data.concepts.length == 1) {
-                      if (!$window.confirm('The refset has members that will also be deleted.')) {
+                workflowService.findAllAssignedRefsets($scope.project.id, {
+                  startIndex : 0,
+                  maxResults : 1,
+                  queryRestriction : 'refsetId:' + refset.id
+                }).then(
+                  // Success
+                  function(data) {
+                    if (data.records.length > 0
+                      && !$window
+                        .confirm('The refset is assigned, are you sure you want to proceed?')) {
+                      return;
+                    }
+                    $scope.removeRefsetHelper(refset);
+                  });
+              }
+
+              // Helper for removing a refest
+              $scope.removeRefsetHelper = function(refset) {
+
+                refsetService.findRefsetMembersForQuery(refset.id, '', {
+                  startIndex : 0,
+                  maxResults : 1
+                }).then(
+                  function(data) {
+                    if (data.members.length == 1) {
+                      if (!$window
+                        .confirm('The refset has members, are you sure you want to proceed.')) {
                         return;
                       }
                     }
@@ -441,15 +454,7 @@ tsApp
                       $scope.selected.refset = null;
                       refsetService.fireRefsetChanged();
                     });
-
-                  })
-                } else {
-
-                  refsetService.removeRefset(refset.id).then(function() {
-                    $scope.selected.refset = null;
-                    refsetService.fireRefsetChanged();
                   });
-                }
               };
 
               // Remove refset member
@@ -640,6 +645,7 @@ tsApp
                 $scope.newClause = null;
 
                 // Paging parameters
+                $scope.newClauses = angular.copy($scope.refset.definitionClauses);
                 $scope.pageSize = 5;
                 $scope.pagedClauses = [];
                 $scope.paging = {};
@@ -654,37 +660,59 @@ tsApp
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
-                  $scope.pagedClauses = utilService.getPagedArray($scope.refset.definitionClauses,
+                  $scope.pagedClauses = utilService.getPagedArray($scope.newClauses,
                     $scope.paging['clauses'], $scope.pageSize);
+                }
+
+                // identify whether defintion has changed
+                $scope.isDefinitionDirty = function() {
+                  console.debug("isdefdirty", $scope.newClauses, $scope.refset.definitionClauses);
+                  if ($scope.newClauses.length != $scope.refset.definitionClauses.length) {
+                    return true;
+                  }
+
+                  // Compare scope.refset.definitionClauses to newClauses
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    if ($scope.newClauses[i].value != $scope.refset.definitionClauses[i].value) {
+                      return true;
+                    }
+                    if ($scope.newClauses[i].negated != $scope.refset.definitionClauses[i].negated) {
+                      return true;
+                    }
+                  }
+                  return false;
                 }
 
                 // remove clause
                 $scope.removeClause = function(refset, clause) {
-                  for (var i = 0; i < refset.definitionClauses.length; i++) {
-                    var index = refset.definitionClauses.indexOf(clause);
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    var index = $scope.newClauses.indexOf(clause);
                     if (index != -1) {
-                      refset.definitionClauses.splice(index, 1);
+                      $scope.newClauses.splice(index, 1);
                     }
                   }
                   $scope.getPagedClauses();
                 };
 
                 // add new clause
-                $scope.submitClause = function(refset, clause) {
+                $scope.addClause = function(refset, clause) {
+                  $scope.errors = [];
 
                   // Confirm clauses are unique, skip if not
-                  for (var i = 0; i < refset.definitionClauses.length; i++) {
-                    if (refset.definitionClauses[i] == clause) {
+                  for (var i = 0; i < $scope.newClauses.length; i++) {
+                    if ($scope.newClauses[i].value == clause.value) {
+                      $scope.errors[0] = "Duplicate definition clause";
                       return;
                     }
                   }
-                  refset.definitionClauses.push(clause);
+                  $scope.newClauses.push(clause);
                   $scope.getPagedClauses();
                   $scope.newClause = null;
                 };
 
                 // Save refset
                 $scope.save = function(refset) {
+                  refset.definitionClauses = $scope.newClauses;
                   refsetService.updateRefset(refset).then(
                   // Success - add refset
                   function(data) {
@@ -1936,16 +1964,17 @@ tsApp
                     conceptActive = null;
                   }
 
-                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs, conceptActive).then(
-                  // Success
-                  function(data) {
-                    $scope.oldRegularMembers = data.members;
-                    $scope.oldRegularMembers.totalCount = data.totalCount;
-                  },
-                  // Error
-                  function(data) {
-                    handleError($scope.errors, data);
-                  });
+                  refsetService.getOldRegularMembers($scope.reportToken, null, pfs, conceptActive)
+                    .then(
+                    // Success
+                    function(data) {
+                      $scope.oldRegularMembers = data.members;
+                      $scope.oldRegularMembers.totalCount = data.totalCount;
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
                 };
 
                 // Load 'new regular members' with paging
@@ -2006,7 +2035,7 @@ tsApp
                   $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
                     $scope.paging['stagedInclusions'], $scope.pageSize);
                 }
-                
+
                 $scope.refreshLookupProgress = function() {
                   refsetService.getLookupProgress($scope.stagedRefset.id).then(
                   // Success

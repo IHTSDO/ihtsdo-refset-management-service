@@ -585,8 +585,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     this.definitionClauses = definitionClauses;
   }
 
+  /* see superclass */
   @Override
-  // TODO: eventaully this needs to be expressed in the standard expression syntax
+  // TODO: eventaully this needs to be expressed in the standard expression
+  // syntax
   public String computeDefinition() {
     List<DefinitionClause> positiveClauses = new ArrayList<>();
     List<DefinitionClause> negativeClauses = new ArrayList<>();
@@ -612,6 +614,16 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       }
     }
     return computedDefinition.toString();
+  }
+
+  /* see superclass */
+  @Override
+  public String computeExpression(String expression) {
+    if (getProject().getExclusionClause() != null) {
+      return expression + " + !" + getProject().getExclusionClause();
+    } else {
+      return expression;
+    }
   }
 
   /* see superclass */
@@ -650,23 +662,27 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return getProject().getUserRoleMap();
   }
 
+  /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getTerminology() {
     return terminology;
   }
 
+  /* see superclass */
   @Override
   public void setTerminology(String terminology) {
     this.terminology = terminology;
   }
 
+  /* see superclass */
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public String getVersion() {
     return version;
   }
 
+  /* see superclass */
   @Override
   public void setVersion(String version) {
     this.version = version;
