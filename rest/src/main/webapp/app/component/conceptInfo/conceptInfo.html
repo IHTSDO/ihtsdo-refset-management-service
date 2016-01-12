@@ -30,7 +30,7 @@
     <p ng-show="data.concept && concept" style="margin-top: 5px;">
       <b>Concept</b>
     </p>
-    <p ng-show="concept && !disableMemberTypes" class="info-text">
+    <p ng-show="data.concept && concept && !disableMemberTypes" class="info-text">
       <!-- Add buttons for both refset types -->
       <i ng-click="openAddModal(data.refset, concept); $event.stopPropagation()"
         ng-show="data.refset.type == 'INTENSIONAL' && !disableMemberTypes && !memberTypes[concept.terminologyId].memberType"
