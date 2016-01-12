@@ -478,7 +478,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new Exception("date provided is not in 'YYYYMMDD' format:"
+        throw new LocalException("Date provided is not in 'YYYYMMDD' format:"
             + effectiveTime);
 
       algo.setTranslation(translation);

@@ -359,11 +359,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     if (translation.getProject() == null
         || translation.getProject().getId() == null) {
-      throw new Exception("A translation must have an associated project");
+      throw new LocalException("A translation must have an associated project");
     }
     if (translation.getRefset() == null
         || translation.getRefset().getId() == null) {
-      throw new Exception("A translation must have an associated refset");
+      throw new LocalException("A translation must have an associated refset");
     }
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);

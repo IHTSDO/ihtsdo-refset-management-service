@@ -1016,6 +1016,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         if (members == null) {
           members = refset.getMembers();
         }
+        Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+            "LOOKUP  refset id = " + refset.getId());
+        Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+            "LOOKUP  member ct = " + members.size());
 
         // Put into a map by concept id (for easy retrieval)
         final Map<String, ConceptRefsetMember> memberMap = new HashMap<>();
@@ -1066,6 +1070,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
                 refsetService.updateMember(member);
+                Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+                    "UPDATE    set member = " + member.getConceptName());
               }
 
               // This is for an in-memory member, just update the object
@@ -1074,6 +1080,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+                Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
+                    "LOOKUP    set member = " + member.getConceptName());
               }
             }
 

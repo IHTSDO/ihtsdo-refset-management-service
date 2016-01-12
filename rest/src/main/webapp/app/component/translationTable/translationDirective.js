@@ -938,6 +938,10 @@ tsApp
                           $scope.errors[0] = "Translation name, description, and language must not be empty.";
                           return;
                         }
+                        if (!translation.refsetId) {
+                          $scope.errors[0] = "A refset must be selected";
+                          return;
+                        }
                         translationService.addTranslation(translation).then(
                         // Success - update translation
                         function(data) {

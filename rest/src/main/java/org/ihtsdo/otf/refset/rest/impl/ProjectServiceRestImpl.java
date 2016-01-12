@@ -33,6 +33,7 @@ import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -322,7 +323,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       for (Project p : projectService.getProjects().getObjects()) {
         if (p.getName().equals(project.getName())
             && p.getDescription().equals(project.getDescription())) {
-          throw new Exception(
+          throw new LocalException(
               "A project with this name and description already exists");
         }
       }
