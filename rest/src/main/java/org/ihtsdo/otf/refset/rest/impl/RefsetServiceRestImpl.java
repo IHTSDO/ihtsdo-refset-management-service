@@ -1556,7 +1556,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     Logger.getLogger(getClass()).info("RESTful call (Refset): compare");
 
     // NOTE: this does not generically support comparing intensional refsets
-    // the logic assumes only refset1 has inclusions/exclusions    
+    // the logic assumes only refset1 has inclusions/exclusions
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       authorizeApp(securityService, authToken, "compare refsets",
@@ -1580,19 +1580,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             UserRole.VIEWER);
       }
 
+      // Create conceptId => member maps for refset 1 and refset 2
+      final Map<String, ConceptRefsetMember> refset1Map = new HashMap<>();
+      for (final ConceptRefsetMember member : refset1.getMembers()) {
+        refset1Map.put(member.getConceptId(), member);
+      }
+
+      final Map<String, ConceptRefsetMember> refset2Map = new HashMap<>();
+      for (final ConceptRefsetMember member : refset2.getMembers()) {
+        refset2Map.put(member.getConceptId(), member);
+      }
+
       // creates a "members in common" list (where reportToken is the key)
       final List<ConceptRefsetMember> membersInCommon = new ArrayList<>();
-      // adding member2s to the list instead of member1 because it has the new
-      // retired information
+      // Iterate through the refset2 members
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
         refsetService.handleLazyInit(member2);
-        // only for regular members of staged refset, not INCLUSION or EXCLUSION 
-        // or STAGED_INCLUSION, STAGED_EXCLUSION
+        // Members in common are things where refset2 has type Member
+        // and refset1 has a matching concept_id/type
         if (member2.getMemberType() == Refset.MemberType.MEMBER
-            && refset1.getMembers().indexOf(member2) != -1
-            && refset1.getMembers().get(
-              refset1.getMembers().indexOf(member2)).getMemberType() == Refset.MemberType.MEMBER) {
-          // lazy initialize
+            && refset1Map.containsKey(member2.getConceptId())
+            && refset1Map.get(member2.getConceptId()).getMemberType() == Refset.MemberType.MEMBER) {
+          // lazy initialize for tostring method (needed by applyPfsToList in
+          // findMembersInCommon
           member2.toString();
           membersInCommon.add(member2);
         }
@@ -1604,24 +1614,29 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
       final List<ConceptRefsetMember> newNotOld = new ArrayList<>();
 
+      // Old not new are things from refset1 that do not exist
+      // in refset2 or do exist in refset2 with a different type
       for (final ConceptRefsetMember member1 : refset1.getMembers()) {
         refsetService.handleLazyInit(member1);
-        if (!refset2.getMembers().contains(member1)) {
+        if (!refset2Map.containsKey(member1.getClass())) {
           oldNotNew.add(member1);
-        // Always keep exclusions
-        } else if (member1.getMemberType() == Refset.MemberType.EXCLUSION) {
+          // Always keep exclusions
+        } else if (refset2Map.containsKey(member1.getConceptId())
+            && refset2Map.get(member1.getConceptId()).getMemberType() != member1
+                .getMemberType()) {
           oldNotNew.add(member1);
         }
       }
+      // New not old are things from refset2 that do not exist
+      // in refset1 or do exist in refset1 but with a different type
       for (final ConceptRefsetMember member2 : refset2.getMembers()) {
         refsetService.handleLazyInit(member2);
-        if (!refset1.getMembers().contains(member2)) {
+        if (!refset1Map.containsKey(member2.getConceptId())) {
           newNotOld.add(member2);
-        }
-        // Always include stuff marked as STAGED
-        else if (member2.getMemberType() == Refset.MemberType.INCLUSION_STAGED
-            || member2.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
-            newNotOld.add(member2);
+        } else if (refset1Map.containsKey(member2.getConceptId())
+            && refset1Map.get(member2.getConceptId()).getMemberType() != member2
+                .getMemberType()) {
+          newNotOld.add(member2);
         }
       }
       diffReport.setOldNotNew(oldNotNew);
