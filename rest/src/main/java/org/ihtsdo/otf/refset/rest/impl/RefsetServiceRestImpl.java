@@ -1372,8 +1372,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // With contents committed, can now lookup Names/Statuses of members
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
+
+        // Look up refset members for this refset
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
             ConfigUtility.isBackgroundLookup());
+
+        // Also look up refset members but without save
       }
 
       return refsetCopy;

@@ -602,7 +602,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
-    
+
   }
 
   /* see superclass */
@@ -872,6 +872,30 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   /* see superclass */
   @Override
+  public void lookupMemberNames(Long refsetId,
+    List<ConceptRefsetMember> members, String label, boolean saveMembers,
+    boolean background) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Release Service - lookup member names (2) - " + refsetId);
+    // Only launch process if refset not already looked-up
+    if (getTerminologyHandler().assignNames()) {
+      if (!lookupProgressMap.containsKey(refsetId)) {
+        // Create new thread
+        Runnable lookup =
+            new LookupMemberNamesThread(refsetId, members, label, saveMembers);
+        Thread t = new Thread(lookup);
+        t.start();
+        // Handle non-background
+        if (!background) {
+          t.join();
+        }
+      }
+      // else it is already running
+    }
+  }
+
+  /* see superclass */
+  @Override
   public int getLookupProgress(Long objectId, boolean lookupInProgress)
     throws Exception {
 
@@ -905,8 +929,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     /** The refset id. */
     private Long refsetId;
 
+    /** The members. */
+    private List<ConceptRefsetMember> members;
+
     /** The label. */
     private String label;
+
+    /** The save members. */
+    private boolean saveMembers = true;
 
     /**
      * Instantiates a {@link LookupMemberNamesThread} from the specified
@@ -919,6 +949,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     public LookupMemberNamesThread(Long id, String label) throws Exception {
       refsetId = id;
       this.label = label;
+    }
+
+    /**
+     * Instantiates a {@link LookupMemberNamesThread} from the specified
+     * parameters.
+     *
+     * @param id the id
+     * @param members the members
+     * @param label the label
+     * @param saveMembers the save members
+     * @throws Exception the exception
+     */
+    public LookupMemberNamesThread(Long id, List<ConceptRefsetMember> members,
+        String label, boolean saveMembers) throws Exception {
+      refsetId = id;
+      this.members = members;
+      this.label = label;
+      this.saveMembers = saveMembers;
     }
 
     /* see superclass */
@@ -952,16 +1000,22 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
         if (!refset.isLookupInProgress()) {
           refset.setLookupInProgress(true);
-          refsetService.updateRefset(refset);
-          refsetService.clear();
+          if (saveMembers) {
+            refsetService.updateRefset(refset);
+            refsetService.clear();
+          }
         }
 
         refset = refsetService.getRefset(refsetId);
-        refsetService.setTransactionPerOperation(false);
-        refsetService.beginTransaction();
+        if (saveMembers) {
+          refsetService.setTransactionPerOperation(false);
+          refsetService.beginTransaction();
+        }
 
         // Get the members
-        List<ConceptRefsetMember> members = refset.getMembers();
+        if (members != null) {
+          members = refset.getMembers();
+        }
 
         // Put into a map by concept id (for easy retrieval)
         final Map<String, ConceptRefsetMember> memberMap = new HashMap<>();
@@ -1005,29 +1059,46 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             // Server
             for (final Concept con : cons.getObjects()) {
               // Reread the member as we don't know if it has changed
-              final ConceptRefsetMember member =
-                  refsetService.getMember(memberMap.get(con.getTerminologyId())
-                      .getId());
-              member.setConceptName(con.getName());
-              member.setConceptActive(con.isActive());
-              refsetService.updateMember(member);
+              if (saveMembers) {
+                final ConceptRefsetMember member =
+                    refsetService.getMember(memberMap.get(
+                        con.getTerminologyId()).getId());
+                member.setConceptName(con.getName());
+                member.setConceptActive(con.isActive());
+                refsetService.updateMember(member);
+              }
+
+              // This is for an in-memory member, just update the object
+              else {
+                final ConceptRefsetMember member =
+                    memberMap.get(con.getTerminologyId());
+                member.setConceptName(con.getName());
+                member.setConceptActive(con.isActive());
+              }
             }
 
-            // Update Progess
-            lookupProgressMap.put(refsetId,
-                (int) ((100.0 * i) / numberOfMembers));
-            refsetService.commit();
-            refsetService.clear();
-            refsetService.beginTransaction();
+            // Update Progess and commit
+            int progress = (int) ((100.0 * i) / numberOfMembers);
+            if (lookupProgressMap.get(refsetId) < progress) {
+              lookupProgressMap.put(refsetId,
+                  (int) ((100.0 * i) / numberOfMembers));
+              if (saveMembers) {
+                refsetService.commit();
+                refsetService.clear();
+                refsetService.beginTransaction();
+              }
+            }
           }
         }
 
         // Conclude process (reread refset)
         refset = refsetService.getRefset(refsetId);
         refset.setLookupInProgress(false);
-        refsetService.updateRefset(refset);
-        refsetService.commit();
-        refsetService.close();
+        if (saveMembers) {
+          refsetService.updateRefset(refset);
+          refsetService.commit();
+          refsetService.close();
+        }
         lookupProgressMap.remove(refsetId);
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);
