@@ -1543,7 +1543,7 @@ tsApp
                       }
 
                       if (!refset.name || !refset.description) {
-                        $scope.data.errors[0] = "Refset name and description must not be empty.";
+                        $scope.errors[0] = "Refset name and description must not be empty.";
                         return;
                       }
 

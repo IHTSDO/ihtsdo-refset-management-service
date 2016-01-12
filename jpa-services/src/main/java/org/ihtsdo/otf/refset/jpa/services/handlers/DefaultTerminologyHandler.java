@@ -27,6 +27,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
+import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
@@ -682,10 +683,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       localQuery = localQuery.replace("*", "");
       useTerm = false;
     }
+
     // Use "escg" if it's a concept id, otherwise search term
     final WebTarget target =
-        useTerm ? client.target(url + "/" + branch + "/"
-            + version + "/concepts?term="
+        useTerm ? client.target(url + "/" + branch + "/" + version
+            + "/concepts?term="
             + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
             + "&offset=" + localPfs.getStartIndex() + "&limit="
             + localPfs.getMaxResults() + "&expand=pt()")
@@ -771,6 +773,32 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // Set total count
     conceptList.setTotalCount(Integer.parseInt(doc.get("total").asText()));
     return conceptList;
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList findRefsetsForQuery(String query, String terminology,
+    String version, PfsParameter pfs) throws Exception {
+    if (query != null && !query.isEmpty()) {
+      List<Concept> list =
+          resolveExpression(
+              "<< 900000000000496009 | Simple map type reference set  |",
+              terminology, version, pfs).getObjects();
+
+      final RootServiceJpa service = new RootServiceJpa() {
+        // n/a
+      };
+      ConceptList result = new ConceptListJpa();
+      result.setObjects(service.applyPfsToList(list, Concept.class, pfs));
+      result.setTotalCount(list.size());
+      service.close();
+      return result;
+
+    } else {
+      return resolveExpression(
+          "<< 900000000000496009 | Simple map type reference set  |",
+          terminology, version, pfs);
+    }
   }
 
   /* see superclass */

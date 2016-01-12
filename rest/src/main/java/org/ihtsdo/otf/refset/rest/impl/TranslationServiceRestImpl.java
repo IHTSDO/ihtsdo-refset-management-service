@@ -1513,7 +1513,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove spelling dictionary entry",
           UserRole.AUTHOR);
 
-      spelling.removeEntry(entry);
+      spelling.removeEntry(entry.toLowerCase());
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), false);

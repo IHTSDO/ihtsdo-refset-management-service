@@ -135,6 +135,11 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
               + type.getName() + ", " + type.getDescriptionLength());
         }
       }
+      
+      if (desc.getTypeId().equals("900000000000003001") && 
+          !desc.getTerm().matches(".* \\(.*\\)")) {
+        result.addWarning("FSN description without semantic tag");
+      }
     }
     return result;
   }

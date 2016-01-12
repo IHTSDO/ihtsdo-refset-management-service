@@ -884,11 +884,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
    * @param prefs the prefs
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   private void addDescriptionsHelper(String userName,
     TranslationService translationService, Translation translation,
     Concept concept, UserPreferences prefs) throws Exception {
 
+    if (concept == null) {
+      Logger.getLogger(getClass()).warn(
+          "  Add description helper = concept unexpectedly null");
+      return;
+    }
     // Find any concepts with this terminologyId
     // and a translation terminologyId matching any of the ids from above.
     final StringBuilder query = new StringBuilder();
