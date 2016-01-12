@@ -1013,7 +1013,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         }
 
         // Get the members
-        if (members != null) {
+        if (members == null) {
           members = refset.getMembers();
         }
 
@@ -1103,6 +1103,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
             "Finished lookupMemberNamesThread - " + refsetId);
       } catch (Exception e) {
+        e.printStackTrace();
         try {
           ExceptionHandler.handleException(e, label, null);
         } catch (Exception e1) {
