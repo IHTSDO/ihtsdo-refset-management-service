@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
@@ -39,7 +40,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Helper Jpa Normal Use" Test Cases.
  */
-public class ImportExportRf2HandlerTest {
+public class ImportExportRf2HandlerTest extends JpaSupport {
 
   /** The members input stream. */
   private InputStream membersInputStream = null;
@@ -95,6 +96,7 @@ public class ImportExportRf2HandlerTest {
   @SuppressWarnings("resource")
   @Test
   public void testTranslationHandlerJpa001() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     // Set up superstructure
     Translation translation = new TranslationJpa();
     Refset refset = new RefsetJpa();
@@ -179,6 +181,7 @@ public class ImportExportRf2HandlerTest {
    */
   @Test
   public void testRefsetHandlerJpa002() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     // Set up refset
     Refset refset = new RefsetJpa();
     refset.setModuleId("sampleModuleId");

@@ -23,6 +23,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  * Some initial testing for {@link DefaultTerminologyHandler}. Assumes stock dev
@@ -55,12 +56,12 @@ public class IhtsdoComponentIdentifierHandlerTest extends JpaSupport {
    *
    * @throws Exception the exception
    */
-  // @Test
+  @Test
   public void testGetAssignIds() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
     Project project = new ProjectJpa();
-    project.setNamespace("1000179");
+    project.setNamespace("1000124");
     Refset refset = new RefsetJpa();
     refset.setProject(project);
     Translation translation = new TranslationJpa();

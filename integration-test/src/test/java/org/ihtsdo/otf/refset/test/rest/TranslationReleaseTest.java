@@ -6,7 +6,9 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -48,7 +50,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class TranslationReleaseTest {
+public class TranslationReleaseTest extends RestSupport {
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -330,8 +332,8 @@ public class TranslationReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginCancelRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -362,8 +364,8 @@ public class TranslationReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease002() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginValidateCancelRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -398,7 +400,7 @@ public class TranslationReleaseTest {
    */
   @Test
   public void testRelease003() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -435,8 +437,8 @@ public class TranslationReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease004() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginValidateBetaCancelRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -480,8 +482,8 @@ public class TranslationReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease005() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testFinishRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -545,10 +547,10 @@ public class TranslationReleaseTest {
         releaseService.getCurrentTranslationReleaseInfo(
             stagedTranslation2.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo.getId(), adminAuthToken);
-//    verifyTranslationLookupCompleted(stagedTranslation.getId());
+    // verifyTranslationLookupCompleted(stagedTranslation.getId());
     translationService.removeTranslation(stagedTranslation.getId(), true,
         adminAuthToken);
-//    verifyTranslationLookupCompleted(stagedTranslation2.getId());
+    // verifyTranslationLookupCompleted(stagedTranslation2.getId());
     translationService.removeTranslation(stagedTranslation2.getId(), true,
         adminAuthToken);
     verifyTranslationLookupCompleted(translation1.getId());
@@ -565,7 +567,7 @@ public class TranslationReleaseTest {
    */
   @Test
   public void testReleaseReportToken() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testReleaseReportToken");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -605,6 +607,8 @@ public class TranslationReleaseTest {
    */
   @Test
   public void testFindTranslationReleasesForQuery() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
@@ -758,9 +762,10 @@ public class TranslationReleaseTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentTranslationReleaseAccess() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     ReleaseInfo info =
         releaseService.getCurrentTranslationReleaseInfo(123456789123456789L,
             adminAuthToken);

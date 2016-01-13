@@ -25,8 +25,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Security Service REST Degenerate Use" Test Cases.
  */
-public class SecurityServiceRestDegenerateUseTest extends
-    SecurityServiceRestTest {
+public class SecurityServiceRestDegenerateUseTest extends SecurityTestSupport {
 
   /** The auth token. */
   String authToken = null;
@@ -239,7 +238,7 @@ public class SecurityServiceRestDegenerateUseTest extends
     // Delete user with invalid hibernate id (does not exist)
     // TEST: Should throw exception
 
-    UserList userList = service.getUsers(authToken);
+    UserList userList = service.findUsersForQuery(null, null, authToken);
     Long badId = Collections.max(userList.getObjects(), new Comparator<User>() {
 
       @Override

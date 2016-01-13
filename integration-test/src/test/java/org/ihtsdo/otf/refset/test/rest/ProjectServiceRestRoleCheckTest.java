@@ -31,7 +31,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Project Service REST Normal Use" Test Cases.
  */
-public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
+public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -61,10 +61,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testRoleCheckRestProject001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testRoleCheckRestProject001");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Attempt to add a project with viewer authorization level
     ProjectJpa project = new ProjectJpa();
@@ -117,10 +116,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentProjectAccess() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testNonexistentProjectAccess");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Retrieve a nonexistent project
     Project project =
@@ -134,10 +132,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testFindProjectsForQuery() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST findProjectsForQuery");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Retrieve projects via a number of valid queries with values in DB
     ProjectList projects =
@@ -187,11 +184,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testGetTerminologyVersionsEditions() throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "TEST testGetTerminologyVersionsEditions");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Verify have at least one Terminology (specifically SNOMEDCT)
     StringList editions = projectService.getTerminologyEditions(adminAuthToken);
@@ -231,10 +226,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testAccessingProjectObjects() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testAccessingProjectObjects");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     /* Test Accessing Project Config Icons */
     KeyValuePairList iconConfig = projectService.getIconConfig(adminAuthToken);
@@ -275,10 +269,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testluceneReindex() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testluceneReindex");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     /* Test force full re-indexing of all Lucene indices */
     projectService.luceneReindex(null, adminAuthToken);

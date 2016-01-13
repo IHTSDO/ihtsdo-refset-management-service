@@ -454,11 +454,13 @@ tsApp.service('releaseService', [
     // Export a release artifact and prompt the download, no promise returned
     this.exportReleaseArtifact = function(releaseArtifact) {
       gpService.increment()
-      $http.get(releaseUrl + 'export/' + releaseArtifact.id).then(
+      $http.get(releaseUrl + 'export/' + releaseArtifact.id, {
+        responseType : 'arraybuffer'
+      }).then(
       // Success
       function(response) {
         var blob = new Blob([ response.data ], {
-          type : ''
+          type : "application/octet-stream"
         });
 
         // fake a file URL and download it

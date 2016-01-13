@@ -15,7 +15,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Security Service REST Degenerate Use" Test Cases.
  */
-public class SecurityServiceRestEdgeCasesTest extends SecurityServiceRestTest {
+public class SecurityServiceRestEdgeCasesTest extends SecurityTestSupport {
 
   /**
    * Create test fixtures per test.
@@ -34,7 +34,7 @@ public class SecurityServiceRestEdgeCasesTest extends SecurityServiceRestTest {
    */
   @Test
   public void testEdgeCasesRestSecurity001() throws Exception {
-    Logger.getLogger(getClass()).debug("Start test");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     String authToken;
     // Procedure 1
@@ -60,7 +60,7 @@ public class SecurityServiceRestEdgeCasesTest extends SecurityServiceRestTest {
    */
   @Test
   public void testEdgeCasesRestSecurity003() throws Exception {
-    Logger.getLogger(getClass()).debug("Start test");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Procedure 1
 

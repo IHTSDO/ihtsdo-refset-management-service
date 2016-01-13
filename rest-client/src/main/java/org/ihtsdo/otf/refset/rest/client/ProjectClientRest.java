@@ -394,7 +394,7 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/user/anyrole");
     Response response =
-        target.request(MediaType.APPLICATION_XML)
+        target.request(MediaType.TEXT_PLAIN)
             .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);

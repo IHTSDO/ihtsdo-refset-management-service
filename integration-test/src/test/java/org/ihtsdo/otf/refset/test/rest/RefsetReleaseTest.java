@@ -46,7 +46,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class RefsetReleaseTest {
+public class RefsetReleaseTest extends RestSupport {
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -263,8 +263,8 @@ public class RefsetReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginCancelRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -289,8 +289,8 @@ public class RefsetReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease002() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginValidateCancelRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -317,8 +317,8 @@ public class RefsetReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease003() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testBeginValidateBetaRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -348,8 +348,8 @@ public class RefsetReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease004() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testFinishRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -379,8 +379,8 @@ public class RefsetReleaseTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRelease005() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testMigration001");
+  public void testMultiRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -439,6 +439,8 @@ public class RefsetReleaseTest {
    */
   @Test
   public void testRemoveReleaseArtifact() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
@@ -478,13 +480,13 @@ public class RefsetReleaseTest {
     // Verify that releaseInfo has two artifacts
     ReleaseInfoList releasesList =
         releaseService.findRefsetReleasesForQuery(refset.getId(), null, null,
-        adminAuthToken);
+            adminAuthToken);
     ReleaseInfo release = releasesList.getObjects().get(0);
     assertEquals(2, release.getArtifacts().size());
 
     // Remove simpleImportedArtifact artifact
     releaseService.removeReleaseArtifact(simpleImportedArtifact.getId(),
-            adminAuthToken);
+        adminAuthToken);
 
     // Verify that releaseInfo has one artifact
     releasesList =
@@ -524,6 +526,8 @@ public class RefsetReleaseTest {
    */
   @Test
   public void testExportImportReleaseArtifact() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
@@ -635,6 +639,8 @@ public class RefsetReleaseTest {
    */
   @Test
   public void testFindRefsetReleasesForQuery() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
@@ -770,6 +776,8 @@ public class RefsetReleaseTest {
    */
   @Test
   public void testResumeRelease() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project = projectService.getProject(2L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
 
@@ -808,9 +816,10 @@ public class RefsetReleaseTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentRefsetReleaseAccess() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     ReleaseInfo info =
         releaseService.getCurrentRefsetReleaseInfo(123456789123456789L,
             adminAuthToken);

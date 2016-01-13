@@ -15,7 +15,7 @@ import org.junit.Ignore;
  * The Class SecurityServiceRestTest.
  */
 @Ignore
-public class SecurityServiceRestTest {
+public class SecurityTestSupport extends RestSupport {
   /** The service. */
   protected static SecurityClientRest service;
 

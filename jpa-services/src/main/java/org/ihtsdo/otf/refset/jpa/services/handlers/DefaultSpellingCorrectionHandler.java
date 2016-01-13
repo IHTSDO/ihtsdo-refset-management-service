@@ -136,7 +136,7 @@ public class DefaultSpellingCorrectionHandler implements
         throw new LocalException(
             "Badly formatted spelling file, no whitespace allowed, words only.");
       }
-      entries.add(line);
+      entries.add(line.toLowerCase());
     }
 
     return entries;
@@ -188,7 +188,7 @@ public class DefaultSpellingCorrectionHandler implements
         continue;
       }
 
-      String[] results = checker.suggestSimilar(term, amount);
+      String[] results = checker.suggestSimilar(term.toLowerCase(), amount);
       // if there are results or the word doesn't exist, then send it back
       StringList resultsForTerm = convertResults(results);
       resultHashMap.put(term, resultsForTerm);

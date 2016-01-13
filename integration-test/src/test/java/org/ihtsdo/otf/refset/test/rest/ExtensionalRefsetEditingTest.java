@@ -34,11 +34,12 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRefset001() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testRefset001");
+  public void testExtensionalRefset() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project = projectService.getProject(2L, adminAuthToken);
 
+    
     UserJpa reviewer1 =
         (UserJpa) securityService.getUser("reviewer1", adminAuthToken);
     projectService.assignUserToProject(project.getId(),
@@ -195,8 +196,8 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
    * @throws Exception the exception
    */
   @Test
-  public void testRefset002() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testRefset002");
+  public void testExternalRefset() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project2 = projectService.getProject(2L, adminAuthToken);
     // Create refset (EXTERNAL)

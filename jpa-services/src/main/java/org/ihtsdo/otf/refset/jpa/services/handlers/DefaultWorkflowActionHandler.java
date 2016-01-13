@@ -285,6 +285,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.getReviewers().remove(user);
           record.setForAuthoring(true);
           record.setForReview(false);
+          record.setLastModifiedBy(user.getUserName());
           service.updateTrackingRecord(record);
           refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
@@ -367,6 +368,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // to have been deleted
     if (action != WorkflowAction.UNASSIGN
         && !(action == WorkflowAction.FINISH && refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+      record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
     return record;
@@ -613,6 +615,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.getReviewers().remove(user);
           record.setForAuthoring(true);
           record.setForReview(false);
+          record.setLastModifiedBy(user.getUserName());
           service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
           concept.setLastModifiedBy(user.getUserName());
@@ -701,6 +704,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // that was just supposed to have been deleted
     if (action != WorkflowAction.UNASSIGN
         && !(action == WorkflowAction.FINISH && concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION)) {
+      record.setLastModifiedBy(user.getUserName());
       service.updateTrackingRecord(record);
     }
     return record;

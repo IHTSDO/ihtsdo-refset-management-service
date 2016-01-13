@@ -100,6 +100,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
   public void compute() throws Exception {
 
     // Stage the refset for beta
+    refset.setLastModifiedBy(userName);
     stagedRefset =
         stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
 
@@ -120,7 +121,6 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
         "Snapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
-    artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
 
     // Add it to the staged release info
@@ -154,7 +154,6 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
           "Delta", releaseInfo.getName()));
       artifact.setTimestamp(new Date());
-      artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info

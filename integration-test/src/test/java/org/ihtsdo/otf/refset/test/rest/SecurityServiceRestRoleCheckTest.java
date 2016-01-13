@@ -17,7 +17,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Security Service REST Degenerate Use" Test Cases.
  */
-public class SecurityServiceRestRoleCheckTest extends SecurityServiceRestTest {
+public class SecurityServiceRestRoleCheckTest extends SecurityTestSupport {
 
   /** The admin user auth token. */
   private static String viewerUserAuthToken;
@@ -53,7 +53,7 @@ public class SecurityServiceRestRoleCheckTest extends SecurityServiceRestTest {
    */
   @Test
   public void testRoleCheckRestSecurity002() throws Exception {
-    Logger.getLogger(getClass()).debug("Start test");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // create test user
     UserJpa testUser = new UserJpa();

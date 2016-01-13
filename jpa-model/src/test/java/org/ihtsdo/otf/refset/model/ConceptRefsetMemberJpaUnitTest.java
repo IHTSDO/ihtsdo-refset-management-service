@@ -180,6 +180,7 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
     tester.include("lastModifiedBy");
     tester.include("moduleId");
     tester.include("conceptId");
+    tester.include("conceptActive");
     tester.include("refsetId");
     tester.include("memberType");
     tester.include("conceptNameSort");

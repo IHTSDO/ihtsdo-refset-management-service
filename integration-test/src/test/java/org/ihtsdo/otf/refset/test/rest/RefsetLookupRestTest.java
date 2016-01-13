@@ -43,7 +43,7 @@ import org.junit.Test;
 /**
  * Test case for refset.
  */
-public class RefsetLookupRestTest extends RestIntegrationSupport {
+public class RefsetLookupRestTest extends RestSupport {
 
   /** The admin auth token. */
   private static String adminAuthToken;

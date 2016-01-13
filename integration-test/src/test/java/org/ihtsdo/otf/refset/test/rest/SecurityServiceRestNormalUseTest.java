@@ -18,7 +18,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Security Service REST Normal Use" Test Cases.
  */
-public class SecurityServiceRestNormalUseTest extends SecurityServiceRestTest {
+public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
 
   /**
    * Create test fixtures per test.
@@ -37,7 +37,7 @@ public class SecurityServiceRestNormalUseTest extends SecurityServiceRestTest {
    */
   @Test
   public void testNormalUseRestSecurity001() throws Exception {
-    Logger.getLogger(getClass()).debug("Start test");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     String authToken =
         service.authenticate(viewerUserName, viewerUserPassword).getAuthToken();
