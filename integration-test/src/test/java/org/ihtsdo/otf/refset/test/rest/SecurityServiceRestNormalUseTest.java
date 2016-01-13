@@ -3,9 +3,11 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
-
-import java.util.UUID;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.User;
@@ -179,7 +181,6 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
    * 
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testAddRemoveUserPreferences() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testAddRemoveUserPreferences");
@@ -234,7 +235,6 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
    * 
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testUpdateUserPreferences() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testUpdateUserPreferences");
@@ -303,7 +303,6 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
    * 
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testUserAccess() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testUserAccess");
@@ -372,7 +371,7 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
           service.findUsersForQuery("badKey:badValue", null, adminAuthToken);
       fail("Query keys must be valid.");
     } catch (Exception e) {
-
+      // n/a
     }
     assertNull(users);
 
@@ -381,7 +380,7 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
       users = service.findUsersForQuery("", null, adminAuthToken);
       fail("Query may not be empty.");
     } catch (Exception e) {
-
+      // n/a
     }
     assertNull(users);
   }

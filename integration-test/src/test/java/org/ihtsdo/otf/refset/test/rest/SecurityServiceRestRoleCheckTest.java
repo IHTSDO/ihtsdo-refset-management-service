@@ -3,7 +3,8 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.UserRole;
@@ -110,7 +111,6 @@ public class SecurityServiceRestRoleCheckTest extends SecurityTestSupport {
    * 
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testSecurityRoleAccess() throws Exception {
     Logger.getLogger(getClass()).debug("TEST testSecurityRoleAccess");
