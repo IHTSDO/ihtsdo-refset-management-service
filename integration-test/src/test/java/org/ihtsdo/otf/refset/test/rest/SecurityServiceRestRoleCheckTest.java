@@ -3,10 +3,11 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.SecurityServiceRest;
 import org.junit.After;
@@ -101,6 +102,35 @@ public class SecurityServiceRestRoleCheckTest extends SecurityServiceRestTest {
     service.removeUser(testUser.getId(), adminUserAuthToken);
 
     Logger.getLogger(getClass()).info("  Done!");
+  }
+
+  /**
+   * Test that expected application roles retrieved via auth token
+   * {@link SecurityServiceRest}.
+   * 
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  @Test
+  public void testSecurityRoleAccess() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST testSecurityRoleAccess");
+
+    // Verify that Admin role exists
+    StringList roles = service.getApplicationRoles(adminUserAuthToken);
+    assertTrue(roles.getCount() > 0);
+
+    boolean adminRoleFound = false;
+    boolean viewerRoleFound = false;
+    for (String s : roles.getObjects()) {
+      if (s.equals("ADMIN")) {
+        adminRoleFound = true;
+      } else if (s.equals("VIEWER")) {
+        viewerRoleFound = true;
+      }
+    }
+
+    assertTrue(adminRoleFound);
+    assertTrue(viewerRoleFound);
   }
 
   //
