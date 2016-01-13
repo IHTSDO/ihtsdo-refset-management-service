@@ -94,6 +94,14 @@ public class SecurityTestSupport extends RestSupport {
           "Test prerequisite:  A non-existent (bad) user must be specified in config properties file");
     }
 
+    // bad user must be specified
+    badUserPassword = properties.getProperty("bad.password");
+
+    if (badUserPassword == null || badUserPassword.isEmpty()) {
+      throw new Exception(
+          "Test prerequisite:  A non-existent (bad) user must be specified in config properties file");
+    }
+
     String authToken =
         service.authenticate(adminUserName, adminUserPassword).getAuthToken();
     if (service.getUser(badUserName, authToken) != null) {

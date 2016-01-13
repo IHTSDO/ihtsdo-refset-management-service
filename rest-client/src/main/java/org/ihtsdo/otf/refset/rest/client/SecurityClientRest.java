@@ -124,8 +124,7 @@ public class SecurityClientRest extends RootClientRest implements
     validateNotEmpty(authToken, "authToken");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/security/user"
-            + authToken);
+        client.target(config.getProperty("base.url") + "/security/user");
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
