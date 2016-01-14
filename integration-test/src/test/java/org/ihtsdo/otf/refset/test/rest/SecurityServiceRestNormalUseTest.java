@@ -375,14 +375,6 @@ public class SecurityServiceRestNormalUseTest extends SecurityTestSupport {
     }
     assertNull(users);
 
-    // Verify empty user list retrieved via empty key query
-    try {
-      users = service.findUsersForQuery("", null, adminAuthToken);
-      fail("Query may not be empty.");
-    } catch (Exception e) {
-      // n/a
-    }
-    assertNull(users);
   }
 
   /**
