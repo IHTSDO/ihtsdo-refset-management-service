@@ -681,11 +681,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setPublished(false);
           member.setPublishable(true);
           member.setRefset(newRefset);
+          member.setEffectiveTime(null);
           // Insert new members
           member.setId(null);
           member.setLastModifiedBy(userName);
           refsetService.addMember(member);
         }
+      // Resolve definition if INTENSIONAL
+      } else if (refset.getType() == Refset.Type.INTENSIONAL) {
+        refsetService.resolveRefsetDefinition(refset);
       }
 
       // done
