@@ -280,6 +280,8 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     IndexedFieldTester tester = new IndexedFieldTester(object);
     tester.include("authorUserNames");
     tester.include("reviewerUserNames");
+    tester.include("conceptName");
+    tester.include("refsetName");
     assertTrue(tester.testAnalyzedIndexedFields());
 
     // Test non analyzed fields
@@ -294,8 +296,8 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("projectId");
     tester.include("conceptId");
     tester.include("conceptTerminologyId");
-    tester.include("conceptName");
-    tester.include("refsetName");
+    tester.include("conceptNameSort");
+    tester.include("refsetNameSort");
     tester.include("refsetModuleId");
     tester.include("refsetType");
     assertTrue(tester.testNotAnalyzedIndexedFields());

@@ -180,7 +180,7 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
             concept, this);
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error("  validationResult = " + result);
-      throw new Exception(result.getErrors().iterator().next());
+      throw new LocalException(result.getErrors().iterator().next());
     }
     // Perform the action
     return handler.performWorkflowAction(translation, user, projectRole,

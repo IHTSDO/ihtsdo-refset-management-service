@@ -45,9 +45,10 @@ tsApp
           }
 
           // Add a * to the filter if set and doesn't contain a :
-          if (pfs.filter && pfs.filter.indexOf(":") == -1 && pfs.filter.indexOf("\"") == -1) {
+          if (pfs.queryRestriction && pfs.queryRestriction.indexOf(":") == -1
+            && pfs.queryRestriction.indexOf("\"") == -1) {
             var pfs2 = angular.copy(pfs);
-            pfs2.filter += "*";
+            pfs2.queryRestriction += "*";
             return pfs2;
           }
           return pfs;
@@ -227,7 +228,7 @@ tsApp
           if (paging.filter) {
             newArray = this.getArrayByFilter(newArray, paging.filter);
           }
-          
+
           // apply active status filter
           if (paging.typeFilter) {
             newArray = this.getArrayByActiveStatus(newArray, paging.typeFilter);
@@ -275,7 +276,7 @@ tsApp
           }
           return newArray;
         }
-        
+
         // Get array by filter on conceptActive status
         this.getArrayByActiveStatus = function(array, filter) {
           var newArray = [];
@@ -284,11 +285,9 @@ tsApp
 
             if (array[object].conceptActive && filter == 'Active') {
               newArray.push(array[object]);
-            }
-            else if (!array[object].conceptActive && filter == 'Retired') {
+            } else if (!array[object].conceptActive && filter == 'Retired') {
               newArray.push(array[object]);
-            }
-            else if (array[object].conceptActive && filter == 'All') {
+            } else if (array[object].conceptActive && filter == 'All') {
               newArray.push(array[object]);
             }
           }

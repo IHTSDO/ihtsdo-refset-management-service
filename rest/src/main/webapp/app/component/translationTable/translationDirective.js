@@ -163,6 +163,7 @@ tsApp
 
                 if ($scope.value == 'EDITING'
                   && ($scope.projects.role == 'AUTHOR' || $scope.projects.role == 'REVIEWER')) {
+                  pfs.queryRestriction = $scope.paging['translation'].filter;
                   workflowService.findNonReleaseProcessTranslations($scope.project.id, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
@@ -172,6 +173,7 @@ tsApp
                 }
 
                 if ($scope.value == 'EDITING_ALL') {
+                  pfs.queryRestriction = $scope.paging['translation'].filter;
                   workflowService.findNonReleaseProcessTranslations($scope.project.id, pfs).then(
                     function(data) {
                       $scope.translations = data.translations;
@@ -267,6 +269,7 @@ tsApp
                 };
 
                 if ($scope.projects.role == 'AUTHOR') {
+                  pfs.queryRestriction = $scope.paging['available'].filter;
                   workflowService.findAvailableEditingConcepts($scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -275,6 +278,7 @@ tsApp
                     translation.available.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'REVIEWER') {
+                  pfs.queryRestriction = $scope.paging['available'].filter;
                   workflowService.findAvailableReviewConcepts($scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -283,6 +287,7 @@ tsApp
                     translation.available.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'ADMIN') {
+                  pfs.queryRestriction = $scope.paging['available'].filter;
                   workflowService.findAllAvailableConcepts($scope.project.id, translation.id, pfs)
                     .then(
                     // Success
@@ -307,12 +312,13 @@ tsApp
                   startIndex : ($scope.paging['assigned'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
                   sortField : $scope.paging['assigned'].sortField,
-                  ascending : $scope.paging['assigned'].ascending == null ? true
+                  ascending : $scope.paging['assigned'].ascending == null ? false
                     : $scope.paging['assigned'].ascending,
                   queryRestriction : null
                 };
 
                 if ($scope.projects.role == 'AUTHOR') {
+                  pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedEditingConcepts($scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -321,6 +327,7 @@ tsApp
                     translation.assigned.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'REVIEWER') {
+                  pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedReviewConcepts($scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -329,6 +336,7 @@ tsApp
                     translation.assigned.totalCount = data.totalCount;
                   });
                 } else if ($scope.projects.role == 'ADMIN') {
+                  pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
                     .then(
                     // Success
