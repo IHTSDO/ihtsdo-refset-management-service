@@ -2030,25 +2030,25 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     refsetService.beginTransaction();
     try {
       final Refset refset = refsetService.getRefset(refsetId);
-      String userName =
+      final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "optimize definition for refset id",
               UserRole.AUTHOR);
 
       // create map of definition clause values to their resolved concepts
-      Set<String> resolved = new HashSet<>();
-      Map<String, ConceptList> clauseToConceptsMap = new HashMap<>();
-      List<DefinitionClause> allClauses = refset.getDefinitionClauses();
-      List<DefinitionClause> posClauses = new ArrayList<>();
-      List<DefinitionClause> negClauses = new ArrayList<>();
-      for (DefinitionClause clause : allClauses) {
+      final Set<String> resolved = new HashSet<>();
+      final Map<String, ConceptList> clauseToConceptsMap = new HashMap<>();
+      final List<DefinitionClause> allClauses = refset.getDefinitionClauses();
+      final List<DefinitionClause> posClauses = new ArrayList<>();
+      final List<DefinitionClause> negClauses = new ArrayList<>();
+      for (final DefinitionClause clause : allClauses) {
         if (clause.isNegated()) {
           negClauses.add(clause);
         } else {
           posClauses.add(clause);
         }
         // No need to "resolvExpression" because it doesn't affect the logic
-        ConceptList concepts =
+        final ConceptList concepts =
             refsetService.getTerminologyHandler().resolveExpression(
                 clause.getValue(), refset.getTerminology(),
                 refset.getVersion(), null);
@@ -2056,7 +2056,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // compute if any of the clauses subsume any of the other clauses
-      List<String> subsumedClauses = new ArrayList<>();
+      final List<String> subsumedClauses = new ArrayList<>();
       for (int i = 0; i < posClauses.size(); i++) {
         final String key1 = posClauses.get(i).getValue();
         // Use stream t Java 1.8: o extract concept ids
@@ -2100,8 +2100,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       // remove subsumed and duplicate clauses from the refset
-      Map<String, DefinitionClause> clausesToKeep = new HashMap<>();
-      for (DefinitionClause clause : allClauses) {
+      final Map<String, DefinitionClause> clausesToKeep = new HashMap<>();
+      for (final DefinitionClause clause : allClauses) {
         // keep clause if it isn't subsumed and
         // it isn't a duplicate
         if (!subsumedClauses.contains(clause.getValue())
@@ -2118,7 +2118,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Ideally this can't happen because "redefine" takes care of it.
       // Any inclusions matching things in "resolved" can be removed
       // Any exclusions NOT matching things in "resolved" can be removed
-      for (ConceptRefsetMember member : refset.getMembers()) {
+      for (final ConceptRefsetMember member : refset.getMembers()) {
         if (member.getMemberType() == Refset.MemberType.INCLUSION
             && resolved.contains(member.getConceptId())) {
           refsetService.removeMember(member.getId());
