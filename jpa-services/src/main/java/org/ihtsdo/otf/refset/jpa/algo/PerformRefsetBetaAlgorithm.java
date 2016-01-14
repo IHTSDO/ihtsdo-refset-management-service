@@ -121,6 +121,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
         "Snapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
+    artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
 
     // Add it to the staged release info
@@ -154,6 +155,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
       artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
           "Delta", releaseInfo.getName()));
       artifact.setTimestamp(new Date());
+      artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
 
       // Add it to the staged release info

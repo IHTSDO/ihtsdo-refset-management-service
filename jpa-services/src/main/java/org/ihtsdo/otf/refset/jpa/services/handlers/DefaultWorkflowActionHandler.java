@@ -90,7 +90,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + refset.getId());
     }
 
-    // TODO: possibly support this
+    // TODO: possibly support this after testing
     // if (projectRole == UserRole.REVIEWER
     // && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
     // && action == WorkflowAction.ASSIGN
@@ -405,7 +405,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + concept.getTerminologyId());
     }
 
-    // TODO: possibly support this
+    // TODO: possibly support this after testing
     // if (projectRole == UserRole.REVIEWER
     // && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
     // && action == WorkflowAction.ASSIGN

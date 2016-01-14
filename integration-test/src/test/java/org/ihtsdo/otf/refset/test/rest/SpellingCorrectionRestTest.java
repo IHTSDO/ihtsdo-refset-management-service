@@ -9,11 +9,9 @@ package org.ihtsdo.otf.refset.test.rest;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -351,15 +349,6 @@ public class SpellingCorrectionRestTest extends RestSupport {
 
     // Test SuggestSpelling with entry that does not reside in dictionary
     results = translationService.suggestSpelling(tid, "Word3", adminAuthToken);
-
-    BufferedReader reader =
-        new BufferedReader(new InputStreamReader(
-            translationService.exportSpellingDictionary(tid, adminAuthToken)));
-    String line = null;
-    while ((line = reader.readLine()) != null) {
-      System.out.println("SPELLING=" + line);
-    }
-    reader.close();
 
     assertEquals(2, results.getTotalCount());
 

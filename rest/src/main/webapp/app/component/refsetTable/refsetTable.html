@@ -379,7 +379,7 @@
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
                 title="Edit definition" class="noul material-icons md-18">edit</i>
               <i ng-show="value == 'ASSIGNED'"
-                confirm="The definition will be optimized, thereby eliminating superfluous definition clauses."
+                confirm="Remove redundant definition clauses, and invalid inclusions/exclusions."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
                 title="Optimize definition" class="noul material-icons md-18">compare_arrows</i>
               <!-- Export -->

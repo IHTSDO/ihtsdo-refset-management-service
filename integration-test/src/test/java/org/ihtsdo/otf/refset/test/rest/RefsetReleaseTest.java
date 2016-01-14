@@ -595,11 +595,6 @@ public class RefsetReleaseTest extends RestSupport {
     assertEquals(processedReleaseInfo1.getVersion(),
         processedReleaseInfo2.getVersion());
 
-    // TODO: Add md5 method to do equals() on getData() for
-    // processedReleaseInfo1's.getArtifact.get(0).getData()
-    // versus
-    // processedReleaseInfo2's.getArtifact.get(0).getData()
-
     // clean up
     releaseService.removeReleaseInfo(releaseInfo1.getId(), adminAuthToken);
     releaseService.removeReleaseInfo(releaseInfo2.getId(), adminAuthToken);

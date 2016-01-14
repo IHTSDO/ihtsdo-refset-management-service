@@ -22,3 +22,21 @@ tsApp.directive('translationInfo', [ '$uibModal', 'utilService', function($uibMo
   }
 
 } ]);
+
+// Language list directive
+// e.g. <div languages></div>
+tsApp.directive('languages', [ 'utilService', function(utilService) {
+  console.debug('configure langauges directive');
+  return {
+    restrict : 'A',
+    scope : {
+      translation : '='
+    },
+    templateUrl : 'app/component/translationInfo/languages.html',
+    controller : [ '$scope', function($scope) {
+
+      // end
+    } ]
+  }
+
+} ]);

@@ -324,7 +324,6 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
             .asText());
         // pt.term is the name
-        // TODO added due to NPE
         if (conceptNode.get("pt") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
@@ -505,9 +504,6 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
         rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
         // Only keep INFERRED_RELATIONSHIP rels
-        // TODO: terminology server is not returning inferred role rels, only
-        // isa
-        // if (rel.getCharacteristicTypeId().equals( "STATED_RELATIONSHIP")) {
         if (rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
           continue;
         }

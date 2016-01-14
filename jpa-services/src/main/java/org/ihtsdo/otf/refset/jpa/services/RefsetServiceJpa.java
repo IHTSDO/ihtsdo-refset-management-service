@@ -8,8 +8,10 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.persistence.NoResultException;
@@ -1072,8 +1074,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
                 refsetService.updateMember(member);
-                Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
-                    "UPDATE    set member = " + member.getConceptName());
+
               }
 
               // This is for an in-memory member, just update the object
@@ -1082,8 +1083,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
-                Logger.getLogger(RefsetServiceJpa.this.getClass()).info(
-                    "LOOKUP    set member = " + member.getConceptName());
               }
             }
 
@@ -1131,18 +1130,18 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             + refset.getId());
 
     final Map<String, ConceptRefsetMember> beforeInclusions = new HashMap<>();
-    final Map<String, ConceptRefsetMember> beforeMembersExclusions =
-        new HashMap<>();
+    final Map<String, ConceptRefsetMember> beforeExclusions = new HashMap<>();
+    final Map<String, ConceptRefsetMember> existingMembers = new HashMap<>();
 
-    final List<String> resolvedConcepts = new ArrayList<>();
+    final Set<String> resolvedConcepts = new HashSet<>();
     for (final ConceptRefsetMember member : findMembersForRefset(
         refset.getId(), null, null).getObjects()) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION) {
         beforeInclusions.put(member.getConceptId(), member);
-      }
-      if (member.getMemberType() == Refset.MemberType.EXCLUSION
-          || member.getMemberType() == Refset.MemberType.MEMBER) {
-        beforeMembersExclusions.put(member.getConceptId(), member);
+      } else if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
+        beforeExclusions.put(member.getConceptId(), member);
+      } else if (member.getMemberType() == Refset.MemberType.MEMBER) {
+        existingMembers.put(member.getConceptId(), member);
       }
     }
     final String definition = refset.computeDefinition();
@@ -1153,16 +1152,39 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         getTerminologyHandler().resolveExpression(refset.computeDefinition(),
             refset.getTerminology(), refset.getVersion(), null);
 
+    // Save concepts
     for (final Concept concept : resolvedFromExpression.getObjects()) {
       resolvedConcepts.add(concept.getTerminologyId());
+    }
+
+    // Anything that was an explicit inclusion that is now resolved by the
+    // definition normally, doesn’t need to be an inclusion anymore – because
+    // it can just be a regular member. Thus we can change it to member and avoid
+    // adding it later
+    for (final ConceptRefsetMember member : beforeInclusions.values()) {
+      if (resolvedConcepts.contains(member.getConceptId())) {
+        member.setMemberType(Refset.MemberType.MEMBER);
+        member.setLastModifiedBy(refset.getLastModifiedBy());
+        updateMember(member);
+        existingMembers.put(member.getConceptId(), member);
+      }
+    }
+
+    // Delete all previous members and exclusions that are not resolved from
+    // the current definition.  Otherwise avoid adding it in next section
+    for (final ConceptRefsetMember member : beforeExclusions.values()) {
+      if (!resolvedConcepts.contains(member.getConceptId())) {
+        removeMember(member.getId());
+      } else {
+        existingMembers.put(member.getConceptId(), member);
+      }
     }
 
     // concepts that are properly resolved by the definition that are not
     // already covered by regular members (or prior exclusions, which stay
     // in place as exclusions)
     for (final Concept concept : resolvedFromExpression.getObjects()) {
-      if (!beforeMembersExclusions.keySet()
-          .contains(concept.getTerminologyId())) {
+      if (!existingMembers.containsKey(concept.getTerminologyId())) {
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         member.setModuleId(concept.getModuleId());
         member.setActive(true);
@@ -1170,31 +1192,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
-        member.setLastModifiedBy(refset.getLastModifiedBy());
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());
         member.setRefset(refset);
         // assign new member id
         member.setTerminologyId(null);
         member.setId(null);
+        member.setLastModifiedBy(refset.getLastModifiedBy());
         addMember(member);
       }
-    }
-
-    // Anything that was an explicit inclusion that is now resolved by the
-    // definition normally ,doesn’t need to be an inclusion anymore – because
-    // it can just be a regular member. Thus we can remove the INCLUSION.
-    beforeInclusions.keySet().removeAll(resolvedConcepts);
-    for (final ConceptRefsetMember beforeInclusion : beforeInclusions.values()) {
-      removeMember(beforeInclusion.getId());
-    }
-
-    // Delete all previous members and exclusions that are not resolved from
-    // the current definition.
-    beforeMembersExclusions.keySet().removeAll(resolvedConcepts);
-    for (final ConceptRefsetMember beforeMemberExclusion : beforeMembersExclusions
-        .values()) {
-      removeMember(beforeMemberExclusion.getId());
     }
 
   }

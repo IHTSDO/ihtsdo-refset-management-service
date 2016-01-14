@@ -82,7 +82,6 @@ public class ConceptRefsetMemberJpaUnitTest extends ModelUnitSupport {
    */
   @Test
   public void testModelEqualsHashcode021() throws Exception {
-    // TODO: need to get this working
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     EqualsHashcodeTester tester = new EqualsHashcodeTester(object);
     tester.include("active");
