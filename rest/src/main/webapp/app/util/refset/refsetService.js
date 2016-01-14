@@ -1233,5 +1233,30 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
+    // checks if expression is valid
+    this.isExpressionValid = function(refset, expression) {
+      console.debug('isExpressionValid');
+      var deferred = $q.defer();
+
+      // Get project roles
+      gpService.increment()
+      $http.put(refsetUrl + 'expression/valid?refsetId=' + refset.id, expression, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }}).then(
+      // success
+      function(response) {
+        console.debug('  expression valid = ' + response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    }
     // end
   } ]);

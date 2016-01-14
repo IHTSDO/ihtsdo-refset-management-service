@@ -177,7 +177,25 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final ConceptList list =
           handler.findAvailableEditingConcepts(translation, user, null,
               workflowService);
-      for (final Concept concept : list.getObjects()) {
+      
+      
+      // Apply pfs
+      final ConceptList result = new ConceptListJpa();
+      result.setTotalCount(list.getTotalCount());
+      // any query restriction has already been handled, dont use here
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
+      }
+      List<Concept> concepts = workflowService.applyPfsToList(list.getObjects(), Concept.class, pfs);
+      result.setObjects(concepts);
+      for (final Concept concept : result.getObjects()) {
+        workflowService.handleLazyInit(concept);
+      }
+      return result;
+      
+      
+      
+      /*for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
         concept.getNotes().size();
       }

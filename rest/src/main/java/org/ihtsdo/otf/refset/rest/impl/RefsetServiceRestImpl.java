@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
@@ -52,6 +53,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
@@ -60,6 +62,7 @@ import org.ihtsdo.otf.refset.jpa.services.rest.RefsetServiceRest;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
@@ -2793,4 +2796,44 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
+  
+  @Override
+  @PUT
+  @Consumes("text/plain")
+  @Produces("text/plain")
+  @Path("/expression/valid")
+  @ApiOperation(value = "Indicates if an expression is valid", notes = "Returns true if the expression is valid, false otherwise", response = Boolean.class)
+  public Boolean isExpressionValid(
+    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Expression", required = true) String expression,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful PUT call (Refset): /expression/valid " + refsetId + ", " + expression);
+    
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    Refset refset = refsetService.getRefset(refsetId);
+    try {
+      authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "check expression validity",
+              UserRole.AUTHOR);
+
+      
+      refsetService.getTerminologyHandler().resolveExpression(
+              refset.computeExpression(expression), refset.getTerminology(),
+              refset.getVersion(), null);
+
+      return true;
+      
+    } catch (Exception e) {
+      return false;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
 }
