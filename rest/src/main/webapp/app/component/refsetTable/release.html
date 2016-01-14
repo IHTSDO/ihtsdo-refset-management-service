@@ -15,14 +15,13 @@
     class="alert alert-success">Validation passed with no errors or
     warnings.</span>
 
-  <span
+  <div
     ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
     class="alert alert-warning">The BETA release can be viewed in the
-    "Releases" section.</span>
-  <br>
-  <span
+    "Releases" section.</div>
+  <div
     ng-show="refset.stagingType == 'BETA' || stagedRefset.workflowStatus == 'BETA'"
-    class="alert alert-warning">Click 'Finish' to complete the release.</span>
+    class="alert alert-warning">Click 'Finish' to complete the release.</div>
 
   <div ng-show="validationResult && refset.stagingType != 'BETA'">
     <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>

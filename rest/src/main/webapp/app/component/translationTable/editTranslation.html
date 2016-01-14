@@ -7,7 +7,7 @@
     <table class="table">
       <tr>
         <td>
-          <b>Project:</b>
+          <b>Project</b>
         </td>
         <td>{{project.name}}</td>
       </tr>
@@ -18,7 +18,7 @@
         <td>
           <select ng-show="action == 'Add'" ng-model="refset"
             ng-change="selectRefset(refset)"
-            ng-options="item.name.concat(' (',item.id,')') for item in refsets"></select>
+            ng-options="item.name.concat(' (',item.terminologyId,')') for item in refsets"></select>
           <span ng-show="refset && action == 'Add'">
             <br />
           </span>

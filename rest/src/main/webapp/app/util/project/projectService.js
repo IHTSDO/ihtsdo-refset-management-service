@@ -240,7 +240,7 @@ tsApp.service('projectService', [
 
       // Make PUT call
       gpService.increment();
-      $http.put(
+      $http.post(
         projectUrl + 'users/' + projectId + '/unassigned?query=' + utilService.prepQuery(query),
         utilService.prepPfs(pfs)).then(
       // success

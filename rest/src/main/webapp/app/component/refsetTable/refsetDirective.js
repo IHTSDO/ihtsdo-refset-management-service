@@ -2169,6 +2169,10 @@ tsApp
                     return;
                   }
 
+                  if (newVersion == '' || newVersion == undefined) {
+                    $scope.errors[0] = "New version is a required field.";
+                    return
+                  }
                   refsetService.beginMigration(refset.id, newTerminology, newVersion).then(
                   // Success
                   function(data) {
