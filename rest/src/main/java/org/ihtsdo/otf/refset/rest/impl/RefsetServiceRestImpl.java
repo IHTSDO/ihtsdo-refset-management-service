@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -2060,9 +2059,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       List<String> subsumedClauses = new ArrayList<>();
       for (int i = 0; i < posClauses.size(); i++) {
         final String key1 = posClauses.get(i).getValue();
-        // Use stream to extract concept ids
-        resolved.addAll(clauseToConceptsMap.get(key1).getObjects().stream()
-            .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
+        // Use stream t Java 1.8: o extract concept ids
+        // resolved.addAll(clauseToConceptsMap.get(key1).getObjects().stream()
+        // .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
+        resolved.addAll(getTerminologyIds(clauseToConceptsMap.get(key1)
+            .getObjects()));
         for (int j = i + 1; j < posClauses.size(); j++) {
           final String key2 = posClauses.get(j).getValue();
           final List<Concept> values1 =
@@ -2079,9 +2080,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       for (int i = 0; i < negClauses.size(); i++) {
         final String key1 = negClauses.get(i).getValue();
-        // Use stream to extract concept ids
-        resolved.removeAll(clauseToConceptsMap.get(key1).getObjects().stream()
-            .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
+        // When we have java 1.8: Use stream to extract concept ids
+        // resolved.removeAll(clauseToConceptsMap.get(key1).getObjects().stream()
+        // .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
+        resolved.addAll(getTerminologyIds(clauseToConceptsMap.get(key1)
+            .getObjects()));
         for (int j = i + 1; j < negClauses.size(); j++) {
           final String key2 = negClauses.get(j).getValue();
           final List<Concept> values1 =
@@ -2112,6 +2115,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
+      // Ideally this can't happen because "redefine" takes care of it.
       // Any inclusions matching things in "resolved" can be removed
       // Any exclusions NOT matching things in "resolved" can be removed
       for (ConceptRefsetMember member : refset.getMembers()) {
@@ -2131,6 +2135,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.close();
       securityService.close();
     }
+  }
+
+  /**
+   * Returns the terminology ids.
+   *
+   * @param concepts the concepts
+   * @return the terminology ids
+   */
+  @SuppressWarnings("static-method")
+  private Set<String> getTerminologyIds(List<Concept> concepts) {
+    final Set<String> result = new HashSet<>();
+    for (final Concept concept : concepts) {
+      result.add(concept.getTerminologyId());
+    }
+    return result;
   }
 
   /* see superclass */
