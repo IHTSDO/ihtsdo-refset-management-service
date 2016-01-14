@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -684,7 +685,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setLastModifiedBy(userName);
           refsetService.addMember(member);
         }
-      // Resolve definition if INTENSIONAL
+        // Resolve definition if INTENSIONAL
       } else if (refset.getType() == Refset.Type.INTENSIONAL) {
         refsetService.resolveRefsetDefinition(refset);
       }
@@ -1028,8 +1029,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       for (final ConceptRefsetMember member : refset.getMembers()) {
         if (inclusion.getConceptId().equals(member.getConceptId())) {
           throw new LocalException(
-              "Inclusion is redundant as the refset has a matching member "
-                  + member);
+              "Inclusion is redundant as the refset has a matching member - "
+                  + member.getConceptId() + ", " + member.getConceptName());
         }
       }
 
@@ -1114,7 +1115,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       if (member == null) {
         throw new LocalException(
-            "Exclusion is redundant as the refset does not contain a matching member");
+            "Exclusion is redundant as the refset does not contain a matching member - "
+                + conceptId);
       }
       if (staged) {
         member.setMemberType(Refset.MemberType.EXCLUSION_STAGED);
@@ -2025,6 +2027,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call (Refset): optimize definition for refsetId: " + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
     try {
       final Refset refset = refsetService.getRefset(refsetId);
       String userName =
@@ -2033,6 +2037,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // create map of definition clause values to their resolved concepts
+      Set<String> resolved = new HashSet<>();
       Map<String, ConceptList> clauseToConceptsMap = new HashMap<>();
       List<DefinitionClause> allClauses = refset.getDefinitionClauses();
       List<DefinitionClause> posClauses = new ArrayList<>();
@@ -2054,11 +2059,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // compute if any of the clauses subsume any of the other clauses
       List<String> subsumedClauses = new ArrayList<>();
       for (int i = 0; i < posClauses.size(); i++) {
+        final String key1 = posClauses.get(i).getValue();
+        // Use stream to extract concept ids
+        resolved.addAll(clauseToConceptsMap.get(key1).getObjects().stream()
+            .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
         for (int j = i + 1; j < posClauses.size(); j++) {
-          String key1 = posClauses.get(i).getValue();
-          String key2 = posClauses.get(j).getValue();
-          List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
-          List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
+          final String key2 = posClauses.get(j).getValue();
+          final List<Concept> values1 =
+              clauseToConceptsMap.get(key1).getObjects();
+          final List<Concept> values2 =
+              clauseToConceptsMap.get(key2).getObjects();
           if (values1.containsAll(values2) && !values2.containsAll(values1)) {
             subsumedClauses.add(key2);
           } else if (values2.containsAll(values1)
@@ -2068,11 +2078,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
       }
       for (int i = 0; i < negClauses.size(); i++) {
+        final String key1 = negClauses.get(i).getValue();
+        // Use stream to extract concept ids
+        resolved.removeAll(clauseToConceptsMap.get(key1).getObjects().stream()
+            .map(c -> c.getTerminologyId()).collect(Collectors.toSet()));
         for (int j = i + 1; j < negClauses.size(); j++) {
-          String key1 = negClauses.get(i).getValue();
-          String key2 = negClauses.get(j).getValue();
-          List<Concept> values1 = clauseToConceptsMap.get(key1).getObjects();
-          List<Concept> values2 = clauseToConceptsMap.get(key2).getObjects();
+          final String key2 = negClauses.get(j).getValue();
+          final List<Concept> values1 =
+              clauseToConceptsMap.get(key1).getObjects();
+          final List<Concept> values2 =
+              clauseToConceptsMap.get(key2).getObjects();
           if (values1.containsAll(values2) && !values2.containsAll(values1)) {
             subsumedClauses.add(key2);
           } else if (values2.containsAll(values1)
@@ -2097,6 +2112,19 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
+      // Any inclusions matching things in "resolved" can be removed
+      // Any exclusions NOT matching things in "resolved" can be removed
+      for (ConceptRefsetMember member : refset.getMembers()) {
+        if (member.getMemberType() == Refset.MemberType.INCLUSION
+            && resolved.contains(member.getConceptId())) {
+          refsetService.removeMember(member.getId());
+        } else if (member.getMemberType() == Refset.MemberType.EXCLUSION
+            && !resolved.contains(member.getConceptId())) {
+          refsetService.removeMember(member.getId());
+        }
+      }
+
+      refsetService.commit();
     } catch (Exception e) {
       handleException(e, "trying to retrieve a refset definition");
     } finally {

@@ -457,6 +457,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public SearchResultList findTranslationReleaseRevisions(Long translationId)
     throws Exception {
     // TODO Auto-generated method stub
+    // remember handleLazyInit
     return null;
   }
 
@@ -465,6 +466,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   public ConceptList findConceptsForTranslationRevision(Long translationId,
     Date date, PfsParameter pfs) {
     // TODO Auto-generated method stub
+    // remember handleLazyInit
     return null;
   }
 
@@ -1033,7 +1035,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
       translationCopy.getConcepts().add(concept);
       addConcept(concept);
-      
+
       // Add descriptions
       for (final Description description : concept.getDescriptions()) {
         description.setId(null);
@@ -1042,8 +1044,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         }
         description.setConcept(concept);
         description.setLastModifiedBy(translation.getLastModifiedBy());
-        final Description newDescription =
-            addDescription(description);
+        final Description newDescription = addDescription(description);
         concept.getDescriptions().add(newDescription);
         // Add language refset entries
         for (final LanguageRefsetMember member : description
@@ -1054,8 +1055,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           }
           member.setDescriptionId(newDescription.getTerminologyId());
           member.setLastModifiedBy(translation.getLastModifiedBy());
-          addLanguageRefsetMember(member,
-              translation.getTerminology());
+          addLanguageRefsetMember(member, translation.getTerminology());
           description.getLanguageRefsetMembers().add(member);
         }
       }
@@ -1068,8 +1068,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       translationCopy.getDescriptionTypes().add(type);
       // addDescriptionType(type);
     }
-
-    // TODO: need to copy notes
 
     // set staging parameters on the original translation
     translation.setStaged(true);

@@ -681,7 +681,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       // Load translation
-      System.out.println("b");
       final Translation translation =
           translationService.getTranslation(translationId);
       if (translation == null) {
@@ -2310,8 +2309,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // creates a "concepts in common" list (where reportToken is the key)
       final List<Concept> conceptsInCommon = new ArrayList<>();
 
-      // TODO: concepts in common not getting populated because terminologyIds
-      // are different
+      // Get concepts in common
       for (final Concept concept1 : translation1.getConcepts()) {
         if (translation2.getConcepts().contains(concept1)) {
           // Lazy-initialze parts of concept
@@ -2652,8 +2650,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      final String userName =authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "remove concept note", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove concept note", UserRole.AUTHOR);
 
       // remove note
       translationService.removeNote(noteId, ConceptNoteJpa.class);

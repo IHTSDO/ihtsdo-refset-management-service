@@ -2178,7 +2178,6 @@ tsApp
                   function(data) {
                     $scope.stagedRefset = data;
                     $scope.stagedRefset.lookupInProgress = true;
-                    // TODO read this from the refset using a service
                     $scope.refset.stagingType = 'MIGRATION';
                     $scope.lookupProgress = 0;
 
@@ -2269,11 +2268,7 @@ tsApp
 
                 // add inclusion
                 $scope.include = function(refset, member, staged) {
-                  // TODO: take refsetId as extra param
-                  // copy the member and set the refsetId to the refsetId that is passed in (in this case staged) angular.copy
-                  // look at exclude also
-                  // TODO: did this, but it still isn't showing up as staged inclusions, no exception at least
-                  var stagedMember = angular.copy(member);
+                  
                   stagedMember.refsetId = refset.id
                   refsetService.addRefsetInclusion(stagedMember, staged).then(
                   // Success

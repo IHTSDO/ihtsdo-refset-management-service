@@ -1838,7 +1838,7 @@ tsApp
                   var description = {};
                   description.term = '';
                   description.caseSignificanceId = $scope.caseSensitiveTypes[0].key;
-                  // TODO: decide which one to pick (maybe just look for 'Synonym')
+                  // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
                   description.type = types[types.length - 1];
 

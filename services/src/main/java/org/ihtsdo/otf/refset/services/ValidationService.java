@@ -56,7 +56,7 @@ public interface ValidationService extends RootService {
    * Validate refset.
    *
    * @param refset the refset
-   * @param project TODO
+   * @param project the project
    * @param service the service
    * @return the validation result
    * @throws Exception the exception

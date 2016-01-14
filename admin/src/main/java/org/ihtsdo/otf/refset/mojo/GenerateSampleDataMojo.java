@@ -729,7 +729,6 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       // calculate date for tomorrow to ensure different release date than above
       Calendar c = Calendar.getInstance();
       c.add(Calendar.DATE, 1);
-      // TODO: come back to this
       new ReleaseServiceRestImpl().beginRefsetRelease(test9.getId(),
           ConfigUtility.DATE_FORMAT.format(c.getTime()),
           reviewer1.getAuthToken());

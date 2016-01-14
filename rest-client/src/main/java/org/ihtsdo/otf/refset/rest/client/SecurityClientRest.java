@@ -187,7 +187,6 @@ public class SecurityClientRest extends RootClientRest implements
             .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
-    System.out.println("RESPONSE =" + response);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {

@@ -486,7 +486,6 @@ public class ReleaseClientRest extends RootClientRest implements
   @Override
   public InputStream exportReleaseArtifact(Long artifactId, String authToken)
     throws Exception {
-    // TODO done
     Logger.getLogger(getClass()).debug(
         "Release Client - export release artifact: " + artifactId);
 
