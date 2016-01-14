@@ -97,12 +97,16 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
       for (Description description : concept.getDescriptions()) {
         Logger.getLogger(getClass()).debug(
             "  description = " + description.getTerminologyId() + ", "
-                + description.getTerm());
+                + description.getTerm() + ", " + description.getEffectiveTime());
 
         descSb.append(description.getTerminologyId()).append("\t");
-        descSb.append(
+        if (description.getEffectiveTime() != null) {
+          descSb.append(
             ConfigUtility.DATE_FORMAT.format(description.getEffectiveTime()))
             .append("\t");
+        } else {
+          descSb.append("\t");
+        }
         descSb.append(1).append("\t");
         descSb.append(translation.getRefset().getModuleId()).append("\t");
         descSb.append(concept.getTerminologyId()).append("\t");
@@ -116,9 +120,13 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
             .getLanguageRefsetMembers()) {
           Logger.getLogger(getClass()).debug("    member = " + member);
           langSb.append(member.getTerminologyId()).append("\t");
-          langSb.append(
+          if (member.getEffectiveTime() != null) {
+            langSb.append(
               ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
               .append("\t");
+          } else {
+            langSb.append("\t");
+          }
           langSb.append(member.isActive() ? "1" : "0").append("\t");
           langSb.append(translation.getRefset().getModuleId()).append("\t");
           langSb.append(translation.getRefset().getTerminologyId())

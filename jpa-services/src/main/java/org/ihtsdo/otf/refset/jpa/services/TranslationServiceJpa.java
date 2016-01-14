@@ -1030,8 +1030,36 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       if (concept.getEffectiveTime() == null) {
         concept.setEffectiveTime(effectiveTime);
       }
+
       translationCopy.getConcepts().add(concept);
       addConcept(concept);
+      
+      // Add descriptions
+      for (final Description description : concept.getDescriptions()) {
+        description.setId(null);
+        if (description.getEffectiveTime() == null) {
+          description.setEffectiveTime(effectiveTime);
+        }
+        description.setConcept(concept);
+        description.setLastModifiedBy(translation.getLastModifiedBy());
+        final Description newDescription =
+            addDescription(description);
+        concept.getDescriptions().add(newDescription);
+        // Add language refset entries
+        for (final LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
+          member.setId(null);
+          if (member.getEffectiveTime() == null) {
+            member.setEffectiveTime(effectiveTime);
+          }
+          member.setDescriptionId(newDescription.getTerminologyId());
+          member.setLastModifiedBy(translation.getLastModifiedBy());
+          addLanguageRefsetMember(member,
+              translation.getTerminology());
+          description.getLanguageRefsetMembers().add(member);
+        }
+      }
+      updateConcept(concept);
     }
 
     for (final DescriptionType originType : translation.getDescriptionTypes()) {

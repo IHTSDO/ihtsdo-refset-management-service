@@ -95,6 +95,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
   @Override
   public void compute() throws Exception {
 
+    translation.setLastModifiedBy(userName);
+    
     // Stage the translation
     stagedTranslation =
         stageTranslation(translation, Translation.StagingType.BETA,
@@ -109,7 +111,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // Generate the snapshot release artifact and add it
     ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportConcepts(translation, translation.getConcepts());
+        handler.exportConcepts(stagedTranslation, stagedTranslation.getConcepts());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
