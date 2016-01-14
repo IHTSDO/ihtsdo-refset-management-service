@@ -467,7 +467,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Load translation
       final Translation translation = algo.getTranslation(translationId);
       if (translation == null) {
-        throw new Exception("Invalid translation id " + translationId);
+        throw new LocalException("Invalid translation id " + translationId);
+      }
+      if (translation.getConcepts() == null || translation.getConcepts().size() == 0) {
+        throw new LocalException("Translation " + translation.getTerminologyId() + " has no concepts to release.");
       }
 
       // Authorize the call
