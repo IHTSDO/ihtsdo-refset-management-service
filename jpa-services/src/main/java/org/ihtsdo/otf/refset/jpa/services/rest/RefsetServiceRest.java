@@ -577,5 +577,18 @@ public interface RefsetServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  Refset recoveryRefset(Long refsetId, String authToken) throws Exception;
+  public Refset recoveryRefset(Long refsetId, String authToken) throws Exception;
+
+  /**
+   * Is expression valid.
+   *
+   * @param refsetId the refset id
+   * @param expression the expression
+   * @param authToken the auth token
+   * @return the boolean
+   * @throws Exception the exception
+   */
+  public Boolean isExpressionValid(Long refsetId, String expression, String authToken)
+    throws Exception;
+
 }

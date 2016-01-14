@@ -709,9 +709,22 @@ tsApp
                       return;
                     }
                   }
-                  $scope.newClauses.push(clause);
-                  $scope.getPagedClauses();
-                  $scope.newClause = null;
+                  refsetService.isExpressionValid(refset, clause.value).then(
+                      // Success - add refset
+                      function(data) {
+                        if (data == 'true') {
+                          $scope.newClauses.push(clause);
+                          $scope.getPagedClauses();
+                          $scope.newClause = null;
+                        } else {
+                          $scope.errors[0] = "Submitted definition clause is invalid";
+                          return;
+                        }
+                      },
+                      // Error - add refset
+                      function(data) {
+                        handleError($scope.errors, data);
+                      })              
                 };
 
                 // Save refset

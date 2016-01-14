@@ -1499,4 +1499,31 @@ public class RefsetClientRest extends RootClientRest implements
     return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
         RefsetJpa.class);
   }
+  
+  /* see superclass */
+  @Override
+  public Boolean isExpressionValid(Long refsetId, String expression, String authToken) throws Exception {
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/expression/valid"
+            + "?refsetId="
+            + refsetId
+            + "?expression="
+            + URLEncoder.encode(expression == null ? "" : expression, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    Response response =
+        target.request(MediaType.TEXT_PLAIN)
+            .header("Authorization", authToken).put(Entity.text(expression));
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    return resultString.equals("true");
+
+  }
 }
