@@ -1555,8 +1555,8 @@ tsApp
                         $scope.warnings = [];
                       }
 
-                      if (!refset.name || !refset.description) {
-                        $scope.errors[0] = "Refset name and description must not be empty.";
+                      if (!refset.name || !refset.description || !refset.moduleId) {
+                        $scope.errors[0] = "Refset name, description and moduleId must not be empty.";
                         return;
                       }
 
