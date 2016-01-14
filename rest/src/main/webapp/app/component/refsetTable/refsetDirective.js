@@ -152,6 +152,7 @@ tsApp
                 }
 
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'AUTHOR') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAvailableEditingRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
@@ -160,6 +161,7 @@ tsApp
                   });
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'REVIEWER') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAvailableReviewRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
@@ -168,6 +170,7 @@ tsApp
                   })
                 }
                 if ($scope.value == 'AVAILABLE' && $scope.projects.role == 'ADMIN') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAllAvailableRefsets($scope.project.id, pfs).then(
                     function(data) {
                       $scope.refsets = data.refsets;
@@ -176,6 +179,7 @@ tsApp
                     })
                 }
                 if ($scope.value == 'ASSIGNED_ALL' && $scope.projects.role == 'ADMIN') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
                   // Success
                   function(data) {
@@ -195,6 +199,7 @@ tsApp
                   })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAssignedEditingRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -205,6 +210,7 @@ tsApp
                   })
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'REVIEWER') {
+                  pfs.queryRestriction = $scope.paging['refset'].filter;
                   workflowService.findAssignedReviewRefsets($scope.project.id,
                     $scope.user.userName, pfs).then(
                   // Success
@@ -286,7 +292,7 @@ tsApp
                   startIndex : ($scope.paging['member'].page - 1) * $scope.pageSize,
                   maxResults : $scope.pageSize,
                   sortField : $scope.paging['member'].sortField,
-                  ascending : $scope.paging['member'].ascending == null ? true
+                  ascending : $scope.paging['member'].ascending == null ? false
                     : $scope.paging['member'].ascending,
                   queryRestriction : null
                 };
@@ -352,9 +358,11 @@ tsApp
                 // handle 'ASSIGNED' vs 'AVAILABLE' fields
                 // refsetTable.html expresses the fields in terms of available
                 var lfield = field;
-                if ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL') {
+                if (table == 'refset' && ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL')) {
                   if (field == 'terminologyId') {
                     lfield = 'refsetId';
+                  } else if (field == 'lastModified') {
+                      lfield = 'lastModified';
                   } else {
                     // uppercase and prepend refset in all other cases
                     lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);
@@ -374,9 +382,11 @@ tsApp
               // Return up or down sort chars if sorted
               $scope.getSortIndicator = function(table, field) {
                 var lfield = field;
-                if ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL') {
+                if (table == 'refset' && ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL')) {
                   if (field == 'terminologyId') {
                     lfield = 'refsetId';
+                  } else if (field == 'lastModified') {
+                      lfield = 'lastModified';
                   } else {
                     // uppercase and prepend refset in all other cases
                     lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);

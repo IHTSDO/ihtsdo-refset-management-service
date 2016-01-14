@@ -207,23 +207,24 @@ public abstract class RootServiceJpa implements RootService {
    * @param queryStr the query str
    * @param pfs the pfs
    * @return the javax.persistence. query
+   * @throws Exception the exception
    */
   public javax.persistence.Query applyPfsToJqlQuery(String queryStr,
-    PfsParameter pfs) {
+    PfsParameter pfs) throws Exception {
     StringBuilder localQueryStr = new StringBuilder();
     localQueryStr.append(queryStr);
 
     // Query restriction assumes a driving table called "a"
     if (pfs != null) {
-      if (pfs.getQueryRestriction() != null) {
-        localQueryStr.append(" AND ").append(pfs.getQueryRestriction());
+      if (pfs.getQueryRestriction() == null) {
+        throw new Exception("Query restriction not supported for JQL queries");
       }
 
       if (pfs.getActiveOnly()) {
-        localQueryStr.append("  AND a.obsolete = 0 ");
+        localQueryStr.append("  AND a.active = 1 ");
       }
       if (pfs.getInactiveOnly()) {
-        localQueryStr.append("  AND a.obsolete = 1 ");
+        localQueryStr.append("  AND a.active = 0 ");
       }
 
       // add an order by clause to end of the query, assume driving table
@@ -304,25 +305,32 @@ public abstract class RootServiceJpa implements RootService {
 
     // Handle filtering based on toString()
     if (pfs != null
-        && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction().isEmpty())) {
+        && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction()
+            .isEmpty())) {
 
-      List<T> filteredResult = new ArrayList<T>();
+      // Strip last char off if it is a *
+      String match = pfs.getQueryRestriction();
+      if (match.lastIndexOf('*') == match.length()-1) {
+        match = match.substring(0, match.length()-1); 
+      }
+      final List<T> filteredResult = new ArrayList<T>();
       for (T t : result) {
-        if (t.toString().toLowerCase().indexOf(pfs.getQueryRestriction().toLowerCase()) != -1) {
+        if (t.toString().toLowerCase()
+            .indexOf(match.toLowerCase()) != -1) {
           filteredResult.add(t);
         }
       }
-      
-      if (filteredResult.size() != result.size() ) {
+
+      if (filteredResult.size() != result.size()) {
         result = filteredResult;
       }
-    }    
-    
+    }
+
     // get the start and end indexes based on paging parameters
     int startIndex = 0;
     int toIndex = result.size();
     if (pfs != null && pfs.getStartIndex() != -1) {
-        startIndex = pfs.getStartIndex();
+      startIndex = pfs.getStartIndex();
       toIndex = Math.min(result.size(), startIndex + pfs.getMaxResults());
       if (startIndex > toIndex) {
         startIndex = 0;

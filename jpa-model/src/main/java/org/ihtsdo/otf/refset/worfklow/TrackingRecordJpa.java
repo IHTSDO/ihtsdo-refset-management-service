@@ -28,6 +28,7 @@ import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
+import org.hibernate.search.annotations.Fields;
 import org.hibernate.search.annotations.Index;
 import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.Store;
@@ -364,7 +365,10 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the concept name
    */
   @XmlTransient
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Fields({
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "conceptNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getConceptName() {
     return concept == null ? "" : concept.getName();
   }
@@ -375,7 +379,10 @@ public class TrackingRecordJpa implements TrackingRecord {
    * @return the refset name
    */
   @XmlTransient
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  @Fields({
+    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+    @Field(name = "refsetNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+})
   public String getRefsetName() {
     return refset == null ? "" : refset.getName();
   }
