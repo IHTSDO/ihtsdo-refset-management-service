@@ -2086,35 +2086,35 @@ tsApp
                   $scope.pagedStagedInclusions = utilService.getPagedArray($scope.stagedInclusions,
                     $scope.paging['stagedInclusions'], $scope.pageSize);
                 }
-                
+
                 // Get paged valid inclusions (assume all are loaded)
                 $scope.getPagedValidInclusions = function() {
                   $scope.pagedValidInclusions = utilService.getPagedArray($scope.validInclusions,
                     $scope.paging['validInclusions'], $scope.pageSize);
                 }
-                
+
                 // Get paged invalid inclusions (assume all are loaded)
                 $scope.getPagedInvalidInclusions = function() {
-                  $scope.pagedInvalidInclusions = utilService.getPagedArray($scope.invalidInclusions,
-                    $scope.paging['invalidInclusions'], $scope.pageSize);
+                  $scope.pagedInvalidInclusions = utilService.getPagedArray(
+                    $scope.invalidInclusions, $scope.paging['invalidInclusions'], $scope.pageSize);
                 }
-                
+
                 // Get paged staged exclusions (assume all are loaded)
                 $scope.getPagedStagedExclusions = function() {
                   $scope.pagedStagedExclusions = utilService.getPagedArray($scope.stagedExclusions,
                     $scope.paging['stagedExclusions'], $scope.pageSize);
                 }
-                
+
                 // Get paged valid exclusions (assume all are loaded)
                 $scope.getPagedValidExclusions = function() {
                   $scope.pagedValidExclusions = utilService.getPagedArray($scope.validExclusions,
                     $scope.paging['validExclusions'], $scope.pageSize);
                 }
-                
+
                 // Get paged invalid exclusions (assume all are loaded)
                 $scope.getPagedInvalidExclusions = function() {
-                  $scope.pagedInvalidExclusions = utilService.getPagedArray($scope.invalidExclusions,
-                    $scope.paging['invalidExclusions'], $scope.pageSize);
+                  $scope.pagedInvalidExclusions = utilService.getPagedArray(
+                    $scope.invalidExclusions, $scope.paging['invalidExclusions'], $scope.pageSize);
                 }
 
                 $scope.refreshLookupProgress = function() {
@@ -2153,17 +2153,22 @@ tsApp
 
                 // Begin migration and compare refsets and get diff report
                 $scope.beginMigration = function(newTerminology, newVersion) {
-                  $scope.errors =[];
-                  if (newTerminology == $scope.refset.terminology &&
-                    newVersion == $scope.refset.version) {
+                  $scope.errors = [];
+                  if (newTerminology == $scope.refset.terminology
+                    && newVersion == $scope.refset.version) {
                     $scope.errors[0] = "New terminology and version cannot match existing values";
-                    return
-                  } 
-                  if (newTerminology == $scope.refset.terminology &&
-                    newVersion < $scope.refset.version) {
+                    return;
+                  }
+                  if (newTerminology == $scope.refset.terminology
+                    && newVersion < $scope.refset.version) {
                     $scope.errors[0] = "New version must be greater than existing version";
-                    return
-                  } 
+                    return;
+                  }
+                  if (!newVersion) {
+                    $scope.errors[0] = "New version must not be blank";
+                    return;
+                  }
+
                   if (newVersion == '' || newVersion == undefined) {
                     $scope.errors[0] = "New version is a required field.";
                     return

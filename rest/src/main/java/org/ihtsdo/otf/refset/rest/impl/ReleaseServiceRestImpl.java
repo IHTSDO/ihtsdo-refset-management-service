@@ -979,7 +979,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Create an populate
       final ReleaseArtifact artifact = new ReleaseArtifactJpa();
-      artifact.setLastModifiedBy(userName);
       artifact.setName(contentDispositionHeader.getFileName());
       artifact.setReleaseInfo(info);
       artifact.setTimestamp(new Date());
@@ -993,6 +992,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       artifact.setData(buffer.toByteArray());
 
       // Add the release artifact
+      artifact.setLastModifiedBy(userName);
       return releaseService.addReleaseArtifact(artifact);
 
     } catch (Exception e) {

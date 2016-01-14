@@ -754,6 +754,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // set staging parameters on the original refset
     refset.setStaged(true);
     refset.setStagingType(stagingType);
+    // lastmodifiedby is already set correctly
     updateRefset(refset);
 
     final StagedRefsetChange stagedChange = new StagedRefsetChangeJpa();
@@ -998,12 +999,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           }
         }
 
-        if (!refset.isLookupInProgress()) {
+        // Set last modified flag to false for this operation
+        refsetService.setLastModifiedFlag(false);
+
+        if (!refset.isLookupInProgress() && saveMembers) {
           refset.setLookupInProgress(true);
-          if (saveMembers) {
-            refsetService.updateRefset(refset);
-            refsetService.clear();
-          }
+          refsetService.updateRefset(refset);
+          refsetService.clear();
         }
 
         refset = refsetService.getRefset(refsetId);
@@ -1101,8 +1103,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
         // Conclude process (reread refset)
         refset = refsetService.getRefset(refsetId);
-        refset.setLookupInProgress(false);
         if (saveMembers) {
+          refset.setLookupInProgress(false);
           refsetService.updateRefset(refset);
           refsetService.commit();
           refsetService.close();
@@ -1158,7 +1160,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // concepts that are properly resolved by the definition that are not
     // already covered by regular members (or prior exclusions, which stay
     // in place as exclusions)
-    final Date startDate = new Date();
     for (final Concept concept : resolvedFromExpression.getObjects()) {
       if (!beforeMembersExclusions.keySet()
           .contains(concept.getTerminologyId())) {
@@ -1169,7 +1170,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setPublished(concept.isPublished());
         member.setConceptId(concept.getTerminologyId());
         member.setConceptName(concept.getName());
-        member.setLastModified(startDate);
         member.setLastModifiedBy(refset.getLastModifiedBy());
         member.setMemberType(Refset.MemberType.MEMBER);
         member.setModuleId(concept.getModuleId());

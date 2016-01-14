@@ -6,7 +6,9 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
@@ -23,7 +25,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Project Service REST User Queries" Test Cases.
  */
-public class ProjectUserQueryTest extends ProjectServiceRestTest {
+public class ProjectUserQueryTest extends ProjectTestSupport {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -83,10 +85,9 @@ public class ProjectUserQueryTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testGetProjectRoles() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testGetProjectRoles");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     StringList roles = projectService.getProjectRoles(adminAuthToken);
     assertNotNull(roles);
@@ -101,10 +102,9 @@ public class ProjectUserQueryTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testFindProjectUsers() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testFindProjectUsers");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Create Test Data
     UserJpa reviewer1 =
@@ -153,13 +153,17 @@ public class ProjectUserQueryTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
-  // @Test
+  @Test
   public void testUserHasSomeProjectRole() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testUserHasSomeProjectRole");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Boolean result = projectService.userHasSomeProjectRole(adminAuthToken);
+    assertFalse(result);
+    String author1AuthToken =
+        securityService.authenticate("author1", "author1").getAuthToken();
+    result = projectService.userHasSomeProjectRole(author1AuthToken);
     assertTrue(result);
+
   }
 
   /**

@@ -29,7 +29,7 @@ import org.junit.Test;
 /**
  * Test case for translation.
  */
-public class TranslationNoteTest extends RestIntegrationSupport {
+public class TranslationNoteTest extends RestSupport {
 
   /** The auth token. */
   private static String authToken;

@@ -7,12 +7,12 @@ import org.junit.Rule;
 import org.junit.rules.TestName;
 
 /**
- * Integration testing for REST services.
+ * Support for integration tests.
  */
-public class RestIntegrationSupport {
+public class RestSupport {
 
-  /** The name. */
+  /**  The name. */
   @Rule
   public TestName name = new TestName();
-
+  
 }

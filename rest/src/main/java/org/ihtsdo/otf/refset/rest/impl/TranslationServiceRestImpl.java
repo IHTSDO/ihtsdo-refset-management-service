@@ -421,9 +421,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Update translation
       translation.setLastModifiedBy(userName);
-      System.out.println("TRANSLATION SPELLING="
-          + translation.getSpellingDictionary());
-      System.out.println("TRANSLATION MEMORY=" + translation.getPhraseMemory());
       translationService.updateTranslation(translation);
 
     } catch (Exception e) {
@@ -870,7 +867,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
         ++objectCt;
         concept.setId(null);
-        concept.setLastModifiedBy(userName);
         concept.setPublishable(true);
         concept.setPublished(false);
         concept.setName("TBD");
@@ -879,6 +875,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         // Mark as ready for publication as they are imported and can be further
         // worked on from there
         concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+        concept.setLastModifiedBy(userName);
         translationService.addConcept(concept);
 
         for (final Description description : concept.getDescriptions()) {
@@ -888,21 +885,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               .setLanguageRefsetMembers(new ArrayList<LanguageRefsetMember>());
           for (final LanguageRefsetMember member : members) {
             member.setId(null);
-            member.setLastModifiedBy(userName);
             member.setPublishable(true);
             member.setPublished(false);
             member.setDescriptionId(description.getTerminologyId());
+            member.setLastModifiedBy(userName);
             translationService.addLanguageRefsetMember(member,
                 translation.getTerminology());
             description.getLanguageRefsetMembers().add(member);
           }
           description.setId(null);
-          description.setLastModifiedBy(userName);
           description.setPublishable(true);
           description.setPublished(false);
           description.setConcept(concept);
+          description.setLastModifiedBy(userName);
           translationService.addDescription(description);
         }
+        concept.setLastModifiedBy(userName);
         translationService.updateConcept(concept);
         conceptIds.add(concept.getTerminologyId());
 
@@ -921,12 +919,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Remove the staged translation change and set staging type back to null
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
-      translation.setLastModifiedBy(userName);
       boolean assignNames =
           translationService.getTerminologyHandler().assignNames();
       if (assignNames) {
         translation.setLookupInProgress(true);
       }
+      translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
       // close transaction
@@ -1036,8 +1034,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Add translation concept
-      concept.setLastModifiedBy(userName);
       concept.setTranslation(translation);
+      concept.setLastModifiedBy(userName);
       final Concept newConcept = translationService.addConcept(concept);
 
       // Add descriptions
@@ -1057,6 +1055,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           description.getLanguageRefsetMembers().add(member);
         }
       }
+      newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
       translationService.commit();
       return newConcept;
@@ -1184,7 +1183,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Update concept
-      concept.setLastModifiedBy(securityService.getUsernameForToken(authToken));
+      concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
       // finish transaction
@@ -1323,9 +1322,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      authorizeProject(translationService, toTranslation.getProject().getId(),
-          securityService, authToken, "copy translation spelling entries",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService, toTranslation.getProject()
+              .getId(), securityService, authToken,
+              "copy translation spelling entries", UserRole.AUTHOR);
 
       final List<String> fromEntries = fromSpelling.getEntries();
       if (fromEntries == null) {
@@ -1349,6 +1349,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .isEmpty()) {
         toTranslation.setSpellingDictionaryEmpty(spelling.getEntries()
             .isEmpty());
+        toTranslation.setLastModifiedBy(userName);
         translationService.updateTranslation(toTranslation);
       }
 
@@ -1394,11 +1395,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "add entry from the spelling dictionary",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add entry from the spelling dictionary", UserRole.AUTHOR);
 
-      spelling.addEntry(entry);
+      spelling.addEntry(entry.toLowerCase());
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
@@ -1408,6 +1410,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1449,9 +1452,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken,
-          "add multiple entries from the spelling dictionary", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add multiple entries from the spelling dictionary",
+              UserRole.AUTHOR);
 
       // Bail on null
       if (entries == null || entries.getObjects() == null
@@ -1467,6 +1472,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1509,9 +1515,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "remove spelling dictionary entry",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove spelling dictionary entry", UserRole.AUTHOR);
 
       spelling.removeEntry(entry.toLowerCase());
       final SpellingCorrectionHandler handler =
@@ -1522,6 +1529,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1563,9 +1571,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken,
-          "remove all entries to the spelling dictionary", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove all entries to the spelling dictionary", UserRole.AUTHOR);
 
       if (!spelling.getEntries().isEmpty()) {
         spelling.setEntries(new ArrayList<String>());
@@ -1573,13 +1582,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         final SpellingCorrectionHandler handler =
             getSpellingCorrectionHandler(translation);
         handler.reindex(spelling.getEntries(), false);
-
         translationService.updateSpellingDictionary(spelling);
       }
 
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1662,8 +1671,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // authorize the call
-      authorizeProject(translationService, toTranslation.getProject().getId(),
-          securityService, authToken, "copy phrase memory", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService, toTranslation.getProject()
+              .getId(), securityService, authToken, "copy phrase memory",
+              UserRole.AUTHOR);
 
       final List<MemoryEntry> fromEntries =
           fromTranslation.getPhraseMemory().getEntries();
@@ -1684,6 +1695,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getPhraseMemory().getEntries().isEmpty()) {
         toTranslation.setPhraseMemoryEmpty(toTranslation.getPhraseMemory()
             .getEntries().isEmpty());
+        toTranslation.setLastModifiedBy(userName);
         translationService.updateTranslation(toTranslation);
       }
 
@@ -1722,9 +1734,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
 
       // authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "add new entry to the phrase memory",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "add new entry to the phrase memory", UserRole.AUTHOR);
       final MemoryEntry entry = new MemoryEntryJpa();
       entry.setName(name);
       entry.setTranslatedName(translatedName);
@@ -1734,6 +1747,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getEntries().isEmpty()) {
         translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
             .getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1769,9 +1783,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.getTranslation(translationId);
 
       // authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "remove entry from the phrase memory",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove entry from the phrase memory", UserRole.AUTHOR);
 
       final String query =
           "name:\"" + name + "\" AND translatedName:\"" + translatedName + "\"";
@@ -1787,6 +1802,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getEntries().isEmpty()) {
         translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
             .getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -1974,9 +1990,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "import spelling entries",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import spelling entries", UserRole.AUTHOR);
 
       if (!spelling.getEntries().isEmpty()) {
         throw new LocalException(
@@ -1992,6 +2009,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -2085,9 +2103,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "import translation definition",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "import translation definition", UserRole.AUTHOR);
 
       final List<MemoryEntry> fromEntries =
           translation.getPhraseMemory().getEntries();
@@ -2109,6 +2128,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           .getEntries().isEmpty()) {
         translation.setPhraseMemoryEmpty(translation.getPhraseMemory()
             .getEntries().isEmpty());
+        translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
 
@@ -2201,7 +2221,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
-      return handler.suggestSpelling(entry, 10);
+      return handler.suggestSpelling(entry.toLowerCase(), 10);
     } catch (Exception e) {
       handleException(e, "trying to suggest a spelling based on an entry");
     } finally {
@@ -2477,15 +2497,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Create the note
       final Note translationNote = new TranslationNoteJpa();
-      translationNote.setLastModifiedBy(userName);
       translationNote.setValue(note);
       ((TranslationNoteJpa) translationNote).setTranslation(translation);
 
       // Add and return the note
+      translationNote.setLastModifiedBy(userName);
       final Note newNote = translationService.addNote(translationNote);
 
       // For indexing
       translation.getNotes().add(newNote);
+      translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
       return newNote;
@@ -2521,9 +2542,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      authorizeProject(translationService, translation.getProject().getId(),
-          securityService, authToken, "remove translation note",
-          UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(translationService,
+              translation.getProject().getId(), securityService, authToken,
+              "remove translation note", UserRole.AUTHOR);
 
       // remove note
       translationService.removeNote(noteId, TranslationNoteJpa.class);
@@ -2535,6 +2557,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           break;
         }
       }
+      translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
     } catch (Exception e) {
@@ -2583,15 +2606,16 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Create the note
       final Note conceptNote = new ConceptNoteJpa();
-      conceptNote.setLastModifiedBy(userName);
       conceptNote.setValue(note);
       ((ConceptNoteJpa) conceptNote).setConcept(concept);
 
       // Add and return the note
+      conceptNote.setLastModifiedBy(userName);
       final Note newNote = translationService.addNote(conceptNote);
 
       // for indexing
       concept.getNotes().add(newNote);
+      concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
       return newNote;
@@ -2628,7 +2652,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation must have a project with a non null identifier.");
       }
 
-      authorizeProject(translationService, translation.getProject().getId(),
+      final String userName =authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "remove concept note", UserRole.AUTHOR);
 
       // remove note
@@ -2641,6 +2665,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           break;
         }
       }
+      concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
     } catch (Exception e) {

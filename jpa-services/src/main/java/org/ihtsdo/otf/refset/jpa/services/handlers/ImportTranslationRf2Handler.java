@@ -125,8 +125,10 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
             final Description description = new DescriptionJpa();
             setCommonFields(description, translation.getRefset());
             description.setTerminologyId(fields[0]);
-            description.setEffectiveTime(ConfigUtility.DATE_FORMAT
-                .parse(fields[1]));
+            if (!fields[1].equals("")) {
+              description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(fields[1]));
+            }
             description.setLanguageCode(fields[5].intern());
             description.setTypeId(fields[6].intern());
             description.setTerm(fields[7]);
@@ -139,8 +141,10 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
             }
             concept = conceptCache.get(fields[4]);
             setCommonFields(concept, translation.getRefset());
-            concept
-                .setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+            if (!fields[1].equals("")) {
+              concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(fields[1]));
+            }
             concept.setTerminologyId(fields[4]);
             concept.setDefinitionStatusId("unknown");
             concept.setTranslation(translation);
@@ -194,7 +198,10 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
             final LanguageRefsetMember member = new LanguageRefsetMemberJpa();
             setCommonFields(member, translation.getRefset());
             member.setTerminologyId(fields[0]);
-            member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+            if (!fields[1].equals("")) {
+              member.setEffectiveTime(ConfigUtility.DATE_FORMAT
+                  .parse(fields[1]));
+            }
 
             // Set from the translation refset
             member.setRefsetId(translation.getRefset().getTerminologyId());

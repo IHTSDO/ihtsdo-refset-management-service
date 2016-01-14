@@ -6,7 +6,9 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,14 +31,12 @@ import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.UserJpa;
-import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
 import org.ihtsdo.otf.refset.rest.client.ProjectClientRest;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
 import org.ihtsdo.otf.refset.rest.client.WorkflowClientRest;
-import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -48,7 +48,7 @@ import org.junit.Test;
 /**
  * Test case for refset.
  */
-public class WorkflowTest {
+public class WorkflowTest extends RestSupport {
 
   /** The adminAuthToken auth token. */
   protected static String adminAuthToken;
@@ -297,13 +297,15 @@ public class WorkflowTest {
    */
   @Test
   public void testFindAllAvailableAssignedRefsets() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST findAllAvailableAssignedRefsets");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Test Setup
     UserJpa reviewer1 =
         (UserJpa) securityService.getUser("reviewer1", adminAuthToken);
+    String reviewerAuthToken = reviewer1.getAuthToken();
     UserJpa author1 =
         (UserJpa) securityService.getUser("author1", adminAuthToken);
+    String authorAuthToken = author1.getAuthToken();
 
     ProjectJpa project = makeProject("Project", "1000001", adminAuthToken);
     projectService = new ProjectClientRest(properties);
@@ -344,7 +346,7 @@ public class WorkflowTest {
 
     // AUTHOR-ASSIGN-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        author1.getUserName(), "AUTHOR", "ASSIGN", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "ASSIGN", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -356,7 +358,7 @@ public class WorkflowTest {
 
     // AUTHOR-SAVE-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        author1.getUserName(), "AUTHOR", "SAVE", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "SAVE", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -387,7 +389,7 @@ public class WorkflowTest {
     // AUTHOR-FINISH-R1, as refset2 is available and refset1 is now
     // EDITING_DONE, 2 refsets available
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        author1.getUserName(), "AUTHOR", "FINISH", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "FINISH", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -399,7 +401,7 @@ public class WorkflowTest {
 
     // REVIEWER-ASSIGN-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        reviewer1.getUserName(), "REVIEWER", "ASSIGN", adminAuthToken);
+        reviewer1.getUserName(), UserRole.REVIEWER.toString(), "ASSIGN", reviewerAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -411,7 +413,7 @@ public class WorkflowTest {
 
     // REVIEWER-UNASSIGN-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        reviewer1.getUserName(), "REVIEWER", "UNASSIGN", adminAuthToken);
+        reviewer1.getUserName(), UserRole.REVIEWER.toString(), "UNASSIGN", reviewerAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -423,7 +425,7 @@ public class WorkflowTest {
 
     // REVIEWER-SAVE-R2
     workflowService.performWorkflowAction(project.getId(), refset2.getId(),
-        author1.getUserName(), "AUTHOR", "ASSIGN", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "ASSIGN", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -435,7 +437,7 @@ public class WorkflowTest {
 
     // AUTHOR-REASSIGN-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        reviewer1.getUserName(), "AUTHOR", "REASSIGN", adminAuthToken);
+        reviewer1.getUserName(), UserRole.AUTHOR.toString(), "REASSIGN", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -447,7 +449,7 @@ public class WorkflowTest {
 
     // AUTHOR-SAVE-R1
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        author1.getUserName(), "AUTHOR", "SAVE", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "SAVE", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -459,7 +461,7 @@ public class WorkflowTest {
 
     // Reset WF on both
     workflowService.performWorkflowAction(project.getId(), refset1.getId(),
-        author1.getUserName(), "AUTHOR", "UNASSIGN", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "UNASSIGN", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -470,7 +472,7 @@ public class WorkflowTest {
     assertEquals(1, assignedRefsets.getCount());
 
     workflowService.performWorkflowAction(project.getId(), refset2.getId(),
-        author1.getUserName(), "AUTHOR", "UNASSIGN", adminAuthToken);
+        author1.getUserName(), UserRole.AUTHOR.toString(), "UNASSIGN", authorAuthToken);
     availableRefsets =
         workflowService.findAllAvailableRefsets(project.getId(), null,
             adminAuthToken);
@@ -500,7 +502,7 @@ public class WorkflowTest {
    */
   @Test
   public void testGetTrackingRecordForRefset() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST getTrackingRecordForRefset");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Test Setup
     UserJpa author1 =
@@ -596,6 +598,8 @@ public class WorkflowTest {
    */
   @Test
   public void testNonexistentTrackingRecordsAccess() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     // Test Null Refset
     TrackingRecord record =
         workflowService.getTrackingRecordForRefset(1234567890L, adminAuthToken);

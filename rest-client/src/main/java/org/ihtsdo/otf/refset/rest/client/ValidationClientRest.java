@@ -61,14 +61,13 @@ public class ValidationClientRest extends RootClientRest implements
     String memberString =
         ConfigUtility.getStringForGraph(concept == null ? new ConceptJpa()
             : concept);
-    Logger.getLogger(getClass()).info(memberString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).post(Entity.xml(memberString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -97,14 +96,14 @@ public class ValidationClientRest extends RootClientRest implements
     String refsetString =
         ConfigUtility.getStringForGraph(refset == null ? new RefsetJpa()
             : refset);
-    Logger.getLogger(getClass()).info(refsetString);
+
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).post(Entity.xml(refsetString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -132,7 +131,6 @@ public class ValidationClientRest extends RootClientRest implements
     String translationString =
         ConfigUtility.getStringForGraph(translation == null
             ? new TranslationJpa() : translation);
-    Logger.getLogger(getClass()).info(translationString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
@@ -140,7 +138,7 @@ public class ValidationClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -168,14 +166,13 @@ public class ValidationClientRest extends RootClientRest implements
     String memberString =
         ConfigUtility.getStringForGraph(member == null
             ? new ConceptRefsetMemberJpa() : member);
-    Logger.getLogger(getClass()).info(memberString);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).post(Entity.xml(memberString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -206,7 +203,7 @@ public class ValidationClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -244,7 +241,7 @@ public class ValidationClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -271,7 +268,7 @@ public class ValidationClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }

@@ -53,7 +53,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class TranslationTest {
+public class TranslationTest extends RestSupport {
 
   /** The admin auth token. */
   private static String adminAuthToken;
@@ -351,7 +351,7 @@ public class TranslationTest {
    */
   @Test
   public void testImportExportPhraseMemory() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testImportExportPhraseMemory");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
@@ -396,7 +396,8 @@ public class TranslationTest {
    */
   @Test
   public void testaddRemovePhraseMemory() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testaddRemovePhraseMemory");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
@@ -463,7 +464,8 @@ public class TranslationTest {
    */
   @Test
   public void testSuggestTranslation() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN testSuggestTranslation");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Project project1 = projectService.getProject(1L, adminAuthToken);
     User admin = securityService.authenticate(adminUser, adminPassword);
     // Create refset (extensional)
@@ -501,7 +503,8 @@ public class TranslationTest {
    */
   @Test
   public void testGetLanguageDescriptionTypes() throws Exception {
-    Logger.getLogger(getClass()).debug("RUN GetLanguageDescriptionTypes");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     User admin = securityService.authenticate(adminUser, adminPassword);
 
     // Create refset(extensional)
@@ -574,9 +577,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentTranslationAccess() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Translation translation =
         translationService.getTranslation(123456789123456789L, adminAuthToken);
     assertNull(translation);
@@ -587,9 +591,10 @@ public class TranslationTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentTranslationConceptAccess() throws Exception {
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+
     Concept concept =
         translationService.getConcept(1234567890L, adminAuthToken);
     assertNull(concept);

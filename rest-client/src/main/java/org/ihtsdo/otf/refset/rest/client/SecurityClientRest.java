@@ -124,8 +124,7 @@ public class SecurityClientRest extends RootClientRest implements
     validateNotEmpty(authToken, "authToken");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/security/user"
-            + authToken);
+        client.target(config.getProperty("base.url") + "/security/user");
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -188,6 +187,7 @@ public class SecurityClientRest extends RootClientRest implements
             .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
+    System.out.println("RESPONSE =" + response);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -300,15 +300,14 @@ public class SecurityClientRest extends RootClientRest implements
     String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Security Client - find users " + query + ", " + pfs);
-    validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
             + "/security/user/find"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20"));
+            + (query != null ? "?query="
+                + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                    .replaceAll("\\+", "%20") : ""));
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
             : pfs);

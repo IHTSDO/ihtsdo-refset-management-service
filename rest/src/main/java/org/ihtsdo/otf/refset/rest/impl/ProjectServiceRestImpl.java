@@ -142,12 +142,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeProject(projectService, projectId, securityService, authToken,
-          "add user to project", UserRole.AUTHOR);
+      final String thisUser =
+          authorizeProject(projectService, projectId, securityService,
+              authToken, "add user to project", UserRole.AUTHOR);
 
-      User user = securityService.getUser(userName);
-      Project project = projectService.getProject(projectId);
+      final User user = securityService.getUser(userName);
+      final Project project = projectService.getProject(projectId);
       project.getUserRoleMap().put(user, UserRole.valueOf(role));
+      project.setLastModifiedBy(thisUser);
       projectService.updateProject(project);
 
       user.getProjectRoleMap().put(project, UserRole.valueOf(role));
@@ -187,18 +189,23 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     final ProjectService projectService = new ProjectServiceJpa();
     try {
       // Check if user is either an ADMIN overall or an AUTHOR on this project
+
+      String thisUser = null;
       try {
-        authorizeApp(securityService, authToken, "unassign user from project",
-            UserRole.USER);
+        thisUser =
+            authorizeApp(securityService, authToken,
+                "unassign user from project", UserRole.USER);
       } catch (Exception e) {
         // now try to validate project role
-        authorizeProject(projectService, projectId, securityService, authToken,
-            "unassign user from project", UserRole.AUTHOR);
+        thisUser =
+            authorizeProject(projectService, projectId, securityService,
+                authToken, "unassign user from project", UserRole.AUTHOR);
       }
 
       final User user = securityService.getUser(userName);
       final Project project = projectService.getProject(projectId);
       project.getUserRoleMap().remove(user);
+      project.setLastModifiedBy(thisUser);
       projectService.updateProject(project);
 
       user.getProjectRoleMap().remove(project);
@@ -530,6 +537,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   /* see superclass */
   @Override
   @GET
+  @Produces("text/plain")
   @Path("/user/anyrole")
   @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project", response = Boolean.class)
   public Boolean userHasSomeProjectRole(

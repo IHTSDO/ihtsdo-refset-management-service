@@ -45,7 +45,7 @@ import org.junit.Test;
 /**
  * Test case for refset.
  */
-public class RefsetNoteTest extends RestIntegrationSupport {
+public class RefsetNoteTest extends RestSupport {
 
   /** The auth token. */
   private static String authToken;

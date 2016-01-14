@@ -5,7 +5,6 @@ package org.ihtsdo.otf.refset.rest.impl;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -240,19 +239,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       final Refset refset = translationService.recoveryRefset(refsetId);
+      authorizeProject(translationService, refset.getProject().getId(),
+          securityService, authToken, "recover refset for id", UserRole.AUTHOR);
+
       for (Translation translation : refset.getTranslations()) {
         translationService.addTranslation(translation);
         for (Concept concept : translation.getConcepts()) {
+
+          // n/a, this is recovering prior state
+          // concept.setLastModifiedBy(userName);
           translationService.addConcept(concept);
         }
-      }
-      if (refset.isPublic()) {
-        authorizeApp(securityService, authToken, "recover refset for id",
-            UserRole.VIEWER);
-      } else {
-        authorizeProject(translationService, refset.getProject().getId(),
-            securityService, authToken, "recover refset for id",
-            UserRole.AUTHOR);
       }
       return refset;
     } catch (Exception e) {
@@ -464,10 +461,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setConceptName(concept.getName());
           member.setMemberType(Refset.MemberType.MEMBER);
           member.setModuleId(concept.getModuleId());
-          member.setLastModifiedBy(userName);
           member.setRefset(refset);
           member.setActive(true);
           member.setConceptActive(true);
+          member.setLastModifiedBy(userName);
           list.addObject(refsetService.addMember(member));
         }
       }
@@ -667,8 +664,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       // clear notes
       refset.setNotes(new ArrayList<Note>());
-      refset.setLastModifiedBy(userName);
       refset.setProject(refsetService.getProject(projectId));
+      refset.setLastModifiedBy(userName);
       final Refset newRefset = refsetService.addRefset(refset);
 
       // Copy all the members if EXTENSIONAL
@@ -1098,8 +1095,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
 
       final Refset refset = refsetService.getRefset(refsetId);
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "add exclusion", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "add exclusion", UserRole.AUTHOR);
 
       ConceptRefsetMember member = null;
       for (final ConceptRefsetMember c : refset.getMembers()) {
@@ -1123,6 +1121,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       } else {
         member.setMemberType(Refset.MemberType.EXCLUSION);
       }
+      member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
 
       return member;
@@ -1155,9 +1154,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final ConceptRefsetMember member = refsetService.getMember(memberId);
 
+      final String userName =
+          authorizeProject(refsetService, member.getRefset().getProject()
+              .getId(), securityService, authToken, "add inclusion",
+              UserRole.AUTHOR);
+
       if (member.getMemberType() == Refset.MemberType.EXCLUSION
           || member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
         member.setMemberType(Refset.MemberType.MEMBER);
+        member.setLastModifiedBy(userName);
         refsetService.updateMember(member);
       }
 
@@ -1276,8 +1281,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
 
-      final Date startDate = new Date();
-
       // STAGE REFSET
       final Refset refsetCopy =
           refsetService.stageRefset(refset, Refset.StagingType.MIGRATION, null);
@@ -1301,6 +1304,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         // do this to re-use the terminology id
         final Map<String, ConceptRefsetMember> conceptIdMap = new HashMap<>();
         for (final ConceptRefsetMember member : refset.getMembers()) {
+          refsetService.handleLazyInit(member);
           conceptIdMap.put(member.getConceptId(), member);
         }
         // create members to add
@@ -1311,7 +1315,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           ConceptRefsetMember member = null;
           if (originMember != null) {
             member = new ConceptRefsetMemberJpa(originMember);
-            member.setLastModifiedBy(userName);
           }
           // Otherwise create a new one
           else {
@@ -1322,8 +1325,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             member.setPublished(concept.isPublished());
             member.setConceptId(concept.getTerminologyId());
             member.setConceptName(concept.getName());
-            member.setLastModified(startDate);
-            member.setLastModifiedBy(userName);
           }
 
           // If origin refset has this as in exclusion, keep it that way.
@@ -1331,6 +1332,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setPublishable(true);
           member.setRefset(refsetCopy);
           member.setId(null);
+          member.setLastModifiedBy(userName);
           refsetService.addMember(member);
 
           // Add to in-memory data structure for later use
@@ -1347,6 +1349,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
           if (!concept.isActive()) {
             member.setConceptActive(false);
+            member.setLastModifiedBy(userName);
             refsetService.updateMember(member);
           }
         }
@@ -1357,20 +1360,28 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // If we're going to call lookupNames, set lookupInProgress first
       boolean assignNames = refsetService.getTerminologyHandler().assignNames();
-      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
+      if (assignNames) {
         refsetCopy.setLookupInProgress(true);
       }
+      refsetCopy.setLastModifiedBy(userName);
       refsetService.updateRefset(refsetCopy);
       refsetService.commit();
 
-      // With contents committed, can now lookup Names/Statuses of members
+      // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
 
         // Look up refset members for this refset
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
             ConfigUtility.isBackgroundLookup());
+      }
 
-        // Also look up refset members but without save
+      // Look up oldNotNew
+      else if (refsetCopy.getType() == Refset.Type.INTENSIONAL && assignNames) {
+
+        List<ConceptRefsetMember> oldNotNew =
+            getOldNotNewForMigration(refset, refsetCopy, refsetService);
+        refsetService.lookupMemberNames(refset.getId(), oldNotNew,
+            "begin migration", true, ConfigUtility.isBackgroundLookup());
       }
 
       return refsetCopy;
@@ -1382,6 +1393,43 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+
+  /**
+   * Returns the old not new for migration.
+   *
+   * @param refset the refset
+   * @param refsetCopy the refset copy
+   * @param refsetService the refset service
+   * @return the old not new for migration
+   */
+  @SuppressWarnings("static-method")
+  private List<ConceptRefsetMember> getOldNotNewForMigration(Refset refset,
+    Refset refsetCopy, RefsetService refsetService) {
+    // NOTE: this logic is borrowed from compareRefset
+    // Create conceptId => member maps for refset 1 and refset 2
+    final Map<String, ConceptRefsetMember> refset1Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refset.getMembers()) {
+      refset1Map.put(member.getConceptId(), member);
+    }
+    final Map<String, ConceptRefsetMember> refset2Map = new HashMap<>();
+    for (final ConceptRefsetMember member : refsetCopy.getMembers()) {
+      refset2Map.put(member.getConceptId(), member);
+    }
+    final List<ConceptRefsetMember> oldNotNew = new ArrayList<>();
+    // Old not new are things from refset1 that do not exist
+    // in refset2 or do exist in refset2 with a different type
+    for (final ConceptRefsetMember member1 : refset.getMembers()) {
+      if (!refset2Map.containsKey(member1.getConceptId())) {
+        oldNotNew.add(member1);
+        // Always keep exclusions
+      } else if (refset2Map.containsKey(member1.getConceptId())
+          && refset2Map.get(member1.getConceptId()).getMemberType() != member1
+              .getMemberType()) {
+        oldNotNew.add(member1);
+      }
+    }
+    return oldNotNew;
   }
 
   /* see superclass */
@@ -1455,14 +1503,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         // New member, rewire to origin - this moves the content back to the
         // origin refset
-        if (!originMembers.containsKey(key)) {
-          stagedMembers.get(key).setRefset(refset);
-          refsetService.updateMember(stagedMembers.get(key));
-        } else if (originMembers.containsKey(key)
-            && stagedMembers.get(key).getMemberType() != originMembers.get(key)
-                .getMemberType()) {
-          stagedMembers.get(key).setRefset(refset);
-          refsetService.updateMember(stagedMembers.get(key));
+        final ConceptRefsetMember originMember = originMembers.get(key);
+        final ConceptRefsetMember stagedMember = stagedMembers.get(key);
+        if (originMember == null) {
+          stagedMember.setRefset(refset);
+          stagedMember.setLastModifiedBy(userName);
+          refsetService.updateMember(stagedMember);
+        } else if (originMember != null
+            && stagedMember.getMemberType() != originMember.getMemberType()) {
+          stagedMember.setRefset(refset);
+          stagedMember.setLastModifiedBy(userName);
+          refsetService.updateMember(stagedMember);
         }
         // Member matches one in origin - remove it
         else {
@@ -1477,15 +1528,16 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Remove the staged refset change and set staging type back to null
       // and update version
       refset.setStagingType(null);
-      refset.setLastModifiedBy(userName);
       refset.setTerminology(stagedRefset.getTerminology());
       refset.setVersion(stagedRefset.getVersion());
+      refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
       // Update terminology/version also for any translations
       for (Translation translation : refset.getTranslations()) {
         translation.setTerminology(refset.getTerminology());
         translation.setVersion(refset.getVersion());
+        translation.setLastModifiedBy(userName);
         refsetService.updateTranslation(translation);
       }
 
@@ -1547,6 +1599,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final StagedRefsetChange change =
           refsetService.getStagedRefsetChange(refset.getId());
       refsetService.removeStagedRefsetChange(change.getId());
+
+      List<ConceptRefsetMember> oldNotNew =
+          getOldNotNewForMigration(refset, change.getStagedRefset(),
+              refsetService);
+      refsetService.lookupMemberNames(refset.getId(), oldNotNew,
+          "cancel migration", true, ConfigUtility.isBackgroundLookup());
 
       refsetService.removeRefset(change.getStagedRefset().getId(), true);
       refset.setStagingType(null);
@@ -1667,7 +1725,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       memberDiffReportMap.put(reportToken, diffReport);
 
-      // TODO: compute status/name of diffReport.getOldNotNew()
       return reportToken;
 
     } catch (Exception e) {
@@ -2296,8 +2353,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         ++objectCt;
         member.setActive(true);
         member.setId(null);
-        member.setLastModified(member.getEffectiveTime());
-        member.setLastModifiedBy(userName);
         member.setPublishable(true);
         member.setPublished(false);
         member.setMemberType(Refset.MemberType.MEMBER);
@@ -2306,6 +2361,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setConceptActive(true);
         member.setConceptName("TBD");
 
+        member.setLastModifiedBy(userName);
         refsetService.addMember(member);
 
         conceptIds.add(member.getConceptId());
@@ -2321,11 +2377,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Remove the staged refset change and set staging type back to null
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
-      refset.setLastModifiedBy(userName);
       boolean assignNames = refsetService.getTerminologyHandler().assignNames();
       if (assignNames) {
         refset.setLookupInProgress(true);
       }
+      refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
       // End transaction
@@ -2452,10 +2508,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ((RefsetNoteJpa) refsetNote).setRefset(refset);
 
       // Add and return the note
+      refsetNote.setLastModifiedBy(userName);
       final Note newNote = refsetService.addNote(refsetNote);
 
       // For indexing
       refset.getNotes().add(newNote);
+      refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
       return newNote;
@@ -2490,8 +2548,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset must have a project with a non null identifier.");
       }
 
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "remove refset note", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "remove refset note", UserRole.AUTHOR);
 
       // remove note
       refsetService.removeNote(noteId, RefsetNoteJpa.class);
@@ -2502,6 +2561,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           break;
         }
       }
+      refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
     } catch (Exception e) {
@@ -2553,10 +2613,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       ((ConceptRefsetMemberNoteJpa) memberNote).setMember(member);
 
       // Add and return the note
+      memberNote.setLastModifiedBy(userName);
       final Note newNote = refsetService.addNote(memberNote);
 
       // for indexing
       member.getNotes().add(memberNote);
+      member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
       return newNote;
 
@@ -2592,8 +2654,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset must have a project with a non null identifier.");
       }
 
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "remove member note", UserRole.AUTHOR);
+      final String userName =
+          authorizeProject(refsetService, refset.getProject().getId(),
+              securityService, authToken, "remove member note", UserRole.AUTHOR);
 
       // remove note
       refsetService.removeNote(noteId, ConceptRefsetMemberNoteJpa.class);
@@ -2605,6 +2668,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           break;
         }
       }
+      member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
 
     } catch (Exception e) {

@@ -17,7 +17,7 @@ import org.junit.Test;
  * TODO: edit the description Implementation of the
  * "Template Service REST XXX Use" Test Cases.
  */
-public class TemplateServiceXxxUseTest {
+public class TemplateServiceXxxUseTest extends RestSupport {
 
   // TODO: edit the service to use
   /** The service. */
@@ -54,7 +54,7 @@ public class TemplateServiceXxxUseTest {
   @Test
   // TODO: Edit this method name to match the test case
   public void testXxxUseRestTemplate001() throws Exception {
-    Logger.getLogger(getClass()).debug("Start test");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // TODO: implement the test case
 

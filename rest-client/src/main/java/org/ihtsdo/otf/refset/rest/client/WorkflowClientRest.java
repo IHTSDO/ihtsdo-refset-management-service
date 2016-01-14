@@ -64,7 +64,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -101,7 +101,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -140,7 +140,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -179,7 +179,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -218,7 +218,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -257,7 +257,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -298,7 +298,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -352,7 +352,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -387,7 +387,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -422,7 +422,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -457,7 +457,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -492,7 +492,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -526,10 +526,10 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
-  }
+    }
 
     // converting to object
     return (TrackingRecord) ConfigUtility.getGraphForString(resultString,
@@ -559,10 +559,10 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
-  }
+    }
 
     // converting to object
     return (RefsetList) ConfigUtility.getGraphForString(resultString,
@@ -573,6 +573,8 @@ public class WorkflowClientRest extends RootClientRest implements
   @Override
   public TrackingRecordList findAllAssignedRefsets(Long projectId,
     PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Workflow Client - find all assigned refsets - " + projectId);
 
     validateNotEmpty(projectId, "projectId");
 
@@ -590,7 +592,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -624,7 +626,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -658,7 +660,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }
@@ -692,7 +694,7 @@ public class WorkflowClientRest extends RootClientRest implements
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      Logger.getLogger(getClass()).debug(resultString);
+      // n/a
     } else {
       throw new Exception(resultString);
     }

@@ -18,7 +18,7 @@ import org.junit.Test;
 /**
  * Implementation of the "Project Service REST Concept Queries" Test Cases.
  */
-public class ProjectConceptQueryTest extends ProjectServiceRestTest {
+public class ProjectConceptQueryTest extends ProjectTestSupport {
 
   /** The viewer auth token. */
   private static String viewerAuthToken;
@@ -47,10 +47,9 @@ public class ProjectConceptQueryTest extends ProjectServiceRestTest {
    *
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testConceptAccess() throws Exception {
-    Logger.getLogger(getClass()).debug("TEST testConceptAccess");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // verify able to retrieve expected concept via direct call
     Concept concept =
@@ -104,11 +103,9 @@ public class ProjectConceptQueryTest extends ProjectServiceRestTest {
    * 
    * @throws Exception the exception
    */
-  @SuppressWarnings("static-method")
   @Test
   public void testNonexistentProjectConceptAccess() throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "TEST testNonexistentProjectConceptAccess");
+    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Concept doesn't exist thus should return null
     Concept concept =

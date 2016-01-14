@@ -764,7 +764,8 @@ public class RefsetClientRest extends RootClientRest implements
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
                 .replaceAll("\\+", "%20")
-            + "&conceptActive=" + conceptActive.toString());
+            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
+
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
             : pfs);
@@ -1096,8 +1097,7 @@ public class RefsetClientRest extends RootClientRest implements
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
                 .replaceAll("\\+", "%20")
-            + "&conceptActive="
-            + conceptActive);
+            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -1141,8 +1141,7 @@ public class RefsetClientRest extends RootClientRest implements
             + URLEncoder
                 .encode(reportToken == null ? "" : reportToken, "UTF-8")
                 .replaceAll("\\+", "%20")
-            + "&conceptActive="
-            + conceptActive);
+            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()

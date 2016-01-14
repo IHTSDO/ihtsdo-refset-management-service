@@ -18,7 +18,7 @@ import org.junit.Ignore;
  * Superclass for "Project Service REST" Test Cases.
  */
 @Ignore
-public class ProjectServiceRestTest {
+public class ProjectTestSupport extends RestSupport {
 
   /** The service. */
   protected static ProjectClientRest projectService;
