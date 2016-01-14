@@ -1,5 +1,5 @@
 // Login controller
-refsetApp
+tsApp
   .controller(
     'LoginCtrl',
     [
