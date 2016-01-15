@@ -871,7 +871,6 @@ tsApp
                   templateUrl : 'app/component/translationTable/editTranslation.html',
                   controller : AddTranslationModalCtrl,
                   backdrop : 'static',
-                  size : 'lg',
                   resolve : {
                     metadata : function() {
                       return $scope.metadata;
