@@ -111,7 +111,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // Generate the snapshot release artifact and add it
     ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportConcepts(stagedTranslation, stagedTranslation.getConcepts());
+        handler.exportConcepts(translation, translation.getConcepts());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
@@ -149,7 +149,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getFileName(translation.getProject()
-          .getNamespace(), "Snapshot", releaseInfo.getName()));
+          .getNamespace(), "Delta", releaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
