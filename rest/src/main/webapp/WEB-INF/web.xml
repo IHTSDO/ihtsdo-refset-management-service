@@ -5,6 +5,10 @@
 <web-app>
   <display-name>Refset REST Services</display-name>
 
+  <listener>
+    <listener-class>org.ihtsdo.otf.refset.rest.impl.SessionFactoryShutdownListener</listener-class>
+  </listener>
+
   <!-- Jersey configuration. For additional configuration see the class RefsetServerApplication -->
   <servlet>
     <servlet-name>jersey</servlet-name>

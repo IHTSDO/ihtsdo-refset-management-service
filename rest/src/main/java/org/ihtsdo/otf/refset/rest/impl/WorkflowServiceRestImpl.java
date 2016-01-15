@@ -177,8 +177,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final ConceptList list =
           handler.findAvailableEditingConcepts(translation, user, null,
               workflowService);
-      
-      
+
       // Apply pfs
       final ConceptList result = new ConceptListJpa();
       result.setTotalCount(list.getTotalCount());
@@ -186,26 +185,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       if (pfs != null) {
         pfs.setQueryRestriction(null);
       }
-      List<Concept> concepts = workflowService.applyPfsToList(list.getObjects(), Concept.class, pfs);
+      List<Concept> concepts =
+          workflowService.applyPfsToList(list.getObjects(), Concept.class, pfs);
       result.setObjects(concepts);
       for (final Concept concept : result.getObjects()) {
         workflowService.handleLazyInit(concept);
       }
       return result;
-      
-      
-      
-      /*for (final Concept concept : list.getObjects()) {
-        concept.setDescriptions(new ArrayList<Description>());
-        concept.getNotes().size();
-      }
-      list.setTotalCount(list.getCount());
-
-      // Apply pfs
-      list.setObjects(workflowService.applyPfsToList(list.getObjects(),
-          Concept.class, pfs));
-
-      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find available editing work");
