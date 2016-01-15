@@ -876,7 +876,7 @@ tsApp
                       return $scope.metadata;
                     },
                     refsets : function() {
-                      return $scope.refsets;
+                      return $scope.refsets.sort(utilService.sort_by('name'));
                     },
                     project : function() {
                       return $scope.project;
