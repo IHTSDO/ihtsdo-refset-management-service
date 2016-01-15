@@ -1037,7 +1037,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       addConcept(concept);
 
       // Add descriptions
-      for (final Description description : concept.getDescriptions()) {
+      for (final Description description : originConcept.getDescriptions()) {
         description.setId(null);
         if (description.getEffectiveTime() == null) {
           description.setEffectiveTime(effectiveTime);

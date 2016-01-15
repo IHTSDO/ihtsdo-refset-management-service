@@ -83,7 +83,6 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminologyId");
     tester.include("caseSignificanceId");
-    tester.include("translationOfId");
     tester.include("concept");
     tester.include("languageCode");
     tester.include("term");
@@ -175,7 +174,6 @@ public class DescriptionJpaUnitTest extends ModelUnitSupport {
     tester.include("typeId");
     tester.include("termSort");
     tester.include("caseSignificanceId");
-    tester.include("translationOfId");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
