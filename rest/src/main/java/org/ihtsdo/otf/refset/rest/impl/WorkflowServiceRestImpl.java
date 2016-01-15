@@ -175,13 +175,23 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               .getWorkflowPath());
       // Find available editing work
       final ConceptList list =
-          handler.findAvailableEditingConcepts(translation, user, pfs,
+          handler.findAvailableEditingConcepts(translation, user, null,
               workflowService);
-      for (final Concept concept : list.getObjects()) {
-        concept.setDescriptions(new ArrayList<Description>());
-        concept.getNotes().size();
+
+      // Apply pfs
+      final ConceptList result = new ConceptListJpa();
+      result.setTotalCount(list.getTotalCount());
+      // any query restriction has already been handled, dont use here
+      if (pfs != null) {
+        pfs.setQueryRestriction(null);
       }
-      return list;
+      List<Concept> concepts =
+          workflowService.applyPfsToList(list.getObjects(), Concept.class, pfs);
+      result.setObjects(concepts);
+      for (final Concept concept : result.getObjects()) {
+        workflowService.handleLazyInit(concept);
+      }
+      return result;
 
     } catch (Exception e) {
       handleException(e, "trying to find available editing work");
@@ -206,7 +216,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Workflow): /translation/assigned/editing "
-            + translationId + ", " + userName);
+            + translationId + ", " + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
@@ -270,12 +280,18 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               .getWorkflowPath());
       // Find available editing work
       final ConceptList list =
-          handler.findAvailableReviewConcepts(translation, user, pfs,
+          handler.findAvailableReviewConcepts(translation, user, null,
               workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
         concept.getNotes().size();
       }
+
+      list.setTotalCount(list.getCount());
+
+      // Apply pfs
+      list.setObjects(workflowService.applyPfsToList(list.getObjects(),
+          Concept.class, pfs));
       return list;
 
     } catch (Exception e) {
@@ -465,10 +481,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
-      // any query restriction has already been handled, dont use here
-      if (pfs != null) {
-        pfs.setQueryRestriction(null);
-      }
+
       list = workflowService.applyPfsToList(list, Refset.class, pfs);
       result.setObjects(list);
       for (final Refset refset : result.getObjects()) {
@@ -632,10 +645,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
       result.setTotalCount(list.size());
-      // any query restriction has already been handled, dont use here
-      if (pfs != null) {
-        pfs.setQueryRestriction(null);
-      }
       list =
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
               Refset.class, pfs);
@@ -761,10 +770,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       final RefsetList list = new RefsetListJpa();
       list.setTotalCount(refsets.size());
-      // any query restriction has already been handled, dont use here
-      if (pfs != null) {
-        pfs.setQueryRestriction(null);
-      }
       list.getObjects().addAll(
           workflowService.applyPfsToList(refsets, Refset.class, pfs));
       for (final Refset refset : list.getObjects()) {
@@ -894,19 +899,15 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       for (final User user : project.getUserRoleMap().keySet()) {
         if (project.getUserRoleMap().get(user) == UserRole.AUTHOR) {
           concepts.addAll(handler.findAvailableEditingConcepts(translation,
-              user, pfs, workflowService).getObjects());
+              user, null, workflowService).getObjects());
         } else if (project.getUserRoleMap().get(user) == UserRole.REVIEWER) {
           concepts.addAll(handler.findAvailableReviewConcepts(translation,
-              user, pfs, workflowService).getObjects());
+              user, null, workflowService).getObjects());
         }
       }
 
       final ConceptList list = new ConceptListJpa();
       list.setTotalCount(concepts.size());
-      // any query restriction has already been handled, dont use here
-      if (pfs != null) {
-        pfs.setQueryRestriction(null);
-      }
       list.getObjects().addAll(
           workflowService.applyPfsToList(concepts, Concept.class, pfs));
 
@@ -1025,11 +1026,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       workflowService.handleLazyInit(record.getRefset());
     }
     for (final User author : record.getAuthors()) {
-      author.getProjectRoleMap().size();
+      author.setProjectRoleMap(null);
       author.setUserPreferences(null);
     }
     for (final User reviewer : record.getReviewers()) {
-      reviewer.getProjectRoleMap().size();
+      reviewer.setProjectRoleMap(null);
       reviewer.setUserPreferences(null);
     }
   }
