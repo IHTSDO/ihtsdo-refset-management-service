@@ -1062,7 +1062,7 @@ tsApp
 
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
-                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.selectedIoHandler = $scope.ioHandlers[1];
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
