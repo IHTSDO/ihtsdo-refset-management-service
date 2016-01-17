@@ -240,7 +240,7 @@ tsApp
 
                 // For editing pane, restrict to READY_FOR_PUBLICATION only
                 if ($scope.value == 'EDITING') {
-                  pfs.queryRestriction = 'workflowStatus:READY_FOR_PUBLICATION';
+                  pfs.queryRestriction = 'workflowStatus:READY_FOR_PUBLICATION AND revision:false';
                 }
                 if ($scope.value == 'RELEASE') {
                   // may not need a restriction here

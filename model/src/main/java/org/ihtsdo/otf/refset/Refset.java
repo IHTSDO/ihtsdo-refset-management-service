@@ -425,4 +425,18 @@ public interface Refset extends Component, Searchable {
    */
   public boolean isLookupInProgress();
 
+  /**
+   * Sets the revision.
+   *
+   * @param revision the revision
+   */
+  public void setRevision(boolean revision);
+
+  /**
+   * Indicates whether or not revision is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isRevision();
+
 }

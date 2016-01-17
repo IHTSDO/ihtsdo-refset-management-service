@@ -135,6 +135,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("type");
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
+    tester.include("revision");
 
     // Set up objects
     tester.proxy(Project.class, 1, p1);
@@ -221,6 +222,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetDescriptorUuid");
     tester.include("inPublicationProcess");
     tester.include("lookupInProgress");
+    tester.include("revision");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -266,6 +268,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("workflowStatus");
     tester.include("projectId");
     tester.include("namespace");
+    tester.include("revision");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 

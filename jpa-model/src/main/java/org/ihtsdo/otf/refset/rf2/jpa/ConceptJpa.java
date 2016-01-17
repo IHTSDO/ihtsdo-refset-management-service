@@ -99,6 +99,10 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   @IndexedEmbedded(targetElement = ConceptNoteJpa.class)
   private List<Note> notes = new ArrayList<>();
 
+  /** The revision. */
+  @Column(nullable = false)
+  private boolean revision = false;
+  
   /**
    * Instantiates an empty {@link ConceptJpa}.
    */
@@ -288,6 +292,19 @@ public class ConceptJpa extends AbstractComponent implements Concept {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public boolean isRevision() {
+    return revision;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRevision(boolean revision) {
+    this.revision = revision;
+  }
+  
+  /* see superclass */
+  @Override
   public boolean equals(Object obj) {
     if (this == obj)
       return true;
@@ -300,6 +317,8 @@ public class ConceptJpa extends AbstractComponent implements Concept {
       if (other.definitionStatusId != null)
         return false;
     } else if (!definitionStatusId.equals(other.definitionStatusId))
+      return false;
+    if (revision != other.revision)
       return false;
     return true;
   }
@@ -326,6 +345,7 @@ public class ConceptJpa extends AbstractComponent implements Concept {
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
+    result = prime * result + (revision ? 1231 : 1237);
     result =
         prime
             * result

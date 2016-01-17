@@ -246,6 +246,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record2.setRefset(refset);
           if (refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             record2.setRevision(true);
+            refset.setRevision(true);
           }
           record = record2;
           service.addTrackingRecord(record2);
@@ -335,6 +336,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             refset.getWorkflowStatus())) {
           refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
+          refset.setRevision(false);
         }
 
         // Otherwise status stays the same
@@ -575,6 +577,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record2.setConcept(concept);
           if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             record2.setRevision(true);
+            concept.setRevision(true);
           }
           record = record2;
           service.addTrackingRecord(record2);
@@ -668,6 +671,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else if (concept.getWorkflowStatus() == WorkflowStatus.REVIEW_DONE) {
           concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           service.removeTrackingRecord(record.getId());
+          concept.setRevision(false);
         }
 
         concept.setLastModifiedBy(user.getUserName());

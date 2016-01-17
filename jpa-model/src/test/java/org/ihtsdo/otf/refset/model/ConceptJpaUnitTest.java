@@ -85,6 +85,7 @@ public class ConceptJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminologyId");
     tester.include("definitionStatusId");
+    tester.include("revision");
 
     tester.proxy(Translation.class, 1, t1);
     tester.proxy(Translation.class, 2, t2);
@@ -141,6 +142,7 @@ public class ConceptJpaUnitTest extends ModelUnitSupport {
     tester.include("definitionStatusId");
     tester.include("name");
     tester.include("workflowStatus");
+    tester.include("revision");
 
     assertTrue(tester.testNotNullFields());
   }
@@ -172,6 +174,7 @@ public class ConceptJpaUnitTest extends ModelUnitSupport {
     tester.include("nameSort");
     tester.include("translationId");
     tester.include("translationTerminologyId");
+    tester.include("revision");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
