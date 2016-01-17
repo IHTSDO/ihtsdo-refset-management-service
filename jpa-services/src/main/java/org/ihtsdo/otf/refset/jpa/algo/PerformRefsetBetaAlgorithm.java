@@ -114,12 +114,12 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     // Generate the snapshot release artifact and add it
     ExportRefsetHandler handler = getExportRefsetHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportMembers(refset, refset.getMembers());
+        handler.exportMembers(stagedRefset, stagedRefset.getMembers());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
-        "Snapshot", releaseInfo.getName()));
+    artifact.setName(handler.getFileName(stagedRefset.getProject().getNamespace(),
+        "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);

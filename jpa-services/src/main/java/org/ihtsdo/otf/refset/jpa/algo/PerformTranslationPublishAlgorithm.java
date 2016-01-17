@@ -14,6 +14,9 @@ import org.ihtsdo.otf.refset.algo.Algorithm;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
+import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -114,6 +117,23 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     releaseInfo.setLastModifiedBy(userName);
     updateReleaseInfo(releaseInfo);
 
+    // feedback effective times
+    for (Concept concept : translation.getConcepts()) {
+      if (concept.getEffectiveTime() == null) {
+        concept.setEffectiveTime(releaseInfo.getEffectiveTime());
+      }
+      for (Description description : concept.getDescriptions()) {
+        if (description.getEffectiveTime() == null) {
+          description.setEffectiveTime(releaseInfo.getEffectiveTime());
+        }
+        for (LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
+          if (member.getEffectiveTime() == null) {
+            member.setEffectiveTime(releaseInfo.getEffectiveTime());
+          }
+        }
+      }
+    }
+    
     // Remove the translation staging
     removeStagedTranslationChange(stagedTranslationChange.getId());
   }
