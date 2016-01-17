@@ -101,17 +101,4 @@ public interface Description extends Component {
   public void setLanguageRefsetMembers(
     List<LanguageRefsetMember> languageRefsetMembers);
 
-  /**
-   * Returns the translation of.
-   *
-   * @return the translation of
-   */
-  public String getTranslationOfId();
-
-  /**
-   * Sets the translation of.
-   *
-   * @param translationOfId the translation of id
-   */
-  public void setTranslationOfId(String translationOfId);
 }

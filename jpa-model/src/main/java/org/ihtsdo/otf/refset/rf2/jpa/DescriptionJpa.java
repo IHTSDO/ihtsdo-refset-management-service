@@ -58,10 +58,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Column(nullable = false)
   private String caseSignificanceId;
 
-  /** The case significance id. */
-  @Column(nullable = true)
-  private String translationOfId;
-
   /** The concept. */
   @ManyToOne(targetEntity = ConceptJpa.class, optional = false)
   @ContainedIn
@@ -90,7 +86,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
     super(description);
     caseSignificanceId = description.getCaseSignificanceId();
     concept = description.getConcept();
-    translationOfId = description.getTranslationOfId();
     languageCode = description.getLanguageCode();
     term = description.getTerm();
     typeId = description.getTypeId();
@@ -168,19 +163,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   @Override
   public void setCaseSignificanceId(String caseSignificanceId) {
     this.caseSignificanceId = caseSignificanceId;
-  }
-
-  /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-  @Override
-  public String getTranslationOfId() {
-    return translationOfId;
-  }
-
-  /* see superclass */
-  @Override
-  public void setTranslationOfId(String translationOfId) {
-    this.translationOfId = translationOfId;
   }
 
   /* see superclass */
@@ -289,9 +271,9 @@ public class DescriptionJpa extends AbstractComponent implements Description {
   public String toString() {
     return "DescriptionJpa [languageCode=" + languageCode + ", typeId="
         + typeId + ", term=" + term + ", caseSignificanceId="
-        + caseSignificanceId + ", translationOfId=" + translationOfId
-        + ", concept=" + concept + ", languageRefsetMembers="
-        + languageRefsetMembers + "] " + super.toString();
+        + caseSignificanceId + ", concept=" + concept
+        + ", languageRefsetMembers=" + languageRefsetMembers + "] "
+        + super.toString();
   }
 
   /* see superclass */
@@ -303,9 +285,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
         prime
             * result
             + ((caseSignificanceId == null) ? 0 : caseSignificanceId.hashCode());
-    result =
-        prime * result
-            + ((translationOfId == null) ? 0 : translationOfId.hashCode());
     result =
         prime
             * result
@@ -333,11 +312,6 @@ public class DescriptionJpa extends AbstractComponent implements Description {
       if (other.caseSignificanceId != null)
         return false;
     } else if (!caseSignificanceId.equals(other.caseSignificanceId))
-      return false;
-    if (translationOfId == null) {
-      if (other.translationOfId != null)
-        return false;
-    } else if (!translationOfId.equals(other.translationOfId))
       return false;
     if (concept == null) {
       if (other.concept != null)
