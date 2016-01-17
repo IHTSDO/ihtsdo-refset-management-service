@@ -13,11 +13,6 @@ import javax.persistence.TableGenerator;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.hibernate.envers.Audited;
-import org.hibernate.search.annotations.Analyze;
-import org.hibernate.search.annotations.Field;
-import org.hibernate.search.annotations.Index;
-import org.hibernate.search.annotations.Indexed;
-import org.hibernate.search.annotations.Store;
 import org.ihtsdo.otf.refset.DefinitionClause;
 
 /**
@@ -26,7 +21,6 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 @Entity
 @Table(name = "definition_clauses")
 @Audited
-@Indexed
 @XmlRootElement(name = "definitionClause")
 public class DefinitionClauseJpa implements DefinitionClause {
 
@@ -64,7 +58,6 @@ public class DefinitionClauseJpa implements DefinitionClause {
   }
 
   /* see superclass */
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   @Override
   public Long getId() {
     return id;

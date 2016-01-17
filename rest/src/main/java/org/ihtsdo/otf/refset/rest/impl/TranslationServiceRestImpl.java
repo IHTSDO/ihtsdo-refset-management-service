@@ -1097,6 +1097,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // so translation is available lower down
       concept.setTranslation(translation);
 
+      final Map<Long, String> oldTermMap = new HashMap<>();
+      for (final Description oldDesc : oldConcept.getDescriptions()) {
+        oldTermMap.put(oldDesc.getId(), oldDesc.getTerm());
+      }
+
       // Add descriptions/languages that haven't been added yet.
       for (final Description desc : concept.getDescriptions()) {
 
@@ -1109,13 +1114,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         desc.setPublished(false);
         desc.setModuleId(translation.getModuleId());
 
-        // new
-        if (desc.getId() == null) {
+        // If the description is new
+        // OR the description exists but the "term" has changed, add a new
+        // description
+        if (desc.getId() == null
+            || (desc.getId() != null && !oldTermMap.get(desc.getId()).equals(
+                desc.getTerm()))) {
+          // clear ID in case this is a term-change case
+          desc.setId(null);
           desc.setConcept(concept);
           desc.setLastModifiedBy(userName);
           translationService.addDescription(desc);
           for (final LanguageRefsetMember member : desc
               .getLanguageRefsetMembers()) {
+            // clear ID in case this is a term-change case
+            member.setId(null);
             member.setActive(true);
             // new language refset members have null effective time
             member.setEffectiveTime(null);
@@ -1135,8 +1148,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (final Description oldDesc : oldConcept.getDescriptions()) {
         boolean found = false;
         for (final Description desc : concept.getDescriptions()) {
-          // Look for a match
-          if (oldDesc.getId().equals(desc.getId())) {
+          // Look for a match on ID and term - otherwise remove description
+          if (oldDesc.getId().equals(desc.getId())
+              && oldDesc.getTerm().equals(desc.getTerm())) {
 
             // Update language refset member - assume each description has
             // exactly one
