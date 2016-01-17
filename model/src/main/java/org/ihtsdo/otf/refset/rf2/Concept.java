@@ -126,4 +126,18 @@ public interface Concept extends Component {
    */
   public void setLeaf(boolean leaf);
 
+  /**
+   * Indicates whether or not revision is the case.
+   *
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  public boolean isRevision();
+
+  /**
+   * Sets the revision.
+   *
+   * @param revision the revision
+   */
+  public void setRevision(boolean revision);
+
 }

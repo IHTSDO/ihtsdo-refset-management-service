@@ -1135,6 +1135,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       for (final Description oldDesc : oldConcept.getDescriptions()) {
         boolean found = false;
         for (final Description desc : concept.getDescriptions()) {
+          // TODO: consider adding description if term changes
           // Look for a match
           if (oldDesc.getId().equals(desc.getId())) {
 
@@ -1151,17 +1152,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             LanguageRefsetMember oldMember =
                 oldDesc.getLanguageRefsetMembers().get(0);
             LanguageRefsetMember member =
-                oldDesc.getLanguageRefsetMembers().get(0);
+                desc.getLanguageRefsetMembers().get(0);
             if (!oldMember.getAcceptabilityId().equals(
                 member.getAcceptabilityId())) {
               oldMember.setAcceptabilityId(member.getAcceptabilityId());
               oldMember.setLastModifiedBy(userName);
-              translationService.updateLanguageRefsetMember(member,
+              oldMember.setEffectiveTime(null);
+              translationService.updateLanguageRefsetMember(oldMember,
                   translation.getTerminology());
             }
 
             // update the description in case other fields changed
             desc.setLanguageRefsetMembers(oldDesc.getLanguageRefsetMembers());
+            if (!desc.equals(oldDesc)) {
+              desc.setEffectiveTime(null);
+            }
             desc.setLastModifiedBy(userName);
             translationService.updateDescription(desc);
             // found a match, move to the next one

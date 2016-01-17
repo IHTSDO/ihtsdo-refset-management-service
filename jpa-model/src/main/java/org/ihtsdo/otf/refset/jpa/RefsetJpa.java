@@ -143,6 +143,10 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The namespace. */
   @Column(nullable = true)
   private String namespace;
+  
+  /** The revision. */
+  @Column(nullable = false)
+  private boolean revision = false;
 
   /**
    * The refset descriptors.
@@ -689,6 +693,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
   /* see superclass */
   @Override
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public boolean isRevision() {
+    return revision;
+  }
+
+  /* see superclass */
+  @Override
+  public void setRevision(boolean revision) {
+    this.revision = revision;
+  }
+  
+  /* see superclass */
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = super.hashCode();
@@ -703,6 +720,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     result = prime * result + (inPublicationProcess ? 1231 : 1237);
     result = prime * result + (lookupInProgress ? 1231 : 1237);
     result = prime * result + (isPublic ? 1231 : 1237);
+    result = prime * result + (revision ? 1231 : 1237);
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     // not version
@@ -741,6 +759,8 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       return false;
     if (forTranslation != other.forTranslation)
       return false;
+    if (revision != other.revision)
+        return false;
     if (inPublicationProcess != other.inPublicationProcess)
       return false;
     if (lookupInProgress != other.lookupInProgress)

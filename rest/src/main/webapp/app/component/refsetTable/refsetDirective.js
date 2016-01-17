@@ -223,7 +223,7 @@ tsApp
                 if ($scope.value == 'RELEASE') {
                   pfs.queryRestriction = 'projectId: '
                     + $scope.project.id
-                    + ' AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
+                    + ' AND revision:false AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
                   refsetService.findRefsetsForQuery($scope.paging['refset'].filter, pfs).then(
                     function(data) {
@@ -511,7 +511,8 @@ tsApp
 
               // handle workflow advancement
               $scope.handleWorkflow = function(refset) {
-                if ($scope.value == 'ASSIGNED' && refset && refset.workflowStatus == 'NEW') {
+                if ($scope.value == 'ASSIGNED' && refset && 
+                  (refset.workflowStatus == 'NEW' || refset.workflowStatus == 'READY_FOR_PUBLICATION')) {
                   $scope.performWorkflowAction(refset, 'SAVE', $scope.user.userName);
                 } else {
                   refsetService.fireRefsetChanged(refset);

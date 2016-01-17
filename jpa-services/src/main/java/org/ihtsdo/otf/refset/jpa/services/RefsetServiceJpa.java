@@ -749,6 +749,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         member.setId(null);
         if (member.getEffectiveTime() == null)
           member.setEffectiveTime(effectiveTime);
+        refsetCopy.getMembers().add(member);
         addMember(member);
       }
     }

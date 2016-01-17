@@ -94,6 +94,9 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("\r\n");
 
     for (Concept concept : concepts) {
+      if (concept.isRevision()) {
+        continue;
+      }
       for (Description description : concept.getDescriptions()) {
         Logger.getLogger(getClass()).debug(
             "  description = " + description.getTerminologyId() + ", "
