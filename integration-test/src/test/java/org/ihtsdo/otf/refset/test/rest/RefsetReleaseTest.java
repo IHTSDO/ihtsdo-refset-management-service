@@ -841,7 +841,9 @@ public class RefsetReleaseTest extends RestSupport {
         Refset r = refsetService.getRefset(refsetId, adminAuthToken);
         if (r.isLookupInProgress()) {
           // lookupNames still running on refset
-          Logger.getLogger(getClass()).info("Inside wait-loop");
+          Logger.getLogger(getClass()).info(
+              "Inside wait-loop - "
+                  + refsetService.getLookupProgress(refsetId, adminAuthToken));
           completed = false;
           Thread.sleep(250);
         }
