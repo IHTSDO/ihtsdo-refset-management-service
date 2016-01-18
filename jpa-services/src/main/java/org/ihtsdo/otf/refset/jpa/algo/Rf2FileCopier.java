@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 
 /**
  * Copier for RF2 files. Takes a set of concepts and descriptions and subsets
@@ -116,7 +117,7 @@ public class Rf2FileCopier {
       String line;
       int index = keyMap.get(key);
       while ((line = in.readLine()) != null) {
-        final String[] fields = line.split("\t");
+        final String[] fields = FieldedStringTokenizer.split(line,"\t");
 
         // If active only, skip inactive entries
         if (activeOnly && fields[1].equals("0")) {

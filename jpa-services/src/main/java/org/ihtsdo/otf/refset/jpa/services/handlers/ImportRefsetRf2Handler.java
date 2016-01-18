@@ -14,6 +14,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
@@ -77,7 +78,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       // Strip \r and split lines
       line = line.replace("\r", "");
-      final String fields[] = line.split("\t");
+      final String fields[] = FieldedStringTokenizer.split(line, "\t");
 
       // Check field lengths
       // Support any RF2 refset file with 6 or more fields.
@@ -132,7 +133,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       // Strip \r chars and split line
       line = line.replace("\r", "");
-      final String fields[] = line.split("\t");
+      final String fields[] = FieldedStringTokenizer.split(line,"\t");
 
       // Check fields
       if (fields.length != 7) {
