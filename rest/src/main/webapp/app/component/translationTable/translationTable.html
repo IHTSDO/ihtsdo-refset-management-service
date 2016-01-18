@@ -100,6 +100,9 @@
             <br class="visible-xs-inline" />
             {{getTranslationOrganization(translation)}}
             </span>
+            <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
+              <br />{{translation.workflowStatus}}
+            </span>
 
           </td>
           <td>{{translation.language}}</td>
