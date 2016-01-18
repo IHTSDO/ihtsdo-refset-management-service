@@ -667,7 +667,9 @@ public class SpellingCorrectionRestTest extends RestSupport {
         Refset r = refsetService.getRefset(refsetId, adminAuthToken);
         if (r.isLookupInProgress()) {
           // lookupNames still running on refset
-          Logger.getLogger(getClass()).info("Inside wait-loop");
+          Logger.getLogger(getClass()).info(
+              "Inside wait-loop - "
+                  + refsetService.getLookupProgress(refsetId, adminAuthToken));
           completed = false;
           Thread.sleep(250);
         }
@@ -696,8 +698,10 @@ public class SpellingCorrectionRestTest extends RestSupport {
         Translation t =
             translationService.getTranslation(translationId, adminAuthToken);
         if (t.isLookupInProgress()) {
-          // lookupNames still running on translation
-          Logger.getLogger(getClass()).info("Inside wait-loop");
+          // lookupNames still running on refset
+          Logger.getLogger(getClass()).info(
+              "Inside wait-loop - "
+                  + translationService.getLookupProgress(translationId, adminAuthToken));
           completed = false;
           Thread.sleep(250);
         }

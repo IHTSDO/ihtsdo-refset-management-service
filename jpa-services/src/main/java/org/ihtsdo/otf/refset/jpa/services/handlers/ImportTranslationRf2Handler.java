@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
@@ -108,7 +109,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
           line = sc.nextLine();
-          final String fields[] = line.split("\t");
+          final String fields[] = FieldedStringTokenizer.split(line,"\t");
           if (fields.length != 9) {
             sc.close();
             throw new LocalException(
@@ -180,7 +181,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         while (sc.hasNextLine()) {
           line = sc.nextLine();
           line = line.replace("\r", "");
-          final String fields[] = line.split("\t");
+          final String fields[] = FieldedStringTokenizer.split(line,"\t");
 
           if (fields.length != 7) {
             sc.close();
