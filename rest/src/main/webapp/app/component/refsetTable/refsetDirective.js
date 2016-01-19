@@ -1733,7 +1733,9 @@ tsApp
                   concept : null,
                   descriptionTypes : metadata.descriptionTypes,
                   terminology : refset.terminology,
-                  version : refset.version
+                  version : refset.version,
+                  refset : refset,
+                  memberTypes : {}
                 };
                 $scope.pageSize = 10;
                 $scope.paging = {};
@@ -1845,7 +1847,8 @@ tsApp
                   // Success
                   function(data) {
                     $scope.searchResults = data.concepts;
-                    $scope.searchResults.totalCount = data.totalCount;
+                    $scope.searchResults.totalCount = data.totalCount;                    
+                    $scope.getMemberTypes();
                   },
                   // Error
                   function(data) {
@@ -1859,6 +1862,35 @@ tsApp
                   $scope.data.concept = concept;
                 };
 
+
+                // Gets $scope.data.memberTypes
+                $scope.getMemberTypes = function() {
+
+                  var concepts = $scope.searchResults;
+                  var query = concepts[0];
+                  for (var i = 1; i < concepts.length; i++) {
+                    if (!$scope.memberTypes[concepts[i]]) {
+                      query += ' OR ';
+                      query += concepts[i];
+                      // put a placeholder entry for the cases when it isn't a member of the refset
+                      $scope.memberTypes[concepts[i]] = {
+                        conceptId : concepts[i].terminologyId
+                      };
+                    }
+                  }
+                  var pfs = {
+                    startIndex : -1
+                  };
+                  query = '(' + query + ')';
+                  refsetService.findRefsetMembersForQuery($scope.data.refset.id, query, pfs).then(
+                  // Success
+                  function(data) {
+                    for (var i = 0; i < data.members.length; i++) {
+                      $scope.data.memberTypes[data.members[i].conceptId] = data.members[i];
+                    }
+                  })
+                }                                
+                
                 // Dismiss modal
                 $scope.cancel = function() {
                   $uibModalInstance.dismiss('cancel');

@@ -51,6 +51,7 @@
           </tbody>
         </table>
       </span>
+      {{data.memberTypes}}
     </div>
 
     <!--  Right hand side -->
@@ -59,7 +60,7 @@
         class="alert alert-warning">Select a concept to see details</span>
 
       <!-- Concept display -->
-      <div ng-show="data.concept" concept-info data="data"></div>
+      <div ng-show="data.concept" concept-info data="data" handleWorkflow="getMemberTypes()"></div>
 
     </div>
 

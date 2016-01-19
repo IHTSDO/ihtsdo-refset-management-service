@@ -40,7 +40,6 @@ tsApp.directive('conceptInfo', [
 
           // tracks member types by concept id
           $scope.disableMemberTypes = false;
-          $scope.memberTypes = {};
 
           // When concept changes, redo paging
           $scope.$watch('data.concept', function() {
@@ -48,7 +47,7 @@ tsApp.directive('conceptInfo', [
             // Clear error
             $scope.error = null;
             if ($scope.data.concept) {
-              $scope.memberTypes = {};
+              $scope.data.memberTypes = {};
               $scope.getFullConcept($scope.data.concept);
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptChildren($scope.data.concept);
@@ -361,7 +360,7 @@ tsApp.directive('conceptInfo', [
             return concepts;
           }
 
-          // Gets $scope.memberTypes
+          // Gets $scope.data.memberTypes
           // Only operates if $scope.data.refset exists
           $scope.getMemberTypes = function() {
             // skip if refset not set
@@ -381,11 +380,11 @@ tsApp.directive('conceptInfo', [
             var concepts = $scope.getAllConcepts();
             var query = concepts[0];
             for (var i = 1; i < concepts.length; i++) {
-              if (!$scope.memberTypes[concepts[i]]) {
+              if (!$scope.data.memberTypes[concepts[i]]) {
                 query += ' OR ';
                 query += concepts[i];
                 // put a placeholder entry for the cases when it isn't a member of the refset
-                $scope.memberTypes[concepts[i]] = {
+                $scope.data.memberTypes[concepts[i]] = {
                   conceptId : concepts[i].terminologyId
                 };
               }
@@ -398,7 +397,7 @@ tsApp.directive('conceptInfo', [
             // Success
             function(data) {
               for (var i = 0; i < data.members.length; i++) {
-                $scope.memberTypes[data.members[i].conceptId] = data.members[i];
+                $scope.data.memberTypes[data.members[i].conceptId] = data.members[i];
               }
             })
           }
@@ -409,7 +408,7 @@ tsApp.directive('conceptInfo', [
             // Success 
             function() {
               refsetService.fireRefsetChanged(refset);
-              $scope.memberTypes = {};
+              $scope.data.memberTypes = {};
               $scope.getMemberTypes();
             });
           };
@@ -420,7 +419,7 @@ tsApp.directive('conceptInfo', [
             // Success
             function() {
               refsetService.fireRefsetChanged(refset);
-              $scope.memberTypes = {};
+              $scope.data.memberTypes = {};
               $scope.getMemberTypes();
             });
           };
@@ -449,7 +448,7 @@ tsApp.directive('conceptInfo', [
             // Success
             function(data) {
               $scope.handleWorkflow();
-              $scope.memberTypes = {};
+              $scope.data.memberTypes = {};
               $scope.getMemberTypes();
             });
 
@@ -605,7 +604,7 @@ tsApp.directive('conceptInfo', [
             // Success
             function(data) {
               $scope.handleWorkflow();
-              $scope.memberTypes = {};
+              $scope.data.memberTypes = {};
               $scope.getMemberTypes();
             });
 
