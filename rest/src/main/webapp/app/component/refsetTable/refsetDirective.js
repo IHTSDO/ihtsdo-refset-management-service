@@ -1711,6 +1711,9 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
+                    },
+                    value : function() {
+                      return $scope.value;
                     }
                   }
                 });
@@ -1724,9 +1727,10 @@ tsApp
 
               // Add member controller
               var AddMemberModalCtrl = function($scope, $uibModalInstance, metadata, refset,
-                project) {
+                project, value) {
 
                 console.debug('Entered add member modal control');
+                $scope.value = value;
                 $scope.pageSize = 10;
                 $scope.searchResults = null;
                 $scope.data = {
@@ -1823,13 +1827,14 @@ tsApp
 
                 // get search results
                 $scope.getSearchResults = function(search, clearPaging) {
-
+                  
                   if (clearPaging) {
                     $scope.paging['search'].page = 1;
                   }
 
+                  // skip search if blank
                   if (!search) {
-                    handleError($scope.errors, data);
+                    return;
                   }
                   // clear data structures
                   $scope.errors = [];
@@ -1865,16 +1870,18 @@ tsApp
 
                 // Gets $scope.data.memberTypes
                 $scope.getMemberTypes = function() {
-
-                  var concepts = $scope.searchResults;
+                  var concepts = [];
+                  for (var i = 0; i < $scope.searchResults.length; i++) {
+                    concepts.push($scope.searchResults[i].terminologyId);
+                  }
                   var query = concepts[0];
                   for (var i = 1; i < concepts.length; i++) {
-                    if (!$scope.memberTypes[concepts[i]]) {
+                    if (!$scope.data.memberTypes[concepts[i]]) {
                       query += ' OR ';
                       query += concepts[i];
                       // put a placeholder entry for the cases when it isn't a member of the refset
-                      $scope.memberTypes[concepts[i]] = {
-                        conceptId : concepts[i].terminologyId
+                      $scope.data.memberTypes[concepts[i]] = {
+                        conceptId : concepts[i]
                       };
                     }
                   }

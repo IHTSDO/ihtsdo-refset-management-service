@@ -15,7 +15,8 @@ tsApp.directive('conceptInfo', [
       scope : {
         data : '=',
         value : '=',
-        handleWorkflow : '&'
+        handleWorkflow : '&',
+        resetMemberTypes : '&'
       },
       templateUrl : 'app/component/conceptInfo/conceptInfo.html',
       controller : [
@@ -47,10 +48,12 @@ tsApp.directive('conceptInfo', [
             // Clear error
             $scope.error = null;
             if ($scope.data.concept) {
-              $scope.data.memberTypes = {};
               $scope.getFullConcept($scope.data.concept);
               $scope.getConceptParents($scope.data.concept);
               $scope.getConceptChildren($scope.data.concept);
+              $scope.data.memberTypes = {};
+              $scope.resetMemberTypes();
+
             } else {
               // clear data structure
               $scope.orderedDescriptions = null;
@@ -363,6 +366,7 @@ tsApp.directive('conceptInfo', [
           // Gets $scope.data.memberTypes
           // Only operates if $scope.data.refset exists
           $scope.getMemberTypes = function() {
+            console.debug("get member types", $scope.data.refset, $scope.value)
             // skip if refset not set
             if (!$scope.data.refset) {
               $scope.disableMemberTypes = true;
@@ -374,7 +378,6 @@ tsApp.directive('conceptInfo', [
               $scope.disableMemberTypes = true;
               return;
             }
-
             $scope.disableMemberTypes = false;
 
             var concepts = $scope.getAllConcepts();
@@ -385,7 +388,7 @@ tsApp.directive('conceptInfo', [
                 query += concepts[i];
                 // put a placeholder entry for the cases when it isn't a member of the refset
                 $scope.data.memberTypes[concepts[i]] = {
-                  conceptId : concepts[i].terminologyId
+                  conceptId : concepts[i]
                 };
               }
             }
@@ -409,6 +412,8 @@ tsApp.directive('conceptInfo', [
             function() {
               refsetService.fireRefsetChanged(refset);
               $scope.data.memberTypes = {};
+              $scope.resetMemberTypes();
+              $scope.handleWorkflow();
               $scope.getMemberTypes();
             });
           };
@@ -420,6 +425,8 @@ tsApp.directive('conceptInfo', [
             function() {
               refsetService.fireRefsetChanged(refset);
               $scope.data.memberTypes = {};
+              $scope.resetMemberTypes();
+              $scope.handleWorkflow();
               $scope.getMemberTypes();
             });
           };
@@ -447,8 +454,9 @@ tsApp.directive('conceptInfo', [
             modalInstance.result.then(
             // Success
             function(data) {
-              $scope.handleWorkflow();
               $scope.data.memberTypes = {};
+              $scope.resetMemberTypes();
+              $scope.handleWorkflow();
               $scope.getMemberTypes();
             });
 
@@ -603,8 +611,9 @@ tsApp.directive('conceptInfo', [
             modalInstance.result.then(
             // Success
             function(data) {
-              $scope.handleWorkflow();
               $scope.data.memberTypes = {};
+              $scope.resetMemberTypes();
+              $scope.handleWorkflow();
               $scope.getMemberTypes();
             });
 
