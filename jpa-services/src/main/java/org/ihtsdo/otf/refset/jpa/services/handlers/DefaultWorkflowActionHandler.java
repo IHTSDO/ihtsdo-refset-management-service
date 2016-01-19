@@ -581,6 +581,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           }
           record = record2;
           service.addTrackingRecord(record2);
+          service.updateConcept(concept);
         }
 
         // Reviewer case
