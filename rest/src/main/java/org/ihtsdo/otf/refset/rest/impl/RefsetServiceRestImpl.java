@@ -886,7 +886,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       member.setLastModifiedBy(userName);
-      return refsetService.addMember(member);
+
+      ConceptRefsetMember newMember = refsetService.addMember(member);
+      
+      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
+      if (member.getConceptName().equals("TBD") && assignNames) {
+        refsetService.lookupMemberNames(refset.getId(), "add refset member", false);
+      } 
+      return newMember;
 
     } catch (Exception e) {
       handleException(e, "trying to add new member ");

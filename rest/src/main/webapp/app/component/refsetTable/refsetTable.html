@@ -506,6 +506,13 @@
             ng-show="value == 'AVAILABLE' && selected.refset.type == 'EXTENSIONAL'"
             title="Assign refset to make changes to members"
             class="md-grey material-icons md-18">file_upload</i>
+            
+          <!-- Add member list -->  
+          <i
+            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
+            ng-click="openAddRefsetMemberListModal(); $event.stopPropagation()"
+            title="Add/remove refset member list" class="noul material-icons md-18">playlist_add</i>
+            
           <!-- Add member -->
 
           <i ng-show="value == 'ASSIGNED'"
