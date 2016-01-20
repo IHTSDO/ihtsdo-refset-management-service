@@ -142,7 +142,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(response.toString());
+        throw new Exception("Unexpected terminology server failure. Message = "
+            + resultString);
       }
 
       /**
@@ -217,7 +218,14 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new ConceptListJpa();
+      }
+
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**
@@ -303,7 +311,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception(resultString);
+        throw new Exception("Unexpected terminology server failure. Message = "
+            + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -357,7 +366,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**
@@ -564,7 +574,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**
@@ -702,7 +713,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**
@@ -814,7 +826,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**
@@ -874,7 +887,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception(resultString);
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
     }
 
     /**

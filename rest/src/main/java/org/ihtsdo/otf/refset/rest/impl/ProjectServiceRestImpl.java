@@ -58,6 +58,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
+import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -927,10 +928,43 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
         translationService.findConceptsForTranslation(null, query.toString(),
             null);
     // Add all descriptions to the concept
+    final Set<String> descIdsSeen = new HashSet<>();
     for (Concept conceptTranslated : list.getObjects()) {
+
+      // For descriptions from "this" translation
+      // keep only concepts whose translation ids match this translation
+      if (!concept.getTranslation().getId().equals(translation.getId())) {
+        continue;
+      }
+
+      // For concepts from other translations, only descriptions
+      // only if the translation isn't PUBLISHED or BETA
+      if ((translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED || translation
+          .getWorkflowStatus() == WorkflowStatus.BETA)
+          && !concept.getTranslation().getTerminology()
+              .equals(translation.getTerminology())) {
+        continue;
+      }
+
       for (Description desc : conceptTranslated.getDescriptions()) {
-        // Add to the concept to return
-        concept.getDescriptions().add(desc);
+        // Skip inactive descriptions
+        if (!desc.isActive()) {
+          continue;
+        }
+
+        // Add to the concept to return if this is the first time
+        // we have encountered this description terminology id
+        //
+        // This is to ensure that we don't pick up multiple identical
+        // descriptions from "user preferences" based translations. This
+        // algorithm is approximate as we're just pickign the first one
+        // encountered. Though the point of descriptions from other
+        // "user prefs" translations is merely to get some idea
+        //
+        if (!descIdsSeen.contains(desc.getTerminologyId())) {
+          concept.getDescriptions().add(desc);
+          descIdsSeen.add(desc.getTerminologyId());
+        }
       }
     }
 

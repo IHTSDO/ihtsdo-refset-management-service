@@ -80,8 +80,8 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
       final String fields[] = FieldedStringTokenizer.split(line, "\t");
 
       // Check field lengths
-      // Support any RF1 refset file with 4 fields
-      if (fields.length != 4) {
+      // Support any RF1 refset file with 4 fields (4th field might be blank)
+      if (fields.length < 3) {
         pbr.close();
         Logger.getLogger(getClass()).error("line = " + line);
         throw new LocalException(
@@ -91,20 +91,13 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
       // skip header
       if (!fields[1].equals("MEMBERID")) {
 
-        // Keep only active entries
-        if (!fields[2].equals("1")) {
-          continue;
-        }
-
         // Instantiate and populate members
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         setCommonFields(member, refset);
         member.setConceptActive(true);
         member.setRefset(refset);
         member.setConceptId(fields[1]);
-        if (!fields[1].equals("")) {
-          member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
-        }
+        member.setEffectiveTime(null);
 
         // Add member
         list.add(member);

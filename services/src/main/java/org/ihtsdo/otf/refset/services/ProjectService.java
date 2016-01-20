@@ -24,13 +24,6 @@ public interface ProjectService extends RootService {
   public boolean isLastModifiedFlag();
 
   /**
-   * Sets the last modified flag.
-   *
-   * @param lastModifiedFlag the last modified flag
-   */
-  public void setLastModifiedFlag(boolean lastModifiedFlag);
-
-  /**
    * Sets the assign identifiers flag. Used when adding or updating objects to
    * determine if the identifier should be computed based on the id assignment
    * handler.

@@ -86,6 +86,13 @@ public interface RootService {
   public void refreshCaches() throws Exception;
 
   /**
+   * Sets the last modified flag.
+   *
+   * @param lastModifiedFlag the last modified flag
+   */
+  public void setLastModifiedFlag(boolean lastModifiedFlag);
+  
+  /**
    * Apply pfs to list.
    * @param <T>
    *
