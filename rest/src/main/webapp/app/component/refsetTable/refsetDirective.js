@@ -1917,7 +1917,7 @@ tsApp
                         refsetService.addRefsetMember(member).then(
                         // Success
                         function(data) {
-                          $uibModalInstance.close(refset);
+                          $scope.data.memberTypes[concept.terminologyId] = member;
                         },
                         // Error
                         function(data) {
@@ -1929,7 +1929,7 @@ tsApp
                         refsetService.addRefsetInclusion(member, false).then(
                         // Success
                         function(data) {
-                          $uibModalInstance.close(refset);
+                          $scope.data.memberTypes[concept.terminologyId] = member;
                         },
                         // Error
                         function(data) {
@@ -1945,6 +1945,7 @@ tsApp
 
                 };
 
+             
                 // get search results
                 $scope.getSearchResults = function(search, clearPaging) {
                   
@@ -2020,7 +2021,7 @@ tsApp
                 
                 // Dismiss modal
                 $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                  $uibModalInstance.close(refset);
                 };
 
               };
