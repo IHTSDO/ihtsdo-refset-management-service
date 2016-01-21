@@ -127,6 +127,9 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
             translation.getProject().getId());
     if (releaseInfo != null) {
+      // get all concepts from previous translation that are no longer in
+      // stagedTranslation and make them retired in the delta
+      // TODO: note these delta concepts don't have descriptions attached
       Set<Concept> delta =
           Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
       delta.removeAll(stagedTranslation.getConcepts());
@@ -134,6 +137,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         member.setActive(false);
         member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
       }
+      // add all new concepts to the delta
       Set<Concept> newMembers =
           Sets.newHashSet(stagedTranslation.getConcepts());
       newMembers.removeAll(releaseInfo.getTranslation().getConcepts());
@@ -142,6 +146,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
       }
       delta.addAll(newMembers);
+      // TODO: what about descriptions that have changed within a stable concept?
       inputStream =
           handler.exportConcepts(stagedTranslation, Lists.newArrayList(delta));
       artifact = new ReleaseArtifactJpa();
@@ -149,7 +154,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
       artifact.setData(ByteStreams.toByteArray(inputStream));
       artifact.setName(handler.getFileName(stagedTranslation.getProject()
-          .getNamespace(), "Delta", releaseInfo.getName()));
+          .getNamespace(), "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);

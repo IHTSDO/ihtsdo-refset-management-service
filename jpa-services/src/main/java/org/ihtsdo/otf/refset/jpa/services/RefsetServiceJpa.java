@@ -553,38 +553,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public Refset getRefsetRevision(Long refsetId, Date date) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get refset revision for date :"
-            + ConfigUtility.DATE_FORMAT.format(date));
-    // make envers call for date = lastModifiedDate
-    final AuditReader reader = AuditReaderFactory.get(manager);
-    final List<Refset> revisions = reader.createQuery()
-
-    // all revisions, returned as objects, not finding deleted entries
-        .forRevisionsOfEntity(RefsetJpa.class, true, false)
-
-        .addProjection(AuditEntity.revisionNumber())
-
-        // search by id
-        .add(AuditEntity.id().eq(refsetId))
-
-        // must preceed parameter date
-        .add(AuditEntity.revisionProperty("timestamp").le(date))
-
-        // order by descending timestamp
-        .addOrder(AuditEntity.property("timestamp").desc())
-
-        // execute query
-        .getResultList();
-
-    // get the most recent of the revisions that precede the date parameter
-    final Refset refset = revisions.get(0);
-    return refset;
-  }
 
   /* see superclass */
   @Override
@@ -605,24 +573,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
 
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
-    Date date, PfsParameter pfs) {
-    // TODO Auto-generated method stub
-    // remember to do handleLazyInit
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
-    throws Exception {
-    // TODO Auto-generated method stub
-    // remember to do handleLazyInit
-    return null;
   }
 
   /* see superclass */

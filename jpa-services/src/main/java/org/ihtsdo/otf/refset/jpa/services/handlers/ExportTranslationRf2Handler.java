@@ -171,7 +171,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
   @Override
   public String getFileName(String namespace, String type, String version) {
-    return "der2_Refset_Language" + type + "_" + namespace + "_" + version
+    return "translation_" + type + "_" + namespace + "_" + version
         + getFileTypeFilter();
   }
 

@@ -266,32 +266,6 @@ public interface RefsetServiceRest {
     throws Exception;
 
   /**
-   * Returns the refset revision.
-   *
-   * @param refsetId the refset id
-   * @param date the date
-   * @param authToken the auth token
-   * @return the refset revision
-   * @throws Exception the exception
-   */
-  public Refset getRefsetRevision(Long refsetId, String date, String authToken)
-    throws Exception;
-
-  /**
-   * Find members for refset revision.
-   *
-   * @param refsetId the refset id
-   * @param date the date
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the simple ref set member list
-   * @throws Exception the exception
-   */
-  public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(
-    Long refsetId, String date, PfsParameterJpa pfs, String authToken)
-    throws Exception;
-
-  /**
    * Begin import.
    *
    * @param refsetId the refset id
@@ -568,16 +542,6 @@ public interface RefsetServiceRest {
    */
   public void optimizeDefinition(Long refsetId, String authToken)
     throws Exception;
-
-  /**
-   * Recovery refset.
-   *
-   * @param refsetId the refset id
-   * @param authToken the auth token
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset recoveryRefset(Long refsetId, String authToken) throws Exception;
 
   /**
    * Is expression valid.

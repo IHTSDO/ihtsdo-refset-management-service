@@ -419,58 +419,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   }
 
   /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public Translation getTranslationRevision(Long translationId, Date date)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Service - get translation revision for date :"
-            + ConfigUtility.DATE_FORMAT.format(date));
-    // make envers call for date = lastModifiedDate
-    final AuditReader reader = AuditReaderFactory.get(manager);
-    final List<Translation> revisions = reader.createQuery()
-
-    // all revisions, returned as objects, not finding deleted entries
-        .forRevisionsOfEntity(TranslationJpa.class, true, false)
-
-        .addProjection(AuditEntity.revisionNumber())
-
-        // search by id
-        .add(AuditEntity.id().eq(translationId))
-
-        // must precede parameter date
-        .add(AuditEntity.revisionProperty("timestamp").le(date))
-
-        // order by descending timestamp
-        .addOrder(AuditEntity.property("timestamp").desc())
-
-        // execute query
-        .getResultList();
-
-    // get the most recent of the revisions that preceed the date parameter
-    final Translation translation = revisions.get(0);
-    return translation;
-  }
-
-  /* see superclass */
-  @Override
-  public SearchResultList findTranslationReleaseRevisions(Long translationId)
-    throws Exception {
-    // TODO Auto-generated method stub
-    // remember handleLazyInit
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptList findConceptsForTranslationRevision(Long translationId,
-    Date date, PfsParameter pfs) {
-    // TODO Auto-generated method stub
-    // remember handleLazyInit
-    return null;
-  }
-
-  /* see superclass */
   @Override
   public ImportTranslationHandler getImportTranslationHandler(String key)
     throws Exception {

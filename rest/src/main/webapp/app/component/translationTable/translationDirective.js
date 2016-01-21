@@ -352,10 +352,17 @@ tsApp
               };
               // get translation release info
               $scope.getTranslationReleaseInfo = function(translation) {
-                releaseService.getCurrentTranslationReleaseInfo(translation.id).then(
-                  function(data) {
-                    $scope.translationReleaseInfo = data;
-                  })
+                var pfs = {
+                  startIndex : -1,
+                  maxResults : 10,
+                  sortField : null,
+                  ascending : null,
+                  queryRestriction : null
+                };
+                releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(function(data) {
+                  $scope.translationReleaseInfo = data.releaseInfos[0];
+                })
+                
               };
 
               // Save user preferences
