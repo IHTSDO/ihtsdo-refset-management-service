@@ -119,32 +119,6 @@ public interface TranslationServiceRest {
     String authToken) throws Exception;
 
   /**
-   * Returns the translation revision.
-   *
-   * @param translationId the translation id
-   * @param date the date
-   * @param authToken the auth token
-   * @return the translation revision
-   * @throws Exception the exception
-   */
-  public Translation getTranslationRevision(Long translationId, String date,
-    String authToken) throws Exception;
-
-  /**
-   * Find concepts for translation revision.
-   *
-   * @param translationId the translation id
-   * @param date the date
-   * @param pfs the pfs
-   * @param authToken the auth token
-   * @return the concept list
-   * @throws Exception the exception
-   */
-  public ConceptList findTranslationRevisionConceptsForQuery(
-    Long translationId, String date, PfsParameterJpa pfs, String authToken)
-    throws Exception;
-
-  /**
    * Removes the all translation concepts.
    *
    * @param translationId the translation id

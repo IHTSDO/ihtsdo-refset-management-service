@@ -60,42 +60,7 @@ public class RefsetClientRest extends RootClientRest implements
     this.config = config;
   }
 
-  /* see superclass */
-  @Override
-  public Refset getRefsetRevision(Long refsetId, String date, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - get refset revision at the given date " + refsetId
-            + " " + date);
-    validateNotEmpty(refsetId, "refsetId");
-    // Validate date format
-    try {
-      ConfigUtility.DATE_FORMAT.parse(date);
-    } catch (Exception e) {
-      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
-    }
 
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/" + refsetId
-            + "/" + date);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    RefsetJpa refset =
-        (RefsetJpa) ConfigUtility.getGraphForString(resultString,
-            RefsetJpa.class);
-    return refset;
-  }
 
   /* see superclass */
   @Override
@@ -587,44 +552,6 @@ public class RefsetClientRest extends RootClientRest implements
         IoHandlerInfoListJpa.class);
   }
 
-  /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(
-    Long refsetId, String date, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - find refset revision members for query " + refsetId
-            + ", " + date);
-    validateNotEmpty(refsetId, "refsetId");
-    // Validate date format
-    try {
-      ConfigUtility.DATE_FORMAT.parse(date);
-    } catch (Exception e) {
-      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
-    }
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/" + refsetId
-            + "/" + date + "/members");
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (ConceptRefsetMemberListJpa) ConfigUtility.getGraphForString(
-        resultString, ConceptRefsetMemberListJpa.class);
-  }
 
   /* see superclass */
   @Override
@@ -1473,33 +1400,7 @@ public class RefsetClientRest extends RootClientRest implements
     }
   }
 
-  @Override
-  public Refset recoveryRefset(Long refsetId, String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Client - recovery refset " + refsetId);
-    validateNotEmpty(refsetId, "refsetId");
 
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/recovery/"
-            + refsetId);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
-        RefsetJpa.class);
-  }
-  
   /* see superclass */
   @Override
   public Boolean isExpressionValid(Long refsetId, String expression, String authToken) throws Exception {

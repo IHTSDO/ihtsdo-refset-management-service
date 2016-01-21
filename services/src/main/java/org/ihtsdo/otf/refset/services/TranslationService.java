@@ -104,40 +104,6 @@ public interface TranslationService extends RefsetService {
     String query, PfsParameter pfs) throws Exception;
 
   /**
-   * Returns the translation revision.
-   *
-   * @param translationId the translation id
-   * @param date the date
-   * @return the translation revision
-   * @throws Exception the exception
-   */
-  public Translation getTranslationRevision(Long translationId, Date date)
-    throws Exception;
-
-  /**
-   * Find translation release revisions. This is the max revision number before
-   * the finalization date of the release for releases that were published.
-   * 
-   *
-   * @param translationId the translation id
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findTranslationReleaseRevisions(Long translationId)
-    throws Exception;
-
-  /**
-   * Find concepts for translation revision.
-   *
-   * @param translationId the translation id
-   * @param date the date
-   * @param pfs the pfs
-   * @return the concept list
-   */
-  public ConceptList findConceptsForTranslationRevision(Long translationId,
-    Date date, PfsParameter pfs);
-
-  /**
    * Returns the import translation handler.
    *
    * @param key the key

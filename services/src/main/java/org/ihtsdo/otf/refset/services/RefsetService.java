@@ -15,7 +15,6 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
@@ -137,38 +136,6 @@ public interface RefsetService extends ReleaseService {
    */
   public ConceptRefsetMemberList findMembersForRefset(Long refsetId,
     String query, PfsParameter pfs) throws Exception;
-
-  /**
-   * Returns the refset revision.
-   *
-   * @param refsetId the refset id
-   * @param date the date
-   * @return the refset revision
-   * @throws Exception the exception
-   */
-  public Refset getRefsetRevision(Long refsetId, Date date) throws Exception;
-
-  /**
-   * Find release revisions. This is the max revision number before the
-   * finalization date of the release for releases that were published.
-   *
-   * @param refsetId the refset id
-   * @return the search result list
-   * @throws Exception the exception
-   */
-  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
-    throws Exception;
-
-  /**
-   * Find members for refset revision.
-   *
-   * @param refsetId the refset id
-   * @param date the date
-   * @param pfs the pfs
-   * @return the simple ref set member list
-   */
-  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
-    Date date, PfsParameter pfs);
 
   /**
    * Returns the import refset handler.
@@ -365,12 +332,4 @@ public interface RefsetService extends ReleaseService {
    */
   public void resolveRefsetDefinition(Refset refset) throws Exception;
 
-  /**
-   * Recovery refset.
-   *
-   * @param refsetId the refset id
-   * @return the refset
-   * @throws Exception the exception
-   */
-  public Refset recoveryRefset(Long refsetId) throws Exception;
 }

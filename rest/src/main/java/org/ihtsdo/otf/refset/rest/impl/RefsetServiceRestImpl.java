@@ -110,84 +110,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
-  /* see superclass */
-  @Override
-  @GET
-  @Path("/{refsetId}/{date}")
-  @ApiOperation(value = "Get refset for id and date", notes = "Gets the refset for the specified parameters", response = RefsetJpa.class)
-  public Refset getRefsetRevision(
-    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Refset): /" + refsetId + " " + date);
-
-    final RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authorizeApp(securityService, authToken, "retrieve the refset revision",
-          UserRole.VIEWER);
-
-      // check date format
-      if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
-            + date);
-
-      final Refset refset =
-          refsetService.getRefsetRevision(refsetId,
-              ConfigUtility.DATE_FORMAT.parse(date));
-      refsetService.handleLazyInit(refset);
-      return refset;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
-
-  /* see superclass */
-  @Override
-  @POST
-  @Path("/{refsetId}/{date}/members")
-  @ApiOperation(value = "Finds members of refset revision", notes = "Finds members of refset for the specified parameters", response = ConceptRefsetMemberListJpa.class)
-  public ConceptRefsetMemberList findRefsetRevisionMembersForQuery(
-    @ApiParam(value = "Refset id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Date, e.g. YYYYMMDD", required = true) @PathParam("date") String date,
-    @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Refset): /" + refsetId + " " + date);
-
-    final RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authorizeApp(securityService, authToken,
-          "finds members of refset revision", UserRole.VIEWER);
-
-      // check date format
-      if (!date.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
-            + date);
-
-      final ConceptRefsetMemberList list =
-          refsetService.findMembersForRefsetRevision(refsetId,
-              ConfigUtility.DATE_FORMAT.parse(date), pfs);
-      for (ConceptRefsetMember member : list.getObjects()) {
-        refsetService.handleLazyInit(member);
-      }
-      return list;
-    } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
-
-  }
 
   /* see superclass */
   @Override
@@ -221,42 +143,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return null;
     } finally {
       refsetService.close();
-      securityService.close();
-    }
-  }
-
-  @Override
-  @GET
-  @Path("/recovery/{refsetId}")
-  @ApiOperation(value = "Get refset for id", notes = "Gets the refset for the specified id", response = RefsetJpa.class)
-  public Refset recoveryRefset(
-    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
-    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call (Refset): recover refset for id, refsetId:" + refsetId);
-
-    final TranslationService translationService = new TranslationServiceJpa();
-    try {
-      final Refset refset = translationService.recoveryRefset(refsetId);
-      authorizeProject(translationService, refset.getProject().getId(),
-          securityService, authToken, "recover refset for id", UserRole.AUTHOR);
-
-      for (Translation translation : refset.getTranslations()) {
-        translationService.addTranslation(translation);
-        for (Concept concept : translation.getConcepts()) {
-
-          // n/a, this is recovering prior state
-          // concept.setLastModifiedBy(userName);
-          translationService.addConcept(concept);
-        }
-      }
-      return refset;
-    } catch (Exception e) {
-      handleException(e, "trying to recover a refset");
-      return null;
-    } finally {
-      translationService.close();
       securityService.close();
     }
   }

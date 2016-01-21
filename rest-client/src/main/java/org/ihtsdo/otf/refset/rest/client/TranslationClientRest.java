@@ -67,45 +67,6 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Translation getTranslationRevision(Long translationId, String date,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Translation Client - get translation revision at the given date "
-            + translationId + " " + date);
-    validateNotEmpty(translationId, "translationId");
-    // Validate date format
-    try {
-      ConfigUtility.DATE_FORMAT.parse(date);
-    } catch (Exception e) {
-      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
-    }
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/" + date);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).get();
-
-    if (response.getStatus() == 204) {
-      return null;
-    }
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
-        TranslationJpa.class);
-  }
-
-  /* see superclass */
-  @Override
   public Translation getTranslation(Long translationId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -302,47 +263,6 @@ public class TranslationClientRest extends RootClientRest implements
       throw new Exception(response.toString());
     }
     return in;
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptList findTranslationRevisionConceptsForQuery(
-    Long translationId, String date, PfsParameterJpa pfs, String authToken)
-    throws Exception {
-    Logger
-        .getLogger(getClass())
-        .debug(
-            "Translation Client - finds concepts for translation based on pfs parameter and id "
-                + translationId + " " + date);
-    validateNotEmpty(translationId, "translationId");
-    // Validate date format
-    try {
-      ConfigUtility.DATE_FORMAT.parse(date);
-    } catch (Exception e) {
-      throw new Exception("Unable to parse date according to YYYYMMDD " + date);
-    }
-
-    Client client = ClientBuilder.newClient();
-    WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/"
-            + translationId + "/" + date + "/concepts");
-    String pfsString =
-        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
-            : pfs);
-    Response response =
-        target.request(MediaType.APPLICATION_XML)
-            .header("Authorization", authToken).post(Entity.xml(pfsString));
-
-    String resultString = response.readEntity(String.class);
-    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
-      // n/a
-    } else {
-      throw new Exception(response.toString());
-    }
-
-    // converting to object
-    return (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
-        ConceptListJpa.class);
   }
 
   /* see superclass */

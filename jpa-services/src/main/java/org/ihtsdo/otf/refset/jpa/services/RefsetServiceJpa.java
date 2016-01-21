@@ -553,38 +553,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
   }
 
-  /* see superclass */
-  @SuppressWarnings("unchecked")
-  @Override
-  public Refset getRefsetRevision(Long refsetId, Date date) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get refset revision for date :"
-            + ConfigUtility.DATE_FORMAT.format(date));
-    // make envers call for date = lastModifiedDate
-    final AuditReader reader = AuditReaderFactory.get(manager);
-    final List<Refset> revisions = reader.createQuery()
-
-    // all revisions, returned as objects, not finding deleted entries
-        .forRevisionsOfEntity(RefsetJpa.class, true, false)
-
-        .addProjection(AuditEntity.revisionNumber())
-
-        // search by id
-        .add(AuditEntity.id().eq(refsetId))
-
-        // must preceed parameter date
-        .add(AuditEntity.revisionProperty("timestamp").le(date))
-
-        // order by descending timestamp
-        .addOrder(AuditEntity.property("timestamp").desc())
-
-        // execute query
-        .getResultList();
-
-    // get the most recent of the revisions that precede the date parameter
-    final Refset refset = revisions.get(0);
-    return refset;
-  }
 
   /* see superclass */
   @Override
@@ -605,24 +573,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void handleLazyInit(ConceptRefsetMember member) {
     member.getNotes().size();
 
-  }
-
-  /* see superclass */
-  @Override
-  public ConceptRefsetMemberList findMembersForRefsetRevision(Long refsetId,
-    Date date, PfsParameter pfs) {
-    // TODO Auto-generated method stub
-    // remember to do handleLazyInit
-    return null;
-  }
-
-  /* see superclass */
-  @Override
-  public SearchResultList findRefsetReleaseRevisions(Long refsetId)
-    throws Exception {
-    // TODO Auto-generated method stub
-    // remember to do handleLazyInit
-    return null;
   }
 
   /* see superclass */
@@ -1204,63 +1154,5 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
 
-  }
-
-  /**
-   * Recovery refset.
-   *
-   * @param refsetId the refset id
-   * @throws Exception the exception
-   */
-  @Override
-  public Refset recoveryRefset(Long refsetId) throws Exception {
-    final AuditReader reader = AuditReaderFactory.get(manager);
-    final AuditQuery query =
-        reader.createQuery()
-            // last updated revision
-            .forRevisionsOfEntity(RefsetJpa.class, false, false)
-            .addProjection(AuditEntity.revisionNumber().max())
-            // add id and owner as constraints
-            .add(AuditEntity.property("id").eq(refsetId));
-    final Number revision = (Number) query.getSingleResult();
-    final RefsetJpa refset =
-        (RefsetJpa) reader.createQuery()
-            .forEntitiesAtRevision(RefsetJpa.class, revision)
-            .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
-    if (refset != null) {
-      final RefsetJpa refsetJpa = new RefsetJpa(refset);
-      refsetJpa.setId(null);
-      final Refset recoveredRefset = addRefset(refsetJpa);
-      for (final ConceptRefsetMember member : refset.getMembers()) {
-        ConceptRefsetMember memberJpa = new ConceptRefsetMemberJpa(member);
-        memberJpa.setId(null);
-        memberJpa.setRefset(recoveredRefset);
-        addMember(memberJpa);
-      }
-      for (final Translation translation : refset.getTranslations()) {
-        final TranslationJpa translationJpa = new TranslationJpa(translation);
-        translationJpa.setId(null);
-        translationJpa.setRefset(recoveredRefset);
-        recoveredRefset.getTranslations().add(translationJpa);
-        for (final Concept concept : translation.getConcepts()) {
-          ConceptJpa conceptJpa = new ConceptJpa(concept, true);
-          conceptJpa.setId(null);
-          conceptJpa.setTranslation(translationJpa);
-          translation.getConcepts().add(conceptJpa);
-          for (final Description description : concept.getDescriptions()) {
-            description.setId(null);
-          }
-          for (final Relationship rel : concept.getRelationships()) {
-            rel.setId(null);
-          }
-          for (final Note note : concept.getNotes()) {
-            note.setId(null);
-          }
-
-        }
-      }
-      return recoveredRefset;
-    } else
-      throw new Exception("Cannot find the refset to recover");
   }
 }
