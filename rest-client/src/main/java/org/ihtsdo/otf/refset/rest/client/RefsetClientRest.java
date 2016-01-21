@@ -60,8 +60,6 @@ public class RefsetClientRest extends RootClientRest implements
     this.config = config;
   }
 
-
-
   /* see superclass */
   @Override
   public Refset getRefset(Long refsetId, String authToken) throws Exception {
@@ -552,7 +550,6 @@ public class RefsetClientRest extends RootClientRest implements
         IoHandlerInfoListJpa.class);
   }
 
-
   /* see superclass */
   @Override
   public Refset beginMigration(Long refsetId, String newTerminology,
@@ -677,21 +674,23 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception {
     validateNotEmpty(reportToken, "reportToken");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/common/members"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + "&reportToken="
-            + URLEncoder
-                .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
+        client
+            .target(config.getProperty("base.url")
+                + "/refset/common/members"
+                + "?query="
+                + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                + "&reportToken="
+                + URLEncoder.encode(reportToken == null ? "" : reportToken,
+                    "UTF-8").replaceAll("\\+", "%20")
+                + (conceptActive != null ? ("&conceptActive=" + conceptActive)
+                    : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -1005,7 +1004,8 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - get old regular members: " + reportToken + ", "
             + query);
@@ -1015,16 +1015,17 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/old/members"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + "&reportToken="
-            + URLEncoder
-                .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
+        client
+            .target(config.getProperty("base.url")
+                + "/refset/old/members"
+                + "?query="
+                + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                + "&reportToken="
+                + URLEncoder.encode(reportToken == null ? "" : reportToken,
+                    "UTF-8").replaceAll("\\+", "%20")
+                + (conceptActive != null ? ("&conceptActive=" + conceptActive)
+                    : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -1049,7 +1050,8 @@ public class RefsetClientRest extends RootClientRest implements
   /* see superclass */
   @Override
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception {
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Client - get new regular members: " + reportToken + ", "
             + query);
@@ -1059,16 +1061,17 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(config.getProperty("base.url")
-            + "/refset/new/members"
-            + "?query="
-            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + "&reportToken="
-            + URLEncoder
-                .encode(reportToken == null ? "" : reportToken, "UTF-8")
-                .replaceAll("\\+", "%20")
-            + (conceptActive != null ? ("&conceptActive=" +conceptActive) : ""));
+        client
+            .target(config.getProperty("base.url")
+                + "/refset/new/members"
+                + "?query="
+                + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                + "&reportToken="
+                + URLEncoder.encode(reportToken == null ? "" : reportToken,
+                    "UTF-8").replaceAll("\\+", "%20")
+                + (conceptActive != null ? ("&conceptActive=" + conceptActive)
+                    : ""));
 
     String pfsString =
         ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
@@ -1400,22 +1403,23 @@ public class RefsetClientRest extends RootClientRest implements
     }
   }
 
-
   /* see superclass */
   @Override
-  public Boolean isExpressionValid(Long refsetId, String expression, String authToken) throws Exception {
+  public Boolean isExpressionValid(Long refsetId, String expression,
+    String authToken) throws Exception {
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/refset/expression/valid"
+        client.target(config.getProperty("base.url")
+            + "/refset/expression/valid"
             + "?refsetId="
             + refsetId
             + "?expression="
             + URLEncoder.encode(expression == null ? "" : expression, "UTF-8")
                 .replaceAll("\\+", "%20"));
     Response response =
-        target.request(MediaType.TEXT_PLAIN)
-            .header("Authorization", authToken).put(Entity.text(expression));
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .put(Entity.text(expression));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -1427,4 +1431,38 @@ public class RefsetClientRest extends RootClientRest implements
     return resultString.equals("true");
 
   }
+
+  /* see superclass */
+  @Override
+  public Refset recoverRefset(Long projectId, Long refsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - recover refset - " + projectId + ", " + refsetId);
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(refsetId, "refsetId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/refset/recover/"
+            + refsetId + "?projectId=" + projectId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (RefsetJpa) ConfigUtility.getGraphForString(resultString,
+        RefsetJpa.class);
+  }
+
 }

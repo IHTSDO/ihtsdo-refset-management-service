@@ -18,7 +18,6 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -490,6 +489,15 @@ public interface TranslationService extends RefsetService {
    */
   public List<LanguageDescriptionType> resolveLanguageDescriptionTypes(
     Translation translation, UserPreferences prefs) throws Exception;
+
+  /**
+   * Recover a deleted translation.
+   *
+   * @param translationId the translation id
+   * @return the translation
+   * @throws Exception the exception
+   */
+  public Translation recoverTranslation(Long translationId) throws Exception;
 
   /**
    * Handle lazy initialization for a translation.

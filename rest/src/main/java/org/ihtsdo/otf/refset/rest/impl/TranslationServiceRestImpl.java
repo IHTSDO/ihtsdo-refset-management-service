@@ -130,8 +130,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
-
-
   /* see superclass */
   @Override
   @GET
@@ -2804,5 +2802,42 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       phraseMemoryHandlerMap.put(translation.getId(), handler);
     }
     return phraseMemoryHandlerMap.get(translation.getId());
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/recover/{translationId}")
+  @ApiOperation(value = "Recover translation", notes = "Gets the translation for the specified id", response = TranslationJpa.class)
+  public Translation recoverTranslation(
+    @ApiParam(value = "Project internal id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): recover translation for id, translationId:"
+            + translationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    try {
+      authorizeProject(translationService, projectId, securityService,
+          authToken, "recover refset for id", UserRole.AUTHOR);
+
+      translationService.setLastModifiedFlag(false);
+      final Translation translation =
+          translationService.recoverTranslation(translationId);
+      translationService.setLastModifiedFlag(true);
+      translationService.handleLazyInit(translation);
+      translationService.commit();
+      return translation;
+    } catch (Exception e) {
+      handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 }

@@ -371,7 +371,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList findMembersInCommon(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception;
 
   /**
    * Returns the diff report.
@@ -449,7 +450,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList getOldRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception;
 
   /**
    * Returns the new regular members.
@@ -463,7 +465,8 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public ConceptRefsetMemberList getNewRegularMembers(String reportToken,
-    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken) throws Exception;
+    String query, PfsParameterJpa pfs, Boolean conceptActive, String authToken)
+    throws Exception;
 
   /**
    * Removes the refset exclusion.
@@ -489,23 +492,23 @@ public interface RefsetServiceRest {
 
   /**
    * Returns the status of identifying the name and active states for all
-   * members of the refset
+   * members of the refset.
    *
    * @param refsetId the refset id
    * @param authToken the auth token
    * @return lookup status
-   * @throws Exception
+   * @throws Exception the exception
    */
   public Integer getLookupProgress(Long refsetId, String authToken)
     throws Exception;
 
   /**
    * Launches the lookup process of identifying the name and active states for
-   * all members of the refset
-   * 
-   * @param refsetId
-   * @param authToken
-   * @throws Exception
+   * all members of the refset.
+   *
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @throws Exception the exception
    */
   public void startLookupMemberNames(Long refsetId, String authToken)
     throws Exception;
@@ -552,7 +555,19 @@ public interface RefsetServiceRest {
    * @return the boolean
    * @throws Exception the exception
    */
-  public Boolean isExpressionValid(Long refsetId, String expression, String authToken)
+  public Boolean isExpressionValid(Long refsetId, String expression,
+    String authToken) throws Exception;
+
+  /**
+   * Recover removed refset.
+   *
+   * @param projectId the project id, for authentication
+   * @param refsetId the refset id
+   * @param authToken the auth token
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset recoverRefset(Long projectId, Long refsetId, String authToken)
     throws Exception;
 
 }

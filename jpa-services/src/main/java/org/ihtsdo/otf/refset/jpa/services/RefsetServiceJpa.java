@@ -36,24 +36,19 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetNoteJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.StagedRefsetChangeJpa;
-import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptRefsetMemberListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
-import org.ihtsdo.otf.refset.rf2.Relationship;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
@@ -552,7 +547,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       return null;
     }
   }
-
 
   /* see superclass */
   @Override
@@ -1110,7 +1104,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
     // Anything that was an explicit inclusion that is now resolved by the
     // definition normally, doesn’t need to be an inclusion anymore – because
-    // it can just be a regular member. Thus we can change it to member and avoid
+    // it can just be a regular member. Thus we can change it to member and
+    // avoid
     // adding it later
     for (final ConceptRefsetMember member : beforeInclusions.values()) {
       if (resolvedConcepts.contains(member.getConceptId())) {
@@ -1122,7 +1117,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     // Delete all previous members and exclusions that are not resolved from
-    // the current definition.  Otherwise avoid adding it in next section
+    // the current definition. Otherwise avoid adding it in next section
     for (final ConceptRefsetMember member : beforeExclusions.values()) {
       if (!resolvedConcepts.contains(member.getConceptId())) {
         removeMember(member.getId());
@@ -1157,13 +1152,15 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   }
 
   /**
-   * Recovery refset.
+   * Recover refset.
    *
    * @param refsetId the refset id
    * @throws Exception the exception
    */
   @Override
-  public Refset recoverDeletedRefset(Long refsetId) throws Exception {
+  public Refset recoverRefset(Long refsetId) throws Exception {
+
+    // Get last refset revision not a delete
     final AuditReader reader = AuditReaderFactory.get(manager);
     final AuditQuery query =
         reader.createQuery()
@@ -1172,46 +1169,44 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             .addProjection(AuditEntity.revisionNumber().max())
             // add id and owner as constraints
             .add(AuditEntity.property("id").eq(refsetId));
-
     final Number revision = (Number) query.getSingleResult();
-    final RefsetJpa refset =
-        (RefsetJpa) reader.createQuery()
-            .forEntitiesAtRevision(RefsetJpa.class, revision)
-            .add(AuditEntity.property("id").eq(refsetId)).getSingleResult();
-    if (refset != null) {
-      final RefsetJpa refsetJpa = new RefsetJpa(refset);
-      refsetJpa.setId(null);
-      final Refset recoveredRefset = addRefset(refsetJpa);
-      for (final ConceptRefsetMember member : refset.getMembers()) {
-        ConceptRefsetMember memberJpa = new ConceptRefsetMemberJpa(member);
-        memberJpa.setId(null);
-        memberJpa.setRefset(recoveredRefset);
-        addMember(memberJpa);
-      }
-      for (final Translation translation : refset.getTranslations()) {
-        final TranslationJpa translationJpa = new TranslationJpa(translation);
-        translationJpa.setId(null);
-        translationJpa.setRefset(recoveredRefset);
-        recoveredRefset.getTranslations().add(translationJpa);
-        for (final Concept concept : translation.getConcepts()) {
-          ConceptJpa conceptJpa = new ConceptJpa(concept, true);
-          conceptJpa.setId(null);
-          conceptJpa.setTranslation(translationJpa);
-          translation.getConcepts().add(conceptJpa);
-          for (final Description description : concept.getDescriptions()) {
-            description.setId(null);
-          }
-          for (final Relationship rel : concept.getRelationships()) {
-            rel.setId(null);
-          }
-          for (final Note note : concept.getNotes()) {
-            note.setId(null);
-          }
+    final RefsetJpa refset = reader.find(RefsetJpa.class, refsetId, revision);
 
-        }
+    // If not null recover
+    if (refset != null) {
+
+      // Recover refset
+      final RefsetJpa copy = new RefsetJpa(refset);
+      copy.setId(null);
+      // Recover definition clauses
+      for (final DefinitionClause clause : refset.getDefinitionClauses()) {
+        clause.setId(null);
       }
-      return recoveredRefset;
-    } else
+      addRefset(copy);
+
+      // Recover members
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        member.setId(null);
+        member.setRefset(copy);
+        addMember(member);
+      }
+
+      // Recover Notes
+      for (final Note note : refset.getNotes()) {
+        final RefsetNoteJpa note2 = (RefsetNoteJpa) note;
+        note2.setId(null);
+        note2.setRefset(copy);
+        addNote(note);
+      }
+
+      // Translations have to be recovered separately
+
+      return copy;
+    }
+    // fail on invalid refset id
+    else {
       throw new Exception("Cannot find the refset to recover");
+    }
   }
+
 }

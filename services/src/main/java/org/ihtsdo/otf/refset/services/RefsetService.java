@@ -339,5 +339,5 @@ public interface RefsetService extends ReleaseService {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset recoverDeletedRefset(Long refsetId) throws Exception;
+  public Refset recoverRefset(Long refsetId) throws Exception;
 }
