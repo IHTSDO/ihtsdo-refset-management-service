@@ -1213,7 +1213,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    * @throws Exception the exception
    */
   @Override
-  public Refset recoveryRefset(Long refsetId) throws Exception {
+  public Refset recoverDeletedRefset(Long refsetId) throws Exception {
     final AuditReader reader = AuditReaderFactory.get(manager);
     final AuditQuery query =
         reader.createQuery()
@@ -1222,6 +1222,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             .addProjection(AuditEntity.revisionNumber().max())
             // add id and owner as constraints
             .add(AuditEntity.property("id").eq(refsetId));
+
     final Number revision = (Number) query.getSingleResult();
     final RefsetJpa refset =
         (RefsetJpa) reader.createQuery()

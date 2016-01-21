@@ -238,7 +238,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final Refset refset = translationService.recoveryRefset(refsetId);
+      final Refset refset = translationService.recoverDeletedRefset(refsetId);
       authorizeProject(translationService, refset.getProject().getId(),
           securityService, authToken, "recover refset for id", UserRole.AUTHOR);
 

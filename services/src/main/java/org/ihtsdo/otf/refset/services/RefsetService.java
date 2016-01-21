@@ -366,11 +366,11 @@ public interface RefsetService extends ReleaseService {
   public void resolveRefsetDefinition(Refset refset) throws Exception;
 
   /**
-   * Recovery refset.
+   * Recover a deleted refset.
    *
    * @param refsetId the refset id
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset recoveryRefset(Long refsetId) throws Exception;
+  public Refset recoverDeletedRefset(Long refsetId) throws Exception;
 }

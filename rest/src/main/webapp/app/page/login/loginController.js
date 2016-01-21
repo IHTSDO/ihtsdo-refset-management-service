@@ -45,7 +45,6 @@ tsApp.controller('LoginCtrl', [
         securityService.setUser(response.data);
 
         // set request header authorization and reroute
-        console.debug('authToken = ' + response.data.authToken);
         $http.defaults.headers.common.Authorization = response.data.authToken;
         if (response.data.userPreferences && response.data.userPreferences.lastTab) {
           $location.path(response.data.userPreferences.lastTab);
