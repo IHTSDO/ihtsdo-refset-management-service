@@ -421,7 +421,7 @@ public class RefsetTest extends RefsetTestSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+/*  @Test
   public void testRecoveryRefset() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
@@ -463,7 +463,7 @@ public class RefsetTest extends RefsetTestSupport {
             new PfsParameterJpa(), adminAuthToken).getObjects();
 
     assertEquals(21, foundMembers.size());
-  }
+  }*/
 
   /**
    * Test obtaining nonexistent refset returns null gracefully

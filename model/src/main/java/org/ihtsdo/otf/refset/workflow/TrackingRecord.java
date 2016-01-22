@@ -128,4 +128,19 @@ public interface TrackingRecord extends HasLastModified {
    * @param revision the revision
    */
   public void setRevision(boolean revision);
+  
+  /**
+   * Returns the origin revision.
+   *
+   * @return the origin revision
+   */
+  public Long getOriginRevision();
+  
+  /**
+   * Sets the origin revision.
+   *
+   * @param revision the origin revision
+   */
+  public void setOriginRevision(Long revision);
+  
 }

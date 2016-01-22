@@ -102,6 +102,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The concept. */
   @OneToOne(targetEntity = ConceptJpa.class)
   private Concept concept = null;
+  
+  /**  The origin revision. */
+  private Long originRevision = null;
 
   /**
    * Instantiates an empty {@link TrackingRecordJpa}.
@@ -128,6 +131,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     translation = new TranslationJpa(record.getTranslation());
     refset = new RefsetJpa(record.getRefset());
     concept = new ConceptJpa(record.getConcept(), false);
+    originRevision = record.getOriginRevision();
   }
 
   /* see superclass */
@@ -461,6 +465,7 @@ public class TrackingRecordJpa implements TrackingRecord {
         prime * result + ((translation == null) ? 0 : translation.hashCode());
     result = prime * result + ((authors == null) ? 0 : authors.hashCode());
     result = prime * result + ((reviewers == null) ? 0 : reviewers.hashCode());
+    result = prime * result + ((originRevision == null) ? 0 : originRevision.hashCode());
     return result;
   }
 
@@ -500,6 +505,11 @@ public class TrackingRecordJpa implements TrackingRecord {
         return false;
     } else if (!reviewers.equals(other.reviewers))
       return false;
+    if (originRevision == null) {
+      if (other.originRevision != null)
+        return false;
+    } else if (originRevision.equals(other.originRevision))
+      return false;
     return true;
   }
 
@@ -511,6 +521,16 @@ public class TrackingRecordJpa implements TrackingRecord {
         + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
         + ", authors=" + authors + ", reviewers=" + reviewers
         + ", translation=" + translation + ", refset=" + refset + ", concept="
-        + concept + "]";
+        + concept + ", originRevision=" + originRevision + "]";
+  }
+
+  @Override
+  public Long getOriginRevision() {
+    return originRevision;
+  }
+
+  @Override
+  public void setOriginRevision(Long revision) {
+    originRevision = revision;
   }
 }
