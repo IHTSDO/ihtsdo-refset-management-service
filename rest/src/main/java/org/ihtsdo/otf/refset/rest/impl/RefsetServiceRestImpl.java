@@ -40,6 +40,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
@@ -2257,8 +2258,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
-      
-      // Lazy initialize the refset (so it's all ready for later after the commit)
+
+      // Lazy initialize the refset (so it's all ready for later after the
+      // commit)
       refsetService.handleLazyInit(refset);
 
       // Authorize the call
@@ -2700,34 +2702,32 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
   /* see superclass */
   @Override
-  @PUT
+  @POST
   @Consumes("text/plain")
   @Produces("text/plain")
   @Path("/expression/valid")
   @ApiOperation(value = "Indicates if an expression is valid", notes = "Returns true if the expression is valid, false otherwise", response = Boolean.class)
   public Boolean isExpressionValid(
-    @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
-    @ApiParam(value = "Expression", required = true) String expression,
+    @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful PUT call (Refset): /expression/valid " + refsetId + ", "
-            + expression);
+        "RESTful PUT call (Refset): /expression/valid " + terminology + ", "
+            + version + ", " + expression);
 
     // Create service and configure transaction scope
     final RefsetService refsetService = new RefsetServiceJpa();
-    refsetService.setTransactionPerOperation(false);
-    refsetService.beginTransaction();
-    Refset refset = refsetService.getRefset(refsetId);
     try {
-      authorizeProject(refsetService, refset.getProject().getId(),
-          securityService, authToken, "check expression validity",
-          UserRole.AUTHOR);
+      authorizeApp(securityService, authToken, "check expression validity",
+          UserRole.VIEWER);
 
-      refsetService.getTerminologyHandler().resolveExpression(
-          refset.computeExpression(expression), refset.getTerminology(),
-          refset.getVersion(), null);
-
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(1);
+      refsetService.getTerminologyHandler().resolveExpression(expression,
+          terminology, version, pfs);
       return true;
 
     } catch (Exception e) {

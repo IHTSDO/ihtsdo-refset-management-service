@@ -549,14 +549,15 @@ public interface RefsetServiceRest {
   /**
    * Is expression valid.
    *
-   * @param refsetId the refset id
    * @param expression the expression
+   * @param terminology the terminology
+   * @param version the version
    * @param authToken the auth token
    * @return the boolean
    * @throws Exception the exception
    */
-  public Boolean isExpressionValid(Long refsetId, String expression,
-    String authToken) throws Exception;
+  public Boolean isExpressionValid(String expression, String terminology,
+    String version, String authToken) throws Exception;
 
   /**
    * Recover removed refset.
