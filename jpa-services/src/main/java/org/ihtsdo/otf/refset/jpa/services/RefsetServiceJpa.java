@@ -48,7 +48,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
-import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -557,7 +556,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       return null;
     }
   }
-
 
   /* see superclass */
   @Override
@@ -1104,18 +1102,25 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     if (definition.equals("")) {
       return;
     }
-    final ConceptList resolvedFromExpression =
-        getTerminologyHandler().resolveExpression(refset.computeDefinition(),
-            refset.getTerminology(), refset.getVersion(), null);
+    ConceptList resolvedFromExpression = null;
+    try {
+      resolvedFromExpression =
+          getTerminologyHandler().resolveExpression(refset.computeDefinition(),
+              refset.getTerminology(), refset.getVersion(), null);
 
-    // Save concepts
-    for (final Concept concept : resolvedFromExpression.getObjects()) {
-      resolvedConcepts.add(concept.getTerminologyId());
+      // Save concepts
+      for (final Concept concept : resolvedFromExpression.getObjects()) {
+        resolvedConcepts.add(concept.getTerminologyId());
+      }
+    } catch (Exception e) {
+      throw new LocalException(
+          "Unable to import definition file, the expression could not be resolved - "
+              + refset.computeDefinition());
     }
-
     // Anything that was an explicit inclusion that is now resolved by the
     // definition normally, doesn’t need to be an inclusion anymore – because
-    // it can just be a regular member. Thus we can change it to member and avoid
+    // it can just be a regular member. Thus we can change it to member and
+    // avoid
     // adding it later
     for (final ConceptRefsetMember member : beforeInclusions.values()) {
       if (resolvedConcepts.contains(member.getConceptId())) {
@@ -1127,7 +1132,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
     // Delete all previous members and exclusions that are not resolved from
-    // the current definition.  Otherwise avoid adding it in next section
+    // the current definition. Otherwise avoid adding it in next section
     for (final ConceptRefsetMember member : beforeExclusions.values()) {
       if (!resolvedConcepts.contains(member.getConceptId())) {
         removeMember(member.getId());
@@ -1160,6 +1165,65 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
 
   }
+
+  /**
+   * Recover refset.
+   *
+   * @param refsetId the refset id
+   * @throws Exception the exception
+   */
+  @Override
+  public Refset recoverRefset(Long refsetId) throws Exception {
+
+    // Get last refset revision not a delete
+    final AuditReader reader = AuditReaderFactory.get(manager);
+    final AuditQuery query =
+        reader.createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(RefsetJpa.class, false, false)
+            .addProjection(AuditEntity.revisionNumber().max())
+            // add id and owner as constraints
+            .add(AuditEntity.property("id").eq(refsetId));
+    final Number revision = (Number) query.getSingleResult();
+    final RefsetJpa refset = reader.find(RefsetJpa.class, refsetId, revision);
+
+    // If not null recover
+    if (refset != null) {
+
+      // Recover refset
+      final RefsetJpa copy = new RefsetJpa(refset);
+      copy.setId(null);
+      // Recover definition clauses
+      for (final DefinitionClause clause : refset.getDefinitionClauses()) {
+        clause.setId(null);
+      }
+      addRefset(copy);
+
+      // Recover members
+      for (final ConceptRefsetMember member : refset.getMembers()) {
+        member.setId(null);
+        member.setRefset(copy);
+        addMember(member);
+      }
+
+      // Recover Notes
+      for (final Note note : refset.getNotes()) {
+        final RefsetNoteJpa note2 = (RefsetNoteJpa) note;
+        note2.setId(null);
+        note2.setRefset(copy);
+        addNote(note);
+      }
+
+      // Translations have to be recovered separately
+
+      return copy;
+    }
+    // fail on invalid refset id
+    else {
+      throw new Exception("Cannot find the refset to recover");
+    }
+  }
+
 
   @Override
   public Long getRefsetRevisionNumber(Long refsetId) throws Exception {

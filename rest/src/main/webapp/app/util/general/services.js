@@ -91,6 +91,7 @@ tsApp
           }
         }
 
+        // Dialog error handler
         this.handleDialogError = function(errors, error) {
           console.debug('Handle dialog error: ', errors, error);
           // handle long error

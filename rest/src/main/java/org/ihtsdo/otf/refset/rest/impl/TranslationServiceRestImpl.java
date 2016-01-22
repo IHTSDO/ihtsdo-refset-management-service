@@ -130,8 +130,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
-
-
   /* see superclass */
   @Override
   @GET
@@ -473,7 +471,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call DELETE (Translation): concept/remove/all/"
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final WorkflowService translationService = new WorkflowServiceJpa();
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -481,9 +479,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove all concepts", UserRole.AUTHOR);
       translationService.setTransactionPerOperation(false);
       translationService.beginTransaction();
+
+      // Find concepts with tracking records (we are NOT going to remove these)
+      final Set<Long> idsWithRecords = new HashSet<>();
+      for (final TrackingRecord record : translationService
+          .findTrackingRecordsForQuery("translationId:" + translationId, null)
+          .getObjects()) {
+        idsWithRecords.add(record.getConcept().getId());
+      }
+
       for (final Concept concept : translationService
           .findConceptsForTranslation(translationId, "", null).getObjects()) {
-        translationService.removeConcept(concept.getId(), true);
+        // Only remove things without tracking records
+        if (!idsWithRecords.contains(concept.getId())) {
+          translationService.removeConcept(concept.getId(), true);
+        }
       }
       translationService.commit();
 
@@ -2804,5 +2814,42 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       phraseMemoryHandlerMap.put(translation.getId(), handler);
     }
     return phraseMemoryHandlerMap.get(translation.getId());
+  }
+
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/recover/{translationId}")
+  @ApiOperation(value = "Recover translation", notes = "Gets the translation for the specified id", response = TranslationJpa.class)
+  public Translation recoverTranslation(
+    @ApiParam(value = "Project internal id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
+    @ApiParam(value = "Translation internal id, e.g. 2", required = true) @PathParam("translationId") Long translationId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): recover translation for id, translationId:"
+            + translationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    try {
+      authorizeProject(translationService, projectId, securityService,
+          authToken, "recover refset for id", UserRole.AUTHOR);
+
+      translationService.setLastModifiedFlag(false);
+      final Translation translation =
+          translationService.recoverTranslation(translationId);
+      translationService.setLastModifiedFlag(true);
+      translationService.handleLazyInit(translation);
+      translationService.commit();
+      return translation;
+    } catch (Exception e) {
+      handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
   }
 }

@@ -98,6 +98,7 @@
             </span>
             <span ng-show="!refset.effectiveTime">
               <br />{{toDate(refset.lastModified)}}
+              <br />{{refset.lastModifiedBy}}
             </span>
           </td>
           <td>
@@ -599,7 +600,7 @@
               <td>{{member.conceptId}}</td>
               <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
               <td
-                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}</td>
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}<br />{{member.lastModifiedBy}}</td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(member.effectiveTime)}}</td>
               <td>

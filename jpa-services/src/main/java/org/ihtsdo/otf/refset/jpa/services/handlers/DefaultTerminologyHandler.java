@@ -1028,6 +1028,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // API
     map.put("900000000000017005", "Case sensitive");
     map.put("900000000000448009", "Case insensitive");
+    map.put("900000000000020002", "Initial character case insensitive");
     return map;
   }
 

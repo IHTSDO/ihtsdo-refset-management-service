@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response.Status.Family;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -107,7 +108,10 @@ public class IhtsdoComponentIdentifierServiceHandler implements
       }
       tried = true;
     }
-    throw new Exception("Unexpected failure...", failedException);
+    throw new LocalException(
+        "There was an unexpected failure of the identifier service."
+            + " It may be due to an incorrect or unsupported namespace id. "
+            + failedException.getMessage());
   }
 
   /* see superclass */
@@ -145,8 +149,10 @@ public class IhtsdoComponentIdentifierServiceHandler implements
       }
       tried = true;
     }
-    throw new Exception("Unexpected failure...", failedException);
-
+    throw new LocalException(
+        "There was an unexpected failure of the identifier service."
+            + " It may be due to an incorrect or unsupported namespace id. "
+            + failedException.getMessage());
   }
 
   /* see superclass */
@@ -266,7 +272,8 @@ public class IhtsdoComponentIdentifierServiceHandler implements
         builder.post(Entity.json("{ \"username\": \"" + userName
             + "\", \"password\": \"" + password + "\" }"));
     if (response.getStatusInfo().getFamily() != Family.SUCCESSFUL) {
-      throw new Exception(response.toString());
+      throw new LocalException("Authentication to component id server failed. "
+          + response.toString());
     }
     String resultString = response.readEntity(String.class);
     ObjectMapper mapper = new ObjectMapper();
@@ -302,8 +309,11 @@ public class IhtsdoComponentIdentifierServiceHandler implements
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected failure to get terminology id: "
-          + resultString);
+
+      throw new LocalException(
+          "There was an unexpected failure of the identifier service."
+              + " It may be due to an incorrect or unsupported namespace id.  "
+              + response);
     }
     /**
      * <pre>

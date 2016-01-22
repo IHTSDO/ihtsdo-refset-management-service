@@ -359,10 +359,11 @@ tsApp
                   ascending : null,
                   queryRestriction : null
                 };
-                releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(function(data) {
-                  $scope.translationReleaseInfo = data.releaseInfos[0];
-                })
-                
+                releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(
+                  function(data) {
+                    $scope.translationReleaseInfo = data.releaseInfos[0];
+                  })
+
               };
 
               // Save user preferences
@@ -603,8 +604,10 @@ tsApp
               $scope.startLookup = function(translation) {
                 startLookup(translation);
               }
+
               // Start lookup again
-              var startLookup = function(translation) {
+              function startLookup(translation) {
+                console.debug("start lookup", $scope.lookupInterval);
                 translationService.startLookup(translation.id).then(
                 // Success
                 function(data) {
@@ -1518,10 +1521,10 @@ tsApp
                 $scope.user = user;
                 $scope.role = role;
 
-                // Data structure for case sensitivity - we just need the id/name
-                $scope.caseSensitiveTypes = [];
+                // Data structure for case significance - we just need the id/name
+                $scope.caseSignificanceTypes = [];
                 for ( var type in $scope.translation.caseSensitiveTypes) {
-                  $scope.caseSensitiveTypes.push({
+                  $scope.caseSignificanceTypes.push({
                     key : type,
                     value : $scope.translation.caseSensitiveTypes[type]
                   })
@@ -1852,7 +1855,7 @@ tsApp
                 $scope.addDescription = function() {
                   var description = {};
                   description.term = '';
-                  description.caseSignificanceId = $scope.caseSensitiveTypes[0].key;
+                  description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
                   description.type = types[types.length - 1];
@@ -2032,7 +2035,17 @@ tsApp
 
                 $scope.translation = translation;
                 $scope.ioHandlers = ioHandlers;
-                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.selectedIoHandler = null;
+                for (var i = 0; i < ioHandlers.length; i++) {
+                  // Choose first one if only one
+                  if ($scope.selectedIoHandler == null) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                  // choose "rf2" as default otherwise
+                  if (ioHandlers[i].name.endsWith("RF2")) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                }
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
@@ -2118,6 +2131,7 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      startLookup(translation);
                       $uibModalInstance.close(translation);
                     },
                     // Failure - show error

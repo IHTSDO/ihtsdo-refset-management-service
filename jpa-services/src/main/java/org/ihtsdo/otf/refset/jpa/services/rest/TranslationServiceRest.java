@@ -583,4 +583,17 @@ public interface TranslationServiceRest {
    */
   public LanguageDescriptionTypeList getLanguageDescriptionTypes(
     String authToken) throws Exception;
+
+  /**
+   * Recover removed translation.
+   *
+   * @param projectId the project id
+   * @param translationId the translation id
+   * @param authToken the auth token
+   * @return the translation
+   * @throws Exception the exception
+   */
+  public Translation recoverTranslation(Long projectId, Long translationId,
+    String authToken) throws Exception;
+
 }

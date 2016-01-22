@@ -572,7 +572,7 @@ tsApp
                 startLookup(refset);
               }
               // Start lookup again - not $scope because modal must access it
-              var startLookup = function(refset) {
+              function startLookup(refset) {
                 refsetService.startLookup(refset.id).then(
                 // Success
                 function(data) {
@@ -1069,7 +1069,17 @@ tsApp
 
                 $scope.refset = refset;
                 $scope.ioHandlers = ioHandlers;
-                $scope.selectedIoHandler = $scope.ioHandlers[1];
+                $scope.selectedIoHandler = null;
+                for (var i = 0; i < ioHandlers.length; i++) {
+                  // Choose first one if only one
+                  if ($scope.selectedIoHandler == null) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                  // choose "rf2" as default otherwise
+                  if (ioHandlers[i].name.endsWith("RF2")) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                }
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
@@ -1145,6 +1155,7 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      startLookup(refset);
                       $uibModalInstance.close(refset);
                     },
                     // Failure - show error
@@ -1502,77 +1513,56 @@ tsApp
                 modalInstance.result.then(
                 // Success
                 function(data) {
-
                   $scope.handleWorkflow(data);
-                  //refsetService.fireRefsetChanged(data);
                 });
               };
 
               // Add Refset Member List controller
               var AddRefsetMemberListModalCtrl = function($scope, $uibModalInstance, refset) {
-
                 console.debug('Entered add refset member list modal control', refset);
 
                 $scope.refsetMemberList = '';
                 $scope.errors = [];
                 $scope.warnings = [];
+                $scope.memberIdList = "";
+                $scope.ids = [];
 
+                // TODO: report counts in UI, then close.
+
+                // Add members in the list
                 $scope.submitMemberIncludeList = function() {
-                  if ($scope.memberIdList.indexOf(",") != -1) {
-                    $scope.ids = $scope.memberIdList.split(",");
-                  } else {
-                    $scope.ids = $scope.memberIdList.split("\n");
-                  }
-                  var ct = 0;
-                  for (var i=0; i<$scope.ids.length; i++) {
-                      var member = {
-                        active : true,
-                        conceptId : $scope.ids[i].trim(),
-                        conceptName : 'TBD',
-                        conceptActive : true,
-                        memberType : 'MEMBER',
-                        moduleId : refset.moduleId,
-                      };
-                      member.refsetId = refset.id;
-                      refsetService.addRefsetMember(member).then(
-                      // Success
-                      function(data) {
-                        ct++;
-                        if (ct == $scope.ids.length) {
-                          $window.alert(ct + ' members have been added to the refset.');
-                          $uibModalInstance.close(refset);
-                        }
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      })
-                  }
-                }
-                
-                $scope.submitMemberExcludeList = function() {
-                  if ($scope.memberIdList.indexOf(",") != -1) {
-                    $scope.ids = $scope.memberIdList.split(",");
-                  } else {
-                    $scope.ids = $scope.memberIdList.split("\n");
-                  }
-                  var ct = 0;
-                  for (var i=0; i<$scope.ids.length; i++) {   
-                    refsetService.findRefsetMembersForQuery(refset.id, $scope.ids[i],
-                      {
+                  $scope.ids = getIds($scope.memberIdList);
+                  
+                  var exists = [];
+                  var added = [];
+                    for (var i = 0; i < $scope.ids.length; i++) {   
+                      var conceptId = $scope.ids[i];
+                      refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:' + conceptId, {
                       startIndex : 0,
                       maxResults : 1
                     }).then(
                     // Success
                     function(data) {
-                      memberId = data.members[0].id;
-                      
-                      refsetService.removeRefsetMember(memberId).then(
+                      if (data.members.length > 0) {
+                        // TODO: show this in dialog
+                        exists.push(conceptId);
+                      } else {
+                      var member = {
+                        active : true,
+                        conceptId : conceptId,
+                        conceptName : 'TBD',
+                        conceptActive : true,
+                        memberType : 'MEMBER',
+                        moduleId : refset.moduleId,
+                        refsetId : refset.id
+                      };
+                      refsetService.addRefsetMember(member).then(
                         // Success
                         function(data) {
-                          ct++;
-                          if (ct == $scope.ids.length) {
-                            $window.alert(ct + ' members have been removed from the refset.');
+                          added.push(conceptId);
+                          // Show this in the dialog
+                          if ((added.length+exists.length) == $scope.ids.length) {
+                            $window.alert(added.length + ' members have been added to the refset.');
                             $uibModalInstance.close(refset);
                           }
                         },
@@ -1580,12 +1570,74 @@ tsApp
                         function(data) {
                           handleError($scope.errors, data);
                         })
+                    }
+                      },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                     }) 
+                                        
+                  }
+                }
+                
+                // Exclude members in list
+                $scope.submitMemberExcludeList = function() {
+                  $scope.ids = getIds($scope.memberIdList);
+                  var notExists = [];
+                  var removed = [];
+                    for (var i = 0; i < $scope.ids.length; i++) {   
+                      var conceptId = $scope.ids[i];
+                    refsetService.findRefsetMembersForQuery(refset.id, 'conceptId:'+conceptId,
+                      {
+                      startIndex : 0,
+                      maxResults : 1
+                    }).then(
+                    // Success
+                    function(data) {
+                      
+                      if (data.members.length == 0) {
+                        // TODO show in ui
+                        notExists.push(conceptId);
+                      } else {
+                      
+                      var memberId = data.members[0].id;                      
+                      refsetService.removeRefsetMember(memberId).then(
+                        // Success
+                        function(data) {
+                          removed.push(memberId);
+                          if ((removed.length + notExists.length) == $scope.ids.length) {
+                            // TODO show in ui
+                            $window.alert(removed.length + ' members have been removed from the refset.');
+                            $uibModalInstance.close(refset);
+                          }
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        })
+                      }
                     },
                     // Error
                     function(data) {
                       handleError($scope.errors, data);
                     })                     
                   } 
+                }
+
+                // Get the ids from the value
+                function getIds(value) {
+                  console.debug("value",value);
+                  // Split on punctuation
+                   var list = $scope.memberIdList.split(/ \t-({[)}]_!@#%&*\\:;\"',.?\/~+=|<>$`^/);
+                   var result = [];
+                   // remove empty stuff
+                   for (var i = 0; i < list.length; i++) {
+                     if ($list[i]) {
+                       result.push(list[i]);
+                     }
+                   }
+                   console.debug("  result = ",result);
+                   return result;
                 }
 
                 // Dismiss modal

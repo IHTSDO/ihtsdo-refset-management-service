@@ -77,11 +77,9 @@
               <td>
                 <select ng-model="description.type"
                   ng-options="type.name for type in getDescriptionTypes()">
-                </select> <br /> <select style="margin-top: 5px;"
-                  ng-model="description.caseSignificanceId">
-                  <option
-                    ng-repeat="item in caseSensitiveTypes | orderBy:'item.key'"
-                    value="{{item.key}}">{{item.value}}</option>
+                </select> <br /> <select style="margin-top: 5px; width: 115px"
+                  ng-model="description.caseSignificanceId"
+                  ng-options="item.key as item.value for item in caseSignificanceTypes | orderBy:'item.key'">
                 </select>
               </td>
               <td>

@@ -454,7 +454,8 @@ public class RefsetTest extends RefsetTestSupport {
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
 
     Refset recoveryRefset =
-        refsetService.recoveryRefset(refset.getId(), adminAuthToken);
+        refsetService.recoverRefset(refset.getProjectId(), refset.getId(),
+            adminAuthToken);
 
     // Verify number of members recovered
     foundMembers =

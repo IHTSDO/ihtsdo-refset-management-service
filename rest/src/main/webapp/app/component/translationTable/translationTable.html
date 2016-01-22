@@ -89,6 +89,7 @@
             </span>
             <span ng-show="!translation.effectiveTime">
               <br />{{toDate(translation.lastModified)}}
+              <br />{{translation.lastModifiedBy}}
             </span>
           </td>
           <td>
@@ -540,7 +541,8 @@
           <td style="word-break: break-word;">{{record.concept.terminologyId}}</td>
           <td>{{record.concept.name}}</td>
           <td>
-            {{toDate(record.lastModified)}}<br />{{record.concept.workflowStatus}}
+            {{toDate(record.lastModified)}}<br />{{record.concept.lastModifiedBy}}
+            <br />{{record.concept.workflowStatus}}
           </td>
           <!-- Actions -->
           <td class="nobreak">
@@ -725,7 +727,7 @@
                 </span>
               </td>
               <td
-                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">{{toDate(concept.lastModified)}}</td>
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">{{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}</td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
               <td ng-show="value == 'EDITING'">

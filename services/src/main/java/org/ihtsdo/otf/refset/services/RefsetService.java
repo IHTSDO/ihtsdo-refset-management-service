@@ -369,4 +369,12 @@ public interface RefsetService extends ReleaseService {
    */
   public void updateNote(Note note) throws Exception;
 
+  /**
+   * Recover a deleted refset.
+   *
+   * @param refsetId the refset id
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset recoverRefset(Long refsetId) throws Exception;
 }

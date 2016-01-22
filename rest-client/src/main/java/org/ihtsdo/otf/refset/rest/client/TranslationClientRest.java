@@ -274,8 +274,8 @@ public class TranslationClientRest extends RootClientRest implements
     validateNotEmpty(translationId, "translationId");
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/translation/concept/remove/all/"
-            + translationId);
+        client.target(config.getProperty("base.url")
+            + "/translation/concept/remove/all/" + translationId);
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -733,11 +733,13 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/phrasememory/remove?translationId=" + translationId
+            + "/translation/phrasememory/remove?translationId="
+            + translationId
             + "&name="
             + URLEncoder.encode(name, "UTF-8").replaceAll("\\+", "%20")
             + "&translatedName="
-            + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+", "%20"));
+            + URLEncoder.encode(translatedName, "UTF-8").replaceAll("\\+",
+                "%20"));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1508,4 +1510,39 @@ public class TranslationClientRest extends RootClientRest implements
     return (LanguageDescriptionTypeListJpa) ConfigUtility.getGraphForString(
         resultString, LanguageDescriptionTypeListJpa.class);
   }
+
+  /* see superclass */
+  @Override
+  public Translation recoverTranslation(Long projectId, Long translationId,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Client - recover translation " + projectId + ", "
+            + translationId);
+    validateNotEmpty(translationId, "translationId");
+    validateNotEmpty(projectId, "projectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/translation/recover"
+            + translationId + "?projectId=" + projectId);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    if (response.getStatus() == 204) {
+      return null;
+    }
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (TranslationJpa) ConfigUtility.getGraphForString(resultString,
+        TranslationJpa.class);
+  }
+
 }

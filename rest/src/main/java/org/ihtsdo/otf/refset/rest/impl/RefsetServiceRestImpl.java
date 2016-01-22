@@ -110,7 +110,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     securityService = new SecurityServiceJpa();
   }
 
-
   /* see superclass */
   @Override
   @GET
@@ -771,15 +770,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "import refset definition",
               UserRole.AUTHOR);
 
-      member.setLastModifiedBy(userName);
+      // Look up concept name and active
+      if (member.getConceptName() == null
+          || member.getConceptName().equals("TBD")) {
+        final Concept concept =
+            refsetService.getTerminologyHandler().getConcept(
+                member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        if (concept != null) {
+          member.setConceptName(concept.getName());
+          member.setConceptActive(concept.isActive());
+        } else {
+          member.setConceptName("TBD");
+        }
+      }
 
-      ConceptRefsetMember newMember = refsetService.addMember(member);
-      
-      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
-      if (member.getConceptName().equals("TBD") && assignNames) {
-        refsetService.lookupMemberNames(refset.getId(), "add refset member", false);
-      } 
-      return newMember;
+      member.setLastModifiedBy(userName);
+      return refsetService.addMember(member);
 
     } catch (Exception e) {
       handleException(e, "trying to add new member ");
@@ -930,7 +937,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setId(null);
 
       // Lookup concept name and active if not already set
-      if (inclusion.getConceptName() == null) {
+      if (inclusion.getConceptName() == null
+          || inclusion.getConceptName().equals("TBD")) {
         if (refsetService.getTerminologyHandler().assignNames()) {
           final Concept concept =
               refsetService.getTerminologyHandler().getConcept(
@@ -2249,6 +2257,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
+      
+      // Lazy initialize the refset (so it's all ready for later after the commit)
+      refsetService.handleLazyInit(refset);
 
       // Authorize the call
       final String userName =
@@ -2686,7 +2697,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-  
+
+  /* see superclass */
   @Override
   @PUT
   @Consumes("text/plain")
@@ -2699,8 +2711,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful PUT call (Refset): /expression/valid " + refsetId + ", " + expression);
-    
+        "RESTful PUT call (Refset): /expression/valid " + refsetId + ", "
+            + expression);
+
     // Create service and configure transaction scope
     final RefsetService refsetService = new RefsetServiceJpa();
     refsetService.setTransactionPerOperation(false);
@@ -2708,16 +2721,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     Refset refset = refsetService.getRefset(refsetId);
     try {
       authorizeProject(refsetService, refset.getProject().getId(),
-              securityService, authToken, "check expression validity",
-              UserRole.AUTHOR);
+          securityService, authToken, "check expression validity",
+          UserRole.AUTHOR);
 
-      
       refsetService.getTerminologyHandler().resolveExpression(
-              refset.computeExpression(expression), refset.getTerminology(),
-              refset.getVersion(), null);
+          refset.computeExpression(expression), refset.getTerminology(),
+          refset.getVersion(), null);
 
       return true;
-      
+
     } catch (Exception e) {
       return false;
     } finally {
@@ -2726,4 +2738,38 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
+  @Override
+  @GET
+  @Path("/recover/{refsetId}")
+  @ApiOperation(value = "Recover refset", notes = "Gets the refset for the specified id", response = RefsetJpa.class)
+  public Refset recoverRefset(
+    @ApiParam(value = "Project internal id, e.g. 2", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Refset internal id, e.g. 2", required = true) @PathParam("refsetId") Long refsetId,
+    @ApiParam(value = "Authorization token, e.g. 'guest'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): recover refset for id, refsetId:" + refsetId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    refsetService.setTransactionPerOperation(false);
+    refsetService.beginTransaction();
+    try {
+      authorizeProject(refsetService, projectId, securityService, authToken,
+          "recover refset for id", UserRole.AUTHOR);
+
+      refsetService.setLastModifiedFlag(false);
+      final Refset refset = refsetService.recoverRefset(refsetId);
+      refsetService.handleLazyInit(refset);
+      refsetService.setLastModifiedFlag(true);
+      refsetService.commit();
+      return refset;
+    } catch (Exception e) {
+      handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
 }

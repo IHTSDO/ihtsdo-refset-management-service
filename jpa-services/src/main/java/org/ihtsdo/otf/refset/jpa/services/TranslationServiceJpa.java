@@ -33,7 +33,6 @@ import org.ihtsdo.otf.refset.helpers.IoHandlerInfo;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
-import org.ihtsdo.otf.refset.helpers.SearchResultList;
 import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
@@ -989,7 +988,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       addConcept(concept);
 
       // Add descriptions
-      for (final Description originDescription : originConcept.getDescriptions()) {
+      for (final Description originDescription : originConcept
+          .getDescriptions()) {
         Description description = new DescriptionJpa(originDescription, false);
         description.setId(null);
         if (description.getEffectiveTime() == null) {
@@ -1002,10 +1002,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         // Add language refset entries
         for (final LanguageRefsetMember originMember : originDescription
             .getLanguageRefsetMembers()) {
-          LanguageRefsetMember member = new LanguageRefsetMemberJpa(originMember);
+          LanguageRefsetMember member =
+              new LanguageRefsetMemberJpa(originMember);
           member.setId(null);
           if (member.getEffectiveTime() == null) {
-           member.setEffectiveTime(effectiveTime);
+            member.setEffectiveTime(effectiveTime);
           }
           member.setDescriptionId(description.getTerminologyId());
           member.setLastModifiedBy(translation.getLastModifiedBy());
@@ -1381,6 +1382,88 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           .append(", ");
     }
     return result;
+  }
+
+  /**
+   * Recover translation.
+   *
+   * @param translationId the translation id
+   * @throws Exception the exception
+   */
+  @Override
+  public Translation recoverTranslation(Long translationId) throws Exception {
+
+    // Get last translation revision not a delete
+    final AuditReader reader = AuditReaderFactory.get(manager);
+    final AuditQuery query =
+        reader.createQuery()
+            // last updated revision
+            .forRevisionsOfEntity(TranslationJpa.class, false, false)
+            .addProjection(AuditEntity.revisionNumber().max())
+            // add id and owner as constraints
+            .add(AuditEntity.property("id").eq(translationId));
+    final Number revision = (Number) query.getSingleResult();
+    final TranslationJpa translation =
+        reader.find(TranslationJpa.class, translationId, revision);
+
+    // If not null recover
+    if (translation != null) {
+
+      // Recover translation
+      final TranslationJpa copy = new TranslationJpa(translation);
+      copy.setId(null);
+      addTranslation(copy);
+
+      // Recover spelling
+      final SpellingDictionary dictionary =
+          new SpellingDictionaryJpa(translation.getSpellingDictionary());
+      dictionary.setId(null);
+      dictionary.setTranslation(translation);
+      addSpellingDictionary(dictionary);
+
+      // Phrase memory
+      final PhraseMemory memory =
+          new PhraseMemoryJpa(translation.getPhraseMemory());
+      memory.setId(null);
+      memory.setTranslation(null);
+      addPhraseMemory(memory);
+      for (final MemoryEntry entry : memory.getEntries()) {
+        entry.setId(null);
+        entry.setPhraseMemory(memory);
+        addMemoryEntry(entry);
+      }
+
+      // Recover concepts/descriptions/languages
+      for (final Concept concept : translation.getConcepts()) {
+        concept.setId(null);
+        addConcept(concept);
+        for (final Description description : concept.getDescriptions()) {
+          for (final LanguageRefsetMember member : description
+              .getLanguageRefsetMembers()) {
+            member.setId(null);
+            addLanguageRefsetMember(member, translation.getTerminology());
+          }
+          description.setId(null);
+          addDescription(description);
+        }
+      }
+
+      // Recover Notes
+      for (final Note note : translation.getNotes()) {
+        final TranslationNoteJpa note2 = (TranslationNoteJpa) note;
+        note2.setId(null);
+        note2.setTranslation(copy);
+        addNote(note);
+      }
+
+      // Translations have to be recovered separately
+
+      return copy;
+    }
+    // fail on invalid translation id
+    else {
+      throw new Exception("Cannot find the translation to recover");
+    }
 
   }
 
