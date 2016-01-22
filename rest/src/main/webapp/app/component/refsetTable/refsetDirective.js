@@ -572,7 +572,7 @@ tsApp
                 startLookup(refset);
               }
               // Start lookup again - not $scope because modal must access it
-              var startLookup = function(refset) {
+              function startLookup(refset) {
                 refsetService.startLookup(refset.id).then(
                 // Success
                 function(data) {

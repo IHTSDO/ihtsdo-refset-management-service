@@ -604,7 +604,7 @@ tsApp
                 startLookup(translation);
               }
               // Start lookup again
-              var startLookup = function(translation) {
+              function startLookup(translation) {
                 translationService.startLookup(translation.id).then(
                 // Success
                 function(data) {

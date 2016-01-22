@@ -33,11 +33,7 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <scope>compile</scope>
-    </dependency>
+   
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.refset</groupId>
