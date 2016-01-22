@@ -1523,10 +1523,10 @@ tsApp
 
                 // Data structure for case significance - we just need the id/name
                 $scope.caseSignificanceTypes = [];
-                for ( var type in $scope.translation.caseSignificanceTypes) {
+                for ( var type in $scope.translation.caseSensitiveTypes) {
                   $scope.caseSignificanceTypes.push({
                     key : type,
-                    value : $scope.translation.caseSignificanceTypes[type]
+                    value : $scope.translation.caseSensitiveTypes[type]
                   })
                 }
 
