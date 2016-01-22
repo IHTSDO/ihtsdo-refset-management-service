@@ -272,7 +272,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus())) {
           if (record.isRevision()) {
-            //refset = service.syncRefset(refset.getId(), service.getRefsetRevision(refset.getId(), record.getOriginRevision()));
+            /*Refset originRevision = service.getRefsetRevision(refset.getId(), record.getOriginRevision());
+            originRevision.getMembers().size();
+            service.handleLazyInit(originRevision);
+            refset = service.syncRefset(refset.getId(), originRevision);*/
+            
             refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           } else {
             refset.setWorkflowStatus(WorkflowStatus.NEW);
@@ -607,8 +611,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_DONE).contains(
                     concept.getWorkflowStatus())) {
           if (record.isRevision()) {
-
-            //concept = service.syncConcept(concept.getId(), service.getConceptRevision(concept.getId(), record.getOriginRevision()));
+            /*Concept originRevision = service.getConceptRevision(concept.getId(), record.getOriginRevision());
+            service.handleLazyInit(originRevision);
+            concept = service.syncConcept(concept.getId(), originRevision);*/
             concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
             service.removeTrackingRecord(record.getId());
           } else {

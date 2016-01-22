@@ -1247,8 +1247,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public Refset getRefsetRevision(Long refsetId, Long revision)
     throws Exception {
     final AuditReader reader = AuditReaderFactory.get(manager);
-    final Refset refset = reader.find(RefsetJpa.class, refsetId, revision);
-    handleLazyInit(refset);
+    final Refset refset = reader.find(RefsetJpa.class, refsetId, Integer.valueOf(revision.intValue()));
     return refset;
   }
 
