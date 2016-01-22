@@ -331,5 +331,42 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void resolveRefsetDefinition(Refset refset) throws Exception;
+  
+  /**
+   * Returns the refset revision number.
+   *
+   * @param refsetId the refset id
+   * @return the refset revision number
+   * @throws Exception the exception
+   */
+  public Long getRefsetRevisionNumber(Long refsetId) throws Exception;
+  
+  /**
+   * Returns the refset revision.
+   *
+   * @param refsetId the refset id
+   * @param revision the revision
+   * @return the refset revision
+   * @throws Exception the exception
+   */
+  public Refset getRefsetRevision(Long refsetId, Long revision) throws Exception;
+  
+  /**
+   * Sync refset.
+   *
+   * @param refsetId the refset id
+   * @param restoreRefset the restore refset
+   * @return the refset
+   * @throws Exception the exception
+   */
+  public Refset syncRefset(Long refsetId, Refset restoreRefset) throws Exception;
+
+  /**
+   * Update note.
+   *
+   * @param note the note
+   * @throws Exception the exception
+   */
+  public void updateNote(Note note) throws Exception;
 
 }
