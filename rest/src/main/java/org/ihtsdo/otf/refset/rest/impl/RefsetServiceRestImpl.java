@@ -2257,6 +2257,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
+      
+      // Lazy initialize the refset (so it's all ready for later after the commit)
+      refsetService.handleLazyInit(refset);
 
       // Authorize the call
       final String userName =

@@ -1521,12 +1521,12 @@ tsApp
                 $scope.user = user;
                 $scope.role = role;
 
-                // Data structure for case sensitivity - we just need the id/name
-                $scope.caseSensitiveTypes = [];
-                for ( var type in $scope.translation.caseSensitiveTypes) {
-                  $scope.caseSensitiveTypes.push({
+                // Data structure for case significance - we just need the id/name
+                $scope.caseSignificanceTypes = [];
+                for ( var type in $scope.translation.caseSignificanceTypes) {
+                  $scope.caseSignificanceTypes.push({
                     key : type,
-                    value : $scope.translation.caseSensitiveTypes[type]
+                    value : $scope.translation.caseSignificanceTypes[type]
                   })
                 }
 
@@ -1855,7 +1855,7 @@ tsApp
                 $scope.addDescription = function() {
                   var description = {};
                   description.term = '';
-                  description.caseSignificanceId = $scope.caseSensitiveTypes[0].key;
+                  description.caseSignificanceId = $scope.caseSignificanceTypes[0].key;
                   // Pick the last one by default (e.g. Synonym)
                   var types = $scope.getDescriptionTypes();
                   description.type = types[types.length - 1];
