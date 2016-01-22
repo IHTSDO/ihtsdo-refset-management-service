@@ -246,7 +246,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record2.setRefset(refset);
           if (refset.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             record2.setRevision(true);
-            record2.setOriginRevision(service.getRefsetRevisionNumber(refset.getId()));
+            //record2.setOriginRevision(service.getRefsetRevisionNumber(refset.getId()));
             refset.setRevision(true);
           }
           record = record2;
@@ -272,7 +272,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus())) {
           if (record.isRevision()) {
-            refset = service.syncRefset(refset.getId(), service.getRefsetRevision(refset.getId(), record.getOriginRevision()));
+            //refset = service.syncRefset(refset.getId(), service.getRefsetRevision(refset.getId(), record.getOriginRevision()));
             refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
           } else {
             refset.setWorkflowStatus(WorkflowStatus.NEW);
@@ -579,7 +579,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record2.setConcept(concept);
           if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             record2.setRevision(true);
-            record2.setOriginRevision(service.getConceptRevisionNumber(concept.getId()));
+            //record2.setOriginRevision(service.getConceptRevisionNumber(concept.getId()));
             concept.setRevision(true);
           }
           record = record2;
@@ -608,7 +608,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     concept.getWorkflowStatus())) {
           if (record.isRevision()) {
 
-            concept = service.syncConcept(concept.getId(), service.getConceptRevision(concept.getId(), record.getOriginRevision()));
+            //concept = service.syncConcept(concept.getId(), service.getConceptRevision(concept.getId(), record.getOriginRevision()));
             concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
             service.removeTrackingRecord(record.getId());
           } else {
