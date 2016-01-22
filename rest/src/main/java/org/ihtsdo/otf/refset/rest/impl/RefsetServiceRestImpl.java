@@ -770,16 +770,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "import refset definition",
               UserRole.AUTHOR);
 
-      member.setLastModifiedBy(userName);
-
-      ConceptRefsetMember newMember = refsetService.addMember(member);
-
-      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
-      if (member.getConceptName().equals("TBD") && assignNames) {
-        refsetService.lookupMemberNames(refset.getId(), "add refset member",
-            false);
+      // Look up concept name and active
+      if (member.getConceptName() == null
+          || member.getConceptName().equals("TBD")) {
+        final Concept concept =
+            refsetService.getTerminologyHandler().getConcept(
+                member.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        if (concept != null) {
+          member.setConceptName(concept.getName());
+          member.setConceptActive(concept.isActive());
+        } else {
+          member.setConceptName("TBD");
+        }
       }
-      return newMember;
+
+      member.setLastModifiedBy(userName);
+      return refsetService.addMember(member);
 
     } catch (Exception e) {
       handleException(e, "trying to add new member ");
@@ -930,7 +937,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setId(null);
 
       // Lookup concept name and active if not already set
-      if (inclusion.getConceptName() == null) {
+      if (inclusion.getConceptName() == null
+          || inclusion.getConceptName().equals("TBD")) {
         if (refsetService.getTerminologyHandler().assignNames()) {
           final Concept concept =
               refsetService.getTerminologyHandler().getConcept(

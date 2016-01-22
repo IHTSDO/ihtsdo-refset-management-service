@@ -471,7 +471,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call DELETE (Translation): concept/remove/all/"
             + translationId);
 
-    final TranslationService translationService = new TranslationServiceJpa();
+    final WorkflowService translationService = new WorkflowServiceJpa();
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
@@ -479,9 +479,21 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "remove all concepts", UserRole.AUTHOR);
       translationService.setTransactionPerOperation(false);
       translationService.beginTransaction();
+
+      // Find concepts with tracking records (we are NOT going to remove these)
+      final Set<Long> idsWithRecords = new HashSet<>();
+      for (final TrackingRecord record : translationService
+          .findTrackingRecordsForQuery("translationId:" + translationId, null)
+          .getObjects()) {
+        idsWithRecords.add(record.getConcept().getId());
+      }
+
       for (final Concept concept : translationService
           .findConceptsForTranslation(translationId, "", null).getObjects()) {
-        translationService.removeConcept(concept.getId(), true);
+        // Only remove things without tracking records
+        if (!idsWithRecords.contains(concept.getId())) {
+          translationService.removeConcept(concept.getId(), true);
+        }
       }
       translationService.commit();
 

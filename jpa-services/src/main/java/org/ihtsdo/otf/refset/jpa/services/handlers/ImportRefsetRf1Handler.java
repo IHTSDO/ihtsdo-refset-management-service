@@ -111,7 +111,7 @@ public class ImportRefsetRf1Handler implements ImportRefsetHandler {
   @Override
   public List<DefinitionClause> importDefinition(Refset refset,
     InputStream content) throws Exception {
-    throw new UnsupportedOperationException(
+    throw new LocalException(
         "This handler only supports importing of members.");
   }
 

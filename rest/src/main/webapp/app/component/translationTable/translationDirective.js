@@ -359,10 +359,11 @@ tsApp
                   ascending : null,
                   queryRestriction : null
                 };
-                releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(function(data) {
-                  $scope.translationReleaseInfo = data.releaseInfos[0];
-                })
-                
+                releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(
+                  function(data) {
+                    $scope.translationReleaseInfo = data.releaseInfos[0];
+                  })
+
               };
 
               // Save user preferences
@@ -603,8 +604,10 @@ tsApp
               $scope.startLookup = function(translation) {
                 startLookup(translation);
               }
+
               // Start lookup again
               function startLookup(translation) {
+                console.debug("start lookup", $scope.lookupInterval);
                 translationService.startLookup(translation.id).then(
                 // Success
                 function(data) {
@@ -2032,7 +2035,17 @@ tsApp
 
                 $scope.translation = translation;
                 $scope.ioHandlers = ioHandlers;
-                $scope.selectedIoHandler = $scope.ioHandlers[0];
+                $scope.selectedIoHandler = null;
+                for (var i = 0; i < ioHandlers.length; i++) {
+                  // Choose first one if only one
+                  if ($scope.selectedIoHandler == null) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                  // choose "rf2" as default otherwise
+                  if (ioHandlers[i].name.endsWith("RF2")) {
+                    $scope.selectedIoHandler = ioHandlers[i];
+                  }
+                }
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
@@ -2118,6 +2131,7 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      startLookup(translation);
                       $uibModalInstance.close(translation);
                     },
                     // Failure - show error

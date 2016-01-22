@@ -1093,15 +1093,21 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     if (definition.equals("")) {
       return;
     }
-    final ConceptList resolvedFromExpression =
-        getTerminologyHandler().resolveExpression(refset.computeDefinition(),
-            refset.getTerminology(), refset.getVersion(), null);
+    ConceptList resolvedFromExpression = null;
+    try {
+      resolvedFromExpression =
+          getTerminologyHandler().resolveExpression(refset.computeDefinition(),
+              refset.getTerminology(), refset.getVersion(), null);
 
-    // Save concepts
-    for (final Concept concept : resolvedFromExpression.getObjects()) {
-      resolvedConcepts.add(concept.getTerminologyId());
+      // Save concepts
+      for (final Concept concept : resolvedFromExpression.getObjects()) {
+        resolvedConcepts.add(concept.getTerminologyId());
+      }
+    } catch (Exception e) {
+      throw new LocalException(
+          "Unable to import definition file, the expression could not be resolved - "
+              + refset.computeDefinition());
     }
-
     // Anything that was an explicit inclusion that is now resolved by the
     // definition normally, doesn’t need to be an inclusion anymore – because
     // it can just be a regular member. Thus we can change it to member and

@@ -842,7 +842,7 @@ tsApp.service('refsetService', [
       return deferred.promise;
     }
 
-    this.exportDefinition = function(refset, handlerId, extension, label) {
+    this.exportDefinition = function(refset, handlerId, extension) {
       console.debug('exportDefinition');
       gpService.increment()
       $http.get(refsetUrl + 'export/definition?refsetId=' + refset.id + '&handlerId=' + handlerId)
@@ -858,7 +858,7 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + label + '.' + extension;
+          a.download = 'definition.' + refset.terminologyId + '.' + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
