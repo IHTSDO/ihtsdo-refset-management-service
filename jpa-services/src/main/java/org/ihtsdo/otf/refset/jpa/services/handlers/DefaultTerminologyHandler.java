@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.ws.rs.client.Client;
@@ -23,6 +24,8 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.KeyValuePair;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -178,6 +181,94 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     return list;
   }
 
+  @Override
+  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(String 
+    conceptId, String terminology, String version) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  get potential current concepts for retired concept - " + conceptId);
+    // Make a webservice call to SnowOwl to get concept
+    final Client client = ClientBuilder.newClient();
+
+   
+    WebTarget target =
+        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
+            + URLEncoder.encode(conceptId, "UTF-8").replaceAll(" ", "%20"));
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new KeyValuePairList();
+      }
+
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
+    }
+
+    /**
+     * <pre>
+     * 
+     * {
+     *   "items": [
+     *     {
+     *       "id": "150606004",
+     *       "released": true,
+     *       "active": false,
+     *       "effectiveTime": "20020131",
+     *       "moduleId": "900000000000207008",
+     *       "definitionStatus": "PRIMITIVE",
+     *       "subclassDefinitionStatus": "NON_DISJOINT_SUBCLASSES",
+     *       "inactivationIndicator": "AMBIGUOUS",
+     *       "associationTargets": {
+     *         "POSSIBLY_EQUIVALENT_TO": [
+     *           "86052008",
+     *           "266685009"
+     *         ]
+     *       }
+     *     }
+     *   ],
+     *   "offset": 0,
+     *   "limit": 50,
+     *   "total": 1
+     * }
+     * </pre>
+     */
+    
+
+    KeyValuePairList keyValuePairList = new KeyValuePairList();
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    final int total = doc.get("total").asInt();
+    // Get concepts returned in this call (up to 200)
+    if (doc.get("items") == null) {
+      return keyValuePairList;
+    }
+    for (final JsonNode conceptNode : doc.get("items")) {
+      for (final JsonNode mapping : conceptNode.findValues("associationTargets")) {
+        Entry<String, JsonNode> entry = mapping.fields().next();
+        String key = entry.getKey();
+        String values = entry.getValue().toString();
+        if (values.contains("[")) {
+          values = values.substring(1, values.length() -1);
+        }
+        values = values.replaceAll("\"", "");
+        for (String value : values.split(",")) {
+          KeyValuePair kvp = new KeyValuePair(key, value);
+          keyValuePairList.addKeyValuePair(kvp);
+        }
+      }
+    }
+    return keyValuePairList;
+  }
+  
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
