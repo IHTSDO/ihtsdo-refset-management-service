@@ -727,7 +727,7 @@ tsApp
                       return;
                     }
                   }
-                  refsetService.isExpressionValid(refset, clause.value).then(
+                  refsetService.isExpressionValid(clause.value, refset.terminology, refset.version).then(
                       // Success - add refset
                       function(data) {
                         if (data == 'true') {

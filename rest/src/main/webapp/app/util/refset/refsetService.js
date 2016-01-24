@@ -665,8 +665,8 @@ tsApp.service('refsetService', [
       gpService.increment();
       $http.post(
         refsetUrl + 'old/members?reportToken=' + reportToken
-          + (conceptActive != null ? '&conceptActive=' + conceptActive : '') 
-          + '&query=' + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+          + (conceptActive != null ? '&conceptActive=' + conceptActive : '') + '&query='
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -691,9 +691,9 @@ tsApp.service('refsetService', [
       // Make POST call
       gpService.increment();
       $http.post(
-        refsetUrl + 'new/members?reportToken=' + reportToken 
-        + (conceptActive != null ? '&conceptActive=' + conceptActive : '') 
-        + '&query=' + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
+        refsetUrl + 'new/members?reportToken=' + reportToken
+          + (conceptActive != null ? '&conceptActive=' + conceptActive : '') + '&query='
+          + utilService.prepQuery(query), utilService.prepPfs(pfs)).then(
       // success
       function(response) {
         console.debug('  output = ', response.data);
@@ -1234,16 +1234,18 @@ tsApp.service('refsetService', [
     }
 
     // checks if expression is valid
-    this.isExpressionValid = function(refset, expression) {
+    this.isExpressionValid = function(expression, terminology, version) {
       console.debug('isExpressionValid');
       var deferred = $q.defer();
 
       // Get project roles
       gpService.increment()
-      $http.put(refsetUrl + 'expression/valid?refsetId=' + refset.id, expression, {
-        headers : {
-          'Content-type' : 'text/plain'
-        }}).then(
+      $http.post(refsetUrl + 'expression/valid?terminology=' + terminology + '&version=' + version,
+        expression, {
+          headers : {
+            'Content-type' : 'text/plain'
+          }
+        }).then(
       // success
       function(response) {
         console.debug('  expression valid = ' + response.data);

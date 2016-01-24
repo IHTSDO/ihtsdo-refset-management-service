@@ -1405,21 +1405,19 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public Boolean isExpressionValid(Long refsetId, String expression,
-    String authToken) throws Exception {
-
+  public Boolean isExpressionValid(String expression, String terminology,
+    String version, String authToken) throws Exception {
+    validateNotEmpty(expression, "expression");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/refset/expression/valid"
-            + "?refsetId="
-            + refsetId
-            + "?expression="
-            + URLEncoder.encode(expression == null ? "" : expression, "UTF-8")
-                .replaceAll("\\+", "%20"));
+            + "/refset/expression/valid" + "?terminology=" + terminology
+            + "&version=" + version);
     Response response =
         target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
-            .put(Entity.text(expression));
+            .post(Entity.text(expression));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
