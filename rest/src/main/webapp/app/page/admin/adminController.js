@@ -486,7 +486,11 @@ tsApp
 
           $scope.action = 'Add';
           $scope.project = {
-            terminology : metadata.terminologies[0]
+            terminology : metadata.terminologies[0],
+            moduleId : user.userPreferences.moduleId,
+            namespace : user.userPreferences.namespace,
+            organization : user.userPreferences.organization,
+            exclusionClause : user.userPreferences.exclusionClause            
           };
           $scope.clause = null;
           $scope.terminologies = metadata.terminologies;
@@ -534,6 +538,23 @@ tsApp
 
             // copy clause - don't allow negation - it's implicitly negated
             project.exclusionClause = $scope.clause == null ? null : $scope.clause.value;
+            
+            // validate exclusion clause
+            // TODO: how do we validate clause without the refset?
+            /*refsetService.isExpressionValid(refset, project.exclusionClause).then(
+              // Success - add refset
+              function(data) {
+                if (data == 'true') {
+                  
+                } else {
+                  $scope.errors[0] = "Submitted definition clause is invalid";
+                  return;
+                }
+              },
+              // Error - add refset
+              function(data) {
+                handleError($scope.errors, data);
+              })        */ 
             
             // Add project
             projectService.addProject(project).then(

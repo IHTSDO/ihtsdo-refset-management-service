@@ -176,6 +176,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("translation");
     tester.include("authors");
     tester.include("reviewers");
+    tester.include("originRevision");
 
     tester.proxy(Translation.class, 1, t1);
     tester.proxy(Translation.class, 2, t2);

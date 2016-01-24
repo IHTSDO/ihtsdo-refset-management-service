@@ -9,6 +9,7 @@ import java.util.Map;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
@@ -184,6 +185,18 @@ public interface TerminologyHandler extends Configurable {
    */
   public ConceptList getConceptChildren(String terminologyId,
     String terminology, String version) throws Exception;
+
+  /**
+   * Returns the potential current concepts for retired concept.
+   *
+   * @param conceptId the concept id
+   * @param terminology the terminology
+   * @param version the version
+   * @return the potential current concepts for retired concept
+   * @throws Exception the exception
+   */
+  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
+    String conceptId, String terminology, String version) throws Exception;
 
   /**
    * <pre>

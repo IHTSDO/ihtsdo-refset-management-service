@@ -80,6 +80,23 @@ public class UserPreferencesJpa implements UserPreferences {
 
   /** The lastProjectId. */
   private Long lastProjectId;
+  
+  /**  The module id. */
+  @Column(nullable = true)
+  private String moduleId;
+  
+  /**  The namespace. */
+  @Column(nullable = true)
+  private String namespace;
+  
+  /**  The organization. */
+  @Column(nullable = true)
+  private String organization;
+  
+  /**  The exclusion clause. */
+  @Column(nullable = true)
+  private String exclusionClause;
+  
 
   /**
    * The default constructor.
@@ -107,6 +124,10 @@ public class UserPreferencesJpa implements UserPreferences {
     lastDirectoryAccordion = prefs.getLastDirectoryAccordion();
     lastProjectRole = prefs.getLastProjectRole();
     lastProjectId = prefs.getLastProjectId();
+    moduleId = prefs.getModuleId();
+    namespace = prefs.getNamespace();
+    organization = prefs.getOrganization();
+    exclusionClause = prefs.getExclusionClause();
   }
 
   /**
@@ -314,6 +335,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#getLanguageDescriptionTypes()
+   */
   @XmlElement(type = LanguageDescriptionTypeJpa.class)
   @Override
   public List<LanguageDescriptionType> getLanguageDescriptionTypes() {
@@ -324,6 +348,9 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setLanguageDescriptionTypes(java.util.List)
+   */
   @Override
   public void setLanguageDescriptionTypes(
     List<LanguageDescriptionType> languageDescriptionTypes) {
@@ -331,29 +358,44 @@ public class UserPreferencesJpa implements UserPreferences {
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#isSpellingEnabled()
+   */
   @Override
   public boolean isSpellingEnabled() {
     return spellingEnabled;
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setSpellingEnabled(boolean)
+   */
   @Override
   public void setSpellingEnabled(boolean spellingEnabled) {
     this.spellingEnabled = spellingEnabled;
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#isMemoryEnabled()
+   */
   @Override
   public boolean isMemoryEnabled() {
     return memoryEnabled;
   }
 
   /* see superclass */
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setMemoryEnabled(boolean)
+   */
   @Override
   public void setMemoryEnabled(boolean memoryEnabled) {
     this.memoryEnabled = memoryEnabled;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -380,6 +422,10 @@ public class UserPreferencesJpa implements UserPreferences {
             + ((lastRefsetAccordion == null) ? 0 : lastRefsetAccordion
                 .hashCode());
     result = prime * result + ((lastTab == null) ? 0 : lastTab.hashCode());
+    result = prime * result + ((moduleId == null) ? 0 : moduleId.hashCode());
+    result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+    result = prime * result + ((organization == null) ? 0 : organization.hashCode());
+    result = prime * result + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
     result =
         prime
             * result
@@ -394,6 +440,9 @@ public class UserPreferencesJpa implements UserPreferences {
     return result;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -449,9 +498,42 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!userName.equals(otherUserName))
       return false;
+    if (userName == null) {
+      if (otherUserName != null)
+        return false;
+    } else if (!userName.equals(otherUserName))
+      return false;
+    if (userName == null) {
+      if (otherUserName != null)
+        return false;
+    } else if (!userName.equals(otherUserName))
+      return false;
+    if (moduleId == null) {
+      if (other.moduleId != null)
+        return false;
+    } else if (!moduleId.equals(other.moduleId))
+      return false;
+    if (namespace == null) {
+      if (other.namespace != null)
+        return false;
+    } else if (!namespace.equals(other.namespace))
+      return false;
+    if (organization == null) {
+      if (other.organization != null)
+        return false;
+    } else if (!organization.equals(other.organization))
+      return false;
+    if (exclusionClause == null) {
+      if (other.exclusionClause != null)
+        return false;
+    } else if (!exclusionClause.equals(other.exclusionClause))
+      return false;
     return true;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
   @Override
   public String toString() {
     return "UserPreferencesJpa [id=" + id + ", user=" + user
@@ -461,7 +543,76 @@ public class UserPreferencesJpa implements UserPreferences {
         + ", memoryEnabled=" + memoryEnabled + ", lastTranslationAccordion="
         + lastTranslationAccordion + ", lastDirectoryAccordion="
         + lastDirectoryAccordion + ", lastProjectRole=" + lastProjectRole
-        + ", lastProjectId=" + lastProjectId + "]";
+        + ", lastProjectId=" + lastProjectId 
+        + ", moduleId=" + moduleId
+        + ", namespace=" + namespace
+        + ", organization=" + organization
+        + ", exclusionClause=" + exclusionClause
+        + "]";
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#getModuleId()
+   */
+  @Override
+  public String getModuleId() {
+    return moduleId;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setModuleId(java.lang.String)
+   */
+  @Override
+  public void setModuleId(String moduleId) {
+    this.moduleId = moduleId;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#getNamespace()
+   */
+  @Override
+  public String getNamespace() {
+    return namespace;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setNamespace(java.lang.String)
+   */
+  @Override
+  public void setNamespace(String namespace) {
+    this.namespace = namespace;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#getOrganization()
+   */
+  @Override
+  public String getOrganization() {
+    return organization;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setOrganization(java.lang.String)
+   */
+  @Override
+  public void setOrganization(String organization) {
+    this.organization = organization;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#getExclusionClause()
+   */
+  @Override
+  public String getExclusionClause() {
+    return exclusionClause;
+  }
+
+  /* (non-Javadoc)
+   * @see org.ihtsdo.otf.refset.UserPreferences#setExclusionClause(java.lang.String)
+   */
+  @Override
+  public void setExclusionClause(String exclusionClause) {
+    this.exclusionClause = exclusionClause;
   }
 
 }

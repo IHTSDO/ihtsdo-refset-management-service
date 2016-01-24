@@ -166,5 +166,61 @@ public interface UserPreferences {
    * @param lastProjectId the last project id
    */
   public void setLastProjectId(Long lastProjectId);
+  
+  /**
+   * Returns the module id.
+   *
+   * @return the module id
+   */
+  public String getModuleId();
+  
+  /**
+   * Sets the module id.
+   *
+   * @param moduleId the module id
+   */
+  public void setModuleId(String moduleId);
+  
+  /**
+   * Returns the namespace.
+   *
+   * @return the namespace
+   */
+  public String getNamespace();
+  
+  /**
+   * Sets the namespace.
+   *
+   * @param namespace the namespace
+   */
+  public void setNamespace(String namespace);
+  
+  /**
+   * Returns the organization.
+   *
+   * @return the organization
+   */
+  public String getOrganization();
+  
+  /**
+   * Sets the organization.
+   *
+   * @param organization the organization
+   */
+  public void setOrganization(String organization);
+  
+  /**
+   * Returns the exclusion clause.
+   *
+   * @return the exclusion clause
+   */
+  public String getExclusionClause();
+  
+  /**
+   * Sets the exclusion clause.
+   *
+   * @param exclusionClause the exclusion clause
+   */
+  public void setExclusionClause(String exclusionClause);
 
 }
