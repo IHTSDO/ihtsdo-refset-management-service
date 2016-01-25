@@ -182,14 +182,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   }
 
   @Override
-  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(String 
-    conceptId, String terminology, String version) throws Exception {
+  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
+    String conceptId, String terminology, String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get potential current concepts for retired concept - " + conceptId);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-   
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?escg="
             + URLEncoder.encode(conceptId, "UTF-8").replaceAll(" ", "%20"));
@@ -239,7 +238,6 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
      * }
      * </pre>
      */
-    
 
     KeyValuePairList keyValuePairList = new KeyValuePairList();
     ObjectMapper mapper = new ObjectMapper();
@@ -252,12 +250,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       return keyValuePairList;
     }
     for (final JsonNode conceptNode : doc.get("items")) {
-      for (final JsonNode mapping : conceptNode.findValues("associationTargets")) {
+      for (final JsonNode mapping : conceptNode
+          .findValues("associationTargets")) {
         Entry<String, JsonNode> entry = mapping.fields().next();
         String key = entry.getKey();
         String values = entry.getValue().toString();
         if (values.contains("[")) {
-          values = values.substring(1, values.length() -1);
+          values = values.substring(1, values.length() - 1);
         }
         values = values.replaceAll("\"", "");
         for (String value : values.split(",")) {
@@ -268,7 +267,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
     return keyValuePairList;
   }
-  
+
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,

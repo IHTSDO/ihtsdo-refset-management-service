@@ -17,7 +17,7 @@
         </td>
         <td>
           <select ng-show="action == 'Add'" ng-model="refset"
-            ng-change="selectRefset(refset)" style="width:270;"
+            ng-change="selectRefset(refset)" style="width: 270;"
             ng-options="item.name.concat(' (',item.terminologyId,')') for item in refsets"></select>
           <span ng-show="refset && action == 'Add'">
             <br />
@@ -42,8 +42,8 @@
           <b>Description</b>
         </td>
         <td>
-          <textarea rows="4" cols="40" ng-model="translation.description" style="width:270;"
-            placeholder="Basic description of translation"></textarea>
+          <textarea rows="4" cols="40" ng-model="translation.description"
+            style="width: 270;" placeholder="Basic description of translation"></textarea>
         </td>
       </tr>
       <tr>
@@ -126,3 +126,4 @@
     ">{{action}}</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>
+</div>

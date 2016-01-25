@@ -5,13 +5,13 @@
 <div class="modal-body">
   <div>
     <table class="table">
-      <tr>Enter list of member ids:</tr>
       <tr>
-
+        <td>Enter list of member ids:</td>
+      </tr>
+      <tr>
         <td>
-          <textarea rows="8" cols="40"
-            ng-model="memberIdList"></textarea>
-          
+          <textarea rows="8" cols="40" ng-model="memberIdList"></textarea>
+
         </td>
       </tr>
       <tr ng-show="warnings.length > 0">
@@ -29,8 +29,10 @@
           <div class="alert alert-danger alert-error">
             {{errors[0]}}
             <div style="display: inline; float: right;">
-              <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-                class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+              <i ng-show="errors[1]"
+                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                class="noul material-icons md-18"
+                ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
             <p ng-show="errors[1] && error.expand">
               <br />{{errors[1]}}
@@ -61,3 +63,4 @@
       ng-click="submitMemberExcludeList();">Exclude</button>
     <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
   </div>
+</div>

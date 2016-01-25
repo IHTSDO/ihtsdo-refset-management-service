@@ -21,7 +21,6 @@ import org.hibernate.envers.query.AuditQuery;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -48,7 +47,6 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
-import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
@@ -1470,17 +1468,17 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public Long getConceptRevisionNumber(Long conceptId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - get revision number for concept :"
-            + conceptId);
+        "Translation Service - get revision number for concept :" + conceptId);
     final AuditReader reader = AuditReaderFactory.get(manager);
-        
+
     final AuditQuery query =
-        reader.createQuery()
+        reader
+            .createQuery()
             // last updated revision
             .forRevisionsOfEntity(RefsetJpa.class, true, false)
             .add(AuditEntity.property("id").eq(conceptId))
-            .addProjection(AuditEntity.revisionNumber().max());            
-            
+            .addProjection(AuditEntity.revisionNumber().max());
+
     final Number revision = (Number) query.getSingleResult();
     return revision.longValue();
   }
@@ -1517,55 +1515,62 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     for (Description newDescription : newDescriptions) {
       newDescriptionIdMap.put(newDescription.getId(), newDescription);
     }
-    // get the id lists  map id->Object single for loop with lookup in map
+    // get the id lists map id->Object single for loop with lookup in map
     originConcept.getDescriptions().clear();
-    
+
     // old not new : ADD (by id)
     for (Long oldDescriptionId : oldDescriptionIdMap.keySet()) {
       Description oldDescription = oldDescriptionIdMap.get(oldDescriptionId);
-      if(!newDescriptionIdMap.containsKey(oldDescriptionId)) {
+      if (!newDescriptionIdMap.containsKey(oldDescriptionId)) {
         oldDescription.setId(null);
-        for (LanguageRefsetMember lrm : oldDescription.getLanguageRefsetMembers()) {
+        for (LanguageRefsetMember lrm : oldDescription
+            .getLanguageRefsetMembers()) {
           lrm.setId(null);
-          addLanguageRefsetMember(lrm, oldDescription.getConcept().getTranslation().getTerminology());
+          addLanguageRefsetMember(lrm, oldDescription.getConcept()
+              .getTranslation().getTerminology());
         }
         addDescription(oldDescription);
         originConcept.getDescriptions().add(oldDescription);
       }
     }
-        
+
     // new not old : REMOVE (by id)
     for (Long newDescriptionId : newDescriptionIdMap.keySet()) {
       Description newDescription = newDescriptionIdMap.get(newDescriptionId);
-      if(!oldDescriptionIdMap.containsKey(newDescriptionId)) {
+      if (!oldDescriptionIdMap.containsKey(newDescriptionId)) {
         removeDescription(newDescription.getId());
-        for (LanguageRefsetMember lrm : newDescription.getLanguageRefsetMembers()) {
+        for (LanguageRefsetMember lrm : newDescription
+            .getLanguageRefsetMembers()) {
           removeLanguageRefsetMember(lrm.getId());
         }
       }
     }
-    
+
     // same id : UPDATE
     for (Description oldDescription : oldDescriptionIdMap.values()) {
       for (Description newDescription : newDescriptionIdMap.values()) {
         if (oldDescription.getId().equals(newDescription.getId())) {
-          // verify that oldDescrpition and newDescription each have exactly 1 lang
+          // verify that oldDescrpition and newDescription each have exactly 1
+          // lang
           // refset member
           if (oldDescription.getLanguageRefsetMembers().size() != 1) {
-            throw new Exception("The original description must have exactly one language refset member.");
+            throw new Exception(
+                "The original description must have exactly one language refset member.");
           }
           if (newDescription.getLanguageRefsetMembers().size() != 1) {
-            throw new Exception("The current description must have exactly one language refset member.");
+            throw new Exception(
+                "The current description must have exactly one language refset member.");
           }
           // verify that old/new lrm have the same id
-          if (!newDescription.getLanguageRefsetMembers().get(0).getId().equals(
-              oldDescription.getLanguageRefsetMembers().get(0).getId())) {
-            throw new Exception("The old and new language refset members must have the same id.");
+          if (!newDescription.getLanguageRefsetMembers().get(0).getId()
+              .equals(oldDescription.getLanguageRefsetMembers().get(0).getId())) {
+            throw new Exception(
+                "The old and new language refset members must have the same id.");
           }
-          updateLanguageRefsetMember(oldDescription.getLanguageRefsetMembers().get(0),
-              originConcept.getTranslation().getTerminology());
+          updateLanguageRefsetMember(oldDescription.getLanguageRefsetMembers()
+              .get(0), originConcept.getTranslation().getTerminology());
           updateDescription(oldDescription);
-          originConcept.getDescriptions().add(oldDescription);          
+          originConcept.getDescriptions().add(oldDescription);
         }
       }
     }
@@ -1574,9 +1579,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // Notes
     //
     resolveNotes(originConcept.getNotes(), currentConcept.getNotes());
-    
+
     updateConcept(originConcept);
-    
+
     return originConcept;
   }
 }

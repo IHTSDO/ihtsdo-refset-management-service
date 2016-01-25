@@ -64,10 +64,12 @@
 
         <table ng-show="pagedNotes.length > 0" class="table">
           <thead class="table-select-row">
-            <th class="col-md-6 col-xs-6">{{type}} Notes</th>
-            <th class="col-md-2 col-xs-2">Date</th>
-            <th class="col-md-2 col-xs-2">Author</th>
-            <th class="col-md-2 col-xs-2"></th>
+            <tr>
+              <th class="col-md-6 col-xs-6">{{type}} Notes</th>
+              <th class="col-md-2 col-xs-2">Date</th>
+              <th class="col-md-2 col-xs-2">Author</th>
+              <th class="col-md-2 col-xs-2"></th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="note in pagedNotes">
@@ -98,7 +100,8 @@
             <div class="alert alert-danger alert-error">
               {{errors[0]}}
               <div style="display: inline; float: right;">
-                <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                <i ng-show="errors[1]"
+                  title="{{error.expand ? 'Show' : 'Hide'}} long eror"
                   class="noul material-icons md-18"
                   ng-click="error.expand = !error.expand;">attach_file</i>
               </div>

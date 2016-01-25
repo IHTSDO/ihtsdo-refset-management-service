@@ -22,7 +22,7 @@
       <span ng-show="search && searchResults.length == 0"
         class="alert alert-warning">No results</span>
 
-      <span ng-show="search && searchResults.length > 0">
+      <div ng-show="search && searchResults.length > 0">
 
         <span style="display: block;">
           <uib-pagination items-per-page="pageSize" max-size="5"
@@ -35,12 +35,13 @@
 
         </span>
 
-
         <table ng-show="searchResults.length > 0" class="table">
           <thead class="table-select-row">
-            <th class="col-md-3 col-xs-3">Concept Id</th>
-            <th class="col-md-9 col-xs-9">Name</th>
-            <th class="col-md-1 col-xs-1"></th>
+            <tr>
+              <th class="col-md-3 col-xs-3">Concept Id</th>
+              <th class="col-md-9 col-xs-9">Name</th>
+              <th class="col-md-1 col-xs-1"></th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="concept in searchResults"
@@ -70,7 +71,7 @@
             </tr>
           </tbody>
         </table>
-      </span>
+      </div>
     </div>
 
     <!--  Right hand side -->
