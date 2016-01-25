@@ -120,6 +120,10 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
     tester.include("memoryEnabled");
     tester.include("spellingEnabled");
     tester.include("user");
+    tester.include("moduleId");
+    tester.include("namespace");
+    tester.include("organization");
+    tester.include("exclusionClause");
 
     // Set up objects
     tester.proxy(User.class, 1, u1);

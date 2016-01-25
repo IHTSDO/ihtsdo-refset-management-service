@@ -186,6 +186,47 @@
             Memory Suggestion (DISABLED)</span>
         </div>
       </div>
+      </div>
+   <div class="row">
+          
+      <div class="col-md-12 col-xs-12">
+        <h5>
+          <b>Default Project Settings</b>
+        </h5>
+      </div>
+      <div class="col-md-12 col-xs-12">
+        <div class="col-md-6 col-xs-6">
+          <table  class="table">
+            <thead class="table-select-row">
+              <th class="col-md-2 col-xs-2"></th>
+              <th class="col-md-10 col-xs-10"></th>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Module Id:</td>
+                <td><input type="text" size="40" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.moduleId"></td>               
+              </tr>
+              <tr>
+                <td>Namespace:</td>
+                <td><input type="text" size="40" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.namespace"></td>               
+              </tr>
+               <tr>
+                <td>Organization:</td>
+                <td><input type="text" size="40" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.organization"></td>               
+              </tr>
+               <tr>
+                <td>Exclusion Clause:</td>
+                <td><input type="text" size="40" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.exclusionClause"></td>               
+              </tr>
+            </tbody>
+          </table>
+          
+        </div>
+      </div>
     </div>
     <div class="row" style="margin-top: 5px;">
       <div class="col-md-12 col-xs-12">
