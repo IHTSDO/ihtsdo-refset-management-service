@@ -102,8 +102,8 @@ public class TrackingRecordJpa implements TrackingRecord {
   /** The concept. */
   @OneToOne(targetEntity = ConceptJpa.class)
   private Concept concept = null;
-  
-  /**  The origin revision. */
+
+  /** The origin revision. */
   private Long originRevision = null;
 
   /**
@@ -353,6 +353,17 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
+   * Sets the concept id. For JAXB.
+   *
+   * @param conceptId the concept id
+   */
+  public void setConceptId(Long conceptId) {
+    if (concept == null) {
+      concept = new ConceptJpa();
+    }
+    concept.setId(conceptId);
+  }
+  /**
    * Returns the concept terminology id.
    *
    * @return the concept terminology id
@@ -384,9 +395,9 @@ public class TrackingRecordJpa implements TrackingRecord {
    */
   @XmlTransient
   @Fields({
-    @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
-    @Field(name = "refsetNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
-})
+      @Field(index = Index.YES, analyze = Analyze.YES, store = Store.NO),
+      @Field(name = "refsetNameSort", index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  })
   public String getRefsetName() {
     return refset == null ? "" : refset.getName();
   }
@@ -452,24 +463,20 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.forAuthoring = forAuthoring;
   }
 
-  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((concept == null) ? 0 : concept.hashCode());
+    result = prime * result + ((authors == null) ? 0 : authors.hashCode());
+    result = prime * result + getConceptId().hashCode();
     result = prime * result + (forAuthoring ? 1231 : 1237);
     result = prime * result + (forReview ? 1231 : 1237);
-    result = prime * result + (revision ? 1231 : 1237);
-    result =
-        prime * result + ((translation == null) ? 0 : translation.hashCode());
-    result = prime * result + ((authors == null) ? 0 : authors.hashCode());
+    result = prime * result + getRefsetId().hashCode();
     result = prime * result + ((reviewers == null) ? 0 : reviewers.hashCode());
-    result = prime * result + ((originRevision == null) ? 0 : originRevision.hashCode());
+    result = prime * result + (revision ? 1231 : 1237);
     return result;
   }
 
-  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -479,36 +486,31 @@ public class TrackingRecordJpa implements TrackingRecord {
     if (getClass() != obj.getClass())
       return false;
     TrackingRecordJpa other = (TrackingRecordJpa) obj;
-    if (concept == null) {
-      if (other.concept != null)
+    if (authors == null) {
+      if (other.authors != null)
         return false;
-    } else if (!concept.equals(other.concept))
+    } else if (!authors.equals(other.authors))
+      return false;
+    if (getConceptId() == null) {
+      if (other.getConceptId() != null)
+        return false;
+    } else if (!getConceptId().equals(other.getConceptId()))
       return false;
     if (forAuthoring != other.forAuthoring)
       return false;
     if (forReview != other.forReview)
       return false;
-    if (revision != other.revision)
-      return false;
-    if (translation == null) {
-      if (other.translation != null)
+    if (getRefsetId() == null) {
+      if (other.getRefsetId() != null)
         return false;
-    } else if (!translation.equals(other.translation))
-      return false;
-    if (authors == null) {
-      if (other.authors != null)
-        return false;
-    } else if (!authors.equals(other.authors))
+    } else if (!getRefsetId().equals(other.getRefsetId()))
       return false;
     if (reviewers == null) {
       if (other.reviewers != null)
         return false;
     } else if (!reviewers.equals(other.reviewers))
       return false;
-    if (originRevision == null) {
-      if (other.originRevision != null)
-        return false;
-    } else if (originRevision.equals(other.originRevision))
+    if (revision != other.revision)
       return false;
     return true;
   }
@@ -520,8 +522,9 @@ public class TrackingRecordJpa implements TrackingRecord {
         + ", lastModifiedBy=" + lastModifiedBy + ", forAuthoring="
         + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
         + ", authors=" + authors + ", reviewers=" + reviewers
-        + ", translation=" + translation + ", refset=" + refset + ", concept="
-        + concept + ", originRevision=" + originRevision + "]";
+        + ", translation=" + translation + ", refset="
+        + refset.getTerminologyId() + ", concept=" + concept.getTerminologyId()
+        + ", originRevision=" + originRevision + "]";
   }
 
   @Override
