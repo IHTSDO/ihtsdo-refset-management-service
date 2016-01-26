@@ -63,7 +63,6 @@ tsApp
               utilService.handleError(response);
               $scope.message = "Authentication error, log in at ${security.handler.IMS.url}";
               window.location.href = "${security.handler.IMS.url}/#/login?serviceReferer=${base.url}%2F%23%2Flogin";
-              h
             });
 
       } ])
