@@ -59,10 +59,10 @@ tsApp.controller('LoginCtrl', [
         utilService.handleError(response);
         gpService.decrement();
       });
-    }
+    };
 
     // Logout function
     $scope.logout = function() {
       securityService.logout();
-    }
+    };
   } ]);

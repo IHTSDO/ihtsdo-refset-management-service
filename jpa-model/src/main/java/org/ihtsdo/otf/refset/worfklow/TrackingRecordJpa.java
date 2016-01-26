@@ -363,6 +363,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     }
     concept.setId(conceptId);
   }
+
   /**
    * Returns the concept terminology id.
    *
@@ -523,7 +524,8 @@ public class TrackingRecordJpa implements TrackingRecord {
         + forAuthoring + ", forReview=" + forReview + ", revision=" + revision
         + ", authors=" + authors + ", reviewers=" + reviewers
         + ", translation=" + translation + ", refset="
-        + refset.getTerminologyId() + ", concept=" + concept.getTerminologyId()
+        + (refset != null ? refset.getTerminologyId() : "") + ", concept="
+        + (concept != null ? concept.getTerminologyId() : "")
         + ", originRevision=" + originRevision + "]";
   }
 

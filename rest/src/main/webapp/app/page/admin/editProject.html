@@ -79,8 +79,8 @@
           <b>Exclusion Clause</b>
         </td>
         <td>
-          <input ng-model="project.exclusionClause" size="40"
-            placeholder="e.g. <<252741004 | Brain mapping (procedure) |" />
+          <div definition-clause clause="clause" mode="edit"
+            allowNegation="false"></div>
         </td>
       </tr>
     </table>
@@ -123,24 +123,28 @@
                 class="noul material-icons md-18">delete</i>
             </td>
           </tr>
-          <tr ng-show="errors.length > 0">
-            <td>&nbsp;</td>
-            <td>
-              <div class="alert alert-danger alert-error"
-                ng-repeat="error in errors">
-                {{error}}
-                <!-- DO NOT SUPPORT clearing error <div
-              style="cursor: pointer; display: inline; float: right; width: 3%;">
-              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
-            </div> -->
-              </div>
-            </td>
-          </tr>
         </tbody>
       </table>
     </div>
   </div>
+  <div ng-show="errors.length > 0" class="row">
+    <table class="table">
+      <tr>
+        <td>
+          <div class="alert alert-danger alert-error"
+            ng-repeat="error in errors">
+            {{error}}
+            <!-- DO NOT SUPPORT clearing error <div
+              style="cursor: pointer; display: inline; float: right; width: 3%;">
+              <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+            </div> -->
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
 </div>
+
 
 <div class="modal-footer">
   <button ng-show="action == 'Add'" class="btn btn-primary"

@@ -19,7 +19,7 @@ tsApp.directive('translationInfo', [ '$uibModal', 'utilService', function($uibMo
 
       // end
     } ]
-  }
+  };
 
 } ]);
 
@@ -37,6 +37,6 @@ tsApp.directive('languages', [ 'utilService', function(utilService) {
 
       // end
     } ]
-  }
+  };
 
 } ]);

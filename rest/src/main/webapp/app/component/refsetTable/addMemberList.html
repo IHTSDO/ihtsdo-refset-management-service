@@ -14,6 +14,63 @@
 
         </td>
       </tr>
+      <tr ng-show="hasResults()">
+        <td colspan="2">
+          <div ng-show="added.length>0" class="alert alert-success">
+            {{added.length}} members added
+            <div style="display: inline; float: right;">
+              <i title="Show added concept ids"
+                class="noul material-icons md-18"
+                ng-click="added.expand = !added.expand;">attach_file</i>
+            </div>
+            <p ng-show="added.expand">
+              [
+              <span ng-repeat="conceptId in added">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="removed.length>0" class="alert alert-success">
+            {{removed.length}} members removed
+            <div style="display: inline; float: right;">
+              <i title="Show removed concept ids"
+                class="noul material-icons md-18"
+                ng-click="removed.expand = !removed.expand;">attach_file</i>
+            </div>
+            <p ng-show="removed.expand">
+              [
+              <span ng-repeat="conceptId in removed">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="exists.length>0" class="alert alert-warning">
+            {{exists.length}} members not added because they already exist
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members already present"
+                class="noul material-icons md-18"
+                ng-click="exists.expand = !exists.expand;">attach_file</i>
+            </div>
+            <p ng-show="exists.expand">
+              [
+              <span ng-repeat="conceptId in exists">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+          <div ng-show="notExists.length>0" class="alert alert-warning">
+            {{notExists.length}} members not removed because they did not exist
+            <div style="display: inline; float: right;">
+              <i title="Show concept ids for members not removed"
+                class="noul material-icons md-18"
+                ng-click="notExists.expand = !notExists.expand;">attach_file</i>
+            </div>
+            <p ng-show="notExists.expand">
+              [
+              <span ng-repeat="conceptId in notExists">{{conceptId}}, </span>
+              ]
+            </p>
+          </div>
+        </td>
+      </tr>
+
       <tr ng-show="warnings.length > 0">
         <td>&nbsp;</td>
         <td>
@@ -57,10 +114,11 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn btn-primary" ng-disabled="!memberIdList"
-      ng-click="submitMemberIncludeList();">Include</button>
-    <button class="btn btn-primary" ng-disabled="!memberIdList"
-      ng-click="submitMemberExcludeList();">Exclude</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary" ng-disabled="!memberIdList || hasResults()"
+      ng-click="includeMembers();">Include</button>
+    <button class="btn btn-primary" ng-disabled="!memberIdList || hasResults()"
+      ng-click="excludeMembers();">Exclude</button>
+    <button ng-show="!hasResults()" class="btn btn-warning" ng-click="cancel()">Cancel</button>
+    <button ng-show="hasResults()" class="btn btn-warning" ng-click="close()">Close</button>
   </div>
 </div>

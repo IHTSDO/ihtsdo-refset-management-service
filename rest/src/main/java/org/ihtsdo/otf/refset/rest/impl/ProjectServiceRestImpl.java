@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -80,8 +81,8 @@ import com.wordnik.swagger.annotations.ApiParam;
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
 @Api(value = "/project", description = "Operations to retrieve project info and interact with the terminology handler")
-public class ProjectServiceRestImpl extends RootServiceRestImpl
-    implements ProjectServiceRest {
+public class ProjectServiceRestImpl extends RootServiceRestImpl implements
+    ProjectServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -102,7 +103,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Get project roles", notes = "Gets list of valid project roles", response = StringList.class)
   public StringList getProjectRoles(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /roles");
 
     try {
@@ -131,9 +132,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "User role, e.g. 'ADMIN'", required = true) @QueryParam("role") String role,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass()).info("RESTful POST call (Project): /assign "
-        + projectId + ", " + userName + ", " + role);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /assign " + projectId + ", " + userName
+            + ", " + role);
 
     // Test preconditions
     if (projectId == null || userName == null || role == null) {
@@ -142,8 +144,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String thisUser = authorizeProject(projectService, projectId,
-          securityService, authToken, "add user to project", UserRole.AUTHOR);
+      final String thisUser =
+          authorizeProject(projectService, projectId, securityService,
+              authToken, "add user to project", UserRole.AUTHOR);
 
       final User user = securityService.getUser(userName);
       final Project project = projectService.getProject(projectId);
@@ -174,9 +177,11 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "User name, e.g. guest", required = true) @QueryParam("userName") String userName,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass()).info("RESTful POST call (Project): /unassign "
-        + projectId + ", " + userName);
+    throws Exception {
+    Logger.getLogger(getClass())
+        .info(
+            "RESTful POST call (Project): /unassign " + projectId + ", "
+                + userName);
 
     // Test preconditions
     if (projectId == null || userName == null) {
@@ -189,12 +194,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       String thisUser = null;
       try {
-        thisUser = authorizeApp(securityService, authToken,
-            "unassign user from project", UserRole.USER);
+        thisUser =
+            authorizeApp(securityService, authToken,
+                "unassign user from project", UserRole.USER);
       } catch (Exception e) {
         // now try to validate project role
-        thisUser = authorizeProject(projectService, projectId, securityService,
-            authToken, "unassign user from project", UserRole.AUTHOR);
+        thisUser =
+            authorizeProject(projectService, projectId, securityService,
+                authToken, "unassign user from project", UserRole.AUTHOR);
       }
 
       final User user = securityService.getUser(userName);
@@ -226,9 +233,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call PUT (Project): /users/ "
-        + projectId + ", " + query + ", " + pfs);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Project): /users/ " + projectId + ", " + query
+            + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -240,8 +248,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
           || pfs.getQueryRestriction().isEmpty()) {
         pfs.setQueryRestriction("projectAnyRole:" + projectId);
       } else {
-        pfs.setQueryRestriction(
-            pfs.getQueryRestriction() + " AND projectAnyRole:" + projectId);
+        pfs.setQueryRestriction(pfs.getQueryRestriction()
+            + " AND projectAnyRole:" + projectId);
 
       }
       final UserList list = securityService.findUsersForQuery(query, pfs);
@@ -269,9 +277,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call PUT (Project): /users/ "
-        + projectId + "/unassigned, " + query + ", " + pfs);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Project): /users/ " + projectId + "/unassigned, "
+            + query + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -280,8 +289,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       // return all users assigned to the project
       if (pfs.getQueryRestriction() != null
           && !pfs.getQueryRestriction().isEmpty()) {
-        pfs.setQueryRestriction(
-            pfs.getQueryRestriction() + " AND NOT projectAnyRole:" + projectId);
+        pfs.setQueryRestriction(pfs.getQueryRestriction()
+            + " AND NOT projectAnyRole:" + projectId);
       } else {
         pfs.setQueryRestriction("NOT projectAnyRole:" + projectId);
       }
@@ -309,15 +318,15 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public Project addProject(
     @ApiParam(value = "Project, e.g. newProject", required = true) ProjectJpa project,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful call PUT (Project): /add " + project);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call PUT (Project): /add " + project);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
 
-      final String userName = authorizeApp(securityService, authToken,
-          "add project", UserRole.USER);
+      final String userName =
+          authorizeApp(securityService, authToken, "add project", UserRole.USER);
 
       // check to see if project already exists
       for (Project p : projectService.getProjects().getObjects()) {
@@ -325,6 +334,19 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
             && p.getDescription().equals(project.getDescription())) {
           throw new LocalException(
               "A project with this name and description already exists");
+        }
+      }
+
+      // Validate the project exclusion clause
+      if (project.getExclusionClause() != null) {
+        try {
+          final PfsParameter pfs = new PfsParameterJpa();
+          pfs.setStartIndex(0);
+          pfs.setMaxResults(1);
+          projectService.getTerminologyHandler().resolveExpression(
+              project.getExclusionClause(), project.getTerminology(), "", pfs);
+        } catch (Exception e) {
+          throw new LocalException("Project has invalid exclusion clause");
         }
       }
 
@@ -350,9 +372,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public void updateProject(
     @ApiParam(value = "Project, e.g. existingProject", required = true) ProjectJpa project,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful call POST (Project): /update " + project);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Project): /update " + project);
 
     // Create service and configure transaction scope
     final ProjectService projectService = new ProjectServiceJpa();
@@ -371,13 +393,26 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
         throw new Exception("Project " + project.getId() + " does not exist");
       }
 
+      // Validate the project exclusion clause
+      if (project.getExclusionClause() != null) {
+        try {
+          final PfsParameter pfs = new PfsParameterJpa();
+          pfs.setStartIndex(0);
+          pfs.setMaxResults(1);
+          projectService.getTerminologyHandler().resolveExpression(
+              project.getExclusionClause(), project.getTerminology(), "", pfs);
+        } catch (Exception e) {
+          throw new LocalException("Project has invalid exclusion clause");
+        }
+      }
+
       // The map adapter for UserRoleMap only loads usernames and we need the
       // ids This method also shouldn't be used to change user role map so we
       // reload it from the persisted object and reuse it. A similar thing
       // is NOT needed for the user object because the role map persists
       // only project ids.
-      project.setUserRoleMap(
-          projectService.getProject(project.getId()).getUserRoleMap());
+      project.setUserRoleMap(projectService.getProject(project.getId())
+          .getUserRoleMap());
 
       // Update project
       project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
@@ -407,9 +442,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public void removeProject(
     @ApiParam(value = "Project id, e.g. 3", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful call DELETE (Project): /remove/" + projectId);
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call DELETE (Project): /remove/" + projectId);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -440,7 +475,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public Project getProject(
     @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
     Logger.getLogger(getClass()).info("RESTful call (Project): /" + projectId);
 
     final ProjectService projectService = new ProjectServiceJpa();
@@ -470,15 +505,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Project): find projects for query, " + pfs);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): find projects for query, " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find projects",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find projects", UserRole.VIEWER);
 
       return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
@@ -500,9 +534,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Project): /reindex "
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /reindex "
             + (indexedObjects == null ? "with no objects specified"
                 : "with specified objects " + indexedObjects));
 
@@ -536,21 +570,23 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project", response = Boolean.class)
   public Boolean userHasSomeProjectRole(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Project): /user/anyrole");
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /user/anyrole");
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String user = authorizeApp(securityService, authToken,
-          "check for any project role", UserRole.VIEWER);
+      final String user =
+          authorizeApp(securityService, authToken,
+              "check for any project role", UserRole.VIEWER);
 
       final StringBuilder sb = new StringBuilder();
       sb.append("(");
       sb.append("userRoleMap:" + user + UserRole.ADMIN).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.REVIEWER).append(" OR ");
       sb.append("userRoleMap:" + user + UserRole.AUTHOR).append(")");
-      final ProjectList list = projectService
-          .findProjectsForQuery(sb.toString(), new PfsParameterJpa());
+      final ProjectList list =
+          projectService.findProjectsForQuery(sb.toString(),
+              new PfsParameterJpa());
       return list.getTotalCount() != 0;
 
     } catch (Exception e) {
@@ -569,9 +605,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Get all terminology editions", notes = "Gets all known terminology editions", response = StringList.class)
   public StringList getTerminologyEditions(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Project): /terminology/all");
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/all");
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -601,7 +637,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   public TerminologyList getTerminologyVersions(
     @ApiParam(value = "Edition, e.g. 'SNOMEDCT'", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /terminology/" + terminology + "/all");
 
@@ -609,8 +645,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     try {
       authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
 
-      final List<Terminology> versions = projectService.getTerminologyHandler()
-          .getTerminologyVersions(terminology);
+      final List<Terminology> versions =
+          projectService.getTerminologyHandler().getTerminologyVersions(
+              terminology);
       final TerminologyList list = new TerminologyListJpa();
       list.setObjects(versions);
       list.setTotalCount(list.getCount());
@@ -632,13 +669,12 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
   @ApiOperation(value = "Get icon map", notes = "Gets the mapping from namespace or module ID to icon key", response = KeyValuePairList.class)
   public KeyValuePairList getIconConfig(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
     Logger.getLogger(getClass()).info("RESTful POST call (Project): /icons");
 
     try {
-      authorizeApp(securityService, authToken, "get icon info",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get icon info", UserRole.VIEWER);
 
       final Properties p = ConfigUtility.getConfigProperties();
       final KeyValuePairList list = new KeyValuePairList();
@@ -671,19 +707,19 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Project): find concepts for query, " + query + ", "
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): find concepts for query, " + query + ", "
             + terminology + ", " + version + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find concepts",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "find concepts", UserRole.VIEWER);
 
-      final ConceptList concepts = projectService.getTerminologyHandler()
-          .findConceptsForQuery(query, terminology, version, pfs);
+      final ConceptList concepts =
+          projectService.getTerminologyHandler().findConceptsForQuery(query,
+              terminology, version, pfs);
 
       return concepts;
     } catch (Exception e) {
@@ -707,23 +743,24 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Project): get concept with conceptId, "
-            + terminologyId + ", " + terminology + ", " + version + ", "
-            + translationId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): get concept with conceptId, " + terminologyId
+            + ", " + terminology + ", " + version + ", " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final String userName = authorizeApp(securityService, authToken,
-          "retrieve concept with description", UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken,
+              "retrieve concept with description", UserRole.VIEWER);
 
       Concept concept = null;
 
       try {
-        concept = translationService.getTerminologyHandler()
-            .getFullConcept(terminologyId, terminology, version);
+        concept =
+            translationService.getTerminologyHandler().getFullConcept(
+                terminologyId, terminology, version);
       } catch (Exception e) {
         Logger.getLogger(getClass()).info(
             "No results in call to Terminology Handler with terminologyId: "
@@ -769,20 +806,21 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Version", required = false) @QueryParam("version") String version,
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Project): retrieves concept's parents, "
-            + terminologyId + ", " + terminology + ", " + version + ", "
-            + translationId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): retrieves concept's parents, " + terminologyId
+            + ", " + terminology + ", " + version + ", " + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      final String userName = authorizeApp(securityService, authToken,
-          "get concept parents", UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken, "get concept parents",
+              UserRole.VIEWER);
 
-      final ConceptList concepts = translationService.getTerminologyHandler()
-          .getConceptParents(terminologyId, terminology, version);
+      final ConceptList concepts =
+          translationService.getTerminologyHandler().getConceptParents(
+              terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
@@ -827,21 +865,23 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Translation id, e.g. 3", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
+    throws Exception {
 
-    Logger.getLogger(getClass())
-        .info("RESTful call (Project): retrieves concept's children, "
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Project): retrieves concept's children, "
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
 
     try {
-      final String userName = authorizeApp(securityService, authToken,
-          "get concept children", UserRole.VIEWER);
+      final String userName =
+          authorizeApp(securityService, authToken, "get concept children",
+              UserRole.VIEWER);
 
-      final ConceptList concepts = translationService.getTerminologyHandler()
-          .getConceptChildren(terminologyId, terminology, version);
+      final ConceptList concepts =
+          translationService.getTerminologyHandler().getConceptChildren(
+              terminologyId, terminology, version);
 
       // If translationId is set, include descriptions from the translation
       if (translationId != null) {
@@ -887,8 +927,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     Concept concept, UserPreferences prefs) throws Exception {
 
     if (concept == null) {
-      Logger.getLogger(getClass())
-          .warn("  Add description helper = concept unexpectedly null");
+      Logger.getLogger(getClass()).warn(
+          "  Add description helper = concept unexpectedly null");
       return;
     }
     // Find any concepts with this terminologyId
@@ -911,8 +951,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     query.append(")");
 
     // Get all concepts matching translation queries
-    final ConceptList list = translationService.findConceptsForTranslation(null,
-        query.toString(), null);
+    final ConceptList list =
+        translationService.findConceptsForTranslation(null, query.toString(),
+            null);
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();
     for (Concept conceptTranslated : list.getObjects()) {
@@ -927,8 +968,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
       // For concepts from other translations, only descriptions
       // only if the translation isn't PUBLISHED or BETA
-      if ((translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED
-          || translation.getWorkflowStatus() == WorkflowStatus.BETA)
+      if ((translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED || translation
+          .getWorkflowStatus() == WorkflowStatus.BETA)
           && !concept.getTranslation().getTerminology()
               .equals(translation.getTerminology())) {
         continue;
@@ -957,9 +998,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     }
 
     // Compute the concept preferred name
-    concept.setName(
-        translationService.computePreferredName(concept, translationService
-            .resolveLanguageDescriptionTypes(translation, prefs)));
+    concept
+        .setName(translationService.computePreferredName(concept,
+            translationService.resolveLanguageDescriptionTypes(translation,
+                prefs)));
 
   }
 
@@ -973,17 +1015,18 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
     @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-      throws Exception {
-    Logger.getLogger(getClass())
-        .info("RESTful POST call (Project): /terminology/" + terminology
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/" + terminology
             + "/descriptiontypes - " + version);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
 
-      final List<DescriptionType> types = projectService.getTerminologyHandler()
-          .getStandardDescriptionTypes(terminology);
+      final List<DescriptionType> types =
+          projectService.getTerminologyHandler().getStandardDescriptionTypes(
+              terminology);
 
       final DescriptionTypeList list = new DescriptionTypeListJpa();
       list.setObjects(types);

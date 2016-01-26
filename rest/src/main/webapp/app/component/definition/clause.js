@@ -14,6 +14,6 @@ tsApp.directive('definitionClause', [ '$uibModal', 'utilService', function($uibM
 
       // end
     } ]
-  }
+  };
 
 } ]);

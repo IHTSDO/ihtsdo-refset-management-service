@@ -563,7 +563,7 @@
 
             <!-- UnAssign (instead of delete) -->
             <i ng-show="projects.role != 'ADMIN'"
-              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
+              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
               ng-click="unassign(record.concept)" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
 
@@ -666,7 +666,7 @@
             title="Import translation concepts"
             class="noul material-icons md-18">file_upload</i>
           <i
-            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.refset.name}})?"
+            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
             ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
             ng-click="removeAllTranslationConcepts(selected.translation); "
             title="Remove all concepts" class="noul material-icons md-18">delete</i>

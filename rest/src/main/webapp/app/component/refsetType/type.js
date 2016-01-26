@@ -13,5 +13,5 @@ tsApp.directive('refsetTypeIcon', [ function() {
       // empty controller
 
     } ]
-  }
+  };
 } ]);

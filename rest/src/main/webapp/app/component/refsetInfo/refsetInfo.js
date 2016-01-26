@@ -19,6 +19,6 @@ tsApp.directive('refsetInfo', [ '$uibModal', 'utilService', function($uibModal, 
 
       // end
     } ]
-  }
+  };
 
 } ]);

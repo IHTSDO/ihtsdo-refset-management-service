@@ -150,7 +150,8 @@
 
             <span ng-repeat="author in refsetAuthorsMap[refset.id]">
               <!-- Only unassign if there are no reviewers -->
-              <i confirm="Are you sure you want to unassign the refset?"
+              <i
+                confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
                 ng-show="!refsetReviewersMap[refset.id]"
                 uib-tooltip="Unassign author: {{author.userName}}"
                 ng-click="unassign(refset, author.userName);"

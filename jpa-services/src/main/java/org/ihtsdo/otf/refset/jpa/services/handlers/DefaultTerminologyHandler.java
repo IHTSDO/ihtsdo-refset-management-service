@@ -456,6 +456,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return null;
+      }
       throw new Exception("Unexpected terminology server failure. Message = "
           + resultString);
     }
@@ -652,6 +657,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
+    // if terminologyId is too short ,term server fails
+    if (terminologyId == null) {
+      return null;
+    }
+    if (terminologyId.length() < 5) {
+      return null;
+    }
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
@@ -664,6 +676,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return null;
+      }
+
       throw new Exception("Unexpected terminology server failure. Message = "
           + resultString);
     }

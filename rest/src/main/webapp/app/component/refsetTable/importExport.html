@@ -25,16 +25,16 @@
           <b>Choose File</b>
         </td>
         <td>
-          <span style="align: center">
-            <button type="file" ngf-select ng-model="file" name="file"
+          <div>
+            <button style="margin-left: 15px" type="file" ngf-select
+              ng-model="file" name="file"
               ngf-pattern="selectedIoHandler.fileTypeFilter"
               ngf-max-size="200MB">Browse for File</button>
-            <span style="display: block" ngf-drop ng-model="file"
-              class="drop-box" ngf-drag-over-class="'dragover'"
-              ngf-max-size="200MB"
+            <div ngf-drop ng-model="file" class="drop-box"
+              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
               ngf-pattern="selectedIoHandler.fileTypeFilter">Drop file
-              here</span>
-          </span>
+              here</div>
+          </div>
         </td>
       </tr>
       <tr ng-show="file">

@@ -49,7 +49,7 @@ tsApp
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : []
-        }
+        };
 
         // Get $scope.projects
         $scope.getProjects = function() {
@@ -79,7 +79,7 @@ tsApp
             } else {
               $scope.setProject(data.projects[0]);
             }
-          })
+          });
 
         };
 
@@ -122,25 +122,25 @@ tsApp
                 $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
                 securityService.updateUserPreferences($scope.user.userPreferences);
                 projectService.fireProjectChanged($scope.project);
-              })
-        }
+              });
+        };
 
         $scope.setRole = function() {
           $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
           securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
-        }
+        };
 
         // Determine whether the user is a project admin
         $scope.isProjectAdmin = function() {
           return $scope.projects.role == 'ADMIN';
-        }
+        };
 
         // Get $scope.refsetTypes - for picklist
         $scope.getRefsetTypes = function() {
           refsetService.getRefsetTypes().then(function(data) {
             $scope.metadata.refsetTypes = data.strings;
-          })
+          });
         };
 
         // Get $scope.metadata.terminologies, also loads
@@ -152,7 +152,7 @@ tsApp
             for (var i = 0; i < data.strings.length; i++) {
               $scope.getTerminologyVersions(data.strings[i]);
             }
-          })
+          });
 
         };
 
@@ -163,7 +163,7 @@ tsApp
             for (var i = 0; i < data.translations.length; i++) {
               $scope.metadata.versions[terminology].push(data.translations[i].version);
             }
-          })
+          });
         };
 
         // Get $scope.metadata.{import,export}Handlers
@@ -174,14 +174,14 @@ tsApp
           refsetService.getExportRefsetHandlers().then(function(data) {
             $scope.metadata.exportHandlers = data.handlers;
           });
-        }
+        };
 
         // Get $scope.metadata.workflowPaths
         $scope.getWorkflowPaths = function() {
           workflowService.getWorkflowPaths().then(function(data) {
             $scope.metadata.workflowPaths = data.strings;
           });
-        }
+        };
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
@@ -190,7 +190,7 @@ tsApp
             $scope.user.userPreferences.lastRefsetAccordion = data;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
-        }
+        };
 
         // Configure tab and accordion
         $scope.configureTab = function() {
@@ -202,7 +202,7 @@ tsApp
             $scope.accordionState['AVAILABLE'] = true;
           }
           securityService.updateUserPreferences($scope.user.userPreferences);
-        }
+        };
 
         // Initialize
         $scope.getProjects();

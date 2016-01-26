@@ -137,7 +137,7 @@ tsApp
                   function(data) {
                     $scope.refsets = data.refsets;
                   });
-              }
+              };
 
               // Get $scope.translations
               $scope.getTranslations = function() {
@@ -158,7 +158,7 @@ tsApp
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
                     $scope.reselect();
-                  })
+                  });
                 }
 
                 if ($scope.value == 'EDITING'
@@ -169,7 +169,7 @@ tsApp
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;
                       $scope.reselect();
-                    })
+                    });
                 }
 
                 if ($scope.value == 'EDITING_ALL') {
@@ -179,7 +179,7 @@ tsApp
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;
                       $scope.reselect();
-                    })
+                    });
                 }
 
                 if ($scope.value == 'RELEASE') {
@@ -192,7 +192,7 @@ tsApp
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
                     $scope.reselect();
-                  })
+                  });
                 }
 
               };
@@ -225,7 +225,7 @@ tsApp
                     $scope.refreshLookupProgress(translation);
                   }
                 }
-              }
+              };
               // Get $scope.selected.translation.concepts
               $scope.getConcepts = function(translation) {
 
@@ -250,7 +250,7 @@ tsApp
                   $scope.paging['concept'].filter, pfs).then(function(data) {
                   translation.concepts = data.concepts;
                   translation.concepts.totalCount = data.totalCount;
-                })
+                });
 
               };
 
@@ -362,7 +362,7 @@ tsApp
                 releaseService.findTranslationReleasesForQuery(translation.id, null, pfs).then(
                   function(data) {
                     $scope.translationReleaseInfo = data.releaseInfos[0];
-                  })
+                  });
 
               };
 
@@ -373,7 +373,7 @@ tsApp
                 function(data) {
                   $scope.user.userPreferences = data;
                 });
-              }
+              };
 
               // export release artifact
               $scope.exportReleaseArtifact = function(artifact) {
@@ -384,8 +384,8 @@ tsApp
               $scope.removeAllTranslationConcepts = function(translation) {
                 translationService.removeAllTranslationConcepts(translation.id).then(
                   function(data) {
-                    translationService.fireTranslationChanged(translation)
-                  })
+                    translationService.fireTranslationChanged(translation);
+                  });
               };
 
               // Convert date to a string
