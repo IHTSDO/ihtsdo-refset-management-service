@@ -535,15 +535,15 @@ tsApp.service('projectService', [
 
     
     // get log for project and refset/translation
-    this.getLog = function(projectId, objectId, lines) {
+    this.getLog = function(projectId, objectId) {
       console.debug('getLog');
       var deferred = $q.defer();
 
       // Assign user to project
       gpService.increment()
       $http.get(
-        projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines='
-          + lines).then(
+        projectUrl + 'log?projectId=' + projectId + 
+         '&objectId=' + objectId + '&lines=1000').then(
       // success
       function(response) {
         gpService.decrement();

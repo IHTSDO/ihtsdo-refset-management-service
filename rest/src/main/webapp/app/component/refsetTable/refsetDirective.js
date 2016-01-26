@@ -1531,7 +1531,7 @@ tsApp
                 
                 // Get log to display
                 $scope.getLog = function() {
-                  projectService.getLog(project.id, refset.id, 6).then(
+                  projectService.getLog(project.id, refset.id).then(
                         // Success
                         function(data) {
                           $scope.log = data;

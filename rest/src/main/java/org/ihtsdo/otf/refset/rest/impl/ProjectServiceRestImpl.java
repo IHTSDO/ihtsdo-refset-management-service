@@ -36,7 +36,6 @@ import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -215,6 +214,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       user.getProjectRoleMap().remove(project);
       securityService.updateUser(user);
 
+      addLogEntry(projectService, userName, "UNASSIGN User from Project", projectId, projectId, user.getUserName());
+      
       return project;
     } catch (Exception e) {
       handleException(e, "trying to remove user from project");
@@ -355,7 +356,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
-      addLogEntry(projectService, userName, "ADD Project", newProject.getId(), newProject.getId(), newProject.getName());
+      addLogEntry(projectService, userName, "ADD Project", newProject.getId(), newProject.getId(), newProject.getTerminologyId() + ": " + newProject.getName());
       return newProject;
     } catch (Exception e) {
       handleException(e, "trying to add a project");
@@ -382,7 +383,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "update project", UserRole.USER);
+      final String userName = authorizeApp(securityService, authToken, "update project", UserRole.USER);
 
       // check to see if project already exists
       boolean found = false;
@@ -421,6 +422,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
       projectService.updateProject(project);
 
+      addLogEntry(projectService, userName, "UPDATE Project", project.getId(), project.getId(), project.getTerminologyId() + ": " + project.getName());
+      
     } catch (Exception e) {
       handleException(e, "trying to update a project");
     } finally {
@@ -451,7 +454,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "remove project", UserRole.USER);
+      final String userName = authorizeApp(securityService, authToken, "remove project", UserRole.USER);
 
       // unassign users from project before deleting it
       final Project project = projectService.getProject(projectId);
@@ -460,7 +463,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
-
+      
+      addLogEntry(projectService, userName, "UPDATE Project", projectId, projectId, project.getTerminologyId() + ": " + project.getName());
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a project");
     } finally {

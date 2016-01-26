@@ -3,12 +3,16 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.jpa.helpers.LogEntryJpa;
@@ -247,6 +251,9 @@ public class RootServiceRestImpl {
     
     //$action (projectId=$projectId, objectId=$objectId): $detail
     StringBuilder message = new StringBuilder();
+    Calendar c = Calendar.getInstance();
+    message.append("[").append(ConfigUtility.DATE_FORMAT4.format(c.getTime()));
+    message.append("] ");
     message.append(action).append(" (projectId=");
     message.append(projectId).append(", objectId=");
     message.append(objectId).append("): ");

@@ -190,10 +190,6 @@
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
-            <i 
-              ng-click="openLogModal()"
-              title="Retrieve log"
-              class="noul material-icons md-18">event_note</i>
 
             <!-- Cancel buttons if migration in progress -->
             <span ng-show="refset.stagingType == 'IMPORT'">
@@ -309,6 +305,10 @@
                   title="Add refset note"
                   ng-click="openNotesModal(selected.refset, 'Refset'); $event.stopPropagation()"
                   class="md-grey material-icons md-18">assignment</i>
+                <i 
+                  ng-click="openLogModal()"
+                  title="Retrieve log"
+                  class="noul material-icons md-18">event_note</i>
               </div>
             </td>
           </tr>

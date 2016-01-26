@@ -309,6 +309,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       memory.setTranslation(newTranslation);
       translationService.addPhraseMemory(memory);
 
+      addLogEntry(translationService, userName, "ADD Translation", newTranslation.getProject().getId(), newTranslation.getId(), newTranslation.getTerminologyId() + ": " + newTranslation.getName());
+      
       translationService.commit();
 
       return newTranslation;
@@ -343,7 +345,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Update translation
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-
+      
+      addLogEntry(translationService, userName, "UPDATE Translation", translation.getProject().getId(), translation.getId(), translation.getTerminologyId() + ": " + translation.getName());
+      
     } catch (Exception e) {
       handleException(e, "trying to update a translation");
     } finally {
@@ -375,7 +379,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         throw new Exception(
             "translation must have a project with a non null identifier.");
       }
-      authorizeProject(translationService, translation.getProject().getId(),
+      final String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "removerefset", UserRole.AUTHOR);
 
       // If cascade is true, remove any tracking records associated with this
@@ -399,6 +403,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId, cascade);
+      
+      addLogEntry(translationService, userName, "REMOVE Translation", translation.getProject().getId(), translationId, translation.getTerminologyId() + ": " + translation.getName());
+      
 
     } catch (Exception e) {
       handleException(e, "trying to remove a translation");
@@ -475,7 +482,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     try {
       final Translation translation =
           translationService.getTranslation(translationId);
-      authorizeProject(translationService, translation.getProject().getId(),
+      final String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "remove all concepts", UserRole.AUTHOR);
       translationService.setTransactionPerOperation(false);
       translationService.beginTransaction();
@@ -495,6 +502,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           translationService.removeConcept(concept.getId(), true);
         }
       }
+      
+      addLogEntry(translationService, userName, "REMOVE All Translation Concepts", translation.getProject().getId(), translation.getId(), ": ");
+      
       translationService.commit();
 
     } catch (Exception e) {
@@ -989,6 +999,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
+      addLogEntry(translationService, userName, "ADD Translation Concept", translation.getProject().getId(), translation.getId(), newConcept.getTerminologyId() + ": " + newConcept.getName());
+      
       translationService.commit();
       return newConcept;
     } catch (Exception e) {
@@ -1136,6 +1148,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
+      addLogEntry(translationService, userName, "UPDATE Translation Concept", translation.getProject().getId(), translation.getId(), concept.getTerminologyId() + ": " + concept.getName());
+      
       // finish transaction
       translationService.commit();
     } catch (Exception e) {
@@ -1172,13 +1186,15 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Translation translation = concept.getTranslation();
 
       // Authorize call
-      authorizeProject(translationService, translation.getProject().getId(),
+      final String userName = authorizeProject(translationService, translation.getProject().getId(),
           securityService, authToken, "remove translation concept",
           UserRole.AUTHOR);
 
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId, true);
 
+      addLogEntry(translationService, userName, "REMOVE Translation Concept", translation.getProject().getId(), translation.getId(), concept.getTerminologyId() + ": " + concept.getName());
+      
       translationService.commit();
     } catch (Exception e) {
       handleException(e, "trying to remove a translation concept");
@@ -1482,7 +1498,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
-
+      addLogEntry(translationService, userName, "REMOVE Spelling Dictionary Entry", translation.getProject().getId(), translation.getId(), entry + ": ");
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a spelling dictionary entry");
     } finally {
@@ -1755,7 +1772,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
-
+      addLogEntry(translationService, userName, "REMOVE Phrase Memory Entry", translation.getProject().getId(), translation.getId(), name + ": " + translatedName);
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a phrase memory entry");
     } finally {
@@ -2457,7 +2475,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.getNotes().add(newNote);
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-
+      
+      addLogEntry(translationService, userName, "ADD Translation Note", translation.getProject().getId(), translation.getId(), newNote.getId() + ": " + newNote.getValue());
+      
       return newNote;
     } catch (Exception e) {
       handleException(e, "trying to add translation note");
@@ -2508,7 +2528,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
-
+      
+      addLogEntry(translationService, userName, "REMOVE Translation Note", translation.getProject().getId(), translationId, translation.getTerminologyId() + ": " + noteId);
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a translation note");
     } finally {
@@ -2567,6 +2589,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
+      addLogEntry(translationService, userName, "ADD Translation Concept Note", translation.getProject().getId(), translation.getId(), newNote.getId() + ": " + newNote.getValue());
+      
       return newNote;
 
     } catch (Exception e) {
@@ -2619,6 +2643,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
+      addLogEntry(translationService, userName, "REMOVE Translation Concept Note", translation.getProject().getId(), translation.getId(), concept.getTerminologyId() + ": " + noteId );
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a concept note");
     } finally {
