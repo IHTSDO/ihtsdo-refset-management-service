@@ -2380,6 +2380,63 @@ tsApp
                 $scope.format = 'yyyyMMdd';
               }
 
+              
+              // Log modal
+              $scope.openLogModal = function() {
+                console.debug('openLogModal ');
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/log.html',
+                  controller : LogModalCtrl,
+                  backdrop : 'static',
+                  size : 'lg',
+                  resolve : {
+                    translation : function() {
+                      return $scope.selected.translation;
+                    },
+                    project : function() {
+                      return $scope.project;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                });
+              };
+
+              // Log controller
+              var LogModalCtrl = function($scope, $uibModalInstance, translation, project) {
+                console.debug('Entered log modal control', translation, project);
+
+                $scope.errors = [];
+                $scope.warnings = [];
+
+                
+                // Get log to display
+                $scope.getLog = function() {
+                  projectService.getLog(project.id, translation.id).then(
+                        // Success
+                        function(data) {
+                          $scope.log = data;
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        })            
+                  
+                }
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+                
+                // initialize
+                $scope.getLog();
+              }; 
+              
               // Feedback modal
               $scope.openFeedbackModal = function(ltranslation) {
                 console.debug('Open feedbackModal ', ltranslation);

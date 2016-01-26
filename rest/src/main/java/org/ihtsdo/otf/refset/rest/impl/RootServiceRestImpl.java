@@ -3,14 +3,23 @@
  */
 package org.ihtsdo.otf.refset.rest.impl;
 
+import java.util.Calendar;
+import java.util.Date;
+
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.LogEntry;
+import org.ihtsdo.otf.refset.jpa.helpers.LogEntryJpa;
+import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 
@@ -129,7 +138,7 @@ public class RootServiceRestImpl {
     // return username
     return userName;
   }
-
+  
   /**
    * Authorize private project.
    *
@@ -219,5 +228,44 @@ public class RootServiceRestImpl {
    */
   public static void setNotificationWebsocket(NotificationWebsocket websocket2) {
     websocket = websocket2;
+  }
+  
+  /**
+   * Adds the log entry.
+   *
+   * @param service the service
+   * @param userName the user name
+   * @param action the action
+   * @param projectId the project id
+   * @param objectId the object id
+   * @param detail the detail
+   * @return the log entry
+   * @throws Exception the exception
+   */
+  public LogEntry addLogEntry(RootService service, String userName, String action, Long projectId, Long objectId, String detail)
+    throws Exception {
+    LogEntry entry = new LogEntryJpa();
+    entry.setLastModifiedBy(userName);
+    entry.setObjectId(objectId);
+    entry.setProjectId(projectId);
+    
+    //$action (projectId=$projectId, objectId=$objectId): $detail
+    StringBuilder message = new StringBuilder();
+    Calendar c = Calendar.getInstance();
+    message.append("[").append(ConfigUtility.DATE_FORMAT4.format(c.getTime()));
+    message.append("] ");
+    message.append(action).append(" (projectId=");
+    message.append(projectId).append(", objectId=");
+    message.append(objectId).append("): ");
+    message.append(detail).append("\n");
+
+    entry.setMessage(message.toString());
+    
+    // Add component
+    LogEntry newLogEntry = service.addLogEntry(entry);
+
+    // do not inform listeners
+    return newLogEntry;
+
   }
 }

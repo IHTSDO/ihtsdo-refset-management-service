@@ -678,4 +678,31 @@ public class ProjectClientRest extends RootClientRest implements
         resultString, DescriptionTypeListJpa.class);
 
   }
+
+  @Override
+  public String getLog(Long projectId, Long objectId, int lines,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+    validateNotEmpty(projectId, "projectId");
+    validateNotEmpty(objectId, "objectId");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/log?"
+            + "projectId=" + projectId + "&objectId=" + objectId + "&lines=" + lines);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return resultString;
+
+  }
 }
