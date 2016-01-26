@@ -49,7 +49,7 @@ public class EqualsHashcodeTester extends ProxyTester {
     Object o1 = createObject(1);
     Object o2 = createObject(1);
     setFields(o2, false, true, 2);
-    return o1.equals(o2);
+     return o1.equals(o2);
   }
 
   /**

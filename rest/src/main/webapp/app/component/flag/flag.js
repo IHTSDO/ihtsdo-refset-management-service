@@ -13,13 +13,13 @@ tsApp.directive('flagIcon', [ 'projectService', function(projectService) {
       // Tests that the key has an icon
       $scope.hasIcon = function(key) {
         return projectService.hasIcon(key);
-      }
+      };
 
       // Returns the icon path for the key (moduleId or namespaceId)
       $scope.getIcon = function(key) {
         return projectService.getIcon(key);
-      }
+      };
 
     } ]
-  }
+  };
 } ]);

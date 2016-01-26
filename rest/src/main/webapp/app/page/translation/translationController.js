@@ -50,7 +50,7 @@ tsApp
           importHandlers : [],
           exportHandlers : [],
           workflowPaths : []
-        }
+        };
 
         // Get $scope.projects
         $scope.getProjects = function() {
@@ -80,7 +80,7 @@ tsApp
             } else {
               $scope.setProject(data.projects[0]);
             }
-          })
+          });
 
         };
 
@@ -123,19 +123,19 @@ tsApp
                 $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
                 securityService.updateUserPreferences($scope.user.userPreferences);
                 projectService.fireProjectChanged($scope.project);
-              })
-        }
+              });
+        };
 
         $scope.setRole = function() {
           $scope.user.userPreferences.lastProjectRole = $scope.projects.role;
           securityService.updateUserPreferences($scope.user.userPreferences);
           projectService.fireProjectChanged($scope.project);
-        }
+        };
 
         // Determine whether the user is a project admin
         $scope.isProjectAdmin = function() {
           return $scope.projects.role == 'ADMIN';
-        }
+        };
 
         // Get $scope.metadata.{import,export}Handlers
         $scope.getIOHandlers = function() {
@@ -145,14 +145,14 @@ tsApp
           translationService.getExportTranslationHandlers().then(function(data) {
             $scope.metadata.exportHandlers = data.handlers;
           });
-        }
+        };
 
         // Get $scope.metadata.workflowPaths
         $scope.getWorkflowPaths = function() {
           workflowService.getWorkflowPaths().then(function(data) {
             $scope.metadata.workflowPaths = data.strings;
           });
-        }
+        };
 
         // Set the current accordion
         $scope.setAccordion = function(data) {
@@ -161,7 +161,7 @@ tsApp
             $scope.user.userPreferences.lastTranslationAccordion = data;
             securityService.updateUserPreferences($scope.user.userPreferences);
           }
-        }
+        };
 
         // Configure tab and accordion
         $scope.configureTab = function() {
@@ -173,7 +173,7 @@ tsApp
             $scope.accordionState['EDITING'] = true;
           }
           securityService.updateUserPreferences($scope.user.userPreferences);
-        }
+        };
 
         // Initialize
         $scope.getProjects();

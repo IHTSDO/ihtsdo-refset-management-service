@@ -103,24 +103,30 @@
             ng-show="membersInCommon.length > 0 || paging['membersInCommon'].typeFilter != ''"
             class="table">
             <thead>
-              <th class="col-md-4 col-xs-4">Concept id</th>
-              <th class="col-md-7 col-xs-7">Concept name</th>
-              <th class="col-md-1 col-xs-1" ng-show="refset.type == 'EXTENSIONAL'"><select
-                title="Filter by status" style="width: 60px;"
-                ng-model="paging['membersInCommon'].typeFilter"
-                ng-options="item for item in statusTypes"
-                ng-change="findMembersInCommon()">
-                  <option value="">All</option>
-              </select></th>
-              <th class="col-md-1 col-xs-1"></th>
+              <tr>
+                <th class="col-md-4 col-xs-4">Concept id</th>
+                <th class="col-md-7 col-xs-7">Concept name</th>
+                <th class="col-md-1 col-xs-1"
+                  ng-show="refset.type == 'EXTENSIONAL'"><select
+                  title="Filter by status" style="width: 60px;"
+                  ng-model="paging['membersInCommon'].typeFilter"
+                  ng-options="item for item in statusTypes"
+                  ng-change="findMembersInCommon()">
+                    <option value="">All</option>
+                </select></th>
+                <th class="col-md-1 col-xs-1"></th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in membersInCommon">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td ng-show="refset.type == 'EXTENSIONAL'"><button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
-                <td><i title="Remove"
+                <td ng-show="refset.type == 'EXTENSIONAL'">
+                  <button class="btn btn-xs retired"
+                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                </td>
+                <td>
+                  <i title="Remove"
                     confirm="Are you sure you want to remove the retired member?"
                     ng-show="!member.conceptActive && refset.type == 'EXTENSIONAL'"
                     ng-click="removeMember(member); $event.stopPropagation()"
@@ -129,18 +135,20 @@
               </tr>
             </tbody>
           </table>
-          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
-            class="alert alert-warning"> No filter results</div>            
-          <div ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
-            class="alert alert-warning"> Origin and staged refsets have
-            no members in common</div>
+          <div
+            ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter != ''"
+            class="alert alert-warning">No filter results</div>
+          <div
+            ng-show="membersInCommon.length == 0 && paging['membersInCommon'].typeFilter == ''"
+            class="alert alert-warning">Origin and staged refsets have no
+            members in common</div>
         </div>
       </div>
-      
-      
+
+
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          
+
           <h5
             ng-show="validInclusions.length > 0 || stagedInclusions.length > 0"
             uib-tooltip="Concepts not in migrated refset.  User can choose to continue their explicit inclusion.">
@@ -180,23 +188,27 @@
             ng-show="validInclusions.length > 0 || stagedInclusions.length > 0"
             class="table">
             <thead>
-              <th class="col-md-3 col-xs-3">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
-              <th class="col-md-1 col-xs-1"><select
-              title="Filter by status" style="width: 60px;"
-              ng-model="paging['validInclusions'].typeFilter"
-              ng-options="item for item in statusTypes"
-              ng-change="getPagedValidInclusions()">
-                <option value="">All</option>
-              </select></th>
-              <th class="col-md-1 col-xs-1"></th>
+              <tr>
+                <th class="col-md-3 col-xs-3">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+                <th class="col-md-1 col-xs-1"><select
+                  title="Filter by status" style="width: 60px;"
+                  ng-model="paging['validInclusions'].typeFilter"
+                  ng-options="item for item in statusTypes"
+                  ng-change="getPagedValidInclusions()">
+                    <option value="">All</option>
+                </select></th>
+                <th class="col-md-1 col-xs-1"></th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedValidInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
+                <td>
+                  <button class="btn btn-xs retired"
+                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                </td>
                 <td>
                   <a ng-click="include(stagedRefset, member, true)">
                     <i uib-tooltip="Add inclusion to staged refset."
@@ -244,28 +256,32 @@
             ng-show="pagedStagedInclusions.length == 0 && paging['stagedInclusions'].filter"
             class="alert alert-warning"> No staged inclusions matching
             filter </span>
-          
+
           <table
             ng-show="stagedInclusions.length > 0 || validInclusions.length > 0"
             class="table">
             <thead>
-              <th class="col-md-3 col-xs-3">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
-              <th class="col-md-1 col-xs-1"><select
-              title="Filter by status" style="width: 60px;"
-              ng-model="paging['stagedInclusions'].typeFilter"
-              ng-options="item for item in statusTypes"
-              ng-change="getPagedStagedInclusions()">
-                <option value="">All</option>
-              </select></th>
-              <th class="col-md-1 col-xs-1"></th>
+              <tr>
+                <th class="col-md-3 col-xs-3">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+                <th class="col-md-1 col-xs-1"><select
+                  title="Filter by status" style="width: 60px;"
+                  ng-model="paging['stagedInclusions'].typeFilter"
+                  ng-options="item for item in statusTypes"
+                  ng-change="getPagedStagedInclusions()">
+                    <option value="">All</option>
+                </select></th>
+                <th class="col-md-1 col-xs-1"></th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedStagedInclusions">
                 <td style="word-break: break-word;">{{member.conceptId}}</td>
                 <td>{{member.conceptName}}</td>
-                <td><button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button></td>
+                <td>
+                  <button class="btn btn-xs retired"
+                    ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                </td>
                 <td>
                   <a ng-click="revert(refset, member)">
                     <i uib-tooltip="Revert staged inclusion."
@@ -281,9 +297,8 @@
 
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          
-          <h5
-            ng-show="invalidInclusions.length > 0"
+
+          <h5 ng-show="invalidInclusions.length > 0"
             uib-tooltip="Concepts that were inclusions in origin refset, but now are regular members of the migrated refset.">
             <b>Invalid Inclusions<span
                 ng-show="pagedInvalidInclusions.length > 0">
@@ -319,8 +334,10 @@
 
           <table ng-show="invalidInclusions.length > 0" class="table">
             <thead>
-              <th class="col-md-4 col-xs-4">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
+              <tr>
+                <th class="col-md-4 col-xs-4">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedInvalidInclusions">
@@ -331,10 +348,10 @@
           </table>
         </div>
       </div>
-      
+
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          
+
           <h5
             ng-show="validExclusions.length > 0 || stagedExclusions.length > 0"
             uib-tooltip="Concepts that are in migrated refset.  User can choose to continue their exclusion.">
@@ -374,9 +391,11 @@
             ng-show="validExclusions.length > 0 || stagedExclusions.length > 0"
             class="table">
             <thead>
-              <th class="col-md-3 col-xs-3">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
-              <th class="col-md-1 col-xs-1"></th>
+              <tr>
+                <th class="col-md-3 col-xs-3">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+                <th class="col-md-1 col-xs-1"></th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedValidExclusions">
@@ -429,14 +448,16 @@
             ng-show="pagedStagedExclusions.length == 0 && paging['stagedExclusions'].filter"
             class="alert alert-warning"> No staged exclusions matching
             filter </span>
-          
+
           <table
             ng-show="stagedExclusions.length > 0 || validExclusions.length > 0"
             class="table">
             <thead>
-              <th class="col-md-3 col-xs-3">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
-              <th class="col-md-1 col-xs-1"></th>
+              <tr>
+                <th class="col-md-3 col-xs-3">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+                <th class="col-md-1 col-xs-1"></th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedStagedExclusions">
@@ -457,9 +478,8 @@
 
       <div class="row">
         <div class="col-md-6 col-xs-6">
-          
-          <h5
-            ng-show="invalidExclusions.length > 0"
+
+          <h5 ng-show="invalidExclusions.length > 0"
             uib-tooltip="Concepts that can no longer be excluded, because they are not in migrated refset.">
             <b>Invalid Exclusions<span
                 ng-show="pagedInvalidExclusions.length > 0">
@@ -495,8 +515,10 @@
 
           <table ng-show="invalidExclusions.length > 0" class="table">
             <thead>
-              <th class="col-md-4 col-xs-4">Concept id</th>
-              <th class="col-md-8 col-xs-8">Concept name</th>
+              <tr>
+                <th class="col-md-4 col-xs-4">Concept id</th>
+                <th class="col-md-8 col-xs-8">Concept name</th>
+              </tr>
             </thead>
             <tbody>
               <tr ng-repeat="member in pagedInvalidExclusions">
@@ -506,7 +528,7 @@
             </tbody>
           </table>
         </div>
-      </div>      
+      </div>
 
       <!-- End col-md-8 -->
     </div>
@@ -540,9 +562,11 @@
 
       <table ng-show="newRegularMembers.length > 0" class="table">
         <thead>
-          <th class="col-md-3 col-xs-3">Concept id</th>
-          <th class="col-md-8 col-xs-8">Concept name</th>
-          <th class="col-md-1 col-xs-1"></th>
+          <tr>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-8 col-xs-8">Concept name</th>
+            <th class="col-md-1 col-xs-1"></th>
+          </tr>
         </thead>
         <tbody>
           <tr ng-repeat="member in newRegularMembers"
@@ -592,16 +616,18 @@
         ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter != ''"
         class="table">
         <thead>
-          <th class="col-md-3 col-xs-3">Concept id</th>
-          <th class="col-md-7 col-xs-7">Concept name</th>
-          <th class="col-md-1 col-xs-1"><select title="Filter by status"
-            style="width: 45px;"
-            ng-model="paging['oldRegularMembers'].typeFilter"
-            ng-options="item for item in statusTypes"
-            ng-change="getOldRegularMembers()">
-              <option value="">All</option>
-          </select></th>
-          <th class="col-md-1 col-xs-1"></th>
+          <tr>
+            <th class="col-md-3 col-xs-3">Concept id</th>
+            <th class="col-md-7 col-xs-7">Concept name</th>
+            <th class="col-md-1 col-xs-1"><select title="Filter by status"
+              style="width: 45px;"
+              ng-model="paging['oldRegularMembers'].typeFilter"
+              ng-options="item for item in statusTypes"
+              ng-change="getOldRegularMembers()">
+                <option value="">All</option>
+            </select></th>
+            <th class="col-md-1 col-xs-1"></th>
+          </tr>
         </thead>
         <tbody>
           <tr ng-repeat="member in oldRegularMembers"

@@ -4,7 +4,7 @@
   <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <span style="display: block;">
+    <div>
       <uib-pagination items-per-page="pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
@@ -22,11 +22,11 @@
         ng-click="paging['translation'].filter = ''; getTranslations()"
         title="Click to clear filter text">Clear</button>
       <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
-        <div style="float: right;">
+        <span style="float: right;">
           <button ng-click="openAddTranslationModal(); $event.stopPropagation()"
             title="Add translation" class="btn btn-xs btn-primary">Add
             Translation</button>
-        </div>
+        </span>
       </h4>
 
       <button type="button" class="btn btn-xs btn-primary"
@@ -37,45 +37,47 @@
         <span ng-show="showLatest" title="Click to show all">Latest</span>
         <span ng-hide="showLatest" title="Click to show only most recent">All</span>
       </button>
-    </span>
+    </div>
 
     <span ng-show="translations.totalCount == 0" style="display: block;"
       class="alert alert-warning">No translations.</span>
     <table ng-show="translations.totalCount > 0" class="table">
       <thead>
-        <th class="col-md-2 col-xs-2"
-          ng-click="setSortField('translation','terminologyId', null)">Refset
-          Id<span ng-bind="getSortIndicator('translation','terminologyId')"></span>
-        </th>
-        <th class="col-md-4 col-xs-4"
-          ng-click="setSortField('translation','name', null)">Name<span
-            ng-bind="getSortIndicator('translation','name',null)"></span> / <span
-            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
-            <span ng-click="setSortField('translation','effectiveTime', null)">
-              Effective Time
-              <span
-                ng-bind="getSortIndicator('translation','effectiveTime',null)"></span>
+        <tr>
+          <th class="col-md-2 col-xs-2"
+            ng-click="setSortField('translation','terminologyId', null)">Refset
+            Id<span ng-bind="getSortIndicator('translation','terminologyId')"></span>
+          </th>
+          <th class="col-md-4 col-xs-4"
+            ng-click="setSortField('translation','name', null)">Name<span
+              ng-bind="getSortIndicator('translation','name',null)"></span> / <span
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
+              <span ng-click="setSortField('translation','effectiveTime', null)">
+                Effective Time
+                <span
+                  ng-bind="getSortIndicator('translation','effectiveTime',null)"></span>
+              </span>
+            </span> <span
+              ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
+              <span ng-click="setSortField('translation','lastModified', null)">
+                Last Modified
+                <span
+                  ng-bind="getSortIndicator('translation','lastModified',null)"></span>
+              </span>
+            </span></th>
+          <th class="col-md-3 col-xs-3"
+            ng-click="setSortField('translation','module', null)">Module<span
+              ng-bind="getSortIndicator('translation','module',null)"></span></th>
+          <th class="col-md-1 col-xs-1"
+            ng-click="setSortField('translation','language', null)">Lang<span
+              ng-bind="getSortIndicator('translation','language',null)"></span></th>
+          <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
+            <span ng-show="value == 'EDITING'" style="float: right;">
+              <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
+                title="Add translation" class="noul material-icons md-18">add</i>
             </span>
-          </span> <span
-            ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
-            <span ng-click="setSortField('translation','lastModified', null)">
-              Last Modified
-              <span
-                ng-bind="getSortIndicator('translation','lastModified',null)"></span>
-            </span>
-          </span></th>
-        <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('translation','module', null)">Module<span
-            ng-bind="getSortIndicator('translation','module',null)"></span></th>
-        <th class="col-md-1 col-xs-1"
-          ng-click="setSortField('translation','language', null)">Lang<span
-            ng-bind="getSortIndicator('translation','language',null)"></span></th>
-        <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
-          <span ng-show="value == 'EDITING'" style="float: right;">
-            <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
-              title="Add translation" class="noul material-icons md-18">add</i>
-          </span>
-        </th>
+          </th>
+        </tr>
       </thead>
       <tbody>
         <tr ng-repeat="translation in translations"
@@ -88,8 +90,7 @@
               <br />{{toShortDate(translation.effectiveTime)}}
             </span>
             <span ng-show="!translation.effectiveTime">
-              <br />{{toDate(translation.lastModified)}}
-              <br />{{translation.lastModifiedBy}}
+              <br />{{toDate(translation.lastModified)}} <br />{{translation.lastModifiedBy}}
             </span>
           </td>
           <td>
@@ -97,9 +98,10 @@
             <!-- Mobile friendly line-break -->
             <br class="visible-xs-inline" />
             <span flag-icon obj="translation"></span>
-            <!-- Mobile friendly line-break -->
-            <br class="visible-xs-inline" />
-            {{getTranslationOrganization(translation)}}
+            <span>
+              <!-- Mobile friendly line-break -->
+              <br class="visible-xs-inline" />
+              {{getTranslationOrganization(translation)}}
             </span>
             <span ng-show="value != 'PUBLISHED' && value != 'BETA'">
               <br />{{translation.workflowStatus}}
@@ -187,7 +189,6 @@
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
           </td>
-          </td>
 
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
@@ -216,8 +217,10 @@
       <h4>{{selected.translation.name}}</h4>
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-4 col-xs-4"></th>
-          <th class="col-md-8 col-xs-8"></th>
+          <tr>
+            <th class="col-md-4 col-xs-4"></th>
+            <th class="col-md-8 col-xs-8"></th>
+          </tr>
         </thead>
         <tbody>
           <tr>
@@ -382,9 +385,11 @@
           ng-show="selected.translation && translationReleaseInfo && translationReleaseInfo.artifacts"
           class="table">
           <thead>
-            <th class="col-md-6 col-xs-6">Release File</th>
-            <th class="col-md-6 col-xs-6">Timestamp</th>
-            <th style="width: 1%; word-wrap: nowrap"></th>
+            <tr>
+              <th class="col-md-6 col-xs-6">Release File</th>
+              <th class="col-md-6 col-xs-6">Timestamp</th>
+              <th style="width: 1%; word-wrap: nowrap"></th>
+            </tr>
           </thead>
           <tbody>
             <tr
@@ -449,21 +454,23 @@
       concepts.</span>
     <table ng-show="selected.translation.available.totalCount > 0" class="table">
       <thead>
-        <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('available','terminologyId', null)">Concept
-          Id<span ng-bind="getSortIndicator('available','terminologyId')"></span>
-        </th>
-        <th class="col-md-5 col-xs-5"
-          ng-click="setSortField('available','name', null)">Name<span
-            ng-bind="getSortIndicator('available','name',null)"></span></th>
-        <th class="col-md-2 col-xs-2"
-          ng-click="setSortField('available','lastModified', selected.translation)">Last
-          Modified<span ng-bind="getSortIndicator('available','lastModified')"></span>
-        </th>
-        <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
-            ng-show="projects.role != 'ADMIN' && selected.translation.available.totalCount > 0"
-            ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
-            title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
+        <tr>
+          <th class="col-md-3 col-xs-3"
+            ng-click="setSortField('available','terminologyId', null)">Concept
+            Id<span ng-bind="getSortIndicator('available','terminologyId')"></span>
+          </th>
+          <th class="col-md-5 col-xs-5"
+            ng-click="setSortField('available','name', null)">Name<span
+              ng-bind="getSortIndicator('available','name',null)"></span></th>
+          <th class="col-md-2 col-xs-2"
+            ng-click="setSortField('available','lastModified', selected.translation)">Last
+            Modified<span ng-bind="getSortIndicator('available','lastModified')"></span>
+          </th>
+          <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
+              ng-show="projects.role != 'ADMIN' && selected.translation.available.totalCount > 0"
+              ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
+              title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
+        </tr>
       </thead>
       <tbody>
         <tr ng-repeat="concept in selected.translation.available">
@@ -519,22 +526,25 @@
       concepts.</span>
     <table ng-show="selected.translation.assigned.totalCount > 0" class="table">
       <thead>
-        <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('assigned','conceptTerminologyId', null)">Concept
-          Id<span ng-bind="getSortIndicator('assigned','conceptTerminologyId')"></span>
-        </th>
-        <th class="col-md-5 col-xs-5"
-          ng-click="setSortField('assigned','conceptName', null)">Name<span
-            ng-bind="getSortIndicator('assigned','conceptName',null)"></span></th>
-        <th class="col-md-2 col-xs-2"
-          ng-click="setSortField('assigned','lastModified', selected.translation)">Last
-          Modified<span ng-bind="getSortIndicator('assigned','lastModified')"></span>
-        </th>
-        <th class="col-md-2 col-xs-2">Actions <i
-            ng-show="selected.translation.assigned.totalCount > 0"
-            confirm="Are you sure you want to unassign all concepts?"
-            ng-click="unassignAll();" title="Unassign all"
-            class="noul material-icons md-18">assignment_return</i></th>
+        <tr>
+          <th class="col-md-3 col-xs-3"
+            ng-click="setSortField('assigned','conceptTerminologyId', null)">Concept
+            Id<span
+              ng-bind="getSortIndicator('assigned','conceptTerminologyId')"></span>
+          </th>
+          <th class="col-md-5 col-xs-5"
+            ng-click="setSortField('assigned','conceptName', null)">Name<span
+              ng-bind="getSortIndicator('assigned','conceptName',null)"></span></th>
+          <th class="col-md-2 col-xs-2"
+            ng-click="setSortField('assigned','lastModified', selected.translation)">Last
+            Modified<span ng-bind="getSortIndicator('assigned','lastModified')"></span>
+          </th>
+          <th class="col-md-2 col-xs-2">Actions <i
+              ng-show="selected.translation.assigned.totalCount > 0"
+              confirm="Are you sure you want to unassign all concepts?"
+              ng-click="unassignAll();" title="Unassign all"
+              class="noul material-icons md-18">assignment_return</i></th>
+        </tr>
       </thead>
       <tbody>
         <tr ng-repeat="record in selected.translation.assigned">
@@ -553,7 +563,7 @@
 
             <!-- UnAssign (instead of delete) -->
             <i ng-show="projects.role != 'ADMIN'"
-              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
+              confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
               ng-click="unassign(record.concept)" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
 
@@ -645,7 +655,7 @@
         <span ng-show="selected.translation.concepts.totalCount>0">
           ({{selected.translation.concepts.totalCount}})</span>
 
-        <div style="float: right;">
+        <span style="float: right;">
 
           <i
             ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); $event.stopPropagation()"
@@ -656,19 +666,19 @@
             title="Import translation concepts"
             class="noul material-icons md-18">file_upload</i>
           <i
-            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.refset.name}})?"
+            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
             ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
             ng-click="removeAllTranslationConcepts(selected.translation); "
             title="Remove all concepts" class="noul material-icons md-18">delete</i>
-        </div>
+        </span>
       </h4>
       <span
         ng-show="selected.translation && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
         <br />
-        <div class="alert alert-warning">Translation has no concepts </div>
+        <span class="alert alert-warning">Translation has no concepts</span>
       </span>
 
-      <span
+      <div
         ng-show="selected.translation.concepts.totalCount > 0 || paging['concept'].filter">
 
         <span style="display: block;">
@@ -694,25 +704,28 @@
 
         <table class="table">
           <thead>
-            <th class="col-md-3 col-xs-3"
-              ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
-              Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
-            </th>
-            <th class="col-md-5 col-xs-5"
-              ng-click="setSortField('concept','name', selected.translation)">Name<span
-                ng-bind="getSortIndicator('concept','name')"></span>
-            </th>
-            <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
-              class="col-md-2 col-xs-2"
-              ng-click="setSortField('concept','lastModified', selected.translation)">Last
-              Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
-            </th>
-            <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
-              class="col-md-2 col-xs-2"
-              ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
-              Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
-            </th>
-            <th ng-show="value == 'EDITING'">Actions</th>
+            <tr>
+              <th class="col-md-3 col-xs-3"
+                ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
+                Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
+              </th>
+              <th class="col-md-5 col-xs-5"
+                ng-click="setSortField('concept','name', selected.translation)">Name<span
+                  ng-bind="getSortIndicator('concept','name')"></span>
+              </th>
+              <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
+                class="col-md-2 col-xs-2"
+                ng-click="setSortField('concept','lastModified', selected.translation)">Last
+                Modified<span
+                  ng-bind="getSortIndicator('concept','lastModified')"></span>
+              </th>
+              <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
+                class="col-md-2 col-xs-2"
+                ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
+                Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
+              </th>
+              <th ng-show="value == 'EDITING'">Actions</th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="concept in selected.translation.concepts"
@@ -727,7 +740,9 @@
                 </span>
               </td>
               <td
-                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">{{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}</td>
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
+                {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
+              </td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
               <td ng-show="value == 'EDITING'">
@@ -757,7 +772,7 @@
           <br />No translation concepts matching filter
         </span>
 
-      </span>
+      </div>
     </div>
 
     <!-- EndR3C2 -->

@@ -18,17 +18,17 @@ tsApp.service('projectService', [
     // broadcasts a new project id
     this.fireProjectChanged = function(project) {
       $rootScope.$broadcast('refset:projectChanged', project);
-    }
+    };
 
     // Gets the user projects info
     this.getUserProjectsInfo = function() {
       return userProjectsInfo;
-    }
+    };
 
     this.getIconConfig = function() {
       console.debug('get icon config', iconConfig);
       return iconConfig;
-    }
+    };
 
     // get icon config info
     this.prepareIconConfig = function() {
@@ -36,7 +36,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'icons').then(
       // success
       function(response) {
@@ -55,24 +55,24 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // Tests that the key has an icon
     this.hasIcon = function(key) {
       return iconConfig[key] !== undefined;
-    }
+    };
 
     // Returns the icon path for the key (moduleId or namespaceId)
     this.getIcon = function(key) {
       return iconConfig[key];
-    }
+    };
 
     // get all projects
     this.getProjects = function() {
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'all').then(
       // success
       function(response) {
@@ -86,14 +86,14 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // get project
     this.getProject = function(projectId) {
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + projectId).then(
       // success
       function(response) {
@@ -107,14 +107,14 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
     // add project
     this.addProject = function(project) {
       console.debug('addProject');
       var deferred = $q.defer();
 
       // Add project
-      gpService.increment()
+      gpService.increment();
       $http.put(projectUrl + 'add', project).then(
       // success
       function(response) {
@@ -129,7 +129,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // update project
     this.updateProject = function(project) {
@@ -137,7 +137,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Add project
-      gpService.increment()
+      gpService.increment();
       $http.post(projectUrl + 'update', project).then(
       // success
       function(response) {
@@ -152,7 +152,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // remove project
     this.removeProject = function(project) {
@@ -160,7 +160,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Add project
-      gpService.increment()
+      gpService.increment();
       $http['delete'](projectUrl + 'remove/' + project.id).then(
       // success
       function(response) {
@@ -175,7 +175,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // Finds projects as a list
     this.findProjectsAsList = function(query, pfs) {
@@ -265,7 +265,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Assign user to project
-      gpService.increment()
+      gpService.increment();
       $http.get(
         projectUrl + 'assign?projectId=' + projectId + '&userName=' + userName + '&role='
           + projectRole).then(
@@ -282,7 +282,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // unassign user from project
     this.unassignUserFromProject = function(projectId, userName) {
@@ -290,23 +290,22 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Unassign user from project
-      gpService.increment()
-      $http.get(projectUrl + 'unassign?projectId=' + projectId + '&userName=' + userName)
-        .then(
-        // success
-        function(response) {
-          console.debug('  project = ', response.data);
-          gpService.decrement();
-          deferred.resolve(response.data);
-        },
-        // error
-        function(response) {
-          utilService.handleError(response);
-          gpService.decrement();
-          deferred.reject(response.data);
-        });
+      gpService.increment();
+      $http.get(projectUrl + 'unassign?projectId=' + projectId + '&userName=' + userName).then(
+      // success
+      function(response) {
+        console.debug('  project = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
       return deferred.promise;
-    }
+    };
 
     // get project roles
     this.getProjectRoles = function() {
@@ -314,7 +313,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Get project roles
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'roles').then(
       // success
       function(response) {
@@ -328,7 +327,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // does user have any role on any project
     this.getUserHasAnyRole = function() {
@@ -336,7 +335,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Get project roles
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'user/anyrole').then(
       // success
       function(response) {
@@ -352,7 +351,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     this.findConceptsForQuery = function(query, terminology, version, pfs) {
 
@@ -392,8 +391,8 @@ tsApp.service('projectService', [
       // Make POST call
       gpService.increment();
       $http.get(
-        projectUrl + 'concept/parents?terminologyId=' + terminologyId + '&terminology=' + terminology
-          + '&version=' + version
+        projectUrl + 'concept/parents?terminologyId=' + terminologyId + '&terminology='
+          + terminology + '&version=' + version
           + (translationId != null ? '&translationId=' + translationId : '')).then(
       // success
       function(response) {
@@ -474,7 +473,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'terminology/all').then(
       // success
       function(response) {
@@ -488,14 +487,14 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // get terminology versions
     this.getTerminologyVersions = function(terminology) {
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'terminology/' + terminology + '/all').then(
       // success
       function(response) {
@@ -509,7 +508,7 @@ tsApp.service('projectService', [
         deferred.reject(response.data);
       });
       return deferred.promise;
-    }
+    };
 
     // Get standard description types
     this.getStandardDescriptionTypes = function(terminology, version) {
@@ -517,7 +516,7 @@ tsApp.service('projectService', [
       var deferred = $q.defer();
 
       // Get projects
-      gpService.increment()
+      gpService.increment();
       $http.get(projectUrl + 'terminology/' + terminology + '/descriptiontypes?version=' + version)
         .then(
         // success
@@ -532,7 +531,7 @@ tsApp.service('projectService', [
           deferred.reject(response.data);
         });
       return deferred.promise;
-    }
+    };
 
     
     // get log for project and refset/translation
@@ -559,4 +558,5 @@ tsApp.service('projectService', [
       return deferred.promise;
     }
     //end
+    // end
   } ]);

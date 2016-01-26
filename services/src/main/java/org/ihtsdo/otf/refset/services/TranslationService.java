@@ -8,7 +8,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
-import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.SpellingDictionary;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
@@ -513,7 +512,7 @@ public interface TranslationService extends RefsetService {
    * @param concept the concept
    */
   public void handleLazyInit(Concept concept);
-  
+
   /**
    * Returns the concept revision number.
    *
@@ -522,7 +521,7 @@ public interface TranslationService extends RefsetService {
    * @throws Exception the exception
    */
   public Long getConceptRevisionNumber(Long conceptId) throws Exception;
-  
+
   /**
    * Returns the concept revision.
    *
@@ -531,8 +530,9 @@ public interface TranslationService extends RefsetService {
    * @return the concept revision
    * @throws Exception the exception
    */
-  public Concept getConceptRevision(Long conceptId, Long revision) throws Exception;
-  
+  public Concept getConceptRevision(Long conceptId, Long revision)
+    throws Exception;
+
   /**
    * Sync concept.
    *
@@ -541,7 +541,7 @@ public interface TranslationService extends RefsetService {
    * @return the concept
    * @throws Exception the exception
    */
-  public Concept syncConcept(Long conceptId, Concept restoreConcept) throws Exception;
-
+  public Concept syncConcept(Long conceptId, Concept restoreConcept)
+    throws Exception;
 
 }

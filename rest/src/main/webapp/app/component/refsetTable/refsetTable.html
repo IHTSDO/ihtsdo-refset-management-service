@@ -4,7 +4,7 @@
   <!-- R1C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <span style="display: block;">
+    <div>
       <uib-pagination items-per-page="pageSize" max-size="5"
         boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
         next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
@@ -33,13 +33,13 @@
       <!-- Admins shouldn't add projects -->
       <h4
         ng-show="value == 'AVAILABLE' && refsets.totalCount == 0 && projects.role != 'ADMIN'">
-        <div style="float: right;">
+        <span style="float: right;">
           <button ng-click="openAddRefsetModal(); $event.stopPropagation()"
             title="Add refset" class="btn btn-xs btn-primary">Add
             Refset</button>
-        </div>
+        </span>
       </h4>
-    </span>
+    </div>
 
     <!-- Basic Refset info -->
     <span ng-show="refsets.totalCount == 0" style="display: block;"
@@ -47,45 +47,46 @@
 
     <table ng-show="refsets.totalCount > 0" class="table">
       <thead class="table-select-row">
-        <th class="col-md-2 col-xs-2"
-          ng-click="setSortField('refset','terminologyId', null)">Refset Id<span
-            ng-bind="getSortIndicator('refset','terminologyId')"></span>
-        </th>
-        <th class="col-md-4 col-xs-4"><span
-            ng-click="setSortField('refset','name', null)">
-            Name
-            <span ng-bind="getSortIndicator('refset','name',null)"></span>
-          </span> / <span
-            ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
-            <span ng-click="setSortField('refset','effectiveTime', null)">
-              Effective Time
-              <span ng-bind="getSortIndicator('refset','effectiveTime',null)"></span>
+        <tr>
+          <th class="col-md-2 col-xs-2"
+            ng-click="setSortField('refset','terminologyId', null)">Refset
+            Id<span ng-bind="getSortIndicator('refset','terminologyId')"></span>
+          </th>
+          <th class="col-md-4 col-xs-4"><span
+              ng-click="setSortField('refset','name', null)">
+              Name
+              <span ng-bind="getSortIndicator('refset','name',null)"></span>
+            </span> / <span
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">
+              <span ng-click="setSortField('refset','effectiveTime', null)">
+                Effective Time
+                <span ng-bind="getSortIndicator('refset','effectiveTime',null)"></span>
+              </span>
+            </span> <span
+              ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
+              <span ng-click="setSortField('refset','lastModified', null)">
+                Last Modified
+                <span ng-bind="getSortIndicator('refset','lastModified',null)"></span>
+              </span>
+            </span></th>
+          <th class="col-md-3 col-xs-3"
+            ng-click="setSortField('refset','moduleId', null)">Module<span
+              ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
+          <th class="col-md-1 col-xs-1"
+            ng-click="setSortField('refset','type', null)">Type<span
+              ng-bind="getSortIndicator('refset','type',null)"></span></th>
+          <!-- Actions header -->
+          <th class="col-md-2 col-xs-2"
+            ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'">Actions
+            <span style="float: right;">
+              <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
+                title="Add refset" class="noul material-icons md-18">add</i>
             </span>
-          </span> <span
-            ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
-            <span ng-click="setSortField('refset','lastModified', null)">
-              Last Modified
-              <span ng-bind="getSortIndicator('refset','lastModified',null)"></span>
-            </span>
-          </span></th>
-        <th class="col-md-3 col-xs-3"
-          ng-click="setSortField('refset','moduleId', null)">Module<span
-            ng-bind="getSortIndicator('refset','moduleId',null)"></span></th>
-        <th class="col-md-1 col-xs-1"
-          ng-click="setSortField('refset','type', null)">Type<span
-            ng-bind="getSortIndicator('refset','type',null)"></span></th>
-        <!-- Actions header -->
-        <th class="col-md-2 col-xs-2"
-          ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'">Actions
-          <span style="float: right;">
-            <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
-              title="Add refset" class="noul material-icons md-18">add</i>
-          </span>
-        </th>
-        <th class="col-md-2 col-xs-2"
-          ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'BETA')">Actions
-        </th>
-
+          </th>
+          <th class="col-md-2 col-xs-2"
+            ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'BETA')">Actions
+          </th>
+        </tr>
       </thead>
       <tbody>
         <tr ng-repeat="refset in refsets" ng-click="selectRefset(refset);"
@@ -97,8 +98,7 @@
               <br />{{toShortDate(refset.effectiveTime)}}
             </span>
             <span ng-show="!refset.effectiveTime">
-              <br />{{toDate(refset.lastModified)}}
-              <br />{{refset.lastModifiedBy}}
+              <br />{{toDate(refset.lastModified)}} <br />{{refset.lastModifiedBy}}
             </span>
           </td>
           <td>
@@ -150,7 +150,8 @@
 
             <span ng-repeat="author in refsetAuthorsMap[refset.id]">
               <!-- Only unassign if there are no reviewers -->
-              <i confirm="Are you sure you want to unassign the refset?"
+              <i
+                confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
                 ng-show="!refsetReviewersMap[refset.id]"
                 uib-tooltip="Unassign author: {{author.userName}}"
                 ng-click="unassign(refset, author.userName);"
@@ -448,9 +449,11 @@
           ng-show="selected.refset && refsetReleaseInfo && refsetReleaseInfo.artifacts"
           class="table">
           <thead>
-            <th class="col-md-6 col-xs-6">Release File</th>
-            <th class="col-md-6 col-xs-6">Timestamp</th>
-            <th style="width: 1%; word-wrap: nowrap"></th>
+            <tr>
+              <th class="col-md-6 col-xs-6">Release File</th>
+              <th class="col-md-6 col-xs-6">Timestamp</th>
+              <th style="width: 1%; word-wrap: nowrap"></th>
+            </tr>
           </thead>
           <tbody>
             <tr
@@ -497,7 +500,7 @@
         <span ng-show="selected.refset.members.totalCount>0">
           ({{selected.refset.members.totalCount}})</span>
 
-        <div style="float: right;">
+        <span style="float: right;">
           <!-- Export -->
           <i
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); $event.stopPropagation()"
@@ -511,13 +514,14 @@
             ng-show="value == 'AVAILABLE' && selected.refset.type == 'EXTENSIONAL'"
             title="Assign refset to make changes to members"
             class="md-grey material-icons md-18">file_upload</i>
-            
-          <!-- Add member list -->  
+
+          <!-- Add member list -->
           <i
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddRefsetMemberListModal(); $event.stopPropagation()"
-            title="Add/remove refset member list" class="noul material-icons md-18">playlist_add</i>
-            
+            title="Add/remove refset member list"
+            class="noul material-icons md-18">playlist_add</i>
+
           <!-- Add member -->
 
           <i ng-show="value == 'ASSIGNED'"
@@ -532,7 +536,7 @@
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
             ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
-        </div>
+        </span>
       </h4>
       <span
         ng-show="selected.refset && !paging['member'].filter && !paging['member'].typeFilter && selected.refset.members.totalCount == 0">
@@ -543,7 +547,7 @@
           members, assign refset to edit</span>
       </span>
 
-      <span>
+      <div>
         <span style="display: block;">
           <uib-pagination items-per-page="pageSize" max-size="5"
             boundary-links="true" class="pagination-xs" previous-text="&lsaquo;"
@@ -570,32 +574,35 @@
           ng-show="selected.refset.members.totalCount > 0 || paging['member'].filter || paging['member'].typeFilter"
           class="table">
           <thead class="table-select-row">
-            <th class="col-md-3 col-xs-3"
-              ng-click="setSortField('member','conceptId', selected.refset)">Concept
-              Id<span ng-bind="getSortIndicator('member','conceptId')"></span>
-            </th>
-            <th class="col-md-5 col-xs-5"
-              ng-click="setSortField('member','conceptName', selected.refset)">Name<span
-                ng-bind="getSortIndicator('member','conceptName')"></span>
-            </th>
-            <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
-              class="col-md-2 col-xs-2"
-              ng-click="setSortField('member','lastModified', selected.refset)">Last
-              Modified<span ng-bind="getSortIndicator('member','lastModified')"></span>
-            </th>
-            <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
-              class="col-md-2 col-xs-2"
-              ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
-              Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>
-            </th>
-            <th class="col-md-2 col-xs-2"><select
-              title="Filter by member type" style="width: 80px;"
-              ng-model="paging['member'].typeFilter"
-              ng-options="item for item in memberTypes"
-              ng-change="getMembers(selected.refset)">
-                <option value="">All</option>
-            </select></th>
-            <th ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">Actions</th>
+            <tr>
+              <th class="col-md-3 col-xs-3"
+                ng-click="setSortField('member','conceptId', selected.refset)">Concept
+                Id<span ng-bind="getSortIndicator('member','conceptId')"></span>
+              </th>
+              <th class="col-md-5 col-xs-5"
+                ng-click="setSortField('member','conceptName', selected.refset)">Name<span
+                  ng-bind="getSortIndicator('member','conceptName')"></span>
+              </th>
+              <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
+                class="col-md-2 col-xs-2"
+                ng-click="setSortField('member','lastModified', selected.refset)">Last
+                Modified<span
+                  ng-bind="getSortIndicator('member','lastModified')"></span>
+              </th>
+              <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
+                class="col-md-2 col-xs-2"
+                ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
+                Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>
+              </th>
+              <th class="col-md-2 col-xs-2"><select
+                title="Filter by member type" style="width: 80px;"
+                ng-model="paging['member'].typeFilter"
+                ng-options="item for item in memberTypes"
+                ng-change="getMembers(selected.refset)">
+                  <option value="">All</option>
+              </select></th>
+              <th ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">Actions</th>
+            </tr>
           </thead>
           <tbody>
             <tr ng-repeat="member in selected.refset.members"
@@ -604,7 +611,9 @@
               <td>{{member.conceptId}}</td>
               <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
               <td
-                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">{{toDate(member.lastModified)}}<br />{{member.lastModifiedBy}}</td>
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
+                {{toDate(member.lastModified)}}<br />{{member.lastModifiedBy}}
+              </td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(member.effectiveTime)}}</td>
               <td>
@@ -664,7 +673,7 @@
           <br />No refset members matching filter
         </span>
 
-      </span>
+      </div>
     </div>
 
     <!-- End R2C2 -->

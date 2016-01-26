@@ -3,10 +3,16 @@
  */
 package org.ihtsdo.otf.refset.helpers;
 
+import java.lang.reflect.Method;
+
 import org.apache.log4j.Logger;
 
 /**
- * Automates JUnit testing of equals and hashcode methods.
+ * import java.lang.reflect.Method;
+ * 
+ * import org.apache.log4j.Logger;
+ * 
+ * /** Automates JUnit testing of equals and hashcode methods.
  */
 public class XmlSerializationTester extends ProxyTester {
 
@@ -31,15 +37,33 @@ public class XmlSerializationTester extends ProxyTester {
         "Test xml serialization - " + clazz.getName());
     Object obj = createObject(1);
     String xml = ConfigUtility.getStringForGraph(obj);
-    Logger.getLogger(getClass()).info(xml);
+    Logger.getLogger(getClass()).debug(xml);
     Object obj2 = ConfigUtility.getGraphForString(xml, obj.getClass());
     String json = ConfigUtility.getJsonForGraph(obj);
-    Logger.getLogger(getClass()).info(json);
+    Logger.getLogger(getClass()).debug(json);
     Object obj3 = ConfigUtility.getGraphForJson(json, obj.getClass());
-    Logger.getLogger(getClass()).info(obj);
-    Logger.getLogger(getClass()).info(obj2);
-    Logger.getLogger(getClass()).info(obj3);
+    Logger.getLogger(getClass()).debug(obj);
+    Logger.getLogger(getClass()).debug(obj2);
+    Logger.getLogger(getClass()).debug(obj3);
 
+    // If obj has an "id" field, compare the ids
+    try {
+      final Method method =
+          obj.getClass().getMethod("getId", new Class<?>[] {});
+      if (method != null && method.getReturnType() == Long.class) {
+
+        final Long id1 = (Long) method.invoke(obj, new Object[] {});
+        final Long id2 = (Long) method.invoke(obj2, new Object[] {});
+        final Long id3 = (Long) method.invoke(obj3, new Object[] {});
+        if (!id1.equals(id2) || !id2.equals(id3)) {
+          Logger.getLogger(getClass()).debug(
+              "  id fields do not match " + id1 + ", " + id2 + ", " + id3);
+          return false;
+        }
+      }
+    } catch (NoSuchMethodException e) {
+      // this is OK
+    }
     return obj.equals(obj2) && obj.equals(obj3);
   }
 

@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 var tsApp = angular.module('tsApp',
   [ 'ngRoute', 'ui.bootstrap', 'ui.tree', 'ngFileUpload', 'ui.tinymce', 'ngCookies' ]).config(
@@ -77,11 +77,11 @@ tsApp.controller('ErrorCtrl', [ '$scope', 'utilService', function($scope, utilSe
 
   $scope.clearError = function() {
     utilService.clearError();
-  }
+  };
 
   $scope.setError = function(message) {
     utilService.setError(message);
-  }
+  };
 
 } ]);
 
@@ -100,7 +100,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
     // Set selected tab (change the view)
     $scope.setSelectedTab = function(tab) {
       tabService.setSelectedTab(tab);
-    }
+    };
 
     // sets the selected tab by label
     // to be called by controllers when their
@@ -112,7 +112,7 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
           break;
         }
       }
-    }
+    };
 
     // Set 'active' or not
     $scope.tabClass = function(tab) {
@@ -121,22 +121,22 @@ tsApp.controller('TabCtrl', [ '$scope', '$interval', '$timeout', 'securityServic
       } else {
         return '';
       }
-    }
+    };
 
     // for ng-show
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
-    }
+    };
 
     // for ng-show
     $scope.isAdmin = function() {
       return securityService.isAdmin();
-    }
+    };
 
     // for ng-show
     $scope.isUser = function() {
       return securityService.isUser();
-    }
+    };
 
   } ]);
 
@@ -151,13 +151,13 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     // Logout method
     $scope.logout = function() {
       securityService.logout();
-    }
+    };
 
     // clear "guest" user cookie and redirect to login path
     $scope.login = function() {
       securityService.clearUser();
       $location.path('/login');
-    }
+    };
 
     // Open help page dynamically
     $scope.goToHelp = function() {
@@ -173,7 +173,7 @@ tsApp.controller('HeaderCtrl', [ '$scope', '$location', '$http', 'securityServic
     // for ng-show
     $scope.isLoggedIn = function() {
       return securityService.isLoggedIn();
-    }
+    };
 
   } ]);
 
@@ -190,7 +190,7 @@ tsApp.controller('FooterCtrl', [ '$scope', 'gpService', 'securityService',
     // for ng-show
     $scope.isShowing = function() {
       return securityService.isLoggedIn();
-    }
+    };
 
   } ]);
 
@@ -219,20 +219,19 @@ tsApp
 
 tsApp.factory('$confirm', function($uibModal, $confirmModalDefaults) {
   return function(data, settings) {
-    settings = angular.extend($confirmModalDefaults, (settings || {}));
-    data = data || {};
+    var lsettings = angular.extend($confirmModalDefaults, (settings || {}));
 
-    if ('templateUrl' in settings && 'template' in settings) {
-      delete settings.template;
+    if ('templateUrl' in lsettings && 'template' in lsettings) {
+      delete lsettings.template;
     }
 
-    settings.resolve = {
+    lsettings.resolve = {
       data : function() {
-        return data;
+        return data || {};
       }
     };
 
-    return $uibModal.open(settings).result;
+    return $uibModal.open(lsettings).result;
   };
 });
 
@@ -272,5 +271,5 @@ tsApp.directive('confirm', function($confirm) {
         reBind(bindConfirm);
       }
     }
-  }
-})
+  };
+});

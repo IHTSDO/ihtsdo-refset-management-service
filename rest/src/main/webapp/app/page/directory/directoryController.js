@@ -44,7 +44,7 @@ tsApp.controller('DirectoryCtrl', [
       importHandlers : [],
       exportHandlers : [],
       workflowPaths : []
-    }
+    };
 
     // Get $scope.projects
     $scope.getProjects = function() {
@@ -61,7 +61,7 @@ tsApp.controller('DirectoryCtrl', [
       function(data) {
         $scope.projects.data = data.projects;
         $scope.projects.totalCount = data.totalCount;
-      })
+      });
 
     };
 
@@ -69,7 +69,7 @@ tsApp.controller('DirectoryCtrl', [
     $scope.getRefsetTypes = function() {
       refsetService.getRefsetTypes().then(function(data) {
         $scope.metadata.refsetTypes = data.strings;
-      })
+      });
     };
     // Get $scope.metadata.terminologies, also loads
     // versions for the first edition in the list
@@ -82,7 +82,7 @@ tsApp.controller('DirectoryCtrl', [
         for (var i = 0; i < data.strings.length; i++) {
           $scope.getTerminologyVersions(data.strings[i]);
         }
-      })
+      });
 
     };
 
@@ -95,7 +95,7 @@ tsApp.controller('DirectoryCtrl', [
         for (var i = 0; i < data.translations.length; i++) {
           $scope.metadata.versions[terminology].push(data.translations[i].version);
         }
-      })
+      });
     };
 
     // Get $scope.metadata.workflowPaths
@@ -135,7 +135,7 @@ tsApp.controller('DirectoryCtrl', [
         $scope.accordionState['PUBLISHED'] = true;
       }
       securityService.updateUserPreferences($scope.user.userPreferences);
-    }
+    };
 
     // Get $scope.metadata.{import,export}Handlers
     $scope.getIOHandlers = function() {
@@ -145,7 +145,7 @@ tsApp.controller('DirectoryCtrl', [
       refsetService.getExportRefsetHandlers().then(function(data) {
         $scope.metadata.exportHandlers = data.handlers;
       });
-    }
+    };
 
     // Initialize
     $scope.getRefsetTypes();

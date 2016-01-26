@@ -953,19 +953,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setId(null);
 
       // Lookup concept name and active if not already set
+      // Look up concept name and active
       if (inclusion.getConceptName() == null
           || inclusion.getConceptName().equals("TBD")) {
-        if (refsetService.getTerminologyHandler().assignNames()) {
-          final Concept concept =
-              refsetService.getTerminologyHandler().getConcept(
-                  inclusion.getConceptId(), refset.getTerminology(),
-                  refset.getVersion());
+        final Concept concept =
+            refsetService.getTerminologyHandler().getConcept(
+                inclusion.getConceptId(), refset.getTerminology(),
+                refset.getVersion());
+        if (concept != null) {
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
         } else {
           inclusion.setConceptName("TBD");
         }
       }
+      
       // Ensure effective time is null
       inclusion.setEffectiveTime(null);
       // Set inclusion type

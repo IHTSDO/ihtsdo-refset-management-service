@@ -182,14 +182,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   }
 
   @Override
-  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(String 
-    conceptId, String terminology, String version) throws Exception {
+  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
+    String conceptId, String terminology, String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get potential current concepts for retired concept - " + conceptId);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
-   
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?escg="
             + URLEncoder.encode(conceptId, "UTF-8").replaceAll(" ", "%20"));
@@ -239,7 +238,6 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
      * }
      * </pre>
      */
-    
 
     KeyValuePairList keyValuePairList = new KeyValuePairList();
     ObjectMapper mapper = new ObjectMapper();
@@ -252,12 +250,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       return keyValuePairList;
     }
     for (final JsonNode conceptNode : doc.get("items")) {
-      for (final JsonNode mapping : conceptNode.findValues("associationTargets")) {
+      for (final JsonNode mapping : conceptNode
+          .findValues("associationTargets")) {
         Entry<String, JsonNode> entry = mapping.fields().next();
         String key = entry.getKey();
         String values = entry.getValue().toString();
         if (values.contains("[")) {
-          values = values.substring(1, values.length() -1);
+          values = values.substring(1, values.length() - 1);
         }
         values = values.replaceAll("\"", "");
         for (String value : values.split(",")) {
@@ -268,7 +267,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
     return keyValuePairList;
   }
-  
+
   /* see superclass */
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
@@ -457,6 +456,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return null;
+      }
       throw new Exception("Unexpected terminology server failure. Message = "
           + resultString);
     }
@@ -653,6 +657,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
+    // if terminologyId is too short ,term server fails
+    if (terminologyId == null) {
+      return null;
+    }
+    if (terminologyId.length() < 5) {
+      return null;
+    }
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
@@ -665,6 +676,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return null;
+      }
+
       throw new Exception("Unexpected terminology server failure. Message = "
           + resultString);
     }

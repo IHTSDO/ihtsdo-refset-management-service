@@ -44,8 +44,10 @@
 
       <table class="table">
         <thead class="table-select-row">
-          <th class="col-md-6 col-xs-6">Definition Clause</th>
-          <th class="col-md-2 col-xs-2"></th>
+          <tr>
+            <th class="col-md-6 col-xs-6">Definition Clause</th>
+            <th class="col-md-2 col-xs-2"></th>
+          </tr>
         </thead>
         <tbody>
           <tr ng-repeat="clause in pagedClauses">
@@ -60,8 +62,8 @@
           </tr>
           <tr ng-show="value == 'ASSIGNED'">
             <td>
-              <div definition-clause clause="newClause"
-                allow-negation="true" mode="edit"></div>
+              <div definition-clause clause="newClause" allow-negation="true"
+                mode="edit"></div>
             </td>
             <td>
               <i ng-show="value == 'ASSIGNED'"
@@ -95,8 +97,9 @@
 </div>
 
 <div class="modal-footer">
-  <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary" ng-show="value == 'ASSIGNED'"
-    ng-click="save(refset);" title="Save and recompute definition">Recompute</button>
+  <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
+    ng-show="value == 'ASSIGNED'" ng-click="save(refset);"
+    title="Save and recompute definition">Recompute</button>
   <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
     ng-click="cancel()">Cancel</button>
   <button class="btn btn-warning" ng-show="value == 'AVAILABLE'"

@@ -25,20 +25,22 @@
           <b>Choose File</b>
         </td>
         <td class="col-md-8 col-xs-8">
-          <center>
-            <button type="file" ngf-select ng-model="file" name="file"
+          <div>
+            <button style="margin-left: 15px" type="file" ngf-select
+              ng-model="file" name="file"
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'"
               ngf-max-size="200MB">Browse for File</button>
-            <div ngf-drop ng-model="file" class="drop-box"
-              ngf-drag-over-class="'dragover'" ngf-max-size="200MB"
+            <br />
+            <div ngf-drop ng-model="file"
+              class="drop-box" ngf-drag-over-class="'dragover'"
+              ngf-max-size="200MB"
               ngf-pattern="'.txt,{{selectedIoHandler.fileTypeFilter}}'">Drop
               file here</div>
-            </div>
-          </center>
+          </div>
         </td>
       </tr>
       <tr ng-show="!file && type != 'Translation'">
-        <td>&nbsp</td>
+        <td>&nbsp;</td>
         <td ng-show="type == 'Spelling Dictionary'">Format is a file with
           one single correctly spelled word per line.</td>
         <td ng-show="type == 'Phrase Memory'">Format is a vertical bar
@@ -54,8 +56,10 @@
           <div class="alert alert-danger alert-error">
             {{errors[0]}}
             <div style="display: inline; float: right;">
-              <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-                class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+              <i ng-show="errors[1]"
+                title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+                class="noul material-icons md-18"
+                ng-click="error.expand = !error.expand;">attach_file</i>
             </div>
             <p ng-show="errors[1] && error.expand">
               <br />{{errors[1]}}
