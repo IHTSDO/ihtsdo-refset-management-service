@@ -5,6 +5,7 @@ package org.ihtsdo.otf.refset.services;
 
 import java.util.List;
 
+import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 
 /**
@@ -104,4 +105,50 @@ public interface RootService {
    */
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
     PfsParameter pfs) throws Exception;
+
+  /**
+   * Find log entries for query.
+   *
+   * @param query the query
+   * @param pfs the pfs
+   * @return the list
+   * @throws Exception the exception
+   */
+  public List<LogEntry> findLogEntriesForQuery(String query, PfsParameter pfs)
+    throws Exception;
+
+  /**
+   * Adds the log entry.
+   *
+   * @param logEntry the log entry
+   * @return the log entry
+   * @throws Exception the exception
+   */
+  public LogEntry addLogEntry(LogEntry logEntry) throws Exception;
+  
+  /**
+   * Update log entry.
+   *
+   * @param logEntry the log entry
+   * @throws Exception the exception
+   */
+  public void updateLogEntry(LogEntry logEntry) throws Exception;
+
+  /**
+   * Removes the log entry.
+   *
+   * @param id the id
+   * @throws Exception the exception
+   */
+  public void removeLogEntry(Long id) throws Exception;
+  
+  /**
+   * Returns the log entry.
+   *
+   * @param id the id
+   * @return the log entry
+   * @throws Exception the exception
+   */
+  public LogEntry getLogEntry(Long id) throws Exception;
+
 }

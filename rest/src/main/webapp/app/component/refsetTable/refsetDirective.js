@@ -1495,6 +1495,63 @@ tsApp
 
               };
 
+ 
+              // Log modal
+              $scope.openLogModal = function() {
+                console.debug('openLogModal ');
+
+                var modalInstance = $uibModal.open({
+                  templateUrl : 'app/component/refsetTable/log.html',
+                  controller : LogModalCtrl,
+                  backdrop : 'static',
+                  size : 'lg',
+                  resolve : {
+                    refset : function() {
+                      return $scope.selected.refset;
+                    },
+                    project : function() {
+                      return $scope.project;
+                    }
+                  }
+                });
+
+                modalInstance.result.then(
+                // Success
+                function(data) {
+                });
+              };
+
+              // Log controller
+              var LogModalCtrl = function($scope, $uibModalInstance, refset, project) {
+                console.debug('Entered log modal control', refset, project);
+
+                $scope.errors = [];
+                $scope.warnings = [];
+
+                
+                // Get log to display
+                $scope.getLog = function() {
+                  projectService.getLog(project.id, refset.id, 6).then(
+                        // Success
+                        function(data) {
+                          $scope.log = data;
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        })            
+                  
+                }
+
+                // Dismiss modal
+                $scope.cancel = function() {
+                  $uibModalInstance.dismiss('cancel');
+                };
+                
+                // initialize
+                $scope.getLog();
+              };            
+              
               // Add Refset Member List modal
               $scope.openAddRefsetMemberListModal = function() {
                 console.debug('openAddRefsetMemberListModal ');

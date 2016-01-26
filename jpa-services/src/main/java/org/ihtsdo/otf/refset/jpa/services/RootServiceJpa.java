@@ -26,7 +26,9 @@ import org.hibernate.search.jpa.FullTextQuery;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
+import org.ihtsdo.otf.refset.helpers.LogEntry;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
+import org.ihtsdo.otf.refset.jpa.helpers.LogEntryJpa;
 import org.ihtsdo.otf.refset.jpa.services.handlers.IndexUtility;
 import org.ihtsdo.otf.refset.services.RootService;
 
@@ -435,7 +437,9 @@ public abstract class RootServiceJpa implements RootService {
     return addObject(hasLastModified);
 
   }
+  
 
+  
   /**
    * Adds the object.
    *
@@ -555,6 +559,8 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+
+  
   /**
    * Removes the object.
    *
@@ -657,4 +663,45 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  @Override
+  public List<LogEntry> findLogEntriesForQuery(
+    String query, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Root Service - find log entries " + "/" + query);
+
+    final StringBuilder sb = new StringBuilder();
+    if (query != null && !query.equals("")) {
+      sb.append(query);
+    }
+
+    int[] totalCt = new int[1];
+    final List<LogEntry> list =
+        (List<LogEntry>) getQueryResults(sb.toString(),
+            LogEntryJpa.class, LogEntryJpa.class, pfs,
+            totalCt);
+    
+    return list;
+  }
+  
+  @Override
+  public LogEntry addLogEntry(LogEntry logEntry) throws Exception {
+    return addHasLastModified(logEntry);
+  }
+
+  @Override
+  public void updateLogEntry(LogEntry logEntry) throws Exception {
+    updateHasLastModified(logEntry);
+  }
+
+  @Override
+  public void removeLogEntry(Long id) throws Exception {
+    removeHasLastModified(id, LogEntry.class);
+  }
+  
+
+  @Override
+  public LogEntry getLogEntry(Long id) throws Exception {
+    return getHasLastModified(id, LogEntry.class);
+  }
 }

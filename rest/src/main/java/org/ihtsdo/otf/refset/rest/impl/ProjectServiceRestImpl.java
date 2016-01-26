@@ -34,6 +34,8 @@ import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.LogEntry;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
@@ -331,6 +333,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
+      addLogEntry(projectService, userName, "ADD Project", newProject.getId(), newProject.getId(), newProject.getName());
       return newProject;
     } catch (Exception e) {
       handleException(e, "trying to add a project");
@@ -992,6 +995,49 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl
 
     } catch (Exception e) {
       handleException(e, "trying to get versions");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  @GET
+  @Path("/log")
+  @Produces("text/plain")
+  @ApiOperation(value = "Get log entries for objectId", notes = "Returns log entries for the given objectId", response = String.class)
+  @Override
+  public String getLog(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
+    @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /log/" + projectId + ", " + objectId);
+
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeProject(projectService, projectId,
+          securityService, authToken, "get log entries", UserRole.AUTHOR);
+
+      PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(1000);
+      pfs.setAscending(false);
+      pfs.setSortField("lastModified");
+      
+      final List<LogEntry> entries =
+          projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
+
+      StringBuilder log = new StringBuilder();
+      for (LogEntry entry : entries) {
+        log.append(entry.getMessage());
+      }
+
+      return log.toString();
+      
+    } catch (Exception e) {
+      handleException(e, "trying to get log");
     } finally {
       projectService.close();
       securityService.close();

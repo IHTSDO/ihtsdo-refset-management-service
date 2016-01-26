@@ -39,6 +39,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
+import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
@@ -284,9 +285,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           && !refset.getDefinitionClauses().isEmpty()) {
         refsetService.resolveRefsetDefinition(newRefset);
       }
-
+      
+      addLogEntry(refsetService, userName, "ADD Refset", newRefset.getProject().getId(), newRefset.getId(), newRefset.getTerminologyId() + ": " + newRefset.getName());
+      
       refsetService.commit();
-
+      
       return newRefset;
     } catch (Exception e) {
       handleException(e, "trying to add a refset");
@@ -354,6 +357,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           list.addObject(refsetService.addMember(member));
         }
       }
+      addLogEntry(refsetService, userName, "ADD Refset Members for Expression", refset.getProject().getId(), refset.getId(), expression);
+      
       refsetService.commit();
       return list;
     } catch (Exception e) {
@@ -450,7 +455,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           && !refset.getDefinitionClauses().toString().equals(previousClauses)) {
         refsetService.resolveRefsetDefinition(refset);
       }
-
+      addLogEntry(refsetService, userName, "UPDATE Refset", refset.getProject().getId(), refset.getProject().getId(), refset.getId() + ": " + refset.getName());
+      
       refsetService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
@@ -481,6 +487,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Refset must have a project with a non null identifier.");
       }
 
+      final String userName =
       authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "remove refset", UserRole.AUTHOR);
 
@@ -505,7 +512,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // remove refset
       refsetService.removeRefset(refsetId, cascade);
-
+      addLogEntry(refsetService, userName, "REMOVE Refset", refset.getProject().getId(), refset.getId(), refset.getTerminologyId() + ": " + refset.getName());
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a refset");
     } finally {
@@ -574,7 +582,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       } else if (refset.getType() == Refset.Type.INTENSIONAL) {
         refsetService.resolveRefsetDefinition(refset);
       }
-
+      addLogEntry(refsetService, userName, "ADD Clone Project", refset.getProject().getId(), refset.getId(), refset.getTerminologyId() + ": " + refset.getName());
+      
       // done
       refsetService.commit();
       return newRefset;
@@ -787,7 +796,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       member.setLastModifiedBy(userName);
-      return refsetService.addMember(member);
+      ConceptRefsetMember newMember =  refsetService.addMember(member);
+      addLogEntry(refsetService, userName, "ADD Refset Member", refset.getProject().getId(), newMember.getId(), newMember.getConceptId() + ": " + newMember.getConceptName());
+      
+      return newMember;
 
     } catch (Exception e) {
       handleException(e, "trying to add new member ");
@@ -815,11 +827,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     try {
       final ConceptRefsetMember member = refsetService.getMember(memberId);
       final Refset refset = member.getRefset();
-      authorizeProject(refsetService, refset.getProject().getId(),
+      final String userName = authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "remove member", UserRole.AUTHOR);
 
       refsetService.removeMember(memberId);
-
+      addLogEntry(refsetService, userName, "REMOVE Refset Member", refset.getProject().getId(), memberId, member.getTerminologyId() + ": " + member.getConceptName());
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a member ");
     } finally {
@@ -843,7 +856,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       final Refset refset = refsetService.getRefset(refsetId);
-      authorizeProject(refsetService, refset.getProject().getId(),
+      final String userName = authorizeProject(refsetService, refset.getProject().getId(),
           securityService, authToken, "remove all members", UserRole.AUTHOR);
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
@@ -851,6 +864,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           .findMembersForRefset(refsetId, "", null).getObjects()) {
         refsetService.removeMember(member.getId());
       }
+      addLogEntry(refsetService, userName, "REMOVE All Refset Members", refset.getProject().getId(), refsetId,  ": " );
+      
       refsetService.commit();
 
     } catch (Exception e) {
@@ -965,6 +980,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       inclusion.setPublished(false);
       inclusion.setRefset(refset);
       inclusion.setLastModifiedBy(userName);
+      
+      addLogEntry(refsetService, userName, "ADD Refset Inclusion", refset.getProject().getId(), inclusion.getId(), inclusion.getConceptId() + ": " + inclusion.getConceptName());
+      
       return refsetService.addMember(inclusion);
 
     } catch (Exception e) {
@@ -1026,7 +1044,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
-
+      addLogEntry(refsetService, userName, "ADD Refset Exclusion", refset.getProject().getId(), member.getId(), member.getConceptId() + ": " + member.getConceptName());
+      
       return member;
     } catch (Exception e) {
       handleException(e, "trying to add new exclusion ");
@@ -1068,7 +1087,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         member.setLastModifiedBy(userName);
         refsetService.updateMember(member);
       }
-
+      addLogEntry(refsetService, userName, "REMOVE Refset Exclusion", member.getRefset().getProject().getId(), memberId, member.getTerminologyId() + ": " + member.getConceptName());
+      
       return member;
     } catch (Exception e) {
       handleException(e, "trying to remove a exclusion ");
@@ -1287,6 +1307,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "begin migration", true, ConfigUtility.isBackgroundLookup());
       }
 
+      addLogEntry(refsetService, userName, "BEGIN migration", refset.getProject().getId(), refset.getId(), refset.getTerminologyId() + ": " + refset.getName());
+      
       return refsetCopy;
 
     } catch (Exception e) {
@@ -1449,7 +1471,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // remove the refset
       refsetService.removeRefset(stagedRefset.getId(), false);
-
+      
+      addLogEntry(refsetService, userName, "FINISH migration", refset.getProject().getId(), refset.getId(), refset.getTerminologyId() + ": " + refset.getName());
+      
       refsetService.commit();
 
       return refset;
@@ -2468,7 +2492,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.getNotes().add(newNote);
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-
+      
+      addLogEntry(refsetService, userName, "ADD Refset Note", refset.getProject().getId(), newNote.getId(), newNote.getId() + ": " + newNote.getValue());
+      
       return newNote;
     } catch (Exception e) {
       handleException(e, "trying to add refset note");
@@ -2516,7 +2542,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
-
+      
+      addLogEntry(refsetService, userName, "REMOVE Refset Note", refset.getProject().getId(), noteId,  ": ");
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a refset note");
     } finally {
@@ -2573,6 +2601,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       member.getNotes().add(memberNote);
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
+      
+      addLogEntry(refsetService, userName, "ADD Refset Member Note", refset.getProject().getId(), memberNote.getId(), memberNote.getId() + ": " + memberNote.getValue());
+      
       return newNote;
 
     } catch (Exception e) {
@@ -2623,7 +2654,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
-
+      addLogEntry(refsetService, userName, "REMOVE Refset Member Note", refset.getProject().getId(), noteId,  ": ");
+      
     } catch (Exception e) {
       handleException(e, "trying to remove a member note");
     } finally {
@@ -2737,7 +2769,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-
+  
   /* see superclass */
   @Override
   @GET
@@ -2766,6 +2798,39 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       return refset;
     } catch (Exception e) {
       handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
+  @Override
+  @GET
+  @Path("/concept/alternates")
+  @ApiOperation(value = "Returns potential alternative concepts for a retired concept", notes = "Returns potential current alternative concepts for a given retired concept.", response = KeyValuePairList.class)
+  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
+    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) String conceptId,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful GET call (Refset): /concept/alternates " + terminology + ", "
+            + version + ", " + conceptId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get alternate concepts for retired concept",
+          UserRole.VIEWER);
+     
+      KeyValuePairList keyValuePairs = refsetService.getTerminologyHandler().getPotentialCurrentConceptsForRetiredConcept(conceptId,
+          terminology, version);
+      return keyValuePairs;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get alternate concepts for retired concept");
       return null;
     } finally {
       refsetService.close();
