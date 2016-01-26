@@ -33,7 +33,7 @@ tsApp
                   })
                 .then(
 
-                  // Success 
+                  // Success
                   function(response) {
                     console.debug("user = ", response.data);
                     securityService.setUser(response.data);
