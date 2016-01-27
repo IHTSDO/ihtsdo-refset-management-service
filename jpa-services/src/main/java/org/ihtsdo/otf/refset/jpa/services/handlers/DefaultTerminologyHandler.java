@@ -263,7 +263,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       }
     }
 
-    // Look up concepts - set "definition status id" to the reason for inactivation
+    // Look up concepts - set "definition status id" to the reason for
+    // inactivation
     // probably need a better placeholder for this, but for now - good enough
     ConceptList list =
         this.getConcepts(new ArrayList<>(reasonMap.keySet()), terminology,
@@ -910,8 +911,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         // n/a
       };
       ConceptList result = new ConceptListJpa();
-      result.setObjects(service.applyPfsToList(list, Concept.class, pfs));
-      result.setTotalCount(list.size());
+      int[] totalCt = new int[1];
+      result.setObjects(service.applyPfsToList(list, Concept.class, totalCt,
+          pfs));
+      result.setTotalCount(totalCt[0]);
       service.close();
       return result;
 

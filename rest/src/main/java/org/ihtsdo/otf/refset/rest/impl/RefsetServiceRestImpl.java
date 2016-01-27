@@ -1748,14 +1748,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      final int[] totalCt = new int[1];
       list.setObjects(refsetService.applyPfsToList(commonMembersList,
-          ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null
-          || pfs.getQueryRestriction().equals(""))
-        list.setTotalCount(commonMembersList.size());
-      else
-        list.setTotalCount(list.getObjects().size());
-
+          ConceptRefsetMember.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
       return list;
 
     } catch (Exception e) {
@@ -1851,14 +1847,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final ConceptRefsetMemberList list = new ConceptRefsetMemberListJpa();
+      final int[] totalCt = new int[1];
       list.setObjects(refsetService.applyPfsToList(oldMembers,
-          ConceptRefsetMember.class, pfs));
-      if (pfs.getQueryRestriction() == null
-          || pfs.getQueryRestriction().equals(""))
-        list.setTotalCount(oldMembers.size());
-      else
-        list.setTotalCount(list.getObjects().size());
-
+          ConceptRefsetMember.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
       return list;
 
     } catch (Exception e) {
@@ -1904,10 +1896,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // apply pfs and query
-      newMembers.setTotalCount(memberDiffReport.getNewRegularMembers().size());
+      final int[] totalCt = new int[1];
       newMembers.setObjects(refsetService.applyPfsToList(
           memberDiffReport.getNewRegularMembers(), ConceptRefsetMember.class,
-          pfs));
+          totalCt, pfs));
+      newMembers.setTotalCount(totalCt[0]);
+
       for (final ConceptRefsetMember member : newMembers.getObjects()) {
         refsetService.handleLazyInit(member);
       }
@@ -2196,9 +2190,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         return result;
       }
 
-      addLogEntry(refsetService, userName, "BEGIN IMPORT refset", refset.getProject()
-          .getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+      addLogEntry(refsetService, userName, "BEGIN IMPORT refset", refset
+          .getProject().getId(), refset.getId(), refset.getTerminologyId()
+          + ": " + refset.getName());
       return result;
     } catch (Exception e) {
       handleException(e, "trying to begin import members");
@@ -2420,10 +2414,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.updateRefset(refset);
 
       // End transaction
-      addLogEntry(refsetService, userName, "FINISH IMPORT refset", refset.getProject()
-          .getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName() + ", " + objectCt
-              + " members imported");
+      addLogEntry(refsetService, userName, "FINISH IMPORT refset", refset
+          .getProject().getId(), refset.getId(), refset.getTerminologyId()
+          + ": " + refset.getName() + ", " + objectCt + " members imported");
       refsetService.commit();
 
       // With contents committed, can now lookup Names/Statuses of members
@@ -2480,9 +2473,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       refsetService.updateRefset(refset);
 
-      addLogEntry(refsetService, userName, "CANCEL IMPORT refset", refset.getProject()
-          .getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+      addLogEntry(refsetService, userName, "CANCEL IMPORT refset", refset
+          .getProject().getId(), refset.getId(), refset.getTerminologyId()
+          + ": " + refset.getName());
 
     } catch (Exception e) {
       handleException(e, "trying to resume import members");

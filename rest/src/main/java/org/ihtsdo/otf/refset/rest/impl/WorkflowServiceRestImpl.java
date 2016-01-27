@@ -179,13 +179,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Apply pfs
       final ConceptList result = new ConceptListJpa();
-      result.setTotalCount(list.getTotalCount());
-      // any query restriction has already been handled, dont use here
-      if (pfs != null) {
-        pfs.setQueryRestriction(null);
-      }
+      final int[] totalCt = new int[1];
       List<Concept> concepts =
-          workflowService.applyPfsToList(list.getObjects(), Concept.class, pfs);
+          workflowService.applyPfsToList(list.getObjects(), Concept.class,
+              totalCt, pfs);
+      result.setTotalCount(totalCt[0]);
       result.setObjects(concepts);
       for (final Concept concept : result.getObjects()) {
         workflowService.handleLazyInit(concept);
@@ -286,11 +284,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         concept.getNotes().size();
       }
 
-      list.setTotalCount(list.getCount());
-
       // Apply pfs
+      final int[] totalCt = new int[1];
       list.setObjects(workflowService.applyPfsToList(list.getObjects(),
-          Concept.class, pfs));
+          Concept.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
       return list;
 
     } catch (Exception e) {
@@ -479,10 +477,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
-      result.setTotalCount(list.size());
-
-      list = workflowService.applyPfsToList(list, Refset.class, pfs);
+      final int[] totalCt = new int[1];
+      list = workflowService.applyPfsToList(list, Refset.class, totalCt, pfs);
       result.setObjects(list);
+      result.setTotalCount(totalCt[0]);
       for (final Refset refset : result.getObjects()) {
         workflowService.handleLazyInit(refset);
       }
@@ -643,10 +641,11 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
 
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
-      result.setTotalCount(list.size());
+      final int[] totalCt = new int[1];
       list =
           ((WorkflowServiceJpa) workflowService).applyPfsToList(list,
-              Refset.class, pfs);
+              Refset.class, totalCt, pfs);
+      result.setTotalCount(totalCt[0]);
       result.setObjects(list);
 
       for (final Refset refset : list) {
@@ -768,9 +767,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final RefsetList list = new RefsetListJpa();
-      list.setTotalCount(refsets.size());
+      final int[] totalCt = new int[1];
       list.getObjects().addAll(
-          workflowService.applyPfsToList(refsets, Refset.class, pfs));
+          workflowService.applyPfsToList(refsets, Refset.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
       for (final Refset refset : list.getObjects()) {
         workflowService.handleLazyInit(refset);
       }
@@ -906,10 +906,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final ConceptList list = new ConceptListJpa();
-      list.setTotalCount(concepts.size());
-      list.getObjects().addAll(
-          workflowService.applyPfsToList(concepts, Concept.class, pfs));
-
+      final int[] totalCt = new int[1];
+      list.getObjects()
+          .addAll(
+              workflowService.applyPfsToList(concepts, Concept.class, totalCt,
+                  pfs));
+      list.setTotalCount(totalCt[0]);
       for (final Concept concept : list.getObjects()) {
         workflowService.handleLazyInit(concept);
       }

@@ -508,7 +508,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BEGIN RELEASE refset ", translation.getProject()
+      addLogEntry(algo, userName, "BEGIN RELEASE translation", translation.getProject()
           .getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
 
@@ -520,6 +520,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.handleLazyInit(info);
       algo.handleLazyInit(info.getTranslation());
 
+      
       return info;
     } catch (Exception e) {
       handleException(e, "trying to begin release of translation");
@@ -734,6 +735,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "CANCEL RELEASE translation", translation.getProject()
+          .getId(), translation.getId(),
+          translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
     } catch (Exception e) {

@@ -344,7 +344,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       pfs.setStartIndex(origStartIndex);
       String queryRestriction = pfs.getQueryRestriction();
       pfs.setQueryRestriction(null);
-      result.setObjects(applyPfsToList(list, Translation.class, pfs));
+      // passing new int[1] because we're only using this for paging
+      result.setObjects(applyPfsToList(list, Translation.class, new int[1], pfs));
       pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
       pfs.setQueryRestriction(queryRestriction);

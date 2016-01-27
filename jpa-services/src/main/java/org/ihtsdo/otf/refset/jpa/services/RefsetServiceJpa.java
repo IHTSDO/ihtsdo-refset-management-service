@@ -321,7 +321,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       pfs.setStartIndex(origStartIndex);
       String queryRestriction = pfs.getQueryRestriction();
       pfs.setQueryRestriction(null);
-      result.setObjects(applyPfsToList(list, Refset.class, pfs));
+      // passing new int[1] because we're only using this for paging
+      result.setObjects(applyPfsToList(list, Refset.class, new int[1], pfs));
       pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
       pfs.setQueryRestriction(queryRestriction);

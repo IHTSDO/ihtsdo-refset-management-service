@@ -38,10 +38,9 @@ import org.ihtsdo.otf.refset.services.RootService;
  */
 public abstract class RootServiceJpa implements RootService {
 
-
   /** The last modified flag. */
   protected boolean lastModifiedFlag = true;
-  
+
   /** The user map. */
   protected static Map<String, User> userMap = new HashMap<>();
 
@@ -251,19 +250,10 @@ public abstract class RootServiceJpa implements RootService {
     return query;
   }
 
-  /**
-   * Apply pfs to List.
-   *
-   * @param <T> the
-   * @param list the list
-   * @param clazz the clazz
-   * @param pfs the pfs
-   * @return the javax.persistence. query
-   * @throws Exception the exception
-   */
+  // this is called by REST layer and so needs to be exposed through RootService
   @Override
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
-    PfsParameter pfs) throws Exception {
+    int[] totalCt, PfsParameter pfs) throws Exception {
 
     // Skip empty pfs
     if (pfs == null) {
@@ -310,6 +300,9 @@ public abstract class RootServiceJpa implements RootService {
       });
     }
 
+    // Set total count before filtering
+    totalCt[0] = result.size();
+
     // Handle filtering based on toString()
     if (pfs != null
         && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction()
@@ -317,13 +310,12 @@ public abstract class RootServiceJpa implements RootService {
 
       // Strip last char off if it is a *
       String match = pfs.getQueryRestriction();
-      if (match.lastIndexOf('*') == match.length()-1) {
-        match = match.substring(0, match.length()-1); 
+      if (match.lastIndexOf('*') == match.length() - 1) {
+        match = match.substring(0, match.length() - 1);
       }
       final List<T> filteredResult = new ArrayList<T>();
       for (T t : result) {
-        if (t.toString().toLowerCase()
-            .indexOf(match.toLowerCase()) != -1) {
+        if (t.toString().toLowerCase().indexOf(match.toLowerCase()) != -1) {
           filteredResult.add(t);
         }
       }
@@ -372,13 +364,12 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
-
   /* see superclass */
   @Override
   public void setLastModifiedFlag(boolean lastModifiedFlag) {
     this.lastModifiedFlag = lastModifiedFlag;
   }
-  
+
   /**
    * Returns the query results.
    *
@@ -418,7 +409,6 @@ public abstract class RootServiceJpa implements RootService {
     return fullTextQuery.getResultList();
 
   }
-  
 
   /**
    * Adds the has last modified.
@@ -437,9 +427,7 @@ public abstract class RootServiceJpa implements RootService {
     return addObject(hasLastModified);
 
   }
-  
 
-  
   /**
    * Adds the object.
    *
@@ -559,8 +547,6 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
-
-  
   /**
    * Removes the object.
    *
@@ -665,8 +651,8 @@ public abstract class RootServiceJpa implements RootService {
 
   @SuppressWarnings("unchecked")
   @Override
-  public List<LogEntry> findLogEntriesForQuery(
-    String query, PfsParameter pfs) throws Exception {
+  public List<LogEntry> findLogEntriesForQuery(String query, PfsParameter pfs)
+    throws Exception {
     Logger.getLogger(getClass()).info(
         "Root Service - find log entries " + "/" + query);
 
@@ -677,13 +663,12 @@ public abstract class RootServiceJpa implements RootService {
 
     int[] totalCt = new int[1];
     final List<LogEntry> list =
-        (List<LogEntry>) getQueryResults(sb.toString(),
-            LogEntryJpa.class, LogEntryJpa.class, pfs,
-            totalCt);
-    
+        (List<LogEntry>) getQueryResults(sb.toString(), LogEntryJpa.class,
+            LogEntryJpa.class, pfs, totalCt);
+
     return list;
   }
-  
+
   @Override
   public LogEntry addLogEntry(LogEntry logEntry) throws Exception {
     return addHasLastModified(logEntry);
@@ -698,7 +683,6 @@ public abstract class RootServiceJpa implements RootService {
   public void removeLogEntry(Long id) throws Exception {
     removeHasLastModified(id, LogEntry.class);
   }
-  
 
   @Override
   public LogEntry getLogEntry(Long id) throws Exception {

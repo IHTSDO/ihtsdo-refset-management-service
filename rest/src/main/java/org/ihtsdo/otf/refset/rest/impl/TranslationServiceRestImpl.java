@@ -2378,9 +2378,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       final ConceptList list = new ConceptListJpa();
-      list.setTotalCount(commonConceptsList.size());
+      final int[] totalCt = new int[1];
       list.setObjects(translationService.applyPfsToList(commonConceptsList,
-          Concept.class, pfs));
+          Concept.class, totalCt, pfs));
+      list.setTotalCount(totalCt[0]);
       for (final Concept concept : list.getObjects()) {
         // handle all lazy initializations
         concept.getDescriptions().size();
