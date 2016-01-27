@@ -520,7 +520,7 @@ public interface TranslationService extends RefsetService {
    * @return the concept revision number
    * @throws Exception the exception
    */
-  public Long getConceptRevisionNumber(Long conceptId) throws Exception;
+  public Integer getConceptRevisionNumber(Long conceptId) throws Exception;
 
   /**
    * Returns the concept revision.
@@ -530,7 +530,7 @@ public interface TranslationService extends RefsetService {
    * @return the concept revision
    * @throws Exception the exception
    */
-  public Concept getConceptRevision(Long conceptId, Long revision)
+  public Concept getConceptRevision(Long conceptId, Integer revision)
     throws Exception;
 
   /**

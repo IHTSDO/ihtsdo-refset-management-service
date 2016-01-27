@@ -83,8 +83,9 @@ public class ConfigUtility {
   public final static FastDateFormat DATE_FORMAT3 = FastDateFormat
       .getInstance("yyyy");
   
+  /**  The Constant DATE_FORMAT4. */
   public final static FastDateFormat DATE_FORMAT4 = FastDateFormat
-      .getInstance("yyyy_MM_dd_hh_mm_ss");
+      .getInstance("yyyy_MM_dd hh:mm:ss");
 
   /** The config. */
   public static Properties config = null;

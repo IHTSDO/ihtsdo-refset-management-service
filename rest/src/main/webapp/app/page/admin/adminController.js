@@ -249,6 +249,7 @@ tsApp
 
         // Removes a project
         $scope.removeProject = function(project) {
+          // check for users
           if (project.userRoleMap != null && project.userRoleMap != undefined
             && Object.keys(project.userRoleMap).length > 0) {
             if (!confirm('The project has users assigned to it.  Are you sure you want to remove the project ('
@@ -256,13 +257,34 @@ tsApp
               return;
             }
           }
-          projectService.removeProject(project).then(
-          // Success
-          function() {
-            // Refresh projects
-            $scope.getProjects();
-            $scope.getCandidateProjects();
-          });
+
+          // Check for refsets
+          refsetService
+            .findRefsetsForQuery("projectId:" + project.id, {
+              startIndex : 0,
+              maxResults : 1
+            })
+            .then(
+              // Successs
+              function(data) {
+                console.debug("DATA",data);
+                // if refsets, stop
+                if (data.refsets.length > 0) {
+                  alert('The project has refsets attached. The refsets for this project must be removed'
+                    + ' before the project itself can be removed');
+                  return;
+                }
+                // Otherwise, remove project
+                projectService.removeProject(project).then(
+                // Success
+                function() {
+                  // Refresh projects
+                  $scope.getProjects();
+                  $scope.getCandidateProjects();
+                });
+              } // no need for error function
+            );
+
         };
 
         // Removes a user

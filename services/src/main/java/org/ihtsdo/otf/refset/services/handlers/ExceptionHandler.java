@@ -54,7 +54,11 @@ public class ExceptionHandler {
 
     e.printStackTrace();
     if (e instanceof LocalException) {
-      throw e;
+      if (e.getMessage().contains("AuthToken does not have a valid userName.")) {
+        throw new LocalException("AuthToken does not have a valid userName.");
+      } else {
+        throw e;
+      }
     }
     if (e instanceof WebApplicationException) {
       throw (WebApplicationException) e;

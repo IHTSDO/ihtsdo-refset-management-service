@@ -20,6 +20,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -35,6 +36,7 @@ import org.ihtsdo.otf.refset.Translation;
 @Entity
 @Table(name = "spelling_dictionaries")
 @XmlRootElement(name = "dictionary")
+@Audited
 public class SpellingDictionaryJpa implements SpellingDictionary {
 
   /** The id. Set initial value to 5 to bypass entries in import.sql */

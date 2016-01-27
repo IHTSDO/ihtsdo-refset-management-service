@@ -133,7 +133,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
       handleLazyInit(record, workflowService);
-
       return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");

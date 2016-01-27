@@ -27,7 +27,7 @@ import org.ihtsdo.otf.refset.helpers.LogEntry;
 
 /**
  * The JPA enabled implementation of the log entry object.
- */  
+ */
 @Entity
 @Table(name = "log_entries")
 @Indexed
@@ -48,16 +48,16 @@ public class LogEntryJpa implements LogEntry {
   /** The last modified. */
   @Column(nullable = false)
   private String lastModifiedBy;
-  
-  /**  The message. */
+
+  /** The message. */
   @Column(nullable = false)
   private String message;
-  
-  /**  The object id. */
+
+  /** The object id. */
   @Column(nullable = false)
   private Long objectId;
-  
-  /**  The project id. */
+
+  /** The project id. */
   @Column(nullable = false)
   private Long projectId;
 
@@ -69,10 +69,10 @@ public class LogEntryJpa implements LogEntry {
     // do nothing
   }
 
-
   /**
    * Instantiates a {@link LogEntryJpa} from the specified parameters.
    *
+   * @param logEntry the log entry
    */
   public LogEntryJpa(LogEntry logEntry) {
     id = logEntry.getId();
@@ -133,7 +133,7 @@ public class LogEntryJpa implements LogEntry {
 
   @Override
   @FieldBridge(impl = LongBridge.class)
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)  
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getObjectId() {
     return objectId;
   }
@@ -145,7 +145,7 @@ public class LogEntryJpa implements LogEntry {
 
   @Override
   @FieldBridge(impl = LongBridge.class)
-  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)  
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public Long getProjectId() {
     return projectId;
   }

@@ -486,7 +486,7 @@ tsApp
                 // Success
                 function() {
                   $scope.selected.concept = null;
-                  $scope.getMembers(refset);
+                  $scope.handleWorkflow(refset);
                 });
               };
               // Remove refset inclusion
@@ -495,7 +495,7 @@ tsApp
                 refsetService.removeRefsetMember(member.id).then(
                 // Success
                 function() {
-                  $scope.getMembers(refset);
+                  $scope.handleWorkflow(refset);
                 });
               };
 
@@ -503,7 +503,7 @@ tsApp
               // list with current PFS settings
               $scope.addRefsetExclusion = function(refset, member) {
                 refsetService.addRefsetExclusion(refset, member.conceptId, false).then(function() {
-                  $scope.getMembers(refset);
+                  $scope.handleWorkflow(refset);
                 });
 
               };
@@ -511,7 +511,7 @@ tsApp
               // Remove refset exclusion and refreshes members
               $scope.removeRefsetExclusion = function(refset, member) {
                 refsetService.removeRefsetExclusion(member.id).then(function() {
-                  $scope.getMembers(refset);
+                  $scope.handleWorkflow(refset);
                 });
 
               };
@@ -1495,7 +1495,6 @@ tsApp
 
               };
 
- 
               // Log modal
               $scope.openLogModal = function() {
                 console.debug('openLogModal ');
@@ -1515,10 +1514,8 @@ tsApp
                   }
                 });
 
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                });
+                // NO need for result function - no action on close
+                // modalInstance.result.then(function(data) {});
               };
 
               // Log controller
@@ -1528,30 +1525,29 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
 
-                
                 // Get log to display
                 $scope.getLog = function() {
                   projectService.getLog(project.id, refset.id).then(
-                        // Success
-                        function(data) {
-                          $scope.log = data;
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        })            
-                  
-                }
+                  // Success
+                  function(data) {
+                    $scope.log = data;
+                  },
+                  // Error
+                  function(data) {
+                    handleError($scope.errors, data);
+                  });
+
+                };
 
                 // Dismiss modal
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                $scope.close = function() {
+                  $uibModalInstance.close(refset);
                 };
-                
+
                 // initialize
                 $scope.getLog();
-              };            
-              
+              };
+
               // Add Refset Member List modal
               $scope.openAddRefsetMemberListModal = function() {
                 console.debug('openAddRefsetMemberListModal ');
@@ -1593,7 +1589,7 @@ tsApp
                 $scope.hasResults = function() {
                   return $scope.added.length > 0 || $scope.removed.length > 0
                     || $scope.exists.length > 0 || $scope.notExists.length > 0;
-                }
+                };
 
                 // Add members in the list
                 $scope.includeMembers = function() {

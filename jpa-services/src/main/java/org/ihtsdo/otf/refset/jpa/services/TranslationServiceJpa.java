@@ -36,7 +36,6 @@ import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.IoHandlerInfoJpa;
 import org.ihtsdo.otf.refset.jpa.MemoryEntryJpa;
 import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
-import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.SpellingDictionaryJpa;
 import org.ihtsdo.otf.refset.jpa.StagedTranslationChangeJpa;
@@ -413,6 +412,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   @Override
   public void handleLazyInit(Concept concept) {
     for (final Description d : concept.getDescriptions()) {
+      d.toString();
       d.getLanguageRefsetMembers().size();
     }
     concept.getRelationships().size();
@@ -487,6 +487,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return list;
   }
 
+  /* see superclass */
   @Override
   public Concept addConcept(Concept concept) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -509,6 +510,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addHasLastModified(concept);
   }
 
+  /* see superclass */
   @Override
   public void updateConcept(Concept concept) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -535,6 +537,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     this.updateHasLastModified(concept);
   }
 
+  /* see superclass */
   @Override
   public void removeConcept(Long id, boolean cascade) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -574,6 +577,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // no workflow listener
   }
 
+  /* see superclass */
   @Override
   public Concept getConcept(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -581,6 +585,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(id, ConceptJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Concept getConcept(String terminologyId, String terminology,
     String version) throws Exception {
@@ -591,6 +596,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         ConceptJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Description addDescription(Description description) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -613,6 +619,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addHasLastModified(description);
   }
 
+  /* see superclass */
   @Override
   public void updateDescription(Description description) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -640,6 +647,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   }
 
+  /* see superclass */
   @Override
   public void removeDescription(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -648,6 +656,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     removeHasLastModified(id, DescriptionJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Description getDescription(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -655,6 +664,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(id, DescriptionJpa.class);
   }
 
+  /* see superclass */
   @Override
   public Description getDescription(String terminologyId, String terminology,
     String version) throws Exception {
@@ -666,6 +676,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   }
 
+  /* see superclass */
   @Override
   public LanguageRefsetMember addLanguageRefsetMember(
     LanguageRefsetMember member, String terminology) throws Exception {
@@ -686,6 +697,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addHasLastModified(member);
   }
 
+  /* see superclass */
   @Override
   public void updateLanguageRefsetMember(LanguageRefsetMember member,
     String terminology) throws Exception {
@@ -712,6 +724,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     this.updateHasLastModified(member);
   }
 
+  /* see superclass */
   @Override
   public void removeLanguageRefsetMember(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -720,6 +733,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     removeHasLastModified(id, LanguageRefsetMemberJpa.class);
   }
 
+  /* see superclass */
   @Override
   public LanguageRefsetMember getLanguageRefsetMember(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -727,6 +741,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return getHasLastModified(id, LanguageRefsetMemberJpa.class);
   }
 
+  /* see superclass */
   @Override
   public LanguageRefsetMember getLanguageRefsetMember(String terminologyId,
     String terminology, String version) throws Exception {
@@ -738,6 +753,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   }
 
+  /* see superclass */
   @Override
   public StagedTranslationChange addStagedTranslationChange(
     StagedTranslationChange change) throws Exception {
@@ -754,6 +770,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return change;
   }
 
+  /* see superclass */
   @Override
   public void removeStagedTranslationChange(Long id) throws Exception {
     try {
@@ -786,6 +803,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public StagedTranslationChange getStagedTranslationChange(Long translationId)
     throws Exception {
@@ -802,6 +820,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public SpellingDictionary addSpellingDictionary(SpellingDictionary dictionary)
     throws Exception {
@@ -812,6 +831,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addObject(dictionary);
   }
 
+  /* see superclass */
   @Override
   public void updateSpellingDictionary(SpellingDictionary dictionary)
     throws Exception {
@@ -821,6 +841,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     updateObject(dictionary);
   }
 
+  /* see superclass */
   @Override
   public void removeSpellingDictionary(Long dictionaryId) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -833,6 +854,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public MemoryEntry addMemoryEntry(MemoryEntry memoryEntry) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -842,6 +864,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addObject(memoryEntry);
   }
 
+  /* see superclass */
   @Override
   public void updateMemoryEntry(MemoryEntry memoryEntry) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -850,6 +873,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     updateObject(memoryEntry);
   }
 
+  /* see superclass */
   @Override
   public void removeMemoryEntry(Long memoryEntryId) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -862,6 +886,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public PhraseMemory addPhraseMemory(PhraseMemory phraseMemory)
     throws Exception {
@@ -872,6 +897,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return addObject(phraseMemory);
   }
 
+  /* see superclass */
   @Override
   public void updatePhraseMemory(PhraseMemory phraseMemory) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -880,6 +906,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     updateObject(phraseMemory);
   }
 
+  /* see superclass */
   @Override
   public void removePhraseMemory(Long phraseMemoryId) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -891,6 +918,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public MemoryEntry getMemoryEntry(Long id) throws Exception {
     Logger.getLogger(getClass()).debug(
@@ -1069,6 +1097,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return null;
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public ReleaseInfoList findTranslationReleasesForQuery(Long translationId,
@@ -1097,6 +1126,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return result;
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public List<MemoryEntry> findMemoryEntryForTranslation(Long translationId,
@@ -1386,6 +1416,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
    * Recover translation.
    *
    * @param translationId the translation id
+   * @return the translation
    * @throws Exception the exception
    */
   @Override
@@ -1465,8 +1496,9 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   }
 
+  /* see superclass */
   @Override
-  public Long getConceptRevisionNumber(Long conceptId) throws Exception {
+  public Integer getConceptRevisionNumber(Long conceptId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get revision number for concept :" + conceptId);
     final AuditReader reader = AuditReaderFactory.get(manager);
@@ -1475,16 +1507,17 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         reader
             .createQuery()
             // last updated revision
-            .forRevisionsOfEntity(RefsetJpa.class, true, false)
+            .forRevisionsOfEntity(ConceptJpa.class, true, false)
             .add(AuditEntity.property("id").eq(conceptId))
             .addProjection(AuditEntity.revisionNumber().max());
 
     final Number revision = (Number) query.getSingleResult();
-    return revision.longValue();
+    return revision.intValue();
   }
 
+  /* see superclass */
   @Override
-  public Concept getConceptRevision(Long conceptId, Long revision)
+  public Concept getConceptRevision(Long conceptId, Integer revision)
     throws Exception {
     final AuditReader reader = AuditReaderFactory.get(manager);
     final Concept concept = reader.find(ConceptJpa.class, conceptId, revision);
@@ -1492,96 +1525,119 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     return concept;
   }
 
+  /* see superclass */
   @Override
   public Concept syncConcept(Long conceptId, Concept originConcept)
     throws Exception {
 
+    boolean prev = assignIdentifiersFlag;
+    setAssignIdentifiersFlag(false);
+    boolean prev2 = lastModifiedFlag;
     setLastModifiedFlag(false);
-    final Concept currentConcept = getConcept(conceptId);
+    boolean prev3 = getTransactionPerOperation();
+    if (prev3) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
+
+    final Concept newConcept = getConcept(conceptId);
 
     // verify that originRefset has an id matching refsetId
-    if (originConcept.getId() != currentConcept.getId())
+    if (!originConcept.getId().equals(newConcept.getId()))
       throw new Exception(
           "Id for origin concept and current concept must match.");
 
     // descriptions
-    List<Description> oldDescriptions = originConcept.getDescriptions();
-    List<Description> newDescriptions = currentConcept.getDescriptions();
-    Map<Long, Description> oldDescriptionIdMap = new HashMap<>();
-    for (Description oldDescription : oldDescriptions) {
-      oldDescriptionIdMap.put(oldDescription.getId(), oldDescription);
+    final Map<Long, Description> oldDescriptionMap = new HashMap<>();
+    for (final Description oldDescription : originConcept.getDescriptions()) {
+      oldDescriptionMap.put(oldDescription.getId(), oldDescription);
     }
-    Map<Long, Description> newDescriptionIdMap = new HashMap<>();
-    for (Description newDescription : newDescriptions) {
-      newDescriptionIdMap.put(newDescription.getId(), newDescription);
+    final Map<Long, Description> newDescriptionMap = new HashMap<>();
+    for (final Description newDescription : newConcept.getDescriptions()) {
+      newDescriptionMap.put(newDescription.getId(), newDescription);
     }
     // get the id lists map id->Object single for loop with lookup in map
     originConcept.getDescriptions().clear();
 
     // old not new : ADD (by id)
-    for (Long oldDescriptionId : oldDescriptionIdMap.keySet()) {
-      Description oldDescription = oldDescriptionIdMap.get(oldDescriptionId);
-      if (!newDescriptionIdMap.containsKey(oldDescriptionId)) {
-        oldDescription.setId(null);
-        for (LanguageRefsetMember lrm : oldDescription
+    for (final Description oldDescription : oldDescriptionMap.values()) {
+      if (!newDescriptionMap.containsKey(oldDescription.getId())) {
+        // Add back in the language refset members
+        for (final LanguageRefsetMember member : oldDescription
             .getLanguageRefsetMembers()) {
-          lrm.setId(null);
-          addLanguageRefsetMember(lrm, oldDescription.getConcept()
-              .getTranslation().getTerminology());
+          member.setId(null);
+          addLanguageRefsetMember(member, originConcept.getTranslation()
+              .getTerminology());
+          // No need to add to data structure, it's already there
+          // oldDescription.getLanguageRefsetMembers().add(member);
         }
+        // Add the description
+        oldDescription.setId(null);
         addDescription(oldDescription);
         originConcept.getDescriptions().add(oldDescription);
       }
     }
 
     // new not old : REMOVE (by id)
-    for (Long newDescriptionId : newDescriptionIdMap.keySet()) {
-      Description newDescription = newDescriptionIdMap.get(newDescriptionId);
-      if (!oldDescriptionIdMap.containsKey(newDescriptionId)) {
+    for (final Description newDescription : newDescriptionMap.values()) {
+      if (!oldDescriptionMap.containsKey(newDescription.getId())) {
+        // Remove the descrition
         removeDescription(newDescription.getId());
-        for (LanguageRefsetMember lrm : newDescription
+        // Remove the language refset members
+        for (final LanguageRefsetMember member : newDescription
             .getLanguageRefsetMembers()) {
-          removeLanguageRefsetMember(lrm.getId());
+          removeLanguageRefsetMember(member.getId());
         }
       }
     }
 
     // same id : UPDATE
-    for (Description oldDescription : oldDescriptionIdMap.values()) {
-      for (Description newDescription : newDescriptionIdMap.values()) {
-        if (oldDescription.getId().equals(newDescription.getId())) {
-          // verify that oldDescrpition and newDescription each have exactly 1
-          // lang
-          // refset member
-          if (oldDescription.getLanguageRefsetMembers().size() != 1) {
-            throw new Exception(
-                "The original description must have exactly one language refset member.");
-          }
-          if (newDescription.getLanguageRefsetMembers().size() != 1) {
-            throw new Exception(
-                "The current description must have exactly one language refset member.");
-          }
-          // verify that old/new lrm have the same id
-          if (!newDescription.getLanguageRefsetMembers().get(0).getId()
-              .equals(oldDescription.getLanguageRefsetMembers().get(0).getId())) {
-            throw new Exception(
-                "The old and new language refset members must have the same id.");
-          }
-          updateLanguageRefsetMember(oldDescription.getLanguageRefsetMembers()
-              .get(0), originConcept.getTranslation().getTerminology());
-          updateDescription(oldDescription);
-          originConcept.getDescriptions().add(oldDescription);
+    for (final Description oldDescription : oldDescriptionMap.values()) {
+      if (newDescriptionMap.containsKey(oldDescription.getId())) {
+        final Description newDescription =
+            newDescriptionMap.get(oldDescription.getId());
+        // CHECK ASSUMPTION: each description has only a single language
+        if (oldDescription.getLanguageRefsetMembers().size() != 1) {
+          throw new Exception(
+              "The original description must have exactly one language refset member.");
         }
+        if (newDescription.getLanguageRefsetMembers().size() != 1) {
+          throw new Exception(
+              "The current description must have exactly one language refset member.");
+        }
+        // CHECK ASSUMPTION: the language refset members of old/new share an id
+        // If not the case, need to add code to handle this condition
+        if (!newDescription.getLanguageRefsetMembers().get(0).getId()
+            .equals(oldDescription.getLanguageRefsetMembers().get(0).getId())) {
+          throw new Exception(
+              "The old and new language refset members must have the same id.");
+        }
+        // Update to the old member
+        updateLanguageRefsetMember(oldDescription.getLanguageRefsetMembers()
+            .get(0), originConcept.getTranslation().getTerminology());
+        // Update the description (in case it changed)
+        updateDescription(oldDescription);
+        // Add it back into the data structure
+        originConcept.getDescriptions().add(oldDescription);
       }
     }
 
     //
-    // Notes
+    // Sync notes
     //
-    resolveNotes(originConcept.getNotes(), currentConcept.getNotes());
+    syncNotes(originConcept.getNotes(), newConcept.getNotes());
 
+    // Save the current state of the origin concept, thus restoring it.
     updateConcept(originConcept);
 
+    // Restore flags (for callers)
+    setAssignIdentifiersFlag(prev);
+    setLastModifiedFlag(prev2);
+    if (prev3) {
+      commit();
+      setTransactionPerOperation(true);
+    }
+    // Return the changed concept
     return originConcept;
   }
 }

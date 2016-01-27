@@ -69,7 +69,7 @@ tsApp
         // Handle error message
         this.handleError = function(response) {
           console.debug('Handle error: ', response);
-          if (response.data && response.data.length > 100) {
+          if (response.data && response.data.length > 120) {
             this.error.message = "Unexpected error, click the icon to view attached full error";
             this.error.longMessage = response.data;
           } else {

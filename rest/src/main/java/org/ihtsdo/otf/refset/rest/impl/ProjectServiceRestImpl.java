@@ -49,6 +49,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ProjectListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TerminologyListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.UserListJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.rest.ProjectServiceRest;
@@ -58,6 +59,7 @@ import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.ProjectService;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -149,12 +151,14 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(projectService, projectId, securityService,
               authToken, "add user to project", UserRole.AUTHOR);
 
-      final User user = securityService.getUser(userName);
-      final Project project = projectService.getProject(projectId);
+      User user = securityService.getUser(userName);
+      Project project = projectService.getProject(projectId);
       project.getUserRoleMap().put(user, UserRole.valueOf(role));
       project.setLastModifiedBy(thisUser);
       projectService.updateProject(project);
 
+      project = projectService.getProject(projectId);
+      user = securityService.getUser(userName);
       user.getProjectRoleMap().put(project, UserRole.valueOf(role));
       securityService.updateUser(user);
 
@@ -205,17 +209,20 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
                 authToken, "unassign user from project", UserRole.AUTHOR);
       }
 
-      final User user = securityService.getUser(userName);
-      final Project project = projectService.getProject(projectId);
+      User user = securityService.getUser(userName);
+      Project project = projectService.getProject(projectId);
       project.getUserRoleMap().remove(user);
       project.setLastModifiedBy(thisUser);
       projectService.updateProject(project);
 
+      user = securityService.getUser(userName);
+      project = projectService.getProject(projectId);
       user.getProjectRoleMap().remove(project);
       securityService.updateUser(user);
 
-      addLogEntry(projectService, userName, "UNASSIGN User from Project", projectId, projectId, user.getUserName());
-      
+      addLogEntry(projectService, userName, "UNASSIGN User from Project",
+          projectId, projectId, user.getUserName());
+
       return project;
     } catch (Exception e) {
       handleException(e, "trying to remove user from project");
@@ -356,7 +363,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
-      addLogEntry(projectService, userName, "ADD Project", newProject.getId(), newProject.getId(), newProject.getTerminologyId() + ": " + newProject.getName());
+      addLogEntry(projectService, userName, "ADD Project", newProject.getId(),
+          newProject.getId(),
+          newProject.getTerminologyId() + ": " + newProject.getName());
       return newProject;
     } catch (Exception e) {
       handleException(e, "trying to add a project");
@@ -383,7 +392,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     // Create service and configure transaction scope
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String userName = authorizeApp(securityService, authToken, "update project", UserRole.USER);
+      final String userName =
+          authorizeApp(securityService, authToken, "update project",
+              UserRole.USER);
 
       // check to see if project already exists
       boolean found = false;
@@ -422,8 +433,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
       projectService.updateProject(project);
 
-      addLogEntry(projectService, userName, "UPDATE Project", project.getId(), project.getId(), project.getTerminologyId() + ": " + project.getName());
-      
+      addLogEntry(projectService, userName, "UPDATE Project", project.getId(),
+          project.getId(),
+          project.getTerminologyId() + ": " + project.getName());
+
     } catch (Exception e) {
       handleException(e, "trying to update a project");
     } finally {
@@ -454,7 +467,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String userName = authorizeApp(securityService, authToken, "remove project", UserRole.USER);
+      final String userName =
+          authorizeApp(securityService, authToken, "remove project",
+              UserRole.USER);
 
       // unassign users from project before deleting it
       final Project project = projectService.getProject(projectId);
@@ -463,9 +478,10 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
-      
-      addLogEntry(projectService, userName, "UPDATE Project", projectId, projectId, project.getTerminologyId() + ": " + project.getName());
-      
+
+      addLogEntry(projectService, userName, "UPDATE Project", projectId,
+          projectId, project.getTerminologyId() + ": " + project.getName());
+
     } catch (Exception e) {
       handleException(e, "trying to remove a project");
     } finally {
@@ -1050,6 +1066,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     return null;
   }
 
+  /* see superclass */
   @GET
   @Path("/log")
   @Produces("text/plain")
@@ -1059,21 +1076,22 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
     @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken) throws Exception {
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Project): /log/" + projectId + ", " + objectId);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeProject(projectService, projectId,
-          securityService, authToken, "get log entries", UserRole.AUTHOR);
+      authorizeProject(projectService, projectId, securityService, authToken,
+          "get log entries", UserRole.AUTHOR);
 
       PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
       pfs.setMaxResults(1000);
       pfs.setAscending(false);
       pfs.setSortField("lastModified");
-      
+
       final List<LogEntry> entries =
           projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
 
@@ -1083,7 +1101,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
 
       return log.toString();
-      
+
     } catch (Exception e) {
       handleException(e, "trying to get log");
     } finally {
@@ -1091,5 +1109,49 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
     return null;
+  }
+
+  /**
+   * Returns the replacement concepts.
+   *
+   * @param conceptId the concept id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the replacement concepts
+   * @throws Exception the exception
+   */
+  @Override
+  @GET
+  @Path("/concept/replacements")
+  @ApiOperation(value = "Returns potential alternative concepts for a retired concept", notes = "Returns potential current alternative concepts for a given retired concept.", response = KeyValuePairList.class)
+  public ConceptList getReplacementConcepts(
+    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) String conceptId,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful GET call (Refset): /concept/alternates " + terminology + ", "
+            + version + ", " + conceptId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get alternate concepts for retired concept", UserRole.VIEWER);
+
+      ConceptList concepts =
+          refsetService.getTerminologyHandler().getReplacementConcepts(
+              conceptId, terminology, version);
+      return concepts;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get alternate concepts for retired concept");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
   }
 }

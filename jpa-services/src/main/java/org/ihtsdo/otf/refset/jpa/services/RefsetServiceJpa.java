@@ -1087,6 +1087,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     final Map<String, ConceptRefsetMember> existingMembers = new HashMap<>();
 
     final Set<String> resolvedConcepts = new HashSet<>();
+
     for (final ConceptRefsetMember member : findMembersForRefset(
         refset.getId(), null, null).getObjects()) {
       if (member.getMemberType() == Refset.MemberType.INCLUSION) {
@@ -1173,6 +1174,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    */
   @Override
   public Refset recoverRefset(Long refsetId) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Refset Service - recover refset - " + refsetId);
 
     // Get last refset revision not a delete
     final AuditReader reader = AuditReaderFactory.get(manager);
@@ -1224,11 +1227,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   }
 
   @Override
-  public Long getRefsetRevisionNumber(Long refsetId) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Refset Service - get refset revision number for refset :" + refsetId);
+  public Integer getRefsetRevisionNumber(Long refsetId) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Refset Service - get refset revision number for refset - " + refsetId);
     final AuditReader reader = AuditReaderFactory.get(manager);
-
     final AuditQuery query =
         reader
             .createQuery()
@@ -1236,128 +1238,171 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             .forRevisionsOfEntity(RefsetJpa.class, true, false)
             .add(AuditEntity.property("id").eq(refsetId))
             .addProjection(AuditEntity.revisionNumber().max());
-
     final Number revision = (Number) query.getSingleResult();
-    return revision.longValue();
+    Logger.getLogger(getClass()).debug("  revision = " + revision);
+    return revision.intValue();
   }
 
+  /* see superclass */
   @Override
-  public Refset getRefsetRevision(Long refsetId, Long revision)
+  public Refset getRefsetRevision(Long refsetId, Integer revision)
     throws Exception {
+    Logger.getLogger(getClass())
+        .info(
+            "Refset Service - get refset revision  - " + refsetId + ", "
+                + revision);
     final AuditReader reader = AuditReaderFactory.get(manager);
     final Refset refset =
-        reader.find(RefsetJpa.class, refsetId,
-            Integer.valueOf(revision.intValue()));
+        reader.find(RefsetJpa.class, refsetId, revision.intValue());
     return refset;
   }
 
   @Override
   public Refset syncRefset(Long refsetId, Refset originRefset) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Refset Service - sync refset - " + originRefset);
 
-    // calling method needs to use transactionPerOperation(false)
+    // Initialize origin refset
+    originRefset.getMembers().size();
+    originRefset.getNotes().size();
 
+    boolean prev = assignIdentifiersFlag;
+    setAssignIdentifiersFlag(false);
+    boolean prev2 = lastModifiedFlag;
     setLastModifiedFlag(false);
+    boolean prev3 = getTransactionPerOperation();
+    if (prev3) {
+      setTransactionPerOperation(false);
+      beginTransaction();
+    }
     final Refset currentRefset = getRefset(refsetId);
 
     // verify that originRefset has an id matching refsetId
-    if (originRefset.getId() != currentRefset.getId())
-      throw new Exception("Id for origin refset and current refset must match.");
+    if (!originRefset.getId().equals(currentRefset.getId())) {
+      throw new Exception(
+          "Id for origin refset and current refset must match - " + +refsetId
+              + ", " + originRefset.getId());
+    }
 
     //
-    // members
+    // Sync members
     //
-    List<ConceptRefsetMember> oldMembers = originRefset.getMembers();
-    List<ConceptRefsetMember> newMembers = currentRefset.getMembers();
-
-    Map<Long, ConceptRefsetMember> oldMemberIdMap = new HashMap<>();
-    for (ConceptRefsetMember oldMember : oldMembers) {
-      oldMemberIdMap.put(oldMember.getId(), oldMember);
+    final Map<Long, ConceptRefsetMember> oldMemberMap = new HashMap<>();
+    for (final ConceptRefsetMember oldMember : originRefset.getMembers()) {
+      oldMemberMap.put(oldMember.getId(), oldMember);
     }
-    Map<Long, ConceptRefsetMember> newMemberIdMap = new HashMap<>();
-    for (ConceptRefsetMember newMember : newMembers) {
-      newMemberIdMap.put(newMember.getId(), newMember);
+    final Map<Long, ConceptRefsetMember> newMemberMap = new HashMap<>();
+    for (final ConceptRefsetMember newMember : currentRefset.getMembers()) {
+      newMemberMap.put(newMember.getId(), newMember);
     }
+    System.out.print("oldMembers=" + oldMemberMap);
+    System.out.print("newMembers=" + newMemberMap);
     originRefset.getMembers().clear();
 
     // old not new : ADD (by id)
-    for (Long oldMemberId : oldMemberIdMap.keySet()) {
-      ConceptRefsetMember oldMember = oldMemberIdMap.get(oldMemberId);
-      if (!newMemberIdMap.containsKey(oldMemberId)) {
+    for (final ConceptRefsetMember oldMember : oldMemberMap.values()) {
+      if (!newMemberMap.containsKey(oldMember.getId())) {
+        System.out.println("Add member " + oldMember);
         oldMember.setId(null);
         addMember(oldMember);
         // need to add old notes back
-        for (Note oldNote : oldMember.getNotes()) {
+        for (final Note oldNote : oldMember.getNotes()) {
           addNote(oldNote);
         }
+        // add back in the old note to the data structure
+        originRefset.getMembers().add(oldMember);
       }
-      originRefset.getMembers().add(oldMember);
     }
 
     // new not old : REMOVE (by id)
-    for (Long newMemberId : newMemberIdMap.keySet()) {
-      ConceptRefsetMember newMember = newMemberIdMap.get(newMemberId);
-      if (!oldMemberIdMap.containsKey(newMemberId)) {
+    for (final ConceptRefsetMember newMember : newMemberMap.values()) {
+      if (!oldMemberMap.containsKey(newMember.getId())) {
         // remove the notes
-        for (Note newNote : newMember.getNotes()) {
+        for (final Note newNote : newMember.getNotes()) {
           removeNote(newNote.getId(), newNote.getClass());
         }
+        System.out.println("Remove member " + newMember);
+        // remove new members
+        removeMember(newMember.getId());
+        // no need to remove from data structure (oldRefset.getMembers())
       }
-      // remove new members
-      removeMember(newMember.getId());
     }
 
     // same id : UPDATE
-    for (ConceptRefsetMember oldMember : originRefset.getMembers()) {
-      for (ConceptRefsetMember newMember : currentRefset.getMembers()) {
-        if (oldMember.getId().equals(newMember.getId())) {
-          resolveNotes(oldMember.getNotes(), newMember.getNotes());
-          updateMember(oldMember);
-          originRefset.getMembers().add(oldMember);
-        }
+    for (final ConceptRefsetMember oldMember : oldMemberMap.values()) {
+      if (newMemberMap.containsKey(oldMember.getId())) {
+        final ConceptRefsetMember newMember =
+            newMemberMap.get(oldMember.getId());
+        // Sync the notes
+        syncNotes(oldMember.getNotes(), newMember.getNotes());
+        // restore to old state
+        System.out.println("Update member " + oldMember);
+        final ConceptRefsetMember updateMember =
+            new ConceptRefsetMemberJpa(oldMember);
+        updateMember(updateMember);
+        // Add to the data structure
+        originRefset.getMembers().add(updateMember);
       }
     }
 
     //
     // definition clauses
     //
-    List<DefinitionClause> oldClauses = originRefset.getDefinitionClauses();
-    List<DefinitionClause> newClauses = currentRefset.getDefinitionClauses();
+    final Map<Long, DefinitionClause> oldClausesMap = new HashMap<>();
+    for (final DefinitionClause oldClause : originRefset.getDefinitionClauses()) {
+      oldClausesMap.put(oldClause.getId(), oldClause);
+    }
+    final Map<Long, DefinitionClause> newClausesMap = new HashMap<>();
+    for (final DefinitionClause newClause : currentRefset
+        .getDefinitionClauses()) {
+      newClausesMap.put(newClause.getId(), newClause);
+    }
     originRefset.getDefinitionClauses().clear();
 
     // old not new : ADD (by id)
-    oldClauses.removeAll(newClauses);
-    for (DefinitionClause oldClause : oldClauses) {
-      oldClause.setId(null);
-      originRefset.getDefinitionClauses().add(oldClause);
+    for (final DefinitionClause oldClause : oldClausesMap.values()) {
+      if (!newClausesMap.containsKey(oldClause.getId())) {
+        // No need to add to DB - this is a CASCADE field
+        // the update refset call will save it
+        oldClause.setId(null);
+        originRefset.getDefinitionClauses().add(oldClause);
+      }
     }
 
     // new not old : REMOVE (by id)
-    // no need because of cascade and already cleared
-    /*
-     * newClauses.removeAll(oldClauses); for (DefinitionClause newClause :
-     * newClauses) { originRefset.getDefinitionClauses().remove(newClause); }
-     */
+    // no need because this is a CASCADE field
 
     // same id : UPDATE
-    for (DefinitionClause oldDefinitionClause : originRefset
-        .getDefinitionClauses()) {
-      for (DefinitionClause newDefinitionClause : currentRefset
-          .getDefinitionClauses()) {
-        if (oldDefinitionClause.getId().equals(newDefinitionClause.getId())) {
-          originRefset.getDefinitionClauses().add(oldDefinitionClause);
-        }
+    for (final DefinitionClause oldClause : oldClausesMap.values()) {
+      if (newClausesMap.containsKey(oldClause.getId())) {
+        // No need to remove from DB - this is a CASCADE field
+        // the update refset call will save it
+        originRefset.getDefinitionClauses().add(oldClause);
       }
+
     }
 
     //
     // Notes
     //
-    resolveNotes(originRefset.getNotes(), currentRefset.getNotes());
+    syncNotes(originRefset.getNotes(), currentRefset.getNotes());
 
+    //
     // at the end, originRefset should have exactly the right members
     // attached to it (for indexing)
+    //
     updateRefset(originRefset);
 
+    // Restore flags (for the caller)
+    setAssignIdentifiersFlag(prev);
+    setLastModifiedFlag(prev2);
+
+    if (prev3) {
+      commit();
+      setTransactionPerOperation(true);
+    }
+
+    // Return the original refset
     return originRefset;
   }
 
@@ -1368,29 +1413,43 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    * @param newNotes the new notes
    * @throws Exception the exception
    */
-  protected void resolveNotes(List<Note> oldNotes, List<Note> newNotes)
+  protected void syncNotes(List<Note> oldNotes, List<Note> newNotes)
     throws Exception {
 
-    // old not new : ADD (by id)
+    final Map<Long, Note> oldNotesMap = new HashMap<>();
+    final Map<Long, Note> newNotesMap = new HashMap<>();
+    for (final Note note : oldNotes) {
+      oldNotesMap.put(note.getId(), note);
+    }
+    for (final Note note : newNotes) {
+      newNotesMap.put(note.getId(), note);
+    }
+
+    // Clear old notes to prepare
     oldNotes.removeAll(newNotes);
-    for (Note oldNote : oldNotes) {
-      oldNote.setId(null);
-      addNote(oldNote);
+
+    // old not new : ADD (by id)
+    for (final Note oldNote : oldNotesMap.values()) {
+      if (!newNotesMap.containsKey(oldNote.getId())) {
+        oldNote.setId(null);
+        addNote(oldNote);
+      }
     }
 
     // new not old : REMOVE (by id)
-    newNotes.removeAll(oldNotes);
-    for (Note newNote : newNotes) {
-      removeNote(newNote.getId(), newNote.getClass());
+    for (final Note newNote : newNotesMap.values()) {
+      if (!oldNotesMap.containsKey(newNote.getId())) {
+        removeNote(newNote.getId(), newNote.getClass());
+      }
     }
 
     // same id : UPDATE
-    for (Note oldNote : oldNotes) {
-      for (Note newNote : newNotes) {
-        if (oldNote.getId().equals(newNote.getId())) {
-          updateNote(oldNote);
-        }
+    for (final Note oldNote : oldNotesMap.values()) {
+      if (newNotesMap.containsKey(oldNote.getId())) {
+        updateNote(oldNote);
       }
     }
+
   }
+
 }

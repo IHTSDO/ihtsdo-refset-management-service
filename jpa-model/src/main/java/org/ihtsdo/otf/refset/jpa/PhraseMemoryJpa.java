@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Indexed;
 import org.ihtsdo.otf.refset.MemoryEntry;
 import org.ihtsdo.otf.refset.PhraseMemory;
@@ -29,6 +30,7 @@ import org.ihtsdo.otf.refset.Translation;
 @Entity
 @Table(name = "phrase_memories")
 @Indexed
+@Audited
 @XmlRootElement(name = "memory")
 public class PhraseMemoryJpa implements PhraseMemory {
 

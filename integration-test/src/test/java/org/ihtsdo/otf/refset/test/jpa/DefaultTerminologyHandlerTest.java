@@ -11,7 +11,6 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
@@ -117,13 +116,13 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
 
-    KeyValuePairList keyValuePairList =
-        service.getTerminologyHandler().getPotentialCurrentConceptsForRetiredConcept(
-            "150606004", "SNOMEDCT", "2015-01-31");
-    assertEquals(2, keyValuePairList.getKeyValuePairs().size());
+    ConceptList concepts =
+        service.getTerminologyHandler().getReplacementConcepts("150606004",
+            "SNOMEDCT", "2015-01-31");
+    assertEquals(2, concepts.getObjects().size());
     service.close();
   }
-  
+
   /**
    * Test get concept parents.
    *

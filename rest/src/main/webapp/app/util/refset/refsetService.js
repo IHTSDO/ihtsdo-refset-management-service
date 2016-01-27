@@ -64,7 +64,7 @@ tsApp.service('refsetService', [
     };
 
     // get refset for id
-    this.getRefset = function(refsetId) {
+    this.refset = function(refsetId) {
       console.debug('getRefset');
       var deferred = $q.defer();
 

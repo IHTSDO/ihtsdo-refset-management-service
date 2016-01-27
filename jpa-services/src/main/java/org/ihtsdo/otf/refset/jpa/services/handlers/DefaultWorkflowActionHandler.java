@@ -21,10 +21,14 @@ import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
@@ -133,6 +137,14 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.REVIEW_IN_PROGRESS,
                     WorkflowStatus.REVIEW_DONE).contains(
                     refset.getWorkflowStatus());
+        // A refset can also be "READY_FOR_PUBLICATION" with a revision flag
+        if (!flag) {
+          flag =
+              record != null
+                  && record.isRevision()
+                  && EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                      refset.getWorkflowStatus());
+        }
         break;
 
       case REASSIGN:
@@ -227,10 +239,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
+      service.handleLazyInit(record);
+      if (record.getRefset() != null) {
+        service.handleLazyInit(record.getRefset());
+      }
     } else if (recordList.getCount() > 1) {
       throw new LocalException("Unexpected number of tracking records for "
           + refset.getId());
     }
+
+    boolean revertFlag = false;
 
     switch (action) {
       case ASSIGN:
@@ -258,9 +276,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else {
           record.setForAuthoring(false);
           record.setForReview(true);
+          // Set the review origin revision, so we can revert on unassign
+          record.setReviewOriginRevision(service.getRefsetRevisionNumber(refset
+              .getId()));
           record.getReviewers().add(user);
           record.setLastModifiedBy(user.getUserName());
-          service.updateTrackingRecord(record);
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
         }
         break;
@@ -273,14 +293,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.EDITING_DONE).contains(
                     refset.getWorkflowStatus())) {
           if (record.isRevision()) {
-            Refset originRevision =
-                service.getRefsetRevision(refset.getId(),
-                    record.getOriginRevision());
-            originRevision.getMembers().size();
-            service.handleLazyInit(originRevision);
-            // mildly problematic - how to fix?
-            refset = service.syncRefset(refset.getId(), originRevision);
-            refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
+            // Read origin refset with a different service, then detach it
+            final Refset originRefset =
+                getOriginRefset(refset.getId(), record.getOriginRevision());
+            service.syncRefset(refset.getId(), originRefset);
+            // signal to leave refset alone
+            revertFlag = true;
+
           } else {
             refset.setWorkflowStatus(WorkflowStatus.NEW);
           }
@@ -296,10 +315,28 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
-          service.updateTrackingRecord(record);
-          refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+          // get the origin review refset (e.g. the EDITING_DONE state)
+          final Refset originRefset =
+              getOriginRefset(refset.getId(), record.getReviewOriginRevision());
+          // Restore it.
+          service.syncRefset(refset.getId(), originRefset);
+          // Set the flag to avoid saving the refset later, this is the final
+          // saved state.
+          revertFlag = true;
+          // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
         }
+
+        // a READY_FOR_PUBLICATION revision case that has not yet been saved
+        // Simply remove the record and revert the revision flag
+        else if (record != null
+            && record.isRevision()
+            && EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                refset.getWorkflowStatus())) {
+          service.removeTrackingRecord(record.getId());
+          refset.setRevision(false);
+        }
+
         break;
 
       case REASSIGN:
@@ -369,8 +406,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new LocalException("Illegal workflow action - " + action);
     }
 
-    refset.setLastModifiedBy(user.getUserName());
-    service.updateRefset(refset);
+    if (!revertFlag) {
+      refset.setLastModifiedBy(user.getUserName());
+      service.updateRefset(refset);
+    }
+
     // After UNASSIGN and deleting the tracking record,
     // this would create a new tracking record to keep the
     // refset assigned
@@ -458,6 +498,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                     WorkflowStatus.REVIEW_IN_PROGRESS,
                     WorkflowStatus.REVIEW_DONE).contains(
                     concept.getWorkflowStatus());
+        // A concept can also say be "READY_FOR_PUBLICATION" with a revision
+        // flag
+        if (!flag) {
+          flag =
+              record != null
+                  && record.isRevision()
+                  && EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                      concept.getWorkflowStatus());
+        }
         break;
 
       case REASSIGN:
@@ -560,10 +609,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
+      service.handleLazyInit(record);
+      if (record.getConcept() != null) {
+        service.handleLazyInit(record.getConcept());
+      }
     } else if (recordList.getCount() > 1) {
       throw new LocalException("Unexpected number of tracking records for "
           + concept.getTerminologyId());
     }
+    boolean revertFlag = false;
     switch (action) {
       case ASSIGN:
         // Author case
@@ -586,24 +640,25 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record2.setConcept(concept);
           if (concept.getWorkflowStatus() == WorkflowStatus.READY_FOR_PUBLICATION) {
             record2.setRevision(true);
-            // record2.setOriginRevision(service.getConceptRevisionNumber(concept.getId()));
+            record2.setOriginRevision(service.getConceptRevisionNumber(concept
+                .getId()));
             concept.setRevision(true);
           }
           record = record2;
           service.addTrackingRecord(record2);
-          service.updateConcept(concept);
         }
 
         // Reviewer case
         else {
           record.setForAuthoring(false);
           record.setForReview(true);
+          // Set the review origin revision, so we can revert on unassign
+          record.setReviewOriginRevision(service
+              .getConceptRevisionNumber(concept.getId()));
           record.getReviewers().add(user);
           record.setLastModifiedBy(user.getUserName());
-          service.updateTrackingRecord(record);
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
-          concept.setLastModifiedBy(user.getUserName());
-          service.updateConcept(concept);
+
         }
         break;
       case UNASSIGN:
@@ -613,20 +668,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 .of(WorkflowStatus.NEW, WorkflowStatus.EDITING_IN_PROGRESS,
                     WorkflowStatus.EDITING_DONE).contains(
                     concept.getWorkflowStatus())) {
+
           if (record.isRevision()) {
-            /*
-             * Concept originRevision =
-             * service.getConceptRevision(concept.getId(),
-             * record.getOriginRevision());
-             * service.handleLazyInit(originRevision); concept =
-             * service.syncConcept(concept.getId(), originRevision);
-             */
-            concept.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
-            service.removeTrackingRecord(record.getId());
+            // Read origin concept with a different service, then detach it
+            final Concept originConcept =
+                getOriginConcept(concept.getId(), record.getOriginRevision());
+            service.syncConcept(concept.getId(), originConcept);
+            // signal to leave refset alone
+            revertFlag = true;
+
           } else {
-            service.removeTrackingRecord(record.getId());
-            service.removeConcept(concept.getId(), true);
+            concept.setWorkflowStatus(WorkflowStatus.NEW);
           }
+
+          service.removeTrackingRecord(record.getId());
         }
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE
@@ -637,10 +692,26 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
-          service.updateTrackingRecord(record);
-          concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
-          concept.setLastModifiedBy(user.getUserName());
-          service.updateConcept(concept);
+          // get the origin review concept (e.g. the EDITING_DONE state)
+          final Concept originConcept =
+              getOriginConcept(concept.getId(),
+                  record.getReviewOriginRevision());
+          // Restore it.
+          service.syncConcept(concept.getId(), originConcept);
+          // Set the flag to avoid saving the refset later, this is the final
+          // saved state.
+          revertFlag = true;
+          // no need to do this, sync takes care of it
+          // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
+        }
+        // a READY_FOR_PUBLICATION revision case that has not yet been saved
+        // Simply remove the record and revert the revision flag
+        else if (record != null
+            && record.isRevision()
+            && EnumSet.of(WorkflowStatus.READY_FOR_PUBLICATION).contains(
+                concept.getWorkflowStatus())) {
+          service.removeTrackingRecord(record.getId());
+          concept.setRevision(false);
         }
         break;
 
@@ -666,8 +737,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         }
         // all other cases, status remains the same
         // EDITING_IN_PROGRESS, EDITING_DONE, REVIEW_IN_PROGRESS, REVIEW_DONE
-        concept.setLastModifiedBy(user.getUserName());
-        service.updateConcept(concept);
         break;
 
       case FINISH:
@@ -692,9 +761,6 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           concept.setRevision(false);
         }
 
-        concept.setLastModifiedBy(user.getUserName());
-        service.updateConcept(concept);
-
         // Otherwise status stays the same
         break;
 
@@ -718,6 +784,11 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
       default:
         throw new LocalException("Illegal workflow action - " + action);
+    }
+
+    if (!revertFlag) {
+      concept.setLastModifiedBy(user.getUserName());
+      service.updateConcept(concept);
     }
 
     // After UNASSIGN and deleting the tracking record,
@@ -886,4 +957,57 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     return list;
   }
 
+  /**
+   * Returns the origin refset.
+   *
+   * @param refsetId the refset id
+   * @param revision the revision
+   * @return the origin refset
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private Refset getOriginRefset(Long refsetId, Integer revision)
+    throws Exception {
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      final Refset originRefset =
+          refsetService.getRefsetRevision(refsetId, revision);
+      refsetService.handleLazyInit(originRefset);
+      // lazy init all members too
+      for (final ConceptRefsetMember member : originRefset.getMembers()) {
+        refsetService.handleLazyInit(member);
+      }
+      return originRefset;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      refsetService.close();
+    }
+  }
+
+  /**
+   * Returns the origin concept.
+   *
+   * @param conceptId the concept id
+   * @param revision the revision
+   * @return the origin concept
+   * @throws Exception the exception
+   */
+  @SuppressWarnings("static-method")
+  private Concept getOriginConcept(Long conceptId, Integer revision)
+    throws Exception {
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      final Concept originConcept =
+          translationService.getConceptRevision(conceptId, revision);
+      // lazy init
+      translationService.handleLazyInit(originConcept);
+      originConcept.getTranslation().getTerminology();
+      return originConcept;
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      translationService.close();
+    }
+  }
 }

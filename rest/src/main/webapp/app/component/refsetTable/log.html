@@ -5,11 +5,16 @@
 <div class="modal-body">
   <div class="row">
 
-    <div class="col-md-12 col-xs-12" ng-show="error">
-      <p class="alert alert-danger alert-error">{{error}}
-      <div style="cursor: pointer; display: inline; float: right; width: 3%;">
-        <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
+    <div class="alert alert-danger alert-error">
+      {{errors[0]}}
+      <div style="display: inline; float: right;">
+        <i ng-show="errors[1]"
+          title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+          class="noul material-icons md-18"
+          ng-click="error.expand = !error.expand;">attach_file</i>
       </div>
+      <p ng-show="errors[1] && error.expand">
+        <br />{{errors[1]}}
       </p>
     </div>
 
@@ -17,7 +22,6 @@
 
       <div ng-show="log.length > 0"
         style="max-height: 500px; overflow-y: scroll;">
-        
         <pre>{{log}}</pre>
       </div>
     </div>
@@ -26,5 +30,5 @@
 
 
 <div class="modal-footer">
-  <button class="btn btn-warning" ng-click="cancel()">Close</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

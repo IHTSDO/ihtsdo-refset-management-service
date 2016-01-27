@@ -13,6 +13,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 
@@ -23,6 +24,7 @@ import org.ihtsdo.otf.refset.StagedRefsetChange;
 @Table(name = "staged_refset_changes", uniqueConstraints = @UniqueConstraint(columnNames = {
   "originRefset_id"
 }))
+@Audited
 public class StagedRefsetChangeJpa implements StagedRefsetChange {
 
   /** The id. - here only for JPA, not accessible */

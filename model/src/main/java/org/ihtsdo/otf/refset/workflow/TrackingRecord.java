@@ -114,33 +114,48 @@ public interface TrackingRecord extends HasLastModified {
    * @param forAuthoring the for authoring flag
    */
   public void setForAuthoring(boolean forAuthoring);
-  
+
   /**
    * Indicates whether or not revision is the case.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */
   public boolean isRevision();
-  
+
   /**
-   * Sets the revision.
+   * Sets the revision flag (indicating this is a ready for publication record being re-edited)
    *
    * @param revision the revision
    */
   public void setRevision(boolean revision);
-  
+
   /**
-   * Returns the origin revision.
+   * Returns the origin revision, the initial state of the refset before re-editing.
    *
    * @return the origin revision
    */
-  public Long getOriginRevision();
-  
+  public Integer getOriginRevision();
+
   /**
    * Sets the origin revision.
    *
    * @param revision the origin revision
    */
-  public void setOriginRevision(Long revision);
-  
+  public void setOriginRevision(Integer revision);
+
+  /**
+   * Returns the review origin revision, the initial state of the refset before review, in case
+   * it needs to be unassigned after changes.
+   *
+   * @return the review origin revision
+   */
+  public Integer getReviewOriginRevision();
+
+  /**
+   * Sets the review origin revision.
+   *
+   * @param revision the review origin revision
+   */
+  public void setReviewOriginRevision(Integer revision);
+
 }

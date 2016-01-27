@@ -13,6 +13,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
+import org.hibernate.envers.Audited;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 
@@ -23,6 +24,7 @@ import org.ihtsdo.otf.refset.Translation;
 @Table(name = "staged_translation_changes", uniqueConstraints = @UniqueConstraint(columnNames = {
   "originTranslation_id"
 }))
+@Audited
 public class StagedTranslationChangeJpa implements StagedTranslationChange {
 
   /** The id. - here only for JPA, not accessible */

@@ -204,6 +204,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "BEGIN RELEASE refset ", refset.getProject()
+          .getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName());
+
       // Finish transaction
       algo.commit();
 
@@ -333,6 +337,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "BETA RELEASE refset ", refset.getProject()
+          .getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName());
+
       // Finish transaction
       algo.commit();
 
@@ -383,6 +391,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "BETA RELEASE refset ", refset.getProject()
+          .getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName());
+
       // Finish transaction
       algo.commit();
 
@@ -432,6 +444,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "CANCEL RELEASE refset ", refset.getProject()
+          .getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName());
+
       // Finish transaction
       algo.commit();
 
@@ -469,8 +485,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if (translation == null) {
         throw new LocalException("Invalid translation id " + translationId);
       }
-      if (translation.getConcepts() == null || translation.getConcepts().size() == 0) {
-        throw new LocalException("Translation " + translation.getTerminologyId() + " has no concepts to release.");
+      if (translation.getConcepts() == null
+          || translation.getConcepts().size() == 0) {
+        throw new LocalException("Translation "
+            + translation.getTerminologyId() + " has no concepts to release.");
       }
 
       // Authorize the call
@@ -489,6 +507,10 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.setUserName(userName);
       algo.checkPreconditions();
       algo.compute();
+
+      addLogEntry(algo, userName, "BEGIN RELEASE refset ", translation.getProject()
+          .getId(), translation.getId(),
+          translation.getTerminologyId() + ": " + translation.getName());
 
       // Finish transaction
       algo.commit();
@@ -546,8 +568,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       final ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
-        throw new LocalException("Translation release is not ready to validate "
-            + translationId);
+        throw new LocalException(
+            "Translation release is not ready to validate " + translationId);
       final ValidationResult result =
           validationService.validateTranslation(translation,
               translation.getProject(), translationService);

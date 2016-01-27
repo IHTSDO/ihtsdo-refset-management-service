@@ -254,7 +254,7 @@ public interface ProjectServiceRest {
    */
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception;
-  
+
   /**
    * Returns the log.
    *
@@ -265,6 +265,20 @@ public interface ProjectServiceRest {
    * @return the log
    * @throws Exception the exception
    */
-  public String getLog(Long projectId, Long objectId, int lines, String authToken) 
-    throws Exception;
+  public String getLog(Long projectId, Long objectId, int lines,
+    String authToken) throws Exception;
+
+  /**
+   * 
+   * Returns the potential current concepts for retired concept.
+   *
+   * @param conceptId the concept id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the potential current concepts for retired concept
+   * @throws Exception the exception
+   */
+  public ConceptList getReplacementConcepts(String conceptId,
+    String terminology, String version, String authToken) throws Exception;
 }

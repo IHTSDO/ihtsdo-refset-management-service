@@ -15,7 +15,6 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.IoHandlerInfoList;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -572,19 +571,5 @@ public interface RefsetServiceRest {
   public Refset recoverRefset(Long projectId, Long refsetId, String authToken)
     throws Exception;
 
-  /**
-   * 
-   * Returns the potential current concepts for retired concept.
-   *
-   * @param conceptId the concept id
-   * @param terminology the terminology
-   * @param version the version
-   * @param authToken the auth token
-   * @return the potential current concepts for retired concept
-   * @throws Exception the exception
-   */
-  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
-    String conceptId, String terminology, String version, String authToken)
-    throws Exception;
 
 }

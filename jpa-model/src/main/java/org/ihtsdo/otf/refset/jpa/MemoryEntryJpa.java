@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.FieldBridge;
@@ -31,6 +32,7 @@ import org.ihtsdo.otf.refset.PhraseMemory;
 @Entity
 @Table(name = "memory_entries")
 @Indexed
+@Audited
 @XmlRootElement(name = "entry")
 public class MemoryEntryJpa implements MemoryEntry {
 

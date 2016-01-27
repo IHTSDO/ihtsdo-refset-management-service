@@ -104,7 +104,10 @@ public class TrackingRecordJpa implements TrackingRecord {
   private Concept concept = null;
 
   /** The origin revision. */
-  private Long originRevision = null;
+  private Integer originRevision = null;
+
+  /** The review origin revision. */
+  private Integer reviewOriginRevision = null;
 
   /**
    * Instantiates an empty {@link TrackingRecordJpa}.
@@ -132,6 +135,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     refset = new RefsetJpa(record.getRefset());
     concept = new ConceptJpa(record.getConcept(), false);
     originRevision = record.getOriginRevision();
+    reviewOriginRevision = record.getReviewOriginRevision();
   }
 
   /* see superclass */
@@ -464,6 +468,31 @@ public class TrackingRecordJpa implements TrackingRecord {
     this.forAuthoring = forAuthoring;
   }
 
+  /* see superclass */
+  @Override
+  public Integer getOriginRevision() {
+    return originRevision;
+  }
+
+  /* see superclass */
+  @Override
+  public void setOriginRevision(Integer revision) {
+    originRevision = revision;
+  }
+
+  /* see superclass */
+  @Override
+  public Integer getReviewOriginRevision() {
+    return reviewOriginRevision;
+  }
+
+  /* see superclass */
+  @Override
+  public void setReviewOriginRevision(Integer revision) {
+    reviewOriginRevision = revision;
+  }
+
+  /* see superclass */
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -478,6 +507,7 @@ public class TrackingRecordJpa implements TrackingRecord {
     return result;
   }
 
+  /* see superclass */
   @Override
   public boolean equals(Object obj) {
     if (this == obj)
@@ -526,16 +556,8 @@ public class TrackingRecordJpa implements TrackingRecord {
         + ", translation=" + translation + ", refset="
         + (refset != null ? refset.getTerminologyId() : "") + ", concept="
         + (concept != null ? concept.getTerminologyId() : "")
-        + ", originRevision=" + originRevision + "]";
+        + ", originRevision=" + originRevision + ", reviewOriginRevision="
+        + reviewOriginRevision + "]";
   }
 
-  @Override
-  public Long getOriginRevision() {
-    return originRevision;
-  }
-
-  @Override
-  public void setOriginRevision(Long revision) {
-    originRevision = revision;
-  }
 }

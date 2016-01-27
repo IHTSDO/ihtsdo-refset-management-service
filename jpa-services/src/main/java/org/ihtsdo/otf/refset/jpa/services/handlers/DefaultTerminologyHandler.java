@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.KeyValuePair;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -181,9 +179,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     return list;
   }
 
+  /* see superclass */
   @Override
-  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
-    String conceptId, String terminology, String version) throws Exception {
+  public ConceptList getReplacementConcepts(String conceptId,
+    String terminology, String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  get potential current concepts for retired concept - " + conceptId);
     // Make a webservice call to SnowOwl to get concept
@@ -203,7 +202,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
       // Here's the messy part about trying to parse the return error message
       if (resultString.contains("loop did not match anything")) {
-        return new KeyValuePairList();
+        return new ConceptListJpa();
       }
 
       throw new Exception("Unexpected terminology server failure. Message = "
@@ -239,16 +238,14 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
      * </pre>
      */
 
-    KeyValuePairList keyValuePairList = new KeyValuePairList();
+    ConceptList concepts = new ConceptListJpa();
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
-    // get total amount
-    final int total = doc.get("total").asInt();
-    // Get concepts returned in this call (up to 200)
     if (doc.get("items") == null) {
-      return keyValuePairList;
+      return concepts;
     }
+    final Map<String, String> reasonMap = new HashMap<>();
     for (final JsonNode conceptNode : doc.get("items")) {
       for (final JsonNode mapping : conceptNode
           .findValues("associationTargets")) {
@@ -260,12 +257,21 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         }
         values = values.replaceAll("\"", "");
         for (String value : values.split(",")) {
-          KeyValuePair kvp = new KeyValuePair(key, value);
-          keyValuePairList.addKeyValuePair(kvp);
+          // conceptId, reason
+          reasonMap.put(value, key);
         }
       }
     }
-    return keyValuePairList;
+
+    // Look up concepts - set "definition status id" to the reason for inactivation
+    // probably need a better placeholder for this, but for now - good enough
+    ConceptList list =
+        this.getConcepts(new ArrayList<>(reasonMap.keySet()), terminology,
+            version);
+    for (final Concept concept : list.getObjects()) {
+      concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
+    }
+    return concepts;
   }
 
   /* see superclass */

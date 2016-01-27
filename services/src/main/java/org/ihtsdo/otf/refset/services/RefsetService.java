@@ -309,8 +309,8 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void lookupMemberNames(Long refsetId,
-    List<ConceptRefsetMember> members, String label, boolean saveMembers, boolean background)
-    throws Exception;
+    List<ConceptRefsetMember> members, String label, boolean saveMembers,
+    boolean background) throws Exception;
 
   /**
    * Returns the percentage of concepts within the refset whose lookup has been
@@ -331,7 +331,7 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public void resolveRefsetDefinition(Refset refset) throws Exception;
-  
+
   /**
    * Returns the refset revision number.
    *
@@ -339,8 +339,8 @@ public interface RefsetService extends ReleaseService {
    * @return the refset revision number
    * @throws Exception the exception
    */
-  public Long getRefsetRevisionNumber(Long refsetId) throws Exception;
-  
+  public Integer getRefsetRevisionNumber(Long refsetId) throws Exception;
+
   /**
    * Returns the refset revision.
    *
@@ -349,8 +349,9 @@ public interface RefsetService extends ReleaseService {
    * @return the refset revision
    * @throws Exception the exception
    */
-  public Refset getRefsetRevision(Long refsetId, Long revision) throws Exception;
-  
+  public Refset getRefsetRevision(Long refsetId, Integer revision)
+    throws Exception;
+
   /**
    * Sync refset.
    *
@@ -359,7 +360,8 @@ public interface RefsetService extends ReleaseService {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset syncRefset(Long refsetId, Refset restoreRefset) throws Exception;
+  public Refset syncRefset(Long refsetId, Refset restoreRefset)
+    throws Exception;
 
   /**
    * Update note.

@@ -9,7 +9,6 @@ import java.util.Map;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
@@ -195,24 +194,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the potential current concepts for retired concept
    * @throws Exception the exception
    */
-  public KeyValuePairList getPotentialCurrentConceptsForRetiredConcept(
-    String conceptId, String terminology, String version) throws Exception;
-
-  /**
-   * <pre>
-   * Refset methods
-   *  - add/update/remove/get/find refset
-   *  - add/remove/get/find refset member
-   *  - get/find refset members
-   * Translation (some of these likely already exist)
-   *  - add/update/remove concept (get/find already defined)
-   *  - add/update/remove description (get alread implemented)
-   *  - add/update/remove language refset member
-   * </pre>
-   * 
-   * .
-   *
-   * @return true, if successful
-   */
+  public ConceptList getReplacementConcepts(String conceptId,
+    String terminology, String version) throws Exception;
 
 }

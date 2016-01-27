@@ -175,8 +175,9 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/assign?projectId="
-            + projectId + "&userName=" + userName + "&role=" + role);
+        client.target(config.getProperty("base.url")
+            + "/project/assign?projectId=" + projectId + "&userName="
+            + userName + "&role=" + role);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -208,8 +209,9 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/unassign?projectId="
-            + projectId + "&userName=" + userName);
+        client.target(config.getProperty("base.url")
+            + "/project/unassign?projectId=" + projectId + "&userName="
+            + userName);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -394,8 +396,8 @@ public class ProjectClientRest extends RootClientRest implements
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/user/anyrole");
     Response response =
-        target.request(MediaType.TEXT_PLAIN)
-            .header("Authorization", authToken).get();
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -651,6 +653,7 @@ public class ProjectClientRest extends RootClientRest implements
     return list;
   }
 
+  /* see superclass */
   @Override
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception {
@@ -679,6 +682,7 @@ public class ProjectClientRest extends RootClientRest implements
 
   }
 
+  /* see superclass */
   @Override
   public String getLog(Long projectId, Long objectId, int lines,
     String authToken) throws Exception {
@@ -689,7 +693,8 @@ public class ProjectClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/log?"
-            + "projectId=" + projectId + "&objectId=" + objectId + "&lines=" + lines);
+            + "projectId=" + projectId + "&objectId=" + objectId + "&lines="
+            + lines);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -705,4 +710,38 @@ public class ProjectClientRest extends RootClientRest implements
     return resultString;
 
   }
+
+  /* see superclass */
+  @Override
+  public ConceptList getReplacementConcepts(String conceptId,
+    String terminology, String version, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - find refset members for query " + conceptId + ", "
+            + terminology + ", " + version);
+    validateNotEmpty(conceptId, "conceptId");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/concept/alternates"
+            + "?conceptId=" + conceptId + "&terminology=" + terminology
+            + "&version=" + version);
+
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (ConceptList) ConfigUtility.getGraphForString(resultString,
+        ConceptList.class);
+  }
+
 }
