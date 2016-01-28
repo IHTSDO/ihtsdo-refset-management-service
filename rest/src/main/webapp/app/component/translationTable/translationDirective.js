@@ -522,7 +522,7 @@ tsApp
 
               // Remove concept
               $scope.removeConcept = function(translation, concept) {
-                translationService.removeConcept(concept.id).then(
+                translationService.removeTranslationConcept(concept.id).then(
                 // Success
                 function() {
                   $scope.getConcepts(translation);

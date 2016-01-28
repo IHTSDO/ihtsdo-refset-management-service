@@ -330,7 +330,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final User user = securityService.getUser(userName);
       // Find tracking records "for review" for this translation and user
       final String query =
-          "projectId:" + projectId + " AND " + "reviewers:" + user.getName()
+          "projectId:" + projectId + " AND " + "reviewers:" + userName
               + " AND translationId:" + translationId + " AND forReview:true";
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
