@@ -77,12 +77,11 @@
               ng-bind="getSortIndicator('refset','type',null)"></span></th>
           <!-- Actions header -->
           <th class="col-md-2 col-xs-2"
-            ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'">Actions
-            <span style="float: right;">
-              <i ng-click="openAddRefsetModal(); $event.stopPropagation()"
-                title="Add refset" class="noul material-icons md-18">add</i>
-            </span>
-          </th>
+            ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'"><span
+              style="float: right;">
+              <button ng-click="openAddRefsetModal();" title="Add refset"
+                class="btn btn-xs btn-primary">Add</button>
+            </span></th>
           <th class="col-md-2 col-xs-2"
             ng-show="userProjectsInfo.anyRole && (value == 'PUBLISHED' || value == 'BETA')">Actions
           </th>
@@ -305,9 +304,7 @@
                   title="Add refset note"
                   ng-click="openNotesModal(selected.refset, 'Refset'); $event.stopPropagation()"
                   class="md-grey material-icons md-18">assignment</i>
-                <i 
-                  ng-click="openLogModal()"
-                  title="Retrieve log"
+                <i ng-click="openLogModal()" title="Retrieve log"
                   class="noul material-icons md-18">event_note</i>
               </div>
             </td>
@@ -503,12 +500,12 @@
         <span style="float: right;">
           <!-- Export -->
           <i
-            ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); $event.stopPropagation()"
+            ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); "
             title="Export refset members" class="noul material-icons md-18">file_download</i>
           <!-- Import -->
           <i
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
-            ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); $event.stopPropagation()"
+            ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); "
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
           <i
             ng-show="value == 'AVAILABLE' && selected.refset.type == 'EXTENSIONAL'"
@@ -518,15 +515,20 @@
           <!-- Add member list -->
           <i
             ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
-            ng-click="openAddRefsetMemberListModal(); $event.stopPropagation()"
+            ng-click="openAddRefsetMemberListModal();"
             title="Add/remove refset member list"
             class="noul material-icons md-18">playlist_add</i>
 
           <!-- Add member -->
 
-          <i ng-show="value == 'ASSIGNED'"
-            ng-click="openAddMemberModal(selected.refset); $event.stopPropagation()"
-            title="Add refset member" class="noul material-icons md-18">add</i>
+          <i
+            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
+            ng-click="openAddMemberModal(selected.refset);"
+            title="Add member(s)" class="noul material-icons md-18">add</i>
+          <i
+            ng-show="value == 'ASSIGNED' && selected.refset.type == 'INTENSIONAL'"
+            ng-click="openAddMemberModal(selected.refset);"
+            title="Add inclusion(s)" class="noul material-icons md-18">add</i>
           <i ng-show="value == 'AVAILABLE'"
             title="Assign refset to make changes to members"
             class="md-grey material-icons md-18">add</i>

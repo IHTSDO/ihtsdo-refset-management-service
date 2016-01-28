@@ -1296,14 +1296,11 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     for (final ConceptRefsetMember newMember : currentRefset.getMembers()) {
       newMemberMap.put(newMember.getId(), newMember);
     }
-    System.out.print("oldMembers=" + oldMemberMap);
-    System.out.print("newMembers=" + newMemberMap);
     originRefset.getMembers().clear();
 
     // old not new : ADD (by id)
     for (final ConceptRefsetMember oldMember : oldMemberMap.values()) {
       if (!newMemberMap.containsKey(oldMember.getId())) {
-        System.out.println("Add member " + oldMember);
         oldMember.setId(null);
         addMember(oldMember);
         // need to add old notes back
@@ -1322,7 +1319,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         for (final Note newNote : newMember.getNotes()) {
           removeNote(newNote.getId(), newNote.getClass());
         }
-        System.out.println("Remove member " + newMember);
         // remove new members
         removeMember(newMember.getId());
         // no need to remove from data structure (oldRefset.getMembers())
@@ -1337,7 +1333,6 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         // Sync the notes
         syncNotes(oldMember.getNotes(), newMember.getNotes());
         // restore to old state
-        System.out.println("Update member " + oldMember);
         final ConceptRefsetMember updateMember =
             new ConceptRefsetMemberJpa(oldMember);
         updateMember(updateMember);

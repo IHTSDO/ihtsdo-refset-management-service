@@ -361,8 +361,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           list.addObject(refsetService.addMember(member));
         }
       }
-      addLogEntry(refsetService, userName, "ADD refset members for expression",
-          refset.getProject().getId(), refset.getId(), expression);
+      addLogEntry(refsetService, userName, "ADD members for expression", refset
+          .getProject().getId(), refset.getId(), expression);
 
       refsetService.commit();
       return list;
@@ -814,9 +814,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       member.setLastModifiedBy(userName);
       ConceptRefsetMember newMember = refsetService.addMember(member);
-      addLogEntry(refsetService, userName, "ADD refset member", refset
-          .getProject().getId(), refset.getId(), newMember.getConceptId()
-          + ": " + newMember.getConceptName());
+      addLogEntry(refsetService, userName, "ADD member", refset.getProject()
+          .getId(), refset.getId(),
+          newMember.getConceptId() + ": " + newMember.getConceptName());
 
       return newMember;
 
@@ -851,9 +851,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               securityService, authToken, "remove member", UserRole.AUTHOR);
 
       refsetService.removeMember(memberId);
-      addLogEntry(refsetService, userName, "REMOVE refset member", refset
-          .getProject().getId(), refset.getId(), member.getTerminologyId()
-          + ": " + member.getConceptName());
+      addLogEntry(refsetService, userName, "REMOVE member", refset.getProject()
+          .getId(), refset.getId(),
+          member.getTerminologyId() + ": " + member.getConceptName());
 
     } catch (Exception e) {
       handleException(e, "trying to remove a member ");
@@ -887,7 +887,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           .findMembersForRefset(refsetId, "", null).getObjects()) {
         refsetService.removeMember(member.getId());
       }
-      addLogEntry(refsetService, userName, "REMOVE all refset members", refset
+      addLogEntry(refsetService, userName, "REMOVE all members", refset
           .getProject().getId(), refsetId, ": ");
 
       refsetService.commit();
@@ -1327,7 +1327,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
 
-        // Look up refset members for this refset
+        // Look up members for this refset
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
             ConfigUtility.isBackgroundLookup());
       }
@@ -2664,7 +2664,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
 
-      addLogEntry(refsetService, userName, "ADD refset member note", refset
+      addLogEntry(refsetService, userName, "ADD member note", refset
           .getProject().getId(), refset.getId(), memberNote.getId() + ": "
           + memberNote.getValue());
 
@@ -2718,7 +2718,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       member.setLastModifiedBy(userName);
       refsetService.updateMember(member);
-      addLogEntry(refsetService, userName, "REMOVE refset member note", refset
+      addLogEntry(refsetService, userName, "REMOVE member note", refset
           .getProject().getId(), refset.getId(), noteId + ": ");
 
     } catch (Exception e) {

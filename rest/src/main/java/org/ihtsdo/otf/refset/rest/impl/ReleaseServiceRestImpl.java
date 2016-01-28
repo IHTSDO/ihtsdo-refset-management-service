@@ -391,9 +391,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BETA RELEASE refset ", refset.getProject()
-          .getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+      addLogEntry(algo, userName, "PUBLISH RELEASE refset ", refset
+          .getProject().getId(), refset.getId(), refset.getTerminologyId()
+          + ": " + refset.getName());
 
       // Finish transaction
       algo.commit();
@@ -508,8 +508,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BEGIN RELEASE translation", translation.getProject()
-          .getId(), translation.getId(),
+      addLogEntry(algo, userName, "BEGIN RELEASE translation", translation
+          .getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
 
       // Finish transaction
@@ -520,7 +520,6 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.handleLazyInit(info);
       algo.handleLazyInit(info.getTranslation());
 
-      
       return info;
     } catch (Exception e) {
       handleException(e, "trying to begin release of translation");
@@ -628,6 +627,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "BETA RELEASE translation", translation
+          .getProject().getId(), translation.getId(),
+          translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
 
@@ -682,6 +684,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
+      addLogEntry(algo, userName, "PUBLISH RELEASE translation", translation
+          .getProject().getId(), translation.getId(),
+          translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
 
@@ -735,8 +740,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "CANCEL RELEASE translation", translation.getProject()
-          .getId(), translation.getId(),
+      addLogEntry(algo, userName, "CANCEL RELEASE translation", translation
+          .getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
@@ -1019,7 +1024,13 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Add the release artifact
       artifact.setLastModifiedBy(userName);
-      return releaseService.addReleaseArtifact(artifact);
+      releaseService.addReleaseArtifact(artifact);
+
+      addLogEntry(releaseService, userName, "ADD release artifact", 0L,
+          artifact.getId(), artifact.getName() + ", "
+              + artifact.getData().length);
+
+      return artifact;
 
     } catch (Exception e) {
       handleException(e, "trying to import refset members");

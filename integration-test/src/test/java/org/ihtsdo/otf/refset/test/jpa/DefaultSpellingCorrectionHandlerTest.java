@@ -219,6 +219,10 @@ public class DefaultSpellingCorrectionHandlerTest extends JpaSupport {
     origVals.add("Word-A");
     origVals.add("Word-B");
 
+    List<String> origLcVals = new ArrayList<String>();
+    origLcVals.add("word-a");
+    origLcVals.add("word-b");
+
     StringBuilder builder = new StringBuilder();
     for (String s : origVals) {
       builder.append(s);
@@ -238,7 +242,7 @@ public class DefaultSpellingCorrectionHandlerTest extends JpaSupport {
     }
 
     // Assert
-    assertEquals(origVals, convertedVals);
+    assertEquals(origLcVals, convertedVals);
   }
 
   /**

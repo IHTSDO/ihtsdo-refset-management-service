@@ -257,7 +257,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         if (record == null) {
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
-          record2.getAuthors().add(user);
+          record2.getAuthors().add(user.getUserName());
           record2.setForAuthoring(true);
           record2.setForReview(false);
           record2.setLastModifiedBy(user.getUserName());
@@ -279,7 +279,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           // Set the review origin revision, so we can revert on unassign
           record.setReviewOriginRevision(service.getRefsetRevisionNumber(refset
               .getId()));
-          record.getReviewers().add(user);
+          record.getReviewers().add(user.getUserName());
           record.setLastModifiedBy(user.getUserName());
           refset.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
         }
@@ -617,7 +617,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       throw new LocalException("Unexpected number of tracking records for "
           + concept.getTerminologyId());
     }
-    boolean revertFlag = false;
+    boolean skipUpdate = false;
     switch (action) {
       case ASSIGN:
         // Author case
@@ -628,11 +628,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             concept.setModuleId(translation.getModuleId());
             concept.setEffectiveTime(null);
             concept.setDefinitionStatusId("UNKNOWN");
+            concept.setLastModifiedBy(user.getUserName());
+            skipUpdate = true;
             service.addConcept(concept);
           }
           // Create a tracking record, fill it out, and add it.
           TrackingRecord record2 = new TrackingRecordJpa();
-          record2.getAuthors().add(user);
+          record2.getAuthors().add(user.getUserName());
           record2.setForAuthoring(true);
           record2.setForReview(false);
           record2.setLastModifiedBy(user.getUserName());
@@ -655,7 +657,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           // Set the review origin revision, so we can revert on unassign
           record.setReviewOriginRevision(service
               .getConceptRevisionNumber(concept.getId()));
-          record.getReviewers().add(user);
+          record.getReviewers().add(user.getUserName());
           record.setLastModifiedBy(user.getUserName());
           concept.setWorkflowStatus(WorkflowStatus.REVIEW_NEW);
 
@@ -675,7 +677,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 getOriginConcept(concept.getId(), record.getOriginRevision());
             service.syncConcept(concept.getId(), originConcept);
             // signal to leave refset alone
-            revertFlag = true;
+            skipUpdate = true;
 
           } else {
             concept.setWorkflowStatus(WorkflowStatus.NEW);
@@ -700,7 +702,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.syncConcept(concept.getId(), originConcept);
           // Set the flag to avoid saving the refset later, this is the final
           // saved state.
-          revertFlag = true;
+          skipUpdate = true;
           // no need to do this, sync takes care of it
           // concept.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
         }
@@ -786,7 +788,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new LocalException("Illegal workflow action - " + action);
     }
 
-    if (!revertFlag) {
+    if (!skipUpdate) {
       concept.setLastModifiedBy(user.getUserName());
       service.updateConcept(concept);
     }

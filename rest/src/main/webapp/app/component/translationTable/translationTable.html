@@ -71,10 +71,10 @@
           <th class="col-md-1 col-xs-1"
             ng-click="setSortField('translation','language', null)">Lang<span
               ng-bind="getSortIndicator('translation','language',null)"></span></th>
-          <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">Actions
+          <th class="col-md-2 col-xs-2" ng-show="userProjectsInfo.anyRole">
             <span ng-show="value == 'EDITING'" style="float: right;">
-              <i ng-click="openAddTranslationModal(); $event.stopPropagation()"
-                title="Add translation" class="noul material-icons md-18">add</i>
+              <button ng-click="openAddTranslationModal()"
+                title="Add translation" class="btn btn-xs btn-primary">Add</button>
             </span>
           </th>
         </tr>
@@ -127,7 +127,7 @@
               confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
-            
+
 
             <!-- Start release -->
             <i
@@ -251,9 +251,7 @@
                   title="Add translation notes"
                   ng-click="openNotesModal(selected.translation, 'Translation'); $event.stopPropagation()"
                   class="md-grey material-icons md-18">assignment</i>
-                <i 
-                  ng-click="openLogModal()"
-                  title="Retrieve log"
+                <i ng-click="openLogModal()" title="Retrieve log"
                   class="noul material-icons md-18">event_note</i>
               </div>
             </td>
@@ -481,7 +479,12 @@
         <tr ng-repeat="concept in selected.translation.available">
           <td style="word-break: break-word;">{{concept.terminologyId}}</td>
           <td>{{concept.name}}</td>
-          <td>{{toDate(concept.lastModified)}}</td>
+          <td>
+            {{toDate(concept.lastModified)}}
+            <span ng-show="concept.workflowStatus">
+              <br />{{concept.workflowStatus}}
+            </span>
+          </td>
           <!-- Actions -->
           <td class="nobreak">
             <!-- Assign -->
@@ -663,11 +666,11 @@
         <span style="float: right;">
 
           <i
-            ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); $event.stopPropagation()"
+            ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); "
             title="Export translation concepts"
             class="noul material-icons md-18">file_download</i>
           <i ng-show="value == 'EDITING'"
-            ng-click="openImportExportModal(selected.translation, 'Import', 'Translation'); $event.stopPropagation()"
+            ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
             title="Import translation concepts"
             class="noul material-icons md-18">file_upload</i>
           <i

@@ -9,11 +9,11 @@ import java.util.List;
 
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -35,10 +35,8 @@ import org.hibernate.search.annotations.Store;
 import org.hibernate.search.bridge.builtin.LongBridge;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.CollectionToCsvBridge;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -82,14 +80,14 @@ public class TrackingRecordJpa implements TrackingRecord {
   private boolean revision = false;
 
   /** The authors. */
-  @ManyToMany(targetEntity = UserJpa.class)
+  @ElementCollection
   @CollectionTable(name = "tracking_record_authors")
-  private List<User> authors = new ArrayList<>();
+  private List<String> authors = new ArrayList<>();
 
   /** The reviewers. */
-  @ManyToMany(targetEntity = UserJpa.class)
+  @ElementCollection
   @CollectionTable(name = "tracking_record_reviewers")
-  private List<User> reviewers = new ArrayList<>();
+  private List<String> reviewers = new ArrayList<>();
 
   /** The Translation. */
   @ManyToOne(targetEntity = TranslationJpa.class)
@@ -177,9 +175,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlElement(type = UserJpa.class)
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
-  public List<User> getAuthors() {
+  public List<String> getAuthors() {
     if (authors == null) {
       authors = new ArrayList<>();
     }
@@ -188,23 +186,8 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
-  public void setAuthors(List<User> authors) {
+  public void setAuthors(List<String> authors) {
     this.authors = authors;
-  }
-
-  /**
-   * Returns the author user names. Used for indexing to allow lookup by author
-   * username.
-   *
-   * @return the author user names
-   */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  public List<String> getAuthorUserNames() {
-    List<String> userNames = new ArrayList<>(authors.size() + 1);
-    for (User author : authors) {
-      userNames.add(author.getUserName());
-    }
-    return userNames;
   }
 
   /**
@@ -227,9 +210,9 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /* see superclass */
-  @XmlElement(type = UserJpa.class)
+  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
   @Override
-  public List<User> getReviewers() {
+  public List<String> getReviewers() {
     if (reviewers == null) {
       reviewers = new ArrayList<>();
     }
@@ -238,23 +221,8 @@ public class TrackingRecordJpa implements TrackingRecord {
 
   /* see superclass */
   @Override
-  public void setReviewers(List<User> reviewers) {
+  public void setReviewers(List<String> reviewers) {
     this.reviewers = reviewers;
-  }
-
-  /**
-   * Returns the reviewer user names. Used for indexing to allow lookup by
-   * reviewer username.
-   *
-   * @return the reviewer user names
-   */
-  @Field(bridge = @FieldBridge(impl = CollectionToCsvBridge.class), index = Index.YES, analyze = Analyze.YES, store = Store.NO)
-  public List<String> getReviewerUserNames() {
-    List<String> userNames = new ArrayList<>(reviewers.size() + 1);
-    for (User reviewer : reviewers) {
-      userNames.add(reviewer.getUserName());
-    }
-    return userNames;
   }
 
   /* see superclass */

@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.test.jpa;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -239,26 +240,11 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     ProjectService service = new ProjectServiceJpa();
-    try {
-      service.getTerminologyHandler().getConcept(null, "abc", "def");
-      fail("Exception expected.");
-    } catch (Exception e) {
-      // n/a, expected result
-    }
+    assertNull(service.getTerminologyHandler().getConcept(null, "abc", "def"));
 
-    try {
-      service.getTerminologyHandler().getConcept("abc", null, "def");
-      fail("Exception expected.");
-    } catch (Exception e) {
-      // n/a, expected result
-    }
+    assertNull(service.getTerminologyHandler().getConcept("abc", null, "def"));
 
-    try {
-      service.getTerminologyHandler().getConcept("abc", "abc", null);
-      fail("Exception expected.");
-    } catch (Exception e) {
-      // n/a, expected result
-    }
+    assertNull(service.getTerminologyHandler().getConcept("abc", "abc", null));
 
   }
 

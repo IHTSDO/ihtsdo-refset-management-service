@@ -348,7 +348,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
-      addLogEntry(translationService, userName, "UPDATE Translation",
+      addLogEntry(translationService, userName, "UPDATE translation",
           translation.getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
 
@@ -410,7 +410,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Create service and configure transaction scope
       translationService.removeTranslation(translationId, cascade);
 
-      addLogEntry(translationService, userName, "REMOVE Translation",
+      addLogEntry(translationService, userName, "REMOVE translation",
           translation.getProject().getId(), translationId,
           translation.getTerminologyId() + ": " + translation.getName());
 
@@ -513,7 +513,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       addLogEntry(translationService, userName,
-          "REMOVE All Translation Concepts", translation.getProject().getId(),
+          "REMOVE all translation concepts", translation.getProject().getId(),
           translation.getId(), ": ");
 
       translationService.commit();
@@ -1014,7 +1014,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
-      addLogEntry(translationService, userName, "ADD Translation Concept",
+      addLogEntry(translationService, userName, "ADD concept",
           translation.getProject().getId(), translation.getId(),
           newConcept.getTerminologyId() + ": " + newConcept.getName());
 
@@ -1165,7 +1165,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "UPDATE Translation Concept",
+      addLogEntry(translationService, userName, "UPDATE concept",
           translation.getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
@@ -1213,7 +1213,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId, true);
 
-      addLogEntry(translationService, userName, "REMOVE Translation Concept",
+      addLogEntry(translationService, userName, "REMOVE concept",
           translation.getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
@@ -1521,7 +1521,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translationService.updateTranslation(translation);
       }
       addLogEntry(translationService, userName,
-          "REMOVE Spelling Dictionary Entry", translation.getProject().getId(),
+          "REMOVE spelling dictionary entry", translation.getProject().getId(),
           translation.getId(), entry + ": ");
 
     } catch (Exception e) {
@@ -1796,7 +1796,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translation.setLastModifiedBy(userName);
         translationService.updateTranslation(translation);
       }
-      addLogEntry(translationService, userName, "REMOVE Phrase Memory Entry",
+      addLogEntry(translationService, userName, "REMOVE phrase memory entry",
           translation.getProject().getId(), translation.getId(), name + ": "
               + translatedName);
 
@@ -2503,7 +2503,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
-      addLogEntry(translationService, userName, "ADD Translation Note",
+      addLogEntry(translationService, userName, "ADD translation note",
           translation.getProject().getId(), translation.getId(),
           newNote.getId() + ": " + newNote.getValue());
 
@@ -2558,7 +2558,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translation.setLastModifiedBy(userName);
       translationService.updateTranslation(translation);
 
-      addLogEntry(translationService, userName, "REMOVE Translation Note",
+      addLogEntry(translationService, userName, "REMOVE translation note",
           translation.getProject().getId(), translationId,
           translation.getTerminologyId() + ": " + noteId);
 
@@ -2620,7 +2620,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "ADD Translation Concept Note",
+      addLogEntry(translationService, userName, "ADD concept note",
           translation.getProject().getId(), translation.getId(),
           newNote.getId() + ": " + newNote.getValue());
 
@@ -2677,7 +2677,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       translationService.updateConcept(concept);
 
       addLogEntry(translationService, userName,
-          "REMOVE Translation Concept Note", translation.getProject().getId(),
+          "REMOVE concept note", translation.getProject().getId(),
           translation.getId(), concept.getTerminologyId() + ": " + noteId);
 
     } catch (Exception e) {

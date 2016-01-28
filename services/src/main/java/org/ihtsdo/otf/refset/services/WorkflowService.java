@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.StringList;
@@ -34,23 +35,24 @@ public interface WorkflowService extends TranslationService {
    * Returns the tracking record.
    *
    * @param translationId the translation id
-   * @param userName the user name
+   * @param userId the user id
    * @return the tracking record
    * @throws Exception the exception
    */
   public TrackingRecordList getTrackingRecordsForTranslation(
-    Long translationId, String userName) throws Exception;
+    Long translationId, Long userId) throws Exception;
 
   /**
    * Returns the tracking records for refset. The refset is assigned to at most
    * one person at a time.
+   *
    * @param refsetId the refset id
-   * @param userName the user name
+   * @param userId the user id
    * @return the tracking records for refset
    * @throws Exception the exception
    */
-  public TrackingRecord getTrackingRecordsForRefset(Long refsetId,
-    String userName) throws Exception;
+  public TrackingRecord getTrackingRecordsForRefset(Long refsetId, Long userId)
+    throws Exception;
 
   /**
    * Adds the tracking record.
@@ -90,29 +92,29 @@ public interface WorkflowService extends TranslationService {
    * Perform workflow action.
    *
    * @param refsetId the refset id
-   * @param userName the user name
+   * @param user the user
    * @param projectRole the project role
    * @param action the action
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord performWorkflowAction(Long refsetId, String userName,
+  public TrackingRecord performWorkflowAction(Long refsetId, User user,
     UserRole projectRole, WorkflowAction action) throws Exception;
 
   /**
    * Perform workflow action.
    *
    * @param translationId the translation id
-   * @param userName the user name
+   * @param user the user
    * @param projectRole the project role
    * @param action the action
    * @param concept the concept
    * @return the tracking record
    * @throws Exception the exception
    */
-  public TrackingRecord performWorkflowAction(Long translationId,
-    String userName, UserRole projectRole, WorkflowAction action,
-    Concept concept) throws Exception;
+  public TrackingRecord performWorkflowAction(Long translationId, User user,
+    UserRole projectRole, WorkflowAction action, Concept concept)
+    throws Exception;
 
   /**
    * Returns the workflow handler for path.
