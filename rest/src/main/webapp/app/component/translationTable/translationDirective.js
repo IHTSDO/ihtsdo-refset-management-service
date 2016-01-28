@@ -1957,7 +1957,8 @@ tsApp
                   translationService.updateTranslationConcept(concept).then(
                     // Success - update concept
                     function(data) {
-
+                      // pick up the latest concept
+                      concept = data;
                       // Perform a workflow 'save' operation
                       workflowService.performTranslationWorkflowAction($scope.project.id,
                         $scope.translation.id, $scope.user.userName, $scope.role, 'SAVE', concept)
@@ -2077,7 +2078,7 @@ tsApp
                   if (type == 'Translation') {
                     translationService.exportConcepts($scope.translation, $scope.selectedIoHandler);
                   }
-                  $uibModalInstance.close();
+                  $uibModalInstance.close($scope.translation);
                 };
 
                 // Handle import
@@ -2123,7 +2124,7 @@ tsApp
                           // Success - close dialog
                           function(data) {
                             startLookup(translation);
-                            $uibModalInstance.close(translation);
+                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
@@ -2385,7 +2386,7 @@ tsApp
 
                 // Close modal
                 $scope.close = function() {
-                  $uibModalInstance.close();
+                  $uibModalInstance.close($scope.translation);
                 };
 
                 $scope.open = function($event) {

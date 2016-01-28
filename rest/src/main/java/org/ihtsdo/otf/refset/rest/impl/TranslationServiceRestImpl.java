@@ -1014,8 +1014,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
-      addLogEntry(translationService, userName, "ADD concept",
-          translation.getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "ADD concept", translation
+          .getProject().getId(), translation.getId(),
           newConcept.getTerminologyId() + ": " + newConcept.getName());
 
       translationService.commit();
@@ -1035,7 +1035,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/concept/update")
   @ApiOperation(value = "Update concept", notes = "Updates the specified concept. This also synchronizes the definitions and language refset members")
-  public void updateTranslationConcept(
+  public Concept updateTranslationConcept(
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -1165,19 +1165,22 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "UPDATE concept",
-          translation.getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "UPDATE concept", translation
+          .getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
       // finish transaction
       translationService.commit();
+
+      return concept;
+
     } catch (Exception e) {
       handleException(e, "trying to update a translation");
     } finally {
       translationService.close();
       securityService.close();
     }
-
+    return null;
   }
 
   /* see superclass */
@@ -1213,8 +1216,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Create service and configure transaction scope
       translationService.removeConcept(conceptId, true);
 
-      addLogEntry(translationService, userName, "REMOVE concept",
-          translation.getProject().getId(), translation.getId(),
+      addLogEntry(translationService, userName, "REMOVE concept", translation
+          .getProject().getId(), translation.getId(),
           concept.getTerminologyId() + ": " + concept.getName());
 
       translationService.commit();
@@ -2620,9 +2623,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName, "ADD concept note",
-          translation.getProject().getId(), translation.getId(),
-          newNote.getId() + ": " + newNote.getValue());
+      addLogEntry(translationService, userName, "ADD concept note", translation
+          .getProject().getId(), translation.getId(), newNote.getId() + ": "
+          + newNote.getValue());
 
       return newNote;
 
@@ -2676,9 +2679,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       concept.setLastModifiedBy(userName);
       translationService.updateConcept(concept);
 
-      addLogEntry(translationService, userName,
-          "REMOVE concept note", translation.getProject().getId(),
-          translation.getId(), concept.getTerminologyId() + ": " + noteId);
+      addLogEntry(translationService, userName, "REMOVE concept note",
+          translation.getProject().getId(), translation.getId(),
+          concept.getTerminologyId() + ": " + noteId);
 
     } catch (Exception e) {
       handleException(e, "trying to remove a concept note");

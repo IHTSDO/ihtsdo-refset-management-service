@@ -228,7 +228,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void updateTranslationConcept(ConceptJpa concept, String authToken)
+  public Concept updateTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception;
 
   /**
