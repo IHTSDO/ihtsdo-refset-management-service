@@ -415,7 +415,7 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void updateTranslationConcept(ConceptJpa concept, String authToken)
+  public Concept updateTranslationConcept(ConceptJpa concept, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Client - update concept " + " " + concept);
@@ -431,11 +431,16 @@ public class TranslationClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).post(Entity.xml(conceptString));
 
+    String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
       throw new Exception("Unexpected status - " + response.getStatus());
     }
+
+    // converting to object
+    return (ConceptJpa) ConfigUtility.getGraphForString(resultString,
+        ConceptJpa.class);
   }
 
   /* see superclass */
