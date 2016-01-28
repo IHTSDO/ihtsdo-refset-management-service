@@ -320,20 +320,21 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Workflow): /translation/assigned/review "
-            + translationId + ", " + userName);
+            + translationId + ", " + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.REVIEWER);
 
-      final User user = securityService.getUser(userName);
       // Find tracking records "for review" for this translation and user
       final String query =
           "projectId:" + projectId + " AND " + "reviewers:" + userName
               + " AND translationId:" + translationId + " AND forReview:true";
+      System.out.println("query=" + query);
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
+      System.out.println("records=" + records);
       for (final TrackingRecord record : records.getObjects()) {
         handleLazyInit(record, workflowService);
       }
