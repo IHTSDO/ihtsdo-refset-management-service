@@ -557,36 +557,71 @@ tsApp
                   queryRestriction : null
                 };
 
-                workflowService.findAssignedEditingConcepts($scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-
-                    // Extract concepts from records
-                    var list = new Array();
-                    for (var i = 0; i < data.records.length; i++) {
-                      list.push(data.records[i].concept);
-                    }
-
-                    // Make parameter
-                    var conceptList = {
-                      concepts : list
-                    };
-
-                    // Unassign all concepts
-                    workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                      $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                      'UNASSIGN', conceptList).then(
+                if ($scope.projects.role == 'AUTHOR') {
+                  workflowService.findAssignedEditingConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
-                      translationService.fireTranslationChanged($scope.selected.translation);
-                    }
-                    // Error is already handled by service
-                    );
 
-                  }
-                // Error is already handled by service
-                );
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        list.push(data.records[i].concept);
+                      }
+
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Unassign all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'UNASSIGN', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else if ($scope.projects.role == 'REVIEWER') {
+                  workflowService.findAssignedReviewConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                    // Success
+                    function(data) {
+
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        list.push(data.records[i].concept);
+                      }
+
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Unassign all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'UNASSIGN', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else {
+                  alert("Unassign is only available for AUTHOR or REVIEWER roles.");
+                }
 
               };
 

@@ -152,16 +152,16 @@
               <i
                 confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
                 ng-show="!refsetReviewersMap[refset.id]"
-                uib-tooltip="Unassign author: {{author.userName}}"
-                ng-click="unassign(refset, author.userName);"
+                uib-tooltip="Unassign author: {{author}}"
+                ng-click="unassign(refset, author);"
                 class="noul material-icons md-18">assignment_return</i>
               <i ng-show="refsetReviewersMap[refset.id]"
-                uib-tooltip="Author: {{author.userName}}, unassign reviewer first"
+                uib-tooltip="Author: {{author}}, unassign reviewer first"
                 class="md-grey material-icons md-18">assignment_return</i>
             </span>
             <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
-              <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
-                ng-click="unassign(refset, reviewer.userName);"
+              <i uib-tooltip="Unassign reviewer: {{reviewer}}"
+                ng-click="unassign(refset, reviewer);"
                 class="noul material-icons md-18">assignment_return</i>
             </span>
 

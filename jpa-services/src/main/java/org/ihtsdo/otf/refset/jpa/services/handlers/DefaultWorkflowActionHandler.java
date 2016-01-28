@@ -98,7 +98,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // if (projectRole == UserRole.REVIEWER
     // && refset.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
     // && action == WorkflowAction.ASSIGN
-    // && record.getAuthors().contains(user)) {
+    // && record.getAuthors().contains(user.getUserName())) {
     // result
     // .addError("Reviewer cannot review work that was authored by him/her - "
     // + action + ", " + user);
@@ -301,6 +301,8 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             revertFlag = true;
 
           } else {
+            // remove from authors
+            record.getAuthors().remove(user.getUserName());
             refset.setWorkflowStatus(WorkflowStatus.NEW);
           }
           service.removeTrackingRecord(record.getId());
@@ -311,7 +313,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
             WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
             .contains(refset.getWorkflowStatus())) {
-          record.getReviewers().remove(user);
+          record.getReviewers().remove(user.getUserName());
           record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());
@@ -460,7 +462,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     // if (projectRole == UserRole.REVIEWER
     // && concept.getWorkflowStatus() == WorkflowStatus.EDITING_DONE
     // && action == WorkflowAction.ASSIGN
-    // && record.getAuthors().contains(user)) {
+    // && record.getAuthors().contains(user.getUserName())) {
     // result
     // .addError("Reviewer cannot review work that was authored by him/her - "
     // + action + ", " + user);
@@ -680,6 +682,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             skipUpdate = true;
 
           } else {
+            record.getAuthors().remove(user.getUserName());
             concept.setWorkflowStatus(WorkflowStatus.NEW);
           }
 
@@ -690,7 +693,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         else if (EnumSet.of(WorkflowStatus.REVIEW_NEW,
             WorkflowStatus.REVIEW_IN_PROGRESS, WorkflowStatus.REVIEW_DONE)
             .contains(concept.getWorkflowStatus())) {
-          record.getReviewers().remove(user);
+          record.getReviewers().remove(user.getUserName());
           record.setForAuthoring(true);
           record.setForReview(false);
           record.setLastModifiedBy(user.getUserName());

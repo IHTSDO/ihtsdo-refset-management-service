@@ -265,12 +265,10 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     // Apply pfs restrictions to query
     FullTextQuery fullTextQuery = null;
     try {
-      System.out.println("  jpaquery="+query);
       fullTextQuery =
           IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
               TrackingRecordJpa.class, pfsQuery.toString(), pfs, manager);
     } catch (ParseException e) {
-      System.out.println("  parse exception query="+query);
       // / Try performing an escaped search here
       final StringBuilder escapedPfsQuery = new StringBuilder();
       if (query != null && !query.isEmpty()) {
@@ -285,7 +283,6 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
     // execute the query
     final List<TrackingRecord> results = fullTextQuery.getResultList();
-    System.out.println("  jparesults="+results);
 
     // Convert to search result list
     final TrackingRecordList list = new TrackingRecordListJpa();
@@ -293,7 +290,6 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
       list.getObjects().add(result);
     }
     list.setTotalCount(fullTextQuery.getResultSize());
-    System.out.println("  jpalist="+list);
     return list;
 
   }

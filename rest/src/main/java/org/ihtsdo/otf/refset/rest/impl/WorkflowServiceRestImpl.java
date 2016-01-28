@@ -331,10 +331,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final String query =
           "projectId:" + projectId + " AND " + "reviewers:" + userName
               + " AND translationId:" + translationId + " AND forReview:true";
-      System.out.println("query=" + query);
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
-      System.out.println("records=" + records);
       for (final TrackingRecord record : records.getObjects()) {
         handleLazyInit(record, workflowService);
       }

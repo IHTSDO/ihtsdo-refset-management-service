@@ -551,7 +551,8 @@
               ng-show="selected.translation.assigned.totalCount > 0"
               confirm="Are you sure you want to unassign all concepts?"
               ng-click="unassignAll();" title="Unassign all"
-              class="noul material-icons md-18">assignment_return</i></th>
+              class="noul material-icons md-18">assignment_return</i>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -579,17 +580,17 @@
               <span ng-repeat="author in record.authors">
                 <!-- Only unassign if there are no reviewers -->
                 <i ng-show="!record.reviewers || record.reviewers.length == 0"
-                  uib-tooltip="Unassign author: {{author.userName}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
+                  uib-tooltip="Unassign author: {{author}}"
+                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
                   ng-click="unassign(record.concept)"
                   class="noul material-icons md-18">assignment_return</i>
                 <i ng-show="record.reviewers.length > 0"
-                  uib-tooltip="Author: {{author.userName}}, unassign reviewer first"
+                  uib-tooltip="Author: {{author}}, unassign reviewer first"
                   class="md-grey material-icons md-18">assignment_ind</i>
               </span>
               <span ng-repeat="reviewer in record.reviewers">
-                <i uib-tooltip="Unassign reviewer: {{reviewer.userName}}"
-                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}})"
+                <i uib-tooltip="Unassign reviewer: {{reviewer}}"
+                  confirm="Are you sure you want to unassign this concept ({{record.concept.terminologyId}}, {{record.concept.name}})"
                   ng-click="unassign(record.concept)"
                   class="noul material-icons md-18">assignment_return</i>
               </span>
@@ -675,7 +676,7 @@
             class="noul material-icons md-18">file_upload</i>
           <i
             confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
-            ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
+            ng-show="(value == 'EDITING' || value == 'EDITING_ALL') && selected.translation.concepts.length > 0"
             ng-click="removeAllTranslationConcepts(selected.translation); "
             title="Remove all concepts" class="noul material-icons md-18">delete</i>
         </span>
@@ -732,7 +733,7 @@
                 ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
                 Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
               </th>
-              <th ng-show="value == 'EDITING'">Actions</th>
+              <th ng-show="value == 'EDITING' || value == 'EDITING_ALL'">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -750,24 +751,33 @@
               <td
                 ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
                 {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
+                <span ng-show="projects.role == 'ADMIN'"><br />{{concept.workflowStatus}}</span>
               </td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
-              <td ng-show="value == 'EDITING'">
+              <td ng-show="value == 'EDITING' || || value == 'EDITING_ALL'">
                 <!-- Assign (for error fixing) -->
                 <i ng-show="projects.role != 'ADMIN'"
                   ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
                   title="Assign" class="noul material-icons md-18">assignment_ind</i>
-                <!-- Remove -->
+                <!-- Unassign (for ADMIN fixing) -->
                 <i
-                  confirm="Are you sure you want to remove the concept ({{concept.name}})?"
+                  ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
+                  confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
+                  title="Unassign concept" ng-click="unassign(concept)" class="noul material-icons md-18">assignment_return</i>
+
+                <!-- Remove -->
+                <i ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
+                  confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
                   ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
                   title="Remove concept" class="noul material-icons md-18">delete</i>
                 <!-- Notes -->
-                <i ng-show="concept.notes.length > 0"
+                <i
+                  ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
                   title="Edit concept Notes" class="noul material-icons md-18">assignment</i>
-                <i ng-show="concept.notes.length == 0"
+                <i
+                  ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
                   ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
                   title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
               </td>
