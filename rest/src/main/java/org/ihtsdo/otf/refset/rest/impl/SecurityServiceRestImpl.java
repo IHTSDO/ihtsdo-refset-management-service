@@ -427,11 +427,6 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       final String userName =
           authorizeApp(securityService, authToken, "update user preferences",
               UserRole.VIEWER);
-      System.out.println("SIZE="
-          + securityService.getUser(userName).getProjectRoleMap());
-      if (securityService.getUser(userName).getProjectRoleMap().isEmpty()) {
-        throw new Exception("HERE");
-      }
 
       if (!userPreferences.getUser().getUserName().equals(userName)) {
         throw new Exception(
@@ -439,25 +434,10 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
       }
 
       securityService.updateUserPreferences(userPreferences);
-      System.out.println("SIZE="
-          + securityService.getUser(userName).getProjectRoleMap());
-      if (securityService.getUser(userName).getProjectRoleMap().isEmpty()) {
-        throw new Exception("HERE");
-      }
       final User user = securityService.getUser(userName);
-      System.out.println("SIZE="
-          + securityService.getUser(userName).getProjectRoleMap());
-      if (securityService.getUser(userName).getProjectRoleMap().isEmpty()) {
-        throw new Exception("HERE");
-      }
 
       // lazy initialize
       securityService.handleLazyInit(user);
-      System.out.println("SIZE="
-          + securityService.getUser(userName).getProjectRoleMap());
-      if (securityService.getUser(userName).getProjectRoleMap().isEmpty()) {
-        throw new Exception("HERE");
-      }
 
       return user.getUserPreferences();
     } catch (Exception e) {
