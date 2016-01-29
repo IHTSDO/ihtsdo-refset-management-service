@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
+import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
@@ -685,6 +686,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       // Here's the messy part about trying to parse the return error message
       if (resultString.contains("loop did not match anything")) {
         return null;
+      }
+      
+      if (resultString.contains("One or more supplied query parameters were invalid")) {
+        throw new LocalException("Badly formatted concept id.");
       }
 
       throw new Exception("Unexpected terminology server failure. Message = "

@@ -34,7 +34,7 @@
             ng-model="paging['descriptions'].page"
             ng-change="getPagedDescriptions()"></uib-pagination>
 
-          <input class="input-filter" placeholder="Enter filter text"
+          <input class="input-filter" placeholder="Search"
             ng-show="pagedDescriptions.totalCount > pageSize || paging['descriptions'].filter"
             type="text" ng-model="paging['descriptions'].filter"
             ng-model-options="{ debounce: 300 }"

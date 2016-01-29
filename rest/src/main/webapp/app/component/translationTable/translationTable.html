@@ -12,7 +12,7 @@
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
         type="text" ng-model="paging['translation'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getTranslations()">
@@ -29,9 +29,10 @@
         </span>
       </h4>
 
+      <!-- No need to show for BETA, there should be only one -->
       <button type="button" class="btn btn-xs btn-primary"
         ng-show="translations.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'BETA' || value == 'PUBLISHED')"
+        (value == 'RELEASE' ||  value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getTranslations()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
@@ -441,7 +442,7 @@
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
         type="text" ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
@@ -519,7 +520,7 @@
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
         type="text" ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
@@ -700,7 +701,7 @@
             ng-model="paging['concept'].page"
             ng-change="getConcepts(selected.translation)"></uib-pagination>
 
-          <input class="input-filter" placeholder="Enter filter text"
+          <input class="input-filter" placeholder="Search"
             ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
             type="text" ng-model="paging['concept'].filter"
             ng-model-options="{ debounce: 300 }"

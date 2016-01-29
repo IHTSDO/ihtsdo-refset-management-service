@@ -1541,7 +1541,8 @@ tsApp
 
                 // Dismiss modal
                 $scope.close = function() {
-                  $uibModalInstance.close(refset);
+                  // nothing changed, don't pass a refset
+                  $uibModalInstance.close();
                 };
 
                 // initialize

@@ -48,6 +48,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ReleaseInfoListJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.rf2.DescriptionType;
 import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
@@ -168,7 +169,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         throw new Exception("Unable to find id handler for "
             + refset.getTerminology());
       }
-      String id = idHandler.getTerminologyId(refset);
+      String id = null;
+      try {
+        id = idHandler.getTerminologyId(refset);
+      } catch (Exception e) {
+        throw new LocalException(
+            "Unable to create reference set id due to an issue with the id server.",
+            e);
+      }
       refset.setTerminologyId(id);
     }
 
@@ -563,7 +571,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // handle all lazy initializations
     refset.getProject().getName();
     for (final Translation translation : refset.getTranslations()) {
-      translation.getDescriptionTypes().size();
+      translation.setDescriptionTypes(new ArrayList<DescriptionType>());
       translation.getWorkflowStatus().name();
     }
     refset.getEnabledFeedbackEvents().size();

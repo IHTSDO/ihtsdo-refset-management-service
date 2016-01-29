@@ -43,7 +43,7 @@
             total-items="pagedNotes.totalCount" ng-model="paging['notes'].page"
             ng-change="getPagedNotes()"></uib-pagination>
 
-          <input class="input-filter" placeholder="Enter filter text"
+          <input class="input-filter" placeholder="Search"
             ng-show="pagedNotes.totalCount > pageSize || paging['notes'].filter"
             type="text" ng-model="paging['notes'].filter"
             ng-model-options="{ debounce: 300 }" ng-change="getPagedNotes()">

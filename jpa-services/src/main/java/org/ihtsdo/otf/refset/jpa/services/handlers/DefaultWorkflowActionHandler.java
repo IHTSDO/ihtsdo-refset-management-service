@@ -32,6 +32,7 @@ import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -603,11 +604,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     User user, UserRole projectRole, WorkflowAction action, Concept concept,
     WorkflowService service) throws Exception {
 
-    TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery(
-            "conceptId:"
-                + ((concept == null || concept.getId() == null) ? -1 : concept
-                    .getId()), null);
+    TrackingRecordList recordList = new TrackingRecordListJpa();
+    // do not perform a lookup if concept is new
+    if (concept != null && concept.getId() != null) {
+      recordList =
+          service.findTrackingRecordsForQuery(
+              "conceptId:"
+                  + ((concept == null || concept.getId() == null) ? -1
+                      : concept.getId()), null);
+    }
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
