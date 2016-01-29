@@ -4,6 +4,7 @@
 package org.ihtsdo.otf.refset.test.jpa;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -200,10 +201,9 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     // Bogus ids, term server produces failures
     try {
-      service.getTerminologyHandler().getConcept("12345", "abc", "2015-01-31");
-      fail("Exception expected.");
+      Concept c = service.getTerminologyHandler().getConcept("12345", "abc", "2015-01-31");
+      assertNull(c);
     } catch (Exception e) {
-      // n/a, expected result
     }
 
     ConceptList list =
@@ -240,21 +240,19 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ProjectService service = new ProjectServiceJpa();
     try {
-      service.getTerminologyHandler().getConcept(null, "abc", "def");
-      fail("Exception expected.");
+      Concept c = service.getTerminologyHandler().getConcept(null, "abc", "def");
+      assertNull(c);
     } catch (Exception e) {
-      // n/a, expected result
     }
 
     try {
-      service.getTerminologyHandler().getConcept("abc", null, "def");
-      fail("Exception expected.");
+      Concept c = service.getTerminologyHandler().getConcept("abc", null, "def");
+      assertNull(c);
     } catch (Exception e) {
-      // n/a, expected result
     }
 
     try {
-      service.getTerminologyHandler().getConcept("abc", "abc", null);
+      service.getTerminologyHandler().getConcept("abcabc", "abc", null);
       fail("Exception expected.");
     } catch (Exception e) {
       // n/a, expected result

@@ -238,12 +238,11 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
      * </pre>
      */
 
-    ConceptList concepts = new ConceptListJpa();
     ObjectMapper mapper = new ObjectMapper();
     JsonNode doc = mapper.readTree(resultString);
 
     if (doc.get("items") == null) {
-      return concepts;
+      return new ConceptListJpa();
     }
     final Map<String, String> reasonMap = new HashMap<>();
     for (final JsonNode conceptNode : doc.get("items")) {
@@ -272,7 +271,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
-    return concepts;
+    return list;
   }
 
   /* see superclass */

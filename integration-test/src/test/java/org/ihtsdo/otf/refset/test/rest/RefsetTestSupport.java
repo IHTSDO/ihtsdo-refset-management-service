@@ -133,6 +133,8 @@ public class RefsetTestSupport extends RestSupport {
         Boolean.valueOf(properties
             .getProperty("terminology.handler.DEFAULT.assignNames"));
 
+    // force lookups not in background
+    properties.setProperty("lookup.background", "false");
     backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
@@ -144,7 +146,7 @@ public class RefsetTestSupport extends RestSupport {
   @SuppressWarnings("static-method")
   @Before
   public void setup() throws Exception {
-
+    
     // authentication
     adminAuthToken =
         securityService.authenticate(adminUser, adminPassword).getAuthToken();

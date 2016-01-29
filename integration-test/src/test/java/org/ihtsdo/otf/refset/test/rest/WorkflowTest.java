@@ -123,6 +123,8 @@ public class WorkflowTest extends RestSupport {
         Boolean.valueOf(properties
             .getProperty("terminology.handler.DEFAULT.assignNames"));
 
+    // force lookups not in background
+    properties.setProperty("lookup.background", "false");
     backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 

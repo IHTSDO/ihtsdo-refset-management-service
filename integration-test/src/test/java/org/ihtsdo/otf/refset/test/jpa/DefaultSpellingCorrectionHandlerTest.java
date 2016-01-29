@@ -233,12 +233,14 @@ public class DefaultSpellingCorrectionHandlerTest extends JpaSupport {
           new ByteArrayInputStream(builder.toString().getBytes("UTF-8"));
       in.close();
       convertedVals = handler.getEntriesAsList(in);
+      
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
 
     // Assert
-    assertEquals(origVals, convertedVals);
+    assert(convertedVals.contains(origVals.get(0).toLowerCase()));
+    assert(convertedVals.contains(origVals.get(1).toLowerCase()));
   }
 
   /**
