@@ -81,6 +81,7 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
 
       // Set origin translation fields
       translation.setStagingType(null);
+      translation.setInPublicationProcess(false);
       translation.setLastModifiedBy(userName);
       updateTranslation(translation);
 

@@ -54,6 +54,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /**
  * JPA enabled implementation of {@link Refset}.
  */
@@ -65,6 +67,7 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 @Audited
 @Indexed
 @XmlRootElement(name = "translation")
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class TranslationJpa extends AbstractComponent implements Translation {
 
   /** The terminology. */

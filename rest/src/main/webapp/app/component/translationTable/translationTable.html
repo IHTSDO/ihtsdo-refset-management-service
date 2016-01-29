@@ -193,7 +193,8 @@
 
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
-            <i
+            <!-- cannot delete a BETA release, must cancel release -->
+            <i ng-show="translation.workflowStatus != 'BETA'"
               confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
@@ -751,11 +752,13 @@
               <td
                 ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
                 {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
-                <span ng-show="projects.role == 'ADMIN'"><br />{{concept.workflowStatus}}</span>
+                <span ng-show="projects.role == 'ADMIN'">
+                  <br />{{concept.workflowStatus}}
+                </span>
               </td>
               <td
                 ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
-              <td ng-show="value == 'EDITING' || || value == 'EDITING_ALL'">
+              <td ng-show="value == 'EDITING' || value == 'EDITING_ALL'">
                 <!-- Assign (for error fixing) -->
                 <i ng-show="projects.role != 'ADMIN'"
                   ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
@@ -764,10 +767,12 @@
                 <i
                   ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
                   confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-                  title="Unassign concept" ng-click="unassign(concept)" class="noul material-icons md-18">assignment_return</i>
+                  title="Unassign concept" ng-click="unassign(concept)"
+                  class="noul material-icons md-18">assignment_return</i>
 
                 <!-- Remove -->
-                <i ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
+                <i
+                  ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
                   confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
                   ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
                   title="Remove concept" class="noul material-icons md-18">delete</i>

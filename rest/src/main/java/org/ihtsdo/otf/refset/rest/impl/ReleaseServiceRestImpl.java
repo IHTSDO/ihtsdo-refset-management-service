@@ -29,8 +29,11 @@ import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.ValidationResult;
+import org.ihtsdo.otf.refset.helpers.ConceptList;
+import org.ihtsdo.otf.refset.helpers.ConceptRefsetMemberList;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
@@ -186,6 +189,11 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       final Refset refset = algo.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
+      }
+
+      if (refset.getMembers() == null || refset.getMembers().size() == 0) {
+        throw new LocalException("Refset " + refset.getTerminologyId()
+            + " has no members to release.");
       }
 
       // Authorize the call
@@ -501,6 +509,18 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       if (!effectiveTime.matches("([0-9]{8})"))
         throw new LocalException("Date provided is not in 'YYYYMMDD' format:"
             + effectiveTime);
+
+      // Verify that there are READY_FOR_PUBLICATION concepts in the translation
+      final PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(1);
+      ConceptList list =
+          algo.findConceptsForTranslation(translationId, "workflowStatus:"
+              + WorkflowStatus.READY_FOR_PUBLICATION, pfs);
+      if (list.getCount() == 0) {
+        throw new LocalException("Translation "
+            + translation.getTerminologyId() + " has no concepts to release.");
+      }
 
       algo.setTranslation(translation);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
