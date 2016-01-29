@@ -48,6 +48,9 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
   @Before
   public void setup() throws Exception {
 
+    // force lookups not in background
+    properties.setProperty("lookup.background", "false");
+    
     // authentication
     viewerAuthToken =
         securityService.authenticate(testUser, testPassword).getAuthToken();

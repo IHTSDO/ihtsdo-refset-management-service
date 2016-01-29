@@ -132,7 +132,7 @@ public class ImportExportRf2HandlerTest extends JpaSupport {
 
     byte[] buffer = new byte[is.available()];
 
-    File f = new File("c:/Users/Brian Carlsen/Desktop/x.zip");
+    File f = new File("x.zip");
     FileOutputStream out = new FileOutputStream(f);
     while ((is.read(buffer)) != -1) {
       out.write(buffer);
@@ -166,10 +166,13 @@ public class ImportExportRf2HandlerTest extends JpaSupport {
       }
     }
 
+    f.delete();
+    
     // Verify counts plus 1 for headers
     Assert.assertEquals(105, cid.size());
     Assert.assertEquals(353, descCt);
     Assert.assertEquals(353, langCt);
+
 
   }
 

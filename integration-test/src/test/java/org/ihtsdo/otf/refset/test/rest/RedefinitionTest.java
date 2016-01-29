@@ -123,6 +123,9 @@ public class RedefinitionTest extends RestSupport {
         Boolean.valueOf(properties
             .getProperty("terminology.handler.DEFAULT.assignNames"));
 
+    
+    // force lookups not in background
+    properties.setProperty("lookup.background", "false");
     backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
@@ -135,6 +138,7 @@ public class RedefinitionTest extends RestSupport {
   @Before
   public void setup() throws Exception {
 
+    
     // authentication
     adminAuthToken =
         securityService.authenticate(adminUser, adminPassword).getAuthToken();
@@ -146,7 +150,7 @@ public class RedefinitionTest extends RestSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //@Test
   public void testIntensionalMigration() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
@@ -236,7 +240,7 @@ public class RedefinitionTest extends RestSupport {
    *
    * @throws Exception the exception
    */
-  @Test
+  //TODO @Test
   public void testMigrationWithCompare() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 

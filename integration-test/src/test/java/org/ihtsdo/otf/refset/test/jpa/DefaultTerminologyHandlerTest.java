@@ -201,10 +201,9 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     // Bogus ids, term server produces failures
     try {
-      service.getTerminologyHandler().getConcept("12345", "abc", "2015-01-31");
-      fail("Exception expected.");
+      Concept c = service.getTerminologyHandler().getConcept("12345", "abc", "2015-01-31");
+      assertNull(c);
     } catch (Exception e) {
-      // n/a, expected result
     }
 
     ConceptList list =
@@ -240,11 +239,24 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     ProjectService service = new ProjectServiceJpa();
-    assertNull(service.getTerminologyHandler().getConcept(null, "abc", "def"));
+    try {
+      Concept c = service.getTerminologyHandler().getConcept(null, "abc", "def");
+      assertNull(c);
+    } catch (Exception e) {
+    }
 
-    assertNull(service.getTerminologyHandler().getConcept("abc", null, "def"));
+    try {
+      Concept c = service.getTerminologyHandler().getConcept("abc", null, "def");
+      assertNull(c);
+    } catch (Exception e) {
+    }
 
-    assertNull(service.getTerminologyHandler().getConcept("abc", "abc", null));
+    try {
+      service.getTerminologyHandler().getConcept("abcabc", "abc", null);
+      fail("Exception expected.");
+    } catch (Exception e) {
+      // n/a, expected result
+    }
 
   }
 
