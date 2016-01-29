@@ -128,11 +128,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on refset", UserRole.AUTHOR);
 
+      final User user = securityService.getUser(userName);
       final TrackingRecord record =
-          workflowService.performWorkflowAction(refsetId, userName,
+          workflowService.performWorkflowAction(refsetId, user,
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action));
 
+      addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
+          refsetId, action + " as " + projectRole + " on refset " + refsetId);
+
       handleLazyInit(record, workflowService);
+
       return record;
     } catch (Exception e) {
       handleException(e, "trying to perform workflow action on refset");
@@ -168,6 +173,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       final Translation translation =
           workflowService.getTranslation(translationId);
       final User user = securityService.getUser(userName);
+      securityService.handleLazyInit(user);
       // Obtain the handler
       final WorkflowActionHandler handler =
           workflowService.getWorkflowHandlerForPath(translation
@@ -225,8 +231,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // it is assigned to this translation and marked for editing
       // and not for review
       final String query =
-          "projectId:" + projectId + " AND " + "authorUserNames:"
-              + user.getUserName() + " AND translationId:" + translationId
+          "projectId:" + projectId + " AND " + "authors:" + user.getUserName()
+              + " AND translationId:" + translationId
               + " AND forAuthoring:true AND forReview:false";
 
       final TrackingRecordList records =
@@ -314,19 +320,17 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful POST call (Workflow): /translation/assigned/review "
-            + translationId + ", " + userName);
+            + translationId + ", " + userName + ", " + pfs);
 
     final WorkflowService workflowService = new WorkflowServiceJpa();
     try {
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on translation", UserRole.REVIEWER);
 
-      final User user = securityService.getUser(userName);
       // Find tracking records "for review" for this translation and user
       final String query =
-          "projectId:" + projectId + " AND " + "reviewerUserNames:"
-              + user.getName() + " AND translationId:" + translationId
-              + " AND forReview:true";
+          "projectId:" + projectId + " AND " + "reviewers:" + userName
+              + " AND translationId:" + translationId + " AND forReview:true";
       final TrackingRecordList records =
           workflowService.findTrackingRecordsForQuery(query, pfs);
       for (final TrackingRecord record : records.getObjects()) {
@@ -372,13 +376,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(workflowService, projectId, securityService,
               authToken, "perform workflow action on translation",
               UserRole.AUTHOR);
+      final User user = securityService.getUser(userName);
 
       // Set last modified by
       concept.setLastModifiedBy(authName);
       TrackingRecord record =
-          workflowService.performWorkflowAction(translationId, userName,
+          workflowService.performWorkflowAction(translationId, user,
               UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
               concept);
+
+      addLogEntry(workflowService, userName, "WORKFLOW action", projectId,
+          translationId, action + " as " + projectRole + " on concept "
+              + concept.getTerminologyId() + ", " + concept.getName());
+
       handleLazyInit(record, workflowService);
 
       return record;
@@ -420,13 +430,16 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(workflowService, projectId, securityService,
               authToken, "perform workflow actions on translation",
               UserRole.AUTHOR);
+      final User user = securityService.getUser(userName);
 
       // Set last modified by
       final TrackingRecordList records = new TrackingRecordListJpa();
+      StringBuilder sb = new StringBuilder();
       for (final Concept concept : conceptList.getObjects()) {
+        sb.append(concept.getTerminologyId() + " " + concept.getName() + ", ");
         concept.setLastModifiedBy(authName);
         records.getObjects().add(
-            workflowService.performWorkflowAction(translationId, userName,
+            workflowService.performWorkflowAction(translationId, user,
                 UserRole.valueOf(projectRole), WorkflowAction.valueOf(action),
                 concept));
       }
@@ -438,6 +451,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
         handleLazyInit(record, workflowService);
       }
 
+      addLogEntry(workflowService, userName, "WORKFLOW BATCH action",
+          projectId, translationId, action + " as " + projectRole
+              + " on concepts " + sb);
       return records;
 
     } catch (Exception e) {
@@ -588,7 +604,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       String query = "";
       if (userName != null && !userName.equals("")) {
         query =
-            "projectId:" + projectId + " AND " + "authorUserNames:" + userName
+            "projectId:" + projectId + " AND " + "authors:" + userName
                 + " AND NOT refsetId:0"
                 + " AND forAuthoring:true AND forReview:false";
       } else {
@@ -709,8 +725,8 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       String query = "";
       if (userName != null && !userName.equals("")) {
         query =
-            "projectId:" + projectId + " AND " + "reviewerUserNames:"
-                + userName + " AND NOT refsetId:0" + " AND forReview:true";
+            "projectId:" + projectId + " AND " + "reviewers:" + userName
+                + " AND NOT refsetId:0" + " AND forReview:true";
       } else {
         throw new Exception("UserName must always be set");
       }
@@ -1026,13 +1042,7 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
     if (record.getRefset() != null) {
       workflowService.handleLazyInit(record.getRefset());
     }
-    for (final User author : record.getAuthors()) {
-      author.setProjectRoleMap(null);
-      author.setUserPreferences(null);
-    }
-    for (final User reviewer : record.getReviewers()) {
-      reviewer.setProjectRoleMap(null);
-      reviewer.setUserPreferences(null);
-    }
+    record.getAuthors().size();
+    record.getReviewers().size();
   }
 }

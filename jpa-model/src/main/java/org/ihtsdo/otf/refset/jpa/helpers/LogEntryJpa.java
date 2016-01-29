@@ -50,7 +50,7 @@ public class LogEntryJpa implements LogEntry {
   private String lastModifiedBy;
 
   /** The message. */
-  @Column(nullable = false)
+  @Column(nullable = false, length = 4000)
   private String message;
 
   /** The object id. */
@@ -128,7 +128,11 @@ public class LogEntryJpa implements LogEntry {
 
   @Override
   public void setMessage(String message) {
-    this.message = message;
+    if (message.length() > 4000) {
+      this.message = message.substring(1, 4000);
+    } else {
+      this.message = message;
+    }
   }
 
   @Override

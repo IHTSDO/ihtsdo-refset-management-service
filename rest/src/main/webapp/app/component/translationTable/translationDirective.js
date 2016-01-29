@@ -522,7 +522,7 @@ tsApp
 
               // Remove concept
               $scope.removeConcept = function(translation, concept) {
-                translationService.removeConcept(concept.id).then(
+                translationService.removeTranslationConcept(concept.id).then(
                 // Success
                 function() {
                   $scope.getConcepts(translation);
@@ -557,36 +557,71 @@ tsApp
                   queryRestriction : null
                 };
 
-                workflowService.findAssignedEditingConcepts($scope.project.id,
-                  $scope.selected.translation.id, $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-
-                    // Extract concepts from records
-                    var list = new Array();
-                    for (var i = 0; i < data.records.length; i++) {
-                      list.push(data.records[i].concept);
-                    }
-
-                    // Make parameter
-                    var conceptList = {
-                      concepts : list
-                    };
-
-                    // Unassign all concepts
-                    workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                      $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
-                      'UNASSIGN', conceptList).then(
+                if ($scope.projects.role == 'AUTHOR') {
+                  workflowService.findAssignedEditingConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
                     // Success
                     function(data) {
-                      translationService.fireTranslationChanged($scope.selected.translation);
-                    }
-                    // Error is already handled by service
-                    );
 
-                  }
-                // Error is already handled by service
-                );
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        list.push(data.records[i].concept);
+                      }
+
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Unassign all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'UNASSIGN', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else if ($scope.projects.role == 'REVIEWER') {
+                  workflowService.findAssignedReviewConcepts($scope.project.id,
+                    $scope.selected.translation.id, $scope.user.userName, pfs).then(
+                    // Success
+                    function(data) {
+
+                      // Extract concepts from records
+                      var list = new Array();
+                      for (var i = 0; i < data.records.length; i++) {
+                        list.push(data.records[i].concept);
+                      }
+
+                      // Make parameter
+                      var conceptList = {
+                        concepts : list
+                      };
+
+                      // Unassign all concepts
+                      workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                        $scope.selected.translation.id, $scope.user.userName, $scope.projects.role,
+                        'UNASSIGN', conceptList).then(
+                      // Success
+                      function(data) {
+                        translationService.fireTranslationChanged($scope.selected.translation);
+                      }
+                      // Error is already handled by service
+                      );
+
+                    }
+                  // Error is already handled by service
+                  );
+                } else {
+                  alert("Unassign is only available for AUTHOR or REVIEWER roles.");
+                }
 
               };
 
@@ -1957,7 +1992,8 @@ tsApp
                   translationService.updateTranslationConcept(concept).then(
                     // Success - update concept
                     function(data) {
-
+                      // pick up the latest concept
+                      concept = data;
                       // Perform a workflow 'save' operation
                       workflowService.performTranslationWorkflowAction($scope.project.id,
                         $scope.translation.id, $scope.user.userName, $scope.role, 'SAVE', concept)
@@ -2077,7 +2113,7 @@ tsApp
                   if (type == 'Translation') {
                     translationService.exportConcepts($scope.translation, $scope.selectedIoHandler);
                   }
-                  $uibModalInstance.close();
+                  $uibModalInstance.close($scope.translation);
                 };
 
                 // Handle import
@@ -2123,7 +2159,7 @@ tsApp
                           // Success - close dialog
                           function(data) {
                             startLookup(translation);
-                            $uibModalInstance.close(translation);
+                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
@@ -2385,7 +2421,7 @@ tsApp
 
                 // Close modal
                 $scope.close = function() {
-                  $uibModalInstance.close();
+                  $uibModalInstance.close($scope.translation);
                 };
 
                 $scope.open = function($event) {

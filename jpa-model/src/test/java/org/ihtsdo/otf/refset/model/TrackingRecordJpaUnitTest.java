@@ -5,14 +5,10 @@ package org.ihtsdo.otf.refset.model;
 
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserPreferences;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
@@ -21,7 +17,6 @@ import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.UserPreferencesJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
 import org.ihtsdo.otf.refset.jpa.helpers.NullableFieldTester;
@@ -67,24 +62,6 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
   /** the test fixture p2 */
   private Project p2;
 
-  /** the test fixture l1 */
-  private List<User> l1;
-
-  /** the test fixture l2 */
-  private List<User> l2;
-
-  /** the test fixture u1 */
-  private User u1;
-
-  /** the test fixture u2 */
-  private User u2;
-
-  /** the test fixture up1 */
-  private UserPreferences up1;
-
-  /** the test fixture up2 */
-  private UserPreferences up2;
-
   /**
    * Setup class.
    */
@@ -119,21 +96,6 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     p1 = (ProjectJpa) tester.createObject(1);
     p2 = (ProjectJpa) tester.createObject(2);
 
-    tester = new ProxyTester(new UserJpa());
-    u1 = (UserJpa) tester.createObject(1);
-    u2 = (UserJpa) tester.createObject(2);
-
-    tester = new ProxyTester(new UserPreferencesJpa());
-    up1 = (UserPreferencesJpa) tester.createObject(1);
-    up2 = (UserPreferencesJpa) tester.createObject(2);
-
-    u1.setUserPreferences(up1);
-    u2.setUserPreferences(up2);
-
-    l1 = new ArrayList<>();
-    l1.add(u1);
-    l2 = new ArrayList<>();
-    l2.add(u2);
     r1.setProject(p1);
     r2.setProject(p2);
     t1.setProject(p1);
@@ -220,8 +182,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.proxy(Concept.class, 2, c2);
     tester.proxy(Project.class, 1, p1);
     tester.proxy(Project.class, 2, p2);
-    tester.proxy(List.class, 1, l1);
-    tester.proxy(List.class, 2, l2);
+
     assertTrue(tester.testCopyConstructor(TrackingRecord.class));
   }
 
@@ -235,8 +196,6 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
     XmlSerializationTester tester = new XmlSerializationTester(object);
 
-    User user = new UserJpa();
-    user.setUserName("abc");
     Concept concept = new ConceptJpa();
     concept.setId(1L);
     Refset refset = new RefsetJpa();
@@ -248,13 +207,10 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     project.setId(1L);
     UserPreferences prefs = new UserPreferencesJpa();
     prefs.setId(1L);
-    List<User> list = new ArrayList<>();
-    list.add(user);
     tester.proxy(Translation.class, 1, translation);
     tester.proxy(Refset.class, 1, refset);
     tester.proxy(Concept.class, 1, concept);
     tester.proxy(Project.class, 1, project);
-    tester.proxy(List.class, 1, list);
     assertTrue(tester.testXmlSerialization());
   }
 
@@ -286,8 +242,8 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
 
     // Test analyzed fields
     IndexedFieldTester tester = new IndexedFieldTester(object);
-    tester.include("authorUserNames");
-    tester.include("reviewerUserNames");
+    tester.include("authors");
+    tester.include("reviewers");
     tester.include("conceptName");
     tester.include("refsetName");
     assertTrue(tester.testAnalyzedIndexedFields());

@@ -7,7 +7,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.rf2.Concept;
 
@@ -22,28 +21,28 @@ public interface TrackingRecord extends HasLastModified {
    *
    * @return the author users
    */
-  public List<User> getAuthors();
+  public List<String> getAuthors();
 
   /**
    * Sets the author users.
    *
    * @param authors the author users
    */
-  public void setAuthors(List<User> authors);
+  public void setAuthors(List<String> authors);
 
   /**
    * Returns the reviewers users.
    *
    * @return the reviewers users
    */
-  public List<User> getReviewers();
+  public List<String> getReviewers();
 
   /**
    * Sets the reviewers users.
    *
    * @param reviewers the reviewers
    */
-  public void setReviewers(List<User> reviewers);
+  public void setReviewers(List<String> reviewers);
 
   /**
    * Returns the refset.
@@ -123,14 +122,16 @@ public interface TrackingRecord extends HasLastModified {
   public boolean isRevision();
 
   /**
-   * Sets the revision flag (indicating this is a ready for publication record being re-edited)
+   * Sets the revision flag (indicating this is a ready for publication record
+   * being re-edited)
    *
    * @param revision the revision
    */
   public void setRevision(boolean revision);
 
   /**
-   * Returns the origin revision, the initial state of the refset before re-editing.
+   * Returns the origin revision, the initial state of the refset before
+   * re-editing.
    *
    * @return the origin revision
    */
@@ -144,8 +145,8 @@ public interface TrackingRecord extends HasLastModified {
   public void setOriginRevision(Integer revision);
 
   /**
-   * Returns the review origin revision, the initial state of the refset before review, in case
-   * it needs to be unassigned after changes.
+   * Returns the review origin revision, the initial state of the refset before
+   * review, in case it needs to be unassigned after changes.
    *
    * @return the review origin revision
    */

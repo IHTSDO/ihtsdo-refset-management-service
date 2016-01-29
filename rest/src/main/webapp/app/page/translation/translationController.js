@@ -114,6 +114,12 @@ tsApp
                     } else if ($scope.projects.role == 'AUTHOR') {
                       $scope.roleOptions = [ 'AUTHOR' ];
                     }
+                    // Force the initial choice to be "AUTHOR" instead of
+                    // "ADMIN"
+                    if ($scope.projects.role == 'ADMIN'
+                      && !$scope.user.userPreferences.lastProjectRole) {
+                      $scope.projects.role = 'AUTHOR';
+                    }
                     if ($scope.user.userPreferences.lastProjectRole) {
                       $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
                     }

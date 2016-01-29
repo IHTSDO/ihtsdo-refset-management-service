@@ -340,7 +340,7 @@ tsApp.service('projectService', [
       // success
       function(response) {
         console.debug('  anyrole = ' + response.data);
-        userProjectsInfo.anyRole = response.data;
+        userProjectsInfo.anyRole = (response.data != 'false');
         gpService.decrement();
         deferred.resolve(response.data);
       },
@@ -533,30 +533,29 @@ tsApp.service('projectService', [
       return deferred.promise;
     };
 
-    
     // get log for project and refset/translation
     this.getLog = function(projectId, objectId) {
       console.debug('getLog');
       var deferred = $q.defer();
 
       // Assign user to project
-      gpService.increment()
-      $http.get(
-        projectUrl + 'log?projectId=' + projectId + 
-         '&objectId=' + objectId + '&lines=1000').then(
-      // success
-      function(response) {
-        gpService.decrement();
-        deferred.resolve(response.data);
-      },
-      // error
-      function(response) {
-        utilService.handleError(response);
-        gpService.decrement();
-        deferred.reject(response.data);
-      });
+      gpService.increment();
+      $http
+        .get(projectUrl + 'log?projectId=' + projectId + '&objectId=' + objectId + '&lines=1000')
+        .then(
+        // success
+        function(response) {
+          gpService.decrement();
+          deferred.resolve(response.data);
+        },
+        // error
+        function(response) {
+          utilService.handleError(response);
+          gpService.decrement();
+          deferred.reject(response.data);
+        });
       return deferred.promise;
-    }
-    //end
+    };
+    // end
     // end
   } ]);

@@ -186,7 +186,7 @@ public class RootServiceRestImpl {
             .build());
     }
 
-    // REturn username
+    // Return username
     return userName;
   }
 

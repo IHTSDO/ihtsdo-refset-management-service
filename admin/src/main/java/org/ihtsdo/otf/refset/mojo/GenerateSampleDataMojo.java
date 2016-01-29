@@ -630,6 +630,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new RefsetServiceRestImpl().updateRefset((RefsetJpa) test5,
           author1.getAuthToken());
 
+
       // test 6
       RefsetJpa test3Copy = new RefsetJpa(test3);
       test3Copy.setTerminologyId("666666");
@@ -664,6 +665,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test7.getId(), "reviewer1", "REVIEWER", "ASSIGN",
           author1.getAuthToken());
+
 
       // test 8
       test2Copy.setTerminologyId("888888");
@@ -739,6 +741,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new ReleaseServiceRestImpl().finishRefsetRelease(test9.getId(),
           reviewer1.getAuthToken());
 
+
       // test 10
       test2Copy.setTerminologyId("101010101010");
       test2Copy =
@@ -767,6 +770,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test10.getId(), "author1", "AUTHOR", "REASSIGN",
           reviewer1.getAuthToken());
+
 
       // test 11
       RefsetJpa test11 =

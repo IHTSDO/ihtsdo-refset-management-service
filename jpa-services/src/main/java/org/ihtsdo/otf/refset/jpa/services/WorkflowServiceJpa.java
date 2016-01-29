@@ -86,13 +86,12 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public TrackingRecord performWorkflowAction(Long refsetId, String userName,
+  public TrackingRecord performWorkflowAction(Long refsetId, User user,
     UserRole projectRole, WorkflowAction action) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
             + refsetId);
     final Refset refset = this.getRefset(refsetId);
-    final User user = getUser(userName);
     // Obtain the handler
     final WorkflowActionHandler handler =
         getWorkflowHandlerForPath(refset.getWorkflowPath());
@@ -111,35 +110,33 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
   /* see superclass */
   @Override
   public TrackingRecordList getTrackingRecordsForTranslation(
-    Long translationId, String userName) throws Exception {
+    Long translationId, Long userId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - get tracking records " + translationId + ", "
-            + userName);
+            + userId);
     // Get object references
     final Translation translation = getTranslation(translationId);
     // Get tracking records
-    final User user = getUser(userName);
     final TrackingRecordList list =
         findTrackingRecordsForQuery("translation.id:" + translation.getId()
-            + " AND user.id:" + user.getId(), new PfsParameterJpa());
+            + " AND user.id:" + userId, new PfsParameterJpa());
     return list;
   }
 
   /* see superclass */
   @Override
-  public TrackingRecord getTrackingRecordsForRefset(Long refsetId,
-    String userName) throws Exception {
+  public TrackingRecord getTrackingRecordsForRefset(Long refsetId, Long userId)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Workflow Service - get tracking record " + refsetId + ", " + userName);
+        "Workflow Service - get tracking record " + refsetId + ", " + userId);
     // Get object references
     final Refset refset = getRefset(refsetId);
     // Get tracking records
     TrackingRecordList list = null;
-    if (userName != null && !userName.equals("")) {
-      User user = getUser(userName);
+    if (userId != null) {
       list =
           findTrackingRecordsForQuery("refsetId:" + refset.getId()
-              + " AND user.id:" + user.getId(), new PfsParameterJpa());
+              + " AND user.id:" + userId, new PfsParameterJpa());
     } else {
       list =
           findTrackingRecordsForQuery("refsetId:" + refsetId,
@@ -162,15 +159,14 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
 
   /* see superclass */
   @Override
-  public TrackingRecord performWorkflowAction(Long translationId,
-    String userName, UserRole projectRole, WorkflowAction action,
-    Concept concept) throws Exception {
+  public TrackingRecord performWorkflowAction(Long translationId, User user,
+    UserRole projectRole, WorkflowAction action, Concept concept)
+    throws Exception {
     Logger.getLogger(getClass()).debug(
         "Workflow Service - perform workflow action " + action + ", "
             + concept.getTerminologyId() + ", " + translationId);
     // Get object references
     final Translation translation = getTranslation(translationId);
-    final User user = getUser(userName);
     // Obtain the handler
     final WorkflowActionHandler handler =
         getWorkflowHandlerForPath(translation.getWorkflowPath());
@@ -183,8 +179,10 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
       throw new LocalException(result.getErrors().iterator().next());
     }
     // Perform the action
-    return handler.performWorkflowAction(translation, user, projectRole,
-        action, concept, this);
+    TrackingRecord r =
+        handler.performWorkflowAction(translation, user, projectRole, action,
+            concept, this);
+    return r;
   }
 
   /* see superclass */

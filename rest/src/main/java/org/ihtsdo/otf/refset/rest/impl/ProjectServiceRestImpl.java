@@ -41,6 +41,7 @@ import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.helpers.UserList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
+import org.ihtsdo.otf.refset.jpa.UserJpa;
 import org.ihtsdo.otf.refset.jpa.algo.LuceneReindexAlgorithm;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.DescriptionTypeListJpa;
@@ -147,21 +148,23 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      final String thisUser =
+      final String authUser =
           authorizeProject(projectService, projectId, securityService,
               authToken, "add user to project", UserRole.AUTHOR);
 
       User user = securityService.getUser(userName);
+      User userCopy = new UserJpa(user);
       Project project = projectService.getProject(projectId);
-      project.getUserRoleMap().put(user, UserRole.valueOf(role));
-      project.setLastModifiedBy(thisUser);
+      Project projectCopy = new ProjectJpa(project);
+      project.getUserRoleMap().put(userCopy, UserRole.valueOf(role));
+      project.setLastModifiedBy(authUser);
       projectService.updateProject(project);
 
-      project = projectService.getProject(projectId);
-      user = securityService.getUser(userName);
-      user.getProjectRoleMap().put(project, UserRole.valueOf(role));
+      user.getProjectRoleMap().put(projectCopy, UserRole.valueOf(role));
       securityService.updateUser(user);
 
+      addLogEntry(projectService, authUser, "ASSIGN user to project",
+          projectId, projectId, userName);
       return project;
 
     } catch (Exception e) {
@@ -197,31 +200,32 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     try {
       // Check if user is either an ADMIN overall or an AUTHOR on this project
 
-      String thisUser = null;
+      String authUser = null;
       try {
-        thisUser =
+        authUser =
             authorizeApp(securityService, authToken,
-                "unassign user from project", UserRole.USER);
+                "unassign user from project", UserRole.ADMIN);
       } catch (Exception e) {
         // now try to validate project role
-        thisUser =
+        authUser =
             authorizeProject(projectService, projectId, securityService,
                 authToken, "unassign user from project", UserRole.AUTHOR);
       }
 
       User user = securityService.getUser(userName);
+      User userCopy = new UserJpa(user);
       Project project = projectService.getProject(projectId);
-      project.getUserRoleMap().remove(user);
-      project.setLastModifiedBy(thisUser);
+      Project projectCopy = new ProjectJpa(project);
+
+      project.getUserRoleMap().remove(userCopy);
+      project.setLastModifiedBy(authUser);
       projectService.updateProject(project);
 
-      user = securityService.getUser(userName);
-      project = projectService.getProject(projectId);
-      user.getProjectRoleMap().remove(project);
+      user.getProjectRoleMap().remove(projectCopy);
       securityService.updateUser(user);
 
-      addLogEntry(projectService, userName, "UNASSIGN User from Project",
-          projectId, projectId, user.getUserName());
+      addLogEntry(projectService, authUser, "UNASSIGN user from project",
+          projectId, projectId, userName);
 
       return project;
     } catch (Exception e) {
@@ -363,9 +367,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       // Add project
       project.setLastModifiedBy(userName);
       Project newProject = projectService.addProject(project);
-      addLogEntry(projectService, userName, "ADD Project", newProject.getId(),
-          newProject.getId(),
-          newProject.getTerminologyId() + ": " + newProject.getName());
+      addLogEntry(projectService, userName, "ADD project", newProject.getId(),
+          newProject.getId(), newProject.toString());
       return newProject;
     } catch (Exception e) {
       handleException(e, "trying to add a project");
@@ -433,9 +436,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       project.setLastModifiedBy(securityService.getUsernameForToken(authToken));
       projectService.updateProject(project);
 
-      addLogEntry(projectService, userName, "UPDATE Project", project.getId(),
-          project.getId(),
-          project.getTerminologyId() + ": " + project.getName());
+      addLogEntry(projectService, userName, "UPDATE project", project.getId(),
+          project.getId(), project.toString());
 
     } catch (Exception e) {
       handleException(e, "trying to update a project");
@@ -479,7 +481,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       // Create service and configure transaction scope
       projectService.removeProject(projectId);
 
-      addLogEntry(projectService, userName, "UPDATE Project", projectId,
+      addLogEntry(projectService, userName, "REMOVE project", projectId,
           projectId, project.getTerminologyId() + ": " + project.getName());
 
     } catch (Exception e) {
@@ -950,6 +952,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     TranslationService translationService, Translation translation,
     Concept concept, UserPreferences prefs) throws Exception {
 
+    // translation is always not null - this is only called for viewing
+    // translations
+
     if (concept == null) {
       Logger.getLogger(getClass()).warn(
           "  Add description helper = concept unexpectedly null");
@@ -978,41 +983,48 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     final ConceptList list =
         translationService.findConceptsForTranslation(null, query.toString(),
             null);
+
     // Add all descriptions to the concept
     final Set<String> descIdsSeen = new HashSet<>();
     for (Concept conceptTranslated : list.getObjects()) {
 
-      // For descriptions from "this" translation
-      // keep only concepts whose translation ids match this translation
-      // if concept is being newly translated - then no need for this.
-      if (concept.getTranslation() == null
-          || !concept.getTranslation().getId().equals(translation.getId())) {
+      // Where the terminologyId matches but not the id, skip it
+      // only show descriptions from this version of the translation
+      if (conceptTranslated.getTranslation().getTerminologyId()
+          .equals(translation.getTerminologyId())
+          && !conceptTranslated.getTranslation().getId()
+              .equals(translation.getId())) {
         continue;
       }
 
-      // For concepts from other translations, only descriptions
-      // only if the translation isn't PUBLISHED or BETA
-      if ((translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED || translation
-          .getWorkflowStatus() == WorkflowStatus.BETA)
-          && !concept.getTranslation().getTerminology()
-              .equals(translation.getTerminology())) {
+      // For other translations, we really want either
+      // the latest PUBLISHED version, or the currently-being-edited version
+      // That's hard to do so we'll just pick non-beta, non-published for now
+      // that way we get the current editing version and it's unique.
+      if (!conceptTranslated.getTranslation().getTerminologyId()
+          .equals(translation.getTerminologyId())
+          && (translation.getWorkflowStatus() == WorkflowStatus.PUBLISHED || translation
+              .getWorkflowStatus() == WorkflowStatus.BETA)) {
         continue;
       }
 
       for (Description desc : conceptTranslated.getDescriptions()) {
-        // Skip inactive descriptions
+        // Skip inactive descriptions - i.e. this probably shouldn't happen
+        // because we don't keep old descriptions around
         if (!desc.isActive()) {
           continue;
         }
 
+        //
         // Add to the concept to return if this is the first time
         // we have encountered this description terminology id
         //
         // This is to ensure that we don't pick up multiple identical
         // descriptions from "user preferences" based translations. This
-        // algorithm is approximate as we're just pickign the first one
+        // algorithm is approximate as we're just picking the first one
         // encountered. Though the point of descriptions from other
-        // "user prefs" translations is merely to get some idea
+        // "user prefs" translations is merely to get some idea of other names
+        // not to have 100% precision
         //
         if (!descIdsSeen.contains(desc.getTerminologyId())) {
           concept.getDescriptions().add(desc);

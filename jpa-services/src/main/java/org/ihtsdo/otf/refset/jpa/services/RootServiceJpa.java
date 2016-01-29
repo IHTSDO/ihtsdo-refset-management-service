@@ -8,9 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import javax.persistence.EntityManager;
@@ -23,7 +21,6 @@ import org.apache.log4j.Logger;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParserBase;
 import org.hibernate.search.jpa.FullTextQuery;
-import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.HasLastModified;
 import org.ihtsdo.otf.refset.helpers.LogEntry;
@@ -40,9 +37,6 @@ public abstract class RootServiceJpa implements RootService {
 
   /** The last modified flag. */
   protected boolean lastModifiedFlag = true;
-
-  /** The user map. */
-  protected static Map<String, User> userMap = new HashMap<>();
 
   /** The factory. */
   protected static EntityManagerFactory factory = null;
@@ -277,6 +271,7 @@ public abstract class RootServiceJpa implements RootService {
               new Class<?>[] {});
 
       if (!sortMethod.getReturnType().equals(String.class)
+          && !sortMethod.getReturnType().isEnum()
           && !sortMethod.getReturnType().equals(Date.class)) {
         throw new Exception("Referenced sort field is not of type String");
       }
@@ -338,30 +333,6 @@ public abstract class RootServiceJpa implements RootService {
     }
 
     return result;
-  }
-
-  /**
-   * Returns the user for the userName. Utility method.
-   *
-   * @param userName the userName
-   * @return the user
-   * @throws Exception the exception
-   */
-  public User getUser(String userName) throws Exception {
-    if (userMap.containsKey(userName)) {
-      return userMap.get(userName);
-    }
-    javax.persistence.Query query =
-        manager
-            .createQuery("select u from UserJpa u where userName = :userName");
-    query.setParameter("userName", userName);
-    try {
-      User user = (User) query.getSingleResult();
-      userMap.put(userName, user);
-      return user;
-    } catch (NoResultException e) {
-      return null;
-    }
   }
 
   /* see superclass */

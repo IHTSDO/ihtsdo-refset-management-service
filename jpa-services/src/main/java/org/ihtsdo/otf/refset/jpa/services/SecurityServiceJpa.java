@@ -99,11 +99,14 @@ public class SecurityServiceJpa extends RootServiceJpa implements
     // if user was found, update to match settings
     Long userId = null;
     if (userFound != null) {
+      handleLazyInit(userFound);
+
       Logger.getLogger(getClass()).info("update");
       userFound.setEmail(authUser.getEmail());
       userFound.setName(authUser.getName());
       userFound.setUserName(authUser.getUserName());
       userFound.setApplicationRole(authUser.getApplicationRole());
+
       updateUser(userFound);
       if (userFound.getUserPreferences() == null) {
         UserPreferences newUserPreferences = new UserPreferencesJpa();

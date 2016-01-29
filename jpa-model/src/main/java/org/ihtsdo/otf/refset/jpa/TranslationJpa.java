@@ -154,7 +154,7 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   private SpellingDictionary spellingDictionary = null;
 
   /** The phrase memory. */
-  @OneToOne(cascade = CascadeType.ALL, mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
+  @OneToOne(mappedBy = "translation", targetEntity = PhraseMemoryJpa.class)
   private PhraseMemory phraseMemory = null;
 
   /** The notes. */
@@ -608,13 +608,26 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   /* see superclass */
   @Override
   public String toString() {
-    return "TranslationJpa [name=" + name + ", description=" + description
-        + ", isPublic=" + isPublic + ", stagingType=" + stagingType
-        + ", language=" + language + ", workflowStatus=" + workflowStatus
-        + ", workflowPath=" + workflowPath + ", refset=" + (refset == null ? null : refset.getId())
-        + ", project =" + (refset != null && refset.getProject() != null ? refset.getProject().getId() : null)
-        + ", descriptionTypes=" + descriptionTypes + ", caseSensitiveTypes="
-        + caseSensitiveTypes + "]";
+    return "TranslationJpa [name="
+        + name
+        + ", description="
+        + description
+        + ", isPublic="
+        + isPublic
+        + ", stagingType="
+        + stagingType
+        + ", language="
+        + language
+        + ", workflowStatus="
+        + workflowStatus
+        + ", workflowPath="
+        + workflowPath
+        + ", refset="
+        + (refset == null ? null : refset.getId())
+        + ", project ="
+        + (refset != null && refset.getProject() != null ? refset.getProject()
+            .getId() : null) + ", descriptionTypes=" + descriptionTypes
+        + ", caseSensitiveTypes=" + caseSensitiveTypes + "]";
   }
 
   /* see superclass */
