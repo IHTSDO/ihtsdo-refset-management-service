@@ -48,7 +48,11 @@
               ng-click="selectConcept(concept)"
               ng-class="{selected: concept.terminologyId === data.concept.terminologyId}">
               <td>{{concept.terminologyId}}</td>
-              <td>{{concept.name}}</td>
+              <td>
+                {{concept.name}}
+                <button class="btn btn-xs retired"
+                  ng-show="!concept.active" uib-tooltip="Retired">R</button>
+              </td>
               <td>
                 <i ng-click="addMember(concept);"
                   ng-show="data.memberTypes[concept.terminologyId].memberType != 'MEMBER' &&

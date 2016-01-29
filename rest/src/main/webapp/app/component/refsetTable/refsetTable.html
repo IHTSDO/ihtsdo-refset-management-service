@@ -175,7 +175,7 @@
               title="Edit" class="noul material-icons md-18">edit</i>
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-click="removeRefset(refset);" title="Remove"
+              ng-click="removeRefset(refset); $event.stopPropagation()" title="Remove"
               class="noul material-icons md-18">delete</i>
             <i confirm="Are you sure you want to unassign the refset?"
               ng-click="unassign(refset, user.userName);" title="Unassign"
@@ -235,7 +235,7 @@
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-show="refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="removeRefset(refset);" title="Remove"
+              ng-click="removeRefset(refset); $event.stopPropagation()" title="Remove"
               class="noul material-icons md-18">delete</i>
 
             <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"

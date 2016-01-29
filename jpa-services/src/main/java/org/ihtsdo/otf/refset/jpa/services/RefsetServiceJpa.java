@@ -571,8 +571,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     // handle all lazy initializations
     refset.getProject().getName();
     for (final Translation translation : refset.getTranslations()) {
-      translation.setDescriptionTypes(new ArrayList<DescriptionType>());
-      translation.getWorkflowStatus().name();
+      translation.toString();
     }
     refset.getEnabledFeedbackEvents().size();
     refset.getNotes().size();

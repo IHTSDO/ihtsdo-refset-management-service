@@ -224,7 +224,7 @@ tsApp
                   });
                 }
                 if ($scope.value == 'RELEASE') {
-                  pfs.queryRestriction = 'projectId: '
+                  pfs.queryRestriction = 'projectId:'
                     + $scope.project.id
                     + ' AND revision:false AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
