@@ -6,8 +6,9 @@ package org.ihtsdo.otf.refset.jpa.algo;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseInfo;
@@ -19,13 +20,13 @@ import org.ihtsdo.otf.refset.jpa.ReleaseArtifactJpa;
 import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -96,7 +97,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
   public void compute() throws Exception {
 
     translation.setLastModifiedBy(userName);
-    
+
     // Stage the translation
     stagedTranslation =
         stageTranslation(translation, Translation.StagingType.BETA,
@@ -111,7 +112,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // Generate the snapshot release artifact and add it
     ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportConcepts(stagedTranslation, stagedTranslation.getConcepts());
+        handler.exportConcepts(stagedTranslation,
+            stagedTranslation.getConcepts());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
@@ -127,28 +129,107 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
             translation.getProject().getId());
     if (releaseInfo != null) {
-      // get all concepts from previous translation that are no longer in
-      // stagedTranslation and make them retired in the delta
-      // TODO: note these delta concepts don't have descriptions attached
-      Set<Concept> delta =
-          Sets.newHashSet(releaseInfo.getTranslation().getConcepts());
-      delta.removeAll(stagedTranslation.getConcepts());
-      for (Concept member : delta) {
-        member.setActive(false);
-        member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+
+      // Get descriptions/languages from last time
+      Map<String, Description> oldDescriptionMap = new HashMap<>();
+      Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();
+      for (final Concept concept : releaseInfo.getTranslation().getConcepts()) {
+        for (final Description description : concept.getDescriptions()) {
+          oldDescriptionMap.put(description.getTerminologyId(), description);
+          for (final LanguageRefsetMember member : description
+              .getLanguageRefsetMembers()) {
+            oldMemberMap.put(member.getTerminologyId(), member);
+          }
+          // clear languages to populate them later
+          description.getLanguageRefsetMembers().clear();
+        }
+        // clear descriptions to populate them later
+        concept.getDescriptions().clear();
       }
-      // add all new concepts to the delta
-      Set<Concept> newMembers =
-          Sets.newHashSet(stagedTranslation.getConcepts());
-      newMembers.removeAll(releaseInfo.getTranslation().getConcepts());
-      for (Concept member : newMembers) {
-        member.setActive(true);
-        member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+
+      // Get descriptions/languages from this time
+      Map<String, Description> newDescriptionMap = new HashMap<>();
+      Map<String, LanguageRefsetMember> newMemberMap = new HashMap<>();
+      for (final Concept concept : stagedTranslation.getConcepts()) {
+        for (final Description description : concept.getDescriptions()) {
+          newDescriptionMap.put(description.getTerminologyId(), description);
+          for (final LanguageRefsetMember member : description
+              .getLanguageRefsetMembers()) {
+            newMemberMap.put(member.getTerminologyId(), member);
+          }
+          // clear languages to populate them later
+          description.getLanguageRefsetMembers().clear();
+        }
+        // clear descriptions to populate them later
+        concept.getDescriptions().clear();
       }
-      delta.addAll(newMembers);
-      // TODO: what about descriptions that have changed within a stable concept?
+
+      // Delta descriptions/languages
+      List<Description> deltaDescriptions = new ArrayList<>();
+      List<LanguageRefsetMember> deltaMembers = new ArrayList<>();
+
+      // description now that did not exist before - add active
+      // description now that did exist before but is changed - add active
+      for (final Description description : newDescriptionMap.values()) {
+        // new
+        if (!oldDescriptionMap.containsKey(description.getTerminologyId())) {
+          description.setActive(true);
+          description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaDescriptions.add(description);
+        }
+
+        // changed
+        if (oldDescriptionMap.containsKey(description.getTerminologyId())
+            && !description.equals(oldDescriptionMap.get(description
+                .getTerminologyId()))) {
+          description.setActive(true);
+          description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaDescriptions.add(description);
+        }
+      }
+
+      // description from before that does not exist - add retired
+      for (final Description description : oldDescriptionMap.values()) {
+        if (!newDescriptionMap.containsKey(description.getTerminologyId())) {
+          description.setActive(false);
+          description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaDescriptions.add(description);
+
+        }
+      }
+
+      // language now that did not exist before - add active
+      // language now that did exist before but is changed - add active
+      for (final LanguageRefsetMember member : newMemberMap.values()) {
+        // new language
+        if (!oldMemberMap.containsKey(member.getTerminologyId())) {
+          member.setActive(true);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaMembers.add(member);
+        }
+
+        // changed
+        if (oldMemberMap.containsKey(member.getTerminologyId())
+            && !member.equals(oldMemberMap.get(member.getTerminologyId()))) {
+          member.setActive(true);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaMembers.add(member);
+        }
+      }
+
+      // member from before that does not exist - add retired
+      for (final LanguageRefsetMember member : oldMemberMap.values()) {
+        if (!newMemberMap.containsKey(member.getTerminologyId())) {
+          member.setActive(false);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          deltaMembers.add(member);
+        }
+      }
+
+      // Export
       inputStream =
-          handler.exportConcepts(stagedTranslation, Lists.newArrayList(delta));
+          handler.exportContents(stagedTranslation, deltaDescriptions,
+              deltaMembers);
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
 

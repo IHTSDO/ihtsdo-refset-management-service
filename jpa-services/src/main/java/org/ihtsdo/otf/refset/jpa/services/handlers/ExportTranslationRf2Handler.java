@@ -68,6 +68,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     String descriptionFileName =
         "xsct2_Description_" + translation.getVersion() + ".txt";
 
+    // TODO: rewire this to just extract all descriptions, then all langauges
+    // and call the exportContents with those.  then logic is the same
+    // need to test import/export when we do this
+    
+    
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
     // and write the zip file to an input stream
@@ -98,15 +103,17 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         continue;
       }
       for (Description description : concept.getDescriptions()) {
-        Logger.getLogger(getClass()).debug(
-            "  description = " + description.getTerminologyId() + ", "
-                + description.getTerm() + ", " + description.getEffectiveTime());
+        Logger.getLogger(getClass())
+            .debug(
+                "  description = " + description.getTerminologyId() + ", "
+                    + description.getTerm() + ", "
+                    + description.getEffectiveTime());
 
         descSb.append(description.getTerminologyId()).append("\t");
         if (description.getEffectiveTime() != null) {
           descSb.append(
-            ConfigUtility.DATE_FORMAT.format(description.getEffectiveTime()))
-            .append("\t");
+              ConfigUtility.DATE_FORMAT.format(description.getEffectiveTime()))
+              .append("\t");
         } else {
           descSb.append("\t");
         }
@@ -125,8 +132,8 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
           langSb.append(member.getTerminologyId()).append("\t");
           if (member.getEffectiveTime() != null) {
             langSb.append(
-              ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
-              .append("\t");
+                ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+                .append("\t");
           } else {
             langSb.append("\t");
           }
@@ -156,7 +163,112 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
     ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
     zos.putNextEntry(langEntry);
-    
+
+    bytes = langSb.toString().getBytes("UTF-8");
+    zos.write(bytes, 0, bytes.length);
+    zos.closeEntry();
+    zos.close();
+    return new ByteArrayInputStream(baos.toByteArray());
+  }
+
+  /* see superclass */
+  @Override
+  public InputStream exportContents(Translation translation,
+    List<Description> descriptions, List<LanguageRefsetMember> languages)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "Export translation contents - " + translation.getTerminologyId()
+            + ", " + translation.getName());
+
+    // Use info from "translation" object to get file name right.
+    String languageRefsetMemberFileName =
+        "xder2_cRefset_LanguageSnapshot-" + translation.getLanguage() + "_"
+            + translation.getVersion() + ".txt";
+    String descriptionFileName =
+        "xsct2_Description_" + translation.getVersion() + ".txt";
+
+    // Write descriptions and language refset entries
+    // in SNOMED CT Structure to a .zip file
+    // and write the zip file to an input stream
+    StringBuilder descSb = new StringBuilder();
+    descSb.append("id").append("\t");
+    descSb.append("effectiveTime").append("\t");
+    descSb.append("active").append("\t");
+    descSb.append("moduleId").append("\t");
+    descSb.append("conceptId").append("\t");
+    descSb.append("languageCode").append("\t");
+    descSb.append("typeId").append("\t");
+    descSb.append("term").append("\t");
+    descSb.append("caseSignificanceId").append("\t");
+    descSb.append("\r\n");
+
+    StringBuilder langSb = new StringBuilder();
+    langSb.append("id").append("\t");
+    langSb.append("effectiveTime").append("\t");
+    langSb.append("active").append("\t");
+    langSb.append("moduleId").append("\t");
+    langSb.append("refsetId").append("\t");
+    langSb.append("referencedComponentId").append("\t");
+    langSb.append("acceptabilityId").append("\t");
+    langSb.append("\r\n");
+
+    for (Description description : descriptions) {
+      Logger.getLogger(getClass()).debug(
+          "  description = " + description.getTerminologyId() + ", "
+              + description.getTerm() + ", " + description.getEffectiveTime());
+
+      descSb.append(description.getTerminologyId()).append("\t");
+      if (description.getEffectiveTime() != null) {
+        descSb.append(
+            ConfigUtility.DATE_FORMAT.format(description.getEffectiveTime()))
+            .append("\t");
+      } else {
+        descSb.append("\t");
+      }
+      descSb.append(1).append("\t");
+      descSb.append(translation.getRefset().getModuleId()).append("\t");
+      descSb.append(description.getConcept().getTerminologyId()).append("\t");
+      descSb.append(description.getLanguageCode()).append("\t");
+      descSb.append(description.getTypeId()).append("\t");
+      descSb.append(description.getTerm()).append("\t");
+      descSb.append(description.getCaseSignificanceId()).append("\t");
+      descSb.append("\r\n");
+    }
+
+    for (LanguageRefsetMember member : languages) {
+      Logger.getLogger(getClass()).debug("    member = " + member);
+      langSb.append(member.getTerminologyId()).append("\t");
+      if (member.getEffectiveTime() != null) {
+        langSb.append(
+            ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+            .append("\t");
+      } else {
+        langSb.append("\t");
+      }
+      langSb.append(member.isActive() ? "1" : "0").append("\t");
+      langSb.append(translation.getRefset().getModuleId()).append("\t");
+      langSb.append(translation.getRefset().getTerminologyId()).append("\t");
+      langSb.append(member.getDescriptionId()).append("\t");
+      langSb.append(member.getAcceptabilityId()).append("\t");
+      langSb.append("\r\n");
+    }
+
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    ZipOutputStream zos = new ZipOutputStream(baos);
+
+    /*
+     * File is not on the disk, test.txt indicates only the file name to be put
+     * into the zip
+     */
+    ZipEntry descEntry = new ZipEntry(descriptionFileName);
+    zos.putNextEntry(descEntry);
+    byte[] bytes = descSb.toString().getBytes("UTF-8");
+    zos.write(bytes, 0, bytes.length);
+    zos.closeEntry();
+
+    ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
+    zos.putNextEntry(langEntry);
+
     bytes = langSb.toString().getBytes("UTF-8");
     zos.write(bytes, 0, bytes.length);
     zos.closeEntry();

@@ -9,6 +9,8 @@ import java.util.List;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.Concept;
+import org.ihtsdo.otf.refset.rf2.Description;
+import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 
 /**
  * Generically represents a handler for exporting translation data.
@@ -57,5 +59,17 @@ public interface ExportTranslationHandler extends Configurable {
    */
   public InputStream exportConcepts(Translation translation,
     List<Concept> concepts) throws Exception;
+
+  /**
+   * Export descriptions and langauges. NEeded ot support Delta.
+   * @param translation the translation
+   * @param descriptions the descriptions
+   * @param languages the languages
+   * @return the input stream
+   * @throws Exception the exception
+   */
+  public InputStream exportContents(Translation translation,
+    List<Description> descriptions, List<LanguageRefsetMember> languages)
+    throws Exception;
 
 }

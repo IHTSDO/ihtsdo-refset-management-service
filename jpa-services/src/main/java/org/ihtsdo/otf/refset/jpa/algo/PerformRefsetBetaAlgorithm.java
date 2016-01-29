@@ -6,8 +6,9 @@ package org.ihtsdo.otf.refset.jpa.algo;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
@@ -26,7 +27,6 @@ import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import com.google.common.io.ByteStreams;
 
 /**
@@ -118,8 +118,8 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getFileName(stagedRefset.getProject().getNamespace(),
-        "ActiveSnapshot", releaseInfo.getName()));
+    artifact.setName(handler.getFileName(stagedRefset.getProject()
+        .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
@@ -132,21 +132,61 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         getCurrentRefsetReleaseInfo(refset.getTerminologyId(), refset
             .getProject().getId());
     if (releaseInfo != null) {
-      Set<ConceptRefsetMember> delta =
-          Sets.newHashSet(releaseInfo.getRefset().getMembers());
-      delta.removeAll(stagedRefset.getMembers());
-      for (ConceptRefsetMember member : delta) {
-        member.setActive(false);
-        member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+      // Get members from last time
+      Map<String, ConceptRefsetMember> oldMemberMap = new HashMap<>();
+      for (final ConceptRefsetMember member : releaseInfo.getRefset()
+          .getMembers()) {
+        // Skip exclusions
+        if (member.getMemberType() == Refset.MemberType.EXCLUSION) {
+          continue;
+        }
+        oldMemberMap.put(member.getConceptId(), member);
       }
-      Set<ConceptRefsetMember> newMembers =
-          Sets.newHashSet(stagedRefset.getMembers());
-      newMembers.removeAll(releaseInfo.getRefset().getMembers());
-      for (ConceptRefsetMember member : newMembers) {
-        member.setActive(true);
-        member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+
+      // Get current members
+      Map<String, ConceptRefsetMember> newMemberMap = new HashMap<>();
+      for (final ConceptRefsetMember member : stagedRefset.getMembers()) {
+        newMemberMap.put(member.getConceptId(), member);
       }
-      delta.addAll(newMembers);
+
+      List<ConceptRefsetMember> delta = new ArrayList<>();
+
+      // member/inclusion now that did not exist before - add active
+      // exclusion now that did exist before - add retired
+      for (final ConceptRefsetMember member : stagedRefset.getMembers()) {
+        if ((member.getMemberType() == Refset.MemberType.MEMBER || member
+            .getMemberType() == Refset.MemberType.INCLUSION)
+            && !oldMemberMap.containsKey(member.getConceptId())) {
+          member.setActive(true);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(member);
+        }
+
+        // Only mark it as retired if the terminology id is the same
+        // that way we know the actual member itself was retired.
+        if (member.getMemberType() == Refset.MemberType.EXCLUSION
+            && oldMemberMap.containsKey(member.getConceptId())) {
+          final ConceptRefsetMember oldMember =
+              oldMemberMap.get(member.getConceptId());
+          oldMember.setActive(false);
+          oldMember.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(member);
+        }
+
+      }
+
+      // member/inclusion from before that does not exist - add retired
+      for (final ConceptRefsetMember member : releaseInfo.getRefset()
+          .getMembers()) {
+        if ((member.getMemberType() == Refset.MemberType.MEMBER || member
+            .getMemberType() == Refset.MemberType.INCLUSION)
+            && !newMemberMap.containsKey(member.getConceptId())) {
+          member.setActive(false);
+          member.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
+          delta.add(member);
+        }
+      }
+
       inputStream =
           handler.exportMembers(stagedRefset, Lists.newArrayList(delta));
       artifact = new ReleaseArtifactJpa();
@@ -171,7 +211,7 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     updateRefset(refset);
     stagedRefset.setLastModifiedBy(userName);
     updateRefset(stagedRefset);
-    
+
     // not planned anymore, but also not published yet
     stageReleaseInfo.setPlanned(false);
     addReleaseInfo(stageReleaseInfo);
