@@ -1594,6 +1594,7 @@ tsApp
 
                 // Add members in the list
                 $scope.includeMembers = function() {
+                  $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
                   for (var i = 0; i < $scope.ids.length; i++) {
                     var conceptId = $scope.ids[i];
@@ -1639,6 +1640,7 @@ tsApp
 
                 // Exclude members in list
                 $scope.excludeMembers = function() {
+                  $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
                   var notExists = new Array();
                   var removed = new Array();

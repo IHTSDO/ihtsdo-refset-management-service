@@ -446,11 +446,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     // Validate tracking record
-    TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery(
-            "conceptId:"
-                + ((concept == null || concept.getId() == null) ? -1 : concept
-                    .getId()), null);
+    TrackingRecordList recordList = new TrackingRecordListJpa();
+    if (concept != null && concept.getId() != null) {
+      recordList =
+          service.findTrackingRecordsForQuery("conceptId:" + concept.getId(),
+              null);
+    }
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);

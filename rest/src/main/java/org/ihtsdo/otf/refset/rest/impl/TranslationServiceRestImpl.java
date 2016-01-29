@@ -826,7 +826,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setId(null);
         concept.setPublishable(true);
         concept.setPublished(false);
-        concept.setName("TBD");
+        concept.setName("name lookup in progress");
         concept.setActive(true);
         concept.setTranslation(translation);
         // Mark as ready for publication as they are imported and can be further

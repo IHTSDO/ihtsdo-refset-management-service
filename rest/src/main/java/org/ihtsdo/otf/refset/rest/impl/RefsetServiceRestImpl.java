@@ -798,8 +798,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // Look up concept name and active
-      if (member.getConceptName() == null
-          || member.getConceptName().equals("TBD")) {
+      if (member.getConceptName() == null) {
         final Concept concept =
             refsetService.getTerminologyHandler().getConcept(
                 member.getConceptId(), refset.getTerminology(),
@@ -808,7 +807,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
         } else {
-          member.setConceptName("TBD");
+          member.setConceptName("unable to determine name");
         }
       }
 
@@ -978,8 +977,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Lookup concept name and active if not already set
       // Look up concept name and active
-      if (inclusion.getConceptName() == null
-          || inclusion.getConceptName().equals("TBD")) {
+      if (inclusion.getConceptName() == null) {
         final Concept concept =
             refsetService.getTerminologyHandler().getConcept(
                 inclusion.getConceptId(), refset.getTerminology(),
@@ -988,7 +986,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
         } else {
-          inclusion.setConceptName("TBD");
+          inclusion.setConceptName("unable to determine name");
         }
       }
 
@@ -2388,7 +2386,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         // Initialize values to be overridden by lookupNames routine
         member.setConceptActive(true);
-        member.setConceptName("TBD");
+        member.setConceptName("name lookup in progress");
 
         member.setLastModifiedBy(userName);
         refsetService.addMember(member);

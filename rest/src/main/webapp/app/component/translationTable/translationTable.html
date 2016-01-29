@@ -480,7 +480,10 @@
       <tbody>
         <tr ng-repeat="concept in selected.translation.available">
           <td style="word-break: break-word;">{{concept.terminologyId}}</td>
-          <td>{{concept.name}}</td>
+          <td>
+            {{concept.name}}
+            <span name-info name="concept.name"> </span>
+          </td>
           <td>
             {{toDate(concept.lastModified)}}
             <span ng-show="concept.workflowStatus">
@@ -560,7 +563,10 @@
       <tbody>
         <tr ng-repeat="record in selected.translation.assigned">
           <td style="word-break: break-word;">{{record.concept.terminologyId}}</td>
-          <td>{{record.concept.name}}</td>
+          <td>
+            {{record.concept.name}}
+            <span name-info name="record.concept.name"> </span>
+          </td>
           <td>
             {{toDate(record.lastModified)}}<br />{{record.concept.lastModifiedBy}}
             <br />{{record.concept.workflowStatus}}
@@ -745,6 +751,8 @@
               <td>{{concept.terminologyId}}</td>
               <td>
                 {{concept.name}}
+                <span name-info name="concept.name"> </span>
+
                 <span
                   ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
                   <br /> &bull;&nbsp;{{desc.term}}

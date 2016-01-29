@@ -613,7 +613,10 @@
               ng-click="selectMember(member);"
               ng-class="{selected : member.id == selected.member.id}">
               <td>{{member.conceptId}}</td>
-              <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
+              <td ng-class="getMemberStyle(member)">
+                {{member.conceptName}}
+                <span name-info name="member.conceptName"> </span>
+              </td>
               <td
                 ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
                 {{toDate(member.lastModified)}}<br />{{member.lastModifiedBy}}

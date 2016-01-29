@@ -433,7 +433,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         if (conceptNode.get("pt") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
-          concept.setName("TBD");
+          concept.setName("unable to determine name");
         }
 
         concept.setPublishable(true);

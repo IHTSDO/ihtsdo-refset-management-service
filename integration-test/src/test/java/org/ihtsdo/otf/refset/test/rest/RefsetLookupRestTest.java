@@ -376,7 +376,7 @@ public class RefsetLookupRestTest extends RestSupport {
 
     // Verify name set for all members
     for (ConceptRefsetMember member : refset.getMembers()) {
-      assertFalse(member.getConceptName().equals("TBD"));
+      assertFalse(member.getConceptName().equals("name lookup in progress"));
       assertFalse(member.getConceptName().isEmpty());
     }
 
