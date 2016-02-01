@@ -1463,5 +1463,32 @@ public class RefsetClientRest extends RootClientRest implements
         RefsetJpa.class);
   }
 
+  @Override
+  public Long getOriginForStagedRefset(Long stagedRefsetId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Rest Client - get origin id given the staged Refset Id "
+            + stagedRefsetId);
+    validateNotEmpty(stagedRefsetId, "stagedRefsetId");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/origin"
+            + "?stagedRefsetId=" + stagedRefsetId);
+
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
+
+    Long originId = response.readEntity(Long.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+    // converting to object
+
+    return originId;
+  }
+
 
 }

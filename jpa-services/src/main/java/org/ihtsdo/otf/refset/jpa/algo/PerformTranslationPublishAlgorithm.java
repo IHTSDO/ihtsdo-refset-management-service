@@ -67,7 +67,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     if (!translation.isStaged())
       throw new LocalException("translation workflowstatus is not staged for "
           + translation.getId());
-    stagedTranslationChange = getStagedTranslationChange(translation.getId());
+    stagedTranslationChange = getStagedTranslationChangeFromOrigin(translation.getId());
     if (!WorkflowStatus.BETA.equals(stagedTranslationChange
         .getStagedTranslation().getWorkflowStatus())) {
       throw new Exception(

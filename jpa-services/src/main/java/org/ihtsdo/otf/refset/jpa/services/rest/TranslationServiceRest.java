@@ -596,4 +596,15 @@ public interface TranslationServiceRest {
   public Translation recoverTranslation(Long projectId, Long translationId,
     String authToken) throws Exception;
 
+  /**
+   * Returns the origin for staged translation.
+   *
+   * @param stagedTranslationId the staged translation id
+   * @param authToken the auth token
+   * @return the origin for staged translation
+   * @throws Exception the exception
+   */
+  public Long getOriginForStagedTranslation(Long stagedTranslationId, String authToken)
+    throws Exception;
+
 }

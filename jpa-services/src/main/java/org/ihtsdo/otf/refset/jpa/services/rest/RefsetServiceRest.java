@@ -571,5 +571,16 @@ public interface RefsetServiceRest {
   public Refset recoverRefset(Long projectId, Long refsetId, String authToken)
     throws Exception;
 
+  /**
+   * Returns the origin for staged refset.
+   *
+   * @param stagedRefsetId the staged refset id
+   * @param authToken the auth token
+   * @return the origin for staged refset
+   * @throws Exception the exception
+   */
+  public Long getOriginForStagedRefset(Long stagedRefsetId, String authToken)
+    throws Exception;
+
 
 }

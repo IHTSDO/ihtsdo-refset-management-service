@@ -247,15 +247,30 @@
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Start release process" class="noul material-icons md-18">open_in_new</i>
             <i
-              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && refset.inPublicationProcess"
+              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
+                        refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
+            <i
+              ng-show="refset.workflowStatus == 'BETA' && 
+                        refset.inPublicationProcess"
+              ng-click="openReleaseProcessModalForStaged(refset); $event.stopPropagation()"
+              title="Continue release processing"
+              class="noul material-icons md-18">open_in_new</i>
 
-            <span ng-show="refset.stagingType == 'BETA'">
+            <span ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
+                        refset.inPublicationProcess">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"
+                uib-tooltip="Click to cancel release process">Cancel
+                Release</button>
+            </span>
+            <span ng-show="refset.workflowStatus == 'BETA'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelActionForStaged(refset)"
                 uib-tooltip="Click to cancel release process">Cancel
                 Release</button>
             </span>

@@ -636,6 +636,7 @@ tsApp
                   translationService.fireConceptChanged(concept);
                 });
               };
+             
 
               // Need both a $scope version and a non one for modals.
               $scope.startLookup = function(translation) {
@@ -743,6 +744,24 @@ tsApp
                   });
                 }
               };
+              
+              // cancelling a release given the staged translation            
+              $scope.cancelActionForStaged = function(stagedTranslation) {
+                if (stagedTranslation.workflowStatus == 'BETA') {
+                  translationService.getOriginForStagedTranslation(
+                    stagedTranslation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.originId = data;
+                    translationService.getTranslation(
+                      data).then(
+                    // Success
+                    function(data) {
+                      $scope.cancelAction(data);
+                    });
+                  });
+                }
+              }
 
               // 
               // MODALS
@@ -2322,6 +2341,24 @@ tsApp
                   $scope.selectTranslation(data);
                 });
               };
+              
+              // Open release process modal given staged translation
+              $scope.openReleaseProcessModalForStaged = function(stagedTranslation) {
+
+                translationService.getOriginForStagedTranslation(
+                    stagedTranslation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.originId = data;
+                    translationService.getTranslation(
+                      data).then(
+                    // Success
+                    function(data) {
+                      $scope.openReleaseProcessModal(data);
+                    });
+                  });
+                };
+              
 
               // Release Process controller
               var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation,

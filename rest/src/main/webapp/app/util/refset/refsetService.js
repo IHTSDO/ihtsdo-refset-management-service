@@ -1260,5 +1260,29 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
+    
+    // get the origin id given a staged refset
+    this.getOriginForStagedRefset = function(stagedRefsetId) {
+      console.debug('getOriginForStagedRefset');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(refsetUrl + 'origin?stagedRefsetId=' + stagedRefsetId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
     // end
   } ]);

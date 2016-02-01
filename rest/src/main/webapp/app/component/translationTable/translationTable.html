@@ -198,6 +198,19 @@
               confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
+
+            <i
+              ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED'"
+              ng-click="openReleaseProcessModalForStaged(translation); $event.stopPropagation()"
+              title="Continue release processing"
+              class="noul material-icons md-18">open_in_new</i>
+            <span ng-show="translation.workflowStatus == 'BETA'">
+              <br />
+              <button class="btn btn-xs btn-warning"
+                ng-click="cancelActionForStaged(translation)"
+                uib-tooltip="Click to cancel release process">Cancel
+                Release</button>
+            </span>
           </td>
         </tr>
       </tbody>

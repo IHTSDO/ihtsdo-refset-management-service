@@ -34,6 +34,7 @@ import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.SpellingDictionary;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
@@ -60,6 +61,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.LanguageDescriptionTypeListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.TranslationListJpa;
+import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
@@ -71,6 +73,7 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
+import org.ihtsdo.otf.refset.services.RefsetService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -796,7 +799,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // get the staged change tracking object
       final StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
 
       // Obtain the import handler
       ImportTranslationHandler handler =
@@ -938,7 +941,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove the staged translation change and set staging type back to null
       StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
@@ -2910,6 +2913,44 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+  
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/origin")
+  @ApiOperation(value = "Returns the origin translation given a staged translation", notes = "Returns the origin translation id, given the staged translation id.", response = Long.class)
+  public Long getOriginForStagedTranslation(
+    @ApiParam(value = "Staged Translation id, e.g. 3", required = true) @QueryParam("stagedTranslationId") Long stagedTranslationId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): origin, " + stagedTranslationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get origin translation",
+          UserRole.VIEWER);
+
+      final Translation stagedTranslation = translationService.getTranslation(stagedTranslationId);
+
+      if (stagedTranslation != null) {
+        if (stagedTranslation.getProject() == null) {
+          authorizeApp(securityService, authToken, "get origin translation",
+              UserRole.VIEWER);
+        } else {
+          authorizeProject(translationService, stagedTranslation.getProject().getId(),
+              securityService, authToken, "get origin translation", UserRole.AUTHOR);
+        }
+      } 
+      StagedTranslationChange stagedTranslationChange = translationService.getStagedTranslationChangeFromStaged(stagedTranslationId);
+      return stagedTranslationChange.getOriginTranslation().getId();
+    } catch (Exception e) {
+      handleException(e, "trying to get origin translation");
       return null;
     } finally {
       translationService.close();
