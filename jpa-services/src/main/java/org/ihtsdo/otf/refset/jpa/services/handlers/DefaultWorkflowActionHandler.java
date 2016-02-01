@@ -249,7 +249,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + refset.getId());
     }
 
-    boolean revertFlag = false;
+    boolean skipUpdate = false;
 
     switch (action) {
       case ASSIGN:
@@ -299,13 +299,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 getOriginRefset(refset.getId(), record.getOriginRevision());
             service.syncRefset(refset.getId(), originRefset);
             // signal to leave refset alone
-            revertFlag = true;
+            skipUpdate = true;
 
           } else {
-            // remove from authors
-            record.getAuthors().remove(user.getUserName());
             refset.setWorkflowStatus(WorkflowStatus.NEW);
           }
+          // Remove record
           service.removeTrackingRecord(record.getId());
 
         }
@@ -325,7 +324,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.syncRefset(refset.getId(), originRefset);
           // Set the flag to avoid saving the refset later, this is the final
           // saved state.
-          revertFlag = true;
+          skipUpdate = true;
           // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
         }
@@ -409,7 +408,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new LocalException("Illegal workflow action - " + action);
     }
 
-    if (!revertFlag) {
+    if (!skipUpdate) {
       refset.setLastModifiedBy(user.getUserName());
       service.updateRefset(refset);
     }
@@ -688,10 +687,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             skipUpdate = true;
 
           } else {
-            record.getAuthors().remove(user.getUserName());
-            concept.setWorkflowStatus(WorkflowStatus.NEW);
+            skipUpdate = true;
+            service.removeConcept(concept.getId(), true);
           }
-
+          // Remove tracking record
           service.removeTrackingRecord(record.getId());
         }
         // For review, it removes the reviewer and sets the status back to
