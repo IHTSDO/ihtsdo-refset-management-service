@@ -105,7 +105,11 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         member.setRefset(refset);
         member.setConceptId(fields[5]);
         if (!fields[1].equals("")) {
+          try{
           member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+          } catch (Exception e) {
+            throw new LocalException("Unable to parse date, expecting format YYYYMMDD - " +fields[1]);
+          }
         }
 
         // Add member

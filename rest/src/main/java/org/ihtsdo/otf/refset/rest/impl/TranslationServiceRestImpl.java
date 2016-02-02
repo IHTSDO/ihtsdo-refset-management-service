@@ -388,6 +388,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               translation.getProject().getId(), securityService, authToken,
               "removerefset", UserRole.AUTHOR);
 
+      // If in publication process, don't allow
+      if (translation.isInPublicationProcess()) {
+        throw new LocalException(
+            "Translation in the publication process cannot be removed, use cancel release instead");
+      }
+
+      if (translation.getWorkflowStatus() == WorkflowStatus.BETA) {
+        throw new LocalException(
+            "Translation in the publication process cannot be removed, use cancel release instead");
+      }
+
       // If cascade is true, remove any tracking records associated with this
       // translation
       if (cascade) {

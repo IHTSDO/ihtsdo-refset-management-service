@@ -175,8 +175,8 @@
               title="Edit" class="noul material-icons md-18">edit</i>
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-click="removeRefset(refset); $event.stopPropagation()" title="Remove"
-              class="noul material-icons md-18">delete</i>
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
             <i confirm="Are you sure you want to unassign the refset?"
               ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
@@ -234,9 +234,9 @@
 
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-show="refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="removeRefset(refset); $event.stopPropagation()" title="Remove"
-              class="noul material-icons md-18">delete</i>
+              ng-show="!refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
 
             <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
@@ -587,13 +587,15 @@
                 ng-click="setSortField('member','conceptName', selected.refset)">Name<span
                   ng-bind="getSortIndicator('member','conceptName')"></span>
               </th>
-              <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
+              <th
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'"
                 class="col-md-2 col-xs-2"
                 ng-click="setSortField('member','lastModified', selected.refset)">Last
                 Modified<span
                   ng-bind="getSortIndicator('member','lastModified')"></span>
               </th>
-              <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
+              <th
+                ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'"
                 class="col-md-2 col-xs-2"
                 ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
                 Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>

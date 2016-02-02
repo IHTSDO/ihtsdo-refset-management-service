@@ -195,7 +195,8 @@
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
             <!-- cannot delete a BETA release, must cancel release -->
-            <i ng-show="translation.workflowStatus != 'BETA'"
+            <i
+              ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'BETA'"
               confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
@@ -728,12 +729,14 @@
               ng-click="setSortField('concept','name', selected.translation)">Name<span
                 ng-bind="getSortIndicator('concept','name')"></span>
             </th>
-            <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
+            <th
+              ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'"
               class="col-md-2 col-xs-2"
               ng-click="setSortField('concept','lastModified', selected.translation)">Last
               Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
             </th>
-            <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
+            <th
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value = 'RELEASE'"
               class="col-md-2 col-xs-2"
               ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
               Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
