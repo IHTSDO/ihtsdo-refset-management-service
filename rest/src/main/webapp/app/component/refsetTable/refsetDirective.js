@@ -1105,6 +1105,7 @@ tsApp
                 }
                 $scope.type = type;
                 $scope.operation = operation;
+                $scope.comments = [];
                 $scope.errors = [];
 
                 // Handle export
@@ -1152,8 +1153,9 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
+                              $scope.comments = data.comments;
+                              $scope.errors = data.errors;
                               startLookup(refset);
-                              $uibModalInstance.close(refset);
                             },
                             // Failure - show error
                             function(data) {
@@ -1165,7 +1167,6 @@ tsApp
                         // Failure - show error, clear global error
                         function(data) {
                           handleError($scope.errors, data);
-                          // $uibModalInstance.close();
                         });
                   }
                 };
@@ -1178,13 +1179,13 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      $scope.comments = data.comments;
+                      $scope.errors = data.errors;
                       startLookup(refset);
-                      $uibModalInstance.close(refset);
                     },
                     // Failure - show error
                     function(data) {
                       handleError($scope.errors, data);
-                      // $uibModalInstance.close();
                     });
                   }
                 };
@@ -1199,6 +1200,10 @@ tsApp
                   $uibModalInstance.close();
                 };
 
+                $scope.close = function() {
+                  // close the dialog and reload refsets
+                  $uibModalInstance.close();
+                };
               };
 
               // Directive scoped method for cancelling an import/migration

@@ -2312,8 +2312,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/import/finish")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Finish member import", notes = "Finishes importing the members into the specified refset")
-  public void finishImportMembers(
+  @ApiOperation(value = "Finish member import", notes = "Finishes importing the members into the specified refset", response = ValidationResultJpa.class)
+  public ValidationResult finishImportMembers(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -2372,6 +2372,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Load members into memory and add to refset
       final List<ConceptRefsetMember> members =
           handler.importMembers(refset, in);
+      ValidationResult validationResult = handler.getValidationResults();
       int objectCt = 0;
       for (final ConceptRefsetMember member : members) {
 
@@ -2424,8 +2425,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refsetService.lookupMemberNames(refsetId, "finish import members",
             ConfigUtility.isBackgroundLookup());
       }
+      return validationResult;
     } catch (Exception e) {
       handleException(e, "trying to import members");
+      return null;
     } finally {
       refsetService.close();
       securityService.close();

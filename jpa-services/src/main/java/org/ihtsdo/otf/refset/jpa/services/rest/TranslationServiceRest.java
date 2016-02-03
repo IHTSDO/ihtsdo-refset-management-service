@@ -195,7 +195,7 @@ public interface TranslationServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void finishImportConcepts(
+  public ValidationResult finishImportConcepts(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long translationId, String ioHandlerInfoId, String authToken)
     throws Exception;

@@ -513,7 +513,8 @@ tsApp
             moduleId : user.userPreferences.moduleId,
             namespace : user.userPreferences.namespace,
             organization : user.userPreferences.organization,
-            exclusionClause : user.userPreferences.exclusionClause
+            exclusionClause : user.userPreferences.exclusionClause,
+            feedbackEmail : user.userPreferences.feedbackEmail
           };
           $scope.clause = {
             value : null

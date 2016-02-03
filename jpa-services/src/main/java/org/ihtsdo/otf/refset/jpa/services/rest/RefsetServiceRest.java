@@ -298,9 +298,10 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
+   * @return the validation result
    * @throws Exception the exception
    */
-  public void finishImportMembers(
+  public ValidationResult finishImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
