@@ -51,6 +51,18 @@
         <td>Selected File</td>
         <td>{{file.name}}</td>
       </tr>
+      <tr ng-show="comments.length > 0">
+        <td colspan="2">
+          <div class="alert alert-success" ng-repeat="comment in comments">
+            {{comment}}</div>
+        </td>
+      </tr>
+      <tr ng-show="warnings.length > 0">
+        <td colspan="2">
+          <div class="alert alert-warning" ng-repeat="warning in warnings">
+            {{warning}}</div>
+        </td>
+      </tr>
       <tr ng-show="errors.length > 0">
         <td colspan="2">
           <div class="alert alert-danger alert-error">
@@ -81,10 +93,12 @@
 
   <!--  translation import button -->
   <button class="btn btn-primary" ng-disabled="!file"
-    ng-show="operation == 'Import' && errors.length == 0 && type == 'Translation'"
+    ng-show="operation == 'Import' && errors.length == 0 && comments.length == 0 && type == 'Translation'"
     ng-click="import(file);">Import</button>
-  <button class="btn btn-primary"
+  <button class="btn btn-primary" ng-disabled="!file"
     ng-show="operation == 'Import' && errors.length > 0 && type == 'Translation'"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-show="comments.length == 0" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
+  
 </div>

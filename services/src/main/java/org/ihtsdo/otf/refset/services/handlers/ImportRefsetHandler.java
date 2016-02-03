@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.Configurable;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 
@@ -59,5 +60,12 @@ public interface ImportRefsetHandler extends Configurable {
    */
   public List<DefinitionClause> importDefinition(Refset refset,
     InputStream content) throws Exception;
+  
+  /**
+   * Returns the validation results.
+   *
+   * @return the validation results
+   */
+  public ValidationResult getValidationResults();
 
 }

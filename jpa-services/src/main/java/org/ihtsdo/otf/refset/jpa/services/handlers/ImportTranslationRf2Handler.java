@@ -16,9 +16,11 @@ import java.util.zip.ZipInputStream;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
@@ -39,6 +41,11 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
   /** The id. */
   final String id = "id";
 
+  /**  The validation result. */
+  ValidationResult validationResult = new ValidationResultJpa();
+  
+
+  
   /**
    * Instantiates an empty {@link ImportTranslationRf2Handler}.
    * @throws Exception if anything goes wrong
@@ -72,6 +79,9 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import translation concepts");
 
+    // initialize
+    validationResult = new ValidationResultJpa();
+    
     /** The descriptions. */
     Map<String, Description> descriptions = new HashMap<>();
 
@@ -260,7 +270,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
       throw new LocalException(
           "Languages without corresponding descriptions - " + descLangMap);
     }
-
+    validationResult.addComment(descriptions.size() + " descriptions successfully loaded.");
+    validationResult.addComment(descLangMap.size() + " language refset members successfully loaded.");
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());
   }
@@ -286,6 +297,11 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     c.setPublishable(true);
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
+  }
+
+  @Override
+  public ValidationResult getValidationResults() throws Exception {
+    return validationResult;
   }
 
 }

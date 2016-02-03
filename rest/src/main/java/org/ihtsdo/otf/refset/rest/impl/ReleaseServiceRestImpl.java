@@ -901,7 +901,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // recovering the previously saved state of the staged refset
       final Refset result =
-          refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+          refsetService.getStagedRefsetChangeFromOrigin(refsetId).getStagedRefset();
       refsetService.handleLazyInit(result);
 
       return result;

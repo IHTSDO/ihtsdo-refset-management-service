@@ -1475,7 +1475,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // get the staged change tracking object
       final StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
+          refsetService.getStagedRefsetChangeFromOrigin(refset.getId());
 
       // Get origin and staged members
       final Refset stagedRefset = change.getStagedRefset();
@@ -1621,7 +1621,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove the staged refset change and set staging type back to null
       final StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
+          refsetService.getStagedRefsetChangeFromOrigin(refset.getId());
       if (change == null) {
         // weird condition because staging type still says migration
         throw new LocalException(
@@ -2304,7 +2304,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // recovering the previously saved state of the staged refset
       final Refset stagedRefset =
-          refsetService.getStagedRefsetChange(refsetId).getStagedRefset();
+          refsetService.getStagedRefsetChangeFromOrigin(refsetId).getStagedRefset();
       refsetService.handleLazyInit(stagedRefset);
 
       addLogEntry(refsetService, userName, "RESUME MIGRATION", refset
@@ -2378,8 +2378,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/import/finish")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Finish member import", notes = "Finishes importing the members into the specified refset")
-  public void finishImportMembers(
+  @ApiOperation(value = "Finish member import", notes = "Finishes importing the members into the specified refset", response = ValidationResultJpa.class)
+  public ValidationResult finishImportMembers(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of members file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
@@ -2418,7 +2418,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // get the staged change tracking object
       final StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
+          refsetService.getStagedRefsetChangeFromOrigin(refset.getId());
 
       // Obtain the import handler
       final ImportRefsetHandler handler =
@@ -2438,6 +2438,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Load members into memory and add to refset
       final List<ConceptRefsetMember> members =
           handler.importMembers(refset, in);
+      ValidationResult validationResult = handler.getValidationResults();
       int objectCt = 0;
       for (final ConceptRefsetMember member : members) {
 
@@ -2490,8 +2491,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         refsetService.lookupMemberNames(refsetId, "finish import members",
             ConfigUtility.isBackgroundLookup());
       }
+      return validationResult;
     } catch (Exception e) {
       handleException(e, "trying to import members");
+      return null;
     } finally {
       refsetService.close();
       securityService.close();
@@ -2533,7 +2536,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove the staged refset change and set staging type back to null
       final StagedRefsetChange change =
-          refsetService.getStagedRefsetChange(refset.getId());
+          refsetService.getStagedRefsetChangeFromOrigin(refset.getId());
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
       refset.setLastModifiedBy(userName);
@@ -2936,4 +2939,41 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/origin")
+  @ApiOperation(value = "Returns the origin refset given a staged refset", notes = "Returns the origin refset id, given the staged refset id.", response = Long.class)
+  public Long getOriginForStagedRefset(
+    @ApiParam(value = "Staged Refset id, e.g. 3", required = true) @QueryParam("stagedRefsetId") Long stagedRefsetId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Refset): origin" + stagedRefsetId);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get origin refset",
+          UserRole.VIEWER);
+
+      final Refset stagedRefset = refsetService.getRefset(stagedRefsetId);
+
+      if (stagedRefset != null) {
+        if (stagedRefset.getProject() == null) {
+          authorizeApp(securityService, authToken, "get origin refset",
+              UserRole.VIEWER);
+        } else {
+          authorizeProject(refsetService, stagedRefset.getProject().getId(),
+              securityService, authToken, "get origin refset", UserRole.AUTHOR);
+        }
+      } 
+      StagedRefsetChange stagedRefsetChange = refsetService.getStagedRefsetChangeFromStaged(stagedRefsetId);
+      return stagedRefsetChange.getOriginRefset().getId();
+    } catch (Exception e) {
+      handleException(e, "trying to get origin refset");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
 }

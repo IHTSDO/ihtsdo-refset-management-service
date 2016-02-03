@@ -74,7 +74,7 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
     // Obtain and remove the staged translation change
     // its release info, and the staged translation itself
     StagedTranslationChange change =
-        getStagedTranslationChange(translation.getId());
+        getStagedTranslationChangeFromOrigin(translation.getId());
     if (change != null) {
       // Remove change
       removeStagedTranslationChange(change.getId());

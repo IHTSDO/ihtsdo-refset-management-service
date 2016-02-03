@@ -549,7 +549,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
 
   /* see superclass */
   @Override
-  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+  public StagedRefsetChange getStagedRefsetChangeFromOrigin(Long refsetId)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Refset Service - get staged change for refset " + refsetId);
@@ -558,6 +558,23 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             + "originRefset.id = :refsetId");
     try {
       query.setParameter("refsetId", refsetId);
+      return (StagedRefsetChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
+  }
+  
+  /* see superclass */
+  @Override
+  public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Refset Service - get staged change for staged refset " + stagedRefsetId);
+    final javax.persistence.Query query =
+        manager.createQuery("select a from StagedRefsetChangeJpa a where "
+            + "stagedRefset.id = :stagedRefsetId");
+    try {
+      query.setParameter("stagedRefsetId", stagedRefsetId);
       return (StagedRefsetChange) query.getSingleResult();
     } catch (NoResultException e) {
       return null;

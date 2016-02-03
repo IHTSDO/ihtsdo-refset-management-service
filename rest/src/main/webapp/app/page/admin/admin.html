@@ -238,6 +238,13 @@
                     ng-model="user.userPreferences.exclusionClause">
                 </td>
               </tr>
+              <tr>
+                <td>Feedback Email:</td>
+                <td>
+                  <input type="text" size="40" ng-change="saveUserPreferences()"
+                    ng-model="user.userPreferences.feedbackEmail">
+                </td>
+              </tr>
             </tbody>
           </table>
 

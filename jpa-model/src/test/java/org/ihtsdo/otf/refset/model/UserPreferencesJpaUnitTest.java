@@ -124,6 +124,7 @@ public class UserPreferencesJpaUnitTest extends ModelUnitSupport {
     tester.include("namespace");
     tester.include("organization");
     tester.include("exclusionClause");
+    tester.include("feedbackEmail");
 
     // Set up objects
     tester.proxy(User.class, 1, u1);

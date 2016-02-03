@@ -308,7 +308,7 @@ public interface TranslationService extends RefsetService {
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedTranslationChange getStagedTranslationChange(Long id)
+  public StagedTranslationChange getStagedTranslationChangeFromOrigin(Long id)
     throws Exception;
 
   /**
@@ -543,5 +543,15 @@ public interface TranslationService extends RefsetService {
    */
   public Concept syncConcept(Long conceptId, Concept restoreConcept)
     throws Exception;
+
+  /**
+   * Returns the staged translation change from staged.
+   *
+   * @param stagedTranslationId the staged translation id
+   * @return the staged translation change from staged
+   * @throws Exception the exception
+   */
+  public StagedTranslationChange getStagedTranslationChangeFromStaged(
+    Long stagedTranslationId) throws Exception;
 
 }

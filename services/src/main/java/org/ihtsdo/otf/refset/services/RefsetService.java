@@ -198,7 +198,7 @@ public interface RefsetService extends ReleaseService {
    * @return the staged change
    * @throws Exception the exception
    */
-  public StagedRefsetChange getStagedRefsetChange(Long refsetId)
+  public StagedRefsetChange getStagedRefsetChangeFromOrigin(Long refsetId)
     throws Exception;
 
   /**
@@ -379,4 +379,14 @@ public interface RefsetService extends ReleaseService {
    * @throws Exception the exception
    */
   public Refset recoverRefset(Long refsetId) throws Exception;
+
+  /**
+   * Returns the staged refset change from staged.
+   *
+   * @param stagedRefsetId the staged refset id
+   * @return the staged refset change from staged
+   * @throws Exception the exception
+   */
+  public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
+    throws Exception;
 }

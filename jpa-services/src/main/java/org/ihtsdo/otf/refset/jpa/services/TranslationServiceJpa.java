@@ -806,7 +806,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /* see superclass */
   @Override
-  public StagedTranslationChange getStagedTranslationChange(Long translationId)
+  public StagedTranslationChange getStagedTranslationChangeFromOrigin(Long translationId)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get staged change " + translationId);
@@ -1640,5 +1640,22 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     }
     // Return the changed concept
     return originConcept;
+  }
+  
+  /* see superclass */
+  @Override
+  public StagedTranslationChange getStagedTranslationChangeFromStaged(Long stagedTranslationId)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Translation Service - get staged change for staged translation " + stagedTranslationId);
+    final javax.persistence.Query query =
+        manager.createQuery("select a from StagedTranslationChangeJpa a where "
+            + "stagedTranslation.id = :stagedTranslationId");
+    try {
+      query.setParameter("stagedTranslationId", stagedTranslationId);
+      return (StagedTranslationChange) query.getSingleResult();
+    } catch (NoResultException e) {
+      return null;
+    }
   }
 }

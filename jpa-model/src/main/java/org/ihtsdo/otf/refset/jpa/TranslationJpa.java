@@ -18,6 +18,7 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
+import javax.persistence.NoResultException;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -26,6 +27,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.apache.log4j.Logger;
 import org.hibernate.envers.Audited;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
@@ -42,6 +44,8 @@ import org.ihtsdo.otf.refset.PhraseMemory;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.SpellingDictionary;
+import org.ihtsdo.otf.refset.StagedRefsetChange;
+import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
@@ -658,5 +662,6 @@ public class TranslationJpa extends AbstractComponent implements Translation {
   public void setPhraseMemory(PhraseMemory phraseMemory) {
     this.phraseMemory = phraseMemory;
   }
+
 
 }

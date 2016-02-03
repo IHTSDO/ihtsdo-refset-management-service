@@ -72,7 +72,7 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
     removeReleaseInfo(releaseInfo.getId());
 
     // Get staged refset change,
-    StagedRefsetChange change = getStagedRefsetChange(refset.getId());
+    StagedRefsetChange change = getStagedRefsetChangeFromOrigin(refset.getId());
     if (change != null) {
 
       // Remove staged refset change, release info, and the staged refset

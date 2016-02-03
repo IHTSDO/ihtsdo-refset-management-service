@@ -1234,6 +1234,29 @@ tsApp.service('translationService', [
       return deferred.promise;
     };
 
+    // get the origin id given a staged translation
+    this.getOriginForStagedTranslation = function(stagedTranslationId) {
+      console.debug('getOriginForStagedTranslation');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.get(translationUrl + 'origin?stagedTranslationId=' + stagedTranslationId, {
+        headers : {
+          'Content-type' : 'text/plain'
+        }
+      }).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
     // end
 
   } ]);

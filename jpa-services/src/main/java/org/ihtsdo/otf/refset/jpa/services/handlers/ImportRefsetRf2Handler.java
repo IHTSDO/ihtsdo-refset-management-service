@@ -13,10 +13,12 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.FieldedStringTokenizer;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
+import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.rf2.Component;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
@@ -36,13 +38,20 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /** The id. */
   final String id = "id";
-
+ 
+  /**  The validation result. */
+  ValidationResult validationResult = new ValidationResultJpa();
+  
+  /**  The ct. */
+  private int ct = 0;
+  
   /**
    * Instantiates an empty {@link ImportRefsetRf2Handler}.
    * @throws Exception if anything goes wrong
    */
   public ImportRefsetRf2Handler() throws Exception {
     super();
+    
   }
 
   /* see superclass */
@@ -69,6 +78,10 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     InputStream content) throws Exception {
     Logger.getLogger(getClass()).info("Import refset members ");
 
+    // initialize
+    validationResult = new ValidationResultJpa();
+    ct = 0;
+    
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
     String line = "";
@@ -117,8 +130,14 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
         // Add member
         list.add(member);
+        ct++;
         Logger.getLogger(getClass()).debug("  member = " + member);
       }
+    }
+    if (ct == 1) {
+      validationResult.addComment("1 member successfully loaded.");      
+    } else {
+      validationResult.addComment(ct + " members successfully loaded.");
     }
     pbr.close();
     return list;
@@ -211,5 +230,10 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     c.setPublishable(true);
     c.setPublished(false);
     c.setModuleId(refset.getModuleId());
+  }
+
+  @Override
+  public ValidationResult getValidationResults() {
+    return validationResult;
   }
 }

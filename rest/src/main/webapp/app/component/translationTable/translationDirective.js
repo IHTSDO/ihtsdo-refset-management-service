@@ -636,6 +636,7 @@ tsApp
                   translationService.fireConceptChanged(concept);
                 });
               };
+             
 
               // Need both a $scope version and a non one for modals.
               $scope.startLookup = function(translation) {
@@ -743,6 +744,24 @@ tsApp
                   });
                 }
               };
+              
+              // cancelling a release given the staged translation            
+              $scope.cancelActionForStaged = function(stagedTranslation) {
+                if (stagedTranslation.workflowStatus == 'BETA') {
+                  translationService.getOriginForStagedTranslation(
+                    stagedTranslation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.originId = data;
+                    translationService.getTranslation(
+                      data).then(
+                    // Success
+                    function(data) {
+                      $scope.cancelAction(data);
+                    });
+                  });
+                }
+              }
 
               // 
               // MODALS
@@ -2101,6 +2120,7 @@ tsApp
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
+                $scope.comments = [];
 
                 // Handle export
                 $scope.export = function() {
@@ -2158,8 +2178,9 @@ tsApp
                             $scope.selectedIoHandler.id, file).then(
                           // Success - close dialog
                           function(data) {
+                            $scope.errors = data.errors;
+                            $scope.comments = data.comments;
                             startLookup(translation);
-                            $uibModalInstance.close($scope.translation);
                           },
                           // Failure - show error
                           function(data) {
@@ -2183,8 +2204,9 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      $scope.errors = data.errors;
+                      $scope.comments = data.comments;
                       startLookup(translation);
-                      $uibModalInstance.close(translation);
                     },
                     // Failure - show error
                     function(data) {
@@ -2199,8 +2221,12 @@ tsApp
                   if (type == 'Translation' && $scope.errors.length > 0) {
                     translationService.cancelImportConcepts($scope.translation.id);
                   }
-                  // dismiss the dialog
-                  $uibModalInstance.dismiss('cancel');
+                  $uibModalInstance.close();
+                };
+                
+                // Close modal
+                $scope.close = function() {
+                  $uibModalInstance.close();
                 };
 
               };
@@ -2322,6 +2348,24 @@ tsApp
                   $scope.selectTranslation(data);
                 });
               };
+              
+              // Open release process modal given staged translation
+              $scope.openReleaseProcessModalForStaged = function(stagedTranslation) {
+
+                translationService.getOriginForStagedTranslation(
+                    stagedTranslation.id).then(
+                  // Success
+                  function(data) {
+                    $scope.originId = data;
+                    translationService.getTranslation(
+                      data).then(
+                    // Success
+                    function(data) {
+                      $scope.openReleaseProcessModal(data);
+                    });
+                  });
+                };
+              
 
               // Release Process controller
               var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, translation,

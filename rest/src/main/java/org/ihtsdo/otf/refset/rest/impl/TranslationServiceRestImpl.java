@@ -769,8 +769,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @Path("/import/finish")
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation")
-  public void finishImportConcepts(
+  @ApiOperation(value = "Finish translation concept import", notes = "Finishes the import of translation concepts into the specified translation", response = ValidationResultJpa.class)
+  public ValidationResult finishImportConcepts(
     @ApiParam(value = "Form data header", required = true) @FormDataParam("file") FormDataContentDisposition contentDispositionHeader,
     @ApiParam(value = "Content of concepts file", required = true) @FormDataParam("file") InputStream in,
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
@@ -807,7 +807,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // get the staged change tracking object
       final StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
 
       // Obtain the import handler
       ImportTranslationHandler handler =
@@ -826,6 +826,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Load concepts into memory and add to translation
       final List<Concept> concepts = handler.importConcepts(translation, in);
+      ValidationResult validationResult = handler.getValidationResults();
+      
       int objectCt = 0;
       for (final Concept concept : concepts) {
 
@@ -903,9 +905,10 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         translationService.lookupConceptNames(translationId,
             "finish import concepts", ConfigUtility.isBackgroundLookup());
       }
-
+      return validationResult;
     } catch (Exception e) {
       handleException(e, "trying to import translation concepts");
+      return null;
     } finally {
       translationService.close();
       securityService.close();
@@ -949,7 +952,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove the staged translation change and set staging type back to null
       StagedTranslationChange change =
-          translationService.getStagedTranslationChange(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
@@ -2921,6 +2924,44 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       return translation;
     } catch (Exception e) {
       handleException(e, "trying to recover a refset");
+      return null;
+    } finally {
+      translationService.close();
+      securityService.close();
+    }
+  }
+  
+  @Override
+  @GET
+  @Produces("text/plain")
+  @Path("/origin")
+  @ApiOperation(value = "Returns the origin translation given a staged translation", notes = "Returns the origin translation id, given the staged translation id.", response = Long.class)
+  public Long getOriginForStagedTranslation(
+    @ApiParam(value = "Staged Translation id, e.g. 3", required = true) @QueryParam("stagedTranslationId") Long stagedTranslationId,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info("RESTful call (Translation): origin, " + stagedTranslationId);
+
+    final TranslationService translationService = new TranslationServiceJpa();
+    try {
+      authorizeApp(securityService, authToken, "get origin translation",
+          UserRole.VIEWER);
+
+      final Translation stagedTranslation = translationService.getTranslation(stagedTranslationId);
+
+      if (stagedTranslation != null) {
+        if (stagedTranslation.getProject() == null) {
+          authorizeApp(securityService, authToken, "get origin translation",
+              UserRole.VIEWER);
+        } else {
+          authorizeProject(translationService, stagedTranslation.getProject().getId(),
+              securityService, authToken, "get origin translation", UserRole.AUTHOR);
+        }
+      } 
+      StagedTranslationChange stagedTranslationChange = translationService.getStagedTranslationChangeFromStaged(stagedTranslationId);
+      return stagedTranslationChange.getOriginTranslation().getId();
+    } catch (Exception e) {
+      handleException(e, "trying to get origin translation");
       return null;
     } finally {
       translationService.close();

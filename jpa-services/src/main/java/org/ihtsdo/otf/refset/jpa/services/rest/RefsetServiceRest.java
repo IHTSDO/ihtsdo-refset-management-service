@@ -298,9 +298,10 @@ public interface RefsetServiceRest {
    * @param refsetId the refset id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
+   * @return the validation result
    * @throws Exception the exception
    */
-  public void finishImportMembers(
+  public ValidationResult finishImportMembers(
     FormDataContentDisposition contentDispositionHeader, InputStream in,
     Long refsetId, String ioHandlerInfoId, String authToken) throws Exception;
 
@@ -569,6 +570,17 @@ public interface RefsetServiceRest {
    * @throws Exception the exception
    */
   public Refset recoverRefset(Long projectId, Long refsetId, String authToken)
+    throws Exception;
+
+  /**
+   * Returns the origin for staged refset.
+   *
+   * @param stagedRefsetId the staged refset id
+   * @param authToken the auth token
+   * @return the origin for staged refset
+   * @throws Exception the exception
+   */
+  public Long getOriginForStagedRefset(Long stagedRefsetId, String authToken)
     throws Exception;
 
 

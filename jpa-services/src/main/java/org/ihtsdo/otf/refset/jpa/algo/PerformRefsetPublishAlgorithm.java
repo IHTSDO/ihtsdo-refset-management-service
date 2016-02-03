@@ -65,7 +65,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     if (!refset.isStaged())
       throw new LocalException("refset workflowstatus is not staged for "
           + refset.getId());
-    stagedRefsetChange = getStagedRefsetChange(refset.getId());
+    stagedRefsetChange = getStagedRefsetChangeFromOrigin(refset.getId());
     if (!WorkflowStatus.BETA.equals(stagedRefsetChange.getStagedRefset()
         .getWorkflowStatus())) {
       throw new Exception(
