@@ -23,8 +23,7 @@
 
       <!-- No need to show for BETA, there should be only one -->
       <button type="button" class="btn btn-xs btn-primary"
-        ng-show="refsets.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'PUBLISHED')"
+        ng-show="refsets.totalCount > 0 && (value == 'RELEASE' || value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getRefsets()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
@@ -130,7 +129,7 @@
           <td class="nobreak" ng-show="value == 'AVAILABLE'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i title="Remove"
+            <i title="Remove" ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
@@ -144,7 +143,7 @@
             <!-- ASSIGNED_ALL actions -->
           <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'">
 
-            <i
+            <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
@@ -173,7 +172,7 @@
           <td class="nobreak" ng-show="value == 'ASSIGNED'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
-            <i
+            <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
@@ -234,7 +233,7 @@
 
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-show="!refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              ng-show="!refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               title="Remove" class="noul material-icons md-18">delete</i>
 
@@ -254,7 +253,9 @@
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
-            <span ng-show="refset.stagingType == 'BETA'">
+            <!-- Show cancel release on BETA if there is one, 
+                 otherwise on READY_FOR_PUBLICATION refset itself -->
+            <span ng-show="refset.workflowStatus == 'BETA' || (refset.inPublicationProcess && !refset.staged)">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(refset)"

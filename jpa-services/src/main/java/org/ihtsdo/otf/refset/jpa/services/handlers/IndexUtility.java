@@ -27,21 +27,14 @@ import org.hibernate.search.SearchFactory;
 import org.hibernate.search.annotations.Analyze;
 import org.hibernate.search.annotations.Field;
 import org.hibernate.search.annotations.Fields;
+import org.hibernate.search.annotations.Indexed;
 import org.hibernate.search.annotations.IndexedEmbedded;
 import org.hibernate.search.jpa.FullTextEntityManager;
 import org.hibernate.search.jpa.FullTextQuery;
 import org.hibernate.search.jpa.Search;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
-import org.ihtsdo.otf.refset.jpa.PhraseMemoryJpa;
-import org.ihtsdo.otf.refset.jpa.ProjectJpa;
-import org.ihtsdo.otf.refset.jpa.RefsetJpa;
-import org.ihtsdo.otf.refset.jpa.ReleaseInfoJpa;
-import org.ihtsdo.otf.refset.jpa.TranslationJpa;
-import org.ihtsdo.otf.refset.jpa.UserJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
-import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
-import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.reflections.Reflections;
 
 /**
  * Performs utility functions relating to Lucene indexes and Hibernate Search.
@@ -61,12 +54,15 @@ public class IndexUtility {
   // Initialize the field names maps
   static {
     try {
-      Class<?>[] classes =
-          new Class<?>[] {
-              RefsetJpa.class, ProjectJpa.class, TranslationJpa.class,
-              ReleaseInfoJpa.class, TrackingRecordJpa.class, UserJpa.class,
-              ConceptRefsetMemberJpa.class, ConceptJpa.class, PhraseMemoryJpa.class
-          };
+
+      final Map<String, Class<?>> reindexMap = new HashMap<>();
+      final Reflections reflections = new Reflections();
+      for (final Class<?> clazz : reflections
+          .getTypesAnnotatedWith(Indexed.class)) {
+        reindexMap.put(clazz.getSimpleName(), clazz);
+      }
+      Class<?>[] classes = reindexMap.values().toArray(new Class<?>[0]);
+
       for (Class<?> clazz : classes) {
         stringFieldNames.put(clazz,
             IndexUtility.getIndexedFieldNames(clazz, true));
@@ -400,8 +396,9 @@ public class IndexUtility {
           && !t.field().isEmpty()
           && !IndexUtility.getIndexedFieldNames(fieldNamesKey, false).contains(
               t.field())) {
-        throw new LocalException("Query references invalid field name " + t.field()
-            + ", " + IndexUtility.getIndexedFieldNames(fieldNamesKey, false));
+        throw new LocalException("Query references invalid field name "
+            + t.field() + ", "
+            + IndexUtility.getIndexedFieldNames(fieldNamesKey, false));
       }
     }
 

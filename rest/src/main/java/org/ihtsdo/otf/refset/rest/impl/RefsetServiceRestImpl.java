@@ -1376,7 +1376,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         List<ConceptRefsetMember> oldNotNew =
             getOldNotNewForMigration(refset, refsetCopy, refsetService);
-        refsetService.lookupMemberNames(refset.getId(), oldNotNew,
+        // Look up old members for the new refest id (e.g. new
+        // terminology/version)
+        // On cancel, we need to undo this.
+        refsetService.lookupMemberNames(refsetCopy.getId(), oldNotNew,
             "begin migration", true, ConfigUtility.isBackgroundLookup());
       }
 
@@ -1488,41 +1491,58 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove origin-not-staged members
       for (final String key : originMembers.keySet()) {
-        if (!stagedMembers.containsKey(key)) {
-          refsetService.removeMember(originMembers.get(key).getId());
+        final ConceptRefsetMember originMember = originMembers.get(key);
+        final ConceptRefsetMember stagedMember = stagedMembers.get(key);
+        // concept not in staged refset, remove
+        if (stagedMember == null) {
+          System.out.println("remove origin = " + key + ", " + originMember);
+          refsetService.removeMember(originMember.getId());
         }
-        if (stagedMembers.containsKey(key)
-            && stagedMembers.get(key).getMemberType() != originMembers.get(key)
+        // member type changed, rewire
+        if (stagedMember != null
+            && stagedMember.getMemberType().getUnstagedType() != originMember
                 .getMemberType()) {
-          refsetService.removeMember(originMembers.get(key).getId());
+          // No need to change id, this is
+          originMember.setMemberType(stagedMember.getMemberType()
+              .getUnstagedType());
+          originMember.setRefset(originRefset);
+          originMember.setLastModifiedBy(userName);
+          System.out.println("rewire staged = " + key + ", "
+              + originMember.getMemberType());
+          refsetService.updateMember(originMember);
         }
       }
 
       // rewire staged-not-origin members
       for (final String key : stagedMembers.keySet()) {
-
         // New member, rewire to origin - this moves the content back to the
         // origin refset
         final ConceptRefsetMember originMember = originMembers.get(key);
         final ConceptRefsetMember stagedMember = stagedMembers.get(key);
         if (originMember == null) {
-          stagedMember.setRefset(refset);
+          stagedMember.setMemberType(stagedMember.getMemberType()
+              .getUnstagedType());
+          stagedMember.setRefset(originRefset);
           stagedMember.setLastModifiedBy(userName);
+          System.out.println("rewire staged = " + key + ", "
+              + stagedMember.getMemberType().getUnstagedType());
           refsetService.updateMember(stagedMember);
         } else if (originMember != null
-            && stagedMember.getMemberType() != originMember.getMemberType()) {
-          stagedMember.setRefset(refset);
-          stagedMember.setLastModifiedBy(userName);
-          refsetService.updateMember(stagedMember);
+            && stagedMember.getMemberType().getUnstagedType() != originMember
+                .getMemberType()) {
+          // This was already handled in the prior section, do nothing
         }
-        // Member matches one in origin - remove it
+        // Member exactly matches one in origin - remove it, leave origin alone
         else {
-          refsetService.removeMember(stagedMembers.get(key).getId());
+          System.out.println("remove staged = " + key + ", "
+              + stagedMember.getMemberType().getUnstagedType());
+          refsetService.removeMember(stagedMember.getId());
         }
       }
       stagedRefset.setMembers(new ArrayList<ConceptRefsetMember>());
 
       // copy definition from staged to origin refset
+      // should be identical unless we implement definition changes
       refset.setDefinitionClauses(stagedRefset.getDefinitionClauses());
 
       // Remove the staged refset change and set staging type back to null
@@ -1602,8 +1622,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Remove the staged refset change and set staging type back to null
       final StagedRefsetChange change =
           refsetService.getStagedRefsetChange(refset.getId());
+      if (change == null) {
+        // weird condition because staging type still says migration
+        throw new LocalException(
+            "Unexpected problem with refset staged for migration, "
+                + "but no staged refset. Contact the administrator.");
+      }
       refsetService.removeStagedRefsetChange(change.getId());
 
+      // Rest on cancel
       List<ConceptRefsetMember> oldNotNew =
           getOldNotNewForMigration(refset, change.getStagedRefset(),
               refsetService);

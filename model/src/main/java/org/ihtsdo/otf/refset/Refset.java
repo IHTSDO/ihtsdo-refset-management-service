@@ -39,15 +39,39 @@ public interface Refset extends Component, Searchable {
    */
   public enum MemberType {
     /** The inclusion members. */
-    INCLUSION,
+    INCLUSION(null),
     /** The exclusion members. */
-    EXCLUSION,
+    EXCLUSION(null),
     /** The plain. */
-    MEMBER,
+    MEMBER(null),
     /** The inclusion staged. */
-    INCLUSION_STAGED,
+    INCLUSION_STAGED(INCLUSION),
     /** The exclusion staged. */
-    EXCLUSION_STAGED;
+    EXCLUSION_STAGED(EXCLUSION);
+
+    /** The unstaged. */
+    private MemberType unstaged;
+
+    /**
+     * Instantiates a {@link MemberType} from the specified parameters.
+     *
+     * @param unstaged the unstaged
+     */
+    private MemberType(MemberType unstaged) {
+      this.unstaged = unstaged;
+    }
+
+    /**
+     * Returns the unstaged type.
+     *
+     * @return the unstaged type
+     */
+    public MemberType getUnstagedType() {
+      if (unstaged == null) {
+        return this;
+      }
+      return unstaged;
+    }
   }
 
   /**
@@ -92,7 +116,6 @@ public interface Refset extends Component, Searchable {
     BETA;
   }
 
-  
   /**
    * Returns the description.
    * 
@@ -400,7 +423,7 @@ public interface Refset extends Component, Searchable {
    * @return the string
    */
   public String computeDefinition();
-  
+
   /**
    * Compute expression by considering the project exclusion clause.
    *

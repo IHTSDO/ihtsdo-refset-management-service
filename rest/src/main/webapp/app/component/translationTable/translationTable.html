@@ -150,7 +150,10 @@
                 uib-tooltip="Click to cancel failed import">Cancel
                 Import</button>
             </span>
-            <span ng-show="translation.stagingType == 'BETA'">
+            <!-- Show cancel release on BETA if there is one, 
+                 otherwise on READY_FOR_PUBLICATION refset itself -->
+            <span
+              ng-show="translation.workflowStatus == 'BETA' || (translation.inPublicationProcess && !translation.staged)">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(translation)"
@@ -736,7 +739,7 @@
               Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
             </th>
             <th
-              ng-show="value == 'PUBLISHED' || value == 'BETA' || value = 'RELEASE'"
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'"
               class="col-md-2 col-xs-2"
               ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
               Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>

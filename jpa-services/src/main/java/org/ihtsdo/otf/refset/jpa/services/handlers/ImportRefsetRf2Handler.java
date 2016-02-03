@@ -105,10 +105,13 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         member.setRefset(refset);
         member.setConceptId(fields[5]);
         if (!fields[1].equals("")) {
-          try{
-          member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
+          try {
+            member.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(fields[1]));
           } catch (Exception e) {
-            throw new LocalException("Unable to parse date, expecting format YYYYMMDD - " +fields[1]);
+            pbr.close();
+            throw new LocalException(
+                "Unable to parse date, expecting format YYYYMMDD - "
+                    + fields[1]);
           }
         }
 
@@ -137,12 +140,13 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
       // Strip \r chars and split line
       line = line.replace("\r", "");
-      final String fields[] = FieldedStringTokenizer.split(line,"\t");
+      final String fields[] = FieldedStringTokenizer.split(line, "\t");
 
       // Check fields
       if (fields.length != 7) {
         pbr.close();
-        throw new LocalException("Unexpected field count in refset definition file.");
+        throw new LocalException(
+            "Unexpected field count in refset definition file.");
       }
 
       // skip header
