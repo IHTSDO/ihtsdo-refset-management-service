@@ -388,6 +388,17 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               translation.getProject().getId(), securityService, authToken,
               "removerefset", UserRole.AUTHOR);
 
+      // If in publication process, don't allow
+      if (translation.isInPublicationProcess()) {
+        throw new LocalException(
+            "Translation in the publication process cannot be removed, use cancel release instead");
+      }
+
+      if (translation.getWorkflowStatus() == WorkflowStatus.BETA) {
+        throw new LocalException(
+            "Translation in the publication process cannot be removed, use cancel release instead");
+      }
+
       // If cascade is true, remove any tracking records associated with this
       // translation
       if (cascade) {
@@ -828,7 +839,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setId(null);
         concept.setPublishable(true);
         concept.setPublished(false);
-        concept.setName("TBD");
+        concept.setName("name lookup in progress");
         concept.setActive(true);
         concept.setTranslation(translation);
         // Mark as ready for publication as they are imported and can be further

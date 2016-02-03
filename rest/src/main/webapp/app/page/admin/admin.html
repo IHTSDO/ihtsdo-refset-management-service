@@ -34,7 +34,7 @@
           total-items="projects.totalCount" ng-model="paging['project'].page"
           ng-change="getProjects()"></uib-pagination>
 
-        <input class="input-filter" placeholder="Enter filter text"
+        <input class="input-filter" placeholder="Search"
           ng-show="projects.totalCount > pageSize || paging['project'].filter"
           type="text" ng-model="paging['project'].filter"
           ng-model-options="{ debounce: 300 }" ng-change="getProjects()">
@@ -110,7 +110,7 @@
           total-items="users.totalCount" ng-model="paging['user'].page"
           ng-change="getUsers()"></uib-pagination>
 
-        <input class="input-filter" placeholder="Enter filter text"
+        <input class="input-filter" placeholder="Search"
           ng-show="users.totalCount > pageSize || paging['user'].filter"
           type="text" ng-model="paging['user'].filter"
           ng-model-options="{ debounce: 300 }" ng-change="getUsers()">
@@ -271,7 +271,7 @@
               total-items="pagedAvailableLdt.totalCount"
               ng-model="paging['lang'].page" ng-change="getPagedAvailableLdt()"></uib-pagination>
 
-            <input class="input-filter" placeholder="Enter filter text"
+            <input class="input-filter" placeholder="Search"
               ng-show="pagedAvailableLdt.totalCount > pageSize || paging['lang'].filter"
               type="text" ng-model="paging['lang'].filter"
               ng-model-options="{ debounce: 300 }"
@@ -398,7 +398,7 @@
           ng-model="paging['candidateProject'].page"
           ng-change="getCandidateProjects()"></uib-pagination>
 
-        <input class="input-filter" placeholder="Enter filter text"
+        <input class="input-filter" placeholder="Search"
           ng-show="candidateProjects.totalCount > pageSize || paging['candidateProject'].filter"
           type="text" ng-model="paging['candidateProject'].filter"
           ng-model-options="{ debounce: 300 }"
@@ -454,7 +454,7 @@
               ng-model="paging['candidateUser'].page"
               ng-change="getUnassignedUsers()"></uib-pagination>
 
-            <input class="input-filter" placeholder="Enter filter text"
+            <input class="input-filter" placeholder="Search"
               ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               type="text" ng-model="paging['candidateUser'].filter"
               ng-model-options="{ debounce: 300 }"
@@ -522,7 +522,7 @@
               ng-model="paging['assignedUser'].page"
               ng-change="getAssignedUsers()"></uib-pagination>
 
-            <input class="input-filter" placeholder="Enter filter text"
+            <input class="input-filter" placeholder="Search"
               ng-show="assignedUsers.totalCount > pageSize || paging['assignedUser'].filter"
               type="text" ng-model="paging['assignedUser'].filter"
               ng-model-options="{ debounce: 300 }"

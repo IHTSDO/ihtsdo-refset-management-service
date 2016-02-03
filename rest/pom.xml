@@ -29,11 +29,12 @@
     <deploy.presented.by></deploy.presented.by>
     <base.url>http://localhost:8080</base.url>
     <logout.url>http://localhost:8080/refset-rest/index.html</logout.url>
+    <help.url>https://confluence.ihtsdotools.org</help.url>
   </properties>
 
   <dependencies>
 
-   
+
     <!-- Model interfaces. -->
     <dependency>
       <groupId>org.ihtsdo.otf.refset</groupId>

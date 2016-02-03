@@ -12,7 +12,7 @@
         total-items="translations.totalCount"
         ng-model="paging['translation'].page" ng-change="getTranslations()"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="translations.totalCount > pageSize || paging['translation'].filter"
         type="text" ng-model="paging['translation'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getTranslations()">
@@ -29,9 +29,10 @@
         </span>
       </h4>
 
+      <!-- No need to show for BETA, there should be only one -->
       <button type="button" class="btn btn-xs btn-primary"
         ng-show="translations.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'BETA' || value == 'PUBLISHED')"
+        (value == 'RELEASE' ||  value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getTranslations()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
@@ -194,7 +195,8 @@
           <!-- RELEASE actions -->
           <td class="nobreak" ng-show="value == 'RELEASE'">
             <!-- cannot delete a BETA release, must cancel release -->
-            <i ng-show="translation.workflowStatus != 'BETA'"
+            <i
+              ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'BETA'"
               confirm="Are you sure you want to remove the translation ({{translation.name}})?"
               ng-click="removeTranslation(translation);" title="Remove"
               class="noul material-icons md-18">delete</i>
@@ -454,7 +456,7 @@
         ng-model="paging['available'].page"
         ng-change="getAvailableConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="selected.translation.available.totalCount > pageSize || paging['available'].filter"
         type="text" ng-model="paging['available'].filter"
         ng-model-options="{ debounce: 300 }"
@@ -492,7 +494,10 @@
       <tbody>
         <tr ng-repeat="concept in selected.translation.available">
           <td style="word-break: break-word;">{{concept.terminologyId}}</td>
-          <td>{{concept.name}}</td>
+          <td>
+            {{concept.name}}
+            <span name-info name="concept.name"> </span>
+          </td>
           <td>
             {{toDate(concept.lastModified)}}
             <span ng-show="concept.workflowStatus">
@@ -532,7 +537,7 @@
         ng-model="paging['assigned'].page"
         ng-change="getAssignedConcepts(selected.translation)"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="selected.translation.assigned.totalCount > pageSize || paging['assigned'].filter"
         type="text" ng-model="paging['assigned'].filter"
         ng-model-options="{ debounce: 300 }"
@@ -572,7 +577,10 @@
       <tbody>
         <tr ng-repeat="record in selected.translation.assigned">
           <td style="word-break: break-word;">{{record.concept.terminologyId}}</td>
-          <td>{{record.concept.name}}</td>
+          <td>
+            {{record.concept.name}}
+            <span name-info name="record.concept.name"> </span>
+          </td>
           <td>
             {{toDate(record.lastModified)}}<br />{{record.concept.lastModifiedBy}}
             <br />{{record.concept.workflowStatus}}
@@ -671,144 +679,142 @@
   <div class="col-md-6 col-xs-12">
 
     <!-- Translation Concepts -->
-    <div class="col-md-12 col-xs-12">
+    <div class="col-md-12 col-xs-12"></div>
 
-      <h4 ng-show="selected.translation">
-        Translation Concepts
-        <span ng-show="selected.translation.concepts.totalCount>0">
-          ({{selected.translation.concepts.totalCount}})</span>
+    <h4 ng-show="selected.translation">
+      Translation Concepts
+      <span ng-show="selected.translation.concepts.totalCount>0">
+        ({{selected.translation.concepts.totalCount}})</span>
 
-        <span style="float: right;">
+      <span style="float: right;">
 
-          <i
-            ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); "
-            title="Export translation concepts"
-            class="noul material-icons md-18">file_download</i>
-          <i ng-show="value == 'EDITING'"
-            ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
-            title="Import translation concepts"
-            class="noul material-icons md-18">file_upload</i>
-          <i
-            confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
-            ng-show="(value == 'EDITING' || value == 'EDITING_ALL') && selected.translation.concepts.length > 0"
-            ng-click="removeAllTranslationConcepts(selected.translation); "
-            title="Remove all concepts" class="noul material-icons md-18">delete</i>
-        </span>
-      </h4>
-      <span
-        ng-show="selected.translation && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
-        <br />
-        <span class="alert alert-warning">Translation has no concepts</span>
+        <i
+          ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); "
+          title="Export translation concepts" class="noul material-icons md-18">file_download</i>
+        <i ng-show="value == 'EDITING'"
+          ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
+          title="Import translation concepts" class="noul material-icons md-18">file_upload</i>
+        <i
+          confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
+          ng-show="(value == 'EDITING' || value == 'EDITING_ALL') && selected.translation.concepts.length > 0"
+          ng-click="removeAllTranslationConcepts(selected.translation); "
+          title="Remove all concepts" class="noul material-icons md-18">delete</i>
+      </span>
+    </h4>
+    <span
+      ng-show="selected.translation && !paging['concept'].filter && selected.translation.concepts.totalCount == 0">
+      <br />
+      <span class="alert alert-warning">Translation has no concepts</span>
+    </span>
+
+    <div
+      ng-show="selected.translation.concepts.totalCount > 0 || paging['concept'].filter">
+
+      <span style="display: block;">
+        <uib-pagination items-per-page="pageSize" max-size="5"
+          boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
+          next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
+          ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
+          total-items="selected.translation.concepts.totalCount"
+          ng-model="paging['concept'].page"
+          ng-change="getConcepts(selected.translation)"></uib-pagination>
+
+        <input class="input-filter" placeholder="Search"
+          ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
+          type="text" ng-model="paging['concept'].filter"
+          ng-model-options="{ debounce: 300 }"
+          ng-change="getConcepts(selected.translation)">
+
+        <button class="btn btn-xs btn-warning"
+          ng-show="paging['concept'].filter"
+          ng-click="paging['concept'].filter = ''; getConcepts(selected.translation)"
+          title="Click to clear filter text">Clear</button>
       </span>
 
-      <div
-        ng-show="selected.translation.concepts.totalCount > 0 || paging['concept'].filter">
+      <table class="table">
+        <thead>
+          <tr>
+            <th class="col-md-3 col-xs-3"
+              ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
+              Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
+            </th>
+            <th class="col-md-5 col-xs-5"
+              ng-click="setSortField('concept','name', selected.translation)">Name<span
+                ng-bind="getSortIndicator('concept','name')"></span>
+            </th>
+            <th
+              ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'"
+              class="col-md-2 col-xs-2"
+              ng-click="setSortField('concept','lastModified', selected.translation)">Last
+              Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
+            </th>
+            <th
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value = 'RELEASE'"
+              class="col-md-2 col-xs-2"
+              ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
+              Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
+            </th>
+            <th ng-show="value == 'EDITING' || value == 'EDITING_ALL'">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="concept in selected.translation.concepts"
+            ng-class="{selected: concept.id == selected.concept.id}"
+            ng-click="selectConcept(concept);">
+            <td>{{concept.terminologyId}}</td>
+            <td>
+              {{concept.name}}
+              <span name-info name="concept.name"> </span>
 
-        <span style="display: block;">
-          <uib-pagination items-per-page="pageSize" max-size="5"
-            boundary-links="true" class="pagination-sm" previous-text="&lsaquo;"
-            next-text="&rsaquo;" first-text="&laquo;" last-text="&raquo;"
-            ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
-            total-items="selected.translation.concepts.totalCount"
-            ng-model="paging['concept'].page"
-            ng-change="getConcepts(selected.translation)"></uib-pagination>
+              <span
+                ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
+                <br /> &bull;&nbsp;{{desc.term}}
+              </span>
+            </td>
+            <td
+              ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
+              {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
+              <span ng-show="projects.role == 'ADMIN'">
+                <br />{{concept.workflowStatus}}
+              </span>
+            </td>
+            <td
+              ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
+            <td ng-show="value == 'EDITING' || value == 'EDITING_ALL'">
+              <!-- Assign (for error fixing) -->
+              <i ng-show="projects.role != 'ADMIN'"
+                ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
+                title="Assign" class="noul material-icons md-18">assignment_ind</i>
+              <!-- Unassign (for ADMIN fixing) -->
+              <i
+                ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
+                confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
+                title="Unassign concept" ng-click="unassign(concept)"
+                class="noul material-icons md-18">assignment_return</i>
 
-          <input class="input-filter" placeholder="Enter filter text"
-            ng-show="selected.translation.concepts.totalCount > pageSize || paging['concept'].filter"
-            type="text" ng-model="paging['concept'].filter"
-            ng-model-options="{ debounce: 300 }"
-            ng-change="getConcepts(selected.translation)">
+              <!-- Remove -->
+              <i
+                ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
+                confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
+                ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
+                title="Remove concept" class="noul material-icons md-18">delete</i>
+              <!-- Notes -->
+              <i ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
+                ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+                title="Edit concept Notes" class="noul material-icons md-18">assignment</i>
+              <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
+                ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
+                title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <span
+        ng-show="paging['concept'].filter && selected.translation.concepts.totalCount == 0"
+        class="alert alert-warning">
+        <br />No translation concepts matching filter
+      </span>
 
-          <button class="btn btn-xs btn-warning"
-            ng-show="paging['concept'].filter"
-            ng-click="paging['concept'].filter = ''; getConcepts(selected.translation)"
-            title="Click to clear filter text">Clear</button>
-        </span>
-
-        <table class="table">
-          <thead>
-            <tr>
-              <th class="col-md-3 col-xs-3"
-                ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
-                Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
-              </th>
-              <th class="col-md-5 col-xs-5"
-                ng-click="setSortField('concept','name', selected.translation)">Name<span
-                  ng-bind="getSortIndicator('concept','name')"></span>
-              </th>
-              <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
-                class="col-md-2 col-xs-2"
-                ng-click="setSortField('concept','lastModified', selected.translation)">Last
-                Modified<span
-                  ng-bind="getSortIndicator('concept','lastModified')"></span>
-              </th>
-              <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
-                class="col-md-2 col-xs-2"
-                ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
-                Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
-              </th>
-              <th ng-show="value == 'EDITING' || value == 'EDITING_ALL'">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr ng-repeat="concept in selected.translation.concepts"
-              ng-class="{selected: concept.id == selected.concept.id}"
-              ng-click="selectConcept(concept);">
-              <td>{{concept.terminologyId}}</td>
-              <td>
-                {{concept.name}}
-                <span
-                  ng-repeat="desc in concept.descriptions | orderBy:'desc.term'">
-                  <br /> &bull;&nbsp;{{desc.term}}
-                </span>
-              </td>
-              <td
-                ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
-                {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
-                <span ng-show="projects.role == 'ADMIN'">
-                  <br />{{concept.workflowStatus}}
-                </span>
-              </td>
-              <td
-                ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
-              <td ng-show="value == 'EDITING' || value == 'EDITING_ALL'">
-                <!-- Assign (for error fixing) -->
-                <i ng-show="projects.role != 'ADMIN'"
-                  ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
-                  title="Assign" class="noul material-icons md-18">assignment_ind</i>
-                <!-- Unassign (for ADMIN fixing) -->
-                <i
-                  ng-show="projects.role == 'ADMIN' && concept.workflowStatus != 'READY_FOR_PUBLICATION' && concept.workflowStatus != 'NEW'"
-                  confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
-                  title="Unassign concept" ng-click="unassign(concept)"
-                  class="noul material-icons md-18">assignment_return</i>
-
-                <!-- Remove -->
-                <i
-                  ng-show="concept.workflowStatus == 'READY_FOR_PUBLICATION' || concept.workflowStatus == 'NEW'"
-                  confirm="Are you sure you want to remove the concept ({{concept.terminologyId}}, {{concept.name}})?"
-                  ng-click="removeConcept(selected.translation,concept); $event.stopPropagation()"
-                  title="Remove concept" class="noul material-icons md-18">delete</i>
-                <!-- Notes -->
-                <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
-                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Edit concept Notes" class="noul material-icons md-18">assignment</i>
-                <i
-                  ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
-                  ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                  title="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <span
-          ng-show="paging['concept'].filter && selected.translation.concepts.totalCount == 0"
-          class="alert alert-warning">
-          <br />No translation concepts matching filter
-        </span>
-
-      </div>
     </div>
 
     <!-- EndR3C2 -->

@@ -32,6 +32,7 @@ import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.WorkflowActionHandler;
 import org.ihtsdo.otf.refset.worfklow.TrackingRecordJpa;
+import org.ihtsdo.otf.refset.worfklow.TrackingRecordListJpa;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.TrackingRecordList;
 import org.ihtsdo.otf.refset.workflow.WorkflowAction;
@@ -248,7 +249,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           + refset.getId());
     }
 
-    boolean revertFlag = false;
+    boolean skipUpdate = false;
 
     switch (action) {
       case ASSIGN:
@@ -298,13 +299,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                 getOriginRefset(refset.getId(), record.getOriginRevision());
             service.syncRefset(refset.getId(), originRefset);
             // signal to leave refset alone
-            revertFlag = true;
+            skipUpdate = true;
 
           } else {
-            // remove from authors
-            record.getAuthors().remove(user.getUserName());
             refset.setWorkflowStatus(WorkflowStatus.NEW);
           }
+          // Remove record
           service.removeTrackingRecord(record.getId());
 
         }
@@ -324,7 +324,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
           service.syncRefset(refset.getId(), originRefset);
           // Set the flag to avoid saving the refset later, this is the final
           // saved state.
-          revertFlag = true;
+          skipUpdate = true;
           // refset.setWorkflowStatus(WorkflowStatus.EDITING_DONE);
 
         }
@@ -408,7 +408,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
         throw new LocalException("Illegal workflow action - " + action);
     }
 
-    if (!revertFlag) {
+    if (!skipUpdate) {
       refset.setLastModifiedBy(user.getUserName());
       service.updateRefset(refset);
     }
@@ -445,11 +445,12 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     }
 
     // Validate tracking record
-    TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery(
-            "conceptId:"
-                + ((concept == null || concept.getId() == null) ? -1 : concept
-                    .getId()), null);
+    TrackingRecordList recordList = new TrackingRecordListJpa();
+    if (concept != null && concept.getId() != null) {
+      recordList =
+          service.findTrackingRecordsForQuery("conceptId:" + concept.getId(),
+              null);
+    }
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -603,11 +604,15 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     User user, UserRole projectRole, WorkflowAction action, Concept concept,
     WorkflowService service) throws Exception {
 
-    TrackingRecordList recordList =
-        service.findTrackingRecordsForQuery(
-            "conceptId:"
-                + ((concept == null || concept.getId() == null) ? -1 : concept
-                    .getId()), null);
+    TrackingRecordList recordList = new TrackingRecordListJpa();
+    // do not perform a lookup if concept is new
+    if (concept != null && concept.getId() != null) {
+      recordList =
+          service.findTrackingRecordsForQuery(
+              "conceptId:"
+                  + ((concept == null || concept.getId() == null) ? -1
+                      : concept.getId()), null);
+    }
     TrackingRecord record = null;
     if (recordList.getCount() == 1) {
       record = recordList.getObjects().get(0);
@@ -681,12 +686,13 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             // signal to leave refset alone
             skipUpdate = true;
 
-          } else {
-            record.getAuthors().remove(user.getUserName());
-            concept.setWorkflowStatus(WorkflowStatus.NEW);
-          }
-
+          } 
+          // Remove tracking record
           service.removeTrackingRecord(record.getId());
+          if (!record.isRevision()) {
+            skipUpdate = true;
+            service.removeConcept(concept.getId(), true);
+          }
         }
         // For review, it removes the reviewer and sets the status back to
         // EDITING_DONE

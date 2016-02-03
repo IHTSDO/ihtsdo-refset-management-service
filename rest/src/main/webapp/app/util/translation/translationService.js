@@ -649,7 +649,7 @@ tsApp.service('translationService', [
     };
 
     // Copy spelling dictionary from one translation to another
-    this.copyPhraseMemory = function(fromTranslationId, toTranslationId) {
+    this.copyPhraseMemory = function(fromTranslationId, toTtran_ranslationId) {
       console.debug('copyPhraseMemory');
       var deferred = $q.defer();
 

@@ -31,6 +31,7 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.UserRole;
@@ -54,6 +55,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.IoHandlerInfoListJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.ReleaseServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.SecurityServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.WorkflowServiceJpa;
@@ -62,6 +64,7 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.ReleaseService;
 import org.ihtsdo.otf.refset.services.SecurityService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
@@ -501,9 +504,21 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "remove refset", UserRole.AUTHOR);
 
+      // If in publication process, don't allow
+      if (refset.isInPublicationProcess()) {
+        throw new LocalException(
+            "Refsets in the publication process cannot be removed, use cancel release instead");
+      }
+
+      if (refset.getWorkflowStatus() == WorkflowStatus.BETA) {
+        throw new LocalException(
+            "Refsets in the publication process cannot be removed, use cancel release instead");
+      }
+
       // If cascade is true, remove any tracking records associated with this
       // refset
       if (cascade) {
+        // Remove tracking records
         final WorkflowService workflowService = new WorkflowServiceJpa();
         try {
           // Find and remove any tracking records for this refset
@@ -518,6 +533,22 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         } finally {
           workflowService.close();
         }
+
+        // Remove release infos
+        final ReleaseService releaseService = new ReleaseServiceJpa();
+        try {
+          // Find and remove any release infos for this refset
+          for (final ReleaseInfo info : refsetService
+              .findRefsetReleasesForQuery(refsetId, null, null).getObjects()) {
+            releaseService.removeReleaseInfo(info.getId());
+          }
+
+        } catch (Exception e) {
+          throw e;
+        } finally {
+          releaseService.close();
+        }
+
       }
 
       // remove refset
@@ -562,7 +593,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final Long refsetId = refset.getId();
       final Refset originRefset = refsetService.getRefset(refsetId);
 
+      // Determine if refset with this id already exists in this project.
+      if (originRefset.getTerminologyId().equals(refset.getTerminologyId())
+          && originRefset.getProject().getId()
+              .equals(refset.getProject().getId())) {
+        throw new LocalException(
+            "Duplicate refset terminology id within the project, "
+                + "please change terminology id");
+      }
+
       refset.setId(null);
+      refset.setEffectiveTime(null);
       refset.setWorkflowStatus(WorkflowStatus.NEW);
       // copy definition clauses
       for (DefinitionClause clause : refset.getDefinitionClauses()) {
@@ -798,8 +839,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
 
       // Look up concept name and active
-      if (member.getConceptName() == null
-          || member.getConceptName().equals("TBD")) {
+      if (member.getConceptName() == null) {
         final Concept concept =
             refsetService.getTerminologyHandler().getConcept(
                 member.getConceptId(), refset.getTerminology(),
@@ -808,7 +848,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
         } else {
-          member.setConceptName("TBD");
+          member.setConceptName("unable to determine name");
         }
       }
 
@@ -978,8 +1018,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Lookup concept name and active if not already set
       // Look up concept name and active
-      if (inclusion.getConceptName() == null
-          || inclusion.getConceptName().equals("TBD")) {
+      if (inclusion.getConceptName() == null) {
         final Concept concept =
             refsetService.getTerminologyHandler().getConcept(
                 inclusion.getConceptId(), refset.getTerminology(),
@@ -988,7 +1027,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
         } else {
-          inclusion.setConceptName("TBD");
+          inclusion.setConceptName("unable to determine name");
         }
       }
 
@@ -2389,7 +2428,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         // Initialize values to be overridden by lookupNames routine
         member.setConceptActive(true);
-        member.setConceptName("TBD");
+        member.setConceptName("name lookup in progress");
 
         member.setLastModifiedBy(userName);
         refsetService.addMember(member);

@@ -224,7 +224,7 @@ tsApp
                   });
                 }
                 if ($scope.value == 'RELEASE') {
-                  pfs.queryRestriction = 'projectId: '
+                  pfs.queryRestriction = 'projectId:'
                     + $scope.project.id
                     + ' AND revision:false AND (workflowStatus:READY_FOR_PUBLICATION OR workflowStatus:BETA  OR workflowStatus:PUBLISHED)';
                   pfs.latestOnly = $scope.showLatest;
@@ -1582,7 +1582,8 @@ tsApp
 
                 // Dismiss modal
                 $scope.close = function() {
-                  $uibModalInstance.close(refset);
+                  // nothing changed, don't pass a refset
+                  $uibModalInstance.close();
                 };
 
                 // initialize
@@ -1634,6 +1635,7 @@ tsApp
 
                 // Add members in the list
                 $scope.includeMembers = function() {
+                  $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
                   for (var i = 0; i < $scope.ids.length; i++) {
                     var conceptId = $scope.ids[i];
@@ -1679,6 +1681,7 @@ tsApp
 
                 // Exclude members in list
                 $scope.excludeMembers = function() {
+                  $scope.errors = [];
                   $scope.ids = getIds($scope.memberIdList);
                   var notExists = new Array();
                   var removed = new Array();

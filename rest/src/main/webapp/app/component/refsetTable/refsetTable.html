@@ -12,7 +12,7 @@
         total-items="refsets.totalCount" ng-model="paging['refset'].page"
         ng-change="getRefsets()"></uib-pagination>
 
-      <input class="input-filter" placeholder="Enter filter text"
+      <input class="input-filter" placeholder="Search"
         ng-show="refsets.totalCount > pageSize || paging['refset'].filter"
         type="text" ng-model="paging['refset'].filter"
         ng-model-options="{ debounce: 300 }" ng-change="getRefsets()">
@@ -21,9 +21,10 @@
         ng-click="paging['refset'].filter = ''; getRefsets()"
         title="Click to clear filter text">Clear</button>
 
+      <!-- No need to show for BETA, there should be only one -->
       <button type="button" class="btn btn-xs btn-primary"
         ng-show="refsets.totalCount > 0 &&
-        (value == 'RELEASE' || value == 'BETA' || value == 'PUBLISHED')"
+        (value == 'RELEASE' || value == 'PUBLISHED')"
         ng-model="showLatest" ng-change="getRefsets()" uib-btn-checkbox
         btn-checkbox-true="true" btn-checkbox-false="false">
         <span ng-show="showLatest" title="Click to show all">Latest</span>
@@ -116,7 +117,8 @@
           </td>
 
           <!-- PUBLISHED/BETA actions -->
-          <td class="nobreak" ng-show="value == 'PUBLISHED' || value == 'BETA'">
+          <td class="nobreak"
+            ng-show="(value == 'PUBLISHED' || value == 'BETA') && refset.feedbackEmail">
             <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
               title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
             <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
@@ -173,8 +175,8 @@
               title="Edit" class="noul material-icons md-18">edit</i>
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-click="removeRefset(refset);" title="Remove"
-              class="noul material-icons md-18">delete</i>
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
             <i confirm="Are you sure you want to unassign the refset?"
               ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
@@ -232,9 +234,9 @@
 
             <i
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
-              ng-show="refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION'"
-              ng-click="removeRefset(refset);" title="Remove"
-              class="noul material-icons md-18">delete</i>
+              ng-show="!refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
+              ng-click="removeRefset(refset); $event.stopPropagation()"
+              title="Remove" class="noul material-icons md-18">delete</i>
 
             <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
@@ -574,7 +576,7 @@
             ng-model="paging['member'].page"
             ng-change="getMembers(selected.refset)"></uib-pagination>
 
-          <input class="input-filter" placeholder="Enter filter text"
+          <input class="input-filter" placeholder="Search"
             ng-show="selected.refset.members.totalCount > pageSize || paging['member'].filter"
             type="text" ng-model="paging['member'].filter"
             ng-model-options="{ debounce: 300 }"
@@ -600,13 +602,15 @@
                 ng-click="setSortField('member','conceptName', selected.refset)">Name<span
                   ng-bind="getSortIndicator('member','conceptName')"></span>
               </th>
-              <th ng-show="value != 'PUBLISHED' && value != 'BETA'"
+              <th
+                ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'"
                 class="col-md-2 col-xs-2"
                 ng-click="setSortField('member','lastModified', selected.refset)">Last
                 Modified<span
                   ng-bind="getSortIndicator('member','lastModified')"></span>
               </th>
-              <th ng-show="value == 'PUBLISHED' || value == 'BETA'"
+              <th
+                ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'"
                 class="col-md-2 col-xs-2"
                 ng-click="setSortField('member','effectiveTime', selected.refset)">Effective
                 Time<span ng-bind="getSortIndicator('member','effectiveTime')"></span>
@@ -626,7 +630,10 @@
               ng-click="selectMember(member);"
               ng-class="{selected : member.id == selected.member.id}">
               <td>{{member.conceptId}}</td>
-              <td ng-class="getMemberStyle(member)">{{member.conceptName}}</td>
+              <td ng-class="getMemberStyle(member)">
+                {{member.conceptName}}
+                <span name-info name="member.conceptName"> </span>
+              </td>
               <td
                 ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'">
                 {{toDate(member.lastModified)}}<br />{{member.lastModifiedBy}}

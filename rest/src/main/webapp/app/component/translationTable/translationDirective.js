@@ -2524,7 +2524,8 @@ tsApp
 
                 // close modal
                 $scope.close = function() {
-                  $uibModalInstance.close(refset);
+                  // nothing changed, don't pass a value
+                  $uibModalInstance.close();
                 };
 
                 // initialize

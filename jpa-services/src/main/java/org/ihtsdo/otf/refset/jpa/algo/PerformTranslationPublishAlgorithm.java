@@ -102,6 +102,7 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     stagedTranslation.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     stagedTranslation.setLastModifiedBy(userName);
     stagedTranslation.setProvisional(false);
+    stagedTranslation.setInPublicationProcess(false);
     updateTranslation(stagedTranslation);
 
     // Mark the staged release info as published
@@ -126,14 +127,15 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
         if (description.getEffectiveTime() == null) {
           description.setEffectiveTime(releaseInfo.getEffectiveTime());
         }
-        for (LanguageRefsetMember member : description.getLanguageRefsetMembers()) {
+        for (LanguageRefsetMember member : description
+            .getLanguageRefsetMembers()) {
           if (member.getEffectiveTime() == null) {
             member.setEffectiveTime(releaseInfo.getEffectiveTime());
           }
         }
       }
     }
-    
+
     // Remove the translation staging
     removeStagedTranslationChange(stagedTranslationChange.getId());
   }

@@ -24,7 +24,7 @@
           total-items="pagedClauses.totalCount"
           ng-model="paging['clauses'].page" ng-change="getPagedClauses()"></uib-pagination>
 
-        <input class="input-filter" placeholder="Enter filter text"
+        <input class="input-filter" placeholder="Search"
           ng-show="pagedClauses.totalCount > pageSize || paging['clauses'].filter"
           type="text" ng-model="paging['clauses'].filter"
           ng-model-options="{ debounce: 300 }" ng-change="getPagedClauses()">
@@ -102,6 +102,6 @@
     title="Save and recompute definition">Recompute</button>
   <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
     ng-click="cancel()">Cancel</button>
-  <button class="btn btn-warning" ng-show="value == 'AVAILABLE'"
+  <button class="btn btn-warning"
     ng-click="cancel()">Close</button>
 </div>

@@ -100,6 +100,7 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     stagedRefset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     stagedRefset.setLastModifiedBy(userName);
     stagedRefset.setProvisional(false);
+    stagedRefset.setInPublicationProcess(false);
     stagedRefset.setLastModifiedBy(userName);
     updateRefset(stagedRefset);
 
@@ -114,14 +115,14 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     releaseInfo.setPlanned(false);
     releaseInfo.setLastModifiedBy(userName);
     updateReleaseInfo(releaseInfo);
-    
+
     // feedback effective times
     for (ConceptRefsetMember member : refset.getMembers()) {
       if (member.getEffectiveTime() == null) {
         member.setEffectiveTime(releaseInfo.getEffectiveTime());
       }
     }
-    
+
     removeStagedRefsetChange(stagedRefsetChange.getId());
   }
 
