@@ -182,6 +182,20 @@ public interface UserPreferences {
   public void setModuleId(String moduleId);
   
   /**
+   * Returns the feedback email.
+   *
+   * @return the feedback email
+   */
+  public String getFeedbackEmail();
+  
+  /**
+   * Sets the feedback email.
+   *
+   * @param feedbackEmail the feedback email
+   */
+  public void setFeedbackEmail(String feedbackEmail);
+  
+  /**
    * Returns the namespace.
    *
    * @return the namespace

@@ -85,6 +85,10 @@ public class UserPreferencesJpa implements UserPreferences {
   @Column(nullable = true)
   private String moduleId;
   
+  /**  The module id. */
+  @Column(nullable = true)
+  private String feedbackEmail;
+  
   /**  The namespace. */
   @Column(nullable = true)
   private String namespace;
@@ -128,6 +132,7 @@ public class UserPreferencesJpa implements UserPreferences {
     namespace = prefs.getNamespace();
     organization = prefs.getOrganization();
     exclusionClause = prefs.getExclusionClause();
+    feedbackEmail = prefs.getFeedbackEmail();
   }
 
   /**
@@ -426,6 +431,7 @@ public class UserPreferencesJpa implements UserPreferences {
     result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
     result = prime * result + ((organization == null) ? 0 : organization.hashCode());
     result = prime * result + ((exclusionClause == null) ? 0 : exclusionClause.hashCode());
+    result = prime * result + ((feedbackEmail == null) ? 0 : feedbackEmail.hashCode());
     result =
         prime
             * result
@@ -528,6 +534,11 @@ public class UserPreferencesJpa implements UserPreferences {
         return false;
     } else if (!exclusionClause.equals(other.exclusionClause))
       return false;
+    if (feedbackEmail == null) {
+      if (other.feedbackEmail != null)
+        return false;
+    } else if (!feedbackEmail.equals(other.feedbackEmail))
+      return false;
     return true;
   }
 
@@ -548,6 +559,7 @@ public class UserPreferencesJpa implements UserPreferences {
         + ", namespace=" + namespace
         + ", organization=" + organization
         + ", exclusionClause=" + exclusionClause
+        + ", feedbackEmail=" + feedbackEmail
         + "]";
   }
 
@@ -565,6 +577,16 @@ public class UserPreferencesJpa implements UserPreferences {
   @Override
   public void setModuleId(String moduleId) {
     this.moduleId = moduleId;
+  }
+  
+  @Override
+  public String getFeedbackEmail() {
+    return feedbackEmail;
+  }
+  
+  @Override
+  public void setFeedbackEmail(String feedbackEmail) {
+    this.feedbackEmail = feedbackEmail;
   }
 
   /* (non-Javadoc)
