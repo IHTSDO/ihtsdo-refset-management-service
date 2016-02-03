@@ -1797,7 +1797,7 @@ tsApp
                   if (refset.type == 'EXTENSIONAL') {
                     $scope.clause = null;
                   }
-                  if ($scope.clause.value) {
+                  if ($scope.clause && $scope.clause.value) {
                     refset.definitionClauses = [ {
                       value : $scope.clause.value,
                       negated : false

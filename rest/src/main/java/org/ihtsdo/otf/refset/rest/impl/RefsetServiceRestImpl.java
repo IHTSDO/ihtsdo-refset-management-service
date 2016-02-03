@@ -70,6 +70,7 @@ import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.WorkflowService;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportRefsetHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -848,7 +849,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           member.setConceptName(concept.getName());
           member.setConceptActive(concept.isActive());
         } else {
-          member.setConceptName("unable to determine name");
+          member.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
         }
       }
 
@@ -1027,7 +1028,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           inclusion.setConceptName(concept.getName());
           inclusion.setConceptActive(concept.isActive());
         } else {
-          inclusion.setConceptName("unable to determine name");
+          inclusion.setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
         }
       }
 
@@ -2304,7 +2305,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // recovering the previously saved state of the staged refset
       final Refset stagedRefset =
-          refsetService.getStagedRefsetChangeFromOrigin(refsetId).getStagedRefset();
+          refsetService.getStagedRefsetChangeFromOrigin(refsetId)
+              .getStagedRefset();
       refsetService.handleLazyInit(stagedRefset);
 
       addLogEntry(refsetService, userName, "RESUME MIGRATION", refset
@@ -2455,7 +2457,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
         // Initialize values to be overridden by lookupNames routine
         member.setConceptActive(true);
-        member.setConceptName("name lookup in progress");
+        member.setConceptName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
 
         member.setLastModifiedBy(userName);
         refsetService.addMember(member);
@@ -2948,7 +2950,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Staged Refset id, e.g. 3", required = true) @QueryParam("stagedRefsetId") Long stagedRefsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Refset): origin" + stagedRefsetId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Refset): origin" + stagedRefsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -2965,8 +2968,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           authorizeProject(refsetService, stagedRefset.getProject().getId(),
               securityService, authToken, "get origin refset", UserRole.AUTHOR);
         }
-      } 
-      StagedRefsetChange stagedRefsetChange = refsetService.getStagedRefsetChangeFromStaged(stagedRefsetId);
+      }
+      StagedRefsetChange stagedRefsetChange =
+          refsetService.getStagedRefsetChangeFromStaged(stagedRefsetId);
       return stagedRefsetChange.getOriginRefset().getId();
     } catch (Exception e) {
       handleException(e, "trying to get origin refset");

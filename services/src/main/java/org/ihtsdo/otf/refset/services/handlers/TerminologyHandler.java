@@ -19,6 +19,14 @@ import org.ihtsdo.otf.refset.rf2.LanguageDescriptionType;
  */
 public interface TerminologyHandler extends Configurable {
 
+  /** The Constant UNABLE_TO_DETERMINE_NAME. */
+  public final static String UNABLE_TO_DETERMINE_NAME =
+      "unable to determine name";
+
+  /** The Constant NAME_LOOKUP_IN_PROGRESS. */
+  public final static String NAME_LOOKUP_IN_PROGRESS =
+      "name lookup in progress";
+
   /**
    * Copy the handler. This is needed used because of how the terminology
    * handler is instantiated. One template object is created, and then copies of

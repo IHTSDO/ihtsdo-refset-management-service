@@ -686,7 +686,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             // signal to leave refset alone
             skipUpdate = true;
 
-          } 
+          }
           // Remove tracking record
           service.removeTrackingRecord(record.getId());
           if (!record.isRevision()) {

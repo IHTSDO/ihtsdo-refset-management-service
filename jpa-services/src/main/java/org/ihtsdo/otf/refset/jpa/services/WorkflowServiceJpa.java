@@ -255,30 +255,23 @@ public class WorkflowServiceJpa extends TranslationServiceJpa implements
     Logger.getLogger(getClass()).debug(
         "Workflow Service - find tracking records " + query + ", " + pfs);
 
-    // Build query for pfs conditions
-    final StringBuilder pfsQuery = new StringBuilder();
-
-    if (query != null && !query.isEmpty()) {
-      pfsQuery.append(query);
-    }
-
     // Apply pfs restrictions to query
     FullTextQuery fullTextQuery = null;
     try {
       fullTextQuery =
-          IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
-              TrackingRecordJpa.class, pfsQuery.toString(), pfs, manager);
-    } catch (ParseException e) {
-      // / Try performing an escaped search here
-      final StringBuilder escapedPfsQuery = new StringBuilder();
-      if (query != null && !query.isEmpty()) {
-        escapedPfsQuery.append(QueryParserBase.escape(query));
-      }
-      fullTextQuery =
           IndexUtility
               .applyPfsToLuceneQuery(TrackingRecordJpa.class,
-                  TrackingRecordJpa.class, escapedPfsQuery.toString(), pfs,
+                  TrackingRecordJpa.class, query == null ? "" : query, pfs,
                   manager);
+    } catch (ParseException e) {
+      // / Try performing an escaped search here
+      String escapedPfsQuery = "";
+      if (query != null && !query.isEmpty()) {
+        escapedPfsQuery = QueryParserBase.escape(query);
+      }
+      fullTextQuery =
+          IndexUtility.applyPfsToLuceneQuery(TrackingRecordJpa.class,
+              TrackingRecordJpa.class, escapedPfsQuery, pfs, manager);
     }
 
     // execute the query

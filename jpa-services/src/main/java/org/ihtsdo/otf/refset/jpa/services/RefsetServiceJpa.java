@@ -563,13 +563,14 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       return null;
     }
   }
-  
+
   /* see superclass */
   @Override
   public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
     throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Refset Service - get staged change for staged refset " + stagedRefsetId);
+        "Refset Service - get staged change for staged refset "
+            + stagedRefsetId);
     final javax.persistence.Query query =
         manager.createQuery("select a from StagedRefsetChangeJpa a where "
             + "stagedRefset.id = :stagedRefsetId");
@@ -1043,6 +1044,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             // Populate member's names/statuses from results of Term
             // Server
             for (final Concept con : cons.getObjects()) {
+              termIds.remove(con.getTerminologyId());
+
               // Reread the member as we don't know if it has changed
               if (saveMembers) {
                 final ConceptRefsetMember member =
@@ -1060,6 +1063,27 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
                     memberMap.get(con.getTerminologyId());
                 member.setConceptName(con.getName());
                 member.setConceptActive(con.isActive());
+              }
+            }
+
+            // Found termids have been removed, look up termids
+            // here that are leftover and assign name
+            for (final String termId : termIds) {
+              // Reread the member as we don't know if it has changed
+              if (saveMembers) {
+                final ConceptRefsetMember member =
+                    refsetService.getMember(memberMap.get(termId).getId());
+                member
+                    .setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
+                refsetService.updateMember(member);
+
+              }
+
+              // This is for an in-memory member, just update the object
+              else {
+                final ConceptRefsetMember member = memberMap.get(termId);
+                member
+                    .setConceptName(TerminologyHandler.UNABLE_TO_DETERMINE_NAME);
               }
             }
 
