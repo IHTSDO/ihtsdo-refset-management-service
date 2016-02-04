@@ -1338,18 +1338,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       } else if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
-        for (final ConceptRefsetMember member : refsetCopy.getMembers()) {
-          final Concept concept =
-              refsetService.getTerminologyHandler().getConcept(
-                  member.getConceptId(), refsetCopy.getTerminology(),
-                  refsetCopy.getVersion());
+        // n/a member lookup is going to happen in lookupNames
 
-          if (!concept.isActive()) {
-            member.setConceptActive(false);
-            member.setLastModifiedBy(userName);
-            refsetService.updateMember(member);
-          }
-        }
       } else {
         throw new LocalException(
             "Refset type must be extensional or intensional.");
@@ -1365,7 +1355,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.commit();
 
       // Look up names/concept active for members of EXTENSIONAL
-      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL && assignNames) {
+      if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
         // Look up members for this refset
         refsetService.lookupMemberNames(refsetCopy.getId(), "begin migration",
@@ -1373,7 +1363,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Look up oldNotNew
-      else if (refsetCopy.getType() == Refset.Type.INTENSIONAL && assignNames) {
+      else if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
 
         List<ConceptRefsetMember> oldNotNew =
             getOldNotNewForMigration(refset, refsetCopy, refsetService);
@@ -1615,10 +1605,12 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
         throw new LocalException("Refset is not staged for migration.");
       }
+      System.out.println("a");
 
       // turn transaction per operation off
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
+      System.out.println("a");
 
       // Remove the staged refset change and set staging type back to null
       final StagedRefsetChange change =
@@ -1629,26 +1621,34 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Unexpected problem with refset staged for migration, "
                 + "but no staged refset. Contact the administrator.");
       }
+      System.out.println("a");
       refsetService.removeStagedRefsetChange(change.getId());
+      System.out.println("a");
 
-      // Rest on cancel
+      // Start lookup
       List<ConceptRefsetMember> oldNotNew =
           getOldNotNewForMigration(refset, change.getStagedRefset(),
               refsetService);
+      refset.setLookupInProgress(true);
       refsetService.lookupMemberNames(refset.getId(), oldNotNew,
           "cancel migration", true, ConfigUtility.isBackgroundLookup());
+      System.out.println("a");
 
       refsetService.removeRefset(change.getStagedRefset().getId(), true);
       refset.setStagingType(null);
       refset.setStaged(false);
       refset.setProvisional(false);
       refset.setLastModifiedBy(userName);
+      System.out.println("b " + refset);
       refsetService.updateRefset(refset);
+      System.out.println("a");
 
       addLogEntry(refsetService, userName, "CANCEL MIGRATION", refset
           .getProject().getId(), refset.getId(), refset.getTerminologyId()
           + ": " + refset.getName());
+      System.out.println("a");
       refsetService.commit();
+      System.out.println("a");
 
     } catch (Exception e) {
       handleException(e, "trying to cancel migration of refset");
@@ -2946,7 +2946,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Produces("text/plain")
   @Path("/origin")
   @ApiOperation(value = "Returns the origin refset given a staged refset", notes = "Returns the origin refset id, given the staged refset id.", response = Long.class)
-  public Long getOriginForStagedRefset(
+  public Long getOriginForStagedRefsetId(
     @ApiParam(value = "Staged Refset id, e.g. 3", required = true) @QueryParam("stagedRefsetId") Long stagedRefsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {

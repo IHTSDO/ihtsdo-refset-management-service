@@ -41,11 +41,9 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
   /** The id. */
   final String id = "id";
 
-  /**  The validation result. */
+  /** The validation result. */
   ValidationResult validationResult = new ValidationResultJpa();
-  
 
-  
   /**
    * Instantiates an empty {@link ImportTranslationRf2Handler}.
    * @throws Exception if anything goes wrong
@@ -81,7 +79,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
     // initialize
     validationResult = new ValidationResultJpa();
-    
+
     /** The descriptions. */
     Map<String, Description> descriptions = new HashMap<>();
 
@@ -119,7 +117,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
           line = sc.nextLine();
-          final String fields[] = FieldedStringTokenizer.split(line,"\t");
+          final String fields[] = FieldedStringTokenizer.split(line, "\t");
           if (fields.length != 9) {
             sc.close();
             throw new LocalException(
@@ -191,7 +189,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         while (sc.hasNextLine()) {
           line = sc.nextLine();
           line = line.replace("\r", "");
-          final String fields[] = FieldedStringTokenizer.split(line,"\t");
+          final String fields[] = FieldedStringTokenizer.split(line, "\t");
 
           if (fields.length != 7) {
             sc.close();
@@ -244,6 +242,8 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
       throw new LocalException("Missing or empty language file.");
     }
 
+    final int langCt = descLangMap.size();
+
     // Connect descriptions and language refset member objects
     for (Description description : descriptions.values()) {
 
@@ -267,11 +267,13 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     // If any references are left in descLangMap, we've got a language without a
     // desc
     if (!descLangMap.isEmpty()) {
-      throw new LocalException(
-          "Languages without corresponding descriptions - " + descLangMap);
+      validationResult.addError(descLangMap.size()
+          + " language refset members without matching descriptions.");
     }
-    validationResult.addComment(descriptions.size() + " descriptions successfully loaded.");
-    validationResult.addComment(descLangMap.size() + " language refset members successfully loaded.");
+    validationResult.addComment(descriptions.size()
+        + " descriptions successfully loaded.");
+    validationResult.addComment(langCt
+        + " language refset members successfully loaded.");
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());
   }

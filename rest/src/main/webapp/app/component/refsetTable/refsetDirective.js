@@ -49,7 +49,7 @@ tsApp
               $scope.refsetLookupProgress = {};
               $scope.lookupInterval = null;
               $scope.project = null;
-
+              $scope.cancelling = null;
               $scope.showLatest = true;
 
               // Page metadata
@@ -556,43 +556,64 @@ tsApp
 
               // Directive scoped method for cancelling an import/migration
               $scope.cancelAction = function(refset) {
-                refset.staging = false;
-                refset.stagingType = null;
-                $scope.refset = refset;
+                $scope.cancelling = true;
                 if (refset.stagingType == 'IMPORT') {
-                  refsetService.cancelImportMembers($scope.refset.id).then(
+                  refsetService.cancelImportMembers(refset.id).then(
                   // Success
                   function() {
-                    refsetService.fireRefsetChanged($scope.refset);
+                    $scope.cancelling = false;
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
                   });
                 }
                 if (refset.stagingType == 'MIGRATION') {
-                  refsetService.cancelMigration($scope.refset.id).then(
+
+                  refsetService.cancelMigration(refset.id).then(
                   // Success
                   function(data) {
-                    // Upon cancel, this starts a lookup process
-                    $scope.refsetLookupProgress[refset.id] = 1;
-                    $scope.startLookup($scope.refset);
-                    refsetService.fireRefsetChanged($scope.refset);
+                    // Some local management of refset state to avoid
+                    // a million callbacks to the server while
+                    // startLookup is running
+                    refset.staged = false;
+                    refset.stagingType = null;
+                    // If INTENSIONAL, we need to re-look up old/not/new members
+                    if (refset.type == 'INTENSIONAL') {
+                      refset.lookupInProgress = true;
+                      startLookup(refset);
+                    }
+                    $scope.cancelling = false;
+                    // refsetService.fireRefsetChanged($scope.refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
                   });
+
                 }
                 if (refset.stagingType == 'BETA') {
                   releaseService.cancelRefsetRelease($scope.refset.id).then(
                   // Success
                   function() {
+                    $scope.cancelling = false;
                     refsetService.fireRefsetChanged($scope.refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
                   });
                 }
               };
 
               // cancelling a release given the staged refset
-              $scope.cancelActionForStaged = function(stagedRefset) {
+              $scope.cancelActionForStaged = function(refest) {
                 if (stagedRefset.workflowStatus == 'BETA') {
-                  refsetService.getOriginForStagedRefset(stagedRefset.id).then(
+                  refsetService.getOriginForStagedRefsetId(refset.id).then(
                   // Success
                   function(data) {
-                    $scope.originId = data;
-                    refsetService.refset(data).then(
+                    refsetService.getRefset(data).then(
                     // Success
                     function(data) {
                       $scope.cancelAction(data);
@@ -601,10 +622,6 @@ tsApp
                 }
               };
 
-              // Need a scope verison and a non-scope one for modals
-              $scope.startLookup = function(refset) {
-                startLookup(refset);
-              };
               // Start lookup again - not $scope because modal must access it
               function startLookup(refset) {
                 refsetService.startLookup(refset.id).then(
@@ -625,8 +642,10 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
+                  if (data === "100") {
+                    refset.lookupInProgress = false;
+                  }
                   $scope.refsetLookupProgress[refset.id] = data;
-
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.refsetLookupProgress) {
@@ -1162,7 +1181,6 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
-                              $scope.refset.lookupInProgress = true;
                               $scope.comments = data.comments;
                               $scope.errors = data.errors;
                               startLookup(refset);
@@ -1189,7 +1207,6 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
-                      $scope.refset.lookupInProgress = true;
                       $scope.comments = data.comments;
                       $scope.errors = data.errors;
                       startLookup(refset);
@@ -1248,11 +1265,10 @@ tsApp
               // Open release process modal given staged refset
               $scope.openReleaseProcessModalForStaged = function(stagedRefset) {
 
-                refsetService.getOriginForStagedRefset(stagedRefset.id).then(
+                refsetService.getOriginForStagedRefsetId(stagedRefset.id).then(
                 // Success
                 function(data) {
-                  $scope.originId = data;
-                  refsetService.refset(data).then(
+                  refsetService.getRefset(data).then(
                   // Success
                   function(data) {
                     $scope.openReleaseProcessModal(data);
@@ -2198,8 +2214,8 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset,
-                paging, metadata) {
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
+                refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
                 // set up variables
@@ -2290,7 +2306,38 @@ tsApp
                   });
                 }
 
-                //
+                // Table sorting mechanism
+                $scope.setSortField = function(table, field, object) {
+
+                  utilService.setSortField(table, field, $scope.paging);
+                  // retrieve the correct table
+                  if (table == 'membersInCommon') {
+                    $scope.findMembersInCommon();
+                  } else if (table == 'oldRegularMembers') {
+                    $scope.getOldRegularMembers();
+                  } else if (table == 'newRegularMembers') {
+                    $scope.getNewRegularMembers();
+                  } else if (table == 'stagedInclusions') {
+                    $scope.getPagedStagedInclusions();
+                  } else if (table == 'validInclusions') {
+                    $scope.getPagedValidInclusions();
+                  } else if (table == 'invalidInclusions') {
+                    $scope.getPagedInvalidInclusions();
+                  } else if (table == 'stagedExclusions') {
+                    $scope.getPagedStagedExclusions();
+                  } else if (table == 'validExclusions') {
+                    $scope.getPagedValidEclusions();
+                  } else if (table == 'invalidExclusions') {
+                    $scope.getPagedInvalidExclusions();
+                  }
+                };
+
+                // Return up or down sort chars if sorted
+                $scope.getSortIndicator = function(table, field) {
+                  return utilService.getSortIndicator(table, field, $scope.paging);
+                };
+
+                // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(
                   // Success
@@ -2375,7 +2422,7 @@ tsApp
                 $scope.findMembersInCommon = function() {
                   var pfs = {
                     startIndex : ($scope.paging['membersInCommon'].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
+                    maxResults : $scope.pageSize+2,
                     sortField : null,
                     queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
@@ -2441,17 +2488,16 @@ tsApp
 
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
-                  // Make cancel button go away immediately
-                  refset.staging = false;
-                  refset.stagingType = null;
-
                   refsetService.cancelMigration(refset.id).then(
                   // Success
                   function(data) {
+                    // mark as cancelled
+                    refset.staged = false;
+                    refset.stagingType = null;
                     $scope.stagedRefset = null;
                     // If INTENSIONAL, we need to re-look up old/not/new members
                     if (refset.type == 'INTENSIONAL') {
-                      refset.lookupInProgress = true;
+                      refset.lookupInProgress = false;
                       startLookup(refset);
                     }
                     $uibModalInstance.close(refset);
@@ -2471,6 +2517,10 @@ tsApp
                   function(data) {
                     $scope.lookupProgress = data;
                     if (data >= 100) {
+                      gpService.decrement();
+                      $scope.stagedRefset.lookupInProgress = false;
+                      $scope.refset.lookupInProgress = false;
+
                       // Cancel interval
                       $interval.cancel($scope.lookupInterval);
                       $scope.lookupInterval = null;
@@ -2529,10 +2579,12 @@ tsApp
                     } else {
                       lookupRefset = refset;
                     }
+
+                    gpService.increment();
                     lookupRefset.lookupInProgress = true;
                     $scope.lookupInterval = $interval(function() {
                       $scope.refreshLookupProgress(data);
-                    }, 1000);
+                    }, 2000);
                   },
                   // Error
                   function(data) {

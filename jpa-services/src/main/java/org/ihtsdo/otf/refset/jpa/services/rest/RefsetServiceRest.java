@@ -580,7 +580,7 @@ public interface RefsetServiceRest {
    * @return the origin for staged refset
    * @throws Exception the exception
    */
-  public Long getOriginForStagedRefset(Long stagedRefsetId, String authToken)
+  public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception;
 
 

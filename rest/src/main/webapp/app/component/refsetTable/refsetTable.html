@@ -194,14 +194,14 @@
             <!-- Cancel buttons if migration in progress -->
             <span ng-show="refset.stagingType == 'IMPORT'">
               <br />
-              <button class="btn btn-xs btn-warning"
-                ng-click="cancelAction(refset)"
+              <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
+                ng-click="cancelAction(refset); "
                 uib-tooltip="Click to cancel failed import">Cancel
                 Import</button>
             </span>
             <span ng-show="refset.stagingType == 'MIGRATION'">
               <br />
-              <button class="btn btn-xs btn-warning"
+              <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel migration">Cancel
                 Migration</button>
@@ -260,17 +260,18 @@
               title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
-            <span ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
+            <span
+              ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
                         refset.inPublicationProcess">
               <br />
-              <button class="btn btn-xs btn-warning"
+              <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset)"
                 uib-tooltip="Click to cancel release process">Cancel
                 Release</button>
             </span>
             <span ng-show="refset.workflowStatus == 'BETA'">
               <br />
-              <button class="btn btn-xs btn-warning"
+              <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelActionForStaged(refset)"
                 uib-tooltip="Click to cancel release process">Cancel
                 Release</button>
