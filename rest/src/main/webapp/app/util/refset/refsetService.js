@@ -64,7 +64,7 @@ tsApp.service('refsetService', [
     };
 
     // get refset for id
-    this.refset = function(refsetId) {
+    this.getRefset = function(refsetId) {
       console.debug('getRefset');
       var deferred = $q.defer();
 
@@ -1262,7 +1262,7 @@ tsApp.service('refsetService', [
     };
     
     // get the origin id given a staged refset
-    this.getOriginForStagedRefset = function(stagedRefsetId) {
+    this.getOriginForStagedRefsetId = function(stagedRefsetId) {
       console.debug('getOriginForStagedRefset');
       // Setup deferred
       var deferred = $q.defer();

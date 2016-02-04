@@ -27,13 +27,13 @@
     <h4 ng-show="validationResult.warnings.length > 0">Warnings</h4>
     <table class="table">
       <tr ng-repeat="warning in validationResult.warnings">
-        <td>{{warning}}</td>
+        <td class="alert alert-warning">{{warning}}</td>
       </tr>
     </table>
     <h4 ng-show="validationResult.errors.length > 0">Errors</h4>
     <table class="table">
       <tr ng-repeat="error in validationResult.errors">
-        <td>{{error}}</td>
+        <td class="alert alert-danger alert-error">{{error}}</td>
       </tr>
     </table>
   </div>
@@ -139,7 +139,7 @@
     ng-show="translation.inPublicationProcess && !validationResult && translation.stagingType != 'BETA' && stagedTranslation.workflowStatus != 'BETA'"
     ng-click="validateTranslationRelease(translation)">Validate</button>
   <button class="btn btn-primary"
-    ng-show="validationResult && translation.stagingType != 'BETA'"
+    ng-show="validationResult && validationResult.errors.length == 0 &&  translation.stagingType != 'BETA'"
     ng-click="betaTranslationRelease(translation)">Beta</button>
   <button class="btn btn-primary"
     ng-show="translation.stagingType == 'BETA' || stagedTranslation.workflowStatus == 'BETA'"

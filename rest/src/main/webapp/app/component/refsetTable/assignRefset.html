@@ -19,10 +19,12 @@
       </td>
     </tr>
     <tr>
-      <td>
+      <td colspan="2">
         <b>Note</b>
       </td>
-      <td>
+    </tr>
+    <tr>
+      <td colspan="2">
         <textarea rows="4" cols="40" ng-model="note" ui-tinymce="tinymceOptions"></textarea>
       </td>
     </tr>
@@ -32,8 +34,10 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]"
+              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              class="noul material-icons md-18"
+              ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}

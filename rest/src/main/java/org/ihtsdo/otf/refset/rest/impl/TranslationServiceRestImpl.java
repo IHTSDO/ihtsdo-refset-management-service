@@ -78,6 +78,7 @@ import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.ImportTranslationHandler;
 import org.ihtsdo.otf.refset.services.handlers.PhraseMemoryHandler;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.ihtsdo.otf.refset.workflow.TrackingRecord;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
 
@@ -807,7 +808,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // get the staged change tracking object
       final StagedTranslationChange change =
-          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation
+              .getId());
 
       // Obtain the import handler
       ImportTranslationHandler handler =
@@ -827,7 +829,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       // Load concepts into memory and add to translation
       final List<Concept> concepts = handler.importConcepts(translation, in);
       ValidationResult validationResult = handler.getValidationResults();
-      
+
       int objectCt = 0;
       for (final Concept concept : concepts) {
 
@@ -839,7 +841,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         concept.setId(null);
         concept.setPublishable(true);
         concept.setPublished(false);
-        concept.setName("name lookup in progress");
+        concept.setName(TerminologyHandler.NAME_LOOKUP_IN_PROGRESS);
         concept.setActive(true);
         concept.setTranslation(translation);
         // Mark as ready for publication as they are imported and can be further
@@ -952,7 +954,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       // Remove the staged translation change and set staging type back to null
       StagedTranslationChange change =
-          translationService.getStagedTranslationChangeFromOrigin(translation.getId());
+          translationService.getStagedTranslationChangeFromOrigin(translation
+              .getId());
       translationService.removeStagedTranslationChange(change.getId());
       translation.setStagingType(null);
       translation.setLastModifiedBy(userName);
@@ -2930,7 +2933,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       securityService.close();
     }
   }
-  
+
   @Override
   @GET
   @Produces("text/plain")
@@ -2940,25 +2943,30 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Staged Translation id, e.g. 3", required = true) @QueryParam("stagedTranslationId") Long stagedTranslationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Translation): origin, " + stagedTranslationId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call (Translation): origin, " + stagedTranslationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken, "get origin translation",
           UserRole.VIEWER);
 
-      final Translation stagedTranslation = translationService.getTranslation(stagedTranslationId);
+      final Translation stagedTranslation =
+          translationService.getTranslation(stagedTranslationId);
 
       if (stagedTranslation != null) {
         if (stagedTranslation.getProject() == null) {
           authorizeApp(securityService, authToken, "get origin translation",
               UserRole.VIEWER);
         } else {
-          authorizeProject(translationService, stagedTranslation.getProject().getId(),
-              securityService, authToken, "get origin translation", UserRole.AUTHOR);
+          authorizeProject(translationService, stagedTranslation.getProject()
+              .getId(), securityService, authToken, "get origin translation",
+              UserRole.AUTHOR);
         }
-      } 
-      StagedTranslationChange stagedTranslationChange = translationService.getStagedTranslationChangeFromStaged(stagedTranslationId);
+      }
+      StagedTranslationChange stagedTranslationChange =
+          translationService
+              .getStagedTranslationChangeFromStaged(stagedTranslationId);
       return stagedTranslationChange.getOriginTranslation().getId();
     } catch (Exception e) {
       handleException(e, "trying to get origin translation");

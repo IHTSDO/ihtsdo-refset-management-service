@@ -94,17 +94,6 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
       result.addError("Exclusion member attached to non-intensional refset.");
     }
 
-    // Exclusions should be !publishable, others should be
-    if (member.getMemberType() == Refset.MemberType.EXCLUSION
-        && member.isPublishable()) {
-      result.addError("Exclusion members are not publishable");
-    }
-
-    if (member.getMemberType() != Refset.MemberType.EXCLUSION
-        && !member.isPublishable()) {
-      result.addError("Non-exclusion members should be publishable");
-    }
-
     return result;
   }
 

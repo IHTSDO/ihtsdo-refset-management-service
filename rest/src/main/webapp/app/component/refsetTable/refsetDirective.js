@@ -49,7 +49,7 @@ tsApp
               $scope.refsetLookupProgress = {};
               $scope.lookupInterval = null;
               $scope.project = null;
-
+              $scope.cancelling = null;
               $scope.showLatest = true;
 
               // Page metadata
@@ -554,48 +554,74 @@ tsApp
                 releaseService.exportReleaseArtifact(artifact);
               };
 
-              // Cancel a staging operation
+              // Directive scoped method for cancelling an import/migration
               $scope.cancelAction = function(refset) {
-                $scope.refset = refset;
+                $scope.cancelling = true;
                 if (refset.stagingType == 'IMPORT') {
-                  refsetService.cancelImportMembers($scope.refset.id).then(
+                  refsetService.cancelImportMembers(refset.id).then(
                   // Success
                   function() {
-                    refsetService.fireRefsetChanged();
+                    $scope.cancelling = false;
+                    refsetService.fireRefsetChanged(refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
                   });
                 }
                 if (refset.stagingType == 'MIGRATION') {
-                  refsetService.cancelMigration($scope.refset.id).then(
+
+                  refsetService.cancelMigration(refset.id).then(
+                  // Success
+                  function(data) {
+                    // Some local management of refset state to avoid
+                    // a million callbacks to the server while
+                    // startLookup is running
+                    refset.staged = false;
+                    refset.stagingType = null;
+                    // If INTENSIONAL, we need to re-look up old/not/new members
+                    if (refset.type == 'INTENSIONAL') {
+                      refset.lookupInProgress = true;
+                      startLookup(refset);
+                    }
+                    $scope.cancelling = false;
+                    // refsetService.fireRefsetChanged($scope.refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
+                  });
+
+                }
+                if (refset.stagingType == 'BETA') {
+                  releaseService.cancelRefsetRelease($scope.refset.id).then(
                   // Success
                   function() {
-                    refsetService.fireRefsetChanged();
+                    $scope.cancelling = false;
+                    refsetService.fireRefsetChanged($scope.refset);
+                  },
+                  // Error
+                  function() {
+                    $scope.cancelling = false;
                   });
                 }
               };
 
-              
-              // cancelling a release given the staged refset            
-              $scope.cancelActionForStaged = function(stagedRefset) {
+              // cancelling a release given the staged refset
+              $scope.cancelActionForStaged = function(refest) {
                 if (stagedRefset.workflowStatus == 'BETA') {
-                  refsetService.getOriginForStagedRefset(
-                    stagedRefset.id).then(
+                  refsetService.getOriginForStagedRefsetId(refset.id).then(
                   // Success
                   function(data) {
-                    $scope.originId = data;
-                    refsetService.refset(
-                      data).then(
+                    refsetService.getRefset(data).then(
                     // Success
                     function(data) {
                       $scope.cancelAction(data);
                     });
                   });
                 }
-              }
-              
-              // Need a scope verison and a non-scope one for modals
-              $scope.startLookup = function(refset) {
-                startLookup(refset);
               };
+
               // Start lookup again - not $scope because modal must access it
               function startLookup(refset) {
                 refsetService.startLookup(refset.id).then(
@@ -616,8 +642,10 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
+                  if (data === "100") {
+                    refset.lookupInProgress = false;
+                  }
                   $scope.refsetLookupProgress[refset.id] = data;
-
                   // If all lookups in progress are at 100%, stop interval
                   var found = true;
                   for ( var key in $scope.refsetLookupProgress) {
@@ -1182,6 +1210,7 @@ tsApp
                       $scope.comments = data.comments;
                       $scope.errors = data.errors;
                       startLookup(refset);
+                      $uibModalInstance.close($scope.refset);
                     },
                     // Failure - show error
                     function(data) {
@@ -1204,32 +1233,6 @@ tsApp
                   // close the dialog and reload refsets
                   $uibModalInstance.close();
                 };
-              };
-
-              // Directive scoped method for cancelling an import/migration
-              $scope.cancelAction = function(refset) {
-                $scope.refset = refset;
-                if (refset.stagingType == 'IMPORT') {
-                  refsetService.cancelImportMembers($scope.refset.id).then(
-                  // Success
-                  function() {
-                    refsetService.fireRefsetChanged($scope.refset);
-                  });
-                }
-                if (refset.stagingType == 'MIGRATION') {
-                  refsetService.cancelMigration($scope.refset.id).then(
-                  // Success
-                  function() {
-                    refsetService.fireRefsetChanged($scope.refset);
-                  });
-                }
-                if (refset.stagingType == 'BETA') {
-                  releaseService.cancelRefsetRelease($scope.refset.id).then(
-                  // Success
-                  function() {
-                    refsetService.fireRefsetChanged($scope.refset);
-                  });
-                }
               };
 
               // Release Process modal
@@ -1262,20 +1265,17 @@ tsApp
               // Open release process modal given staged refset
               $scope.openReleaseProcessModalForStaged = function(stagedRefset) {
 
-                refsetService.getOriginForStagedRefset(
-                    stagedRefset.id).then(
+                refsetService.getOriginForStagedRefsetId(stagedRefset.id).then(
+                // Success
+                function(data) {
+                  refsetService.getRefset(data).then(
                   // Success
                   function(data) {
-                    $scope.originId = data;
-                    refsetService.refset(
-                      data).then(
-                    // Success
-                    function(data) {
-                      $scope.openReleaseProcessModal(data);
-                    });
+                    $scope.openReleaseProcessModal(data);
                   });
-                };
-                
+                });
+              };
+
               // Release Process controller
               var ReleaseProcessModalCtrl = function($scope, $uibModalInstance, refset, ioHandlers,
                 utilService) {
@@ -1783,6 +1783,9 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.project = project;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                $scope.clause = {
+                  value : null
+                };
                 $scope.refset = {
                   workflowPath : metadata.workflowPaths[0],
                   terminology : metadata.terminologies[0],
@@ -1798,6 +1801,7 @@ tsApp
                 $scope.errors = [];
                 $scope.warnings = [];
 
+                // lookup versions
                 $scope.terminologySelected = function(terminology) {
                   $scope.versions = metadata.versions[terminology].sort().reverse();
                 };
@@ -1807,11 +1811,11 @@ tsApp
                   refset.projectId = project.id;
                   // Setup definition if configured
                   if (refset.type == 'EXTENSIONAL') {
-                    $scope.defintiion = null;
+                    $scope.clause = null;
                   }
-                  if ($scope.definition) {
+                  if ($scope.clause && $scope.clause.value) {
                     refset.definitionClauses = [ {
-                      value : $scope.definition,
+                      value : $scope.clause.value,
                       negated : false
                     } ];
                   }
@@ -2210,8 +2214,8 @@ tsApp
               };
 
               // Migration modal controller
-              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, refset,
-                paging, metadata) {
+              var MigrationModalCtrl = function($scope, $uibModalInstance, $interval, gpService,
+                refset, paging, metadata) {
                 console.debug('Entered migration modal control');
 
                 // set up variables
@@ -2221,13 +2225,32 @@ tsApp
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
-                $scope.paging['membersInCommon'].typeFilter = '';
-                $scope.paging['oldRegularMembers'].typeFilter = '';
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
                 $scope.pagedStagedInclusions = [];
+                $scope.paging['newRegularMembers'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
+                $scope.paging['oldRegularMembers'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
+                $scope.paging['membersInCommon'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
                 $scope.paging['stagedInclusions'] = {
                   page : 1,
                   filter : '',
@@ -2275,7 +2298,7 @@ tsApp
                   sortField : 'lastModified',
                   ascending : true
                 };
-                var stop;
+                $scope.lookupInterval = null;
 
                 // Initialize
                 if ($scope.refset.stagingType == 'MIGRATION') {
@@ -2285,7 +2308,7 @@ tsApp
                     $scope.stagedRefset = data;
                     $scope.newTerminology = $scope.stagedRefset.terminology;
                     $scope.newVersion = $scope.stagedRefset.version;
-                    refsetService.compareRefsets($scope.refset.id, data.id).then(
+                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                     // Success
                     function(data) {
                       $scope.reportToken = data;
@@ -2302,7 +2325,39 @@ tsApp
                   });
                 }
 
-                //
+                // Table sorting mechanism
+                $scope.setSortField = function(table, field, object) {
+                  console.debug("sort field", table, field, $scope.paging);
+                  utilService.setSortField(table, field, $scope.paging);
+                  console.debug("  paging = ", $scope.paging[table]);
+                  // retrieve the correct table
+                  if (table == 'membersInCommon') {
+                    $scope.findMembersInCommon();
+                  } else if (table == 'oldRegularMembers') {
+                    $scope.getOldRegularMembers();
+                  } else if (table == 'newRegularMembers') {
+                    $scope.getNewRegularMembers();
+                  } else if (table == 'stagedInclusions') {
+                    $scope.getPagedStagedInclusions();
+                  } else if (table == 'validInclusions') {
+                    $scope.getPagedValidInclusions();
+                  } else if (table == 'invalidInclusions') {
+                    $scope.getPagedInvalidInclusions();
+                  } else if (table == 'stagedExclusions') {
+                    $scope.getPagedStagedExclusions();
+                  } else if (table == 'validExclusions') {
+                    $scope.getPagedValidExclusions();
+                  } else if (table == 'invalidExclusions') {
+                    $scope.getPagedInvalidExclusions();
+                  }
+                };
+
+                // Return up or down sort chars if sorted
+                $scope.getSortIndicator = function(table, field) {
+                  return utilService.getSortIndicator(table, field, $scope.paging);
+                };
+
+                // get diff report
                 $scope.getDiffReport = function() {
                   refsetService.getDiffReport($scope.reportToken).then(
                   // Success
@@ -2335,7 +2390,8 @@ tsApp
                   var pfs = {
                     startIndex : ($scope.paging['oldRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
-                    sortField : null,
+                    sortField : $scope.paging['oldRegularMembers'].sortField,
+                    ascending : $scope.paging['oldRegularMembers'].ascending,
                     queryRestriction : $scope.paging['oldRegularMembers'].filter != undefined ? $scope.paging['oldRegularMembers'].filter
                       : null
                   };
@@ -2367,7 +2423,8 @@ tsApp
                   var pfs = {
                     startIndex : ($scope.paging['newRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
-                    sortField : null,
+                    sortField : $scope.paging['newRegularMembers'].sortField,
+                    ascending : $scope.paging['newRegularMembers'].ascending,
                     queryRestriction : $scope.paging['newRegularMembers'].filter != undefined ? $scope.paging['newRegularMembers'].filter
                       : null
                   };
@@ -2387,8 +2444,9 @@ tsApp
                 $scope.findMembersInCommon = function() {
                   var pfs = {
                     startIndex : ($scope.paging['membersInCommon'].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize,
-                    sortField : null,
+                    maxResults : $scope.pageSize + 2,
+                    sortField : $scope.paging['membersInCommon'].sortField,
+                    ascending : $scope.paging['membersInCommon'].ascending,
                     queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
                   };
@@ -2453,11 +2511,18 @@ tsApp
 
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
-
                   refsetService.cancelMigration(refset.id).then(
                   // Success
                   function(data) {
+                    // mark as cancelled
+                    refset.staged = false;
+                    refset.stagingType = null;
                     $scope.stagedRefset = null;
+                    // If INTENSIONAL, we need to re-look up old/not/new members
+                    if (refset.type == 'INTENSIONAL') {
+                      refset.lookupInProgress = false;
+                      startLookup(refset);
+                    }
                     $uibModalInstance.close(refset);
                   },
                   // Error - cancel migration
@@ -2467,16 +2532,25 @@ tsApp
 
                 };
 
-                $scope.refreshLookupProgress = function() {
-                  refsetService.getLookupProgress($scope.stagedRefset.id).then(
+                // Refresh lookup progress until ready
+                // then compare refsets
+                $scope.refreshLookupProgress = function(refset) {
+                  refsetService.getLookupProgress(refset.id).then(
                   // Success
                   function(data) {
                     $scope.lookupProgress = data;
                     if (data >= 100) {
-                      $scope.stopRefreshLookupProgress();
+                      gpService.decrement();
                       $scope.stagedRefset.lookupInProgress = false;
+                      $scope.refset.lookupInProgress = false;
 
-                      refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                      // Cancel interval
+                      $interval.cancel($scope.lookupInterval);
+                      $scope.lookupInterval = null;
+
+                      // Compare refsets original and staged, regardless of the
+                      // parameter
+                      refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                       // Success
                       function(data) {
                         $scope.reportToken = data;
@@ -2492,13 +2566,6 @@ tsApp
                   function(data) {
                     handleError($scope.errors, data);
                   });
-                };
-
-                $scope.stopRefreshLookupProgress = function() {
-                  if (angular.isDefined(stop)) {
-                    $interval.cancel(stop);
-                    stop = undefined;
-                  }
                 };
 
                 // Begin migration and compare refsets and get diff report
@@ -2523,12 +2590,23 @@ tsApp
                   // Success
                   function(data) {
                     $scope.stagedRefset = data;
-                    $scope.stagedRefset.lookupInProgress = true;
+                    // manage local state witout re-reading refset
                     $scope.refset.stagingType = 'MIGRATION';
-                    $scope.lookupProgress = 0;
+                    $scope.refset.staged = true;
 
-                    stop = $interval(function() {
-                      $scope.refreshLookupProgress();
+                    // What to do next depends on type
+                    var lookupRefset = null;
+                    $scope.lookupProgress = 1;
+                    if (refset.type == 'EXTENSIONAL') {
+                      lookupRefset = $scope.stagedRefset;
+                    } else {
+                      lookupRefset = refset;
+                    }
+
+                    gpService.increment();
+                    lookupRefset.lookupInProgress = true;
+                    $scope.lookupInterval = $interval(function() {
+                      $scope.refreshLookupProgress(data);
                     }, 2000);
                   },
                   // Error
@@ -2557,7 +2635,7 @@ tsApp
                   refsetService.removeRefsetMember(member.id).then(
                   // Success
                   function(data) {
-                    refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
+                    refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                     // Success
                     function(data) {
                       $scope.reportToken = data;
@@ -2585,31 +2663,32 @@ tsApp
                 $scope.exclude = function(refset, member, staged) {
                   refsetService.addRefsetExclusion($scope.stagedRefset, member.conceptId, staged)
                     .then(
-                    // Success
-                    function() {
-                      refsetService.releaseReportToken($scope.reportToken).then(
                       // Success
                       function() {
-                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                        // Success
-                        function(data) {
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                          // Success
+                          function() {
+                            refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id)
+                              .then(
+                              // Success
+                              function(data) {
+                                $scope.reportToken = data;
+                                $scope.getDiffReport();
+                              },
+                              // Error
+                              function(data) {
+                                handleError($scope.errors, data);
+                              });
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
                       },
                       // Error
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                    },
-                    // Error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
                 };
 
                 // add inclusion
@@ -2635,14 +2714,14 @@ tsApp
                 }
                 
                 $scope.addRefsetInclusion = function(refset, member, staged) {
-                  stagedMember.refsetId = refset.id;
-                  refsetService.addRefsetInclusion(stagedMember, staged).then(
+                  member.refsetId = refset.id;
+                  refsetService.addRefsetInclusion(member, staged).then(
                   // Success
-                  function() {
+                  function(data) {
                     refsetService.releaseReportToken($scope.reportToken).then(
                     // Success
-                    function() {
-                      refsetService.compareRefsets(member.refsetId, $scope.stagedRefset.id).then(
+                    function(data) {
+                      refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                       // Success
                       function(data) {
                         $scope.reportToken = data;
@@ -2689,59 +2768,61 @@ tsApp
                 $scope.revert = function(refset, member) {
                   if (member.memberType == 'INCLUSION' || member.memberType == 'INCLUSION_STAGED') {
                     refsetService.removeRefsetMember(member.id).then(
-                    // Success - remove refse member
-                    function() {
-                      refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success - release report token
+                      // Success - remove refse member
                       function() {
-                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                        // Success - compare refsets
-                        function(data) {
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error - compare refsets
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                          // Success - release report token
+                          function() {
+                            refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id)
+                              .then(
+                              // Success - compare refsets
+                              function(data) {
+                                $scope.reportToken = data;
+                                $scope.getDiffReport();
+                              },
+                              // Error - compare refsets
+                              function(data) {
+                                handleError($scope.errors, data);
+                              });
+                          },
+                          // Error - release report token
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
                       },
-                      // Error - release report token
+                      // Error - remove refset member
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                    },
-                    // Error - remove refset member
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
                   } else if (member.memberType == 'EXCLUSION'
                     || member.memberType == 'EXCLUSION_STAGED') {
                     refsetService.removeRefsetExclusion(member.id).then(
-                    // Success
-                    function() {
-                      refsetService.releaseReportToken($scope.reportToken).then(
-                      // Success - release report token
+                      // Success
                       function() {
-                        refsetService.compareRefsets(refset.id, $scope.stagedRefset.id).then(
-                        // Success - compare refsets
-                        function(data) {
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error - compare refsets
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                        refsetService.releaseReportToken($scope.reportToken).then(
+                          // Success - release report token
+                          function() {
+                            refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id)
+                              .then(
+                              // Success - compare refsets
+                              function(data) {
+                                $scope.reportToken = data;
+                                $scope.getDiffReport();
+                              },
+                              // Error - compare refsets
+                              function(data) {
+                                handleError($scope.errors, data);
+                              });
+                          },
+                          // Error - release report token
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
                       },
-                      // Error - release report token
+                      // Error - remove refset exclusion
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                    },
-                    // Error - remove refset exclusion
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
                   }
                 };
 

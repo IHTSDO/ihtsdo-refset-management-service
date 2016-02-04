@@ -1468,7 +1468,7 @@ public class RefsetClientRest extends RootClientRest implements
   }
 
   @Override
-  public Long getOriginForStagedRefset(Long stagedRefsetId, String authToken)
+  public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - get origin id given the staged Refset Id "

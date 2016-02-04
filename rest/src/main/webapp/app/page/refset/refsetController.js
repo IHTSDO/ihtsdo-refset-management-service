@@ -102,12 +102,8 @@ tsApp
             .then(
               // Success
               function(data) {
-                console.debug("B=", data);
                 $scope.projects.assignedUsers = data.users;
                 for (var i = 0; i < $scope.projects.assignedUsers.length; i++) {
-                  console.debug("X=", $scope.projects.assignedUsers[i].userName,
-                    $scope.user.userName,
-                    $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id]);
                   if ($scope.projects.assignedUsers[i].userName == $scope.user.userName) {
                     $scope.projects.role = $scope.projects.assignedUsers[i].projectRoleMap[$scope.project.id];
                     if ($scope.projects.role == 'ADMIN') {
@@ -117,10 +113,12 @@ tsApp
                     } else if ($scope.projects.role == 'AUTHOR') {
                       $scope.roleOptions = [ 'AUTHOR' ];
                     }
-                    // Force the initial choice to be "AUTHOR" instead of "ADMIN"
-                    if ($scope.projects.role == 'ADMIN' && !$scope.user.userPreferences.lastProjectRole) {
+                    // Force the initial choice to be "AUTHOR" instead of
+                    // "ADMIN"
+                    if ($scope.projects.role == 'ADMIN'
+                      && !$scope.user.userPreferences.lastProjectRole) {
                       $scope.projects.role = 'AUTHOR';
-                    } 
+                    }
                     if ($scope.user.userPreferences.lastProjectRole) {
                       $scope.projects.role = $scope.user.userPreferences.lastProjectRole;
                     }

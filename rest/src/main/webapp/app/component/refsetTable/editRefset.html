@@ -65,9 +65,7 @@
         <td>
           <b>Organization</b>
         </td>
-        <td>
-          {{project.organization}}
-        </td>
+        <td>{{project.organization}}</td>
       </tr>
       <tr>
         <td>
@@ -132,8 +130,11 @@
           <b>Definition</b>
         </td>
         <td>
-          <textarea ng-show="action == 'Add'" rows="4" cols="40"
-            ng-model="definition"></textarea>
+          <!-- Editing field for ADD -->
+          <div ng-show="action == 'Add'" definition-clause clause="clause"
+            mode="edit" allowNegation="false"></div>
+
+          <!--  Read-only field for ADD -->
           <div ng-show="action == 'Clone' || action == 'Edit'"
             style="max-height: 400px; overflow-y: scroll;">
             <table class="table">

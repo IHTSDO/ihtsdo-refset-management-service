@@ -150,7 +150,10 @@
                 uib-tooltip="Click to cancel failed import">Cancel
                 Import</button>
             </span>
-            <span ng-show="translation.stagingType == 'BETA'">
+            <!-- Show cancel release on BETA if there is one, 
+                 otherwise on READY_FOR_PUBLICATION refset itself -->
+            <span
+              ng-show="translation.workflowStatus == 'BETA' || (translation.inPublicationProcess && !translation.staged)">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(translation)"

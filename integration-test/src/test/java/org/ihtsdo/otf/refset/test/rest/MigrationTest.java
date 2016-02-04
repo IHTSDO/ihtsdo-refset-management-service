@@ -42,7 +42,7 @@ import org.junit.Test;
 /**
  * Test case for redefinition.
  */
-public class RedefinitionTest extends RestSupport {
+public class MigrationTest extends RestSupport {
   /** The admin auth token. */
   private static String adminAuthToken;
 

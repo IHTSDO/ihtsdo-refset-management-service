@@ -433,7 +433,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         if (conceptNode.get("pt") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
         } else {
-          concept.setName("unable to determine name");
+          concept.setName(UNABLE_TO_DETERMINE_NAME);
         }
 
         concept.setPublishable(true);
@@ -687,8 +687,9 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      
-      if (resultString.contains("One or more supplied query parameters were invalid")) {
+
+      if (resultString
+          .contains("One or more supplied query parameters were invalid")) {
         throw new LocalException("Badly formatted concept id.");
       }
 

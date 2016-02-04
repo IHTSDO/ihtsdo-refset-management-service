@@ -267,7 +267,7 @@ tsApp
             .then(
               // Successs
               function(data) {
-                console.debug("DATA",data);
+                console.debug("DATA", data);
                 // if refsets, stop
                 if (data.refsets.length > 0) {
                   alert('The project has refsets attached. The refsets for this project must be removed'
@@ -573,10 +573,15 @@ tsApp
               function(data) {
                 // if not an admin, add user as a project admin
                 if ($scope.user.applicationRole != 'ADMIN') {
+                  var projectId = data.id;
                   projectService.assignUserToProject(data.id, $scope.user.userName, 'ADMIN').then(
                     function(data) {
                       // Update 'anyrole'
                       projectService.getUserHasAnyRole();
+
+                      // Set the "last project" setting to this project
+                      $scope.user.userPreferences.lastProjectId = projectId;
+                      securityService.updateUserPreferences($scope.user.userPreferences);
                       $uibModalInstance.close(data);
                     },
                     // Error
