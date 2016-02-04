@@ -280,6 +280,8 @@ public abstract class RootServiceJpa implements RootService {
       // allow the method to be accessed
       sortMethod.setAccessible(true);
 
+      final boolean ascending = (pfs != null) ? pfs.isAscending() : true;
+
       // sort the list
       Collections.sort(result, new Comparator<T>() {
         @Override
@@ -288,7 +290,11 @@ public abstract class RootServiceJpa implements RootService {
           try {
             final String s1 = (String) sortMethod.invoke(t1, new Object[] {});
             final String s2 = (String) sortMethod.invoke(t2, new Object[] {});
-            return s1.compareTo(s2);
+            if (ascending) {
+              return s1.compareTo(s2);
+            } else {
+              return s2.compareTo(s1);
+            }
           } catch (Exception e) {
             return 0;
           }

@@ -176,6 +176,7 @@ tsApp
 
         // Table sorting mechanism
         this.setSortField = function(table, field, paging) {
+          console.debug("utilService set sort field",table,field,paging);
           paging[table].sortField = field;
           // reset page number too
           paging[table].page = 1;

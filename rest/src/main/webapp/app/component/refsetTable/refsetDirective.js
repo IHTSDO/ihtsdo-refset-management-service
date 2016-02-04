@@ -2225,13 +2225,32 @@ tsApp
                 $scope.membersInCommon = null;
                 $scope.pageSize = 5;
                 $scope.paging = paging;
-                $scope.paging['membersInCommon'].typeFilter = '';
-                $scope.paging['oldRegularMembers'].typeFilter = '';
                 $scope.metadata = metadata;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
                 $scope.pagedStagedInclusions = [];
+                $scope.paging['newRegularMembers'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
+                $scope.paging['oldRegularMembers'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
+                $scope.paging['membersInCommon'] = {
+                  page : 1,
+                  filter : '',
+                  typeFilter : '',
+                  sortField : 'lastModified',
+                  ascending : true
+                };
                 $scope.paging['stagedInclusions'] = {
                   page : 1,
                   filter : '',
@@ -2308,8 +2327,9 @@ tsApp
 
                 // Table sorting mechanism
                 $scope.setSortField = function(table, field, object) {
-
+                  console.debug("sort field", table, field, $scope.paging);
                   utilService.setSortField(table, field, $scope.paging);
+                  console.debug("  paging = ", $scope.paging[table]);
                   // retrieve the correct table
                   if (table == 'membersInCommon') {
                     $scope.findMembersInCommon();
@@ -2326,7 +2346,7 @@ tsApp
                   } else if (table == 'stagedExclusions') {
                     $scope.getPagedStagedExclusions();
                   } else if (table == 'validExclusions') {
-                    $scope.getPagedValidEclusions();
+                    $scope.getPagedValidExclusions();
                   } else if (table == 'invalidExclusions') {
                     $scope.getPagedInvalidExclusions();
                   }
@@ -2370,7 +2390,8 @@ tsApp
                   var pfs = {
                     startIndex : ($scope.paging['oldRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
-                    sortField : null,
+                    sortField : $scope.paging['oldRegularMembers'].sortField,
+                    ascending : $scope.paging['oldRegularMembers'].ascending,
                     queryRestriction : $scope.paging['oldRegularMembers'].filter != undefined ? $scope.paging['oldRegularMembers'].filter
                       : null
                   };
@@ -2402,7 +2423,8 @@ tsApp
                   var pfs = {
                     startIndex : ($scope.paging['newRegularMembers'].page - 1) * $scope.pageSize,
                     maxResults : $scope.pageSize,
-                    sortField : null,
+                    sortField : $scope.paging['newRegularMembers'].sortField,
+                    ascending : $scope.paging['newRegularMembers'].ascending,
                     queryRestriction : $scope.paging['newRegularMembers'].filter != undefined ? $scope.paging['newRegularMembers'].filter
                       : null
                   };
@@ -2422,8 +2444,9 @@ tsApp
                 $scope.findMembersInCommon = function() {
                   var pfs = {
                     startIndex : ($scope.paging['membersInCommon'].page - 1) * $scope.pageSize,
-                    maxResults : $scope.pageSize+2,
-                    sortField : null,
+                    maxResults : $scope.pageSize + 2,
+                    sortField : $scope.paging['membersInCommon'].sortField,
+                    ascending : $scope.paging['membersInCommon'].ascending,
                     queryRestriction : $scope.paging['membersInCommon'].filter != undefined ? $scope.paging['membersInCommon'].filter
                       : null
                   };

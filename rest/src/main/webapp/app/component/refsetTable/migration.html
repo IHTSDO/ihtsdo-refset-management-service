@@ -124,11 +124,11 @@
             <tr>
               <th class="col-md-4 col-xs-4"><span
                   ng-click="setSortField('membersInCommon','conceptId', null)">
-                  Concept Id</span> <span
+                  Id</span> <span
                   ng-bind="getSortIndicator('membersInCommon','conceptId',null)"></span></th>
               <th class="col-md-7 col-xs-7"><span
                   ng-click="setSortField('membersInCommon','conceptName', null)">
-                  Concept Name</span> <span
+                  Name</span> <span
                   ng-bind="getSortIndicator('membersInCommon','conceptName',null)"></span></th>
               <th class="col-md-1 col-xs-1"
                 ng-show="refset.type == 'EXTENSIONAL'"><select
@@ -203,11 +203,11 @@
               <th class="col-md-4 col-xs-4"><span
                   ng-click="setSortField('newRegularMembers','conceptId', null)">
                   Id</span> <span
-                  ng-bind="getSortIndicator('membersInCommon','conceptId',null)"></span></th>
+                  ng-bind="getSortIndicator('newRegularMembers','conceptId',null)"></span></th>
               <th class="col-md-7 col-xs-7"><span
                   ng-click="setSortField('newRegularMembers','conceptName', null)">
                   Name</span> <span
-                  ng-bind="getSortIndicator('membersInCommon','conceptName',null)"></span></th>
+                  ng-bind="getSortIndicator('newRegularMembers','conceptName',null)"></span></th>
 
               <th class="col-md-1 col-xs-1"></th>
             </tr>
@@ -286,11 +286,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('validInclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('validInclusions','conceptId',null)"></span></th>
                   <th class="col-md-7 col-xs-7"><span
                       ng-click="setSortField('validInclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('validInclusions','conceptName',null)"></span></th>
                   <th class="col-md-1 col-xs-1"><select
                     title="Filter by status" style="width: 25px;"
@@ -361,11 +361,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('stagedInclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('stagedInclusions','conceptId',null)"></span></th>
                   <th class="col-md-7 col-xs-7"><span
                       ng-click="setSortField('stagedInclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('stagedInclusions','conceptName',null)"></span></th>
                   <th class="col-md-1 col-xs-1"><select
                     title="Filter by status" style="width: 25px;"
@@ -392,10 +392,10 @@
               </tbody>
             </table>
             <div
-              ng-show="migratedInclusions.length == 0 && (paging['migratedInclusions'].typeFilter || paging['migratedInclusions'].filter)"
+              ng-show="stagedInclusions.length == 0 && (paging['stagedInclusions'].typeFilter || paging['stagedInclusions'].filter)"
               class="alert alert-warning">No results</div>
             <div
-              ng-show="migratedInclusions.length == 0 && !paging['migratedInclusions'].typeFilter && !paging['migratedInclusions'].typeFilter"
+              ng-show="stagedInclusions.length == 0 && !paging['stagedInclusions'].typeFilter && !paging['stagedInclusions'].typeFilter"
               class="alert alert-warning">No migrated inclusions</div>
 
           </div>
@@ -447,11 +447,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('validExclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('validExclusions','conceptId',null)"></span></th>
                   <th class="col-md-7 col-xs-7"><span
                       ng-click="setSortField('validExclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('validExclusions','conceptName',null)"></span></th>
                   <th class="col-md-1 col-xs-1"></th>
                 </tr>
@@ -514,11 +514,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('stagedExclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('stagedExclusions','conceptId',null)"></span></th>
                   <th class="col-md-7 col-xs-7"><span
                       ng-click="setSortField('stagedExclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('stagedExclusions','conceptName',null)"></span></th>
                   <th class="col-md-1 col-xs-1"></th>
                 </tr>
@@ -585,11 +585,11 @@
             <tr>
               <th class="col-md-4 col-xs-4"><span
                   ng-click="setSortField('oldRegularMembers','conceptId', null)">
-                  Concept Id</span> <span
+                  Id</span> <span
                   ng-bind="getSortIndicator('oldRegularMembers','conceptId',null)"></span></th>
               <th class="col-md-7 col-xs-7"><span
                   ng-click="setSortField('oldRegularMembers','conceptName', null)">
-                  Concept Name</span> <span
+                  Name</span> <span
                   ng-bind="getSortIndicator('oldRegularMembers','conceptName',null)"></span></th>
               <th class="col-md-1 col-xs-1"><select
                 title="Filter by status" style="width: 25px;"
@@ -672,11 +672,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('invalidInclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('invalidInclusions','conceptId',null)"></span></th>
                   <th class="col-md-8 col-xs-8"><span
                       ng-click="setSortField('invalidInclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('invalidInclusions','conceptName',null)"></span></th>
                 </tr>
               </thead>
@@ -731,11 +731,11 @@
                 <tr>
                   <th class="col-md-4 col-xs-4"><span
                       ng-click="setSortField('invalidExclusions','conceptId', null)">
-                      Concept Id</span> <span
+                      Id</span> <span
                       ng-bind="getSortIndicator('invalidExclusions','conceptId',null)"></span></th>
                   <th class="col-md-8 col-xs-8"><span
                       ng-click="setSortField('invalidExclusions','conceptName', null)">
-                      Concept Name</span> <span
+                      Name</span> <span
                       ng-bind="getSortIndicator('invalidExclusions','conceptName',null)"></span></th>
                 </tr>
               </thead>
@@ -772,6 +772,7 @@
     ng-click="saveForLater(refset);">Save for later</button>
 
   <button class="btn btn-primary"
+    confirm="Are you sure you want to finish migration?"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     ng-click="finish(refset); ">Finish</button>
 
