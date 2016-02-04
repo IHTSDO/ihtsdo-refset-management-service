@@ -1486,7 +1486,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         final ConceptRefsetMember stagedMember = stagedMembers.get(key);
         // concept not in staged refset, remove
         if (stagedMember == null) {
-          System.out.println("remove origin = " + key + ", " + originMember);
           refsetService.removeMember(originMember.getId());
         }
         // member type changed, rewire
@@ -1498,8 +1497,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               .getUnstagedType());
           originMember.setRefset(originRefset);
           originMember.setLastModifiedBy(userName);
-          System.out.println("rewire staged = " + key + ", "
-              + originMember.getMemberType());
           refsetService.updateMember(originMember);
         }
       }
@@ -1515,8 +1512,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
               .getUnstagedType());
           stagedMember.setRefset(originRefset);
           stagedMember.setLastModifiedBy(userName);
-          System.out.println("rewire staged = " + key + ", "
-              + stagedMember.getMemberType().getUnstagedType());
           refsetService.updateMember(stagedMember);
         } else if (originMember != null
             && stagedMember.getMemberType().getUnstagedType() != originMember
@@ -1525,8 +1520,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         }
         // Member exactly matches one in origin - remove it, leave origin alone
         else {
-          System.out.println("remove staged = " + key + ", "
-              + stagedMember.getMemberType().getUnstagedType());
           refsetService.removeMember(stagedMember.getId());
         }
       }
@@ -1605,12 +1598,10 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       if (refset.getStagingType() != Refset.StagingType.MIGRATION) {
         throw new LocalException("Refset is not staged for migration.");
       }
-      System.out.println("a");
 
       // turn transaction per operation off
       refsetService.setTransactionPerOperation(false);
       refsetService.beginTransaction();
-      System.out.println("a");
 
       // Remove the staged refset change and set staging type back to null
       final StagedRefsetChange change =
@@ -1621,9 +1612,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
             "Unexpected problem with refset staged for migration, "
                 + "but no staged refset. Contact the administrator.");
       }
-      System.out.println("a");
       refsetService.removeStagedRefsetChange(change.getId());
-      System.out.println("a");
 
       // Start lookup
       List<ConceptRefsetMember> oldNotNew =
@@ -1632,23 +1621,18 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLookupInProgress(true);
       refsetService.lookupMemberNames(refset.getId(), oldNotNew,
           "cancel migration", true, ConfigUtility.isBackgroundLookup());
-      System.out.println("a");
 
       refsetService.removeRefset(change.getStagedRefset().getId(), true);
       refset.setStagingType(null);
       refset.setStaged(false);
       refset.setProvisional(false);
       refset.setLastModifiedBy(userName);
-      System.out.println("b " + refset);
       refsetService.updateRefset(refset);
-      System.out.println("a");
 
       addLogEntry(refsetService, userName, "CANCEL MIGRATION", refset
           .getProject().getId(), refset.getId(), refset.getTerminologyId()
           + ": " + refset.getName());
-      System.out.println("a");
       refsetService.commit();
-      System.out.println("a");
 
     } catch (Exception e) {
       handleException(e, "trying to cancel migration of refset");
