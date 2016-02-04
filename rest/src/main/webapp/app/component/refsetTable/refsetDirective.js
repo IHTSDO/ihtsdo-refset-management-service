@@ -2614,7 +2614,27 @@ tsApp
 
                 // add inclusion
                 $scope.include = function(refset, member, staged) {
-
+                  if (!member.conceptActive) {
+                    projectService.getReplacementConcepts(member.conceptId, refset.terminology, refset.version).then(
+                      // Success
+                      function(data) {
+                        $scope.replacementConcepts = data.concepts;
+                        if ($scope.replacementConcepts.length == 0) {
+                          $scope.addRefsetInclusion(refset, member, staged);
+                        } else {
+                          $scope.openReplacementConceptsModal(refset, member, staged, $scope.replacementConcepts);
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                  } else {
+                    $scope.addRefsetInclusion(refset, member, staged);
+                  }
+                }
+                
+                $scope.addRefsetInclusion = function(refset, member, staged) {
                   stagedMember.refsetId = refset.id;
                   refsetService.addRefsetInclusion(stagedMember, staged).then(
                   // Success
@@ -2737,8 +2757,129 @@ tsApp
                   $uibModalInstance.close();
                 };
 
-              };
+                
+                // Add modal
+                $scope.openReplacementConceptsModal = function(lrefset, lmember, lstaged, lreplacementConcepts) {
+                  console.debug('openReplacementConceptsModal ', lrefset, lmember, lstaged, lreplacementConcepts);
 
+                  var modalInstance = $uibModal.open({
+                    templateUrl : 'app/component/refsetTable/replacements.html',
+                    controller : ReplacementConceptsModalCtrl,
+                    backdrop : 'static',
+                    resolve : {
+                      refset : function() {
+                        return lrefset;
+                      },
+                      member : function() {
+                        return lmember;
+                      },
+                      staged : function() {
+                        return lstaged;
+                      },
+                      replacementConcepts : function() {
+                        return lreplacementConcepts;
+                      }
+                    }
+                  });
+
+                  modalInstance.result.then(
+                  // Success
+                  function(data) {
+                    
+                      refsetService.releaseReportToken($scope.reportToken).then(
+                      // Success
+                      function() {
+                        refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
+                        // Success
+                        function(data) {
+                          $scope.reportToken = data;
+                          $scope.getDiffReport();
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+              
+                    
+                  });
+
+                };
+
+                // Add modal controller
+                var ReplacementConceptsModalCtrl = function($scope, $uibModalInstance, refset, 
+                  member, staged, replacementConcepts) {
+                  console.debug('Entered replacement concepts modal control', 
+                    refset, member, staged, replacementConcepts);
+
+                  $scope.errors = [];
+                  $scope.refset = refset;
+                  $scope.member = member;
+                  $scope.staged = staged;
+                  $scope.replacementConcepts = replacementConcepts;
+                  $scope.selection = {
+                    ids: {"test": true}
+                  };
+                  $scope.expectedCt = 0;
+                  
+                  // Add button
+                  $scope.submitAdd = function() {
+                    for (var i=0; i<replacementConcepts.length; i++) {
+                      if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
+                        $scope.expectedCt++;
+                      }
+                    }
+                    if ($scope.selection.ids[$scope.member.conceptId]) {
+                      $scope.expectedCt++;
+                      $scope.addRefsetInclusion($scope.refset, $scope.member, $scope.staged);
+                    }
+                      
+                    for (var i=0; i<replacementConcepts.length; i++) {
+                      if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
+                        var member = {
+                          active : true,
+                          conceptId : replacementConcepts[i].terminologyId,
+                          conceptName : replacementConcepts[i].name,
+                          conceptActive : replacementConcepts[i].active,
+                          memberType : $scope.memberType,
+                          moduleId : refset.moduleId,
+                          refsetId : $scope.refset.id
+                        };
+                        $scope.addRefsetInclusion($scope.refset, member, $scope.staged);
+                      }
+                    }
+                  };
+
+                  $scope.addRefsetInclusion = function(refset, member, staged) {
+                    member.refsetId = refset.id;
+                    refsetService.addRefsetInclusion(member, staged).then(
+                    // Success
+                    function(data) {
+                      $scope.expectedCt--;
+                      if ($scope.expectedCt == 0) {
+                        $uibModalInstance.close();
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+                  };
+
+                  // Dismiss modal
+                  $scope.cancel = function() {
+                    $uibModalInstance.dismiss('cancel');
+                  };
+
+
+                };
+                
+              };
+              
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
                 console.debug('Open feedbackModal ', lrefset);
