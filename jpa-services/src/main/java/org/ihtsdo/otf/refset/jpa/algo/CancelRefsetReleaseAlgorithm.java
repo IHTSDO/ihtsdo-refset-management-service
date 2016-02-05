@@ -74,7 +74,6 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
     // Get staged refset change,
     StagedRefsetChange change = getStagedRefsetChangeFromOrigin(refset.getId());
     if (change != null) {
-
       // Remove staged refset change, release info, and the staged refset
       removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
@@ -82,8 +81,8 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
       refset.setInPublicationProcess(false);
       updateRefset(refset);
       ReleaseInfoList list =
-          findRefsetReleasesForQuery(change.getStagedRefset()
-              .getId(), null, null);
+          findRefsetReleasesForQuery(change.getStagedRefset().getId(), null,
+              null);
       if (list.getCount() != 1) {
         throw new Exception("Cannot find release info for refset "
             + change.getStagedRefset().getId());
@@ -92,6 +91,13 @@ public class CancelRefsetReleaseAlgorithm extends RefsetServiceJpa implements
       removeReleaseInfo(releaseInfo.getId());
       // Remove refset with cascade
       removeRefset(change.getStagedRefset().getId(), true);
+    }
+
+    // Even if not yet staged, turn publication flag off
+    else {
+      refset.setLastModifiedBy(userName);
+      refset.setInPublicationProcess(false);
+      updateRefset(refset);
     }
   }
 

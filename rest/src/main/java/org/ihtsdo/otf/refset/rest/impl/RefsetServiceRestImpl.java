@@ -1354,6 +1354,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refsetService.updateRefset(refsetCopy);
       refsetService.commit();
 
+      // lookup names after commit
+
       // Look up names/concept active for members of EXTENSIONAL
       if (refsetCopy.getType() == Refset.Type.EXTENSIONAL) {
 
@@ -1619,8 +1621,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           getOldNotNewForMigration(refset, change.getStagedRefset(),
               refsetService);
       refset.setLookupInProgress(true);
-      refsetService.lookupMemberNames(refset.getId(), oldNotNew,
-          "cancel migration", true, ConfigUtility.isBackgroundLookup());
 
       refsetService.removeRefset(change.getStagedRefset().getId(), true);
       refset.setStagingType(null);
@@ -1633,6 +1633,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           .getProject().getId(), refset.getId(), refset.getTerminologyId()
           + ": " + refset.getName());
       refsetService.commit();
+
+      // Lookup member names should always happen after commit
+      final boolean assignNames =
+          refsetService.getTerminologyHandler().assignNames();
+      if (assignNames) {
+        refsetService.lookupMemberNames(refset.getId(), oldNotNew,
+            "cancel migration", true, ConfigUtility.isBackgroundLookup());
+      }
 
     } catch (Exception e) {
       handleException(e, "trying to cancel migration of refset");
@@ -2459,7 +2467,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       // Remove the staged refset change and set staging type back to null
       refsetService.removeStagedRefsetChange(change.getId());
       refset.setStagingType(null);
-      boolean assignNames = refsetService.getTerminologyHandler().assignNames();
+      final boolean assignNames =
+          refsetService.getTerminologyHandler().assignNames();
       if (assignNames) {
         refset.setLookupInProgress(true);
       }
@@ -2474,6 +2483,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // With contents committed, can now lookup Names/Statuses of members
       if (assignNames) {
+        // Lookup member names should always happen after commit
         refsetService.lookupMemberNames(refsetId, "finish import members",
             ConfigUtility.isBackgroundLookup());
       }
@@ -2646,6 +2656,11 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "remove refset note", UserRole.AUTHOR);
+
+      if (refset.isStaged()) {
+        throw new LocalException("Refset is staged: " + refset.getStagingType()
+            + " must be cancelled before removing it");
+      }
 
       // remove note
       refsetService.removeNote(noteId, RefsetNoteJpa.class);
@@ -2826,6 +2841,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Start lookup of member names", notes = "Starts a process for looking up member names and concept active status")
   public void startLookupMemberNames(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
+    @ApiParam(value = "Background flag, e.g. true", required = true) @QueryParam("background") Boolean background,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -2842,7 +2858,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Launch lookup process in background thread
       refsetService.lookupMemberNames(refsetId, "requested from client "
-          + userName, ConfigUtility.isBackgroundLookup());
+          + userName, background == null ? ConfigUtility.isBackgroundLookup()
+          : background);
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

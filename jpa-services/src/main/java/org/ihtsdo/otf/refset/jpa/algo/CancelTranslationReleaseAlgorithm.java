@@ -99,6 +99,13 @@ public class CancelTranslationReleaseAlgorithm extends TranslationServiceJpa
       // Remove staged translation and any content
       removeTranslation(change.getStagedTranslation().getId(), true);
     }
+
+    // even if not staged, turn in publication process flag off
+    else {
+      translation.setInPublicationProcess(false);
+      translation.setLastModifiedBy(userName);
+      updateTranslation(translation);
+    }
   }
 
   /* see superclass */

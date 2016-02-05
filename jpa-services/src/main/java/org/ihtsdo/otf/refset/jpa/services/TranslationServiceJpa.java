@@ -225,7 +225,7 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
   /* see superclass */
   @Override
   public void removeTranslation(Long id, boolean cascade) throws Exception {
-    Logger.getLogger(getClass()).debug(
+    Logger.getLogger(getClass()).info(
         "Translation Service - remove translation " + id);
 
     // Manage transaction
@@ -245,14 +245,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
       // Remove concepts/ descriptions/language refset members
       for (final Concept c : translation.getConcepts()) {
-        Logger.getLogger(getClass()).info("remove concept: " + c.getId());
         removeConcept(c.getId(), true);
       }
 
       // Remove spelling dictionary
       if (translation.getSpellingDictionary() != null) {
-        Logger.getLogger(getClass()).info(
-            "remove spelling: " + translation.getSpellingDictionary().getId());
         removeSpellingDictionary(translation.getSpellingDictionary().getId());
       }
 
@@ -260,14 +257,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       if (translation.getPhraseMemory() != null) {
         for (final MemoryEntry entry : translation.getPhraseMemory()
             .getEntries()) {
-          Logger.getLogger(getClass()).info(
-              "remove memory entry: " + entry.getId());
           removeMemoryEntry(entry.getId());
         }
 
         // remove phrase memory
-        Logger.getLogger(getClass()).info(
-            "remove memory: " + translation.getPhraseMemory().getId());
         removePhraseMemory(translation.getPhraseMemory().getId());
       }
 
@@ -276,7 +269,6 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
     // Remove notes
     for (final Note note : translation.getNotes()) {
-      Logger.getLogger(getClass()).info("remove note: " + note.getId());
       removeNote(note.getId(), TranslationNoteJpa.class);
     }
 

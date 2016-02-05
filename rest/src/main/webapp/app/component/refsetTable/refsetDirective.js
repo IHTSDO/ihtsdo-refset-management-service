@@ -642,7 +642,7 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
-                  if (data === "100") {
+                  if (data === "100" || data == 100) {
                     refset.lookupInProgress = false;
                   }
                   $scope.refsetLookupProgress[refset.id] = data;
@@ -2520,7 +2520,6 @@ tsApp
                     $scope.stagedRefset = null;
                     // If INTENSIONAL, we need to re-look up old/not/new members
                     if (refset.type == 'INTENSIONAL') {
-                      refset.lookupInProgress = false;
                       startLookup(refset);
                     }
                     $uibModalInstance.close(refset);

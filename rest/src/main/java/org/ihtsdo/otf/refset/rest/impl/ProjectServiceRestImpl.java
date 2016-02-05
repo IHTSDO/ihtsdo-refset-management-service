@@ -1108,8 +1108,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
           projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
 
       StringBuilder log = new StringBuilder();
-      for (LogEntry entry : entries) {
-        log.append(entry.getMessage());
+      for (int i = entries.size() - 1; i >= 0; i--) {
+        log.append(entries.get(i).getMessage());
       }
 
       return log.toString();

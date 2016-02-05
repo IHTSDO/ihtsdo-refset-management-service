@@ -508,11 +508,12 @@ public interface RefsetServiceRest {
    * all members of the refset.
    *
    * @param refsetId the refset id
+   * @param background the background
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void startLookupMemberNames(Long refsetId, String authToken)
-    throws Exception;
+  public void startLookupMemberNames(Long refsetId, Boolean background,
+    String authToken) throws Exception;
 
   /**
    * Adds the refset members for expression.
@@ -582,6 +583,5 @@ public interface RefsetServiceRest {
    */
   public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception;
-
 
 }

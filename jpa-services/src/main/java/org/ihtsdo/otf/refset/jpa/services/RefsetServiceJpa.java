@@ -833,8 +833,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   @Override
   public void lookupMemberNames(Long refsetId, String label, boolean background)
     throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - lookup member names - " + refsetId);
+    Logger.getLogger(getClass()).info(
+        "Release Service - lookup member names - " + refsetId + ", "
+            + background);
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {
@@ -856,8 +857,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   public void lookupMemberNames(Long refsetId,
     List<ConceptRefsetMember> members, String label, boolean saveMembers,
     boolean background) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "Release Service - lookup member names (2) - " + refsetId);
+    Logger.getLogger(getClass()).info(
+        "Release Service - lookup member names (2) - " + refsetId + ", "
+            + background);
     // Only launch process if refset not already looked-up
     if (getTerminologyHandler().assignNames()) {
       if (!lookupProgressMap.containsKey(refsetId)) {

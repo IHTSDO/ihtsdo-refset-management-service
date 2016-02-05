@@ -88,12 +88,6 @@ public class TranslationTest extends RestSupport {
   /** The test admin password. */
   protected static String adminPassword;
 
-  /** The assign names. */
-  private static Boolean assignNames;
-
-  /** The assign names. */
-  private static Boolean backgroundLookup;
-
   /** The translation ct. */
   private int translationCt = 0;
 
@@ -104,6 +98,13 @@ public class TranslationTest extends RestSupport {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
+
+    //
+    // Cannot force lookups to background
+    // Server config.properties needs this setting:
+    //
+    // lookup.background=false
+    //
 
     // instantiate properties
     properties = ConfigUtility.getConfigProperties();
@@ -137,14 +138,6 @@ public class TranslationTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
-    // The assign names property
-    assignNames =
-        Boolean.valueOf(properties
-            .getProperty("terminology.handler.DEFAULT.assignNames"));
-
-    // force lookups not in background
-    properties.setProperty("lookup.background", "false");
-    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -155,7 +148,7 @@ public class TranslationTest extends RestSupport {
   @SuppressWarnings("static-method")
   @Before
   public void setup() throws Exception {
-    
+
     // authentication
     adminAuthToken =
         securityService.authenticate(adminUser, adminPassword).getAuthToken();
@@ -452,10 +445,8 @@ public class TranslationTest extends RestSupport {
     assertEquals(2, entries.size());
 
     // cleanup
-    verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), true,
         adminAuthToken);
-    verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 
@@ -491,10 +482,8 @@ public class TranslationTest extends RestSupport {
             adminAuthToken);
     assertEquals(2, suggestTranslation.getTotalCount());
 
-    verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), true,
         adminAuthToken);
-    verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
   }
 
@@ -527,10 +516,8 @@ public class TranslationTest extends RestSupport {
     assertTrue(types.getTotalCount() >= 3);
 
     // clean up
-    verifyTranslationLookupCompleted(translation.getId());
     translationService.removeTranslation(translation.getId(), true,
         adminAuthToken);
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -602,66 +589,4 @@ public class TranslationTest extends RestSupport {
     assertNull(concept);
   }
 
-  /**
-   * Ensure refset completed prior to shutting down test to avoid lookupName
-   * issues.
-   *
-   * @param refsetId the refset id
-   * @throws Exception the exception
-   */
-  private void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      refsetService = new RefsetClientRest(properties);
-
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
-        if (r.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info(
-              "Inside wait-loop - "
-                  + refsetService.getLookupProgress(refsetId, adminAuthToken));
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-    }
-  }
-
-  /**
-   * Ensure translation completed prior to shutting down test to avoid
-   * lookupName issues.
-   *
-   * @param translationId the translation id
-   * @throws Exception the exception
-   */
-  private void verifyTranslationLookupCompleted(Long translationId)
-    throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      translationService = new TranslationClientRest(properties);
-
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Translation t =
-            translationService.getTranslation(translationId, adminAuthToken);
-        if (t.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info(
-              "Inside wait-loop - "
-                  + translationService.getLookupProgress(translationId, adminAuthToken));
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-
-    }
-  }
 }

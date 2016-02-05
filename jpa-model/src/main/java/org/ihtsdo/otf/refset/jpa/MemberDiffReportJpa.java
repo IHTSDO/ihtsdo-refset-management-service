@@ -265,10 +265,13 @@ public class MemberDiffReportJpa implements MemberDiffReport {
   @Override
   public List<ConceptRefsetMember> getInvalidExclusions() {
     // oldNotNew members with type EXCLUSION with concept ids
-    // not matching newNotOld members with type MEMBER
+    // not matching newNotOld members with type MEMBER (or EXCLUSION_STAGED)
     List<String> newMembers = new ArrayList<>();
     for (ConceptRefsetMember member : newNotOld) {
-      if (member.getMemberType() == Refset.MemberType.MEMBER) {
+      // EXCLUSION_STAGED is the case where a member existed and was staged as
+      // an exclusion so it's no longer a member (because of the conceptId unique constraint)
+      if (member.getMemberType() == Refset.MemberType.MEMBER
+          || member.getMemberType() == Refset.MemberType.EXCLUSION_STAGED) {
         newMembers.add(member.getConceptId());
       }
     }
