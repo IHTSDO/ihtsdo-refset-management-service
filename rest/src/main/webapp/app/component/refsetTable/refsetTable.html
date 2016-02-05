@@ -76,8 +76,7 @@
             ng-click="setSortField('refset','type', null)">Type<span
               ng-bind="getSortIndicator('refset','type',null)"></span></th>
           <!-- Actions header -->
-          <th class="col-md-2 col-xs-2"
-            ng-show="value == 'AVAILABLE' && projects.role != 'ADMIN'"><span
+          <th class="col-md-2 col-xs-2" ng-show="value == 'AVAILABLE'"><span
               style="float: right;">
               <button ng-click="openAddRefsetModal();" title="Add refset"
                 class="btn btn-xs btn-primary">Add</button>
@@ -140,9 +139,10 @@
               ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               title="Clone" class="noul material-icons md-18">content_copy</i>
-            <!-- ASSIGNED_ALL actions -->
-          <td class="nobreak" ng-show="value == 'ASSIGNED_ALL'">
 
+            <!-- ASSIGNED ADMIN actions -->
+          <td class="nobreak"
+            ng-show="value == 'ASSIGNED' && projects.role == 'ADMIN'">
             <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
@@ -165,11 +165,11 @@
                 ng-click="unassign(refset, reviewer);"
                 class="noul material-icons md-18">assignment_return</i>
             </span>
-
           </td>
 
-          <!-- ASSIGNED actions -->
-          <td class="nobreak" ng-show="value == 'ASSIGNED'">
+          <!-- ASSIGNED non-ADMIN actions -->
+          <td class="nobreak"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
             <i ng-show="!refset.staged"
@@ -499,7 +499,7 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected" value="value"
+    <div ng-show="selected.member" concept-info data="selected" value="value" role="projects.role"
       handle-workflow="handleWorkflow(selected.refset)"></div>
 
     <!-- End R2C1 -->
@@ -520,18 +520,14 @@
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); "
             title="Export refset members" class="noul material-icons md-18">file_download</i>
           <!-- Import -->
-          <i
-            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
+          <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
+            ng-disabled="selected.refset.type != 'EXTENSIONAL'"
             ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); "
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
-          <i
-            ng-show="value == 'AVAILABLE' && selected.refset.type == 'EXTENSIONAL'"
-            title="Assign refset to make changes to members"
-            class="md-grey material-icons md-18">file_upload</i>
 
           <!-- Add member list -->
           <i
-            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddRefsetMemberListModal();"
             title="Add/remove refset member list"
             class="noul material-icons md-18">playlist_add</i>
@@ -539,20 +535,21 @@
           <!-- Add member -->
 
           <i
-            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL'"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
             title="Add member(s)" class="noul material-icons md-18">add</i>
           <i
-            ng-show="value == 'ASSIGNED' && selected.refset.type == 'INTENSIONAL'"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'INTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
             title="Add inclusion(s)" class="noul material-icons md-18">add</i>
           <i ng-show="value == 'AVAILABLE'"
-            title="Assign refset to make changes to members"
+            title="Add members - only when refset is assigned"
             class="md-grey material-icons md-18">add</i>
+
           <!-- Remove all members -->
           <i
             confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
-            ng-show="value == 'ASSIGNED' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
             ng-click="removeAllRefsetMembers(selected.refset); "
             title="Remove all members" class="noul material-icons md-18">delete</i>
         </span>
@@ -622,7 +619,7 @@
                 ng-change="getMembers(selected.refset)">
                   <option value="">All</option>
               </select></th>
-              <th ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">Actions</th>
+              <th ng-show="value == 'ASSIGNED'">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -653,28 +650,27 @@
                   ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
               </td>
               <!-- ASSIGNED actions -->
-              <td class="nobreak"
-                ng-show="value == 'ASSIGNED' || value == 'ASSIGNED_ALL'">
+              <td class="nobreak" ng-show="value == 'ASSIGNED'">
 
                 <i
                   confirm="Are you sure you want to remove the inclusion ({{member.conceptName}})?"
-                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType =='INCLUSION'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType =='INCLUSION'"
                   ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
                   title="Remove inclusion" class="noul material-icons md-18">delete</i>
 
                 <i
                   confirm="Are you sure you want to remove the member ({{member.conceptName}})?"
-                  ng-show="selected.refset.type == 'EXTENSIONAL'"
+                  ng-show="selected.refset.type == 'EXTENSIONAL' && projects.role != 'ADMIN'"
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
                   title="Remove" class="noul material-icons md-18">delete</i>
 
                 <i
-                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'EXCLUSION'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
                   title="Remove exclusion" class="noul material-icons md-18">delete</i>
 
                 <i
-                  ng-show="selected.refset.type == 'INTENSIONAL' && member.memberType == 'MEMBER'"
+                  ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'MEMBER'"
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
                   title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
 

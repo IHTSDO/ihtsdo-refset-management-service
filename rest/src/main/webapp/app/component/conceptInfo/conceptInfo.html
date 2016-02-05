@@ -1,6 +1,14 @@
 
 <div class="row">
 
+  <div class="col-md-12 col-xs-12"
+    ng-show="role == 'ADMIN' && value == 'ASSIGNED'">
+    <span class="alert alert-warning">Editing disabled for ADMIN. Choose
+      AUTHOR or REVIEWER role to make changes.</span>
+  </div>
+</div>
+
+<div class="row">
 
   <div class="col-md-12 col-xs-12" ng-show="error">
     <span class="alert alert-danger alert-error">
@@ -8,9 +16,11 @@
       <span style="cursor: pointer; display: inline; float: right; width: 3%;">
         <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
       </span>
-      span>
     </span>
   </div>
+</div>
+
+<div class="row">
 
   <div class="col-md-12 col-xs-12">
     <h4 ng-show="data.concept && concept">

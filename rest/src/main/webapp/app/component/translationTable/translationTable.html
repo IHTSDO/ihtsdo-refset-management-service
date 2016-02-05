@@ -21,13 +21,6 @@
         ng-show="paging['translation'].filter"
         ng-click="paging['translation'].filter = ''; getTranslations()"
         title="Click to clear filter text">Clear</button>
-      <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
-        <span style="float: right;">
-          <button ng-click="openAddTranslationModal(); $event.stopPropagation()"
-            title="Add translation" class="btn btn-xs btn-primary">Add
-            Translation</button>
-        </span>
-      </h4>
 
       <!-- No need to show for BETA, there should be only one -->
       <button type="button" class="btn btn-xs btn-primary"
@@ -38,6 +31,15 @@
         <span ng-show="showLatest" title="Click to show all">Latest</span>
         <span ng-hide="showLatest" title="Click to show only most recent">All</span>
       </button>
+
+      <h4 ng-show="value=='EDITING' && translations.totalCount == 0">
+        <span style="float: right;">
+          <button ng-click="openAddTranslationModal(); $event.stopPropagation()"
+            title="Add translation" class="btn btn-xs btn-primary">Add
+            Translation</button>
+        </span>
+      </h4>
+
     </div>
 
     <span ng-show="translations.totalCount == 0" style="display: block;"
@@ -120,7 +122,8 @@
           </td>
 
           <!-- EDITING actions -->
-          <td class="nobreak" ng-show="value == 'EDITING'">
+          <td class="nobreak"
+            ng-show="value == 'EDITING' && projects.role != 'ADMIN'">
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
@@ -184,8 +187,9 @@
 
           </td>
 
-          <!-- EDITING_ALL actions -->
-          <td class="nobreak" ng-show="value == 'EDITING_ALL'">
+          <!-- EDITING ADMIN actions -->
+          <td class="nobreak"
+            ng-show="value == 'EDITING' && projects.role =='ADMIN'">
             <i
               ng-click="openEditTranslationModal(translation); $event.stopPropagation()"
               title="Edit" class="noul material-icons md-18">edit</i>
@@ -489,7 +493,7 @@
             Modified<span ng-bind="getSortIndicator('available','lastModified')"></span>
           </th>
           <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
-              ng-show="projects.role != 'ADMIN' && selected.translation.available.totalCount > 0"
+              ng-show="selected.translation.available.totalCount > 0"
               ng-click="openBatchAssignConceptModal(); $event.stopPropagation()"
               title="Assign batch" class="noul material-icons md-18">assignment_ind</i></th>
         </tr>
@@ -512,6 +516,18 @@
             <!-- Assign -->
             <i ng-show="projects.role != 'ADMIN'"
               ng-click="openAssignConceptModal(concept, 'ASSIGN'); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+
+            <!-- Assign -->
+            <i
+              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='NEW'"
+              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
+
+            <!-- Assign -->
+            <i
+              ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='EDITING_DONE'"
+              ng-click="openAssignConceptModal(concept, 'ASSIGN', 'REVIEWER'); $event.stopPropagation()"
               title="Assign" class="noul material-icons md-18">assignment_ind</i>
           </td>
         </tr>
@@ -591,7 +607,7 @@
           <!-- Actions -->
           <td class="nobreak">
             <!-- Edit -->
-            <i
+            <i ng-show="projects.role != 'ADMIN'"
               ng-click="openEditConceptModal(record.concept); $event.stopPropagation()"
               title="Edit concept" class="noul material-icons md-18">edit</i>
 
@@ -628,12 +644,13 @@
 
             <!-- Finish -->
             <i confirm="Are you sure you want to finalize editing/review?"
-              ng-show="record.concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || record.concept.workflowStatus=='REVIEW_NEW'"
+              ng-show="projects.role != 'ADMIN' && (record.concept.workflowStatus.indexOf('IN_PROGRESS') != -1 || record.concept.workflowStatus=='REVIEW_NEW')"
               ng-click="performWorkflowAction(record.concept, 'FINISH');"
               title="Finish" class="noul material-icons md-18">done</i>
 
             <!-- Mark ready for publication -->
-            <i ng-show="record.concept.workflowStatus == 'REVIEW_DONE'"
+            <i
+              ng-show="projects.role != 'ADMIN' && record.concept.workflowStatus == 'REVIEW_DONE'"
               ng-click="performWorkflowAction(record.concept, 'FINISH')"
               title="Mark ready for publication"
               class="noul material-icons md-18">open_in_new</i>
@@ -699,7 +716,7 @@
           title="Import translation concepts" class="noul material-icons md-18">file_upload</i>
         <i
           confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
-          ng-show="(value == 'EDITING' || value == 'EDITING_ALL') && selected.translation.concepts.length > 0"
+          ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
           ng-click="removeAllTranslationConcepts(selected.translation); "
           title="Remove all concepts" class="noul material-icons md-18">delete</i>
       </span>
@@ -757,7 +774,7 @@
               ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
               Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
             </th>
-            <th ng-show="value == 'EDITING' || value == 'EDITING_ALL'">Actions</th>
+            <th ng-show="value == 'EDITING'">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -783,7 +800,7 @@
             </td>
             <td
               ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'">{{toShortDate(concept.effectiveTime)}}</td>
-            <td ng-show="value == 'EDITING' || value == 'EDITING_ALL'">
+            <td ng-show="value == 'EDITING'">
               <!-- Assign (for error fixing) -->
               <i ng-show="projects.role != 'ADMIN'"
                 ng-click="openAssignConceptModal(concept, 'ASSIGN', 'AUTHOR'); $event.stopPropagation()"
