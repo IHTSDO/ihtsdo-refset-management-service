@@ -3,32 +3,45 @@
 </div>
 
 <div class="modal-body">
-  <p>Select retired concept and/or replacement concepts to be included.</p>
-      <table class="table">
-        <thead>
-          <tr>
-            <th class="col-md-1 col-xs-1"></th>
-            <th class="col-md-3 col-xs-3"></th>
-            <th class="col-md-5 col-xs-5"></th>
-            <th class="col-md-3 col-xs-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><input type="checkbox" ng-model="selection.ids[member.conceptId]"></td>
-            <td style="word-break: break-word;">{{member.conceptId}}</td>
-            <td>{{member.conceptName}}</td>
-            <td><button class="btn btn-xs retired" ng-show="!member.conceptActive"
-                uib-tooltip="Retired">R</button></td>
-          </tr>
-          <tr ng-repeat="concept in replacementConcepts">
-            <td><input type="checkbox" ng-model="selection.ids[concept.terminologyId]" ></td>
-            <td style="word-break: break-word;">{{concept.terminologyId}}</td>
-            <td>{{concept.name}}</td>
-            <td>{{concept.definitionStatusId}}</td>
-          </tr>
-        </tbody>
-      </table>
+  <p ng-show="refset.type == 'INTENSIONAL'">Select retired concept and/or
+    replacement concepts to be included.</p>
+  <p ng-show="refset.type == 'EXTENSIONAL'">Select replacement concepts to
+    be included.</p>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="col-md-1 col-xs-1"></th>
+        <th class="col-md-3 col-xs-3"></th>
+        <th class="col-md-5 col-xs-5"></th>
+        <th class="col-md-3 col-xs-3"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-show="refset.type == 'INTENSIONAL'">
+        <td>
+          <input type="checkbox" ng-model="selection.ids[member.conceptId]">
+        </td>
+        <td style="word-break: break-word;">{{member.conceptId}}</td>
+        <td>{{member.conceptName}}</td>
+        <td>
+          <button class="btn btn-xs retired" ng-show="!member.conceptActive"
+            uib-tooltip="Retired">R</button>
+        </td>
+      </tr>
+      <tr ng-repeat="concept in replacementConcepts">
+        <td>
+          <input type="checkbox" ng-show="!invalid.ids[concept.terminologyId]"
+            ng-model="selection.ids[concept.terminologyId]">
+        </td>
+        <td>{{concept.terminologyId}}</td>
+        <td>{{concept.name}}</td>
+        <td>{{concept.definitionStatusId}}</td>
+
+        <!-- ng-class="md-grey: isInvalid(concept.terminologyId),
+                          strike: isInvalid(concept.terminologyId)"     -->
+      </tr>
+    </tbody>
+  </table>
 
 
   <!-- Errors -->
@@ -40,8 +53,10 @@
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]"
+              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              class="noul material-icons md-18"
+              ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}
@@ -64,7 +79,7 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary"
+  <button class="btn btn-primary" ng-disabled="selection.ids.length == 1"
     ng-click="submitAdd()">Submit</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

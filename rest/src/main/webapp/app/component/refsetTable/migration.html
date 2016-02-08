@@ -152,7 +152,11 @@
                     ng-click="removeMember(member); $event.stopPropagation()"
                     class="noul material-icons md-18">delete</i>
                   <button class="btn btn-xs retired"
+                    style="transform: scale(.7, .7); margin-bottom: 8px; padding-left: 4px;"
                     ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                  <i ng-click="include(stagedRefset, member, true)"
+                    ng-show="!member.conceptActive"
+                  title="Add replacement concepts to refset" class="noul material-icons md-12">add</i>
                 </span>
               </td>
             </tr>
@@ -777,10 +781,8 @@
     ng-click="finish(refset); ">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
-    class="btn btn-warning" ng-show="refset.staged"
+    class="btn btn-warning" 
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 
-  <button class="btn btn-warning" ng-show="!refset.staged" title="Close"
-    ng-click="close();">Close</button>
 </div>

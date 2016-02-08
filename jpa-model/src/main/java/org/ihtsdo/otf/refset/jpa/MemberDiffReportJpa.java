@@ -326,7 +326,7 @@ public class MemberDiffReportJpa implements MemberDiffReport {
     }
     List<ConceptRefsetMember> oldRegularMembers = new ArrayList<>();
     for (ConceptRefsetMember member : oldNotNew) {
-      if (member.getMemberType() == Refset.MemberType.MEMBER
+      if (member.getMemberType() == Refset.MemberType.MEMBER 
           && !alreadyMember.contains(member.getConceptId())) {
         oldRegularMembers.add(member);
       }

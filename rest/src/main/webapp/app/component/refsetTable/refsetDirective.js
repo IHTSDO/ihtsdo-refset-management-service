@@ -74,7 +74,7 @@ tsApp
                 page : 1,
                 filter : '',
                 typeFilter : '',
-                sortField : 'lastModified',
+                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'conceptName' : 'lastModified',
                 ascending : true
               };
               $scope.paging['membersInCommon'] = {
@@ -2689,19 +2689,24 @@ tsApp
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                };
-
+                };  
+                
                 // add inclusion
                 $scope.include = function(refset, member, staged) {
+                  // if retired, find if there are replacement concepts
                   if (!member.conceptActive) {
-                    projectService.getReplacementConcepts(member.conceptId, refset.terminology, refset.version).then(
+                    projectService.getReplacementConcepts(member.conceptId, refset.terminology,
+                      refset.version).then(
                       // Success
                       function(data) {
                         $scope.replacementConcepts = data.concepts;
+
+                        // if no replacements, just add the inclusion
                         if ($scope.replacementConcepts.length == 0) {
                           $scope.addRefsetInclusion(refset, member, staged);
                         } else {
-                          $scope.openReplacementConceptsModal(refset, member, staged, $scope.replacementConcepts);
+                          $scope.openReplacementConceptsModal(refset, member, staged,
+                            $scope.replacementConcepts, $scope.reportToken);
                         }
                       },
                       // Error
@@ -2840,8 +2845,8 @@ tsApp
 
                 
                 // Add modal
-                $scope.openReplacementConceptsModal = function(lrefset, lmember, lstaged, lreplacementConcepts) {
-                  console.debug('openReplacementConceptsModal ', lrefset, lmember, lstaged, lreplacementConcepts);
+                $scope.openReplacementConceptsModal = function(lrefset, lmember, lstaged, lreplacementConcepts, lreportToken) {
+                  console.debug('openReplacementConceptsModal ', lrefset, lmember, lstaged, lreplacementConcepts, lreportToken);
 
                   var modalInstance = $uibModal.open({
                     templateUrl : 'app/component/refsetTable/replacements.html',
@@ -2859,6 +2864,9 @@ tsApp
                       },
                       replacementConcepts : function() {
                         return lreplacementConcepts;
+                      },
+                      reportToken : function() {
+                        return lreportToken;
                       }
                     }
                   });
@@ -2893,32 +2901,95 @@ tsApp
 
                 // Add modal controller
                 var ReplacementConceptsModalCtrl = function($scope, $uibModalInstance, refset, 
-                  member, staged, replacementConcepts) {
+                  member, staged, replacementConcepts, reportToken) {
                   console.debug('Entered replacement concepts modal control', 
-                    refset, member, staged, replacementConcepts);
+                    refset, member, staged, replacementConcepts, reportToken);
 
                   $scope.errors = [];
                   $scope.refset = refset;
                   $scope.member = member;
                   $scope.staged = staged;
                   $scope.replacementConcepts = replacementConcepts;
+                  $scope.reportToken = reportToken;
                   $scope.selection = {
+                    ids: {"test": true}
+                  };
+                  //$scope.invalidIds = new Array();
+                  $scope.invalid = {
                     ids: {"test": true}
                   };
                   $scope.expectedCt = 0;
                   
+                  // initialize
+                  var pfs = {
+                    startIndex : 0,
+                    maxResults : 1,
+                    sortField : null,
+                    ascending : null,
+                    queryRestriction : null
+                  };
+                  
+                  // check if replacements are already members
+                  for (var i=0; i<$scope.replacementConcepts.length; i++) {
+                    var query = '(' + $scope.replacementConcepts[i].terminologyId + ')';
+                    refsetService.getNewRegularMembers($scope.reportToken, query, pfs, null).then(
+                      // Success
+                      function(data) {
+                        if (data.members.length != 0) {
+                          $scope.invalid.ids[data.members[0].terminologyId] = true;
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      }); 
+                    refsetService.findMembersInCommon($scope.reportToken, query, pfs, null).then(
+                      // Success
+                      function(data) {
+                        if (data.members.length != 0) {
+                          $scope.invalid.ids[data.members[0].terminologyId] = true;
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      }); 
+                    
+                  }      
+                  refsetService.getDiffReport($scope.reportToken).then(
+                    // Success
+                    function(data) {
+                      $scope.stagedInclusions = data.stagedInclusions;
+                      for (var i=0; i<$scope.replacementConcepts.length; i++) {
+                        for (var j=0; j<$scope.stagedInclusions.length; j++) {
+                          if ($scope.stagedInclusions[j].conceptId == 
+                            $scope.replacementConcepts[i].terminologyId) {
+                            $scope.invalid.ids[$scope.stagedInclusions[j].conceptId] = true;
+                          }
+                        }
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    }); 
+                  
                   // Add button
                   $scope.submitAdd = function() {
+                    // calculate total number of replacement options
                     for (var i=0; i<replacementConcepts.length; i++) {
                       if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
                         $scope.expectedCt++;
                       }
                     }
-                    if ($scope.selection.ids[$scope.member.conceptId]) {
-                      $scope.expectedCt++;
-                      $scope.addRefsetInclusion($scope.refset, $scope.member, $scope.staged);
-                    }
-                      
+                    // if intensional, check if retired concept itself should be included
+                    if (refset.type == 'INTENSIONAL') {            
+                      if ($scope.selection.ids[$scope.member.conceptId]) {
+                        $scope.expectedCt++;
+                        $scope.addRefsetInclusionOrMember($scope.refset, $scope.member, $scope.staged);
+                      }
+                    }   
+                    // if a concept is selected, add it as an inclusion or member
                     for (var i=0; i<replacementConcepts.length; i++) {
                       if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
                         var member = {
@@ -2926,29 +2997,44 @@ tsApp
                           conceptId : replacementConcepts[i].terminologyId,
                           conceptName : replacementConcepts[i].name,
                           conceptActive : replacementConcepts[i].active,
-                          memberType : $scope.memberType,
+                          memberType : (refset.type == 'INTENSIONAL' ? 'MEMBER' : 'INCLUSION'),
                           moduleId : refset.moduleId,
                           refsetId : $scope.refset.id
                         };
-                        $scope.addRefsetInclusion($scope.refset, member, $scope.staged);
+                        $scope.addRefsetInclusionOrMember($scope.refset, member, $scope.staged);
                       }
                     }
                   };
 
-                  $scope.addRefsetInclusion = function(refset, member, staged) {
+                  $scope.addRefsetInclusionOrMember = function(refset, member, staged) {
                     member.refsetId = refset.id;
-                    refsetService.addRefsetInclusion(member, staged).then(
-                    // Success
-                    function(data) {
-                      $scope.expectedCt--;
-                      if ($scope.expectedCt == 0) {
-                        $uibModalInstance.close();
-                      }
-                    },
-                    // Error
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
+                    if (refset.type == 'INTENSIONAL') {
+                      refsetService.addRefsetInclusion(member, staged).then(
+                      // Success
+                      function(data) {
+                        $scope.expectedCt--;
+                        if ($scope.expectedCt == 0) {
+                          $uibModalInstance.close();
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+                    } else if (refset.type == 'EXTENSIONAL') {
+                      refsetService.addRefsetMember(member).then(
+                        // Success
+                        function(data) {
+                          $scope.expectedCt--;
+                          if ($scope.expectedCt == 0) {
+                            $uibModalInstance.close();
+                          }
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                    }
                   };
 
                   // Dismiss modal
@@ -2956,7 +3042,9 @@ tsApp
                     $uibModalInstance.dismiss('cancel');
                   };
 
-
+                  $scope.isInvalid = function(id) {
+                    return  true;
+                  };
                 };
                 
               };
