@@ -193,6 +193,7 @@ public interface TranslationServiceRest {
    * @param translationId the translation id
    * @param ioHandlerInfoId the io handler info id
    * @param authToken the auth token
+   * @return the validation result
    * @throws Exception the exception
    */
   public ValidationResult finishImportConcepts(
@@ -568,11 +569,12 @@ public interface TranslationServiceRest {
    * all concepts of the translation.
    *
    * @param translationId the translation id
+   * @param background the background
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void startLookupConceptNames(Long translationId, String authToken)
-    throws Exception;
+  public void startLookupConceptNames(Long translationId, Boolean background,
+    String authToken) throws Exception;
 
   /**
    * Returns all language description types representing the various installed
@@ -605,7 +607,7 @@ public interface TranslationServiceRest {
    * @return the origin for staged translation
    * @throws Exception the exception
    */
-  public Long getOriginForStagedTranslation(Long stagedTranslationId, String authToken)
-    throws Exception;
+  public Long getOriginForStagedTranslation(Long stagedTranslationId,
+    String authToken) throws Exception;
 
 }

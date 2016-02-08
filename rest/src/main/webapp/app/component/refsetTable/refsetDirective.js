@@ -23,7 +23,7 @@ tsApp
           scope : {
             // Legal 'value' settings include
             // For directory tab: PUBLISHED, BETA
-            // For refset tab: AVAILABLE, ASSIGNED, ASSIGNED_ALL,
+            // For refset tab: AVAILABLE, ASSIGNED
             // RELEASE
             value : '@',
             projects : '=',
@@ -66,8 +66,7 @@ tsApp
               $scope.paging['refset'] = {
                 page : 1,
                 filter : '',
-                sortField : $scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL' ? 'refsetName'
-                  : 'name',
+                sortField : $scope.value == 'ASSIGNED' ? 'refsetName' : 'name',
                 ascending : null
               };
               $scope.paging['member'] = {
@@ -180,26 +179,31 @@ tsApp
                       $scope.reselect();
                     });
                 }
-                if ($scope.value == 'ASSIGNED_ALL' && $scope.projects.role == 'ADMIN') {
+                if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'ADMIN') {
                   pfs.queryRestriction = $scope.paging['refset'].filter;
-                  workflowService.findAllAssignedRefsets($scope.project.id, pfs).then(
-                  // Success
-                  function(data) {
-                    $scope.refsets = $scope.getRefsetsFromRecords(data.records);
-                    $scope.refsets.totalCount = data.totalCount;
-
-                    // get refset tracking records in order to get refset
-                    // authors
-                    for (var i = 0; i < data.length; i++) {
-                      if (data.authors.length > 0) {
-                        $scope.refsetAuthorsMap[data.refset.id] = data.authors;
-                      }
-                      if (data.reviewers.length > 0) {
-                        $scope.refsetReviewersMap[data.refset.id] = data.reviewers;
-                      }
-                    }
-                    $scope.reselect();
-                  });
+                  workflowService
+                    .findAllAssignedRefsets($scope.project.id, pfs)
+                    .then(
+                      // Success
+                      function(data) {
+                        console.debug("X", data);
+                        $scope.refsets = $scope.getRefsetsFromRecords(data.records);
+                        $scope.refsets.totalCount = data.totalCount;
+                        // get refset tracking records in order to get refset
+                        // authors
+                        for (var i = 0; i < data.records.length; i++) {
+                          console.debug("Y", data.records[i]);
+                          if (data.records[i].authors.length > 0) {
+                            console.debug("Z", data.records[i].authors);
+                            $scope.refsetAuthorsMap[data.records[i].refset.id] = data.records[i].authors;
+                          }
+                          if (data.records[i].reviewers.length > 0) {
+                            console.debug("Z", data.records[i].reviewers);
+                            $scope.refsetReviewersMap[data.records[i].refset.id] = data.records[i].reviewers;
+                          }
+                        }
+                        $scope.reselect();
+                      });
                 }
                 if ($scope.value == 'ASSIGNED' && $scope.projects.role == 'AUTHOR') {
                   pfs.queryRestriction = $scope.paging['refset'].filter;
@@ -370,8 +374,7 @@ tsApp
                 // handle 'ASSIGNED' vs 'AVAILABLE' fields
                 // refsetTable.html expresses the fields in terms of available
                 var lfield = field;
-                if (table == 'refset'
-                  && ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL')) {
+                if (table == 'refset' && ($scope.value == 'ASSIGNED')) {
                   if (field == 'terminologyId') {
                     lfield = 'refsetId';
                   } else if (field == 'lastModified') {
@@ -395,8 +398,7 @@ tsApp
               // Return up or down sort chars if sorted
               $scope.getSortIndicator = function(table, field) {
                 var lfield = field;
-                if (table == 'refset'
-                  && ($scope.value == 'ASSIGNED' || $scope.value == 'ASSIGNED_ALL')) {
+                if (table == 'refset' && ($scope.value == 'ASSIGNED')) {
                   if (field == 'terminologyId') {
                     lfield = 'refsetId';
                   } else if (field == 'lastModified') {
@@ -537,7 +539,7 @@ tsApp
 
                 workflowService.performWorkflowAction($scope.project.id, refset.id, userName,
                   $scope.projects.role, action).then(function(data) {
-                  refsetService.fireRefsetChanged();
+                  refsetService.fireRefsetChanged(data);
                 });
               };
 
@@ -642,7 +644,7 @@ tsApp
                 refsetService.getLookupProgress(refset.id).then(
                 // Success
                 function(data) {
-                  if (data === "100") {
+                  if (data === "100" || data == 100) {
                     refset.lookupInProgress = false;
                   }
                   $scope.refsetLookupProgress[refset.id] = data;
@@ -2520,7 +2522,6 @@ tsApp
                     $scope.stagedRefset = null;
                     // If INTENSIONAL, we need to re-look up old/not/new members
                     if (refset.type == 'INTENSIONAL') {
-                      refset.lookupInProgress = false;
                       startLookup(refset);
                     }
                     $uibModalInstance.close(refset);

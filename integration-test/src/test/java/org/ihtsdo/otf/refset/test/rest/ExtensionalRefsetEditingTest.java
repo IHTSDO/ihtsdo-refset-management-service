@@ -39,7 +39,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
 
     Project project = projectService.getProject(2L, adminAuthToken);
 
-    
     UserJpa reviewer1 =
         (UserJpa) securityService.getUser("reviewer1", adminAuthToken);
     projectService.assignUserToProject(project.getId(),
@@ -76,19 +75,29 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Add 5 members to refset
     ConceptRefsetMemberJpa member1 =
         makeConceptRefsetMember("member1", "123", currentRefset);
-    member1 = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member1, adminAuthToken);
+    member1 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member1,
+            adminAuthToken);
     ConceptRefsetMemberJpa member2 =
         makeConceptRefsetMember("member2", "12344", currentRefset);
-    member2 = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member2, adminAuthToken);
+    member2 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member2,
+            adminAuthToken);
     ConceptRefsetMemberJpa member3 =
         makeConceptRefsetMember("member3", "123333", currentRefset);
-    member3 = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member3, adminAuthToken);
+    member3 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member3,
+            adminAuthToken);
     ConceptRefsetMemberJpa member4 =
         makeConceptRefsetMember("member4", "123223", currentRefset);
-    member4 = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member4, adminAuthToken);
+    member4 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member4,
+            adminAuthToken);
     ConceptRefsetMemberJpa member5 =
         makeConceptRefsetMember("member5", "1234545", currentRefset);
-    member5 = (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member5, adminAuthToken);
+    member5 =
+        (ConceptRefsetMemberJpa) refsetService.addRefsetMember(member5,
+            adminAuthToken);
 
     List<ConceptRefsetMember> addedMembers =
         refsetService.findRefsetMembersForQuery(currentRefset.getId(), "",
@@ -145,23 +154,23 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // Assign refset for review
     record =
         workflowService.performWorkflowAction(currentRefset.getProject()
-            .getId(), currentRefset.getId(), reviewer1.getUserName(), "REVIEWER", "ASSIGN",
-            adminAuthToken);
+            .getId(), currentRefset.getId(), reviewer1.getUserName(),
+            "REVIEWER", "ASSIGN", adminAuthToken);
 
     // Find assigned review refset
     currentRefset =
         getNewRefsetInTrackingRecordList(
             workflowService.findAssignedReviewRefsets(currentRefset
-                .getProject().getId(), reviewer1.getUserName(), new PfsParameterJpa(),
-                adminAuthToken), record.getRefset());
+                .getProject().getId(), reviewer1.getUserName(),
+                new PfsParameterJpa(), adminAuthToken), record.getRefset());
 
     assertTrue(currentRefset != null);
 
     // Use workflowService to SAVE the refset
     record =
         workflowService.performWorkflowAction(currentRefset.getProject()
-            .getId(), currentRefset.getId(), reviewer1.getUserName(), "REVIEWER", "SAVE",
-            adminAuthToken);
+            .getId(), currentRefset.getId(), reviewer1.getUserName(),
+            "REVIEWER", "SAVE", adminAuthToken);
 
     // Validate the refset
     result =
@@ -177,16 +186,16 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     // FINISH - status
     record =
         workflowService.performWorkflowAction(currentRefset.getProject()
-            .getId(), currentRefset.getId(), reviewer1.getUserName(), "REVIEWER", "FINISH",
-            adminAuthToken);
+            .getId(), currentRefset.getId(), reviewer1.getUserName(),
+            "REVIEWER", "FINISH", adminAuthToken);
 
     // remove refset
-    workflowService.performWorkflowAction(project.getId(), currentRefset.getId(),
-        reviewer1.getUserName(), "REVIEWER", "UNASSIGN", adminAuthToken);
-    workflowService.performWorkflowAction(project.getId(), currentRefset.getId(),
-        testUser, "AUTHOR", "UNASSIGN", adminAuthToken);
+    workflowService.performWorkflowAction(project.getId(),
+        currentRefset.getId(), reviewer1.getUserName(), "REVIEWER", "UNASSIGN",
+        adminAuthToken);
+    workflowService.performWorkflowAction(project.getId(),
+        currentRefset.getId(), testUser, "AUTHOR", "UNASSIGN", adminAuthToken);
 
-    verifyRefsetLookupCompleted(currentRefset.getId());
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
   }
 
@@ -208,7 +217,6 @@ public class ExtensionalRefsetEditingTest extends RefsetTest {
     assertTrue(currentRefset != null);
 
     // remove refset
-    verifyRefsetLookupCompleted(currentRefset.getId());
     refsetService.removeRefset(currentRefset.getId(), true, adminAuthToken);
 
     Refset pulledRefset = null;

@@ -64,7 +64,6 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(createdMember, pulledMember);
 
     // clean up
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -113,7 +112,6 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(22, foundMembers.size());
 
     // clean up
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -162,7 +160,6 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(143, finalMemberList.getObjects().size());
 
     // clean up
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -262,7 +259,6 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(1, posClauses);
 
     // clean up
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -284,7 +280,6 @@ public class RefsetTest extends RefsetTestSupport {
 
     refsetService = new RefsetClientRest(properties);
 
-    verifyRefsetLookupCompleted(refset.getId());
     refsetService.removeRefset(refset.getId(), true, adminAuthToken);
   }
 
@@ -407,8 +402,6 @@ public class RefsetTest extends RefsetTestSupport {
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     // cleanup
-    verifyRefsetLookupCompleted(janRefset.getId());
-    verifyRefsetLookupCompleted(julyStagedRefset.getId());
     // refsetService.finishMigration(janRefset.getId(), adminAuthToken);
     refsetService.cancelMigration(janRefset.getId(), adminAuthToken);
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);
@@ -419,49 +412,43 @@ public class RefsetTest extends RefsetTestSupport {
    *
    * @throws Exception the exception
    */
-/*  @Test
-  public void testRecoveryRefset() throws Exception {
-    Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
-
-    Project project = projectService.getProject(3L, adminAuthToken);
-
-    User admin = securityService.authenticate(adminUser, adminPassword);
-
-    RefsetJpa refset =
-        makeRefset("refset", null, Refset.Type.EXTENSIONAL, project, UUID
-            .randomUUID().toString(), true);
-
-    refsetService = new RefsetClientRest(properties);
-    refset =
-        (RefsetJpa) refsetService.getRefset(refset.getId(), adminAuthToken);
-
-    // Verify number of members to begin with
-    List<ConceptRefsetMember> foundMembers =
-        refsetService.findRefsetMembersForQuery(refset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
-
-    assertEquals(21, foundMembers.size());
-
-    // Create translation
-    TranslationJpa translation =
-        makeTranslation("translation", refset, project, admin);
-
-    translationService.removeTranslation(translation.getId(), true,
-        adminAuthToken);
-
-    refsetService.removeRefset(refset.getId(), true, adminAuthToken);
-
-    Refset recoveryRefset =
-        refsetService.recoverRefset(refset.getProjectId(), refset.getId(),
-            adminAuthToken);
-
-    // Verify number of members recovered
-    foundMembers =
-        refsetService.findRefsetMembersForQuery(recoveryRefset.getId(), "",
-            new PfsParameterJpa(), adminAuthToken).getObjects();
-
-    assertEquals(21, foundMembers.size());
-  }*/
+  /*
+   * @Test public void testRecoveryRefset() throws Exception {
+   * Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+   * 
+   * Project project = projectService.getProject(3L, adminAuthToken);
+   * 
+   * User admin = securityService.authenticate(adminUser, adminPassword);
+   * 
+   * RefsetJpa refset = makeRefset("refset", null, Refset.Type.EXTENSIONAL,
+   * project, UUID .randomUUID().toString(), true);
+   * 
+   * refsetService = new RefsetClientRest(properties); refset = (RefsetJpa)
+   * refsetService.getRefset(refset.getId(), adminAuthToken);
+   * 
+   * // Verify number of members to begin with List<ConceptRefsetMember>
+   * foundMembers = refsetService.findRefsetMembersForQuery(refset.getId(), "",
+   * new PfsParameterJpa(), adminAuthToken).getObjects();
+   * 
+   * assertEquals(21, foundMembers.size());
+   * 
+   * // Create translation TranslationJpa translation =
+   * makeTranslation("translation", refset, project, admin);
+   * 
+   * translationService.removeTranslation(translation.getId(), true,
+   * adminAuthToken);
+   * 
+   * refsetService.removeRefset(refset.getId(), true, adminAuthToken);
+   * 
+   * Refset recoveryRefset = refsetService.recoverRefset(refset.getProjectId(),
+   * refset.getId(), adminAuthToken);
+   * 
+   * // Verify number of members recovered foundMembers =
+   * refsetService.findRefsetMembersForQuery(recoveryRefset.getId(), "", new
+   * PfsParameterJpa(), adminAuthToken).getObjects();
+   * 
+   * assertEquals(21, foundMembers.size()); }
+   */
 
   /**
    * Test obtaining nonexistent refset returns null gracefully
@@ -559,7 +546,6 @@ public class RefsetTest extends RefsetTestSupport {
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
     // cleanup
-    verifyRefsetLookupCompleted(janRefset.getId());
     refsetService.finishMigration(janRefset.getId(), adminAuthToken);
 
     refsetService.removeRefset(janRefset.getId(), true, adminAuthToken);

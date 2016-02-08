@@ -395,6 +395,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             "Translation in the publication process cannot be removed, use cancel release instead");
       }
 
+      if (translation.isStaged()) {
+        throw new LocalException("Refset is staged: "
+            + translation.getStagingType()
+            + " must be cancelled before removing it");
+      }
+
       if (translation.getWorkflowStatus() == WorkflowStatus.BETA) {
         throw new LocalException(
             "Translation in the publication process cannot be removed, use cancel release instead");
@@ -2751,6 +2757,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Start lookup of concept names", notes = "Starts a process for looking up concept names and concept active status")
   public void startLookupConceptNames(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
+    @ApiParam(value = "Background flag, e.g. true", required = true) @QueryParam("background") Boolean background,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -2767,9 +2774,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               "start lookup concept names", UserRole.AUTHOR);
 
       // Launch lookup process in background thread
-      translationService
-          .lookupConceptNames(translationId, "request from client " + userName,
-              ConfigUtility.isBackgroundLookup());
+      translationService.lookupConceptNames(translationId,
+          "request from client " + userName,
+          background == null ? ConfigUtility.isBackgroundLookup() : background);
     } catch (Exception e) {
       handleException(e,
           "trying to start the lookup of member names and statues");

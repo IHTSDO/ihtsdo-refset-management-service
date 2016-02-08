@@ -881,9 +881,9 @@ public class RefsetClientRest extends RootClientRest implements
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken)
             .post(Entity.entity(multiPart, MediaType.MULTIPART_FORM_DATA_TYPE));
-    
+
     String resultString = response.readEntity(String.class);
-    
+
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -1298,8 +1298,8 @@ public class RefsetClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void startLookupMemberNames(Long refsetId, String authToken)
-    throws Exception {
+  public void startLookupMemberNames(Long refsetId, Boolean background,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - start lookup of names and statuses of refset members "
             + refsetId);
@@ -1307,7 +1307,8 @@ public class RefsetClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/refset/lookup/start?"
-            + "refsetId=" + refsetId);
+            + "refsetId=" + refsetId
+            + (background != null ? "&background=" + background : ""));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1493,6 +1494,5 @@ public class RefsetClientRest extends RootClientRest implements
 
     return originId;
   }
-
 
 }

@@ -1471,8 +1471,8 @@ public class TranslationClientRest extends RootClientRest implements
 
   /* see superclass */
   @Override
-  public void startLookupConceptNames(Long translationId, String authToken)
-    throws Exception {
+  public void startLookupConceptNames(Long translationId, Boolean background,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - start lookup of names and statuses of translation concepts "
             + translationId);
@@ -1480,7 +1480,8 @@ public class TranslationClientRest extends RootClientRest implements
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url")
-            + "/translation/lookup/start?" + "translationId=" + translationId);
+            + "/translation/lookup/start?" + "translationId=" + translationId
+            + (background != null ? "&background=" + background : ""));
 
     Response response =
         target.request(MediaType.APPLICATION_XML)
@@ -1554,8 +1555,8 @@ public class TranslationClientRest extends RootClientRest implements
   }
 
   @Override
-  public Long getOriginForStagedTranslation(Long stagedTranslationId, String authToken)
-    throws Exception {
+  public Long getOriginForStagedTranslation(Long stagedTranslationId,
+    String authToken) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Rest Client - get origin id given the staged Translation Id "
             + stagedTranslationId);

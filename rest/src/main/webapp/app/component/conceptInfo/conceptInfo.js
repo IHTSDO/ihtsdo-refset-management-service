@@ -1,5 +1,5 @@
 // Concept Info directive
-// e.g. <div concept-info data='data' paging='paging' ></div>
+// e.g. <div concept-info data="data" value="ASSIGNED" role="AUTHOR", ... ></div>
 tsApp.directive('conceptInfo', [
   '$uibModal',
   'utilService',
@@ -15,6 +15,7 @@ tsApp.directive('conceptInfo', [
       scope : {
         data : '=',
         value : '=',
+        role : '=',
         handleWorkflow : '&',
         resetMemberTypes : '&'
       },
@@ -375,6 +376,12 @@ tsApp.directive('conceptInfo', [
             console.debug("get member types", $scope.data.refset, $scope.value);
             // skip if refset not set
             if (!$scope.data.refset) {
+              $scope.disableMemberTypes = true;
+              return;
+            }
+
+            // Admins can't edit
+            if ($scope.role == 'ADMIN') {
               $scope.disableMemberTypes = true;
               return;
             }

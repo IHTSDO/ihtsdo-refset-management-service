@@ -24,7 +24,6 @@ import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Refset.FeedbackEvent;
-import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.ValidationResult;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
@@ -76,12 +75,6 @@ public class SpellingCorrectionRestTest extends RestSupport {
   /** The test admin password. */
   protected static String adminPassword;
 
-  /** The assign names. */
-  private static Boolean assignNames;
-
-  /** The assign names. */
-  private static Boolean backgroundLookup;
-
   /**
    * Create test fixtures for class.
    *
@@ -89,6 +82,13 @@ public class SpellingCorrectionRestTest extends RestSupport {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
+
+    //
+    // Cannot force lookups to background
+    // Server config.properties needs this setting:
+    //
+    // lookup.background=false
+    //
 
     // instantiate properties
     properties = ConfigUtility.getConfigProperties();
@@ -112,14 +112,6 @@ public class SpellingCorrectionRestTest extends RestSupport {
       throw new Exception("Test prerequisite: admin.password must be specified");
     }
 
-    // The assign names property
-    assignNames =
-        Boolean.valueOf(properties
-            .getProperty("terminology.handler.DEFAULT.assignNames"));
-
-    // force lookups not in background
-    properties.setProperty("lookup.background", "false");
-    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -364,9 +356,7 @@ public class SpellingCorrectionRestTest extends RestSupport {
     assertEquals(0, results.getTotalCount());
 
     // clean up
-    verifyTranslationLookupCompleted(tid);
     translationService.removeTranslation(tid, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
@@ -441,14 +431,10 @@ public class SpellingCorrectionRestTest extends RestSupport {
     assertEquals(entriesOrig, entriesNew);
 
     // clean up
-    verifyTranslationLookupCompleted(tidOrig);
     translationService.removeTranslation(tidOrig, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
-    verifyTranslationLookupCompleted(tidNew);
     translationService.removeTranslation(tidNew, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
@@ -540,14 +526,10 @@ public class SpellingCorrectionRestTest extends RestSupport {
     assertEquals(0, results.getTotalCount());
 
     // clean up
-    verifyTranslationLookupCompleted(tidFrom);
     translationService.removeTranslation(tidFrom, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
 
-    verifyTranslationLookupCompleted(tidTo);
     translationService.removeTranslation(tidTo, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
   }
 
@@ -643,72 +625,8 @@ public class SpellingCorrectionRestTest extends RestSupport {
     assertEquals(0, results.getMap().keySet().size());
 
     // clean up
-    verifyTranslationLookupCompleted(tid);
     translationService.removeTranslation(tid, true, adminAuthToken);
-    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
   }
 
-  /**
-   * Ensure refset completed prior to shutting down test to avoid lookupName
-   * issues.
-   *
-   * @param refsetId the refset id
-   * @throws Exception the exception
-   */
-  private void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      refsetService = new RefsetClientRest(properties);
-
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
-        if (r.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info(
-              "Inside wait-loop - "
-                  + refsetService.getLookupProgress(refsetId, adminAuthToken));
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-    }
-  }
-
-  /**
-   * Ensure translation completed prior to shutting down test to avoid
-   * lookupName issues.
-   *
-   * @param translationId the translation id
-   * @throws Exception the exception
-   */
-  private void verifyTranslationLookupCompleted(Long translationId)
-    throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      translationService = new TranslationClientRest(properties);
-
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Translation t =
-            translationService.getTranslation(translationId, adminAuthToken);
-        if (t.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info(
-              "Inside wait-loop - "
-                  + translationService.getLookupProgress(translationId, adminAuthToken));
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-
-    }
-  }
 }

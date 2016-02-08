@@ -80,12 +80,6 @@ public class WorkflowTest extends RestSupport {
   /** The test adminAuthToken password. */
   protected static String adminPassword;
 
-  /** The assign names. */
-  private static Boolean assignNames;
-
-  /** The assign names. */
-  private static Boolean backgroundLookup;
-
   /**
    * Create test fixtures for class.
    *
@@ -93,6 +87,13 @@ public class WorkflowTest extends RestSupport {
    */
   @BeforeClass
   public static void setupClass() throws Exception {
+
+    //
+    // Cannot force lookups to background
+    // Server config.properties needs this setting:
+    //
+    // lookup.background=false
+    //
 
     // instantiate properties
     properties = ConfigUtility.getConfigProperties();
@@ -118,14 +119,6 @@ public class WorkflowTest extends RestSupport {
           "Test prerequisite: adminAuthToken.password must be specified");
     }
 
-    // The assign names property
-    assignNames =
-        Boolean.valueOf(properties
-            .getProperty("terminology.handler.DEFAULT.assignNames"));
-
-    // force lookups not in background
-    properties.setProperty("lookup.background", "false");
-    backgroundLookup = ConfigUtility.isBackgroundLookup();
   }
 
   /**
@@ -496,8 +489,6 @@ public class WorkflowTest extends RestSupport {
     assertEquals(0, assignedRefsets.getCount());
 
     // Clean Up
-    verifyRefsetLookupCompleted(refset1.getId());
-    verifyRefsetLookupCompleted(refset2.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
 
@@ -595,7 +586,6 @@ public class WorkflowTest extends RestSupport {
     workflowService.performWorkflowAction(project.getId(), refset2.getId(),
         author1.getUserName(), "AUTHOR", "UNASSIGN", adminAuthToken);
 
-    verifyRefsetLookupCompleted(refset1.getId());
     refsetService.removeRefset(refset1.getId(), true, adminAuthToken);
     refsetService.removeRefset(refset2.getId(), true, adminAuthToken);
 
@@ -627,36 +617,6 @@ public class WorkflowTest extends RestSupport {
         workflowService.getTrackingRecordForRefset(refset.getId(),
             adminAuthToken);
     assertNull(record);
-  }
-
-  /**
-   * Ensure refset completed prior to shutting down test to avoid lookupName
-   * issues.
-   *
-   * @param refsetId the refset id
-   * @throws Exception the exception
-   */
-  protected void verifyRefsetLookupCompleted(Long refsetId) throws Exception {
-    if (assignNames && backgroundLookup) {
-      // Ensure that all lookupNames routines completed
-      boolean completed = false;
-      refsetService = new RefsetClientRest(properties);
-
-      while (!completed) {
-        // Assume process has completed
-        completed = true;
-
-        Refset r = refsetService.getRefset(refsetId, adminAuthToken);
-        if (r.isLookupInProgress()) {
-          // lookupNames still running on refset
-          Logger.getLogger(getClass()).info(
-              "Inside wait-loop - "
-                  + refsetService.getLookupProgress(refsetId, adminAuthToken));
-          completed = false;
-          Thread.sleep(250);
-        }
-      }
-    }
   }
 
 }

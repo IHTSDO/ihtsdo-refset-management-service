@@ -33,21 +33,13 @@
   </div>
   <div class="col-md-12 col-xs-12">
     <uib-accordion> <uib-accordion-group
-      ng-show="!isProjectAdmin()" is-open="accordionState['EDITING']">
-    <uib-accordion-heading>
+      is-open="accordionState['EDITING']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('EDITING');">
       Editing
       <span ng-show="projects.role"> ({{projects.role}})</span>
     </h5>
     </uib-accordion-heading>
     <div translation-table value="EDITING" projects="projects"
-      metadata="metadata"></div>
-    </uib-accordion-group> <uib-accordion-group ng-show="isProjectAdmin()"
-      is-open="accordionState['EDITING_ALL']"> <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('EDITING_ALL');">Editing
-      (All)</h5>
-    </uib-accordion-heading>
-    <div translation-table value="EDITING_ALL" projects="projects"
       metadata="metadata"></div>
     </uib-accordion-group> <uib-accordion-group is-open="accordionState['RELEASE']">
     <uib-accordion-heading>

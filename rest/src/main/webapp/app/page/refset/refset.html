@@ -5,6 +5,9 @@
   <div class="col-md-12 col-xs-12">
     <h4 class="col-md-12">Refsets</h4>
   </div>
+</div>
+
+<div class="row">
   <div class="col-md-12 col-xs-12">
     <div class="col-md-4 col-xs-8">
       <table class="table">
@@ -29,12 +32,13 @@
         </tbody>
       </table>
     </div>
-    <span class="col-md-8 col-xs-4"></span>
+    <div class="col-md-8 col-xs-4"></div>
   </div>
+</div>
+<div class="row">
   <div class="col-md-12 col-xs-12">
     <uib-accordion> <uib-accordion-group
-      is-open="accordionState['AVAILABLE']" ng-show="!isProjectAdmin()">
-    <uib-accordion-heading>
+      is-open="accordionState['AVAILABLE']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('AVAILABLE');">
       Available
       <span ng-show="projects.role"> ({{projects.role}})</span>
@@ -42,22 +46,13 @@
     </uib-accordion-heading>
     <div refset-table value="AVAILABLE" projects="projects" metadata="metadata"></div>
     </uib-accordion-group> <!-- do not show for admins --> <uib-accordion-group
-      is-open="accordionState['ASSIGNED']" ng-show="!isProjectAdmin()">
-    <uib-accordion-heading>
+      is-open="accordionState['ASSIGNED']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('ASSIGNED');">
       Assigned
       <span ng-show="projects.role"> ({{projects.role}})</span>
     </h5>
     </uib-accordion-heading> <!-- TODO project="{{project.id}}" -->
     <div refset-table value="ASSIGNED" projects="projects" metadata="metadata"></div>
-    </uib-accordion-group> <!-- show only for admins --> <uib-accordion-group
-      is-open="accordionState['ASSIGNED_ALL']" ng-show="isProjectAdmin()">
-    <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('ASSIGNED_ALL');">Assigned
-      (All)</h5>
-    </uib-accordion-heading>
-    <div refset-table value="ASSIGNED_ALL" projects="projects"
-      metadata="metadata"></div>
     </uib-accordion-group> <uib-accordion-group is-open="accordionState['RELEASE']">
     <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('RELEASE');">Release</h5>
