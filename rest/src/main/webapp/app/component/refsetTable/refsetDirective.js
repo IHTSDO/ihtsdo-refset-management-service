@@ -186,19 +186,15 @@ tsApp
                     .then(
                       // Success
                       function(data) {
-                        console.debug("X", data);
                         $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                         $scope.refsets.totalCount = data.totalCount;
                         // get refset tracking records in order to get refset
                         // authors
                         for (var i = 0; i < data.records.length; i++) {
-                          console.debug("Y", data.records[i]);
                           if (data.records[i].authors.length > 0) {
-                            console.debug("Z", data.records[i].authors);
                             $scope.refsetAuthorsMap[data.records[i].refset.id] = data.records[i].authors;
                           }
                           if (data.records[i].reviewers.length > 0) {
-                            console.debug("Z", data.records[i].reviewers);
                             $scope.refsetReviewersMap[data.records[i].refset.id] = data.records[i].reviewers;
                           }
                         }
