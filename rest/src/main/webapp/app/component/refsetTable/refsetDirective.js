@@ -2998,7 +2998,7 @@ tsApp
                           conceptId : replacementConcepts[i].terminologyId,
                           conceptName : replacementConcepts[i].name,
                           conceptActive : replacementConcepts[i].active,
-                          memberType : (refset.type == 'INTENSIONAL' ? 'MEMBER' : 'INCLUSION'),
+                          memberType : (refset.type == 'INTENSIONAL' ? 'INCLUSION' : 'MEMBER'),
                           moduleId : refset.moduleId,
                           refsetId : $scope.refset.id
                         };

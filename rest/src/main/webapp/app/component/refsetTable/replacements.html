@@ -28,17 +28,19 @@
             uib-tooltip="Retired">R</button>
         </td>
       </tr>
-      <tr ng-repeat="concept in replacementConcepts">
+      <tr ng-repeat="concept in replacementConcepts"
+        ng-class="{disabled : invalid.ids[concept.terminologyId]}">
         <td>
           <input type="checkbox" ng-show="!invalid.ids[concept.terminologyId]"
             ng-model="selection.ids[concept.terminologyId]">
+          <i ng-show="invalid.ids[concept.terminologyId]"
+  uib-tooltip="Replacement concept is already a member of the refset."
+  class="noul material-icons md-18">info</i>
         </td>
         <td>{{concept.terminologyId}}</td>
         <td>{{concept.name}}</td>
         <td>{{concept.definitionStatusId}}</td>
 
-        <!-- ng-class="md-grey: isInvalid(concept.terminologyId),
-                          strike: isInvalid(concept.terminologyId)"     -->
       </tr>
     </tbody>
   </table>
