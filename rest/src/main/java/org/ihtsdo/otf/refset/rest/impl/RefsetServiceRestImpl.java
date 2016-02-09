@@ -1925,7 +1925,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/new/members")
-  @ApiOperation(value = "Return new regular members", notes = "Returns list of old members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
+  @ApiOperation(value = "Return new regular members", notes = "Returns list of new members for the specified report token and query", response = ConceptRefsetMemberListJpa.class)
   public ConceptRefsetMemberList getNewRegularMembers(
     @ApiParam(value = "Report token", required = true) @QueryParam("reportToken") String reportToken,
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,

@@ -1138,7 +1138,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Path("/concept/replacements")
   @ApiOperation(value = "Returns potential alternative concepts for a retired concept", notes = "Returns potential current alternative concepts for a given retired concept.", response = KeyValuePairList.class)
   public ConceptList getReplacementConcepts(
-    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) String conceptId,
+    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) @QueryParam("conceptId") String conceptId,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
     @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)

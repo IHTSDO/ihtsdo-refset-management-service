@@ -556,6 +556,31 @@ tsApp.service('projectService', [
         });
       return deferred.promise;
     };
-    // end
+    
+    // assign user to project
+    this.getReplacementConcepts = function(conceptId, terminology, version) {
+      console.debug('getReplacementConcepts');
+      var deferred = $q.defer();
+
+      // Assign user to project
+      gpService.increment();
+      $http.get(
+        projectUrl + 'concept/replacements'
+        + '?conceptId=' + conceptId + '&terminology=' + terminology
+        + '&version=' + version).then(
+      // success
+      function(response) {
+        console.debug('  project = ', response.data);
+        gpService.decrement();
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        gpService.decrement();
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
     // end
   } ]);

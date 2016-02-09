@@ -724,7 +724,7 @@ public class ProjectClientRest extends RootClientRest implements
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/concept/alternates"
+        client.target(config.getProperty("base.url") + "/concept/replacements"
             + "?conceptId=" + conceptId + "&terminology=" + terminology
             + "&version=" + version);
 

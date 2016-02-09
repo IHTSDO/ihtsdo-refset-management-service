@@ -153,6 +153,9 @@
                     class="noul material-icons md-18">delete</i>
                   <button class="btn btn-xs retired"
                     ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                  <i ng-click="include(stagedRefset, member, false)"
+                    ng-show="!member.conceptActive"
+                  title="Add replacement concepts to refset" class="noul material-icons md-12">add</i>
                 </span>
               </td>
             </tr>
@@ -208,7 +211,6 @@
                   ng-click="setSortField('newRegularMembers','conceptName', null)">
                   Name</span> <span
                   ng-bind="getSortIndicator('newRegularMembers','conceptName',null)"></span></th>
-
               <th class="col-md-1 col-xs-1"></th>
             </tr>
           </thead>
@@ -219,11 +221,13 @@
               <td>{{member.conceptName}}</td>
               <td>
                 <button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
-                <a ng-click="exclude(refset, member, 'false')">
-                  <i title="Exclude new member."
+                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>                
+                <i title="Exclude new member." ng-click="exclude(refset, member, false)"
+                    ng-show="refset.type == 'INTENSIONAL'"
                     class="noul material-icons md-18">remove_circle_outline</i>
-                </a>
+                <i title="Remove new member." ng-click="removeMember(member)"
+                    ng-show="refset.type == 'EXTENSIONAL'"
+                    class="noul material-icons md-18">delete</i>
               </td>
             </tr>
           </tbody>
@@ -306,12 +310,10 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td class="nobreak">
-                    <a ng-click="include(stagedRefset, member, true)">
-                      <i title="Add inclusion to migrated refset."
+                      <i title="Add inclusion to migrated refset." ng-click="include(stagedRefset, member, true)"
                         class="noul material-icons md-18">arrow_forward</i>
                       <button class="btn btn-xs retired"
-                        ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
-                    </a>
+                        ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>                  
                   </td>
                 </tr>
               </tbody>
@@ -380,11 +382,9 @@
                 <tr ng-repeat="member in pagedStagedInclusions">
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
-                  <td class="nobreak">
-                    <a ng-click="revert(refset, member)">
-                      <i title="Revert migrated inclusion."
-                        class="noul material-icons md-18">arrow_back</i>
-                    </a>
+                  <td class="nobreak">                    
+                      <i title="Revert migrated inclusion." ng-click="revert(refset, member)"
+                        class="noul material-icons md-18">arrow_back</i>                    
                     <button class="btn btn-xs retired"
                       ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
                   </td>
@@ -461,10 +461,8 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td>
-                    <a ng-click="exclude(stagedRefset, member, true)">
-                      <i title="Add exclusion to migration refset."
-                        class="noul material-icons md-18">arrow_forward</i>
-                    </a>
+                      <i title="Add exclusion to migration refset." ng-click="exclude(stagedRefset, member, true)"
+                        class="noul material-icons md-18">arrow_forward</i>                  
                   </td>
                 </tr>
               </tbody>
@@ -528,10 +526,8 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td>
-                    <a ng-click="revert(refset, member)">
-                      <i title="Revert staged exclusion."
+                      <i title="Revert staged exclusion." ng-click="revert(refset, member)"
                         class="noul material-icons md-18">arrow_back</i>
-                    </a>
                   </td>
                 </tr>
               </tbody>
@@ -609,7 +605,7 @@
                 <button class="btn btn-xs retired"
                   ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
                 <a ng-show="member.memberType == 'MEMBER'"
-                  ng-click="include(stagedRefset, member, false)">
+                  ng-click="include(stagedRefset, member, true)">
                   <i title="Include old member."
                     class="noul material-icons md-18">add_circle_outline</i>
                 </a>
@@ -777,10 +773,8 @@
     ng-click="finish(refset); ">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
-    class="btn btn-warning" ng-show="refset.staged"
+    class="btn btn-warning" 
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 
-  <button class="btn btn-warning" ng-show="!refset.staged" title="Close"
-    ng-click="close();">Close</button>
 </div>

@@ -69,7 +69,7 @@ tsApp
               $scope.paging['concept'] = {
                 page : 1,
                 filter : '',
-                sortField : 'lastModified',
+                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'name' : 'lastModified',
                 ascending : null
               };
               $scope.paging['available'] = {
