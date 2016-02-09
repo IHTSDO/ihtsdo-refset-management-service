@@ -124,9 +124,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
               + type.getName() + ", " + type.getDescriptionLength());
         }
       }
-      
-      if (desc.getTypeId().equals("900000000000003001") && 
-          !desc.getTerm().matches(".* \\(.*\\)")) {
+
+      if (desc.getTypeId().equals("900000000000003001")
+          && !desc.getTerm().matches(".* \\(.*\\)")) {
         result.addWarning("FSN description without semantic tag");
       }
     }
@@ -145,8 +145,9 @@ public class DefaultValidationCheck extends AbstractValidationCheck {
     }
 
     // The language should be a 2 letter code matching a language
-    if (!translation.getLanguage().toLowerCase()
-        .equals(translation.getLanguage())) {
+    if (translation.getLanguage() != null
+        && !translation.getLanguage().toLowerCase()
+            .equals(translation.getLanguage())) {
       result.addError("Translation language must be lowercase");
     }
 

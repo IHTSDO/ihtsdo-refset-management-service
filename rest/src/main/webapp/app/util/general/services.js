@@ -119,7 +119,7 @@ tsApp
 
         // Convert date to a string
         this.toDate = function(lastModified) {
-          var date = new Date(lastModified);
+          var date = new Date(lastModified).getUTCDate();
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -146,7 +146,7 @@ tsApp
 
         // Convert date to a short string
         this.toShortDate = function(lastModified) {
-          var date = new Date(lastModified);
+          var date = new Date(lastModified).getUTCDate();
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {

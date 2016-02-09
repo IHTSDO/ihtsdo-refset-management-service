@@ -165,36 +165,8 @@
       <span uib-tooltip="Manage user preferences"> User Preferences </span>
     </h5>
     </uib-accordion-heading> <!--  end A3 User Prefs-->
-    <div class="row">
-      <div class="col-md-12 col-xs-12">
-        <h5>
-          <b>Spelling and Memory Settings</b>
-        </h5>
-      </div>
-      <div class="col-md-12 col-xs-12">
-        <div class="col-md-12 col-xs-12">
-          <!--  spelling correction -->
-          <input type="checkbox" ng-change="saveUserPreferences()"
-            ng-model="user.userPreferences.spellingEnabled">
-          <span class="info-text" ng-show="user.userPreferences.spellingEnabled">Spelling
-            Correction (ENABLED)</span>
-          <span class="info-text"
-            ng-show="!user.userPreferences.spellingEnabled">Spelling
-            Correction (DISABLED)</span>
-        </div>
-        <div class="col-md-12 col-xs-12">
-          <!--  phrase memory-->
-          <input type="checkbox" ng-change="saveUserPreferences()"
-            ng-model="user.userPreferences.memoryEnabled">
-          <span class="info-text" ng-show="user.userPreferences.memoryEnabled">Phrase
-            Memory Suggestion (ENABLED)</span>
-          <span class="info-text" ng-show="!user.userPreferences.memoryEnabled">Phrase
-            Memory Suggestion (DISABLED)</span>
-        </div>
-      </div>
-    </div>
-    <div class="row">
 
+    <div class="row">
       <div class="col-md-12 col-xs-12">
         <h5>
           <b>Default Project Settings</b>
@@ -210,13 +182,6 @@
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td>Module Id:</td>
-                <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.moduleId">
-                </td>
-              </tr>
               <tr>
                 <td>Namespace:</td>
                 <td>
@@ -251,6 +216,36 @@
         </div>
       </div>
     </div>
+    
+    <div class="row">
+      <div class="col-md-12 col-xs-12">
+        <h5>
+          <b>Spelling and Memory Settings</b>
+        </h5>
+      </div>
+      <div class="col-md-12 col-xs-12">
+        <div class="col-md-12 col-xs-12">
+          <!--  spelling correction -->
+          <input type="checkbox" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.spellingEnabled">
+          <span class="info-text" ng-show="user.userPreferences.spellingEnabled">Spelling
+            Correction (ENABLED)</span>
+          <span class="info-text"
+            ng-show="!user.userPreferences.spellingEnabled">Spelling
+            Correction (DISABLED)</span>
+        </div>
+        <div class="col-md-12 col-xs-12">
+          <!--  phrase memory-->
+          <input type="checkbox" ng-change="saveUserPreferences()"
+            ng-model="user.userPreferences.memoryEnabled">
+          <span class="info-text" ng-show="user.userPreferences.memoryEnabled">Phrase
+            Memory Suggestion (ENABLED)</span>
+          <span class="info-text" ng-show="!user.userPreferences.memoryEnabled">Phrase
+            Memory Suggestion (DISABLED)</span>
+        </div>
+      </div>
+    </div>
+        
     <div class="row" style="margin-top: 5px;">
       <div class="col-md-12 col-xs-12">
         <h5>

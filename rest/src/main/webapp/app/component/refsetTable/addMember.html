@@ -55,7 +55,7 @@
                   ng-show="!concept.active" uib-tooltip="Retired">R</button>
               </td>
               <td>
-                <i ng-click="addMember(concept);"
+                <i ng-click="addMember(concept); $event.stopPropagation();"
                   ng-show="data.memberTypes[concept.terminologyId].memberType != 'MEMBER' &&
                     data.memberTypes[concept.terminologyId].memberType != 'EXCLUSION' &&
                     data.memberTypes[concept.terminologyId].memberType != 'INCLUSION'"
