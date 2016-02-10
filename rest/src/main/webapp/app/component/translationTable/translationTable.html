@@ -156,7 +156,7 @@
             <!-- Show cancel release on BETA if there is one, 
                  otherwise on READY_FOR_PUBLICATION refset itself -->
             <span
-              ng-show="translation.workflowStatus == 'BETA' || (translation.inPublicationProcess && !translation.staged)">
+              ng-show="translation.workflowStatus == 'BETA' || translation.inPublicationProcess">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="cancelAction(translation)"

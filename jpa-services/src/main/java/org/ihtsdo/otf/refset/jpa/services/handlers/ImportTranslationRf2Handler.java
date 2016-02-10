@@ -94,6 +94,9 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
     // Handle the input stream as a zip input stream
     ZipInputStream zin = new ZipInputStream(content);
     Map<String, Concept> conceptCache = new HashMap<>();
+    
+    int inactiveDescriptionCt = 0;
+    int inactiveMemberCt = 0;
 
     // Iterate through the zip entries
     for (ZipEntry zipEntry; (zipEntry = zin.getNextEntry()) != null;) {
@@ -127,6 +130,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
             // Skip inactive descriptions
             if (fields[2].equals("0")) {
+              inactiveDescriptionCt++;
               continue;
             }
 
@@ -200,6 +204,7 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
 
             // Skip inactive language entries
             if (fields[2].equals("0")) {
+              inactiveMemberCt++;
               continue;
             }
 
@@ -274,6 +279,17 @@ public class ImportTranslationRf2Handler implements ImportTranslationHandler {
         + " descriptions successfully loaded.");
     validationResult.addComment(langCt
         + " language refset members successfully loaded.");
+
+    if (inactiveDescriptionCt == 1) {
+      validationResult.addWarning("1 inactive description not loaded.");      
+    } else if (inactiveDescriptionCt != 0){
+      validationResult.addWarning(inactiveMemberCt + " inactive descriptions not loaded.");
+    }
+    if (inactiveMemberCt == 1) {
+      validationResult.addWarning("1 inactive member not loaded.");      
+    } else if (inactiveMemberCt != 0){
+      validationResult.addWarning(inactiveMemberCt + " inactive members not loaded.");
+    }
     // Return list of concepts
     return new ArrayList<>(conceptCache.values());
   }

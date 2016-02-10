@@ -2106,6 +2106,7 @@ tsApp
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
+                $scope.warnings = [];
                 $scope.comments = [];
 
                 // Handle export
@@ -2165,6 +2166,7 @@ tsApp
                           // Success - close dialog
                           function(data) {
                             $scope.errors = data.errors;
+                            $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
                           },
@@ -2191,6 +2193,7 @@ tsApp
                     // Success - close dialog
                     function(data) {
                       $scope.errors = data.errors;
+                      $scope.warnings = data.warnings;
                       $scope.comments = data.comments;
                       startLookup(translation);
                     },

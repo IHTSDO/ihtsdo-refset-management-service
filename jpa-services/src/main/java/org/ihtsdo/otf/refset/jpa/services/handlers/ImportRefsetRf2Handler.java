@@ -45,6 +45,9 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   /**  The ct. */
   private int ct = 0;
   
+  /**  The inactive ct. */
+  private int inactiveCt = 0;
+  
   /**
    * Instantiates an empty {@link ImportRefsetRf2Handler}.
    * @throws Exception if anything goes wrong
@@ -81,6 +84,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     // initialize
     validationResult = new ValidationResultJpa();
     ct = 0;
+    inactiveCt = 0;
     
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
@@ -108,6 +112,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
         // Skip inactive entries
         if (fields[2].equals("0")) {
+          inactiveCt++;
           continue;
         }
 
@@ -138,6 +143,11 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       validationResult.addComment("1 member successfully loaded.");      
     } else {
       validationResult.addComment(ct + " members successfully loaded.");
+    }
+    if (inactiveCt == 1) {
+      validationResult.addWarning("1 inactive member was skipped.");      
+    } else if (inactiveCt != 0){
+      validationResult.addWarning(inactiveCt + " inactive members were skipped.");
     }
     pbr.close();
     return list;

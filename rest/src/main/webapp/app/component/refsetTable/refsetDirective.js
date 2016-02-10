@@ -1136,6 +1136,7 @@ tsApp
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.comments = [];
+                $scope.warnings = [];
                 $scope.errors = [];
 
                 // Handle export
@@ -1184,6 +1185,7 @@ tsApp
                             // Success - close dialog
                             function(data) {
                               $scope.comments = data.comments;
+                              $scope.warnings = data.warnings;
                               $scope.errors = data.errors;
                               startLookup(refset);
                             },
@@ -1210,9 +1212,9 @@ tsApp
                     // Success - close dialog
                     function(data) {
                       $scope.comments = data.comments;
+                      $scope.warnings = data.warnings;
                       $scope.errors = data.errors;
                       startLookup(refset);
-                      $uibModalInstance.close($scope.refset);
                     },
                     // Failure - show error
                     function(data) {

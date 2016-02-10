@@ -52,7 +52,7 @@
         <tbody>
           <tr ng-repeat="clause in pagedClauses">
             <td>
-              <div definition-clause clause="clause" mode="view"></div>
+              <div definition-clause clause="clause" allow-negation=true mode="view"></div>
             </td>
             <td>
               <i ng-show="value == 'ASSIGNED'"
@@ -62,7 +62,7 @@
           </tr>
           <tr ng-show="value == 'ASSIGNED'">
             <td>
-              <div definition-clause clause="newClause" allow-negation="true"
+              <div definition-clause clause="newClause" allow-negation=true
                 mode="edit"></div>
             </td>
             <td>

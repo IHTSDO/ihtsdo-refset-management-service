@@ -206,48 +206,78 @@
             <thead class="table-select-row">
               <tr>
                 <th class="col-md-2 col-xs-2"></th>
-                <th class="col-md-10 col-xs-10"></th>
+                <th class="col-md-9 col-xs-9"></th>
+                <th class="col-md-1 col-xs-1"></th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Module Id:</td>
                 <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.moduleId">
+                  <input type="text" size="40" ng-change="setChanged('moduleId')"
+                    ng-model="userPreferences.moduleId">
+                </td>
+                <td>
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="moduleIdChanged == true"
+                    ng-click="saveUserPreference('moduleId', userPreferences.moduleId)"
+                    title="Click to save the module id">Save</button>
                 </td>
               </tr>
               <tr>
                 <td>Namespace:</td>
                 <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.namespace">
+                  <input type="text" size="40" ng-change="setChanged('namespace')"
+                    ng-model="userPreferences.namespace">
+                </td>
+                <td>
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="namespaceChanged == true"
+                    ng-click="saveUserPreference('namespace', userPreferences.namespace)"
+                    title="Click to save the namespace">Save</button>
                 </td>
               </tr>
               <tr>
                 <td>Organization:</td>
                 <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.organization">
+                  <input type="text" size="40" ng-change="setChanged('organization')"
+                    ng-model="userPreferences.organization">
+                </td>
+                <td>
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="organizationChanged == true"
+                    ng-click="saveUserPreference('organization', userPreferences.organization)"
+                    title="Click to save the organization">Save</button>
                 </td>
               </tr>
               <tr>
                 <td>Exclusion Clause:</td>
                 <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.exclusionClause">
+                  <input type="text" size="40" ng-change="setChanged('exclusionClause')"
+                    ng-model="userPreferences.exclusionClause">
                 </td>
+                <td>
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="exclusionClauseChanged == true"
+                    ng-click="saveUserPreference('exclusionClause', userPreferences.exclusionClause)"
+                    title="Click to save the exclusionClause">Save</button>
+                </td>               
               </tr>
               <tr>
                 <td>Feedback Email:</td>
                 <td>
-                  <input type="text" size="40" ng-change="saveUserPreferences()"
-                    ng-model="user.userPreferences.feedbackEmail">
+                  <input type="text" size="40" ng-change="setChanged('feedbackEmail')"
+                    ng-model="userPreferences.feedbackEmail">
                 </td>
+                <td>
+                  <button class="btn btn-xs btn-warning"
+                    ng-show="feedbackEmailChanged == true"
+                    ng-click="saveUserPreference('feedbackEmail', userPreferences.feedbackEmail)"
+                    title="Click to save the feedback email">Save</button>
+                </td>               
               </tr>
             </tbody>
           </table>
-
         </div>
       </div>
     </div>
