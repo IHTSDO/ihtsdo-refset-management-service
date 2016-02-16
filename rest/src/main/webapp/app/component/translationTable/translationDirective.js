@@ -2110,6 +2110,7 @@ tsApp
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.errors = [];
+                $scope.warnings = [];
                 $scope.comments = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
@@ -2173,6 +2174,7 @@ tsApp
                           function(data) {
                             $scope.importFinished = true;
                             $scope.errors = data.errors;
+                            $scope.warnings = data.warnings;
                             $scope.comments = data.comments;
                             startLookup(translation);
                           },
@@ -2200,6 +2202,7 @@ tsApp
                     function(data) {
                       $scope.importFinished = true;
                       $scope.errors = data.errors;
+                      $scope.warnings = data.warnings;
                       $scope.comments = data.comments;
                       startLookup(translation);
                     },

@@ -55,6 +55,19 @@ tsApp
         $scope.metadata = {
           terminologies : []
         };
+        
+        $scope.userPreferences = {
+          moduleId : $scope.user.userPreferences.moduleId,
+          namespace : $scope.user.userPreferences.namespace,
+          organization : $scope.user.userPreferences.organization,
+          exclusionClause : $scope.user.userPreferences.exclusionClause,
+          feedbackEmail : $scope.user.userPreferences.feedbackEmail
+        }
+        $scope.moduleIdChanged = false;
+        $scope.namespaceChanged = false;
+        $scope.organizationChanged = false;
+        $scope.exclusionClauseChanged = false;
+        $scope.feedbackEmailChanged = false;
 
         // Paging variables
         $scope.pageSize = 10;
@@ -305,6 +318,28 @@ tsApp
 
         };
 
+        // update a specific user preference
+        $scope.saveUserPreference = function(item, value) {
+          if (item == 'moduleId') {
+            $scope.user.userPreferences.moduleId = value;
+            $scope.moduleIdChanged = false;
+          } else if (item == 'namespace') {
+            $scope.user.userPreferences.namespace = value;
+            $scope.namespaceChanged = false;
+          } else if (item == 'organization') {
+            $scope.user.userPreferences.organization = value;
+            $scope.organizationChanged = false;
+          } else if (item == 'exclusionClause') {
+            $scope.user.userPreferences.exclusionClause = value;
+            $scope.exclusionClauseChanged = false;
+          } else if (item == 'feedbackEmail') {
+            $scope.user.userPreferences.feedbackEmail = value;
+            $scope.feedbackEmailChanged = false;
+          }
+          
+          $scope.saveUserPreferences();
+        };
+        
         // Save the user preferences
         $scope.saveUserPreferences = function() {
           securityService.updateUserPreferences($scope.user.userPreferences).then(
@@ -314,6 +349,21 @@ tsApp
             $scope.getPagedAvailableLdt();
           });
         };
+        
+        // indicate that a user preference value has changed
+        $scope.setChanged = function(item) {
+          if (item == 'moduleId') {
+            $scope.moduleIdChanged = true;
+          } else if (item == 'namespace') {
+            $scope.namespaceChanged = true;
+          } else if (item == 'organization') {
+            $scope.organizationChanged = true;
+          } else if (item == 'exclusionClause') {
+            $scope.exclusionClauseChanged = true;
+          } else if (item == 'feedbackEmail') {
+            $scope.feedbackEmailChanged = true; 
+          }
+        }
 
         // Get $scope.languageDescriptionTypes
         $scope.getLanguageDescriptionTypes = function() {

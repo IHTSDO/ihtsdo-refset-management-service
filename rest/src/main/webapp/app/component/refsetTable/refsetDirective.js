@@ -1142,6 +1142,7 @@ tsApp
                 $scope.type = type;
                 $scope.operation = operation;
                 $scope.comments = [];
+                $scope.warnings = [];
                 $scope.errors = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
@@ -1194,6 +1195,7 @@ tsApp
                             function(data) {
                               $scope.importFinished = true;
                               $scope.comments = data.comments;
+                              $scope.warnings = data.warnings;
                               $scope.errors = data.errors;
                               startLookup(refset);
                             },
@@ -1221,9 +1223,9 @@ tsApp
                     function(data) {
                       $scope.importFinished = true;
                       $scope.comments = data.comments;
+                      $scope.warnings = data.warnings;
                       $scope.errors = data.errors;
                       startLookup(refset);
-                      $uibModalInstance.close($scope.refset);
                     },
                     // Failure - show error
                     function(data) {
