@@ -27,7 +27,8 @@ tsApp
             // For refset tab: EDITING, RELEASE
             value : '@',
             projects : '=',
-            metadata : '='
+            metadata : '=',
+            stats : '='
           },
           templateUrl : 'app/component/translationTable/translationTable.html',
           controller : [
@@ -158,6 +159,7 @@ tsApp
                     pfs).then(function(data) {
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.translations.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -168,6 +170,7 @@ tsApp
                     function(data) {
                       $scope.translations = data.translations;
                       $scope.translations.totalCount = data.totalCount;
+                      $scope.stats.count = $scope.translations.totalCount;
                       $scope.reselect();
                     });
                 }
@@ -181,6 +184,7 @@ tsApp
                     pfs).then(function(data) {
                     $scope.translations = data.translations;
                     $scope.translations.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.translations.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -2107,7 +2111,9 @@ tsApp
                 $scope.operation = operation;
                 $scope.errors = [];
                 $scope.comments = [];
-
+                $scope.importStarted = false;
+                $scope.importFinished = false;
+                
                 // Handle export
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
@@ -2154,6 +2160,7 @@ tsApp
 
                       // Success
                       function(data) {
+                        $scope.importStarted = true;
                         // data is a validation result, check for errors
                         if (data.errors.length > 0) {
                           $scope.errors = data.errors;
@@ -2164,6 +2171,7 @@ tsApp
                             $scope.selectedIoHandler.id, file).then(
                           // Success - close dialog
                           function(data) {
+                            $scope.importFinished = true;
                             $scope.errors = data.errors;
                             $scope.comments = data.comments;
                             startLookup(translation);
@@ -2190,6 +2198,7 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      $scope.importFinished = true;
                       $scope.errors = data.errors;
                       $scope.comments = data.comments;
                       startLookup(translation);

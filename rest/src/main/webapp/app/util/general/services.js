@@ -118,8 +118,9 @@ tsApp
         };
 
         // Convert date to a string
+        var workDate = new Date();
         this.toDate = function(lastModified) {
-          var date = new Date(lastModified).getUTCDate();
+          var date = new Date(lastModified + workDate.getTimezoneOffset() * 60000);
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -146,7 +147,7 @@ tsApp
 
         // Convert date to a short string
         this.toShortDate = function(lastModified) {
-          var date = new Date(lastModified).getUTCDate();
+          var date = new Date(lastModified + workDate.getTimezoneOffset() * 60000);
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -161,7 +162,7 @@ tsApp
 
         // Convert date to a simple string
         this.toSimpleDate = function(lastModified) {
-          var date = new Date(lastModified);
+          var date = new Date(lastModified + workDate.getTimezoneOffset() * 60000);
           var year = '' + date.getFullYear();
           var month = '' + (date.getMonth() + 1);
           if (month.length == 1) {
@@ -176,7 +177,7 @@ tsApp
 
         // Table sorting mechanism
         this.setSortField = function(table, field, paging) {
-          console.debug("utilService set sort field",table,field,paging);
+          console.debug("utilService set sort field", table, field, paging);
           paging[table].sortField = field;
           // reset page number too
           paging[table].page = 1;
@@ -385,7 +386,7 @@ tsApp.service('gpService', function() {
   this.decrement = function(message) {
     if (message) {
       var index = this.glassPane.messages.indexOf(message); // <-- Not supported
-                                                            // in <IE9
+      // in <IE9
       if (index !== -1) {
         this.glassPane.messages.splice(index, 1);
       }

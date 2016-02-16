@@ -27,7 +27,8 @@ tsApp
             // RELEASE
             value : '@',
             projects : '=',
-            metadata : '='
+            metadata : '=',
+            stats : '='
           },
           templateUrl : 'app/component/refsetTable/refsetTable.html',
           controller : [
@@ -73,7 +74,8 @@ tsApp
                 page : 1,
                 filter : '',
                 typeFilter : '',
-                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'conceptName' : 'lastModified',
+                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'conceptName'
+                  : 'lastModified',
                 ascending : true
               };
               $scope.paging['membersInCommon'] = {
@@ -148,6 +150,7 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.stats.count = $scope.refsets.totalCount;
                       $scope.reselect();
                     });
                 }
@@ -158,6 +161,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.refsets.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -167,6 +171,7 @@ tsApp
                     $scope.user.userName, pfs).then(function(data) {
                     $scope.refsets = data.refsets;
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.refsets.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -176,6 +181,7 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.stats.count = $scope.refsets.totalCount;
                       $scope.reselect();
                     });
                 }
@@ -188,6 +194,7 @@ tsApp
                       function(data) {
                         $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                         $scope.refsets.totalCount = data.totalCount;
+                        $scope.stats.count = $scope.refsets.totalCount;
                         // get refset tracking records in order to get refset
                         // authors
                         for (var i = 0; i < data.records.length; i++) {
@@ -209,6 +216,7 @@ tsApp
                   function(data) {
                     $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.refsets.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -220,6 +228,7 @@ tsApp
                   function(data) {
                     $scope.refsets = $scope.getRefsetsFromRecords(data.records);
                     $scope.refsets.totalCount = data.totalCount;
+                    $scope.stats.count = $scope.refsets.totalCount;
                     $scope.reselect();
                   });
                 }
@@ -232,6 +241,7 @@ tsApp
                     function(data) {
                       $scope.refsets = data.refsets;
                       $scope.refsets.totalCount = data.totalCount;
+                      $scope.stats.count = $scope.refsets.totalCount;
                       $scope.reselect();
                     });
                 }
@@ -1133,6 +1143,8 @@ tsApp
                 $scope.operation = operation;
                 $scope.comments = [];
                 $scope.errors = [];
+                $scope.importStarted = false;
+                $scope.importFinished = false;
 
                 // Handle export
                 $scope.export = function(file) {
@@ -1169,6 +1181,7 @@ tsApp
 
                         // Success
                         function(data) {
+                          $scope.importStarted = true;
                           // data is a validation result, check for errors
                           if (data.errors.length > 0) {
                             $scope.errors = data.errors;
@@ -1179,6 +1192,7 @@ tsApp
                               $scope.selectedIoHandler.id, file).then(
                             // Success - close dialog
                             function(data) {
+                              $scope.importFinished = true;
                               $scope.comments = data.comments;
                               $scope.errors = data.errors;
                               startLookup(refset);
@@ -1205,6 +1219,7 @@ tsApp
                       $scope.selectedIoHandler.id, file).then(
                     // Success - close dialog
                     function(data) {
+                      $scope.importFinished = true;
                       $scope.comments = data.comments;
                       $scope.errors = data.errors;
                       startLookup(refset);
@@ -2686,8 +2701,8 @@ tsApp
                       function(data) {
                         handleError($scope.errors, data);
                       });
-                };  
-                
+                };
+
                 // add inclusion
                 $scope.include = function(refset, member, staged) {
                   // if retired, find if there are replacement concepts
@@ -2714,7 +2729,7 @@ tsApp
                     $scope.addRefsetInclusion(refset, member, staged);
                   }
                 }
-                
+
                 $scope.addRefsetInclusion = function(refset, member, staged) {
                   member.refsetId = refset.id;
                   refsetService.addRefsetInclusion(member, staged).then(
@@ -2840,10 +2855,11 @@ tsApp
                   $uibModalInstance.close();
                 };
 
-                
                 // Add modal
-                $scope.openReplacementConceptsModal = function(lrefset, lmember, lstaged, lreplacementConcepts, lreportToken) {
-                  console.debug('openReplacementConceptsModal ', lrefset, lmember, lstaged, lreplacementConcepts, lreportToken);
+                $scope.openReplacementConceptsModal = function(lrefset, lmember, lstaged,
+                  lreplacementConcepts, lreportToken) {
+                  console.debug('openReplacementConceptsModal ', lrefset, lmember, lstaged,
+                    lreplacementConcepts, lreportToken);
 
                   var modalInstance = $uibModal.open({
                     templateUrl : 'app/component/refsetTable/replacements.html',
@@ -2871,36 +2887,35 @@ tsApp
                   modalInstance.result.then(
                   // Success
                   function(data) {
-                    
-                      refsetService.releaseReportToken($scope.reportToken).then(
+
+                    refsetService.releaseReportToken($scope.reportToken).then(
+                    // Success
+                    function() {
+                      refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
                       // Success
-                      function() {
-                        refsetService.compareRefsets($scope.refset.id, $scope.stagedRefset.id).then(
-                        // Success
-                        function(data) {
-                          $scope.reportToken = data;
-                          $scope.getDiffReport();
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                      function(data) {
+                        $scope.reportToken = data;
+                        $scope.getDiffReport();
                       },
                       // Error
                       function(data) {
                         handleError($scope.errors, data);
                       });
-              
-                    
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+
                   });
 
                 };
 
                 // Add modal controller
-                var ReplacementConceptsModalCtrl = function($scope, $uibModalInstance, refset, 
+                var ReplacementConceptsModalCtrl = function($scope, $uibModalInstance, refset,
                   member, staged, replacementConcepts, reportToken) {
-                  console.debug('Entered replacement concepts modal control', 
-                    refset, member, staged, replacementConcepts, reportToken);
+                  console.debug('Entered replacement concepts modal control', refset, member,
+                    staged, replacementConcepts, reportToken);
 
                   $scope.errors = [];
                   $scope.refset = refset;
@@ -2909,14 +2924,18 @@ tsApp
                   $scope.replacementConcepts = replacementConcepts;
                   $scope.reportToken = reportToken;
                   $scope.selection = {
-                    ids: {"test": true}
+                    ids : {
+                      "test" : true
+                    }
                   };
-                  //$scope.invalidIds = new Array();
+                  // $scope.invalidIds = new Array();
                   $scope.invalid = {
-                    ids: {"test": true}
+                    ids : {
+                      "test" : true
+                    }
                   };
                   $scope.expectedCt = 0;
-                  
+
                   // initialize
                   var pfs = {
                     startIndex : 0,
@@ -2925,69 +2944,73 @@ tsApp
                     ascending : null,
                     queryRestriction : null
                   };
-                  
+
                   // check if replacements are already members
-                  for (var i=0; i<$scope.replacementConcepts.length; i++) {
+                  for (var i = 0; i < $scope.replacementConcepts.length; i++) {
                     var query = '(' + $scope.replacementConcepts[i].terminologyId + ')';
                     refsetService.getNewRegularMembers($scope.reportToken, query, pfs, null).then(
-                      // Success
-                      function(data) {
-                        if (data.members.length != 0) {
-                          $scope.invalid.ids[data.members[0].terminologyId] = true;
-                        }
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      }); 
-                    refsetService.findMembersInCommon($scope.reportToken, query, pfs, null).then(
-                      // Success
-                      function(data) {
-                        if (data.members.length != 0) {
-                          $scope.invalid.ids[data.members[0].terminologyId] = true;
-                        }
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      }); 
-                    
-                  }      
-                  refsetService.getDiffReport($scope.reportToken).then(
                     // Success
                     function(data) {
-                      $scope.stagedInclusions = data.stagedInclusions;
-                      for (var i=0; i<$scope.replacementConcepts.length; i++) {
-                        for (var j=0; j<$scope.stagedInclusions.length; j++) {
-                          if ($scope.stagedInclusions[j].conceptId == 
-                            $scope.replacementConcepts[i].terminologyId) {
-                            $scope.invalid.ids[$scope.stagedInclusions[j].conceptId] = true;
-                          }
-                        }
+                      if (data.members.length != 0) {
+                        $scope.invalid.ids[data.members[0].terminologyId] = true;
                       }
                     },
                     // Error
                     function(data) {
                       handleError($scope.errors, data);
-                    }); 
-                  
+                    });
+                    refsetService.findMembersInCommon($scope.reportToken, query, pfs, null).then(
+                    // Success
+                    function(data) {
+                      if (data.members.length != 0) {
+                        $scope.invalid.ids[data.members[0].terminologyId] = true;
+                      }
+                    },
+                    // Error
+                    function(data) {
+                      handleError($scope.errors, data);
+                    });
+
+                  }
+                  refsetService
+                    .getDiffReport($scope.reportToken)
+                    .then(
+                      // Success
+                      function(data) {
+                        $scope.stagedInclusions = data.stagedInclusions;
+                        for (var i = 0; i < $scope.replacementConcepts.length; i++) {
+                          for (var j = 0; j < $scope.stagedInclusions.length; j++) {
+                            if ($scope.stagedInclusions[j].conceptId == $scope.replacementConcepts[i].terminologyId) {
+                              $scope.invalid.ids[$scope.stagedInclusions[j].conceptId] = true;
+                            }
+                          }
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
+
                   // Add button
                   $scope.submitAdd = function() {
                     // calculate total number of replacement options
-                    for (var i=0; i<replacementConcepts.length; i++) {
+                    for (var i = 0; i < replacementConcepts.length; i++) {
                       if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
                         $scope.expectedCt++;
                       }
                     }
-                    // if intensional, check if retired concept itself should be included
-                    if (refset.type == 'INTENSIONAL') {            
+                    // if intensional, check if retired concept itself should be
+                    // included
+                    if (refset.type == 'INTENSIONAL') {
                       if ($scope.selection.ids[$scope.member.conceptId]) {
                         $scope.expectedCt++;
-                        $scope.addRefsetInclusionOrMember($scope.refset, $scope.member, $scope.staged);
+                        $scope.addRefsetInclusionOrMember($scope.refset, $scope.member,
+                          $scope.staged);
                       }
-                    }   
-                    // if a concept is selected, add it as an inclusion or member
-                    for (var i=0; i<replacementConcepts.length; i++) {
+                    }
+                    // if a concept is selected, add it as an inclusion or
+                    // member
+                    for (var i = 0; i < replacementConcepts.length; i++) {
                       if ($scope.selection.ids[replacementConcepts[i].terminologyId]) {
                         var member = {
                           active : true,
@@ -3020,17 +3043,17 @@ tsApp
                       });
                     } else if (refset.type == 'EXTENSIONAL') {
                       refsetService.addRefsetMember(member).then(
-                        // Success
-                        function(data) {
-                          $scope.expectedCt--;
-                          if ($scope.expectedCt == 0) {
-                            $uibModalInstance.close();
-                          }
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                      // Success
+                      function(data) {
+                        $scope.expectedCt--;
+                        if ($scope.expectedCt == 0) {
+                          $uibModalInstance.close();
+                        }
+                      },
+                      // Error
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
                     }
                   };
 
@@ -3040,12 +3063,12 @@ tsApp
                   };
 
                   $scope.isInvalid = function(id) {
-                    return  true;
+                    return true;
                   };
                 };
-                
+
               };
-              
+
               // Feedback modal
               $scope.openFeedbackModal = function(lrefset) {
                 console.debug('Open feedbackModal ', lrefset);

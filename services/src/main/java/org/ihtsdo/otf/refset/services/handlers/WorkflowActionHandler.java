@@ -42,52 +42,48 @@ public interface WorkflowActionHandler extends Configurable {
    * force the workflow action handler to implement this differently.
    *
    * @param translation the translation
-   * @param user the user
    * @param pfs the pfs
    * @param service the service
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList findAvailableEditingConcepts(Translation translation,
-    User user, PfsParameter pfs, WorkflowService service) throws Exception;
+    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available review work.
    *
    * @param translation the translation
-   * @param user the user
    * @param pfs the pfs
    * @param service the service
    * @return the concept list
    * @throws Exception the exception
    */
   public ConceptList findAvailableReviewConcepts(Translation translation,
-    User user, PfsParameter pfs, WorkflowService service) throws Exception;
+    PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available editing refsets.
    *
    * @param projectId the project id
-   * @param user the user
    * @param pfs the pfs
    * @param service the service
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableEditingRefsets(Long projectId, User user,
+  public RefsetList findAvailableEditingRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**
    * Find available review refsets.
    *
    * @param projectId the project id
-   * @param user the user
    * @param pfs the pfs
    * @param service the service
    * @return the refset list
    * @throws Exception the exception
    */
-  public RefsetList findAvailableReviewRefsets(Long projectId, User user,
+  public RefsetList findAvailableReviewRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception;
 
   /**

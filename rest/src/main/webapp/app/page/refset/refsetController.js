@@ -51,6 +51,17 @@ tsApp
           workflowPaths : []
         };
 
+        // Stats containers for refset-table sections
+        $scope.available = {
+          count : 0
+        };
+        $scope.assigned = {
+          count : 0
+        };
+        $scope.released = {
+          count : 0
+        };
+
         // Get $scope.projects
         $scope.getProjects = function() {
 

@@ -17,7 +17,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.log4j.Logger;
-import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
@@ -180,21 +179,13 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               .getWorkflowPath());
       // Find available editing work
       final ConceptList list =
-          handler.findAvailableEditingConcepts(translation, user, null,
+          handler.findAvailableEditingConcepts(translation, pfs,
               workflowService);
 
-      // Apply pfs
-      final ConceptList result = new ConceptListJpa();
-      final int[] totalCt = new int[1];
-      List<Concept> concepts =
-          workflowService.applyPfsToList(list.getObjects(), Concept.class,
-              totalCt, pfs);
-      result.setTotalCount(totalCt[0]);
-      result.setObjects(concepts);
-      for (final Concept concept : result.getObjects()) {
+      for (final Concept concept : list.getObjects()) {
         workflowService.handleLazyInit(concept);
       }
-      return result;
+      return list;
 
     } catch (Exception e) {
       handleException(e, "trying to find available editing work");
@@ -276,25 +267,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Get object references
       final Translation translation =
           workflowService.getTranslation(translationId);
-      final User user = securityService.getUser(userName);
       // Obtain the handler
       final WorkflowActionHandler handler =
           workflowService.getWorkflowHandlerForPath(translation
               .getWorkflowPath());
       // Find available editing work
       final ConceptList list =
-          handler.findAvailableReviewConcepts(translation, user, null,
-              workflowService);
+          handler
+              .findAvailableReviewConcepts(translation, pfs, workflowService);
       for (final Concept concept : list.getObjects()) {
         concept.setDescriptions(new ArrayList<Description>());
         concept.getNotes().size();
       }
 
-      // Apply pfs
-      final int[] totalCt = new int[1];
-      list.setObjects(workflowService.applyPfsToList(list.getObjects(),
-          Concept.class, totalCt, pfs));
-      list.setTotalCount(totalCt[0]);
       return list;
 
     } catch (Exception e) {
@@ -484,12 +469,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "perform workflow action on refset", UserRole.AUTHOR);
 
-      // Get object references
-      final User user = securityService.getUser(userName);
-
       // Call helper
       List<Refset> list =
-          findAvailableEditingRefsetsHelper(projectId, user, workflowService);
+          findAvailableEditingRefsetsHelper(projectId, workflowService);
 
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
@@ -515,20 +497,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    * Find available editing refsets helper.
    *
    * @param projectId the project id
-   * @param user the user
    * @param workflowService the workflow service
    * @return the list
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
   private List<Refset> findAvailableEditingRefsetsHelper(Long projectId,
-    User user, WorkflowService workflowService) throws Exception {
+    WorkflowService workflowService) throws Exception {
 
     // Combine results from all workflow action handlers
     final List<Refset> list = new ArrayList<>();
     for (final WorkflowActionHandler handler : workflowService
         .getWorkflowHandlers()) {
-      list.addAll(handler.findAvailableEditingRefsets(projectId, user, null,
+      list.addAll(handler.findAvailableEditingRefsets(projectId, null,
           workflowService).getObjects());
     }
     return list;
@@ -648,12 +629,9 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find available review work", UserRole.AUTHOR);
 
-      // Get object references
-      final User user = securityService.getUser(userName);
-
       // Call helper
       List<Refset> list =
-          findAvailableReviewRefsetsHelper(projectId, user, workflowService);
+          findAvailableReviewRefsetsHelper(projectId, workflowService);
 
       // Apply pfs
       final RefsetList result = new RefsetListJpa();
@@ -663,7 +641,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               Refset.class, totalCt, pfs);
       result.setTotalCount(totalCt[0]);
       result.setObjects(list);
-
       for (final Refset refset : list) {
         workflowService.handleLazyInit(refset);
       }
@@ -682,20 +659,19 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
    * Find available review refsets helper.
    *
    * @param projectId the project id
-   * @param user the user
    * @param workflowService the workflow service
    * @return the list
    * @throws Exception the exception
    */
   @SuppressWarnings("static-method")
   private List<Refset> findAvailableReviewRefsetsHelper(Long projectId,
-    User user, WorkflowService workflowService) throws Exception {
+    WorkflowService workflowService) throws Exception {
 
     // Combine results from all workflow action handlers
     final List<Refset> list = new ArrayList<>();
     for (final WorkflowActionHandler handler : workflowService
         .getWorkflowHandlers()) {
-      list.addAll(handler.findAvailableReviewRefsets(projectId, user, null,
+      list.addAll(handler.findAvailableReviewRefsets(projectId, null,
           workflowService).getObjects());
     }
     return list;
@@ -766,21 +742,12 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       authorizeProject(workflowService, projectId, securityService, authToken,
           "trying to find refset available review work", UserRole.AUTHOR);
 
-      // Get the project
-      final Project project = workflowService.getProject(projectId);
-
-      // Get available refsets for all users with author or reviewer roles on
-      // the project
+      // Get available refsets
       final List<Refset> refsets = new ArrayList<>();
-      for (final User user : project.getUserRoleMap().keySet()) {
-        if (project.getUserRoleMap().get(user) == UserRole.AUTHOR) {
-          refsets.addAll(this.findAvailableEditingRefsetsHelper(projectId,
-              user, workflowService));
-        } else if (project.getUserRoleMap().get(user) == UserRole.REVIEWER) {
-          refsets.addAll(this.findAvailableReviewRefsetsHelper(projectId, user,
-              workflowService));
-        }
-      }
+      refsets.addAll(this.findAvailableEditingRefsetsHelper(projectId,
+          workflowService));
+      refsets.addAll(this.findAvailableReviewRefsetsHelper(projectId,
+          workflowService));
 
       final RefsetList list = new RefsetListJpa();
       final int[] totalCt = new int[1];
@@ -899,7 +866,6 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
           "trying to find refset available review work", UserRole.AUTHOR);
 
       // Get the project
-      final Project project = workflowService.getProject(projectId);
       final Translation translation =
           workflowService.getTranslation(translationId);
 
@@ -911,15 +877,10 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
       // Get available concepts for all users with author or reviewer roles on
       // the project
       final List<Concept> concepts = new ArrayList<>();
-      for (final User user : project.getUserRoleMap().keySet()) {
-        if (project.getUserRoleMap().get(user) == UserRole.AUTHOR) {
-          concepts.addAll(handler.findAvailableEditingConcepts(translation,
-              user, null, workflowService).getObjects());
-        } else if (project.getUserRoleMap().get(user) == UserRole.REVIEWER) {
-          concepts.addAll(handler.findAvailableReviewConcepts(translation,
-              user, null, workflowService).getObjects());
-        }
-      }
+      concepts.addAll(handler.findAvailableEditingConcepts(translation, null,
+          workflowService).getObjects());
+      concepts.addAll(handler.findAvailableReviewConcepts(translation, null,
+          workflowService).getObjects());
 
       final ConceptList list = new ConceptListJpa();
       final int[] totalCt = new int[1];

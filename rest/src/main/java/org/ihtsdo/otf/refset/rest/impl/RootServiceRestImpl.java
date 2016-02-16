@@ -253,6 +253,7 @@ public class RootServiceRestImpl {
     Calendar c = Calendar.getInstance();
     message.append("[").append(ConfigUtility.DATE_FORMAT4.format(c.getTime()));
     message.append("] ");
+    message.append(userName).append(" ");
     message.append(action).append(" (projectId=");
     message.append(projectId).append(", objectId=");
     message.append(objectId).append("): ");

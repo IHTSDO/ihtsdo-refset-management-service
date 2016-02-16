@@ -6,30 +6,39 @@
 
     <h4>Refsets</h4>
 
-    <uib-accordion> <uib-accordion-group is-open="accordionState['PUBLISHED']">
-    <uib-accordion-heading ng-click="setAccordion('PUBLISHED');">
-    <h5 class="section-header" ng-click="setAccordion('PUBLISHED');">Published</h5>
+    <uib-accordion> <uib-accordion-group
+      is-open="accordionState['PUBLISHED']"> <uib-accordion-heading
+      ng-click="setAccordion('PUBLISHED');">
+    <h5 class="section-header" ng-click="setAccordion('PUBLISHED');">Published
+      ({{published.count}})</h5>
     </uib-accordion-heading>
-    <div refset-table value="PUBLISHED" projects="projects" metadata="metadata"></div>
-    </uib-accordion-group> <uib-accordion-group is-open="accordionState['BETA']"> <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('BETA');">Beta</h5>
+    <div refset-table value="PUBLISHED" projects="projects" metadata="metadata"
+      stats="published"></div>
+    </uib-accordion-group> <uib-accordion-group is-open="accordionState['BETA']">
+    <uib-accordion-heading>
+    <h5 class="section-header" ng-click="setAccordion('BETA');">Beta
+      ({{beta.count}})</h5>
     </uib-accordion-heading>
-    <div refset-table value="BETA" projects="projects" metadata="metadata"></div>
+    <div refset-table value="BETA" projects="projects" metadata="metadata"
+      stats="beta"></div>
     </uib-accordion-group> </uib-accordion>
 
     <h4>Translations</h4>
 
-    <uib-accordion> <uib-accordion-group is-open="accordionState['TRANSLATION_PUBLISHED']">
-    <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('TRANSLATION_PUBLISHED');">Published</h5>
+    <uib-accordion> <uib-accordion-group
+      is-open="accordionState['TRANSLATION_PUBLISHED']"> <uib-accordion-heading>
+    <h5 class="section-header" ng-click="setAccordion('TRANSLATION_PUBLISHED');">Published
+      ({{tpublished.count}})</h5>
     </uib-accordion-heading>
     <div translation-table value="PUBLISHED" projects="projects"
-      metadata="metadata"></div>
-    </uib-accordion-group> <uib-accordion-group is-open="accordionState['TRANSLATION_BETA']"> <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('TRANSLATION_BETA');">Beta</h5>
+      metadata="metadata" stats="tpublished"></div>
+    </uib-accordion-group> <uib-accordion-group is-open="accordionState['TRANSLATION_BETA']">
+    <uib-accordion-heading>
+    <h5 class="section-header" ng-click="setAccordion('TRANSLATION_BETA');">Beta
+      ({{tbeta.count}})</h5>
     </uib-accordion-heading>
-    <div translation-table value="BETA" projects="projects"
-      metadata="metadata"></div>
+    <div translation-table value="BETA" projects="projects" metadata="metadata"
+      stats="tbeta"></div>
     </uib-accordion-group> </uib-accordion>
 
 

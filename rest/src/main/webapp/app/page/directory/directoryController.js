@@ -46,6 +46,22 @@ tsApp.controller('DirectoryCtrl', [
       workflowPaths : []
     };
 
+    // Stats containers for refset-table sections
+    $scope.published = {
+      count : 0
+    };
+    $scope.beta = {
+      count : 0
+    };
+
+    // Stats containers for translation-table sections
+    $scope.tpublished = {
+      count : 0
+    };
+    $scope.tbeta = {
+      count : 0
+    };
+
     // Get $scope.projects
     $scope.getProjects = function() {
 

@@ -38,7 +38,6 @@
 
 
 <div class="modal-body">
-  <!--   x {{refset.staged}} y {{refset.lookupInProgress}} z {{refset.stagingType}} w-->
   <div ng-show="stagedRefset.lookupInProgress || refset.lookupInProgress"
     class="row">
     <div class="col-md-2">&nbsp;</div>
@@ -155,7 +154,8 @@
                     ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
                   <i ng-click="include(stagedRefset, member, false)"
                     ng-show="!member.conceptActive"
-                  title="Add replacement concepts to refset" class="noul material-icons md-12">add</i>
+                    title="Add replacement concepts to refset"
+                    class="noul material-icons md-12">add</i>
                 </span>
               </td>
             </tr>
@@ -174,7 +174,7 @@
     <!-- R1C2 new not old-->
     <div class="col-md-5 col-xs-12">
       <div
-        ng-show="newRegularMembers.length > 0 || paging['newRegularMembers'].typeFilter || paging['newRegularMembers'].filter">
+        ng-show="newRegularMembers.length > 0 || membersInCommon.length > 0 || paging['newRegularMembers'].typeFilter || paging['newRegularMembers'].filter">
         <h5
           uib-tooltip="New concepts in migration refset, that were not members in the refset.">
           <b>New Members ({{newRegularMembers.totalCount}})</b>
@@ -221,13 +221,14 @@
               <td>{{member.conceptName}}</td>
               <td>
                 <button class="btn btn-xs retired"
-                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>                
-                <i title="Exclude new member." ng-click="exclude(refset, member, false)"
-                    ng-show="refset.type == 'INTENSIONAL'"
-                    class="noul material-icons md-18">remove_circle_outline</i>
+                  ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
+                <i title="Exclude new member."
+                  ng-click="exclude(refset, member, false)"
+                  ng-show="refset.type == 'INTENSIONAL'"
+                  class="noul material-icons md-18">remove_circle_outline</i>
                 <i title="Remove new member." ng-click="removeMember(member)"
-                    ng-show="refset.type == 'EXTENSIONAL'"
-                    class="noul material-icons md-18">delete</i>
+                  ng-show="refset.type == 'EXTENSIONAL'"
+                  class="noul material-icons md-18">delete</i>
               </td>
             </tr>
           </tbody>
@@ -235,6 +236,9 @@
         <div
           ng-show="newRegularMembers.length == 0 && (paging['newRegularMembers'].typeFilter || paging['newRegularMembers'].filter)"
           class="alert alert-warning">No results</div>
+        <div
+          ng-show="newRegularMembers.length == 0 && !paging['newRegularMembers'].typeFilter && !paging['newRegularMembers'].filter"
+          class="alert alert-warning">No new members</div>
       </div>
     </div>
 
@@ -310,10 +314,11 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td class="nobreak">
-                      <i title="Add inclusion to migrated refset." ng-click="include(stagedRefset, member, true)"
-                        class="noul material-icons md-18">arrow_forward</i>
-                      <button class="btn btn-xs retired"
-                        ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>                  
+                    <i title="Add inclusion to migrated refset."
+                      ng-click="include(stagedRefset, member, true)"
+                      class="noul material-icons md-18">arrow_forward</i>
+                    <button class="btn btn-xs retired"
+                      ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
                   </td>
                 </tr>
               </tbody>
@@ -322,7 +327,7 @@
               ng-show="validInclusions.length == 0 && (paging['validInclusions'].typeFilter || paging['validInclusions'].filter)"
               class="alert alert-warning">No results</div>
             <div
-              ng-show="validInclusions.length == 0 && !paging['validInclusions'].typeFilter && !paging['validInclusions'].typeFilter"
+              ng-show="validInclusions.length == 0 && !paging['validInclusions'].typeFilter && !paging['validInclusions'].filter"
               class="alert alert-warning">No valid inclusions</div>
 
           </div>
@@ -382,9 +387,10 @@
                 <tr ng-repeat="member in pagedStagedInclusions">
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
-                  <td class="nobreak">                    
-                      <i title="Revert migrated inclusion." ng-click="revert(refset, member)"
-                        class="noul material-icons md-18">arrow_back</i>                    
+                  <td class="nobreak">
+                    <i title="Revert migrated inclusion."
+                      ng-click="revert(refset, member)"
+                      class="noul material-icons md-18">arrow_back</i>
                     <button class="btn btn-xs retired"
                       ng-show="!member.conceptActive" uib-tooltip="Retired">R</button>
                   </td>
@@ -395,7 +401,7 @@
               ng-show="stagedInclusions.length == 0 && (paging['stagedInclusions'].typeFilter || paging['stagedInclusions'].filter)"
               class="alert alert-warning">No results</div>
             <div
-              ng-show="stagedInclusions.length == 0 && !paging['stagedInclusions'].typeFilter && !paging['stagedInclusions'].typeFilter"
+              ng-show="stagedInclusions.length == 0 && !paging['stagedInclusions'].typeFilter && !paging['stagedInclusions'].filter"
               class="alert alert-warning">No migrated inclusions</div>
 
           </div>
@@ -461,8 +467,9 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td>
-                      <i title="Add exclusion to migration refset." ng-click="exclude(stagedRefset, member, true)"
-                        class="noul material-icons md-18">arrow_forward</i>                  
+                    <i title="Add exclusion to migration refset."
+                      ng-click="exclude(stagedRefset, member, true)"
+                      class="noul material-icons md-18">arrow_forward</i>
                   </td>
                 </tr>
               </tbody>
@@ -471,7 +478,7 @@
               ng-show="validExclusions.length == 0 && (paging['validExclusions'].typeFilter || paging['validExclusions'].filter)"
               class="alert alert-warning">No results</div>
             <div
-              ng-show="validExclusions.length == 0 && !paging['validExclusions'].typeFilter && !paging['validExclusions'].typeFilter"
+              ng-show="validExclusions.length == 0 && !paging['validExclusions'].typeFilter && !paging['validExclusions'].filter"
               class="alert alert-warning">No valid exclusions</div>
 
           </div>
@@ -526,8 +533,9 @@
                   <td style="word-break: break-word;">{{member.conceptId}}</td>
                   <td>{{member.conceptName}}</td>
                   <td>
-                      <i title="Revert staged exclusion." ng-click="revert(refset, member)"
-                        class="noul material-icons md-18">arrow_back</i>
+                    <i title="Revert staged exclusion."
+                      ng-click="revert(refset, member)"
+                      class="noul material-icons md-18">arrow_back</i>
                   </td>
                 </tr>
               </tbody>
@@ -536,7 +544,7 @@
               ng-show="stagedExclusions.length == 0 && (paging['stagedExclusions'].typeFilter || paging['stagedExclusions'].filter)"
               class="alert alert-warning">No results</div>
             <div
-              ng-show="stagedExclusions.length == 0 && !paging['stagedExclusions'].typeFilter && !paging['stagedExclusions'].typeFilter"
+              ng-show="stagedExclusions.length == 0 && !paging['stagedExclusions'].typeFilter && !paging['stagedExclusions'].filter"
               class="alert alert-warning">No migrated exclusions</div>
 
           </div>
@@ -550,7 +558,7 @@
 
       <!-- show if there are old regular members -->
       <div
-        ng-show="oldRegularMembers.length > 0 || paging['oldRegularMembers'].typeFilter || paging['oldRegularMembers'].filter">
+        ng-show="oldRegularMembers.length > 0 || membersInCommon.length > 0 || paging['oldRegularMembers'].typeFilter || paging['oldRegularMembers'].filter">
         <h5
           uib-tooltip="Concepts that were in the refset, but are no longer members in migrated refset.">
           <b>Old Members ({{oldRegularMembers.totalCount}})</b>
@@ -616,6 +624,9 @@
         <div
           ng-show="oldRegularMembers.length == 0 && (paging['oldRegularMembers'].typeFilter || paging['oldRegularMembers'].filter)"
           class="alert alert-warning">No results</div>
+        <div
+          ng-show="oldRegularMembers.length == 0 && !paging['oldRegularMembers'].typeFilter && !paging['oldRegularMembers'].filter"
+          class="alert alert-warning">No old members</div>
       </div>
     </div>
   </div>
@@ -773,7 +784,7 @@
     ng-click="finish(refset); ">Finish</button>
 
   <button confirm="Are you sure you want to cancel migration?"
-    class="btn btn-warning" 
+    class="btn btn-warning"
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 

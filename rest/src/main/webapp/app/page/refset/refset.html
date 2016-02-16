@@ -41,23 +41,29 @@
       is-open="accordionState['AVAILABLE']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('AVAILABLE');">
       Available
-      <span ng-show="projects.role"> ({{projects.role}})</span>
+      <span ng-show="projects.role"> ({{available.count}},
+        {{projects.role}})</span>
     </h5>
     </uib-accordion-heading>
-    <div refset-table value="AVAILABLE" projects="projects" metadata="metadata"></div>
+    <div refset-table value="AVAILABLE" projects="projects" metadata="metadata"
+      stats="available"></div>
     </uib-accordion-group> <!-- do not show for admins --> <uib-accordion-group
       is-open="accordionState['ASSIGNED']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('ASSIGNED');">
       Assigned
-      <span ng-show="projects.role"> ({{projects.role}})</span>
+      <span ng-show="projects.role"> ({{assigned.count}},
+        {{projects.role}})</span>
     </h5>
     </uib-accordion-heading> <!-- TODO project="{{project.id}}" -->
-    <div refset-table value="ASSIGNED" projects="projects" metadata="metadata"></div>
+    <div refset-table value="ASSIGNED" projects="projects" metadata="metadata"
+      stats="assigned"></div>
     </uib-accordion-group> <uib-accordion-group is-open="accordionState['RELEASE']">
     <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('RELEASE');">Release</h5>
+    <h5 class="section-header" ng-click="setAccordion('RELEASE');">Release
+      ({{released.count}})</h5>
     </uib-accordion-heading>
-    <div refset-table value="RELEASE" projects="projects" metadata="metadata"></div>
+    <div refset-table value="RELEASE" projects="projects" metadata="metadata"
+      stats="released"></div>
     </uib-accordion-group> </uib-accordion>
   </div>
 </div>

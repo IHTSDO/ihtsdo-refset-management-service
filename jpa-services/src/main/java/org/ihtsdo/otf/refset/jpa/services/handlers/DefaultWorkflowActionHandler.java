@@ -818,7 +818,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @SuppressWarnings("unchecked")
   @Override
   public ConceptList findAvailableEditingConcepts(Translation translation,
-    User user, PfsParameter pfs, WorkflowService service) throws Exception {
+    PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Members of the refset
     // That do not have concepts in the translation
@@ -864,7 +864,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   @SuppressWarnings("unchecked")
   @Override
   public ConceptList findAvailableReviewConcepts(Translation translation,
-    User user, PfsParameter pfs, WorkflowService service) throws Exception {
+    PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Concepts of the translation with
     // workflow status in a certain state
@@ -900,7 +900,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public RefsetList findAvailableEditingRefsets(Long projectId, User user,
+  public RefsetList findAvailableEditingRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // NEW Refsets for this project that do not yet have tracking records
@@ -938,7 +938,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
-  public RefsetList findAvailableReviewRefsets(Long projectId, User user,
+  public RefsetList findAvailableReviewRefsets(Long projectId,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
     // Refsets for this project that are ready for review

@@ -31,8 +31,7 @@
       </button>
 
       <!-- Admins shouldn't add projects -->
-      <h4
-        ng-show="value == 'AVAILABLE' && refsets.totalCount == 0 && projects.role != 'ADMIN'">
+      <h4 ng-show="value == 'AVAILABLE' && refsets.totalCount == 0">
         <span style="float: right;">
           <button ng-click="openAddRefsetModal(); $event.stopPropagation()"
             title="Add refset" class="btn btn-xs btn-primary">Add
@@ -413,7 +412,7 @@
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
                 title="Import definition" class="noul material-icons md-18">file_upload</i>
               <i ng-show="value == 'AVAILABLE'"
-                title="Assign refset to edit definition"
+                title="To import a definition, assign the refset"
                 class="md-grey material-icons md-18">file_upload</i>
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
@@ -499,8 +498,8 @@
   <!-- R2C1 -->
   <div class="col-md-6 col-xs-12">
 
-    <div ng-show="selected.member" concept-info data="selected" value="value" role="projects.role"
-      handle-workflow="handleWorkflow(selected.refset)"></div>
+    <div ng-show="selected.member" concept-info data="selected" value="value"
+      role="projects.role" handle-workflow="handleWorkflow(selected.refset)"></div>
 
     <!-- End R2C1 -->
   </div>
@@ -520,10 +519,14 @@
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); "
             title="Export refset members" class="noul material-icons md-18">file_download</i>
           <!-- Import -->
-          <i ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'"
-            ng-disabled="selected.refset.type != 'EXTENSIONAL'"
+          <i
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); "
             title="Import refset members" class="noul material-icons md-18">file_upload</i>
+          <i
+            ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type != 'EXTENSIONAL'"
+            title="Import only suppored for extensional refset"
+            class="md-grey material-icons md-18">file_upload</i>
 
           <!-- Add member list -->
           <i

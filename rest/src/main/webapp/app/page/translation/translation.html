@@ -35,18 +35,19 @@
     <uib-accordion> <uib-accordion-group
       is-open="accordionState['EDITING']"> <uib-accordion-heading>
     <h5 class="section-header" ng-click="setAccordion('EDITING');">
-      Editing
+      Editing ({{editing.count}})
       <span ng-show="projects.role"> ({{projects.role}})</span>
     </h5>
     </uib-accordion-heading>
     <div translation-table value="EDITING" projects="projects"
-      metadata="metadata"></div>
+      metadata="metadata" stats="editing"></div>
     </uib-accordion-group> <uib-accordion-group is-open="accordionState['RELEASE']">
     <uib-accordion-heading>
-    <h5 class="section-header" ng-click="setAccordion('RELEASE');">Release</h5>
+    <h5 class="section-header" ng-click="setAccordion('RELEASE');">Release
+      ({{release.count}})</h5>
     </uib-accordion-heading>
     <div translation-table value="RELEASE" projects="projects"
-      metadata="metadata"></div>
+      metadata="metadata" stats="release"></div>
     </uib-accordion-group> </uib-accordion>
   </div>
 </div>
