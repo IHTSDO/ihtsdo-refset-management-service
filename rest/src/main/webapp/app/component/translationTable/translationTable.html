@@ -759,19 +759,19 @@
               ng-click="setSortField('concept','terminologyId', selected.translation)">Concept
               Id<span ng-bind="getSortIndicator('concept','terminologyId')"></span>
             </th>
-            <th class="col-md-5 col-xs-5"
+            <th class="col-md-4 col-xs-4"
               ng-click="setSortField('concept','name', selected.translation)">Name<span
                 ng-bind="getSortIndicator('concept','name')"></span>
             </th>
             <th
               ng-show="value != 'PUBLISHED' && value != 'BETA' && value != 'RELEASE'"
-              class="col-md-2 col-xs-2"
+              class="col-md-3 col-xs-3"
               ng-click="setSortField('concept','lastModified', selected.translation)">Last
               Modified<span ng-bind="getSortIndicator('concept','lastModified')"></span>
             </th>
             <th
               ng-show="value == 'PUBLISHED' || value == 'BETA' || value == 'RELEASE'"
-              class="col-md-2 col-xs-2"
+              class="col-md-3 col-xs-3"
               ng-click="setSortField('concept','effectiveTime', selected.translation)">Effective
               Time<span ng-bind="getSortIndicator('concept','effectiveTime')"></span>
             </th>

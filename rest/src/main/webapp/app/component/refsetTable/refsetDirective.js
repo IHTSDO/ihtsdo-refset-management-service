@@ -1783,6 +1783,9 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
+                    },
+                    projects : function() {
+                      return $scope.projects;
                     }
                   }
                 });
@@ -1795,13 +1798,14 @@ tsApp
               };
 
               // Add Refset controller
-              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project) {
+              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project, projects) {
                 console.debug('Entered add refset modal control', metadata);
 
                 $scope.action = 'Add';
                 $scope.definition = null;
                 $scope.metadata = metadata;
                 $scope.project = project;
+                $scope.projects = projects;
                 $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
                 $scope.clause = {
                   value : null
@@ -1816,7 +1820,8 @@ tsApp
                   terminology : $scope.project.terminology,
                   feedbackEmail : $scope.project.feedbackEmail,
                   type : metadata.refsetTypes[0],
-                  definitionClauses : []
+                  definitionClauses : [],
+                  project : $scope.project
                 };
                 $scope.errors = [];
                 $scope.warnings = [];
