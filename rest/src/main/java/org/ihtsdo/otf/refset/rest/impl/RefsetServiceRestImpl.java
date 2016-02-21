@@ -30,6 +30,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.MemberDiffReport;
 import org.ihtsdo.otf.refset.Note;
+import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
@@ -44,6 +45,7 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.helpers.StringList;
+import org.ihtsdo.otf.refset.helpers.TranslationList;
 import org.ihtsdo.otf.refset.jpa.ConceptRefsetMemberNoteJpa;
 import org.ihtsdo.otf.refset.jpa.MemberDiffReportJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
@@ -446,15 +448,33 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     refsetService.setTransactionPerOperation(false);
     refsetService.beginTransaction();
+    final TranslationService translationService = new TranslationServiceJpa();
+    translationService.setTransactionPerOperation(false);
+    translationService.beginTransaction();
+    
     try {
       String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
               securityService, authToken, "update refset", UserRole.AUTHOR);
 
-      // get previously saved definition clauses
-      String previousClauses =
-          refsetService.getRefset(refset.getId()).getDefinitionClauses()
+      // get previously saved definition clauses & project
+      Refset previousRefset = refsetService.getRefset(refset.getId());
+      String previousClauses = previousRefset.getDefinitionClauses()
               .toString();
+      Project previousProject = previousRefset.getProject();
+      
+      // if project has changed, update project on all of the refset's translations
+      // TODO: currently refset project is updated, but indexes are not in sync so refset is still listed under the wrong project
+      if (previousProject.getId() != refset.getProject().getId()) {
+        TranslationList projectTranslations = translationService.findTranslationsForQuery("projectId:"
+            + previousProject.getId(), new PfsParameterJpa());
+        for (Translation translation : projectTranslations.getObjects()) {
+          translation.setProject(refset.getProject());
+          translation.setLastModifiedBy(userName);
+          translationService.updateTranslation(translation);
+        }
+        translationService.commit();
+      }
 
       // Update refset
       refset.setLastModifiedBy(userName);
@@ -476,6 +496,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       handleException(e, "trying to update a refset");
     } finally {
       refsetService.close();
+      translationService.close();
       securityService.close();
     }
   }

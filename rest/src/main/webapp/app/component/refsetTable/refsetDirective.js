@@ -1028,6 +1028,11 @@ tsApp
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.refset.terminologyId = null;
                 $scope.errors = [];
+                
+                $scope.projectSelected = function(project) {
+                  $scope.refset.namespace = project.namespace;
+                  $scope.refset.moduleId = project.moduleId;
+                };
 
                 $scope.submitRefset = function(refset) {
 
@@ -1908,6 +1913,9 @@ tsApp
                     },
                     project : function() {
                       return $scope.project;
+                    },
+                    projects : function() {
+                      return $scope.projects;
                     }
                   }
                 });
@@ -1922,12 +1930,14 @@ tsApp
 
               // Edit refset controller
               var EditRefsetModalCtrl = function($scope, $uibModalInstance, refset, metadata,
-                project) {
+                project, projects) {
                 console.debug('Entered edit refset modal control');
 
                 $scope.action = 'Edit';
                 $scope.refset = refset;
                 $scope.project = project;
+                $scope.refset.project = project;
+                $scope.projects = projects;
                 $scope.metadata = metadata;
                 $scope.versions = $scope.metadata.versions[refset.terminology].sort().reverse();
                 $scope.errors = [];
@@ -1937,7 +1947,9 @@ tsApp
                 };
 
                 $scope.submitRefset = function(refset) {
-
+                  
+                  refset.projectId = refset.project.id;
+                  
                   // Validate refset
                   validationService.validateRefset(refset).then(
                     function(data) {
