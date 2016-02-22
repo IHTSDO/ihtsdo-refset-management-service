@@ -482,12 +482,12 @@
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
-            ng-click="setSortField('available','terminologyId', null)">Concept
+            ng-click="setSortField('available','terminologyId', selected.translation)">Concept
             Id<span ng-bind="getSortIndicator('available','terminologyId')"></span>
           </th>
           <th 
-            ng-click="setSortField('available','name', null)">Name<span
-              ng-bind="getSortIndicator('available','name',null)"></span></th>
+            ng-click="setSortField('available','name', selected.translation)">Name<span
+              ng-bind="getSortIndicator('available','name')"></span></th>
           <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'"
             ng-click="setSortField('available','lastModified', selected.translation)">Last
             Modified<span ng-bind="getSortIndicator('available','lastModified')"></span>
@@ -571,13 +571,13 @@
       <thead>
         <tr>
           <th class="col-md-3 col-xs-3"
-            ng-click="setSortField('assigned','conceptTerminologyId', null)">Concept
+            ng-click="setSortField('assigned','conceptTerminologyId', selected.translation)">Concept
             Id<span
               ng-bind="getSortIndicator('assigned','conceptTerminologyId')"></span>
           </th>
           <th class="col-md-4 col-xs-4"
-            ng-click="setSortField('assigned','conceptName', null)">Name<span
-              ng-bind="getSortIndicator('assigned','conceptName',null)"></span></th>
+            ng-click="setSortField('assigned','conceptName', selected.translation)">Name<span
+              ng-bind="getSortIndicator('assigned','conceptName')"></span></th>
           <th class="col-md-3 col-xs-3"
             ng-click="setSortField('assigned','lastModified', selected.translation)">Last
             Modified<span ng-bind="getSortIndicator('assigned','lastModified')"></span>

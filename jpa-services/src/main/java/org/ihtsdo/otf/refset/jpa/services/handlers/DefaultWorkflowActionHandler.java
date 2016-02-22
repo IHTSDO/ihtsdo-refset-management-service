@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -841,8 +842,16 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     ctQuery.setParameter("refsetId", translation.getRefset().getId());
 
+    // map concept fields to concept refset member fields
+    PfsParameter localPfs = pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    if (localPfs.getSortField() != null && localPfs.getSortField().equals("name")) {
+      localPfs.setSortField("conceptName");
+    } else if (localPfs.getSortField() != null && localPfs.getSortField().equals("terminologyId")) {
+      localPfs.setSortField("conceptId");
+    }
+    
     final Query query =
-        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
+        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
     query.setParameter("refsetId", translation.getRefset().getId());
     final List<ConceptRefsetMember> results = query.getResultList();
     final ConceptListJpa list = new ConceptListJpa();

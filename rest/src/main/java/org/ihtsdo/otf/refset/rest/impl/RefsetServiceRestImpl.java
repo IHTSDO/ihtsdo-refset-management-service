@@ -445,20 +445,17 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
         "RESTful call POST (Refset): /update " + refset);
 
     // Create service and configure transaction scope
-    final RefsetService refsetService = new RefsetServiceJpa();
-    refsetService.setTransactionPerOperation(false);
-    refsetService.beginTransaction();
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     
     try {
       String userName =
-          authorizeProject(refsetService, refset.getProject().getId(),
+          authorizeProject(translationService, refset.getProject().getId(),
               securityService, authToken, "update refset", UserRole.AUTHOR);
 
       // get previously saved definition clauses & project
-      Refset previousRefset = refsetService.getRefset(refset.getId());
+      Refset previousRefset = translationService.getRefset(refset.getId());
       String previousClauses = previousRefset.getDefinitionClauses()
               .toString();
       Project previousProject = previousRefset.getProject();
@@ -478,24 +475,23 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // Update refset
       refset.setLastModifiedBy(userName);
-      refsetService.updateRefset(refset);
+      translationService.updateRefset(refset);
 
-      addLogEntry(refsetService, userName, "UPDATE refset", refset.getProject()
+      addLogEntry(translationService, userName, "UPDATE refset", refset.getProject()
           .getId(), refset.getId(),
           refset.getTerminologyId() + ": " + refset.getName());
       if (refset.getType() == Refset.Type.INTENSIONAL
           && !refset.getDefinitionClauses().toString().equals(previousClauses)) {
-        refsetService.resolveRefsetDefinition(refset);
-        addLogEntry(refsetService, userName, "  definition =", refset
+        translationService.resolveRefsetDefinition(refset);
+        addLogEntry(translationService, userName, "  definition =", refset
             .getProject().getId(), refset.getId(), refset
             .getDefinitionClauses().toString());
       }
 
-      refsetService.commit();
+      translationService.commit();
     } catch (Exception e) {
       handleException(e, "trying to update a refset");
     } finally {
-      refsetService.close();
       translationService.close();
       securityService.close();
     }
