@@ -728,7 +728,7 @@ tsApp
                     translationService.fireTranslationChanged($scope.translation);
                   });
                 }
-                if (translation.stagingType == 'BETA') {
+                if (translation.stagingType == 'BETA' || translation.inPublicationProcess) {
                   releaseService.cancelTranslationRelease($scope.translation.id).then(
                   // Success
                   function() {
@@ -2454,7 +2454,11 @@ tsApp
 
                 // cancel operation, close modal
                 $scope.cancel = function() {
-                  releaseService.cancelTranslationRelease($scope.translation.id);
+                  releaseService.cancelTranslationRelease($scope.translation.id).then(
+                    // Success
+                    function() {
+                      translationService.fireTranslationChanged($scope.translation);
+                    });
                   $uibModalInstance.dismiss('cancel');
                 };
 

@@ -859,8 +859,20 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
                       + " where c.refset = b AND d.translation = c)");
       ctQuery.setParameter("refsetId", translation.getRefset().getId());
 
+    // map concept fields to concept refset member fields
+    PfsParameter localPfs = pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    if (localPfs.getSortField() != null && localPfs.getSortField().equals("name")) {
+      localPfs.setSortField("conceptName");
+    } else if (localPfs.getSortField() != null && localPfs.getSortField().equals("terminologyId")) {
+      localPfs.setSortField("conceptId");
+    }
+    
       final Query query =
+<<<<<<< .mine
           ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
+=======
+        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
+>>>>>>> .theirs
       query.setParameter("refsetId", translation.getRefset().getId());
       results = query.getResultList();
       totalCount = ((Long) ctQuery.getSingleResult()).intValue();

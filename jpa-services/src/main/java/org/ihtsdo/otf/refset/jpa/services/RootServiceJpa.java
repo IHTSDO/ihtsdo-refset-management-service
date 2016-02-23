@@ -217,7 +217,7 @@ public abstract class RootServiceJpa implements RootService {
 
     // Query restriction assumes a driving table called "a"
     if (pfs != null) {
-      if (pfs.getQueryRestriction() == null) {
+      if (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction().equals("")) {
         throw new Exception("Query restriction not supported for JQL queries");
       }
 
@@ -233,6 +233,12 @@ public abstract class RootServiceJpa implements RootService {
       // "a"
       if (pfs.getSortField() != null) {
         localQueryStr.append(" order by a.").append(pfs.getSortField());
+      }
+      
+      if (pfs.isAscending()) {
+        localQueryStr.append(" asc");       
+      } else {
+        localQueryStr.append(" desc");
       }
     }
 

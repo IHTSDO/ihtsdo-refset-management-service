@@ -1167,6 +1167,9 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           "Unable to import definition file, the expression could not be resolved - "
               + refset.computeDefinition());
     }
+    
+
+    
     // Anything that was an explicit inclusion that is now resolved by the
     // definition normally, doesn’t need to be an inclusion anymore – because
     // it can just be a regular member. Thus we can change it to member and
@@ -1181,6 +1184,13 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     }
 
+    for (ConceptRefsetMember member : existingMembers.values()) {
+      if (!resolvedConcepts.contains(member.getConceptId())) {
+        // member is no longer part of refset
+        removeMember(member.getId());
+      }
+    }
+    
     // Delete all previous members and exclusions that are not resolved from
     // the current definition. Otherwise avoid adding it in next section
     for (final ConceptRefsetMember member : beforeExclusions.values()) {

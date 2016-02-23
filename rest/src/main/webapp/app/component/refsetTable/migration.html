@@ -788,4 +788,7 @@
     ng-disabled="!refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
     title="Cancel migration" ng-click="cancel(refset);">Cancel</button>
 
+  <button class="btn btn-warning"
+    ng-disabled="refset.staged || stagedRefset.lookupInProgress || refset.lookupInProgress"
+    title="Close" ng-click="close(refset);">Close</button>
 </div>

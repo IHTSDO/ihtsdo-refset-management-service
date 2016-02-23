@@ -480,7 +480,7 @@
     <div ng-show="candidateProjects.totalCount != 0" class="col-md-6 col-xs-12">
       <div class="col-md-12 col-xs-12">
         <h5 class="section-header">Unassigned Users</h5>
-        <div ng-show="selectedProject && unassignedUsers.totalCount > 0">
+        <div ng-show="selectedProject">
           <span style="display: block;">
             <uib-pagination items-per-page="pageSize" max-size="5"
               boundary-links="true" class="pagination-sm"
@@ -492,17 +492,15 @@
               ng-change="getUnassignedUsers()"></uib-pagination>
 
             <input class="input-filter" placeholder="Search"
-              ng-show="unassignedUsers.totalCount > pageSize || project['candidateUser'].filter"
               type="text" ng-model="paging['candidateUser'].filter"
               ng-model-options="{ debounce: 300 }"
               ng-change="getUnassignedUsers()">
 
             <button class="btn btn-xs btn-warning"
-              ng-show="project['candidateUser'].filter"
-              ng-click="project['candidateUser'].filter = ''; getUnassignedUsers()"
+              ng-click="paging['candidateUser'].filter = ''; getUnassignedUsers()"
               title="Click to clear filter text">Clear</button>
           </span>
-
+             
           <table class="table">
             <thead class="table-select-row">
               <tr>
@@ -538,7 +536,8 @@
         </div>
         <span ng-show="!selectedProject" style="display: block;"
           class="alert alert-warning"> No project selected</span>
-        <span ng-show="selectedProject && unassignedUsers.totalCount == 0"
+        <span ng-show="selectedProject && unassignedUsers.totalCount == 0 
+        && paging['candidateUser'].filter == ''"
           style="display: block;" class="alert alert-warning"> Selected
           project has no unassigned users</span>
 

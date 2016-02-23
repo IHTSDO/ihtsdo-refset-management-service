@@ -10,10 +10,10 @@
           <b><span ng-show="action == 'Clone'">Clone to </span>Project:</b>
         </td>
         <td>
-          <select ng-show="action == 'Clone'" ng-model="refset.project"
+          <select ng-model="refset.project" 
+            ng-change="projectSelected(refset.project)"
             ng-options="item.name.concat(' (',item.id,')') for item in projects.data">
           </select>
-          <span ng-show="action != 'Clone'">{{project.name}}</span>
         </td>
       </tr>
       <tr>
@@ -132,7 +132,7 @@
         <td>
           <!-- Editing field for ADD -->
           <div ng-show="action == 'Add'" definition-clause clause="clause"
-            mode="edit" allow-negation=true></div>
+            mode="edit" allowNegation="false"></div>
 
           <!--  Read-only field for ADD -->
           <div ng-show="action == 'Clone' || action == 'Edit'"
