@@ -20,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.helpers.RefsetList;
 import org.ihtsdo.otf.refset.jpa.ValidationResultJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.ConceptListJpa;
+import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.RefsetListJpa;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.jpa.services.RootServiceJpa;
@@ -820,6 +821,17 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
+    final PfsParameter localPfs =
+        pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
+    if (localPfs.getSortField() != null
+        && localPfs.getSortField().equals("name")) {
+      localPfs.setSortField("conceptName");
+    }
+    if (localPfs.getSortField() != null
+        && localPfs.getSortField().equals("terminologyId")) {
+      localPfs.setSortField("conceptId");
+    }
+
     // Members of the refset
     // That do not have concepts in the translation
     String queryStr =
@@ -829,23 +841,47 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
             + " where c.refset = b AND d.translation = c)";
 
-    Query ctQuery =
-        ((RootServiceJpa) service)
-            .getEntityManager()
-            .createQuery(
-                "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
-                    + "where b.id = :refsetId and a.refset = b "
-                    + "and a.conceptId NOT IN "
-                    + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
-                    + " where c.refset = b AND d.translation = c)");
-
-    ctQuery.setParameter("refsetId", translation.getRefset().getId());
-
-    final Query query =
-        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
-    query.setParameter("refsetId", translation.getRefset().getId());
-    final List<ConceptRefsetMember> results = query.getResultList();
+    List<ConceptRefsetMember> results = null;
     final ConceptListJpa list = new ConceptListJpa();
+    int totalCount = 0;
+    // No need to use applyPfsToList if there is not a filter
+    if (localPfs.getQueryRestriction() == null
+        || localPfs.getQueryRestriction().isEmpty()) {
+
+      Query ctQuery =
+          ((RootServiceJpa) service)
+              .getEntityManager()
+              .createQuery(
+                  "select count(*) from ConceptRefsetMemberJpa a, RefsetJpa b "
+                      + "where b.id = :refsetId and a.refset = b "
+                      + "and a.conceptId NOT IN "
+                      + "(select d.terminologyId from TranslationJpa c, ConceptJpa d "
+                      + " where c.refset = b AND d.translation = c)");
+      ctQuery.setParameter("refsetId", translation.getRefset().getId());
+
+      final Query query =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, localPfs);
+      query.setParameter("refsetId", translation.getRefset().getId());
+      results = query.getResultList();
+      totalCount = ((Long) ctQuery.getSingleResult()).intValue();
+    }
+
+    // Use applyPfsToList if there is a filter
+    else {
+
+      // Remove query restriction, add it back in later.
+      final Query query =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
+      query.setParameter("refsetId", translation.getRefset().getId());
+      int[] totalCt = new int[1];
+      results = query.getResultList();
+      results =
+          service.applyPfsToList(results, ConceptRefsetMember.class, totalCt,
+              localPfs);
+      totalCount = totalCt[0];
+    }
+
+    // Repackage as a concept list
     for (final ConceptRefsetMember member : results) {
       final Concept concept = new ConceptJpa();
       concept.setActive(member.isActive());
@@ -854,7 +890,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
       concept.setName(member.getConceptName());
       list.getObjects().add(concept);
     }
-    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+    list.setTotalCount(totalCount);
 
     return list;
 
@@ -875,26 +911,49 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
             + "and a = c.concept and a.workflowStatus = :editingDone "
             + "and b.id = :translationId";
 
-    final Query ctQuery =
-        ((RootServiceJpa) service).getEntityManager().createQuery(
-            "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
-                + "where a.translation = b and c.translation = b "
-                + "and a = c.concept and a.workflowStatus = :editingDone "
-                + "and b.id = :translationId");
-
-    ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
-    ctQuery.setParameter("translationId", translation.getId());
-
-    final Query query =
-        ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
-    query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
-    query.setParameter("translationId", translation.getId());
-    final List<Concept> results = query.getResultList();
+    List<Concept> results = null;
     final ConceptListJpa list = new ConceptListJpa();
-    list.setObjects(results);
-    list.setTotalCount(((Long) ctQuery.getSingleResult()).intValue());
+    int totalCount = 0;
+    // No need to use applyPfsToList if there is not a filter
+    if (pfs != null && pfs.getQueryRestriction() == null
+        || pfs.getQueryRestriction().isEmpty()) {
+
+      final Query ctQuery =
+          ((RootServiceJpa) service).getEntityManager().createQuery(
+              "select count(*) from ConceptJpa a, TranslationJpa b, TrackingRecordJpa c "
+                  + "where a.translation = b and c.translation = b "
+                  + "and a = c.concept and a.workflowStatus = :editingDone "
+                  + "and b.id = :translationId");
+      ctQuery.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      ctQuery.setParameter("translationId", translation.getId());
+
+      final Query query =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, pfs);
+      query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      query.setParameter("translationId", translation.getId());
+      results = query.getResultList();
+      totalCount = ((Long) ctQuery.getSingleResult()).intValue();
+    }
+
+    // Use applyPfsToList if there is a filter
+    else {
+
+      // Remove query restriction, add it back in later.
+      final Query query =
+          ((RootServiceJpa) service).applyPfsToJqlQuery(queryStr, null);
+      query.setParameter("editingDone", WorkflowStatus.EDITING_DONE);
+      query.setParameter("translationId", translation.getId());
+      int[] totalCt = new int[1];
+      results = query.getResultList();
+      results = service.applyPfsToList(results, Concept.class, totalCt, pfs);
+      totalCount = totalCt[0];
+    }
+
+    list.getObjects().addAll(results);
+    list.setTotalCount(totalCount);
 
     return list;
+
   }
 
   /* see superclass */
