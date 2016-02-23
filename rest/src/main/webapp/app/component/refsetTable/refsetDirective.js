@@ -2541,6 +2541,11 @@ tsApp
                     $scope.invalidExclusions, $scope.paging['invalidExclusions'], $scope.pageSize);
                 };
 
+                // Close migration dialog
+                $scope.close = function(refset) {
+                  $uibModalInstance.close(refset);
+                }
+                
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
                   refsetService.cancelMigration(refset.id).then(

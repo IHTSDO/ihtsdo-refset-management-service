@@ -82,6 +82,6 @@
   <button class="btn btn-primary"
     ng-show="operation == 'Import' && errors.length > 0"
     ng-click="continueImport(file);">Continue With Import</button>
-  <button class="btn btn-warning" ng-show="importStarted && !importFinished" ng-show="comments.length == 0" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-warning" ng-show="importStarted && !importFinished && comments.length == 0" ng-click="cancel()">Cancel</button>
   <button class="btn btn-warning" ng-show="importFinished || !importStarted" ng-click="close()">Close</button>
 </div>

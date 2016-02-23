@@ -794,8 +794,9 @@
             </td>
             <td
               ng-show="value != 'PUBLISHED' && value != 'BETA' && value !='RELEASE'">
-              {{toDate(concept.lastModified)}}<br />{{concept.lastModifiedBy}}
+              {{toDate(concept.lastModified)}}
               <span ng-show="projects.role == 'ADMIN'">
+                <br />{{concept.lastModifiedBy}}
                 <br />{{concept.workflowStatus}}
               </span>
             </td>
