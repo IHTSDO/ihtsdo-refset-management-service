@@ -445,9 +445,17 @@ public class IndexUtility {
                   + pfs.getSortField());
         }
 
-        Sort sort =
-            new Sort(new SortField(sortField, SortField.Type.STRING,
-                !pfs.isAscending()));
+        Sort sort = null;
+        if (pfs.getSortField().equals("lastModified")
+            || pfs.getSortField().equals("effectiveTime")) {
+          sort =
+              new Sort(new SortField(sortField, SortField.Type.LONG,
+                  !pfs.isAscending()));
+        } else {
+          sort =
+              new Sort(new SortField(sortField, SortField.Type.STRING,
+                  !pfs.isAscending()));
+        }
         fullTextQuery.setSort(sort);
       }
     }

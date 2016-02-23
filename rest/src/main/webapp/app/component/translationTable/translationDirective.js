@@ -70,7 +70,8 @@ tsApp
               $scope.paging['concept'] = {
                 page : 1,
                 filter : '',
-                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'name' : 'lastModified',
+                sortField : $scope.value == 'PUBLISHED' || $scope.value == 'BETA' ? 'name'
+                  : 'lastModified',
                 ascending : null
               };
               $scope.paging['available'] = {
@@ -1374,16 +1375,66 @@ tsApp
                   // may have assigned off this list first). If successful, send
                   // the request
                   var pfs = {
-                    startIndex : (paging['concept'].page - 1) * $scope.batchSize,
+                    startIndex : (paging['available'].page - 1) * $scope.batchSize,
                     maxResults : $scope.batchSize,
-                    sortField : paging['concept'].sortField,
-                    ascending : paging['concept'].ascending == null ? true
-                      : paging['concept'].ascending,
-                    queryRestriction : null
+                    sortField : paging['available'].sortField,
+                    ascending : paging['available'].ascending == null ? true
+                      : paging['available'].ascending,
+                    queryRestriction : paging['available'].filter
                   };
 
-                  workflowService
-                    .findAvailableEditingConcepts(project.id, translation.id, $scope.user.userName,
+                  if ($scope.role == 'AUTHOR') {
+
+                    workflowService
+                      .findAvailableEditingConcepts(project.id, translation.id,
+                        $scope.user.userName, pfs)
+                      .then(
+                        // Success
+                        function(data) {
+
+                          // The first X entries of data.concepts should match
+                          // translation.available
+                          var match = true;
+                          for (var i = 0; i < Math.min(data.concepts.length,
+                            translation.available.length); i++) {
+                            if (data.concepts[i].id !== translation.available[i].id) {
+                              match = false;
+                              break;
+                            }
+                          }
+                          if (!match) {
+                            $scope.errors[0] = 'Some available concepts have been assigned, please refresh the list and try again.';
+                            return;
+                          }
+
+                          // Make parameter
+                          var conceptList = {
+                            concepts : data.concepts
+                          };
+
+                          workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                            translation.id, $scope.user.userName, $scope.role, 'ASSIGN',
+                            conceptList).then(
+                          // Success
+                          function(data) {
+                            // close modal
+                            $uibModalInstance.close(translation);
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
+
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                  }
+                  
+                  else if ($scope.role == 'REVIEWER') {
+                    workflowService
+                    .findAvailableReviewConcepts(project.id, translation.id, $scope.user.userName,
                       pfs)
                     .then(
                       // Success
@@ -1427,6 +1478,7 @@ tsApp
                       function(data) {
                         handleError($scope.errors, data);
                       });
+                  }
 
                 };
 
@@ -2114,7 +2166,7 @@ tsApp
                 $scope.comments = [];
                 $scope.importStarted = false;
                 $scope.importFinished = false;
-                
+
                 // Handle export
                 $scope.export = function() {
                   if (type == 'Spelling Dictionary') {
@@ -2455,10 +2507,10 @@ tsApp
                 // cancel operation, close modal
                 $scope.cancel = function() {
                   releaseService.cancelTranslationRelease($scope.translation.id).then(
-                    // Success
-                    function() {
-                      translationService.fireTranslationChanged($scope.translation);
-                    });
+                  // Success
+                  function() {
+                    translationService.fireTranslationChanged($scope.translation);
+                  });
                   $uibModalInstance.dismiss('cancel');
                 };
 

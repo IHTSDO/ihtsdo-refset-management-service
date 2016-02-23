@@ -461,7 +461,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       Project previousProject = previousRefset.getProject();
       
       // if project has changed, update project on all of the refset's translations
-      // TODO: currently refset project is updated, but indexes are not in sync so refset is still listed under the wrong project
       if (previousProject.getId() != refset.getProject().getId()) {
         TranslationList projectTranslations = translationService.findTranslationsForQuery("projectId:"
             + previousProject.getId(), new PfsParameterJpa());
@@ -470,7 +469,6 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           translation.setLastModifiedBy(userName);
           translationService.updateTranslation(translation);
         }
-        translationService.commit();
       }
 
       // Update refset

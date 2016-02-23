@@ -308,9 +308,6 @@ public abstract class RootServiceJpa implements RootService {
       });
     }
 
-    // Set total count before filtering
-    totalCt[0] = result.size();
-
     // Handle filtering based on toString()
     if (pfs != null
         && (pfs.getQueryRestriction() != null && !pfs.getQueryRestriction()
@@ -332,6 +329,9 @@ public abstract class RootServiceJpa implements RootService {
         result = filteredResult;
       }
     }
+
+    // Set total count before filtering
+    totalCt[0] = result.size();
 
     // get the start and end indexes based on paging parameters
     int startIndex = 0;
