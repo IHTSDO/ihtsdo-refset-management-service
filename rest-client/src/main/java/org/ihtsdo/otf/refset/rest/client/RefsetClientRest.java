@@ -1495,4 +1495,31 @@ public class RefsetClientRest extends RootClientRest implements
     return originId;
   }
 
+  @Override
+  public Integer countExpression(String expression, String terminology,
+    String version, String authToken) throws Exception {
+    validateNotEmpty(expression, "expression");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/refset/expression/count" + "?terminology=" + terminology
+            + "&version=" + version);
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .post(Entity.text(expression));
+
+    Integer originId = response.readEntity(Integer.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    return originId;
+
+  }
+
+
 }

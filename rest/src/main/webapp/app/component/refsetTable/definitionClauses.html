@@ -89,6 +89,11 @@
 
             </td>
           </tr>
+          <tr ng-repeat="warning in warnings">
+            <td colspan="2">
+              <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
+            </td>
+          </tr>
         </tbody>
       </table>
 
@@ -98,8 +103,11 @@
 
 <div class="modal-footer">
   <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
-    ng-show="value == 'ASSIGNED'" ng-click="save(refset);"
+    ng-show="value == 'ASSIGNED' && warnings.length == 0" ng-click="save(refset);"
     title="Save and recompute definition">Recompute</button>
+  <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
+    ng-show="value == 'ASSIGNED' && warnings.length > 0" ng-click="save(refset);"
+    title="Save and recompute definition">Continue</button>
   <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
     ng-click="cancel()">Cancel</button>
   <button ng-show="value != 'ASSIGNED'" class="btn btn-warning"

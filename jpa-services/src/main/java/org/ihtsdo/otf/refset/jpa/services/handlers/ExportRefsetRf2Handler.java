@@ -75,7 +75,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     sb.append("active").append("\t");
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
-    sb.append("referencedComponentId").append("\t");
+    sb.append("referencedComponentId");
     sb.append("\r\n");
 
     for (ConceptRefsetMember member : members) {
@@ -118,7 +118,7 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
     sb.append("moduleId").append("\t");
     sb.append("refsetId").append("\t");
     sb.append("referencedComponentId").append("\t");
-    sb.append("definition").append("\t");
+    sb.append("definition");
     sb.append("\r\n");
 
     sb.append(UUID.randomUUID().toString()).append("\t");

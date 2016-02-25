@@ -1233,6 +1233,31 @@ tsApp.service('refsetService', [
       return deferred.promise;
     };
 
+    // get the count of items in the resolved expression
+    this.countExpression = function(expression, terminology, version) {
+      console.debug('count expression');
+      // Setup deferred
+      var deferred = $q.defer();
+
+      $http.post(refsetUrl + 'expression/count?terminology=' + terminology + '&version=' + version,
+        expression, {
+          headers : {
+            'Content-type' : 'text/plain'
+          }
+        }).then(
+      // success
+      function(response) {
+        console.debug('  output = ', response.data);
+        deferred.resolve(response.data);
+      },
+      // error
+      function(response) {
+        utilService.handleError(response);
+        deferred.reject(response.data);
+      });
+      return deferred.promise;
+    };
+    
     // checks if expression is valid
     this.isExpressionValid = function(expression, terminology, version) {
       console.debug('isExpressionValid');

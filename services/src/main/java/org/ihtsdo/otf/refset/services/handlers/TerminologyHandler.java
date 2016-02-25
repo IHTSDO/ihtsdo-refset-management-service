@@ -205,4 +205,17 @@ public interface TerminologyHandler extends Configurable {
   public ConceptList getReplacementConcepts(String conceptId,
     String terminology, String version) throws Exception;
 
+  /**
+   * Count expression.
+   *
+   * @param expr the expr
+   * @param terminology the terminology
+   * @param version the version
+   * @param pfs the pfs
+   * @return the int
+   * @throws Exception the exception
+   */
+  public int countExpression(String expr, String terminology, String version,
+    PfsParameter pfs) throws Exception;
+
 }

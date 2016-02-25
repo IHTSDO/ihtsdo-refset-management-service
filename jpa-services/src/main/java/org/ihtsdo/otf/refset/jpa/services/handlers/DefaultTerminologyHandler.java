@@ -447,6 +447,59 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     return conceptList;
   }
 
+  @Override
+  public int countExpression(String expr, String terminology,
+    String version, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  expression count - " + terminology + ", " + version + ", " + expr
+            + ", " + pfs);
+    // Make a webservice call to SnowOwl to get concept
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
+    }
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
+    WebTarget target =
+        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=1&offset=0");
+
+    Response response =
+        target.request(accept).header("Authorization", authHeader)
+            .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return 0;
+      }
+
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    return doc.get("total").asInt();
+
+  }
+
+  
+  
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,

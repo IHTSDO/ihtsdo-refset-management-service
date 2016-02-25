@@ -584,4 +584,18 @@ public interface RefsetServiceRest {
   public Long getOriginForStagedRefsetId(Long stagedRefsetId, String authToken)
     throws Exception;
 
+
+  /**
+   * Count expression.
+   *
+   * @param expression the expression
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the integer
+   * @throws Exception the exception
+   */
+  public Integer countExpression(String expression, String terminology,
+    String version, String authToken) throws Exception;
+
 }

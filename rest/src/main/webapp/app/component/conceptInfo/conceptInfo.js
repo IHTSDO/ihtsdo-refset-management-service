@@ -481,6 +481,7 @@ tsApp.directive('conceptInfo', [
             console.debug('Entered add modal control', refset, member);
 
             $scope.errors = [];
+            $scope.warnings = [];
             $scope.refset = refset;
             $scope.member = member;
             $scope.selfAndDescendants = '<<';
@@ -498,27 +499,40 @@ tsApp.directive('conceptInfo', [
                   negated : false
                 };
                 refset.definitionClauses.push(clause);
-                refsetService.updateRefset(refset).then(
-                // Success - update refset
-                function(data) {
-                  $uibModalInstance.close(refset);
-                },
-                // Error - add refset
-                function(data) {
-                  handleError($scope.errors, data);
+                refsetService.countExpression(value, refset.terminology, refset.version).then(
+                  // Success - count expression
+                  function(data) {
+                    var count = data;
+                    if (count < 20000) {
+                      $scope.warnings = [];
+                      $scope.continueAdd(refset, concept, value);
+                    } else {
+                      $scope.warnings[0] = 'Expression will add ' + count + ' members.';          
+                    }
+                  },
+                  // Error - count expression
+                  function(data) {
+                    handleError($scope.errors, data);
                 });
+   
               }
               // if extensional and clause defined, call
               // addRefsetMembersForExpression
               else if (refset.type == 'EXTENSIONAL' && definitionClause) {
-                refsetService.addRefsetMembersForExpression(refset, value).then(
-                // Success - update refset
-                function(data) {
-                  $uibModalInstance.close(refset);
-                },
-                // Error - add refset
-                function(data) {
-                  handleError($scope.errors, data);
+                refsetService.countExpression(value, refset.terminology, refset.version).then(
+                  // Success - count expression
+                  function(data) {
+                    var count = data;
+                    if (count < 20000) {
+                      $scope.warnings = [];
+                      $scope.continueAddRefsetMembers(refset, concept, value);
+                    } else {
+                      $scope.warnings[0] = 'Expression will add up to ' + count + ' members.';          
+                    }
+                  },
+                  // Error - count expression
+                  function(data) {
+                    handleError($scope.errors, data);
                 });
               }
               // if intensional and clause undefined, call add inclusion
@@ -531,6 +545,30 @@ tsApp.directive('conceptInfo', [
               }
             };
 
+            $scope.continueAdd = function(refset, concept, value) {
+              refsetService.updateRefset(refset).then(
+                // Success - update refset
+                function(data) {
+                  $uibModalInstance.close(refset);
+                },
+                // Error - add refset
+                function(data) {
+                  handleError($scope.errors, data);
+                });
+            }
+            
+            $scope.continueAddRefsetMembers = function(refset, concept, value) {
+              refsetService.addRefsetMembersForExpression(refset, value).then(
+                // Success - update refset
+                function(data) {
+                  $uibModalInstance.close(refset);
+                },
+                // Error - add refset
+                function(data) {
+                  handleError($scope.errors, data);
+                });
+            }
+            
             // Dismiss modal
             $scope.cancel = function() {
               $uibModalInstance.dismiss('cancel');

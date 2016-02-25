@@ -389,4 +389,17 @@ public interface RefsetService extends ReleaseService {
    */
   public StagedRefsetChange getStagedRefsetChangeFromStaged(Long stagedRefsetId)
     throws Exception;
+
+  /**
+   * Count expression.
+   *
+   * @param terminology the terminology
+   * @param version the version
+   * @param expression the expression
+   * @return the integer
+   * @throws Exception the exception
+   */
+  public Integer countExpression(String terminology, String version, String expression) throws Exception;
+
+  
 }
