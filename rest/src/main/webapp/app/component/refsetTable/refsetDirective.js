@@ -1245,13 +1245,13 @@ tsApp
                   if ($scope.errors.length > 0 && type == 'Refset Members') {
                     refsetService.cancelImportMembers($scope.refset.id);
                   }
-                  // close the dialog and reload refsets
-                  $uibModalInstance.close();
+                  // dismiss the dialog
+                  $uibModalInstance.dismiss('cancel');
                 };
 
                 $scope.close = function() {
                   // close the dialog and reload refsets
-                  $uibModalInstance.close();
+                  $uibModalInstance.close(refset);
                 };
               };
 
@@ -1387,7 +1387,6 @@ tsApp
                 $scope.cancel = function() {
                   releaseService.cancelRefsetRelease($scope.refset.id);
                   $uibModalInstance.dismiss('cancel');
-
                 };
 
                 // Close the window - to return later
