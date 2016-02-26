@@ -1419,7 +1419,6 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
-      translationService.updateSpellingDictionary(spelling);
 
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
@@ -1483,6 +1482,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
       translationService.updateSpellingDictionary(spelling);
+
       if (translation.isSpellingDictionaryEmpty() != spelling.getEntries()
           .isEmpty()) {
         translation.setSpellingDictionaryEmpty(spelling.getEntries().isEmpty());
