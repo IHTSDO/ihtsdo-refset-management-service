@@ -120,7 +120,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         final ConceptRefsetMember member = new ConceptRefsetMemberJpa();
         setCommonFields(member, refset);
         // save original ids if refset matches
-        if (refset.getTerminologyId().equals(fields[3])) {
+        if (refset.getTerminologyId().equals(fields[4])) {
           member.setTerminologyId(fields[0]);
         }
         member.setConceptActive(true);

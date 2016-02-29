@@ -30,7 +30,7 @@
     <p ng-show="parents.length > 0">
       <b>Parents</b>
     </p>
-    <div ui-tree ng-show="parents.length > 0"
+    <div ui-tree ng-show="parents.length > 0"  class="info-text"
       style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
         <li ng-repeat="tree in parents" ui-tree-node data-nodrag
