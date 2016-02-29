@@ -1478,12 +1478,9 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // ensure lowercase
-      /*StringList lcEntries = new StringList();
       for (String entry : entries.getObjects()) {
-        lcEntries.addObject(entry.toLowerCase());
+        spelling.addEntry(entry.toLowerCase());
       }
-      spelling.addEntries(lcEntries.getObjects());*/
-      spelling.addEntries(entries.getObjects());
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
       handler.reindex(spelling.getEntries(), true);
@@ -2300,7 +2297,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
-      return handler.suggestBatchSpelling(lookupTerms, 10);
+      StringList lcLookupTerms = new StringList();
+      for (String lookupTerm : lookupTerms.getObjects()) {
+        lcLookupTerms.addObject(lookupTerm.toLowerCase());
+      }
+      return handler.suggestBatchSpelling(lcLookupTerms, 10);
     } catch (Exception e) {
       handleException(e, "trying to suggest batch spellings based on entries");
     } finally {
