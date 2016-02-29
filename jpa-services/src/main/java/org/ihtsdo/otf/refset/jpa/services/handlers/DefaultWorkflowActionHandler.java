@@ -222,8 +222,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
 
     if (!flag) {
       result.addError("Invalid action for refset workflow status: "
-          + user.getUserName() + ", " + action + ", "
-          + refset.getWorkflowStatus() + ", " + record.getId());
+          + (user != null ? user.getUserName() : "") + ", " + action + ", "
+          + (refset != null ? refset.getWorkflowStatus() : "") + ", "
+          + (record != null ? record.getId() : ""));
     }
 
     return result;
