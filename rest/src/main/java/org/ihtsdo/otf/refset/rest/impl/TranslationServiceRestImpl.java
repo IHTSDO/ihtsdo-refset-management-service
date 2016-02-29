@@ -1477,6 +1477,12 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         return;
       }
 
+      // ensure lowercase
+      /*StringList lcEntries = new StringList();
+      for (String entry : entries.getObjects()) {
+        lcEntries.addObject(entry.toLowerCase());
+      }
+      spelling.addEntries(lcEntries.getObjects());*/
       spelling.addEntries(entries.getObjects());
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
@@ -2809,6 +2815,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               .findTranslationsForQuery("", new PfsParameterJpa());
       // Go thru translations
       Set<String> terminologies = new HashSet<>();
+      // To ensure types are unique, keep set of previously added
+      Set<String> existingTypes = new HashSet<>();
       for (Translation translation : list.getObjects()) {
         terminologies.add(translation.getTerminology());
         // Go through description types (remove DEF)
@@ -2818,6 +2826,11 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
             continue;
           }
 
+          // if type has already been added to list, skip it
+          if (existingTypes.contains(translation.getName() + translation.getRefset().getTerminologyId() +
+              translation.getLanguage() + descriptionType.getName())){
+            continue;
+          }
           final LanguageDescriptionType type = new LanguageDescriptionTypeJpa();
           type.setDescriptionType(descriptionType);
           // Null the id so that all objects can be cleanly passed back in for
@@ -2827,6 +2840,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           type.setRefsetId(translation.getRefset().getTerminologyId());
           type.setLanguage(translation.getLanguage());
           types.add(type);
+          existingTypes.add(translation.getName() + translation.getRefset().getTerminologyId() +
+              translation.getLanguage() + descriptionType.getName());
         }
       }
 

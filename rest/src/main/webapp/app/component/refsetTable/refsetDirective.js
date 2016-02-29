@@ -736,6 +736,7 @@ tsApp
                   sortField : 'lastModified',
                   ascending : true
                 };
+                $scope.warnings = [];
                 $scope.errors = [];
 
                 // Get paged clauses (assume all are loaded)
@@ -771,6 +772,27 @@ tsApp
                     }
                   }
                   $scope.getPagedClauses();
+                  
+                  // reset the warnings based on remaining clauses
+                  if ($scope.warnings.length > 0) {
+                    $scope.warnings = [];
+                    for (var i = 0; i < $scope.newClauses.length; i++) {
+                      refsetService.countExpression($scope.newClauses[i].value, refset.terminology,
+                        refset.version).then(
+                        // Success - count expression
+                        function(data) {
+                          var count = data;
+                          if (count >= 20000) {
+                            $scope.warnings.push('Definition clause will add up to ' + count
+                              + ' members.');
+                          }
+                        },
+                        // Error - count expression
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
+                    }
+                  }
                 };
 
                 // add new clause
@@ -792,6 +814,19 @@ tsApp
                         $scope.newClauses.push(clause);
                         $scope.getPagedClauses();
                         $scope.newClause = null;
+                        refsetService.countExpression(clause.value, refset.terminology, refset.version)
+                        .then(
+                        // Success - count expression
+                        function(data) {
+                          var count = data;
+                          if (count >= 20000) {
+                            $scope.warnings.push('Definition clause will add up to ' + count + ' members.');          
+                          }
+                        },
+                        // Error - count expression
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                       } else {
                         $scope.errors[0] = 'Submitted definition clause is invalid';
                         return;
@@ -806,6 +841,7 @@ tsApp
                 // Save refset
                 $scope.save = function(refset) {
                   refset.definitionClauses = $scope.newClauses;
+                  $scope.warnings = [];
                   refsetService.updateRefset(refset).then(
                   // Success - add refset
                   function(data) {

@@ -1127,6 +1127,20 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
   }
 
   @Override
+  public Integer countExpression(String terminology, String version, String expression) throws Exception {
+    int total = 0;
+    try {
+    total = getTerminologyHandler().countExpression(expression,
+        terminology, version, null);
+    } catch (Exception e) {
+      throw new LocalException(
+        "Unable to count total expression items, the expression could not be resolved - "
+            + expression);
+    }
+    return new Integer(total);   
+  }
+  
+  @Override
   public void resolveRefsetDefinition(Refset refset) throws Exception {
     Logger.getLogger(getClass()).info(
         "Release Service - resolve refset definition " + " refsetId "

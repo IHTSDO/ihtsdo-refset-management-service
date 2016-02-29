@@ -2850,6 +2850,40 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   }
 
   /* see superclass */
+  @Override
+  @POST
+  @Produces("text/plain")
+  @Consumes("text/plain")
+  @Path("/expression/count")
+  @ApiOperation(value = "Count expression", notes = "Returns the Returns the total count of items in the expression provided by the refset definition clauses.", response = Integer.class)
+  public Integer countExpression(
+    @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Refset): /expression/count "  + terminology + ", "
+            + version + ", " + expression);
+
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+
+      authorizeApp(securityService, authToken, "count expression",
+          UserRole.VIEWER);
+
+      return refsetService.countExpression(terminology, version, expression);
+    } catch (Exception e) {
+      handleException(e,
+          "trying to count items in resolved expression");
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+    return null;
+  }
+  
+  /* see superclass */
   @GET
   @Override
   @Path("/lookup/start")
