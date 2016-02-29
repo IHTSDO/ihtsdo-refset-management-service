@@ -1592,6 +1592,9 @@ tsApp
                         // Recompute suggestions
                         $scope.getSuggestions();
                         success(data);
+                        if ($scope.translation.spellingDictionaryEmpty) {
+                          $scope.translation.spellingDictionaryEmpty = false;
+                        }
                       },
                       // Error
                       function(data) {
@@ -1801,6 +1804,9 @@ tsApp
                     // Success
                     function(data) {
                       $scope.getSuggestions();
+                      if ($scope.translation.spellingDictionaryEmpty) {
+                        $scope.translation.spellingDictionaryEmpty = false;
+                      }
                     },
                     // Error
                     function(data) {
