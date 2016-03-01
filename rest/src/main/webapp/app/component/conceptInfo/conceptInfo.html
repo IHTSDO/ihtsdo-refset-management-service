@@ -30,7 +30,7 @@
     <p ng-show="parents.length > 0">
       <b>Parents</b>
     </p>
-    <div ui-tree ng-show="parents.length > 0"
+    <div ui-tree ng-show="parents.length > 0"  class="info-text"
       style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="parents" data-nodrop-enabled="true">
         <li ng-repeat="tree in parents" ui-tree-node data-nodrag
@@ -153,11 +153,11 @@
       </div>
     </div>
 
-    <p ng-show="children.length > 0" style="margin-top: 10px">
+    <p ng-show="children.length > 0" style="margin-top: 10px" >
       <b>Children<span ng-show="children.length > 0">
           ({{children.length}})</span></b>
     </p>
-    <div ui-tree ng-show="children.length > 0"
+    <div ui-tree ng-show="children.length > 0" class="info-text row"
       style="max-height: 300px; overflow-y: scroll;">
       <ol ui-tree-nodes="" ng-model="children" data-nodrop-enabled="true">
         <li ng-repeat="tree in children" ui-tree-node data-nodrag
