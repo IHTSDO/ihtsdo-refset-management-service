@@ -188,7 +188,7 @@ public class ImportExportRf2HandlerTest extends JpaSupport {
     // Set up refset
     Refset refset = new RefsetJpa();
     refset.setModuleId("sampleModuleId");
-    refset.setTerminology("sampleTerminologyId");
+    refset.setTerminologyId("sampleTerminologyId");
     refset.setProject(new ProjectJpa());
 
     ImportRefsetRf2Handler importHandler = new ImportRefsetRf2Handler();
