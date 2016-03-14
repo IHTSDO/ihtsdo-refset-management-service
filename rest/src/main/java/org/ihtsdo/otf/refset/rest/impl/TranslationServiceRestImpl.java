@@ -1446,7 +1446,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
     Logger.getLogger(getClass()).info(
         "RESTful call Post (Add Batch Spelling Entries): /spelling/add/batch "
-            + translationId);
+            + translationId + ", " + entries);
 
     final TranslationService translationService = new TranslationServiceJpa();
 

@@ -916,8 +916,9 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     final ConceptListJpa list = new ConceptListJpa();
     int totalCount = 0;
     // No need to use applyPfsToList if there is not a filter
-    if (pfs != null && pfs.getQueryRestriction() == null
-        || pfs.getQueryRestriction().isEmpty()) {
+    if (pfs != null
+        && (pfs.getQueryRestriction() == null || pfs.getQueryRestriction()
+            .isEmpty())) {
 
       final Query ctQuery =
           ((RootServiceJpa) service).getEntityManager().createQuery(
