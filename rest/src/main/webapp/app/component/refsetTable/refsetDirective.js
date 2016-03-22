@@ -736,8 +736,15 @@ tsApp
                   sortField : 'lastModified',
                   ascending : true
                 };
-                $scope.warnings = [];
+                $scope.warnings = {};
+                $scope.warningFlag = false;
                 $scope.errors = [];
+
+                // Indicate whether a clause is in a warning condition
+                $scope.isWarning = function(value) {
+                  console.debug("IS WARNING", value, $scope.warnings[value]);
+                  return $scope.warnings[value];
+                };
 
                 // Get paged clauses (assume all are loaded)
                 $scope.getPagedClauses = function() {
@@ -772,25 +779,29 @@ tsApp
                     }
                   }
                   $scope.getPagedClauses();
-                  
+
                   // reset the warnings based on remaining clauses
                   if ($scope.warnings.length > 0) {
-                    $scope.warnings = [];
+                    $scope.warnings = {};
+                    $scope.warningFlag = false;
                     for (var i = 0; i < $scope.newClauses.length; i++) {
-                      refsetService.countExpression($scope.newClauses[i].value, refset.terminology,
-                        refset.version).then(
-                        // Success - count expression
-                        function(data) {
-                          var count = data;
-                          if (count >= 20000) {
-                            $scope.warnings.push('Definition clause will add up to ' + count
-                              + ' members.');
-                          }
-                        },
-                        // Error - count expression
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                      refsetService
+                        .countExpression($scope.newClauses[i].value, refset.terminology,
+                          refset.version)
+                        .then(
+                          // Success - count expression
+                          function(data) {
+                            var count = data;
+                            if (count >= 20000) {
+                              $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
+                                + count + ' members.';
+                              $scope.warningFlag = true;
+                            }
+                          },
+                          // Error - count expression
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
                     }
                   }
                 };
@@ -806,36 +817,42 @@ tsApp
                       return;
                     }
                   }
-                  refsetService.isExpressionValid(clause.value, refset.terminology, refset.version)
+                  refsetService
+                    .isExpressionValid(clause.value, refset.terminology, refset.version)
                     .then(
-                    // Success - add refset
-                    function(data) {
-                      if (data == 'true') {
-                        $scope.newClauses.push(clause);
-                        $scope.getPagedClauses();
-                        $scope.newClause = null;
-                        refsetService.countExpression(clause.value, refset.terminology, refset.version)
-                        .then(
-                        // Success - count expression
-                        function(data) {
-                          var count = data;
-                          if (count >= 20000) {
-                            $scope.warnings.push('Definition clause will add up to ' + count + ' members.');          
-                          }
-                        },
-                        // Error - count expression
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
-                      } else {
-                        $scope.errors[0] = 'Submitted definition clause is invalid';
-                        return;
-                      }
-                    },
-                    // Error - add refset
-                    function(data) {
-                      handleError($scope.errors, data);
-                    });
+                      // Success - add refset
+                      function(data) {
+                        if (data == 'true') {
+                          $scope.newClauses.push(clause);
+                          $scope.getPagedClauses();
+                          $scope.newClause = null;
+                          $scope.warnings = {};
+                          $scope.warningFlag = false;
+                          refsetService
+                            .countExpression(clause.value, refset.terminology, refset.version)
+                            .then(
+                              // Success - count expression
+                              function(data) {
+                                var count = data;
+                                if (count >= 20000) {
+                                  $scope.warnings[$scope.newClauses[i].value] = 'Definition clause resolves to '
+                                    + count + ' members.';
+                                  $scope.warningFlag = true;
+                                }
+                              },
+                              // Error - count expression
+                              function(data) {
+                                handleError($scope.errors, data);
+                              });
+                        } else {
+                          $scope.errors[0] = 'Submitted definition clause is invalid';
+                          return;
+                        }
+                      },
+                      // Error - add refset
+                      function(data) {
+                        handleError($scope.errors, data);
+                      });
                 };
 
                 // Save refset
@@ -1064,7 +1081,7 @@ tsApp
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.refset.terminologyId = null;
                 $scope.errors = [];
-                
+
                 $scope.projectSelected = function(project) {
                   $scope.refset.namespace = project.namespace;
                   $scope.refset.moduleId = project.moduleId;
@@ -1833,7 +1850,8 @@ tsApp
               };
 
               // Add Refset controller
-              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project, projects) {
+              var AddRefsetModalCtrl = function($scope, $uibModalInstance, metadata, project,
+                projects) {
                 console.debug('Entered add refset modal control', metadata);
 
                 $scope.action = 'Add';
@@ -1987,9 +2005,9 @@ tsApp
                 };
 
                 $scope.submitRefset = function(refset) {
-                  
+
                   refset.projectId = refset.project.id;
-                  
+
                   // Validate refset
                   validationService.validateRefset(refset).then(
                     function(data) {
@@ -2579,8 +2597,8 @@ tsApp
                 // Close migration dialog
                 $scope.close = function(refset) {
                   $uibModalInstance.close(refset);
-                }
-                
+                };
+
                 // Cancel migration and close dialog
                 $scope.cancel = function(refset) {
                   refsetService.cancelMigration(refset.id).then(
@@ -2787,7 +2805,7 @@ tsApp
                   } else {
                     $scope.addRefsetInclusion(refset, member, staged);
                   }
-                }
+                };
 
                 $scope.addRefsetInclusion = function(refset, member, staged) {
                   member.refsetId = refset.id;

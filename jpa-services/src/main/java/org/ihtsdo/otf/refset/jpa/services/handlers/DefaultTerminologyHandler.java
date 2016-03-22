@@ -669,7 +669,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
         rel.setCharacteristicTypeId(relNode.get("characteristicType").asText());
         // Only keep INFERRED_RELATIONSHIP rels
-        if (rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
+        if (!rel.getCharacteristicTypeId().equals("INFERRED_RELATIONSHIP")) {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());

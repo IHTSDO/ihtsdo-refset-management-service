@@ -489,7 +489,7 @@ tsApp.directive('conceptInfo', [
             $scope.includeClause = member.terminologyId + ' | ' + member.name + ' |';
 
             // Add button
-            $scope.submitAdd = function(refset, concept, value) {
+            $scope.add = function(refset, concept, value) {
               var definitionClause = value.indexOf('<') != -1;
               // if intensional and clause defined, add clause and update
               // refset
@@ -507,7 +507,7 @@ tsApp.directive('conceptInfo', [
                       $scope.warnings = [];
                       $scope.continueAdd(refset, concept, value);
                     } else {
-                      $scope.warnings[0] = 'Expression will add ' + count + ' members.';          
+                      $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';          
                     }
                   },
                   // Error - count expression
@@ -527,7 +527,7 @@ tsApp.directive('conceptInfo', [
                       $scope.warnings = [];
                       $scope.continueAddRefsetMembers(refset, concept, value);
                     } else {
-                      $scope.warnings[0] = 'Expression will add up to ' + count + ' members.';          
+                      $scope.warnings[0] = 'Expression resolves to ' + count + ' members.';          
                     }
                   },
                   // Error - count expression
@@ -687,7 +687,7 @@ tsApp.directive('conceptInfo', [
             $scope.removeClause = member.conceptId + ' | ' + member.conceptName + ' |';
 
             // Handles removing a member or clause
-            $scope.submitRemove = function(refset, concept, value) {
+            $scope.remove = function(refset, concept, value) {
               var definitionClause = value.indexOf('<') != -1;
 
               // if intensional and clause defined, add clause and update

@@ -16,6 +16,7 @@ import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.jpa.services.ProjectServiceJpa;
+import org.ihtsdo.otf.refset.jpa.services.handlers.BrowserTerminologyHandler;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.services.ProjectService;
 import org.junit.After;
