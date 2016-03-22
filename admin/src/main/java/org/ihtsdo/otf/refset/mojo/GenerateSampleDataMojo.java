@@ -584,7 +584,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
               "222222", "1000124", author1, false);
       ConceptRefsetMemberJpa test2member1 =
           makeRefsetMember(test2, "62621002", "Bednar tumor",
-              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              Refset.MemberType.MEMBER, "en-edition", "20150131",
               "731000124108", "62621002", author1.getName(), author1);
       new WorkflowServiceRestImpl().performWorkflowAction(project1.getId(),
           test2.getId(), "author1", "AUTHOR", "ASSIGN", author1.getAuthToken());
@@ -801,12 +801,12 @@ public class GenerateSampleDataMojo extends AbstractMojo {
       ConceptRefsetMemberJpa test12member1 =
           makeRefsetMember(test12, "129456006",
               "Specific enzyme deficiency (disorder)",
-              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              Refset.MemberType.MEMBER, "en-edition", "20150131",
               "731000124108", "129456006", author1.getName(), author1);
       ConceptRefsetMemberJpa test12member2 =
           makeRefsetMember(test12, "124627000",
               "Deficiency of O-acetylserine (thiol)-lyase (disorder) ",
-              Refset.MemberType.MEMBER, "SNOMEDCT", "2015-01-31",
+              Refset.MemberType.MEMBER, "en-edition", "20150131",
               "731000124108", "124627000", author1.getName(), author1);
       new WorkflowServiceRestImpl()
           .performWorkflowAction(project1.getId(), test12.getId(), "author1",
@@ -894,7 +894,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     project.setName(name);
     project.setDescription("Description of project " + name);
     project.setLastModified(new Date());
-    project.setTerminology("SNOMEDCT");
+    project.setTerminology("en-edition");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
     // This is the only namespace configured in the sample id generation service
@@ -971,8 +971,8 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     info.setPublished(true);
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
-    info.setTerminology("SNOMEDCT");
-    info.setVersion("2015-01-31");
+    info.setTerminology("en-edition");
+    info.setVersion("20150131");
     info.setPlanned(false);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
@@ -1059,10 +1059,10 @@ public class GenerateSampleDataMojo extends AbstractMojo {
     refset.setPublishable(true);
     refset.setPublished(true);
     refset.setInPublicationProcess(false);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     if (importMembers) {
       refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);

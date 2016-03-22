@@ -716,7 +716,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     project.setName(name);
     project.setDescription("Description of project " + name);
     project.setLastModified(new Date());
-    project.setTerminology("SNOMEDCT");
+    project.setTerminology("en-edition");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
     project.setOrganization("IHTSDO");
@@ -753,8 +753,8 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     info.setPublished(true);
     info.setReleaseBeginDate(new Date());
     info.setReleaseFinishDate(new Date());
-    info.setTerminology("SNOMEDCT");
-    info.setVersion("2015-01-31");
+    info.setTerminology("en-edition");
+    info.setVersion("20150131");
     info.setPlanned(false);
     // Need to use Jpa because rest service doesn't have "add release info"
     ReleaseService service = new ReleaseServiceJpa();
@@ -842,11 +842,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setPublishable(true);
     refset.setPublished(true);
     refset.setInPublicationProcess(false);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
     // This is an opportunity to use "branch"
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     if (type == Refset.Type.EXTERNAL) {
@@ -943,11 +943,11 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse("20150131"));
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
@@ -1125,7 +1125,7 @@ public class GenerateSampleData2Mojo extends AbstractMojo {
   @SuppressWarnings("static-method")
   public Refset migrate(Refset refset, User auth) throws Exception {
     RefsetServiceRest refsetService = new RefsetServiceRestImpl();
-    refsetService.beginMigration(refset.getId(), "SNOMEDCT", "2015-07-31",
+    refsetService.beginMigration(refset.getId(), "en-edition", "20150731",
         auth.getAuthToken());
     refsetService = new RefsetServiceRestImpl();
     refsetService.finishMigration(refset.getId(), auth.getAuthToken());

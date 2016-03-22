@@ -160,8 +160,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   /* see superclass */
   @Override
   public List<DefinitionClause> importDefinition(Refset refset,
-    InputStream content) throws Exception {
-    Logger.getLogger(getClass()).info("Import refset definition");
+    InputStream content) throws Exception {    Logger.getLogger(getClass()).info("Import refset definition");
 
     String line = "";
     List<DefinitionClause> definitionClauses = new ArrayList<>();
@@ -190,35 +189,47 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         // parse into definition clauses
         String part1 = "";
         String part2 = "";
-        if (fields[6].contains(" + !")) {
-          part1 = fields[6].substring(0, fields[6].indexOf(" + !"));
-          part2 = fields[6].substring(fields[6].indexOf(" + !") + 4);
+        if (fields[6].contains(" MINUS ")) {
+          part1 = fields[6].substring(0, fields[6].indexOf(" MINUS "));
+          part2 = fields[6].substring(fields[6].indexOf(" MINUS ") + 6);
         } else {
           part1 = fields[6];
         }
-        String[] positiveClauses = part1.split(" UNION ");
+        if (part1.startsWith("(")) {
+          part1 = part1.substring(1);
+        }
+        if (part1.endsWith(")")) {
+          part1 = part1.substring(0, part1.length() - 1);
+        }
+        String[] positiveClauses = part1.split(" OR ");
         for (String clause : positiveClauses) {
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(false);
           defClause.setValue(clause);
           definitionClauses.add(defClause);
         }
-        String[] negativeClauses = part2.split(" + !");
+        if (part2.startsWith(" (")) {
+          part2 = part2.substring(2);
+        }
+        if (part2.endsWith(")")) {
+          part2 = part2.substring(0, part2.length() - 1);
+        }
+        String[] negativeClauses = part2.split(" OR ");
         for (String clause : negativeClauses) {
           // Skip the empty clause (i.e. if there are no clauses)
           if (clause.equals("")) {
             continue;
           }
           // Skip project exclusion clause
-          if (refset.getProject().getExclusionClause().equals(clause)) {
+          if (clause.equals(refset.getProject().getExclusionClause())) {
             continue;
           }
+          
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(true);
           defClause.setValue(clause);
           definitionClauses.add(defClause);
         }
-
       }
     }
     pbr.close();
