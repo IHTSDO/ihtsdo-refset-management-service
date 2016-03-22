@@ -43,16 +43,19 @@
 
 
   <!-- Errors -->
+  <br>
   <table>
     <!-- Errors and warnings-->
     <tr
       ng-show="errors.length == 1 || (errors.length == 2 && errors[1].length>100)">
-      <td colspan="2">
+      <td>
         <div class="alert alert-danger alert-error">
           {{errors[0]}}
           <div style="display: inline; float: right;">
-            <i ng-show="errors[1]" title="{{error.expand ? 'Show' : 'Hide'}} long eror"
-              class="noul material-icons md-18" ng-click="error.expand = !error.expand;">attach_file</i>
+            <i ng-show="errors[1]"
+              title="{{error.expand ? 'Show' : 'Hide'}} long eror"
+              class="noul material-icons md-18"
+              ng-click="error.expand = !error.expand;">attach_file</i>
           </div>
           <p ng-show="errors[1] && error.expand">
             <br />{{errors[1]}}
@@ -62,12 +65,12 @@
     </tr>
     <tr
       ng-show="errors.length>2 || (errors.length == 2 && errors[1].length<101)">
-      <td colspan="2">
+      <td>
         <div class="alert alert-danger alert-error" ng-repeat="error in errors">{{error}}</div>
       </td>
     </tr>
     <tr ng-repeat="warning in warnings">
-      <td colspan="2">
+      <td>
         <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
       </td>
     </tr>
@@ -76,10 +79,14 @@
 
 <div class="modal-footer">
   <button class="btn btn-primary" ng-show="warnings.length == 0"
-    ng-click="submitAdd(refset, member, includeClause)">Submit</button>
-  <button class="btn btn-primary" ng-show="warnings.length != 0 && refset.type == 'INTENSIONAL'"
-    ng-click="continueAdd(refset, member, includeClause)">Continue</button>
-  <button class="btn btn-primary" ng-show="warnings.length != 0 && refset.type == 'EXTENSIONAL'"
-    ng-click="continueAddRefsetMembers(refset, member, includeClause)">Continue</button>    
+    ng-click="add(refset, member, includeClause)">Add</button>
+  <button confirm="Are you sure you want to add an expression for large number of members?"
+    class="btn btn-primary"
+    ng-show="warnings.length != 0 && refset.type == 'INTENSIONAL'"
+    ng-click="continueAdd(refset, member, includeClause)">Add</button>
+  <button confirm="Are you sure you want to add a large number of members?"
+    class="btn btn-primary"
+    ng-show="warnings.length != 0 && refset.type == 'EXTENSIONAL'"
+    ng-click="continueAddRefsetMembers(refset, member, includeClause)">Add</button>
   <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
 </div>

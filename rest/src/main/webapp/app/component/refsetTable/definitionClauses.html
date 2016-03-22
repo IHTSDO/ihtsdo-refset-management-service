@@ -45,19 +45,25 @@
       <table class="table">
         <thead>
           <tr class="table-select-row">
-            <th class="col-md-6 col-xs-6">Definition Clause</th>
-            <th class="col-md-2 col-xs-2">&nbsp;</th>
+            <th class="col-md-9 col-xs-9">Definition Clause</th>
+            <th class="col-md-3 col-xs-3">&nbsp;</th>
           </tr>
         </thead>
         <tbody>
-          <tr ng-repeat="clause in pagedClauses">
+          <tr ng-class="{'alert-warning': isWarning(clause.value)}"
+            ng-repeat="clause in pagedClauses">
             <td>
-              <div definition-clause clause="clause" allow-negation=true mode="view"></div>
+              <div definition-clause clause="clause" allow-negation=true
+                mode="view"></div>
             </td>
             <td>
               <i ng-show="value == 'ASSIGNED'"
                 ng-click="removeClause(refset, clause); $event.stopPropagation()"
                 title="Remove clause" class="noul material-icons md-18">delete</i>
+              &nbsp;
+              <i ng-show="value == 'ASSIGNED' && isWarning(clause.value)"
+                uib-tooltip="{{warnings[clause.value]}}"
+                class="noul material-icons md-18">info_outline</i>
             </td>
           </tr>
           <tr ng-show="value == 'ASSIGNED'">
@@ -66,13 +72,13 @@
                 mode="edit"></div>
             </td>
             <td>
-              <i ng-show="value == 'ASSIGNED'"
+              <button
                 ng-click="addClause(refset, newClause); $event.stopPropagation()"
-                title="Add clause" class="noul material-icons md-18">add</i>
+                title="Add clause" class="btn btn-xs btn-primary">Add</button>
             </td>
           </tr>
           <tr ng-show="errors.length > 0">
-            <td colspan="3">
+            <td colspan="2">
 
               <div class="alert alert-danger alert-error">
                 {{errors[0]}}
@@ -89,11 +95,6 @@
 
             </td>
           </tr>
-          <tr ng-repeat="warning in warnings">
-            <td colspan="2">
-              <div class="alert alert-warning" ng-repeat="warning in warnings">{{warning}}</div>
-            </td>
-          </tr>
         </tbody>
       </table>
 
@@ -103,11 +104,13 @@
 
 <div class="modal-footer">
   <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
-    ng-show="value == 'ASSIGNED' && warnings.length == 0" ng-click="save(refset);"
+    ng-show="value == 'ASSIGNED' && !warningFlag" ng-click="save(refset);"
     title="Save and recompute definition">Recompute</button>
-  <button ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
-    ng-show="value == 'ASSIGNED' && warnings.length > 0" ng-click="save(refset);"
-    title="Save and recompute definition">Continue</button>
+  <button
+    confirm="Are you sure you want to add an expression for large number of members?"
+    ng-disabled="!isDefinitionDirty()" class="btn btn-primary"
+    ng-show="value == 'ASSIGNED' && warningFlag" ng-click="save(refset);"
+    title="Save and recompute definition">Recompute</button>
   <button class="btn btn-warning" ng-show="value == 'ASSIGNED'"
     ng-click="cancel()">Cancel</button>
   <button ng-show="value != 'ASSIGNED'" class="btn btn-warning"

@@ -1239,6 +1239,7 @@ tsApp.service('refsetService', [
       // Setup deferred
       var deferred = $q.defer();
 
+      gpService.increment();
       $http.post(refsetUrl + 'expression/count?terminology=' + terminology + '&version=' + version,
         expression, {
           headers : {
@@ -1248,21 +1249,23 @@ tsApp.service('refsetService', [
       // success
       function(response) {
         console.debug('  output = ', response.data);
+        gpService.decrement();
         deferred.resolve(response.data);
       },
       // error
       function(response) {
         utilService.handleError(response);
+        gpService.decrement();
         deferred.reject(response.data);
       });
       return deferred.promise;
     };
-    
+
     // checks if expression is valid
     this.isExpressionValid = function(expression, terminology, version) {
       console.debug('isExpressionValid');
       var deferred = $q.defer();
-      
+
       // Get project roles
       gpService.increment();
       $http.post(refsetUrl + 'expression/valid?terminology=' + terminology + '&version=' + version,
@@ -1285,7 +1288,7 @@ tsApp.service('refsetService', [
       });
       return deferred.promise;
     };
-    
+
     // get the origin id given a staged refset
     this.getOriginForStagedRefsetId = function(stagedRefsetId) {
       console.debug('getOriginForStagedRefset');
