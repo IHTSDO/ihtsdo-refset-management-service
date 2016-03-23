@@ -2245,8 +2245,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       final SpellingCorrectionHandler handler =
           getSpellingCorrectionHandler(translation);
-      // Lowercase for comparison - so that correct matched case can be returned
-      return handler.suggestSpelling(entry.toLowerCase(), 10);
+      return handler.suggestSpelling(entry, 10);
     } catch (Exception e) {
       handleException(e, "trying to suggest a spelling based on an entry");
     } finally {
@@ -2309,8 +2308,8 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
         }
         // Otherwise, include the corrections
         else {
-          resultHashMap.put(lookupTerm,
-              handler.suggestSpelling(lookupTerm.toLowerCase(), 10));
+          resultHashMap
+              .put(lookupTerm, handler.suggestSpelling(lookupTerm, 10));
         }
       }
       final KeyValuesMap result = new KeyValuesMap();

@@ -8,12 +8,18 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.Tokenizer;
+import org.apache.lucene.analysis.core.KeywordTokenizer;
+import org.apache.lucene.analysis.core.LowerCaseFilter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.search.spell.LevensteinDistance;
 import org.apache.lucene.search.spell.PlainTextDictionary;
@@ -74,12 +80,9 @@ public class DefaultSpellingCorrectionHandler implements
     checker = new SpellChecker(indexFsDir);
     // Presumably not needed - index already built, just opening it
     // reindex(translation.getSpellingDictionary().getEntries(),true);
-    System.out.println("CHECKER accuracy = " + checker.getAccuracy());
-    System.out.println("CHECKER distance = " + checker.getStringDistance());
     checker.setAccuracy(.5f);
     checker.setStringDistance(new LevensteinDistance());
-    System.out.println("CHECKER accuracy = " + checker.getAccuracy());
-    System.out.println("CHECKER distance = " + checker.getStringDistance());
+
   }
 
   /* see superclass */
@@ -89,7 +92,17 @@ public class DefaultSpellingCorrectionHandler implements
       throw new Exception(
           "Set translation must be called prior to calling reindex");
     }
-    IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST, null);
+    IndexWriterConfig iwConfig = new IndexWriterConfig(Version.LATEST,
+    // lowercase keyword analyzer
+        new Analyzer() {
+          @Override
+          protected TokenStreamComponents createComponents(String fieldName,
+            Reader reader) {
+            Tokenizer source = new KeywordTokenizer(reader);
+            TokenStream filter = new LowerCaseFilter(source);
+            return new TokenStreamComponents(source, filter);
+          }
+        });
     StringBuilder builder = new StringBuilder();
     for (String s : entries) {
       builder.append(s);
