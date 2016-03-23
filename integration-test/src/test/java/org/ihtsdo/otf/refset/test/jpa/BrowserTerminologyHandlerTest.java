@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.helpers.ConceptList;
 import org.ihtsdo.otf.refset.helpers.PfsParameter;
 import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
@@ -52,7 +53,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
     }
 
     /**
-     * Test getting concepts from Snow Owl.
+     * Test getting concepts.
      *
      * @throws Exception the exception
      */
@@ -62,9 +63,46 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       ProjectService service = new ProjectServiceJpa();
 
       Concept concept =
-          service.getTerminologyHandler().getConcept("126880001", "SNOMEDCT",
-              "v20160131");
+          service.getTerminologyHandler().getConcept("126880001", "en-edition",
+              "20160131");
       assertEquals(concept.getName(), "Neoplasm of kidney (disorder)");
+      service.close();
+    }
+    
+    @Test
+    public void testGetReplacementConcepts() throws Exception {
+      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+      ProjectService service = new ProjectServiceJpa();
+
+      ConceptList list =
+          service.getTerminologyHandler().getReplacementConcepts("136709000", "en-edition",
+              "20160131");
+      assertEquals(list.getTotalCount(), 1);
+      list =
+          service.getTerminologyHandler().getReplacementConcepts("150606004", "en-edition",
+              "20160131");
+      assertEquals(list.getTotalCount(), 2);
+   
+      service.close();
+    }
+    
+    /**
+     * Test getting concepts.
+     *
+     * @throws Exception the exception
+     */
+    @Test
+    public void testGetConcepts() throws Exception {
+      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+      ProjectService service = new ProjectServiceJpa();
+
+      List<String> concepts = new ArrayList<>();
+      concepts.add("126880001");
+      concepts.add("72938002");
+      ConceptList conceptList =
+          service.getTerminologyHandler().getConcepts(concepts, "en-edition",
+              "20160131");
+      assertEquals(conceptList.getCount(), 2);
       service.close();
     }
 
@@ -82,12 +120,47 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       pfs.setStartIndex(5);
       ConceptList conceptList =
           service.getTerminologyHandler().resolveExpression(
-              "<<284009009|Route of administration|", "SNOMEDCT", "v20160131",
+              "<<284009009|Route of administration|", "en-edition", "20160131",
               pfs);
-      assertEquals(143, conceptList.getTotalCount());
+      assertEquals(148, conceptList.getTotalCount());
+      assertEquals(25, conceptList.getCount());
+      service.close();
+    }
+    
+    @Test
+    public void testCountExpression() throws Exception {
+      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+      ProjectService service = new ProjectServiceJpa();
+      PfsParameter pfs = new PfsParameterJpa();
+      int ct =
+          service.getTerminologyHandler().countExpression(
+              "<<284009009|Route of administration|", "en-edition", "20160131",
+              pfs);
+      assertEquals(148, ct);
       service.close();
     }
 
+    @Test
+    public void testGetTerminologyVersions() throws Exception {
+      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+      ProjectService service = new ProjectServiceJpa();
+      List<Terminology> terminologyList =
+          service.getTerminologyHandler().getTerminologyVersions(
+             "en-edition");
+      assertEquals(3, terminologyList.size());
+      service.close();
+    }
+  
+    @Test
+    public void testGetTerminologyEditions() throws Exception {
+      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
+      ProjectService service = new ProjectServiceJpa();
+      List<String> terminologyList =
+          service.getTerminologyHandler().getTerminologyEditions();
+      assertEquals(3, terminologyList.size());
+      service.close();
+    }
+    
     /**
      * Test getting concepts with descriptions from Snow Owl.
      *
@@ -99,29 +172,11 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       ProjectService service = new ProjectServiceJpa();
 
       Concept concept =
-          service.getTerminologyHandler().getFullConcept("126880001", "SNOMEDCT",
-              "v20160131");
+          service.getTerminologyHandler().getFullConcept("126880001", "en-edition",
+              "20160131");
       assertEquals(concept.getName(), "Neoplasm of kidney (disorder)");
       assertEquals(6, concept.getDescriptions().size());
       assertEquals(2, concept.getRelationships().size());
-      service.close();
-    }
-
-    /**
-     * Test getting the potential current concepts for retired concept.
-     *
-     * @throws Exception the exception
-     */
-    @Test
-    public void getPotentialCurrentConceptsForRetiredConcept() throws Exception {
-
-      Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
-      ProjectService service = new ProjectServiceJpa();
-
-      ConceptList concepts =
-          service.getTerminologyHandler().getReplacementConcepts("150606004",
-              "SNOMEDCT", "2015-01-31");
-      assertEquals(2, concepts.getObjects().size());
       service.close();
     }
 
@@ -137,7 +192,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
 
       ConceptList concepts =
           service.getTerminologyHandler().getConceptParents("108369006",
-              "SNOMEDCT", "v20160131");
+              "en-edition", "20160131");
       assertEquals(1, concepts.getObjects().size());
       assertEquals(concepts.getObjects().get(0).getName(),
           "Neoplasm and/or hamartoma (morphologic abnormality)");
@@ -157,7 +212,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
 
       ConceptList concepts =
           service.getTerminologyHandler().getConceptChildren("108369006",
-              "SNOMEDCT", "v20160131");
+              "en-edition", "20160131");
       assertEquals(40, concepts.getObjects().size());
 
       service.close();
@@ -178,14 +233,20 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       pfs.setMaxResults(50);
       ConceptList concepts =
           service.getTerminologyHandler().findConceptsForQuery("tumor",
-              "SNOMEDCT", "v20160131", pfs);
+              "en-edition", "20160131", pfs);
       assertEquals(50, concepts.getObjects().size());
-      assertEquals(3871, concepts.getTotalCount());
+      assertEquals(6897, concepts.getTotalCount());
 
+      /*concepts =
+          service.getTerminologyHandler().findConceptsForQuery("tumor*",
+              "en-edition", "20160131", pfs);
+      assertEquals(50, concepts.getObjects().size());
+      assertEquals(6897, concepts.getTotalCount());*/
+      
       // check someing with no results
       concepts =
           service.getTerminologyHandler().findConceptsForQuery("tmuor",
-              "SNOMEDCT", "v20160131", pfs);
+              "en-edition", "20160131", pfs);
       assertEquals(0, concepts.getObjects().size());
       service.close();
     }
@@ -204,7 +265,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
       try {
         Concept c =
             service.getTerminologyHandler().getConcept("12345", "abc",
-                "2015-01-31");
+                "20150131");
         assertNull(c);
       } catch (Exception e) {
         fail("unexpected exception");
@@ -212,12 +273,12 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
 
       ConceptList list =
           service.getTerminologyHandler().getConceptChildren("12345", "abc",
-              "2015-01-31");
+              "20150131");
       assertEquals(0, list.getCount());
 
       list =
           service.getTerminologyHandler().getConceptParents("12345", "abc",
-              "2015-01-31");
+              "20150131");
       assertEquals(0, list.getCount());
 
       try {
@@ -225,7 +286,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
         ids.add("1234");
         ids.add("5679");
         list =
-            service.getTerminologyHandler().getConcepts(ids, "abc", "2015-01-31");
+            service.getTerminologyHandler().getConcepts(ids, "abc", "20150131");
         fail("Exception expected.");
       } catch (Exception e) {
         // n/a, expected result

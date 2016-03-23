@@ -45,6 +45,7 @@ import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
+import org.ihtsdo.otf.refset.helpers.ConfigUtility;
 import org.ihtsdo.otf.refset.jpa.helpers.UserMapUserNameBridge;
 import org.ihtsdo.otf.refset.jpa.helpers.UserRoleBridge;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
@@ -604,17 +605,39 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     }
     StringBuilder computedDefinition = new StringBuilder();
     if (positiveClauses.size() > 0) {
+      if (positiveClauses.size() > 1) {
+        computedDefinition.append("(");
+      }
       computedDefinition.append(positiveClauses.get(0).getValue());
-      for (int i = 1; i < positiveClauses.size(); i++) {
-        computedDefinition.append(" UNION ").append(
+      for (int i = 1; i < positiveClauses.size(); i++) {        
+        computedDefinition.append(" OR ").append(
             positiveClauses.get(i).getValue());
       }
-      for (DefinitionClause negClause : negativeClauses) {
-        computedDefinition.append(" + !").append(negClause.getValue());
+      if (positiveClauses.size() > 1) {
+        computedDefinition.append(")");
+      }
+    }
+    if (negativeClauses.size() > 0 || project.getExclusionClause() != null) {
+      computedDefinition.append(" MINUS ");
+      if (negativeClauses.size() > 1 || (negativeClauses.size() == 1 &&
+          project.getExclusionClause() != null)) {
+        computedDefinition.append("(");
+      }
+      computedDefinition.append(negativeClauses.get(0).getValue());
+      for (int i = 1; i < negativeClauses.size(); i++) {        
+        computedDefinition.append(" OR ").append(
+            negativeClauses.get(i).getValue());
       }
       if (project.getExclusionClause() != null) {
-        computedDefinition.append(" + !").append(project.getExclusionClause());
+        if (negativeClauses.size() > 0) {
+          computedDefinition.append(" OR ");
+        }
+        computedDefinition.append(project.getExclusionClause());
       }
+      if (negativeClauses.size() > 1) {
+        computedDefinition.append(")");
+      }
+         
     }
     return computedDefinition.toString();
   }
