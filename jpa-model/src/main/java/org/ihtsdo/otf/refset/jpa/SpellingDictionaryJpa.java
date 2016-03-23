@@ -102,32 +102,6 @@ public class SpellingDictionaryJpa implements SpellingDictionary {
     this.entries = entries;
   }
 
-  /* see superclass */
-  @Override
-  public void addEntry(String entry) {
-    if (this.entries == null) {
-      this.entries = new ArrayList<String>();
-    }
-    this.entries.add(entry);
-  }
-
-  /* see superclass */
-  @Override
-  public void addEntries(List<String> newEntries) {
-    if (this.entries == null) {
-      this.entries = new ArrayList<String>();
-    }
-    this.entries.addAll(newEntries);
-  }
-
-  /* see superclass */
-  @Override
-  public void removeEntry(String entry) {
-    if (this.entries == null || this.entries.isEmpty()) {
-      return;
-    }
-    this.entries.remove(entry);
-  }
 
   /* see superclass */
   @XmlTransient

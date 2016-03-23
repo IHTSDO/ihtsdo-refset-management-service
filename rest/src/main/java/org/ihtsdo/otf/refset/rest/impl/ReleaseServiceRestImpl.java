@@ -105,8 +105,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /refset with query:" + query + ", refsetId:"
-            + refsetId);
+        "RESTful call POST (Release): /refset with query:" + query
+            + ", refsetId:" + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -142,7 +142,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release): /translationId with query:" + query
+        "RESTful call POST (Release): /translationId with query:" + query
             + ", translationId:" + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
@@ -177,7 +177,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refset/begin " + refsetId + ", "
+        "RESTful call GET (Release): /refset/begin " + refsetId + ", "
             + effectiveTime);
 
     final BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
@@ -244,7 +244,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refset/validate " + refsetId);
+        "RESTful call GET (Release): /refset/validate " + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     final ValidationServiceJpa validationService = new ValidationServiceJpa();
@@ -319,7 +319,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refset/beta " + refsetId);
+        "RESTful call GET (Release): /refset/beta " + refsetId);
 
     final PerformRefsetBetaAlgorithm algo = new PerformRefsetBetaAlgorithm();
     // Manage transaction
@@ -375,7 +375,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refset/finish " + refsetId);
+        "RESTful call GET (Release): /refset/finish " + refsetId);
 
     final PerformRefsetPublishAlgorithm algo =
         new PerformRefsetPublishAlgorithm();
@@ -428,7 +428,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /refset/cancel " + refsetId);
+        "RESTful call GET (Release): /refset/cancel " + refsetId);
 
     final CancelRefsetReleaseAlgorithm algo =
         new CancelRefsetReleaseAlgorithm();
@@ -478,7 +478,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translation/begin " + translationId
+        "RESTful call GET (Release): /translation/begin " + translationId
             + ", " + effectiveTime);
 
     final BeginTranslationReleaseAlgorthm algo =
@@ -559,8 +559,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translation/validate "
-            + translationId);
+        "RESTful call GET (Release): /translation/validate " + translationId);
 
     final ValidationServiceJpa validationService = new ValidationServiceJpa();
     final TranslationService translationService = new TranslationServiceJpa();
@@ -620,7 +619,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Translation): /translation/beta " + translationId);
+        "RESTful call GET (Release): /translation/beta " + translationId);
     final PerformTranslationBetaAlgorithm algo =
         new PerformTranslationBetaAlgorithm();
     // Manage transaction
@@ -676,10 +675,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass())
-        .info(
-            "RESTful call POST (Translation): /translation/finish "
-                + translationId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Release): /translation/finish " + translationId);
 
     final PerformTranslationPublishAlgorithm algo =
         new PerformTranslationPublishAlgorithm();
@@ -732,10 +729,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass())
-        .info(
-            "RESTful call POST (Translation): /translation/cancel "
-                + translationId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Release): /translation/cancel " + translationId);
 
     final CancelTranslationReleaseAlgorithm algo =
         new CancelTranslationReleaseAlgorithm();
@@ -879,7 +874,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call POST (Refset): /release/resume " + refsetId);
+        "RESTful call GET (Release): /release/resume " + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -958,6 +953,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
   @Override
   @DELETE
   @Path("/remove/artifact/{artifactId}")
@@ -1073,7 +1069,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Release):  /export/" + artifactId);
+        "RESTful call GET (Release):  /export/" + artifactId);
 
     final ReleaseService releaseService = new ReleaseServiceJpa();
     try {

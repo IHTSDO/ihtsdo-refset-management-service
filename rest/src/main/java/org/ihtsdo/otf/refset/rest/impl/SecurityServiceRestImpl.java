@@ -61,10 +61,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Password, as string post data, e.g. 'author1'", required = true) String password)
     throws Exception {
 
-    Logger.getLogger(getClass())
-        .info(
-            "RESTful call (Authentication): /authentication for user = "
-                + userName);
+    Logger.getLogger(getClass()).info(
+        "RESTful call POST (Security): /authentication for user = " + userName);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       final User user = securityService.authenticate(userName, password);
@@ -94,7 +92,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Authentication): /logout for authToken = " + authToken);
+        "RESTful call GET (Security): /logout for authToken = " + authToken);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       securityService.logout(authToken);
@@ -117,7 +115,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Security): /user/" + id);
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Security): /user/" + id);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the user",
@@ -147,7 +146,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Security): /user/name/" + userName);
+        "RESTful call GET (Security): /user/name/" + userName);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve the user by userName",
@@ -176,7 +175,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call (Security): /user/name" + authToken);
+        "RESTful call GET (Security): /user/name" + authToken);
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       final String userName =
@@ -201,7 +200,8 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   public UserList getUsers(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Security): /user/users");
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Security): /user/users");
     final SecurityService securityService = new SecurityServiceJpa();
     try {
       authorizeApp(securityService, authToken, "retrieve all users",
@@ -295,6 +295,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @GET
   @Path("/roles")
@@ -322,6 +323,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @POST
   @Path("/user/find")
   @ApiOperation(value = "Find user", notes = "Finds a list of all users for the specified query", response = UserListJpa.class)

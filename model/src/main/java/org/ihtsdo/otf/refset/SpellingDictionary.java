@@ -27,27 +27,6 @@ public interface SpellingDictionary extends HasId {
   public void setEntries(List<String> entries);
 
   /**
-   * Adds the entry.
-   *
-   * @param entry the entry
-   */
-  public void addEntry(String entry);
-
-  /**
-   * Adds multiple entries at once.
-   *
-   * @param newEntries the new entries
-   */
-  public void addEntries(List<String> newEntries);
-
-  /**
-   * Removes the entry.
-   *
-   * @param entry the entry
-   */
-  public void removeEntry(String entry);
-
-  /**
    * Returns the translation.
    *
    * @return the translation

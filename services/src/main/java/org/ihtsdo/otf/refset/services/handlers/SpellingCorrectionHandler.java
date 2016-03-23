@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.Configurable;
-import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.StringList;
 
 /**
@@ -47,17 +46,13 @@ public interface SpellingCorrectionHandler extends Configurable {
   public StringList suggestSpelling(String term, int amount) throws Exception;
 
   /**
-   * Returns a list of suggested spellings based on a given set of term. All
-   * terms that are not residing in index are returned in a map of
-   * term-to-suggestions.
+   * Indicates whether the specified term exists.
    *
-   * @param lookupTerms The terms queried for suggestions
-   * @param amount the amount
-   * @return KeyValuesMap of term-to-suggestions
-   * @throws Exception Signals that an I/O exception has occurred.
+   * @param term the term
+   * @return true, if successful
+   * @throws Exception the exception
    */
-  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms, int amount)
-    throws Exception;
+  public boolean exists(String term) throws Exception;
 
   /**
    * Parses and returns a list of strings based on an InputStream passed in.

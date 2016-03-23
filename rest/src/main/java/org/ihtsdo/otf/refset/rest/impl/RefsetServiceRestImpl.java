@@ -448,7 +448,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final TranslationService translationService = new TranslationServiceJpa();
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
-    
+
     try {
       String userName =
           authorizeProject(translationService, refset.getProject().getId(),
@@ -456,14 +456,15 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       // get previously saved definition clauses & project
       Refset previousRefset = translationService.getRefset(refset.getId());
-      String previousClauses = previousRefset.getDefinitionClauses()
-              .toString();
+      String previousClauses = previousRefset.getDefinitionClauses().toString();
       Project previousProject = previousRefset.getProject();
-      
-      // if project has changed, update project on all of the refset's translations
+
+      // if project has changed, update project on all of the refset's
+      // translations
       if (previousProject.getId() != refset.getProject().getId()) {
-        TranslationList projectTranslations = translationService.findTranslationsForQuery("projectId:"
-            + previousProject.getId(), new PfsParameterJpa());
+        TranslationList projectTranslations =
+            translationService.findTranslationsForQuery("projectId:"
+                + previousProject.getId(), new PfsParameterJpa());
         for (Translation translation : projectTranslations.getObjects()) {
           translation.setProject(refset.getProject());
           translation.setLastModifiedBy(userName);
@@ -475,9 +476,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       refset.setLastModifiedBy(userName);
       translationService.updateRefset(refset);
 
-      addLogEntry(translationService, userName, "UPDATE refset", refset.getProject()
-          .getId(), refset.getId(),
-          refset.getTerminologyId() + ": " + refset.getName());
+      addLogEntry(translationService, userName, "UPDATE refset", refset
+          .getProject().getId(), refset.getId(), refset.getTerminologyId()
+          + ": " + refset.getName());
       if (refset.getType() == Refset.Type.INTENSIONAL
           && !refset.getDefinitionClauses().toString().equals(previousClauses)) {
         translationService.resolveRefsetDefinition(refset);
@@ -2863,7 +2864,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call GET (Refset): /expression/count "  + terminology + ", "
+        "RESTful call GET (Refset): /expression/count " + terminology + ", "
             + version + ", " + expression);
 
     final RefsetService refsetService = new RefsetServiceJpa();
@@ -2874,15 +2875,14 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       return refsetService.countExpression(terminology, version, expression);
     } catch (Exception e) {
-      handleException(e,
-          "trying to count items in resolved expression");
+      handleException(e, "trying to count items in resolved expression");
     } finally {
       refsetService.close();
       securityService.close();
     }
     return null;
   }
-  
+
   /* see superclass */
   @GET
   @Override
@@ -2991,6 +2991,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     }
   }
 
+  /* see superclass */
   @Override
   @GET
   @Produces("text/plain")

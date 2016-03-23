@@ -249,7 +249,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /users/ " + projectId + ", " + query
+        "RESTful call POST (Project): /users/ " + projectId + ", " + query
             + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
@@ -293,7 +293,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
-        "RESTful call PUT (Project): /users/ " + projectId + "/unassigned, "
+        "RESTful call POST (Project): /users/ " + projectId + "/unassigned, "
             + query + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
@@ -502,7 +502,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info("RESTful call (Project): /" + projectId);
+    Logger.getLogger(getClass()).info(
+        "RESTful call GET (Project): /" + projectId);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -534,7 +535,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find projects for query, " + pfs);
+        "RESTful call POST (Project): find projects for query, " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
@@ -736,7 +737,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): find concepts for query, " + query + ", "
+        "RESTful call POST (Project): find concepts for query, " + query + ", "
             + terminology + ", " + version + ", " + pfs);
 
     final ProjectService projectService = new ProjectServiceJpa();
@@ -772,8 +773,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): get concept with conceptId, " + terminologyId
-            + ", " + terminology + ", " + version + ", " + translationId);
+        "RESTful call GET (Project): get concept with conceptId, "
+            + terminologyId + ", " + terminology + ", " + version + ", "
+            + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -835,8 +837,9 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): retrieves concept's parents, " + terminologyId
-            + ", " + terminology + ", " + version + ", " + translationId);
+        "RESTful call GET (Project): retrieves concept's parents, "
+            + terminologyId + ", " + terminology + ", " + version + ", "
+            + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
@@ -894,7 +897,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     throws Exception {
 
     Logger.getLogger(getClass()).info(
-        "RESTful call (Project): retrieves concept's children, "
+        "RESTful call POST (Project): retrieves concept's children, "
             + terminologyId + ", " + terminology + ", " + version + ", "
             + translationId);
 

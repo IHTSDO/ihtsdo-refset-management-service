@@ -11,18 +11,17 @@ import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.search.spell.LevensteinDistance;
 import org.apache.lucene.search.spell.PlainTextDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.lucene.util.Version;
 import org.ihtsdo.otf.refset.Translation;
 import org.ihtsdo.otf.refset.helpers.ConfigUtility;
-import org.ihtsdo.otf.refset.helpers.KeyValuesMap;
 import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.services.handlers.SpellingCorrectionHandler;
@@ -44,6 +43,7 @@ public class DefaultSpellingCorrectionHandler implements
    * @throws Exception the exception
    */
   public DefaultSpellingCorrectionHandler() throws Exception {
+    // n/a
   }
 
   /* see superclass */
@@ -52,6 +52,7 @@ public class DefaultSpellingCorrectionHandler implements
     // N/A
   }
 
+  /* see superclass */
   @Override
   public void setTranslation(Translation translation) throws Exception {
 
@@ -73,6 +74,12 @@ public class DefaultSpellingCorrectionHandler implements
     checker = new SpellChecker(indexFsDir);
     // Presumably not needed - index already built, just opening it
     // reindex(translation.getSpellingDictionary().getEntries(),true);
+    System.out.println("CHECKER accuracy = " + checker.getAccuracy());
+    System.out.println("CHECKER distance = " + checker.getStringDistance());
+    checker.setAccuracy(.5f);
+    checker.setStringDistance(new LevensteinDistance());
+    System.out.println("CHECKER accuracy = " + checker.getAccuracy());
+    System.out.println("CHECKER distance = " + checker.getStringDistance());
   }
 
   /* see superclass */
@@ -128,7 +135,8 @@ public class DefaultSpellingCorrectionHandler implements
     while ((line = reader.readLine()) != null) {
       // bad format
       if (line.length() > 500) {
-        throw new LocalException("Line is too long, > 500 chars, likely bad format.");
+        throw new LocalException(
+            "Line is too long, > 500 chars, likely bad format.");
       }
       line = line.replace("\r", "");
       // If the line contains any whitespace, reject the format
@@ -136,7 +144,7 @@ public class DefaultSpellingCorrectionHandler implements
         throw new LocalException(
             "Badly formatted spelling file, no whitespace allowed, words only.");
       }
-      entries.add(line.toLowerCase());
+      entries.add(line);
     }
 
     return entries;
@@ -152,6 +160,7 @@ public class DefaultSpellingCorrectionHandler implements
     // Assume terms of length 1 or 2 always exist
     if (!checker.exist(term) && term.length() > 2) {
       String[] results = checker.suggestSimilar(term, amt);
+
       // Handle the case of no suggestions, determine whether it exists
       return convertResults(results);
     }
@@ -160,44 +169,8 @@ public class DefaultSpellingCorrectionHandler implements
   }
 
   @Override
-  public KeyValuesMap suggestBatchSpelling(StringList lookupTerms, int amount)
-    throws Exception {
-    if (checker == null) {
-      throw new LocalException(
-          "Set translation must be called prior to calling suggest batch spelling");
-    }
-    KeyValuesMap retMap = new KeyValuesMap();
-
-    if (lookupTerms == null || lookupTerms.getObjects() == null
-        || lookupTerms.getObjects().isEmpty()) {
-      return new KeyValuesMap();
-    }
-
-    HashMap<String, StringList> resultHashMap = new HashMap<>();
-
-    // Iterate through lookup terms and store their collections in map
-    for (String term : lookupTerms.getObjects()) {
-
-      // Consider a term existing if 1 or 2 chars only
-      if (term.length() < 3) {
-        continue;
-      }
-
-      // Skip terms that exist
-      if (checker.exist(term)) {
-        continue;
-      }
-
-      String[] results = checker.suggestSimilar(term.toLowerCase(), amount);
-      // if there are results or the word doesn't exist, then send it back
-      StringList resultsForTerm = convertResults(results);
-      resultHashMap.put(term, resultsForTerm);
-    }
-
-    // Convert Map to proper return type
-    retMap.setMap(resultHashMap);
-
-    return retMap;
+  public boolean exists(String term) throws Exception {
+    return checker.exist(term);
   }
 
   /**
