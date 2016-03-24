@@ -55,7 +55,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.ProjectRoleMapAdapter;
 @XmlRootElement(name = "user")
 public class UserJpa implements User {
 
-  /** The id. Set initial value to 5 to bypass entries in import.sql */
+  /** The id. Set initial value to 50 to bypass entries in import.sql */
   @TableGenerator(name = "EntityIdGenUser", table = "table_generator_users", pkColumnValue = "Entity", initialValue = 50)
   @Id
   @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGenUser")

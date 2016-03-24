@@ -64,9 +64,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ProjectJpa implements Project {
 
   /** The id. */
-  @TableGenerator(name = "EntityIdGenProject", table = "table_generator_project", pkColumnValue = "Entity")
+  @TableGenerator(name = "EntityIdGen", table = "table_generator_project", pkColumnValue = "Entity")
   @Id
-  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGenProject")
+  @GeneratedValue(strategy = GenerationType.TABLE, generator = "EntityIdGen")
   private Long id;
 
   /** The last modified. */
