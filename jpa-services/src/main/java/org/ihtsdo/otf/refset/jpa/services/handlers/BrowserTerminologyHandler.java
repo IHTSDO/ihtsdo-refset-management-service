@@ -246,6 +246,130 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
+    // Start by just getting first 1000, then check how many remaining ones
+    // there
+    // are and make a second call if needed
+    final int initialMaxLimit = 1000;
+
+    final String exprUrl = "http://sct-rest.ihtsdotools.org/api/snomed";
+
+    WebTarget target =
+        client.target(exprUrl + "/" + terminology + "/v" + version
+            + "/query/concepts?ecQuery="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
+            + "&offset=" + localPfs.getStartIndex());
+
+    Response response = target.request(accept).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return new ConceptListJpa();
+      }
+
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
+    }
+
+    ConceptList conceptList = new ConceptListJpa();
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    final int total = doc.get("total").asInt();
+    // Get concepts returned in this call (up to 1000)
+    if (doc.get("items") == null) {
+      return conceptList;
+    }
+    for (final JsonNode conceptNode : doc.get("items")) {
+      final Concept concept = new ConceptJpa();
+
+      concept.setActive(conceptNode.get("active").asText().equals("true"));
+      concept.setTerminologyId(conceptNode.get("id").asText());
+      concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
+          "effectiveTime").asText()));
+      concept.setModuleId(conceptNode.get("moduleId").asText());
+      concept.setDefinitionStatusId(conceptNode.get("definitionStatusId")
+          .asText());
+      concept.setName(conceptNode.get("fsn").asText());
+      concept.setPublishable(true);
+      concept.setPublished(true);
+      conceptList.addObject(concept);
+    }
+
+    // If the total is over the initial max limit and pfs max results is too.
+    if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
+
+      target =
+          client.target(exprUrl + "/" + terminology + "/v" + version
+              + "/query/concepts?ecQuery="
+              + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+              + "&limit=" + (total - initialMaxLimit) + "&offset="
+              + (initialMaxLimit + localPfs.getStartIndex()));
+
+      response = target.request(accept).get();
+      resultString = response.readEntity(String.class);
+      if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+        // n/a
+      } else {
+        throw new Exception("Unexpected terminology server failure. Message = "
+            + resultString);
+      }
+      mapper = new ObjectMapper();
+      doc = mapper.readTree(resultString);
+      // get total amount
+      // Get concepts returned in this call (up to 1000)
+      if (doc.get("items") == null) {
+        return conceptList;
+      }
+      for (final JsonNode conceptNode : doc.get("items")) {
+        final Concept concept = new ConceptJpa();
+
+        concept.setActive(conceptNode.get("active").asText().equals("true"));
+        concept.setTerminologyId(conceptNode.get("id").asText());
+        concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode
+            .get("effectiveTime").asText()));
+        concept.setModuleId(conceptNode.get("moduleId").asText());
+        concept.setDefinitionStatusId(conceptNode.get("definitionStatusId")
+            .asText());
+        concept.setName(conceptNode.get("fsn").asText());
+        concept.setPublishable(true);
+        concept.setPublished(true);
+        conceptList.addObject(concept);
+      }
+
+    }
+
+    conceptList.setTotalCount(total);
+    return conceptList;
+  }
+
+  /* see superclass */
+  @SuppressWarnings("javadoc")
+  public ConceptList resolveExpressionBrowser(String expr, String terminology,
+    String version, PfsParameter pfs) throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  resolve expression - " + terminology + ", " + version + ", " + expr
+            + ", " + pfs);
+    final Client client = ClientBuilder.newClient();
+
+    PfsParameter localPfs = pfs;
+    if (localPfs == null) {
+      localPfs = new PfsParameterJpa();
+    } else {
+      // need to copy it because we might change it here
+      localPfs = new PfsParameterJpa(pfs);
+    }
+    if (localPfs.getStartIndex() == -1) {
+      localPfs.setStartIndex(0);
+      localPfs.setMaxResults(Integer.MAX_VALUE);
+    }
+
     // Start by just getting first 200, then check how many remaining ones there
     // are and make a second call if needed
     final int initialMaxLimit = 200;
@@ -360,10 +484,50 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     return conceptList;
   }
 
-  /* see superclass */
+  /* see superclass - connected to Kai's server */
   @Override
   public int countExpression(String expr, String terminology, String version)
     throws Exception {
+    Logger.getLogger(getClass()).info(
+        "  expression count - " + terminology + ", " + version + ", " + expr);
+
+    final String exprUrl = "http://sct-rest.ihtsdotools.org/api/snomed";
+
+    final Client client = ClientBuilder.newClient();
+
+    WebTarget target =
+        client.target(exprUrl + "/" + terminology + "/v" + version
+            + "/query/concepts?ecQuery="
+            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+            + "&limit=1&offset=0");
+
+    Response response = target.request(accept).get();
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+
+      // Here's the messy part about trying to parse the return error message
+      if (resultString.contains("loop did not match anything")) {
+        return 0;
+      }
+
+      throw new Exception("Unexpected terminology server failure. Message = "
+          + resultString);
+    }
+
+    ObjectMapper mapper = new ObjectMapper();
+    JsonNode doc = mapper.readTree(resultString);
+
+    // get total amount
+    return doc.get("total").asInt();
+
+  }
+
+  /* see superclass */
+  @SuppressWarnings("javadoc")
+  public int countExpressionBrowser(String expr, String terminology,
+    String version) throws Exception {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
 

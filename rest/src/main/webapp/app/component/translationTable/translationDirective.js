@@ -1701,7 +1701,9 @@ tsApp
                 $scope.project = project;
                 $scope.user = user;
                 $scope.role = role;
-
+                // Save this so we can set the workflow status and it shows up immediately
+                $scope.concept = concept;
+                
                 // Data structure for case significance - we just need the
                 // id/name
                 $scope.caseSignificanceTypes = [];
@@ -2151,7 +2153,8 @@ tsApp
                         .then(
                           // Success
                           function(data) {
-                            concept.workflowStatus = data.concept.workflowStatus;
+                            // Set the workflow status in the assigned concepts list
+                            $scope.concept.workflowStatus = data.concept.workflowStatus;
                             // Special case:
                             // If "FINISH", mark again as 'finish'
                             if (action == 'FINISH') {
@@ -2160,7 +2163,8 @@ tsApp
                                 concept).then(
                               // Success
                               function(data) {
-                                concept.workflowStatus = data.concept.workflowStatus;
+                                // Set the workflow status in the assigned concepts list
+                                $scope.concept.workflowStatus = data.concept.workflowStatus;
                                 $uibModalInstance.close(action);
                               },
                               // Error

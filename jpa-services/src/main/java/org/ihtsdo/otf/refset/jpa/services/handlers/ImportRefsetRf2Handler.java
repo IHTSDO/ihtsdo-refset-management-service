@@ -38,23 +38,23 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
 
   /** The id. */
   final String id = "id";
- 
-  /**  The validation result. */
+
+  /** The validation result. */
   ValidationResult validationResult = new ValidationResultJpa();
-  
-  /**  The ct. */
+
+  /** The ct. */
   private int ct = 0;
-  
-  /**  The inactive ct. */
+
+  /** The inactive ct. */
   private int inactiveCt = 0;
-  
+
   /**
    * Instantiates an empty {@link ImportRefsetRf2Handler}.
    * @throws Exception if anything goes wrong
    */
   public ImportRefsetRf2Handler() throws Exception {
     super();
-    
+
   }
 
   /* see superclass */
@@ -85,7 +85,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
     validationResult = new ValidationResultJpa();
     ct = 0;
     inactiveCt = 0;
-    
+
     // Read from input stream
     List<ConceptRefsetMember> list = new ArrayList<>();
     String line = "";
@@ -144,14 +144,15 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
       }
     }
     if (ct == 1) {
-      validationResult.addComment("1 member successfully loaded.");      
+      validationResult.addComment("1 member successfully loaded.");
     } else {
       validationResult.addComment(ct + " members successfully loaded.");
     }
     if (inactiveCt == 1) {
-      validationResult.addWarning("1 inactive member was skipped.");      
-    } else if (inactiveCt != 0){
-      validationResult.addWarning(inactiveCt + " inactive members were skipped.");
+      validationResult.addWarning("1 inactive member was skipped.");
+    } else if (inactiveCt != 0) {
+      validationResult.addWarning(inactiveCt
+          + " inactive members were skipped.");
     }
     pbr.close();
     return list;
@@ -160,7 +161,8 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
   /* see superclass */
   @Override
   public List<DefinitionClause> importDefinition(Refset refset,
-    InputStream content) throws Exception {    Logger.getLogger(getClass()).info("Import refset definition");
+    InputStream content) throws Exception {
+    Logger.getLogger(getClass()).info("Import refset definition");
 
     String line = "";
     List<DefinitionClause> definitionClauses = new ArrayList<>();
@@ -205,7 +207,7 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         for (String clause : positiveClauses) {
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(false);
-          defClause.setValue(clause);
+          defClause.setValue(clause.trim());
           definitionClauses.add(defClause);
         }
         if (part2.startsWith(" (")) {
@@ -224,10 +226,10 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
           if (clause.equals(refset.getProject().getExclusionClause())) {
             continue;
           }
-          
+
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(true);
-          defClause.setValue(clause);
+          defClause.setValue(clause.trim());
           definitionClauses.add(defClause);
         }
       }

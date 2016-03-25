@@ -281,8 +281,10 @@ public abstract class RootServiceJpa implements RootService {
       if (!sortMethod.getReturnType().equals(String.class)
           && !sortMethod.getReturnType().isEnum()
           && !sortMethod.getReturnType().equals(Date.class)) {
-        throw new Exception("Referenced sort field is not of type String");
+        throw new Exception("Referenced sort field is not of a supported type");
       }
+
+      final boolean isDate = sortMethod.getReturnType().equals(Date.class);
 
       // allow the method to be accessed
       sortMethod.setAccessible(true);
@@ -295,12 +297,20 @@ public abstract class RootServiceJpa implements RootService {
         public int compare(T t1, T t2) {
           // if an exception is returned, simply pass equality
           try {
-            final String s1 = (String) sortMethod.invoke(t1, new Object[] {});
-            final String s2 = (String) sortMethod.invoke(t2, new Object[] {});
-            if (ascending) {
-              return s1.compareTo(s2);
+            final Object o1 = sortMethod.invoke(t1, new Object[] {});
+            final Object o2 = sortMethod.invoke(t2, new Object[] {});
+            if (isDate) {
+              Long l1 = ((Date) o1).getTime();
+              Long l2 = ((Date) o2).getTime();
+              return ascending ? l1.compareTo(l2) : l2.compareTo(l1);
             } else {
-              return s2.compareTo(s1);
+              final String s1 = o1.toString();
+              final String s2 = o2.toString();
+              if (ascending) {
+                return s1.compareTo(s2);
+              } else {
+                return s2.compareTo(s1);
+              }
             }
           } catch (Exception e) {
             return 0;

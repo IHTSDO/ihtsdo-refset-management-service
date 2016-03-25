@@ -822,6 +822,7 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
   public ConceptList findAvailableEditingConcepts(Translation translation,
     PfsParameter pfs, WorkflowService service) throws Exception {
 
+    // Cleanse PFS parameter to turn "concept" fields into concept refset member fields
     final PfsParameter localPfs =
         pfs == null ? new PfsParameterJpa() : new PfsParameterJpa(pfs);
     if (localPfs.getSortField() != null
@@ -831,6 +832,10 @@ public class DefaultWorkflowActionHandler implements WorkflowActionHandler {
     if (localPfs.getSortField() != null
         && localPfs.getSortField().equals("terminologyId")) {
       localPfs.setSortField("conceptId");
+    }
+    if (localPfs.getSortField() != null
+        && localPfs.getSortField().equals("workflowStatus")) {
+      localPfs.setSortField(null);
     }
 
     // Members of the refset

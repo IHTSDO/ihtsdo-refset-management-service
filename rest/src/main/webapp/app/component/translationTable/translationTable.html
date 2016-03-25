@@ -137,7 +137,8 @@
             <i
               ng-show="!translation.inPublicationProcess && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='BETA'"
               ng-click="openReleaseProcessModal(translation); $event.stopPropagation()"
-              uib-tooltip="Start release process" class="noul material-icons md-18">open_in_new</i>
+              uib-tooltip="Start release process"
+              class="noul material-icons md-18">open_in_new</i>
 
             <i
               ng-show="translation.inPublicationProcess  && translation.workflowStatus != 'PUBLISHED' && translation.workflowStatus!='BETA'"
@@ -365,11 +366,13 @@
               <i
                 ng-show="!selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Export', 'Phrase Memory'); $event.stopPropagation()"
-                uib-tooltip="Export phrase memory" class="noul material-icons md-18">file_download</i>
+                uib-tooltip="Export phrase memory"
+                class="noul material-icons md-18">file_download</i>
               <i
                 ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
                 ng-click="openImportExportModal(selected.translation,'Import', 'Phrase Memory'); $event.stopPropagation()"
-                uib-tooltip="Import phrase memory" class="noul material-icons md-18">file_upload</i>
+                uib-tooltip="Import phrase memory"
+                class="noul material-icons md-18">file_upload</i>
               <i
                 ng-show="selected.translation.phraseMemoryEmpty  && user.applicationRole != 'ADMIN' && user.applicationRole != 'VIEWER'"
                 ng-click="openCopyModal(selected.translation,'Phrase Memory'); $event.stopPropagation()"
@@ -487,9 +490,18 @@
           </th>
           <th ng-click="setSortField('available','name', selected.translation)">Name<span
               ng-bind="getSortIndicator('available','name')"></span></th>
-          <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'"
-            ng-click="setSortField('available','lastModified', selected.translation)">Last
-            Modified<span ng-bind="getSortIndicator('available','lastModified')"></span>
+          <th class="col-md-4 col-xs-4" ng-show="projects.role != 'AUTHOR'">
+            <span
+              ng-click="setSortField('available','lastModified', selected.translation)">
+              Last Modified
+              <span ng-bind="getSortIndicator('available','lastModified')"></span>
+            </span> <span ng-show="projects.role == 'ADMIN'">
+              /<br />
+              <span
+                ng-click="setSortField('available','workflowStatus', selected.translation)">Workflow
+                Status </span>
+              <span ng-bind="getSortIndicator('available','workflowStatus')"></span>
+            </span>
           </th>
           <th class="col-md-2 col-xs-2">Actions <!-- Assign --> <i
               ng-show="selected.translation.available.totalCount > 0"
@@ -505,7 +517,11 @@
             <span name-info name="concept.name"> </span>
           </td>
           <td ng-show="projects.role != 'AUTHOR'">
-            {{toDate(concept.lastModified)}}</td>
+            {{toDate(concept.lastModified)}}
+            <span ng-show="projects.role == 'ADMIN'">
+              /<br /> {{concept.workflowStatus}}
+            </span>
+          </td>
           <!-- Actions -->
           <td class="nobreak">
             <!-- Assign -->
@@ -524,6 +540,14 @@
               ng-show="projects.role == 'ADMIN' && concept.workflowStatus=='EDITING_DONE'"
               ng-click="openAssignConceptModal(concept, 'ASSIGN', 'REVIEWER'); $event.stopPropagation()"
               uib-tooltip="Assign" class="noul material-icons md-18">assignment_ind</i>
+
+            <!-- Unassign -->
+            <i
+              ng-show="projects.role == 'ADMIN' && concept.workflowStatus!='NEW'"
+              confirm="Are you sure you want to unassign this concept ({{concept.terminologyId}}, {{concept.name}})"
+              ng-click="unassign(concept)" uib-tooltip="Unassign"
+              class="noul material-icons md-18">assignment_return</i>
+
           </td>
         </tr>
       </tbody>
@@ -662,7 +686,8 @@
               uib-tooltip="Edit concept Notes" class="noul material-icons md-18">assignment</i>
             <i ng-show="record.concept.notes.length == 0"
               ng-click="openNotesModal(record.concept, 'Concept');"
-              uib-tooltip="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
+              uib-tooltip="Add Concept Notes"
+              class="md-grey material-icons md-18">assignment</i>
 
             <br>
           </td>
@@ -711,10 +736,12 @@
 
         <i
           ng-click="openImportExportModal(selected.translation, 'Export', 'Translation'); "
-          uib-tooltip="Export translation concepts" class="noul material-icons md-18">file_download</i>
+          uib-tooltip="Export translation concepts"
+          class="noul material-icons md-18">file_download</i>
         <i ng-show="value == 'EDITING'"
           ng-click="openImportExportModal(selected.translation, 'Import', 'Translation');"
-          uib-tooltip="Import translation concepts" class="noul material-icons md-18">file_upload</i>
+          uib-tooltip="Import translation concepts"
+          class="noul material-icons md-18">file_upload</i>
         <i
           confirm="Are you sure you want to remove all the concepts of the translation ({{selected.translation.name}})?"
           ng-show="value == 'EDITING' && selected.translation.concepts.length > 0"
