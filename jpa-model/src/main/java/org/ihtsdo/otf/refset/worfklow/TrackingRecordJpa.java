@@ -325,19 +325,7 @@ public class TrackingRecordJpa implements TrackingRecord {
   }
 
   /**
-   * Sets the concept id. For JAXB.
-   *
-   * @param conceptId the concept id
-   */
-  public void setConceptId(Long conceptId) {
-    if (concept == null) {
-      concept = new ConceptJpa();
-    }
-    concept.setId(conceptId);
-  }
-
-  /**
-   * Returns the concept terminology id.
+   * Returns the concept terminology id. For indexing.
    *
    * @return the concept terminology id
    */
@@ -395,6 +383,23 @@ public class TrackingRecordJpa implements TrackingRecord {
   @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
   public String getRefsetType() {
     return refset == null ? "" : refset.getType().toString();
+  }
+
+  /**
+   * Returns the workflow status. For indexing.
+   *
+   * @return the workflow status
+   */
+  @XmlTransient
+  @Field(index = Index.YES, analyze = Analyze.NO, store = Store.NO)
+  public String getWorkflowStatus() {
+    if (concept != null) {
+      return concept.getWorkflowStatus().toString();
+    }
+    if (refset != null) {
+      return refset.getWorkflowStatus().toString();
+    }
+    return "";
   }
 
   /* see superclass */
