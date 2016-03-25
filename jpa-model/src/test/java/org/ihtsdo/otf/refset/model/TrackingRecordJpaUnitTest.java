@@ -264,6 +264,7 @@ public class TrackingRecordJpaUnitTest extends ModelUnitSupport {
     tester.include("refsetNameSort");
     tester.include("refsetModuleId");
     tester.include("refsetType");
+    tester.include("workflowStatus");
     assertTrue(tester.testNotAnalyzedIndexedFields());
 
   }
