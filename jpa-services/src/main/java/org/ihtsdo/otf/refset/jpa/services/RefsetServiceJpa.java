@@ -1126,20 +1126,24 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
-  public Integer countExpression(String terminology, String version, String expression) throws Exception {
+  public Integer countExpression(String terminology, String version,
+    String expression) throws Exception {
     int total = 0;
     try {
-    total = getTerminologyHandler().countExpression(expression,
-        terminology, version, null);
+      total =
+          getTerminologyHandler().countExpression(expression, terminology,
+              version);
     } catch (Exception e) {
       throw new LocalException(
-        "Unable to count total expression items, the expression could not be resolved - "
-            + expression);
+          "Unable to count total expression items, the expression could not be resolved - "
+              + expression);
     }
-    return new Integer(total);   
+    return new Integer(total);
   }
-  
+
+  /* see superclass */
   @Override
   public void resolveRefsetDefinition(Refset refset) throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1181,9 +1185,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           "Unable to import definition file, the expression could not be resolved - "
               + refset.computeDefinition());
     }
-    
 
-    
     // Anything that was an explicit inclusion that is now resolved by the
     // definition normally, doesn’t need to be an inclusion anymore – because
     // it can just be a regular member. Thus we can change it to member and
@@ -1204,7 +1206,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
         removeMember(member.getId());
       }
     }
-    
+
     // Delete all previous members and exclusions that are not resolved from
     // the current definition. Otherwise avoid adding it in next section
     for (final ConceptRefsetMember member : beforeExclusions.values()) {
@@ -1244,6 +1246,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
    * Recover refset.
    *
    * @param refsetId the refset id
+   * @return the refset
    * @throws Exception the exception
    */
   @Override
@@ -1300,6 +1303,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     }
   }
 
+  /* see superclass */
   @Override
   public Integer getRefsetRevisionNumber(Long refsetId) throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1331,6 +1335,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
     return refset;
   }
 
+  /* see superclass */
   @Override
   public Refset syncRefset(Long refsetId, Refset originRefset) throws Exception {
     Logger.getLogger(getClass()).info(

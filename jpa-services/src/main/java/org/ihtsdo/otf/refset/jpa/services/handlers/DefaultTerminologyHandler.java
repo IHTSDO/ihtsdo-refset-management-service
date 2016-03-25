@@ -109,8 +109,14 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     } else {
       throw new Exception("Required property url not specified.");
     }
-    if (p.containsKey("assignNames")) {
-      assignNames = Boolean.valueOf(p.getProperty("assignNames"));
+
+    // Uses the "DEFAULT" assignNames property - this must exist so that it can
+    // be accessed externally
+    if (ConfigUtility.getConfigProperties().containsKey(
+        "terminology.handler.DEFAULT.assignNames")) {
+      assignNames =
+          Boolean.valueOf(ConfigUtility.getConfigProperties().getProperty(
+              "terminology.handler.DEFAULT.assignNames"));
     }
   }
 
@@ -447,26 +453,14 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     return conceptList;
   }
 
+  /* see superclass */
   @Override
-  public int countExpression(String expr, String terminology,
-    String version, PfsParameter pfs) throws Exception {
+  public int countExpression(String expr, String terminology, String version)
+    throws Exception {
     Logger.getLogger(getClass()).info(
-        "  expression count - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+        "  expression count - " + terminology + ", " + version + ", " + expr);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = pfs;
-    if (localPfs == null) {
-      localPfs = new PfsParameterJpa();
-    } else {
-      // need to copy it because we might change it here
-      localPfs = new PfsParameterJpa(pfs);
-    }
-    if (localPfs.getStartIndex() == -1) {
-      localPfs.setStartIndex(0);
-      localPfs.setMaxResults(Integer.MAX_VALUE);
-    }
 
     WebTarget target =
         client.target(url + "/" + branch + "/" + version + "/concepts?escg="
@@ -498,8 +492,6 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   }
 
-  
-  
   /* see superclass */
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
@@ -836,6 +828,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
+  public boolean isConceptId(String query) {
+    return query.matches("\\d+[01]0\\d");
+  }
+
+  /* see superclass */
+  @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
@@ -1119,6 +1117,7 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     return assignNames;
   }
 
+  /* see superclass */
   @Override
   public List<DescriptionType> getStandardDescriptionTypes(String terminology)
     throws Exception {

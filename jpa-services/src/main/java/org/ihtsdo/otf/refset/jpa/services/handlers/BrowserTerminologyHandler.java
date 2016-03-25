@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 West Coast Informatics, LLC
+ * Copyright 2016 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -47,10 +47,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * Default implementation of {@link TerminologyHandler}. Leverages the IHTSDO
- * terminology server to the extent possible for interacting with terminology
- * components. Uses local storage where not possible.
- * 
+ * Implementation of {@link TerminologyHandler} that leverages the IHTSDO
+ * Browser API.
  */
 public class BrowserTerminologyHandler implements TerminologyHandler {
 
@@ -90,15 +88,18 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       throw new Exception("Required property url not specified.");
     }
 
-    if (p.containsKey("assignNames")) {
-      assignNames = Boolean.valueOf(p.getProperty("assignNames"));
+    if (ConfigUtility.getConfigProperties().containsKey(
+        "terminology.handler.DEFAULT.assignNames")) {
+      assignNames =
+          Boolean.valueOf(ConfigUtility.getConfigProperties().getProperty(
+              "terminology.handler.DEFAULT.assignNames"));
     }
   }
 
   /* see superclass */
   @Override
   public String getName() {
-    return "Default terminology handler";
+    return "IHTSDO browser terminology handler";
   }
 
   /* see superclass */
@@ -127,9 +128,6 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
 
     return new ArrayList<String>(set);
-    /*
-     * return Arrays.asList(new String[] { "SNOMEDCT"rele });
-     */
   }
 
   /* see superclass */
@@ -249,20 +247,19 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
 
     // Start by just getting first 200, then check how many remaining ones there
-    // are
-    // and make a second call if needed
+    // are and make a second call if needed
     final int initialMaxLimit = 200;
 
     WebTarget target =
         client.target(url + "expressions/" + terminology + "/v" + version
             + "/execute/brief");
 
-    Entity payload =
-        Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
-            + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "\", \"skip\": \"" + localPfs.getStartIndex()
-            + "\", \"form\": \"inferred\" }");
-    Response response = target.request(accept).post(payload);
+    Response response =
+        target.request(accept).post(
+            Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
+                + Math.min(initialMaxLimit, localPfs.getMaxResults())
+                + "\", \"skip\": \"" + localPfs.getStartIndex()
+                + "\", \"form\": \"inferred\" }"));
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -313,12 +310,12 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
           client.target(url + "expressions/" + terminology + "/v" + version
               + "/execute/brief");
 
-      payload =
-          Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
-              + (total - initialMaxLimit) + "\", \"skip\": \""
-              + (initialMaxLimit + localPfs.getStartIndex())
-              + "\", \"form\": \"inferred\" }");
-      response = target.request(accept).post(payload);
+      response =
+          target.request(accept).post(
+              Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
+                  + (total - initialMaxLimit) + "\", \"skip\": \""
+                  + (initialMaxLimit + localPfs.getStartIndex())
+                  + "\", \"form\": \"inferred\" }"));
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
@@ -363,36 +360,23 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     return conceptList;
   }
 
+  /* see superclass */
   @Override
-  public int countExpression(String expr, String terminology, String version,
-    PfsParameter pfs) throws Exception {
+  public int countExpression(String expr, String terminology, String version)
+    throws Exception {
     Logger.getLogger(getClass()).info(
-        "  expression count - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+        "  expression count - " + terminology + ", " + version + ", " + expr);
 
     final Client client = ClientBuilder.newClient();
-
-    PfsParameter localPfs = pfs;
-    if (localPfs == null) {
-      localPfs = new PfsParameterJpa();
-    } else {
-      // need to copy it because we might change it here
-      localPfs = new PfsParameterJpa(pfs);
-    }
-    if (localPfs.getStartIndex() == -1) {
-      localPfs.setStartIndex(0);
-      localPfs.setMaxResults(Integer.MAX_VALUE);
-    }
 
     WebTarget target =
         client.target(url + "expressions/" + terminology + "/v" + version
             + "/execute/brief");
 
-    Entity payload =
-        Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
-            + localPfs.getMaxResults() + "\", \"skip\": \""
-            + localPfs.getStartIndex() + "\", \"form\": \"inferred\" }");
-    Response response = target.request(accept).post(payload);
+    Response response =
+        target.request(accept).post(
+            Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \"" + 1
+                + "\", \"skip\": \"" + 0 + "\", \"form\": \"inferred\" }"));
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -631,13 +615,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     return resolveExpression(query.toString(), terminology, version, null);
   }
 
-  /**
-   * Indicates whether or not concept id is the case.
-   *
-   * @param query the query
-   * @return <code>true</code> if so, <code>false</code> otherwise
-   */
-  private boolean isConceptId(String query) {
+  /* see superclass */
+  @Override
+  public boolean isConceptId(String query) {
     return query.matches("\\d+[01]0\\d");
   }
 
@@ -661,8 +641,6 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       localPfs.setMaxResults(Integer.MAX_VALUE);
     }
 
-    query = URLEncoder.encode(query, "UTF-8");
-
     // Use getConcept() if it's an id, otherwise search term
     final WebTarget target =
         client
@@ -672,7 +650,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
                 + "/v"
                 + version
                 + "/descriptions?query="
-                + query
+                + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
                 + "&searchMode=partialMatching&lang=english&statusFilter=activeAndInactive&"
                 + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
                 + localPfs.getMaxResults() + "&normalize=true");
@@ -851,6 +829,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     return assignNames;
   }
 
+  /* see superclass */
   @Override
   public List<DescriptionType> getStandardDescriptionTypes(String terminology)
     throws Exception {

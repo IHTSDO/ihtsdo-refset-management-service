@@ -74,12 +74,12 @@
 
               <i
                 ng-click="openEditProjectModal(project); $event.stopPropagation()"
-                title="Edit" class="noul material-icons md-18">edit</i>
+                uib-tooltip="Edit" class="noul material-icons md-18">edit</i>
 
               <i
                 confirm="Are you sure you want to remove the project ({{project.name}})?"
                 ng-click="removeProject(project); $event.stopPropagation()"
-                title="Delete" class="noul material-icons md-18">delete</i>
+                uib-tooltip="Delete" class="noul material-icons md-18">delete</i>
 
             </td>
           </tr>
@@ -147,11 +147,11 @@
 
             <td class="nobreak">
               <i ng-click="openEditUserModal(user); $event.stopPropagation()"
-                title="Edit" class="noul material-icons md-18">edit</i>
+                uib-tooltip="Edit" class="noul material-icons md-18">edit</i>
               <i
                 confirm="Are you sure you want to remove the user ({{user.userName}})?"
                 ng-click="removeUser(user); $event.stopPropagation()"
-                title="Delete" class="noul material-icons md-18">delete</i>
+                uib-tooltip="Delete" class="noul material-icons md-18">delete</i>
             </td>
           </tr>
         </tbody>
@@ -360,7 +360,7 @@
                 <td>
                   <!-- Actions -->
                   <i ng-click="addLanguageDescriptionType(ldt)"
-                    title="Add language description type"
+                    uib-tooltip="Add language description type"
                     class="noul material-icons md-18">add</i>
                 </td>
               </tr>
@@ -398,17 +398,17 @@
                     <!-- Actions - move up-->
                     <i ng-show="$index != 0"
                       ng-click="moveLanguageDescriptionTypeUp(ldt)"
-                      title="Move language description type up"
+                      uib-tooltip="Move language description type up"
                       class="noul material-icons md-18">file_upload</i>
                     <!-- Actions - move down-->
                     <i
                       ng-show="$index != user.userPreferences.languageDescriptionTypes.length-1"
                       ng-click="moveLanguageDescriptionTypeDown(ldt)"
-                      title="Move language description type down"
+                      uib-tooltip="Move language description type down"
                       class="noul material-icons md-18">file_download</i>
                     <!-- Actions - remove -->
                     <i ng-click="removeLanguageDescriptionType(ldt)"
-                      title="Remove description type"
+                      uib-tooltip="Remove description type"
                       class="noul material-icons md-18">delete</i>
                   </span>
                 </td>
@@ -491,8 +491,8 @@
               ng-model="paging['candidateUser'].page"
               ng-change="getUnassignedUsers()"></uib-pagination>
 
-            <input class="input-filter" placeholder="Search"
-              type="text" ng-model="paging['candidateUser'].filter"
+            <input class="input-filter" placeholder="Search" type="text"
+              ng-model="paging['candidateUser'].filter"
               ng-model-options="{ debounce: 300 }"
               ng-change="getUnassignedUsers()">
 
@@ -500,7 +500,7 @@
               ng-click="paging['candidateUser'].filter = ''; getUnassignedUsers()"
               title="Click to clear filter text">Clear</button>
           </span>
-             
+
           <table class="table">
             <thead class="table-select-row">
               <tr>
@@ -527,7 +527,7 @@
 
                   <i
                     ng-click="assignUserToProject(selectedProject.id, unassigned.userName, unassigned.projectRole)"
-                    title="Add user to project with selected role."
+                    uib-tooltip="Add user to project with selected role."
                     class="noul material-icons md-18">add</i>
                 </td>
               </tr>
@@ -536,7 +536,8 @@
         </div>
         <span ng-show="!selectedProject" style="display: block;"
           class="alert alert-warning"> No project selected</span>
-        <span ng-show="selectedProject && unassignedUsers.totalCount == 0 
+        <span
+          ng-show="selectedProject && unassignedUsers.totalCount == 0 
         && paging['candidateUser'].filter == ''"
           style="display: block;" class="alert alert-warning"> Selected
           project has no unassigned users</span>
@@ -593,7 +594,8 @@
                     confirm="Are you sure you want to unassign yourself from this project?"
                     confirm-if="user.userName == assigned.userName"
                     ng-click="unassignUserFromProject(selectedProject.id, assigned.userName);"
-                    title="Unassign user" class="noul material-icons md-18">delete</i>
+                    uib-tooltip="Unassign user"
+                    class="noul material-icons md-18">delete</i>
                 </td>
               </tr>
             </tbody>

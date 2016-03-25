@@ -83,7 +83,7 @@ tsApp
               $scope.paging['assigned'] = {
                 page : 1,
                 filter : '',
-                sortField : 'lastModified',
+                sortField : 'conceptTerminologyId',
                 ascending : null
               };
 
@@ -299,7 +299,9 @@ tsApp
               };
 
               // Get $scope.selected.translation.assigned
-              $scope.getAssignedConcepts = function(translation) {
+              // If nextIndex is set, we need to open the edit concept modal for
+              // that entry
+              $scope.getAssignedConcepts = function(translation, nextIndex) {
                 if (!$scope.projects.role) {
                   return;
                 }
@@ -317,29 +319,37 @@ tsApp
                   pfs.queryRestriction = $scope.paging['assigned'].filter;
                   workflowService.findAssignedEditingConcepts($scope.project.id, translation.id,
                     $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.assigned = data.records;
-                    translation.assigned.totalCount = data.totalCount;
-                  });
-                } else if ($scope.projects.role == 'REVIEWER') {
-                  pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAssignedReviewConcepts($scope.project.id, translation.id,
-                    $scope.user.userName, pfs).then(
-                  // Success
-                  function(data) {
-                    translation.assigned = data.records;
-                    translation.assigned.totalCount = data.totalCount;
-                  });
-                } else if ($scope.projects.role == 'ADMIN') {
-                  pfs.queryRestriction = $scope.paging['assigned'].filter;
-                  workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
-                    .then(
                     // Success
                     function(data) {
                       translation.assigned = data.records;
                       translation.assigned.totalCount = data.totalCount;
+                      if (nextIndex == 0 || nextIndex) {
+                        $scope.openEditConceptModal(translation.assigned[nextIndex].concept,
+                          nextIndex);
+                      }
                     });
+                } else if ($scope.projects.role == 'REVIEWER') {
+                  pfs.queryRestriction = $scope.paging['assigned'].filter;
+                  workflowService.findAssignedReviewConcepts($scope.project.id, translation.id,
+                    $scope.user.userName, pfs).then(
+                    // Success
+                    function(data) {
+                      translation.assigned = data.records;
+                      translation.assigned.totalCount = data.totalCount;
+                      if (nextIndex == 0 || nextIndex) {
+                        $scope.openEditConceptModal(translation.assigned[nextIndex].concept,
+                          nextIndex);
+                      }
+                    });
+                } else if ($scope.projects.role == 'ADMIN') {
+                  pfs.queryRestriction = $scope.paging['assigned'].filter;
+                  workflowService.findAllAssignedConcepts($scope.project.id, translation.id, pfs)
+                    .then(
+                      // Success
+                      function(data) {
+                        translation.assigned = data.records;
+                        translation.assigned.totalCount = data.totalCount;
+                      });
 
                 } else {
                   window.alert('Unexpected role attempting to get available concepts');
@@ -1431,38 +1441,38 @@ tsApp
                           handleError($scope.errors, data);
                         });
                   }
-                  
+
                   else if ($scope.role == 'REVIEWER') {
                     workflowService
-                    .findAvailableReviewConcepts(project.id, translation.id, $scope.user.userName,
-                      pfs)
-                    .then(
-                      // Success
-                      function(data) {
+                      .findAvailableReviewConcepts(project.id, translation.id,
+                        $scope.user.userName, pfs)
+                      .then(
+                        // Success
+                        function(data) {
 
-                        // The first X entries of data.concepts should match
-                        // translation.available
-                        var match = true;
-                        for (var i = 0; i < Math.min(data.concepts.length,
-                          translation.available.length); i++) {
-                          if (data.concepts[i].id !== translation.available[i].id) {
-                            match = false;
-                            break;
+                          // The first X entries of data.concepts should match
+                          // translation.available
+                          var match = true;
+                          for (var i = 0; i < Math.min(data.concepts.length,
+                            translation.available.length); i++) {
+                            if (data.concepts[i].id !== translation.available[i].id) {
+                              match = false;
+                              break;
+                            }
                           }
-                        }
-                        if (!match) {
-                          $scope.errors[0] = 'Some available concepts have been assigned, please refresh the list and try again.';
-                          return;
-                        }
+                          if (!match) {
+                            $scope.errors[0] = 'Some available concepts have been assigned, please refresh the list and try again.';
+                            return;
+                          }
 
-                        // Make parameter
-                        var conceptList = {
-                          concepts : data.concepts
-                        };
+                          // Make parameter
+                          var conceptList = {
+                            concepts : data.concepts
+                          };
 
-                        workflowService.performBatchTranslationWorkflowAction($scope.project.id,
-                          translation.id, $scope.user.userName, $scope.role, 'ASSIGN', conceptList)
-                          .then(
+                          workflowService.performBatchTranslationWorkflowAction($scope.project.id,
+                            translation.id, $scope.user.userName, $scope.role, 'ASSIGN',
+                            conceptList).then(
                           // Success
                           function(data) {
                             // close modal
@@ -1473,11 +1483,11 @@ tsApp
                             handleError($scope.errors, data);
                           });
 
-                      },
-                      // Error
-                      function(data) {
-                        handleError($scope.errors, data);
-                      });
+                        },
+                        // Error
+                        function(data) {
+                          handleError($scope.errors, data);
+                        });
                   }
 
                 };
@@ -1489,10 +1499,11 @@ tsApp
 
               };
 
-              // Edit concept modal
-              $scope.openEditConceptModal = function(lconcept) {
+              // Edit concept modal (pass in the index in the current assigned
+              // work search results)
+              $scope.openEditConceptModal = function(lconcept, index) {
 
-                console.debug('openEditConceptModal ');
+                console.debug('openEditConceptModal', lconcept, index);
 
                 var modalInstance = $uibModal.open({
                   templateUrl : 'app/component/translationTable/editConcept.html',
@@ -1518,11 +1529,73 @@ tsApp
                   }
                 });
 
-                modalInstance.result.then(
-                // Success
-                function(data) {
-                  translationService.fireConceptChanged(data);
-                });
+                modalInstance.result
+                  .then(
+                  // Success
+                  function(data) {
+                    // data is an action:
+                    // CLOSE => fire concept changed with the concept
+                    if (data === 'CLOSE') {
+                      translationService.fireConceptChanged(lconcept);
+                      return;
+                    }
+
+                    // If the index is at the end of the total count of assigned
+                    // concepts, then we are finished. simulate "close" but
+                    // with a window confirm.
+                    if ($scope.selected.translation.assigned.length == $scope.selected.translation.assigned.totalCount
+                      && (index + 1) == $scope.selected.translation.assigned.totalCount) {
+                      window.confirm("The end of the list of concepts to edit has been reached.");
+                      translationService.fireConceptChanged(lconcept);
+                      return;
+                    }
+
+                    // SAVE, FINISIH => compute next index, re-search, reopen
+                    // modal
+                    // Search results in $scope.selected.translation.assigned
+                    var searchAgain = false;
+                    var nextIndex = index;
+                    if (data === 'FINISH') {
+                      // search again if there are more past the current index
+                      if ((index + 1) < $scope.selected.translation.assigned.totalCount) {
+                        searchAgain = true;
+                      }
+                      // nextIndex remains unchanged
+                    } else if (data === 'SAVE') {
+                      // search again if we are at the end of the current search
+                      // results, but not at the end of the total search results
+                      if ((index + 1) == $scope.selected.translation.assigned.length
+                        && (index + 1) < $scope.selected.translation.assigned.totalCount) {
+                        searchAgain = true;
+                        nextIndex = 0;
+                        $scope.paging['assigned'].page++;
+                      } else {
+                        nextIndex++;
+                      }
+
+                    } else {
+                      alert('SHOULD NEVER HAPPEN: ' + data);
+                    }
+
+                    console.debug("index: ", index);
+                    console.debug("assigned.length: ", $scope.selected.translation.assigned.length);
+                    console.debug("assigned.totalCount: ",
+                      $scope.selected.translation.assigned.totalCount);
+                    console.debug("searchAgain: ", searchAgain);
+                    console.debug("nextIndex: ", nextIndex);
+
+                    // Search, then open the concept modal
+                    if (searchAgain) {
+                      $scope.getAssignedConcepts($scope.selected.translation, nextIndex);
+                    }
+
+                    // Otherwise, just open the modal for the next concept
+                    else {
+                      $scope.openEditConceptModal(
+                        $scope.selected.translation.assigned[nextIndex].concept, nextIndex);
+                    }
+
+                  });
               };
 
               // Edit concept controller
@@ -1989,7 +2062,18 @@ tsApp
                 // Concept stuff
 
                 // Save concept
-                $scope.submitConcept = function(concept) {
+                $scope.saveConcept = function(concept) {
+                  $scope.saveOrFinishConcept(concept, 'SAVE');
+                };
+
+                // Finish concept
+                $scope.finishConcept = function(concept) {
+                  $scope.saveOrFinishConcept(concept, 'FINISH');
+                };
+
+                // Handle both save and finish - different workflow
+                // action is used after validate
+                $scope.saveOrFinishConcept = function(concept, action) {
                   // Iterate through concept, set description types and
                   // languages
                   var spliceIndexes = new Array();
@@ -2016,11 +2100,11 @@ tsApp
                     return;
                   }
 
-                  $scope.validateConcept(copy);
+                  $scope.validateConcept(copy, action);
                 };
 
                 // Validate the concept
-                $scope.validateConcept = function(concept) {
+                $scope.validateConcept = function(concept, action) {
                   // Validate the concept
                   validationService.validateConcept(concept, $scope.project.id).then(
                   // Success
@@ -2044,7 +2128,7 @@ tsApp
 
                     // Otherwise, there are no errors and either no warnings
                     // or the user has clicked through warnings. Proceed
-                    $scope.submitConceptHelper(concept);
+                    $scope.submitConceptHelper(concept, action);
 
                   },
                   // Error
@@ -2054,7 +2138,7 @@ tsApp
                 };
 
                 // Helper (so there's not so much nesting
-                $scope.submitConceptHelper = function(concept) {
+                $scope.submitConceptHelper = function(concept, action) {
 
                   translationService.updateTranslationConcept(concept).then(
                     // Success - update concept
@@ -2065,15 +2149,33 @@ tsApp
                       workflowService.performTranslationWorkflowAction($scope.project.id,
                         $scope.translation.id, $scope.user.userName, $scope.role, 'SAVE', concept)
                         .then(
-                        // Success
-                        function(data) {
-                          // finished.
-                          $uibModalInstance.close(concept);
-                        },
-                        // Error
-                        function(data) {
-                          handleError($scope.errors, data);
-                        });
+                          // Success
+                          function(data) {
+                            concept.workflowStatus = data.concept.workflowStatus;
+                            // Special case:
+                            // If "FINISH", mark again as 'finish'
+                            if (action == 'FINISH') {
+                              workflowService.performTranslationWorkflowAction($scope.project.id,
+                                $scope.translation.id, $scope.user.userName, $scope.role, action,
+                                concept).then(
+                              // Success
+                              function(data) {
+                                concept.workflowStatus = data.concept.workflowStatus;
+                                $uibModalInstance.close(action);
+                              },
+                              // Error
+                              function(data) {
+                                handleError($scope.errors, data);
+                              });
+
+                            } else {
+                              $uibModalInstance.close(action);
+                            }
+                          },
+                          // Error
+                          function(data) {
+                            handleError($scope.errors, data);
+                          });
                     },
                     // Error - update concept
                     function(data) {
@@ -2082,9 +2184,9 @@ tsApp
 
                 };
 
-                // Dismiss modal
-                $scope.cancel = function() {
-                  $uibModalInstance.dismiss('cancel');
+                // Close modal
+                $scope.close = function() {
+                  $uibModalInstance.close('CLOSE');
                 };
 
                 // Initialize

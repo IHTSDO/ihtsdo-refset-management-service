@@ -363,6 +363,14 @@ public class WorkflowServiceRestImpl extends RootServiceRestImpl implements
               UserRole.AUTHOR);
       final User user = securityService.getUser(userName);
 
+      // Need to read the accurate, current workflow state of the concept if it exists
+      if (concept.getId() != null) {
+        final Concept c2 = workflowService.getConcept(concept.getId());
+        concept.setWorkflowStatus(c2.getWorkflowStatus());
+      } else {
+        concept.setWorkflowStatus(WorkflowStatus.NEW);
+      }
+
       // Set last modified by
       concept.setLastModifiedBy(authName);
       TrackingRecord record =

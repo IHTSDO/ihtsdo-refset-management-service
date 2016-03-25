@@ -1,5 +1,5 @@
 <div class="modal-header">
-  <h4>Edit Concept</h4>
+  <h4>Edit Concept {{conceptTranslated.terminologyId}} {{conceptTranslated.name}}</h4>
 
 </div>
 
@@ -196,7 +196,10 @@
 </div>
 
 <div class="modal-footer">
-  <button class="btn btn-primary" ng-click="submitConcept(conceptTranslated);"
-    title="Save work">Save</button>
-  <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+  <button class="btn btn-primary" ng-click="saveConcept(conceptTranslated);"
+    title="Save work">Save/Next</button>
+  <button confirm="Are you sure you want to finish editing this concept?"
+    class="btn btn-primary" ng-click="finishConcept(conceptTranslated);"
+    title="Save work">Finish/Next</button>
+  <button class="btn btn-warning" ng-click="close()">Close</button>
 </div>

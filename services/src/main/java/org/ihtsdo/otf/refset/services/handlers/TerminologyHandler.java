@@ -211,11 +211,18 @@ public interface TerminologyHandler extends Configurable {
    * @param expr the expr
    * @param terminology the terminology
    * @param version the version
-   * @param pfs the pfs
    * @return the int
    * @throws Exception the exception
    */
-  public int countExpression(String expr, String terminology, String version,
-    PfsParameter pfs) throws Exception;
+  public int countExpression(String expr, String terminology, String version)
+    throws Exception;
 
+  /**
+   * Indicates whether or not the value is a concept id.
+   *
+   * @param value the value
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   * @throws Exception the exception
+   */
+  public boolean isConceptId(String value) throws Exception;
 }
