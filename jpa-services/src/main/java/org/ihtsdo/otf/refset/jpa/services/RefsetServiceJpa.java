@@ -1182,7 +1182,7 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       }
     } catch (Exception e) {
       throw new LocalException(
-          "Unable to import definition file, the expression could not be resolved - "
+          "Unable to resolve refset definition, the expression could not be resolved - "
               + refset.computeDefinition());
     }
 

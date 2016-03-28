@@ -249,8 +249,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   }
 
   /* see superclass */
-  @Override
-  public ConceptList resolveExpression(String expr, String terminology,
+  //@Override
+  public ConceptList resolveExpressionKai(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
         "  resolve expression - " + terminology + ", " + version + ", " + expr
@@ -373,8 +373,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   }
 
   /* see superclass */
-  @SuppressWarnings("javadoc")
-  public ConceptList resolveExpressionBrowser(String expr, String terminology,
+  @Override
+  public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
         "  resolve expression - " + terminology + ", " + version + ", " + expr

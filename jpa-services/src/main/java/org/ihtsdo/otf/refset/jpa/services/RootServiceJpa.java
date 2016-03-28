@@ -253,6 +253,7 @@ public abstract class RootServiceJpa implements RootService {
   }
 
   // this is called by REST layer and so needs to be exposed through RootService
+  /* see superclass */
   @Override
   public <T> List<T> applyPfsToList(List<T> list, Class<T> clazz,
     int[] totalCt, PfsParameter pfs) throws Exception {
@@ -714,6 +715,7 @@ public abstract class RootServiceJpa implements RootService {
     }
   }
 
+  /* see superclass */
   @SuppressWarnings("unchecked")
   @Override
   public List<LogEntry> findLogEntriesForQuery(String query, PfsParameter pfs)
@@ -734,21 +736,25 @@ public abstract class RootServiceJpa implements RootService {
     return list;
   }
 
+  /* see superclass */
   @Override
   public LogEntry addLogEntry(LogEntry logEntry) throws Exception {
     return addHasLastModified(logEntry);
   }
 
+  /* see superclass */
   @Override
   public void updateLogEntry(LogEntry logEntry) throws Exception {
     updateHasLastModified(logEntry);
   }
 
+  /* see superclass */
   @Override
   public void removeLogEntry(Long id) throws Exception {
     removeHasLastModified(id, LogEntry.class);
   }
 
+  /* see superclass */
   @Override
   public LogEntry getLogEntry(Long id) throws Exception {
     return getHasLastModified(id, LogEntry.class);

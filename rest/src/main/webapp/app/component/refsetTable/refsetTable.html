@@ -548,10 +548,12 @@
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
             uib-tooltip="Add member(s)" class="noul material-icons md-18">add</i>
+
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'INTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
             uib-tooltip="Add inclusion(s)" class="noul material-icons md-18">add</i>
+
           <i ng-show="value == 'AVAILABLE'"
             uib-tooltip="Add members - only when refset is assigned"
             class="md-grey material-icons md-18">add</i>
