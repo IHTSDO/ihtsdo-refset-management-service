@@ -251,10 +251,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // are and make a second call if needed
     final int initialMaxLimit = 1000;
 
-    final String exprUrl = "http://sct-rest.ihtsdotools.org/api/snomed";
-
     WebTarget target =
-        client.target(exprUrl + "/" + terminology + "/v" + version
+        client.target(url + "/" + terminology + "/v" + version
             + "/query/concepts?ecQuery="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
@@ -306,7 +304,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
       target =
-          client.target(exprUrl + "/" + terminology + "/v" + version
+          client.target(url + "/" + terminology + "/v" + version
               + "/query/concepts?ecQuery="
               + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
               + "&limit=" + (total - initialMaxLimit) + "&offset="
@@ -491,12 +489,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     Logger.getLogger(getClass()).info(
         "  expression count - " + terminology + ", " + version + ", " + expr);
 
-    final String exprUrl = "http://sct-rest.ihtsdotools.org/api/snomed";
-
     final Client client = ClientBuilder.newClient();
 
     WebTarget target =
-        client.target(exprUrl + "/" + terminology + "/v" + version
+        client.target(url + "/" + terminology + "/v" + version
             + "/query/concepts?ecQuery="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=1&offset=0");
