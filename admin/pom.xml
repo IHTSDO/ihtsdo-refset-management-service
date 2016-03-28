@@ -115,7 +115,7 @@
 
   <profiles>
 
-    <!-- Create DB, specify -Drun.config=... -->
+    <!-- Create DB, specify -Drefset.config=... -->
     <profile>
       <id>Createdb</id>
       <build>
@@ -143,7 +143,7 @@
       </build>
     </profile>
 
-    <!-- Update DB, specify -Drun.config=... -->
+    <!-- Update DB, specify -Drefset.config=... -->
     <profile>
       <id>Updatedb</id>
       <build>
@@ -171,7 +171,7 @@
       </build>
     </profile>
 
-    <!-- Rebuild indexes, specify -Drun.config=... and -Dindexed.objects=... -->
+    <!-- Rebuild indexes, specify -Drefset.config=... and -Dindexed.objects=... -->
     <profile>
       <id>Reindex</id>
       <build>
@@ -200,6 +200,7 @@
       </build>
     </profile>
 
+    <!-- Generate sample data, use -Drefset.config=... -->
     <profile>
       <id>Sample</id>
       <build>
@@ -226,6 +227,7 @@
       </build>
     </profile>
 
+    <!-- Generate sample data (2), use -Drefset.config=... -->
     <profile>
       <id>Sample2</id>
       <build>
@@ -252,6 +254,32 @@
       </build>
     </profile>
 
+    <!-- Load UAT users, use -Drefset.config=... -Dfile=users.txt -->
+    <profile>
+      <id>UatUsers</id>
+      <build>
+        <plugins>
+          <!-- Generate sample data -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>load-uat-users</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>load-uat-users</goal>
+                </goals>
+                <configuration>
+                  <file>${file}</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
     <!-- Database QA, specify -Drun.config.umls=... -->
     <profile>
       <id>Database</id>
