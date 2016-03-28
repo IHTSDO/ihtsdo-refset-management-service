@@ -175,8 +175,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final Client client = ClientBuilder.newClient();
 
     final WebTarget target =
-        client.target(url + "snomed/" + terminology + "/v" + version
-            + "/concepts/" + conceptId);
+        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
+            + conceptId);
     final Response response = target.request("accept").get();
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -566,8 +566,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
-        client.target(url + "snomed/" + terminology + "/v" + version
-            + "/concepts/" + terminologyId);
+        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId);
     final Response response = target.request("accept").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -719,8 +719,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
-        client.target(url + "snomed/" + terminology + "/v" + version
-            + "/concepts/" + terminologyId);
+        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId);
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -805,7 +805,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final WebTarget target =
         client
             .target(url
-                + "snomed/"
+                + "/"
                 + terminology
                 + "/v"
                 + version
@@ -894,8 +894,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
-        client.target(url + "snomed/" + terminology + "/v" + version
-            + "/concepts/" + terminologyId + "/parents?form=inferred");
+        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId + "/parents?form=inferred");
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -941,8 +941,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
     final WebTarget target =
-        client.target(url + "snomed/" + terminology + "/v" + version
-            + "/concepts/" + terminologyId + "/children?form=inferred");
+        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId + "/children?form=inferred");
     final Response response = target.request("accept").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
