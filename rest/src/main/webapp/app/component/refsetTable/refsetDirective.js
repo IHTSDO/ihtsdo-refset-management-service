@@ -1076,7 +1076,7 @@ tsApp
                 $scope.action = 'Clone';
                 $scope.projects = projects;
                 $scope.metadata = metadata;
-                $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                $scope.versions = metadata.versions[refset.terminology].sort().reverse();
                 // Copy refset and clear terminology id
                 $scope.refset = JSON.parse(JSON.stringify(refset));
                 $scope.refset.terminologyId = null;
@@ -1859,13 +1859,12 @@ tsApp
                 $scope.metadata = metadata;
                 $scope.project = project;
                 $scope.projects = projects;
-                $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                $scope.versions = metadata.versions[$scope.project.terminology].sort().reverse();
                 $scope.clause = {
                   value : null
                 };
                 $scope.refset = {
                   workflowPath : metadata.workflowPaths[0],
-                  terminology : metadata.terminologies[0],
                   version : $scope.versions[0],
                   namespace : $scope.project.namespace,
                   moduleId : $scope.project.moduleId,
@@ -1881,7 +1880,10 @@ tsApp
 
                 // lookup versions
                 $scope.terminologySelected = function(terminology) {
+                  console.debug("VERSIONS", terminology, metadata.versions[terminology].sort()
+                    .reverse());
                   $scope.versions = metadata.versions[terminology].sort().reverse();
+                  $scope.refset.version = $scope.versions[0];
                 };
 
                 $scope.submitRefset = function(refset) {

@@ -860,10 +860,10 @@
               <!-- Notes -->
               <i ng-show="projects.role != 'ADMIN' && concept.notes.length > 0"
                 ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                tooltip="Edit concept Notes" class="noul material-icons md-18">assignment</i>
+                uib-tooltip="Edit concept Notes" class="noul material-icons md-18">assignment</i>
               <i ng-show="projects.role != 'ADMIN' && concept.notes.length == 0"
                 ng-click="openNotesModal(concept, 'Concept'); $event.stopPropagation()"
-                tooltip="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
+                uib-tooltip="Add Concept Notes" class="md-grey material-icons md-18">assignment</i>
             </td>
           </tr>
         </tbody>

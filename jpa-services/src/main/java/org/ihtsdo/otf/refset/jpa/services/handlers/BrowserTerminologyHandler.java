@@ -5,6 +5,8 @@ package org.ihtsdo.otf.refset.jpa.services.handlers;
 
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,7 +110,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final Set<String> set = new HashSet<>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "server/releases");
+    Logger.getLogger(getClass()).info(
+        "  Get terminology editions - " + url + "/server/releases");
+    final WebTarget target = client.target(url + "/server/releases");
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -127,7 +131,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       set.add(entry.get("databaseName").asText());
     }
 
-    return new ArrayList<String>(set);
+    // Sort results
+    List<String> editions = new ArrayList<String>(set);
+    Collections.sort(editions);
+    return editions;
   }
 
   /* see superclass */
@@ -137,7 +144,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
-    final WebTarget target = client.target(url + "server/releases");
+    Logger.getLogger(getClass()).info(
+        "  Get terminology versions - " + url + "/server/releases");
+    final WebTarget target = client.target(url + "/server/releases");
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -152,16 +161,27 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     JsonNode entry = null;
     int index = 0;
+    final List<String> seen = new ArrayList<>();
     while ((entry = doc.get(index++)) != null) {
       if (entry.get("databaseName").asText().equals(edition)) {
-        String effectiveTime = entry.get("effectiveTime").asText();
-        Terminology terminology = new TerminologyJpa();
-        terminology.setTerminology(edition);
-        terminology.setVersion(effectiveTime);
-        list.add(terminology);
+        final String effectiveTime = entry.get("effectiveTime").asText();
+        if (effectiveTime != null && !effectiveTime.isEmpty()
+            && !seen.contains(effectiveTime)) {
+          final Terminology terminology = new TerminologyJpa();
+          terminology.setTerminology(edition);
+          terminology.setVersion(effectiveTime);
+          list.add(terminology);
+        }
+        seen.add(effectiveTime);
       }
     }
-
+    // Reverse sort
+    Collections.sort(list, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o2.getVersion().compareTo(o1.getVersion());
+      }
+    });
     return list;
   }
 
@@ -174,11 +194,14 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
 
-    final WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
-            + conceptId);
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
+            + conceptId;
+    Logger.getLogger(getClass()).info(
+        "  Get replacement concepts - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
-    String resultString = response.readEntity(String.class);
+    final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
@@ -251,12 +274,14 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // are and make a second call if needed
     final int initialMaxLimit = 1000;
 
-    WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version
             + "/query/concepts?ecQuery="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
             + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "&offset=" + localPfs.getStartIndex());
+            + "&offset=" + localPfs.getStartIndex();
+    Logger.getLogger(getClass()).info("  Resolve expression - " + targetUrl);
+    WebTarget target = client.target(targetUrl);
 
     Response response = target.request(accept).get();
 
@@ -304,7 +329,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
       target =
-          client.target(url + "/" + terminology + "/v" + version
+          client.target(url + "/snomed/" + terminology + "/v" + version
               + "/query/concepts?ecQuery="
               + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
               + "&limit=" + (total - initialMaxLimit) + "&offset="
@@ -372,9 +397,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // are and make a second call if needed
     final int initialMaxLimit = 200;
 
-    WebTarget target =
-        client.target(url + "expressions/" + terminology + "/v" + version
-            + "/execute/brief");
+    final String targetUrl =
+        url + "/snomed/expressions/" + terminology + "/v" + version
+            + "/execute/brief";
+    Logger.getLogger(getClass()).info("  Resolve expression - " + targetUrl);
+    WebTarget target = client.target(targetUrl);
 
     Response response =
         target.request(accept).post(
@@ -429,8 +456,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
       target =
-          client.target(url + "expressions/" + terminology + "/v" + version
-              + "/execute/brief");
+          client.target(url + "/snomed/expressions/" + terminology + "/v"
+              + version + "/execute/brief");
 
       response =
           target.request(accept).post(
@@ -491,11 +518,13 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version
             + "/query/concepts?ecQuery="
             + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=1&offset=0");
+            + "&limit=1&offset=0";
+    Logger.getLogger(getClass()).info("  Count expression - " + targetUrl);
+    WebTarget target = client.target(targetUrl);
 
     Response response = target.request(accept).get();
     String resultString = response.readEntity(String.class);
@@ -529,9 +558,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
 
-    WebTarget target =
-        client.target(url + "expressions/" + terminology + "/v" + version
-            + "/execute/brief");
+    final String targetUrl =
+        url + "/snomed/expressions/" + terminology + "/v" + version
+            + "/execute/brief";
+    Logger.getLogger(getClass()).info("  Count expression - " + targetUrl);
+    WebTarget target = client.target(targetUrl);
 
     Response response =
         target.request(accept).post(
@@ -565,9 +596,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     String version) throws Exception {
 
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId);
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId;
+    Logger.getLogger(getClass()).info("  Get full concept - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -718,9 +751,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
     // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId);
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId;
+    Logger.getLogger(getClass()).info("  Get concept - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -802,18 +837,19 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
 
     // Use getConcept() if it's an id, otherwise search term
-    final WebTarget target =
-        client
-            .target(url
-                + "/"
-                + terminology
-                + "/v"
-                + version
-                + "/descriptions?query="
-                + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
-                + "&searchMode=partialMatching&lang=english&statusFilter=activeAndInactive&"
-                + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
-                + localPfs.getMaxResults() + "&normalize=true");
+    final String targetUrl =
+        url
+            + "/"
+            + terminology
+            + "/v"
+            + version
+            + "/descriptions?query="
+            + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
+            + "&searchMode=partialMatching&lang=english&statusFilter=activeAndInactive&"
+            + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
+            + localPfs.getMaxResults() + "&normalize=true";
+    Logger.getLogger(getClass()).info("  Find concepts - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
 
     if (isConceptId(query)) {
       Concept idConcept = getConcept(query, terminology, version);
@@ -893,9 +929,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId + "/parents?form=inferred");
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId + "/parents?form=inferred";
+    Logger.getLogger(getClass()).info("  Get concept parents - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -940,9 +978,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId + "/children?form=inferred");
+    final String targetUrl =
+        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
+            + terminologyId + "/children?form=inferred";
+    Logger.getLogger(getClass()).info("  Get concept children - " + targetUrl);
+    final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
