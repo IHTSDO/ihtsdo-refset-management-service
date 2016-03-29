@@ -2944,8 +2944,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       final PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
       pfs.setMaxResults(1);
-      refsetService.getTerminologyHandler().resolveExpression(expression,
-          terminology, version, pfs);
+      refsetService.getTerminologyHandler().countExpression(expression,
+          terminology, version);
       return true;
 
     } catch (Exception e) {
