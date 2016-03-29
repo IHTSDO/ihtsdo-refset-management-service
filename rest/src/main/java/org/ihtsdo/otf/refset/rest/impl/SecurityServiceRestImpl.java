@@ -252,7 +252,7 @@ public class SecurityServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @DELETE
   @Path("/user/remove/{id}")
-  @ApiOperation(value = "Remove user by id", notes = "Removes the user for the specified id")
+  @ApiOperation(value = "Remove user", notes = "Removes the user for the specified id")
   public void removeUser(
     @ApiParam(value = "User id, e.g. 2", required = true) @PathParam("id") Long id,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)

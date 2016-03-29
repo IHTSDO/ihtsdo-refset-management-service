@@ -128,6 +128,39 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
             pfs);
     assertEquals(148, conceptList.getTotalCount());
     assertEquals(25, conceptList.getCount());
+
+    // Test variations of expressions - just verify no exceptions
+    // <<195967001
+    // <<195967001 MINUS <<304527002
+    // <<195967001 OR <<304527002
+    // (<<195967001 OR <<304527002) MINUS <<370218001
+    // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)
+    // <<195967001 MINUS (<<370218001 OR <<389145006)
+    // (<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR
+    // <<389145006 OR <<195967001)
+
+    service.getTerminologyHandler().resolveExpression(
+        "<<195967001", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "<<195967001 MINUS <<304527002", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "<<195967001 OR <<304527002", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "(<<195967001 OR <<304527002) MINUS <<370218001", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "<<195967001 MINUS (<<370218001 OR <<389145006)", "en-edition", "20160131",
+        pfs);
+    service.getTerminologyHandler().resolveExpression(
+        "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)", "en-edition", "20160131",
+        pfs);
+    
     service.close();
   }
 

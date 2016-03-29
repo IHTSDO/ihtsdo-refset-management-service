@@ -143,7 +143,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   /** The namespace. */
   @Column(nullable = true)
   private String namespace;
-  
+
   /** The revision. */
   @Column(nullable = false)
   private boolean revision = false;
@@ -602,41 +602,45 @@ public class RefsetJpa extends AbstractComponent implements Refset {
         positiveClauses.add(clause);
       }
     }
+    // Add project exclusion to negation clauses if it exists
+    if (project.getExclusionClause() != null) {
+      final DefinitionClause clause = new DefinitionClauseJpa();
+      clause.setValue(project.getExclusionClause());
+      clause.setNegated(true);
+      negativeClauses.add(clause);
+    }
+
     StringBuilder computedDefinition = new StringBuilder();
     if (positiveClauses.size() > 0) {
-      if (positiveClauses.size() > 1) {
+      // only use parens if there is more than one positive and at least one
+      // negative clause
+      if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append("(");
       }
       computedDefinition.append(positiveClauses.get(0).getValue());
-      for (int i = 1; i < positiveClauses.size(); i++) {        
+      for (int i = 1; i < positiveClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             positiveClauses.get(i).getValue());
       }
-      if (positiveClauses.size() > 1) {
+      if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append(")");
       }
     }
     if (negativeClauses.size() > 0 || project.getExclusionClause() != null) {
       computedDefinition.append(" MINUS ");
-      if (negativeClauses.size() > 1 || (negativeClauses.size() == 1 &&
-          project.getExclusionClause() != null)) {
+      // Use parens if the number of negative clauses is > 1
+      if (negativeClauses.size() > 1) {
         computedDefinition.append("(");
       }
       computedDefinition.append(negativeClauses.get(0).getValue());
-      for (int i = 1; i < negativeClauses.size(); i++) {        
+      for (int i = 1; i < negativeClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
             negativeClauses.get(i).getValue());
-      }
-      if (project.getExclusionClause() != null) {
-        if (negativeClauses.size() > 0) {
-          computedDefinition.append(" OR ");
-        }
-        computedDefinition.append(project.getExclusionClause());
       }
       if (negativeClauses.size() > 1) {
         computedDefinition.append(")");
       }
-         
+
     }
     return computedDefinition.toString();
   }
@@ -725,7 +729,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   public void setRevision(boolean revision) {
     this.revision = revision;
   }
-  
+
   /* see superclass */
   @Override
   public int hashCode() {
@@ -782,7 +786,7 @@ public class RefsetJpa extends AbstractComponent implements Refset {
     if (forTranslation != other.forTranslation)
       return false;
     if (revision != other.revision)
-        return false;
+      return false;
     if (inPublicationProcess != other.inPublicationProcess)
       return false;
     if (lookupInProgress != other.lookupInProgress)

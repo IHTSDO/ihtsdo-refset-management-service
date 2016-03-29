@@ -150,7 +150,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
     try {
       final String authUser =
           authorizeProject(projectService, projectId, securityService,
-              authToken, "add user to project", UserRole.AUTHOR);
+              authToken, "assign user to project", UserRole.AUTHOR);
 
       User user = securityService.getUser(userName);
       User userCopy = new UserJpa(user);
@@ -168,7 +168,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       return project;
 
     } catch (Exception e) {
-      handleException(e, "trying to add user to project");
+      handleException(e, "trying to assign user to project");
     } finally {
       projectService.close();
       securityService.close();
@@ -229,7 +229,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       return project;
     } catch (Exception e) {
-      handleException(e, "trying to remove user from project");
+      handleException(e, "trying to unassign user from project");
     } finally {
       projectService.close();
       securityService.close();
@@ -273,7 +273,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       }
       return list;
     } catch (Exception e) {
-      handleException(e, "find users for project");
+      handleException(e, "find assigned users for project");
       return null;
     } finally {
       projectService.close();
@@ -316,7 +316,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       return list;
     } catch (Exception e) {
-      handleException(e, "find users for project");
+      handleException(e, "find candidate users for project");
       return null;
     } finally {
       projectService.close();
@@ -497,7 +497,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/{projectId}")
-  @ApiOperation(value = "Get project for id", notes = "Gets the project for the specified id", response = ProjectJpa.class)
+  @ApiOperation(value = "Get project", notes = "Gets the project for the specified id", response = ProjectJpa.class)
   public Project getProject(
     @ApiParam(value = "Project id, e.g. 2", required = true) @PathParam("projectId") Long projectId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -507,14 +507,13 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve the project",
-          UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get project", UserRole.VIEWER);
 
       final Project project = projectService.getProject(projectId);
 
       return project;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a project");
+      handleException(e, "trying to get project");
       return null;
     } finally {
       projectService.close();
@@ -527,7 +526,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/projects")
-  @ApiOperation(value = "Finds projects", notes = "Finds projects for the specified query", response = ProjectListJpa.class)
+  @ApiOperation(value = "Find projects", notes = "Finds projects for the specified query", response = ProjectListJpa.class)
   public ProjectList findProjectsForQuery(
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
@@ -543,7 +542,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       return projectService.findProjectsForQuery(query, pfs);
     } catch (Exception e) {
-      handleException(e, "trying to retrieve projects ");
+      handleException(e, "trying find projects for query");
       return null;
     } finally {
       projectService.close();
@@ -557,7 +556,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @POST
   @Path("/reindex")
   @Consumes("text/plain")
-  @ApiOperation(value = "Reindexes specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
+  @ApiOperation(value = "Reindex specified objects", notes = "Recomputes lucene indexes for the specified comma-separated objects")
   public void luceneReindex(
     @ApiParam(value = "Comma-separated list of objects to reindex, e.g. ConceptJpa (optional)", required = false) String indexedObjects,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -594,7 +593,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Produces("text/plain")
   @Path("/user/anyrole")
-  @ApiOperation(value = "Determines whether the user has a project role", notes = "Returns true if the user has any role on any project", response = Boolean.class)
+  @ApiOperation(value = "Indicates whether the user has a project role", notes = "Returns true if the user has any role on any project", response = Boolean.class)
   public Boolean userHasSomeProjectRole(
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -660,7 +659,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/terminology/{terminology}/all")
-  @ApiOperation(value = "Get all terminology versions", notes = "Gets versions for the specified terminology edition", response = StringList.class)
+  @ApiOperation(value = "Get all terminology versions", notes = "Gets versions for the specified terminology edition", response = TerminologyListJpa.class)
   public TerminologyList getTerminologyVersions(
     @ApiParam(value = "Edition, e.g. 'SNOMEDCT'", required = true) @PathParam("terminology") String terminology,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -670,7 +669,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
     final ProjectService projectService = new ProjectServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
+      authorizeApp(securityService, authToken, "get terminology versions",
+          UserRole.VIEWER);
 
       final List<Terminology> versions =
           projectService.getTerminologyHandler().getTerminologyVersions(
@@ -681,7 +681,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
       return list;
 
     } catch (Exception e) {
-      handleException(e, "trying to get versions");
+      handleException(e, "trying to get terminology versions");
     } finally {
       projectService.close();
       securityService.close();
@@ -727,7 +727,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concepts")
-  @ApiOperation(value = "Finds concepts", notes = "Finds concepts for the specified query", response = ConceptListJpa.class)
+  @ApiOperation(value = "Find concepts", notes = "Finds concepts for the specified query", response = ConceptListJpa.class)
   public ConceptList findConceptsForQuery(
     @ApiParam(value = "Query", required = false) @QueryParam("query") String query,
     @ApiParam(value = "Terminology", required = false) @QueryParam("terminology") String terminology,
@@ -750,7 +750,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       return concepts;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve projects ");
+      handleException(e, "trying to find concepts for query");
       return null;
     } finally {
       projectService.close();
@@ -763,7 +763,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/concept")
-  @ApiOperation(value = "Get full concept", notes = "Gets a concept with descriptions and relationships for the specified terminology id", response = ConceptJpa.class)
+  @ApiOperation(value = "Get full concept", notes = "Gets a concept with descriptions and relationships for the specified terminology and id", response = ConceptJpa.class)
   public Concept getFullConcept(
     @ApiParam(value = "TerminologyId", required = true) @QueryParam("terminologyId") String terminologyId,
     @ApiParam(value = "Terminology", required = true) @QueryParam("terminology") String terminology,
@@ -814,7 +814,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       return concept;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve projects ");
+      handleException(e, "trying to retrieve concept with description");
       return null;
     } finally {
       translationService.close();
@@ -941,6 +941,133 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
   }
 
+  /* see superclass */
+
+  @Override
+  @GET
+  @Path("/terminology/{terminology}/descriptiontypes")
+  @ApiOperation(value = "Get standard description types", notes = "Gets standard description types for the specified parameters", response = DescriptionTypeListJpa.class)
+  public DescriptionTypeList getStandardDescriptionTypes(
+    @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /terminology/" + terminology
+            + "/descriptiontypes - " + version);
+
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get standard description types", UserRole.VIEWER);
+
+      final List<DescriptionType> types =
+          projectService.getTerminologyHandler().getStandardDescriptionTypes(
+              terminology);
+
+      final DescriptionTypeList list = new DescriptionTypeListJpa();
+      list.setObjects(types);
+      list.setTotalCount(types.size());
+      return list;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get standard description types");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /* see superclass */
+  @GET
+  @Path("/log")
+  @Produces("text/plain")
+  @ApiOperation(value = "Get log entries", notes = "Gets log entries for the specified object and project ids", response = String.class)
+  @Override
+  public String getLog(
+    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
+    @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful POST call (Project): /log/" + projectId + ", " + objectId);
+
+    final ProjectService projectService = new ProjectServiceJpa();
+    try {
+      authorizeProject(projectService, projectId, securityService, authToken,
+          "get log entries", UserRole.AUTHOR);
+
+      PfsParameter pfs = new PfsParameterJpa();
+      pfs.setStartIndex(0);
+      pfs.setMaxResults(1000);
+      pfs.setAscending(false);
+      pfs.setSortField("lastModified");
+
+      final List<LogEntry> entries =
+          projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
+
+      StringBuilder log = new StringBuilder();
+      for (int i = entries.size() - 1; i >= 0; i--) {
+        log.append(entries.get(i).getMessage());
+      }
+
+      return log.toString();
+
+    } catch (Exception e) {
+      handleException(e, "trying to get log");
+    } finally {
+      projectService.close();
+      securityService.close();
+    }
+    return null;
+  }
+
+  /**
+   * Get the replacement concepts.
+   *
+   * @param conceptId the concept id
+   * @param terminology the terminology
+   * @param version the version
+   * @param authToken the auth token
+   * @return the replacement concepts
+   * @throws Exception the exception
+   */
+  @Override
+  @GET
+  @Path("/concept/replacements")
+  @ApiOperation(value = "Get candidate replacement concepts", notes = "Gets potential current alternative concepts for a given retired concept.", response = ConceptListJpa.class)
+  public ConceptList getReplacementConcepts(
+    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) @QueryParam("conceptId") String conceptId,
+    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
+    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).info(
+        "RESTful GET call (Refset): /concept/alternates " + terminology + ", "
+            + version + ", " + conceptId);
+
+    // Create service and configure transaction scope
+    final RefsetService refsetService = new RefsetServiceJpa();
+    try {
+      authorizeApp(securityService, authToken,
+          "get alternate concepts for retired concept", UserRole.VIEWER);
+
+      ConceptList concepts =
+          refsetService.getTerminologyHandler().getReplacementConcepts(
+              conceptId, terminology, version);
+      return concepts;
+
+    } catch (Exception e) {
+      handleException(e, "trying to get alternate concepts for retired concept");
+      return null;
+    } finally {
+      refsetService.close();
+      securityService.close();
+    }
+  }
+
   /**
    * Adds the descriptions helper.
    *
@@ -1042,131 +1169,5 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
             translationService.resolveLanguageDescriptionTypes(translation,
                 prefs)));
 
-  }
-
-  /* see superclass */
-
-  @Override
-  @GET
-  @Path("/terminology/{terminology}/descriptiontypes")
-  @ApiOperation(value = "Get standard description types", notes = "Returns standard description types for the specified parameters", response = DescriptionTypeListJpa.class)
-  public DescriptionTypeList getStandardDescriptionTypes(
-    @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /terminology/" + terminology
-            + "/descriptiontypes - " + version);
-
-    final ProjectService projectService = new ProjectServiceJpa();
-    try {
-      authorizeApp(securityService, authToken, "get versions", UserRole.VIEWER);
-
-      final List<DescriptionType> types =
-          projectService.getTerminologyHandler().getStandardDescriptionTypes(
-              terminology);
-
-      final DescriptionTypeList list = new DescriptionTypeListJpa();
-      list.setObjects(types);
-      list.setTotalCount(types.size());
-      return list;
-
-    } catch (Exception e) {
-      handleException(e, "trying to get versions");
-    } finally {
-      projectService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  /* see superclass */
-  @GET
-  @Path("/log")
-  @Produces("text/plain")
-  @ApiOperation(value = "Get log entries for objectId", notes = "Returns log entries for the given objectId", response = String.class)
-  @Override
-  public String getLog(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
-    @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Project): /log/" + projectId + ", " + objectId);
-
-    final ProjectService projectService = new ProjectServiceJpa();
-    try {
-      authorizeProject(projectService, projectId, securityService, authToken,
-          "get log entries", UserRole.AUTHOR);
-
-      PfsParameter pfs = new PfsParameterJpa();
-      pfs.setStartIndex(0);
-      pfs.setMaxResults(1000);
-      pfs.setAscending(false);
-      pfs.setSortField("lastModified");
-
-      final List<LogEntry> entries =
-          projectService.findLogEntriesForQuery("objectId:" + objectId, pfs);
-
-      StringBuilder log = new StringBuilder();
-      for (int i = entries.size() - 1; i >= 0; i--) {
-        log.append(entries.get(i).getMessage());
-      }
-
-      return log.toString();
-
-    } catch (Exception e) {
-      handleException(e, "trying to get log");
-    } finally {
-      projectService.close();
-      securityService.close();
-    }
-    return null;
-  }
-
-  /**
-   * Returns the replacement concepts.
-   *
-   * @param conceptId the concept id
-   * @param terminology the terminology
-   * @param version the version
-   * @param authToken the auth token
-   * @return the replacement concepts
-   * @throws Exception the exception
-   */
-  @Override
-  @GET
-  @Path("/concept/replacements")
-  @ApiOperation(value = "Returns potential alternative concepts for a retired concept", notes = "Returns potential current alternative concepts for a given retired concept.", response = KeyValuePairList.class)
-  public ConceptList getReplacementConcepts(
-    @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) @QueryParam("conceptId") String conceptId,
-    @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
-    @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
-    throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful GET call (Refset): /concept/alternates " + terminology + ", "
-            + version + ", " + conceptId);
-
-    // Create service and configure transaction scope
-    final RefsetService refsetService = new RefsetServiceJpa();
-    try {
-      authorizeApp(securityService, authToken,
-          "get alternate concepts for retired concept", UserRole.VIEWER);
-
-      ConceptList concepts =
-          refsetService.getTerminologyHandler().getReplacementConcepts(
-              conceptId, terminology, version);
-      return concepts;
-
-    } catch (Exception e) {
-      handleException(e, "trying to get alternate concepts for retired concept");
-      return null;
-    } finally {
-      refsetService.close();
-      securityService.close();
-    }
   }
 }

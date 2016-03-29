@@ -117,27 +117,27 @@
           <td class="nobreak"
             ng-show="(value == 'PUBLISHED' || value == 'BETA') && refset.feedbackEmail">
             <i ng-click="openFeedbackModal(refset); $event.stopPropagation()"
-              uib-tooltip="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
+              title="Submit feedback" class="noul material-icons md-18">speaker_notes</i>
             <i ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
               ng-show="userProjectsInfo.anyRole && refset.type != 'EXTERNAL'"
-              uib-tooltip="Clone" class="noul material-icons md-18">content_copy</i>
+              title="Clone" class="noul material-icons md-18">content_copy</i>
           </td>
 
           <!-- AVAILABLE actions -->
           <td class="nobreak" ng-show="value == 'AVAILABLE'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              uib-tooltip="Edit" class="noul material-icons md-18">edit</i>
-            <i uib-tooltip="Remove" ng-show="!refset.staged"
+              title="Edit" class="noul material-icons md-18">edit</i>
+            <i title="Remove" ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
               class="noul material-icons md-18">delete</i>
             <i
               ng-click="openAssignRefsetModal(refset,'ASSIGN'); $event.stopPropagation()"
-              uib-tooltip="Assign" class="noul material-icons md-18">assignment_ind</i>
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
             <i ng-show="refset.type != 'EXTERNAL'"
               ng-show="projects.role != 'ADMIN'"
               ng-click="openCloneRefsetModal(refset); $event.stopPropagation()"
-              uib-tooltip="Clone" class="noul material-icons md-18">content_copy</i>
+              title="Clone" class="noul material-icons md-18">content_copy</i>
 
             <!-- ASSIGNED ADMIN actions -->
           <td class="nobreak"
@@ -145,22 +145,22 @@
             <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
-              uib-tooltip="Remove" class="noul material-icons md-18">delete</i>
+              title="Remove" class="noul material-icons md-18">delete</i>
 
             <span ng-repeat="author in refsetAuthorsMap[refset.id]">
               <!-- Only unassign if there are no reviewers -->
               <i
                 confirm="Are you sure you want to unassign the refset ({{refset.name}})?"
                 ng-show="!refsetReviewersMap[refset.id]"
-                uib-tooltip="Unassign author: {{author}}"
+                title="Unassign author: {{author}}"
                 ng-click="unassign(refset, author);"
                 class="noul material-icons md-18">assignment_return</i>
               <i ng-show="refsetReviewersMap[refset.id]"
-                uib-tooltip="Author: {{author}}, unassign reviewer first"
+                title="Author: {{author}}, unassign reviewer first"
                 class="md-grey material-icons md-18">assignment_return</i>
             </span>
             <span ng-repeat="reviewer in refsetReviewersMap[refset.id]">
-              <i uib-tooltip="Unassign reviewer: {{reviewer}}"
+              <i title="Unassign reviewer: {{reviewer}}"
                 ng-click="unassign(refset, reviewer);"
                 class="noul material-icons md-18">assignment_return</i>
             </span>
@@ -170,21 +170,21 @@
           <td class="nobreak"
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN'">
             <i ng-click="openEditRefsetModal(refset); $event.stopPropagation()"
-              uib-tooltip="Edit" class="noul material-icons md-18">edit</i>
+              title="Edit" class="noul material-icons md-18">edit</i>
             <i ng-show="!refset.staged"
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-click="removeRefset(refset); $event.stopPropagation()"
-              uib-tooltip="Remove" class="noul material-icons md-18">delete</i>
+              title="Remove" class="noul material-icons md-18">delete</i>
             <i confirm="Are you sure you want to unassign the refset?"
-              ng-click="unassign(refset, user.userName);" uib-tooltip="Unassign"
+              ng-click="unassign(refset, user.userName);" title="Unassign"
               class="noul material-icons md-18">assignment_return</i>
             <i ng-show="projects.role == 'REVIEWER'"
               ng-click="openAssignRefsetModal(refset,'REASSIGN'); $event.stopPropagation()"
-              uib-tooltip="Reassign" class="noul material-icons md-18">assignment_ind</i>
+              title="Reassign" class="noul material-icons md-18">assignment_ind</i>
             <i confirm="Are you sure you want to finalize editing/review?"
               ng-show="refset.workflowStatus.indexOf('IN_PROGRESS') != -1 || refset.workflowStatus=='REVIEW_NEW'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
-              uib-tooltip="Finish" class="noul material-icons md-18">done</i>
+              title="Finish" class="noul material-icons md-18">done</i>
             <i ng-show="refset.workflowStatus == 'REVIEW_DONE'"
               ng-click="performWorkflowAction(refset, 'FINISH', user.userName)"
               title="Mark ready for publication"
@@ -195,14 +195,14 @@
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset); "
-                uib-tooltip="Click to cancel failed import">Cancel
+                title="Click to cancel failed import">Cancel
                 Import</button>
             </span>
             <span ng-show="refset.stagingType == 'MIGRATION'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel migration">Cancel
+                title="Click to cancel migration">Cancel
                 Migration</button>
             </span>
 
@@ -212,14 +212,14 @@
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="startLookup(refset)"
-                uib-tooltip="Click to restart lookup">Restart Lookup</button>
+                title="Click to restart lookup">Restart Lookup</button>
             </span>
             <span
               ng-show="refset.lookupInProgress && refsetLookupProgress[refset.id] > -1 && refsetLookupProgress[refset.id] < 100">
               <br />
               <button class="btn btn-xs btn-warning"
                 ng-click="refreshLookupProgress(refset)"
-                uib-tooltip="Click to refresh lookup progress">
+                title="Click to refresh lookup progress">
                 Refresh
                 <span ng-show="refsetLookupProgress[refset.id]">
                   {{refsetLookupProgress[refset.id]}}%</span>
@@ -234,30 +234,30 @@
               confirm="Are you sure you want to remove the refset ({{refset.name}})?"
               ng-show="!refset.staged && !refset.inPublicationProcess && (refset.workflowStatus == 'PUBLISHED' || refset.workflowStatus == 'READY_FOR_PUBLICATION')"
               ng-click="removeRefset(refset); $event.stopPropagation()"
-              uib-tooltip="Remove" class="noul material-icons md-18">delete</i>
+              title="Remove" class="noul material-icons md-18">delete</i>
 
             <i ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION'"
               ng-click="openAssignRefsetModal(refset,'ASSIGN','AUTHOR'); $event.stopPropagation()"
-              uib-tooltip="Assign" class="noul material-icons md-18">assignment_ind</i>
+              title="Assign" class="noul material-icons md-18">assignment_ind</i>
 
             <!-- only if READY_FOR_PUBLICATION -->
 
             <i
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && !refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
-              uib-tooltip="Start release process"
+              title="Start release process"
               class="noul material-icons md-18">open_in_new</i>
             <i
               ng-show="refset.workflowStatus == 'READY_FOR_PUBLICATION' && 
                         refset.inPublicationProcess"
               ng-click="openReleaseProcessModal(refset); $event.stopPropagation()"
-              uib-tooltip="Continue release processing"
+              title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
             <i
               ng-show="refset.workflowStatus == 'BETA' && 
                         refset.inPublicationProcess"
               ng-click="openReleaseProcessModalForStaged(refset); $event.stopPropagation()"
-              uib-tooltip="Continue release processing"
+              title="Continue release processing"
               class="noul material-icons md-18">open_in_new</i>
 
             <span
@@ -266,14 +266,14 @@
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelAction(refset)"
-                uib-tooltip="Click to cancel release process">Cancel
+                title="Click to cancel release process">Cancel
                 Release</button>
             </span>
             <span ng-show="refset.workflowStatus == 'BETA'">
               <br />
               <button class="btn btn-xs btn-warning" ng-disabled="cancelling"
                 ng-click="cancelActionForStaged(refset)"
-                uib-tooltip="Click to cancel release process">Cancel
+                title="Click to cancel release process">Cancel
                 Release</button>
             </span>
           </td>
@@ -316,13 +316,13 @@
               <div>
                 <i ng-show="selected.refset.notes.length > 0"
                   ng-click="openNotesModal(selected.refset, 'Refset'); $event.stopPropagation()"
-                  uib-tooltip="Edit refset notes"
+                  title="Edit refset notes"
                   class="noul material-icons md-18">assignment</i>
                 <i ng-show="selected.refset.notes.length == 0"
-                  uib-tooltip="Add refset note"
+                  title="Add refset note"
                   ng-click="openNotesModal(selected.refset, 'Refset'); $event.stopPropagation()"
                   class="md-grey material-icons md-18">assignment</i>
-                <i ng-click="openLogModal()" uib-tooltip="Retrieve log"
+                <i ng-click="openLogModal()" title="Retrieve log"
                   class="noul material-icons md-18">event_note</i>
               </div>
             </td>
@@ -371,12 +371,12 @@
               <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
                 ng-show="selected.refset.stagingType == null && value == 'ASSIGNED'"
-                uib-tooltip="Migration" class="noul material-icons md-18">find_replace</i>
+                title="Migration" class="noul material-icons md-18">find_replace</i>
 
               <i
                 ng-click="openMigrationModal(selected.refset, 'Migration'); $event.stopPropagation()"
                 ng-show="selected.refset.stagingType == 'MIGRATION' && value == 'ASSIGNED'"
-                uib-tooltip="Resume migration" class="noul material-icons md-18">play_arrow</i>
+                title="Resume migration" class="noul material-icons md-18">play_arrow</i>
 
             </td>
           </tr>
@@ -394,11 +394,11 @@
               <!-- edit/view/optimize definition -->
               <i ng-show="value != 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
-                uib-tooltip="View definition, assign refset to edit"
+                title="View definition, assign refset to edit"
                 class="noul material-icons md-18">list</i>
               <i ng-show="value == 'ASSIGNED'"
                 ng-click="openDefinitionClausesModal(selected.refset, value);$event.stopPropagation()"
-                uib-tooltip="Edit definition" class="noul material-icons md-18">edit</i>
+                title="Edit definition" class="noul material-icons md-18">edit</i>
               <i ng-show="value == 'ASSIGNED'"
                 confirm="Remove redundant definition clauses, and invalid inclusions/exclusions."
                 ng-click="optimizeDefinition(selected.refset);$event.stopPropagation()"
@@ -406,17 +406,17 @@
               <!-- Export -->
               <i
                 ng-click="openImportExportModal(selected.refset, 'Export', 'Definition');$event.stopPropagation()"
-                uib-tooltip="Export definition"
+                title="Export definition"
                 class="noul material-icons md-18">file_download</i>
               <!-- Import -->
               <i ng-show="value == 'ASSIGNED'"
                 confirm="The refset already has a definition, importing will override it. Do you want to continue?"
                 confirm-if="selected.refset.definitionClauses.length>0"
                 ng-click="openImportExportModal(selected.refset, 'Import', 'Definition');$event.stopPropagation()"
-                uib-tooltip="Import definition"
+                title="Import definition"
                 class="noul material-icons md-18">file_upload</i>
               <i ng-show="value == 'AVAILABLE'"
-                uib-tooltip="To import a definition, assign the refset"
+                title="To import a definition, assign the refset"
                 class="md-grey material-icons md-18">file_upload</i>
               <div style="max-height: 200px; overflow-y: scroll;">
                 <table class="table">
@@ -480,7 +480,7 @@
               <td>{{toShortDate(artifact.timestamp)}}</td>
               <td>
                 <i ng-click="exportReleaseArtifact(artifact)"
-                  uib-tooltip="Export {{artifact.name}}"
+                  title="Export {{artifact.name}}"
                   class="noul material-icons md-18">file_download</i>
               </td>
             </tr>
@@ -522,48 +522,48 @@
           <!-- Export -->
           <i
             ng-click="openImportExportModal(selected.refset, 'Export', 'Refset Members'); "
-            uib-tooltip="Export refset members"
+            title="Export refset members"
             class="noul material-icons md-18">file_download</i>
           <!-- Import -->
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openImportExportModal(selected.refset, 'Import', 'Refset Members'); "
-            uib-tooltip="Import refset members"
+            title="Import refset members"
             class="noul material-icons md-18">file_upload</i>
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type != 'EXTENSIONAL'"
-            uib-tooltip="Import only suppored for extensional refset"
+            title="Import only suppored for extensional refset"
             class="md-grey material-icons md-18">file_upload</i>
 
           <!-- Add member list -->
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddRefsetMemberListModal();"
-            uib-tooltip="Add/remove refset member list"
+            title="Add/remove refset member list"
             class="noul material-icons md-18">playlist_add</i>
 
           <!-- Add member -->
+          <i ng-show="value == 'AVAILABLE'"
+            title="Add members - only when refset is assigned"
+            class="md-grey material-icons md-18">add</i>
 
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
-            uib-tooltip="Add member(s)" class="noul material-icons md-18">add</i>
+            title="Add member(s)" class="noul material-icons md-18">add</i>
 
           <i
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'INTENSIONAL'"
             ng-click="openAddMemberModal(selected.refset);"
-            uib-tooltip="Add inclusion(s)" class="noul material-icons md-18">add</i>
+            title="Add inclusion(s)" class="noul material-icons md-18">add</i>
 
-          <i ng-show="value == 'AVAILABLE'"
-            uib-tooltip="Add members - only when refset is assigned"
-            class="md-grey material-icons md-18">add</i>
 
           <!-- Remove all members -->
           <i
-            confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-show="value == 'ASSIGNED' && projects.role != 'ADMIN' && selected.refset.type == 'EXTENSIONAL' && selected.refset.members.length > 0"
+            confirm="Are you sure you want to remove all the members of the refset ({{selected.refset.name}})?"
             ng-click="removeAllRefsetMembers(selected.refset); "
-            uib-tooltip="Remove all members" class="noul material-icons md-18">delete</i>
+            title="Remove all members" class="noul material-icons md-18">delete</i>
         </span>
       </h4>
       <span
@@ -668,36 +668,36 @@
                   confirm="Are you sure you want to remove the inclusion ({{member.conceptName}})?"
                   ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType =='INCLUSION'"
                   ng-click="removeRefsetInclusion(selected.refset,member); $event.stopPropagation()"
-                  uib-tooltip="Remove inclusion"
+                  title="Remove inclusion"
                   class="noul material-icons md-18">delete</i>
 
                 <i
                   confirm="Are you sure you want to remove the member ({{member.conceptName}})?"
                   ng-show="selected.refset.type == 'EXTENSIONAL' && projects.role != 'ADMIN'"
                   ng-click="removeRefsetMember(selected.refset,member); $event.stopPropagation()"
-                  uib-tooltip="Remove" class="noul material-icons md-18">delete</i>
+                  title="Remove" class="noul material-icons md-18">delete</i>
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'EXCLUSION'"
                   ng-click="removeRefsetExclusion(selected.refset,member);  $event.stopPropagation()"
-                  uib-tooltip="Remove exclusion"
+                  title="Remove exclusion"
                   class="noul material-icons md-18">delete</i>
 
                 <i
                   ng-show="selected.refset.type == 'INTENSIONAL' && projects.role != 'ADMIN' && member.memberType == 'MEMBER'"
                   ng-click="addRefsetExclusion(selected.refset, member); $event.stopPropagation()"
-                  uib-tooltip="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
+                  title="Add exclusion" class="noul material-icons md-18">remove_circle_outline</i>
 
                 <i
                   ng-click="openNotesModal(member, 'Member'); $event.stopPropagation()"
                   ng-show="member.notes.length > 0"
-                  uib-tooltip="Edit member Notes"
+                  title="Edit member Notes"
                   class="noul material-icons md-18">assignment</i>
 
                 <i
                   ng-click="openNotesModal(member, 'Member'); $event.stopPropagation()"
                   ng-show="member.notes.length == 0"
-                  uib-tooltip="Add member notes"
+                  title="Add member notes"
                   class="md-grey material-icons md-18">assignment</i>
               </td>
             </tr>

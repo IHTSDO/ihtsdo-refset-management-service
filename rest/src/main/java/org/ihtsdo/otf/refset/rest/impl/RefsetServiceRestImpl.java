@@ -90,7 +90,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@Api(value = "/refset", description = "Operations to retrieve refset info")
+@Api(value = "/refset", description = "Operations to manage refsets and refset members")
 public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     RefsetServiceRest {
 
@@ -145,7 +145,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       return refset;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset");
+      handleException(e, "trying to get a refset");
       return null;
     } finally {
       refsetService.close();
@@ -183,7 +183,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       return member;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a member");
+      handleException(e, "trying to get a member");
       return null;
     } finally {
       refsetService.close();
@@ -217,7 +217,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       return result;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve refsets ");
+      handleException(e, "trying to get refsets ");
       return null;
     } finally {
       refsetService.close();
@@ -248,7 +248,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve refsets ");
+      handleException(e, "trying to get refsets ");
       return null;
     } finally {
       refsetService.close();
@@ -976,7 +976,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve members",
+      authorizeApp(securityService, authToken, "find members",
           UserRole.VIEWER); // Load refset
 
       final Refset refset = refsetService.getRefset(refsetId);
@@ -991,7 +991,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
       }
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve members ");
+      handleException(e, "trying to find members ");
       return null;
     } finally {
       refsetService.close();
@@ -2041,7 +2041,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       return refset.computeDefinition();
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset definition");
+      handleException(e, "trying to get a refset definition");
       return null;
     } finally {
       refsetService.close();
@@ -2173,7 +2173,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       refsetService.commit();
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset definition");
+      handleException(e, "trying to optimize definition for refset id");
     } finally {
       refsetService.close();
       securityService.close();

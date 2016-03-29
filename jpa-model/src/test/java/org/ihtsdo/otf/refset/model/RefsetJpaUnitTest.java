@@ -3,6 +3,7 @@
  */
 package org.ihtsdo.otf.refset.model;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.DefinitionClause;
 import org.ihtsdo.otf.refset.Project;
 import org.ihtsdo.otf.refset.Refset;
 import org.ihtsdo.otf.refset.helpers.CopyConstructorTester;
@@ -18,6 +20,7 @@ import org.ihtsdo.otf.refset.helpers.EqualsHashcodeTester;
 import org.ihtsdo.otf.refset.helpers.GetterSetterTester;
 import org.ihtsdo.otf.refset.helpers.ProxyTester;
 import org.ihtsdo.otf.refset.helpers.XmlSerializationTester;
+import org.ihtsdo.otf.refset.jpa.DefinitionClauseJpa;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.jpa.RefsetJpa;
 import org.ihtsdo.otf.refset.jpa.helpers.IndexedFieldTester;
@@ -123,7 +126,7 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("moduleId");
     tester.include("terminology");
     tester.include("terminologyId");
-    //tester.include("version");
+    // tester.include("version");
     tester.include("definitionClauses");
     tester.include("description");
     tester.include("externalUrl");
@@ -271,6 +274,130 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
     tester.include("revision");
 
     assertTrue(tester.testNotAnalyzedIndexedFields());
+
+  }
+
+  /**
+   * Test compute definition
+   *
+   * @throws Exception the exception
+   */
+  @Test
+  public void testComputeDefinition() throws Exception {
+    Logger.getLogger(getClass()).debug("TEST " + name.getMethodName());
+
+    //
+    // Test these cases:
+    // <<195967001
+    // <<195967001 MINUS <<304527002
+    // <<195967001 OR <<304527002
+    // (<<195967001 OR <<304527002) MINUS <<370218001
+    // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)
+    // <<195967001 MINUS (<<370218001 OR <<389145006)
+    // (<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR
+    // <<389145006 OR <<195967001)
+    //
+    // Also test the minus ones with a project exclusion clause
+    //
+
+    Project project = new ProjectJpa();
+    project.setExclusionClause(null);
+
+    Refset refset = new RefsetJpa();
+    refset.setProject(project);
+
+    // <<195967001
+    DefinitionClause clause1 = new DefinitionClauseJpa();
+    clause1.setValue("<<195967001");
+    clause1.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    assertEquals("<<195967001", refset.computeDefinition());
+
+    // <<195967001 with project exclusion clause
+    project.setExclusionClause("<<304527002");
+    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition());
+
+    // <<195967001 MINUS <<304527002
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    DefinitionClause clause2 = new DefinitionClauseJpa();
+    clause2.setValue("<<304527002");
+    clause2.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition());
+
+    // Try adding clauses in the reverse order
+    refset.getDefinitionClauses().clear();
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause1);
+    assertEquals("<<195967001 MINUS <<304527002", refset.computeDefinition());
+
+    // <<195967001 MINUS <<304527002 with project exclusion clause
+    project.setExclusionClause("<<370218001");
+    assertEquals("<<195967001 MINUS (<<304527002 OR <<370218001)",
+        refset.computeDefinition());
+
+    // (<<195967001 OR <<304527002) MINUS <<370218001
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    clause2.setNegated(false);
+    DefinitionClause clause3 = new DefinitionClauseJpa();
+    clause3.setValue("<<370218001");
+    clause3.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause3);
+    assertEquals("(<<195967001 OR <<304527002) MINUS <<370218001",
+        refset.computeDefinition());
+
+    // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    DefinitionClause clause4 = new DefinitionClauseJpa();
+    clause4.setValue("<<389145006");
+    clause4.setNegated(true);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    refset.getDefinitionClauses().add(clause3);
+    refset.getDefinitionClauses().add(clause4);
+    assertEquals(
+        "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006)",
+        refset.computeDefinition());
+
+    // (<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006) with
+    // project exclusion
+    project.setExclusionClause("<<12345");
+    assertEquals(
+        "(<<195967001 OR <<304527002) MINUS (<<370218001 OR <<389145006 OR <<12345)",
+        refset.computeDefinition());
+
+    // <<195967001 MINUS (<<370218001 OR <<389145006)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause3);
+    refset.getDefinitionClauses().add(clause4);
+    assertEquals("<<195967001 MINUS (<<370218001 OR <<389145006)",
+        refset.computeDefinition());
+
+    // (<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR
+    // <<389145006 OR <<195967001)
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    DefinitionClause clause3b = new DefinitionClauseJpa(clause3);
+    clause3b.setNegated(false);
+    refset.getDefinitionClauses().add(clause3b);
+    refset.getDefinitionClauses().add(clause3);
+    refset.getDefinitionClauses().add(clause4);
+    DefinitionClause clause1b = new DefinitionClauseJpa(clause1);
+    clause1b.setNegated(true);
+    refset.getDefinitionClauses().add(clause1b);
+    assertEquals(
+        "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)",
+        refset.computeDefinition());
 
   }
 

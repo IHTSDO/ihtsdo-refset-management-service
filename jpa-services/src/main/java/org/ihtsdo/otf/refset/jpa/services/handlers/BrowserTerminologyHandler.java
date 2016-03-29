@@ -249,9 +249,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   }
 
   /* see superclass */
-  //@Override
-  @SuppressWarnings("javadoc")
-  public ConceptList resolveExpressionKai(String expr, String terminology,
+  @Override
+  public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
         "  resolve expression - " + terminology + ", " + version + ", " + expr
@@ -374,8 +373,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   }
 
   /* see superclass */
-  @Override
-  public ConceptList resolveExpression(String expr, String terminology,
+  // @Override
+  @SuppressWarnings("javadoc")
+  public ConceptList resolveExpressionBrowser(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
     Logger.getLogger(getClass()).info(
         "  resolve expression - " + terminology + ", " + version + ", " + expr
@@ -399,8 +399,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final int initialMaxLimit = 200;
 
     final String targetUrl =
-        url + "/expressions/" + terminology + "/v" + version
-            + "/execute/brief";
+        url + "/expressions/" + terminology + "/v" + version + "/execute/brief";
     Logger.getLogger(getClass()).info("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
@@ -457,8 +456,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
       target =
-          client.target(url + "/expressions/" + terminology + "/v"
-              + version + "/execute/brief");
+          client.target(url + "/expressions/" + terminology + "/v" + version
+              + "/execute/brief");
 
       response =
           target.request(accept).post(
@@ -560,8 +559,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final Client client = ClientBuilder.newClient();
 
     final String targetUrl =
-        url + "/expressions/" + terminology + "/v" + version
-            + "/execute/brief";
+        url + "/expressions/" + terminology + "/v" + version + "/execute/brief";
     Logger.getLogger(getClass()).info("  Count expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
@@ -840,7 +838,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // Use getConcept() if it's an id, otherwise search term
     final String targetUrl =
         url
-            + "/"
+            + "/snomed/"
             + terminology
             + "/v"
             + version

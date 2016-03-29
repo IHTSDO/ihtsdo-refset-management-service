@@ -77,7 +77,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@Api(value = "/release", description = "Operations to retrieve release info")
+@Api(value = "/release", description = "Operations to manage releases")
 public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     ReleaseServiceRest {
 
@@ -669,7 +669,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @GET
   @Override
   @Path("/translation/finish")
-  @ApiOperation(value = "Finish translation release", notes = "Finishes the release process by marking staging translation release as PUBLISHED", response = ValidationResultJpa.class)
+  @ApiOperation(value = "Finish translation release", notes = "Finishes the release process by marking staging translation release as PUBLISHED", response = TranslationJpa.class)
   public Translation finishTranslationRelease(
     @ApiParam(value = "Translation id, e.g. 3", required = true) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -771,7 +771,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/refset/info")
-  @ApiOperation(value = "Retrieves current refset release", notes = "Retrieves current refset release info.", response = ReleaseInfoJpa.class)
+  @ApiOperation(value = "Get current refset release", notes = "Gets current refset release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo getCurrentRefsetReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -819,7 +819,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @GET
   @Path("/translation/info")
-  @ApiOperation(value = "Retrieves current translation release info", notes = "Retrieves current translation release info.", response = ReleaseInfoJpa.class)
+  @ApiOperation(value = "Get current translation release info", notes = "Gets current translation release info.", response = ReleaseInfoJpa.class)
   public ReleaseInfo getCurrentTranslationReleaseInfo(
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
@@ -1075,7 +1075,7 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     try {
       // authorize call
       authorizeApp(securityService, authToken,
-          "retrieve the release history for the translation", UserRole.VIEWER);
+          "get the release history for the translation", UserRole.VIEWER);
       final ReleaseArtifact artifact =
           releaseService.getReleaseArtifact(artifactId);
       final InputStream in = new ByteArrayInputStream(artifact.getData());

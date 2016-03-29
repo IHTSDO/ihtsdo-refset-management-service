@@ -96,7 +96,7 @@ import com.wordnik.swagger.annotations.ApiParam;
 @Produces({
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
-@Api(value = "/translation", description = "Operations to retrieve translation info")
+@Api(value = "/translation", description = "Operations to manage translations and translated concepts")
 public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     TranslationServiceRest {
 
@@ -146,7 +146,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
           "RESTful call GET (Translation): get translation, translationId:"
               + translationId);
 
-      authorizeApp(securityService, authToken, "retrieve the translation",
+      authorizeApp(securityService, authToken, "get the translation",
           UserRole.VIEWER);
 
       final Translation translation =
@@ -157,7 +157,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
       return translation;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a translation");
+      handleException(e, "trying to get a translation");
       return null;
     } finally {
       translationService.close();
@@ -181,14 +181,14 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
               "RESTful call GET (Translation): get concept, conceptId:"
                   + conceptId);
 
-      authorizeApp(securityService, authToken, "retrieve the concept",
+      authorizeApp(securityService, authToken, "get the concept",
           UserRole.VIEWER);
 
       final Concept concept = translationService.getConcept(conceptId);
 
       return concept;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a concept");
+      handleException(e, "trying to get a concept");
       return null;
     } finally {
       translationService.close();
@@ -212,7 +212,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "retrieve the refset",
+      authorizeApp(securityService, authToken, "get translations for refset",
           UserRole.VIEWER);
 
       final Refset refset = translationService.getRefset(refsetId);
@@ -226,7 +226,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       result.setTotalCount(translations.size());
       return result;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve a refset");
+      handleException(e, "trying to get translations for refset");
       return null;
     } finally {
       translationService.close();
@@ -260,7 +260,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve translations ");
+      handleException(e, "trying to find translations ");
       return null;
     } finally {
       translationService.close();
@@ -576,7 +576,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       }
       return list;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve translation concepts ");
+      handleException(e, "trying to find translation concepts ");
       return null;
     } finally {
       translationService.close();
@@ -1059,7 +1059,7 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
   @Override
   @POST
   @Path("/concept/update")
-  @ApiOperation(value = "Update concept", notes = "Updates the specified concept. This also synchronizes the definitions and language refset members")
+  @ApiOperation(value = "Update concept", notes = "Updates the specified concept. This also synchronizes the definitions and language refset members", response = ConceptJpa.class)
   public Concept updateTranslationConcept(
     @ApiParam(value = "Concept", required = true) ConceptJpa concept,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
