@@ -66,13 +66,13 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         "xder2_cRefset_LanguageSnapshot-" + translation.getLanguage() + "_"
             + translation.getVersion() + ".txt";
     String descriptionFileName =
-        "xsct2_Description_" + translation.getVersion() + ".txt";
+        "xsct2_Description_Snapshot-" + translation.getLanguage() + "_"
+            + translation.getVersion() + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
-    // and call the exportContents with those.  then logic is the same
+    // and call the exportContents with those. then logic is the same
     // need to test import/export when we do this
-    
-    
+
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
     // and write the zip file to an input stream
@@ -173,7 +173,7 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
   /* see superclass */
   @Override
-  public InputStream exportContents(Translation translation,
+  public InputStream exportDelta(Translation translation,
     List<Description> descriptions, List<LanguageRefsetMember> languages)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -182,10 +182,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
 
     // Use info from "translation" object to get file name right.
     String languageRefsetMemberFileName =
-        "xder2_cRefset_LanguageSnapshot-" + translation.getLanguage() + "_"
+        "xder2_cRefset_LanguageDelta-" + translation.getLanguage() + "_"
             + translation.getVersion() + ".txt";
     String descriptionFileName =
-        "xsct2_Description_" + translation.getVersion() + ".txt";
+        "xsct2_Description_Delta-" + translation.getLanguage() + "_"
+            + translation.getVersion() + ".txt";
 
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file

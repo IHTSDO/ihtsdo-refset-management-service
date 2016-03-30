@@ -858,7 +858,7 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'definition.' + refset.terminologyId + '.' + extension;
+          a.download = 'definition.' + refset.terminologyId + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();
@@ -888,7 +888,7 @@ tsApp.service('refsetService', [
           var a = document.createElement('a');
           a.href = fileURL;
           a.target = '_blank';
-          a.download = 'members.' + refset.terminologyId + '.' + extension;
+          a.download = 'members.' + refset.terminologyId + extension;
           document.body.appendChild(a);
           gpService.decrement();
           a.click();

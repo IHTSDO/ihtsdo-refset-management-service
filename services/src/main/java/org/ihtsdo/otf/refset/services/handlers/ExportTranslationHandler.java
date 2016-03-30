@@ -61,14 +61,14 @@ public interface ExportTranslationHandler extends Configurable {
     List<Concept> concepts) throws Exception;
 
   /**
-   * Export descriptions and langauges. NEeded ot support Delta.
+   * Export descriptions and languages. Needed to support Delta.
    * @param translation the translation
    * @param descriptions the descriptions
    * @param languages the languages
    * @return the input stream
    * @throws Exception the exception
    */
-  public InputStream exportContents(Translation translation,
+  public InputStream exportDelta(Translation translation,
     List<Description> descriptions, List<LanguageRefsetMember> languages)
     throws Exception;
 

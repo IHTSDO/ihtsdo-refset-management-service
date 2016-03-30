@@ -128,8 +128,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     releaseInfo =
         getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
             translation.getProject().getId());
-    if (releaseInfo != null) {
 
+    if (releaseInfo != null) {
       // Get descriptions/languages from last time
       Map<String, Description> oldDescriptionMap = new HashMap<>();
       Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();
@@ -194,7 +194,6 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
           description.setActive(false);
           description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
           deltaDescriptions.add(description);
-
         }
       }
 
@@ -228,7 +227,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
       // Export
       inputStream =
-          handler.exportContents(stagedTranslation, deltaDescriptions,
+          handler.exportDelta(stagedTranslation, deltaDescriptions,
               deltaMembers);
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);

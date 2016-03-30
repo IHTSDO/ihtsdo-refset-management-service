@@ -385,6 +385,8 @@ tsApp
                     lfield = 'refsetId';
                   } else if (field == 'lastModified') {
                     lfield = 'lastModified';
+                  } else if (field == 'workflowStatus') {
+                    lfield = 'workflowStatus';
                   } else {
                     // uppercase and prepend refset in all other cases
                     lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);
@@ -409,6 +411,8 @@ tsApp
                     lfield = 'refsetId';
                   } else if (field == 'lastModified') {
                     lfield = 'lastModified';
+                  } else if (field == 'workflowStatus') {
+                    lfield = 'workflowStatus';
                   } else {
                     // uppercase and prepend refset in all other cases
                     lfield = 'refset' + field.charAt(0).toUpperCase() + field.slice(1);
