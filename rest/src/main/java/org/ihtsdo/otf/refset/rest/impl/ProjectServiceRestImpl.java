@@ -986,8 +986,8 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Get log entries", notes = "Gets log entries for the specified object and project ids", response = String.class)
   @Override
   public String getLog(
-    @ApiParam(value = "Project id, e.g. 5", required = false) @QueryParam("projectId") Long projectId,
-    @ApiParam(value = "Object id, e.g. 5", required = false) @QueryParam("objectId") Long objectId,
+    @ApiParam(value = "Project id, e.g. 5", required = true) @QueryParam("projectId") Long projectId,
+    @ApiParam(value = "Object id, e.g. 5", required = true) @QueryParam("objectId") Long objectId,
     @ApiParam(value = "Lines, e.g. 5", required = false) @QueryParam("lines") int lines,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
@@ -1001,7 +1001,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
 
       PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
-      pfs.setMaxResults(1000);
+      pfs.setMaxResults(lines);
       pfs.setAscending(false);
       pfs.setSortField("lastModified");
 

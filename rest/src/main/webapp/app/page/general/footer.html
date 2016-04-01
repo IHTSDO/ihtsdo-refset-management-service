@@ -18,11 +18,12 @@
   <nav
     class="hidden-xs navbar navbar-default navbar-fixed-bottom header-footer-bg">
     <div class="container-fluid">
-      <div style="width: 100%; margin-top: 15px;" >
-        <div style="width: 1%; white-space: nowrap; display: table-cell;" >
+      <div style="width: 100%; margin-top: 15px;">
+        <div style="width: 1%; white-space: nowrap; display: table-cell;">
           <a class="header-footer-text header-footer-link" href="${deploy.link}">${deploy.footer.copyright}</a>
         </div>
-        <div style="display: table-cell;">&nbsp;&nbsp;
+        <div style="display: table-cell;">
+          &nbsp;&nbsp;
           <span ng-include src="'app/page/general/footerLinks.html'"></span>
           <div class="alert alert-danger" ng-show="isGlassPaneNegative()">
             The Glass Pane activity indicator may not be functioning correctly.<br>Please
@@ -34,3 +35,25 @@
     </div>
   </nav>
 </div>
+<script type="text/javascript">
+  var _iub = _iub || [];
+  _iub.csConfiguration = {
+    cookiePolicyId : 7822445,
+    siteId : 522873,
+    lang : "en"
+  };
+  (function(w, d) {
+    var loader = function() {
+      var s = d.createElement("script"), tag = d.getElementsByTagName("script")[0];
+      s.src = "//cdn.iubenda.com/cookie_solution/iubenda_cs.js";
+      tag.parentNode.insertBefore(s, tag);
+    };
+    if (w.addEventListener) {
+      w.addEventListener("load", loader, false);
+    } else if (w.attachEvent) {
+      w.attachEvent("onload", loader);
+    } else {
+      w.onload = loader;
+    }
+  })(window, document);
+</script>
