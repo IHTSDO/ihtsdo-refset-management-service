@@ -82,11 +82,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
   private String version;
 
   /** The name. */
-  @Column(nullable = false)
+  @Column(nullable = false, length = 4000)
   private String name;
 
   /** The description. */
-  @Column(nullable = false)
+  @Column(nullable = false, length = 4000)
   private String description;
 
   /** The is public. */
