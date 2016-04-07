@@ -1024,8 +1024,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           while (i < numberOfMembers) {
             final List<String> termIds = new ArrayList<>();
 
-            // Create list of conceptIds for all members (up to 10 at a time)
-            for (int j = 0; (j < 30 && i < numberOfMembers); j++, i++) {
+            // Create list of conceptIds for all members (up to 101 at a time)
+            for (int j = 0; (j < 101 && i < numberOfMembers); j++, i++) {
               termIds.add(members.get(i).getConceptId());
             }
             // Get concepts from Term Server based on list

@@ -40,7 +40,9 @@ public class ExportRefsetRf2Handler implements ExportRefsetHandler {
 
   @Override
   public String getFileName(String namespace, String type, String version) {
-    return "der2_sRefset_Simple" + type + "_" + namespace + "_" + version
+    // Use "INT" for the namespace if null
+    return "der2_sRefset_Simple" + type + "_"
+        + (namespace == null ? "INT" : namespace) + "_" + version
         + getFileTypeFilter();
   }
 

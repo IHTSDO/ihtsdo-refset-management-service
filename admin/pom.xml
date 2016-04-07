@@ -254,6 +254,35 @@
       </build>
     </profile>
 
+    <!-- Generate PROD data, use -Drefset.config=... -->
+    <profile>
+      <id>Prod</id>
+      <build>
+        <plugins>
+          <!-- Generate sample data -->
+          <plugin>
+            <groupId>org.ihtsdo.otf.refset</groupId>
+            <artifactId>refset-admin</artifactId>
+            <version>${project.version}</version>
+            <executions>
+              <execution>
+                <id>prod-data</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>prod-data</goal>
+                </goals>
+                <configuration>
+                  <mode>${mode}</mode>
+                  <!-- users.txt file -->
+                  <file>${file}</file>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
     <!-- Load UAT users, use -Drefset.config=... -Dfile=users.txt -->
     <profile>
       <id>UatUsers</id>

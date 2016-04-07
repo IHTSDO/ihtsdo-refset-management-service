@@ -1252,8 +1252,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
           while (i < numberOfConcepts) {
             final List<String> termIds = new ArrayList<>();
 
-            // Create list of conceptIds for all concepts (up to 10 at a time)
-            for (int j = 0; (j < 30 && i < numberOfConcepts); j++, i++) {
+            // Create list of conceptIds for all concepts (up to 101 at a time)
+            for (int j = 0; (j < 101 && i < numberOfConcepts); j++, i++) {
               termIds.add(concepts.get(i).getTerminologyId());
             }
             // Get concepts from Term Server based on list
