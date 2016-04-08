@@ -399,6 +399,87 @@ public class RefsetJpaUnitTest extends ModelUnitSupport {
         "(<<195967001 OR <<304527002 OR <<370218001) MINUS (<<370218001 OR <<389145006 OR <<195967001)",
         refset.computeDefinition());
 
+    // Test role restriction cases too
+    // < 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|
+    // (< 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|) OR <<409623005 | Respiratory insufficiency (disorder) |
+    //
+
+    // < 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    clause1 = new DefinitionClauseJpa();
+    clause1
+        .setValue("< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|");
+    clause1.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    assertEquals(
+        "< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|",
+        refset.computeDefinition());
+
+    // with project exclusion clause
+    project.setExclusionClause("<<304527002");
+    assertEquals(
+        "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) MINUS <<304527002",
+        refset.computeDefinition());
+
+    // (< 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|) OR <<409623005 | Respiratory insufficiency (disorder) |
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue("<<409623005 | Respiratory insufficiency (disorder) |");
+    clause1.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    assertEquals(
+        "(< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
+            + "OR <<409623005 | Respiratory insufficiency (disorder) |",
+        refset.computeDefinition());
+
+    // with project exclusion clause
+    project.setExclusionClause("<<304527002");
+    assertEquals(
+        "((< 19829001 |disorder of lung|: 116676008 |associated morphology| = 79654002 |edema|) "
+            + "OR <<409623005 | Respiratory insufficiency (disorder) |) MINUS <<304527002",
+        refset.computeDefinition());
+
+    // < 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    clause1 = new DefinitionClauseJpa();
+    clause1.setValue("< 19829001 : 116676008 = 79654002");
+    clause1.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    assertEquals("< 19829001 : 116676008 = 79654002",
+        refset.computeDefinition());
+
+    // with project exclusion clause
+    project.setExclusionClause("<<304527002");
+    assertEquals("(< 19829001 : 116676008 = 79654002) MINUS <<304527002",
+        refset.computeDefinition());
+
+    // (< 19829001 |disorder of lung|: 116676008 |associated morphology| =
+    // 79654002 |edema|) OR <<409623005 | Respiratory insufficiency (disorder) |
+    refset.getDefinitionClauses().clear();
+    project.setExclusionClause(null);
+    clause2 = new DefinitionClauseJpa();
+    clause2.setValue("<<409623005");
+    clause1.setNegated(false);
+    refset.getDefinitionClauses().add(clause1);
+    refset.getDefinitionClauses().add(clause2);
+    assertEquals("(< 19829001 : 116676008 = 79654002) OR <<409623005",
+        refset.computeDefinition());
+
+    // with project exclusion clause
+    project.setExclusionClause("<<304527002");
+    assertEquals(
+        "((< 19829001 : 116676008 = 79654002) OR <<409623005) MINUS <<304527002",
+        refset.computeDefinition());
+
   }
 
   /**
