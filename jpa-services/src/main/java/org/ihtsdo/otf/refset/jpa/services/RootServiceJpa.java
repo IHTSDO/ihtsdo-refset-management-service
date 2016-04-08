@@ -172,6 +172,27 @@ public abstract class RootServiceJpa implements RootService {
 
   /* see superclass */
   @Override
+  public void commitClearBegin() throws Exception {
+    commit();
+    clear();
+    beginTransaction();
+  }
+
+  /* see superclass */
+  @Override
+  public void logAndCommit(int objectCt, int logCt, int commitCt)
+    throws Exception {
+    // log at regular intervals
+    if (objectCt % logCt == 0) {
+      Logger.getLogger(getClass()).info("    count = " + objectCt);
+    }
+    if (objectCt % commitCt == 0) {
+      commitClearBegin();
+    }
+  }
+  
+  /* see superclass */
+  @Override
   public void close() throws Exception {
     if (manager.isOpen()) {
       manager.close();

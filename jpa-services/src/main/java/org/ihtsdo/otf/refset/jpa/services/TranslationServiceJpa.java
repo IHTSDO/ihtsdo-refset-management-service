@@ -55,6 +55,7 @@ import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageDescriptionTypeJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.TranslationService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -337,7 +338,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       String queryRestriction = pfs.getQueryRestriction();
       pfs.setQueryRestriction(null);
       // passing new int[1] because we're only using this for paging
-      result.setObjects(applyPfsToList(list, Translation.class, new int[1], pfs));
+      result
+          .setObjects(applyPfsToList(list, Translation.class, new int[1], pfs));
       pfs.setQueryRestriction(queryRestriction);
       result.setTotalCount(list.size());
       pfs.setQueryRestriction(queryRestriction);
@@ -798,8 +800,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
 
   /* see superclass */
   @Override
-  public StagedTranslationChange getStagedTranslationChangeFromOrigin(Long translationId)
-    throws Exception {
+  public StagedTranslationChange getStagedTranslationChangeFromOrigin(
+    Long translationId) throws Exception {
     Logger.getLogger(getClass()).debug(
         "Translation Service - get staged change " + translationId);
     final javax.persistence.Query query =
@@ -981,11 +983,8 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
       }
     }
 
-    // without doing the copy constructor, we get the following errors:
-    // identifier of an instance of
-    // org.ihtsdo.otf.translation.rf2.jpa.ConceptTranslationMemberJpa was
-    // altered from
-    // 6901 to null
+    // Copy concepts
+    int objectCt = 0;
     for (final Concept originConcept : translation.getConcepts()) {
 
       // Skip members for beta that are not ready for publication
@@ -1034,6 +1033,16 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
         }
       }
       updateConcept(concept);
+
+      // Log and commit on intervals if not using transaction per operation
+      if (!getTransactionPerOperation()) {
+        logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
+      }
+    }
+
+    // Commit if not using transaction per operation
+    if (!getTransactionPerOperation()) {
+      commitClearBegin();
     }
 
     for (final DescriptionType originType : translation.getDescriptionTypes()) {
@@ -1633,13 +1642,14 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
     // Return the changed concept
     return originConcept;
   }
-  
+
   /* see superclass */
   @Override
-  public StagedTranslationChange getStagedTranslationChangeFromStaged(Long stagedTranslationId)
-    throws Exception {
+  public StagedTranslationChange getStagedTranslationChangeFromStaged(
+    Long stagedTranslationId) throws Exception {
     Logger.getLogger(getClass()).debug(
-        "Translation Service - get staged change for staged translation " + stagedTranslationId);
+        "Translation Service - get staged change for staged translation "
+            + stagedTranslationId);
     final javax.persistence.Query query =
         manager.createQuery("select a from StagedTranslationChangeJpa a where "
             + "stagedTranslation.id = :stagedTranslationId");

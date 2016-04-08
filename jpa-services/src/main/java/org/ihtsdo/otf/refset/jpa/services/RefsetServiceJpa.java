@@ -52,6 +52,7 @@ import org.ihtsdo.otf.refset.rf2.RefsetDescriptorRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.RefsetDescriptorRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.RefsetService;
+import org.ihtsdo.otf.refset.services.RootService;
 import org.ihtsdo.otf.refset.services.handlers.ExceptionHandler;
 import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.handlers.IdentifierAssignmentHandler;
@@ -720,6 +721,8 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
       // identifier of an instance of
       // org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa was altered from
       // 6901 to null
+      int objectCt = 0;
+
       for (final ConceptRefsetMember originMember : refset.getMembers()) {
         ConceptRefsetMember member = new ConceptRefsetMemberJpa(originMember);
         member.setRefset(refsetCopy);
@@ -728,7 +731,17 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
           member.setEffectiveTime(effectiveTime);
         refsetCopy.getMembers().add(member);
         addMember(member);
+
+        // Log and commit on intervals if not using transaction per operation
+        if (!getTransactionPerOperation()) {
+          logAndCommit(++objectCt, RootService.logCt, RootService.commitCt);
+        }
+
       }
+    }
+    // Commit if not using transaction per operation
+    if (!getTransactionPerOperation()) {
+      commitClearBegin();
     }
 
     // set staging parameters on the original refset

@@ -277,23 +277,6 @@ public class GenerateProdDataMojo extends AbstractMojo {
   }
 
   /**
-   * Make user.
-   *
-   * @param userName the user name
-   * @param name the name
-   * @return the user
-   */
-  @SuppressWarnings("static-method")
-  private UserJpa makeUser(String userName, String name) {
-    final UserJpa user = new UserJpa();
-    user.setUserName(userName);
-    user.setName(name);
-    user.setEmail(userName + "@example.com");
-    user.setApplicationRole(UserRole.USER);
-    return user;
-  }
-
-  /**
    * Make project.
    *
    * @param name the name
@@ -446,6 +429,7 @@ public class GenerateProdDataMojo extends AbstractMojo {
    * Release refset.
    *
    * @param refset the refset
+   * @param finishFlag the finish flag
    * @param auth the auth
    * @return the refset jpa
    * @throws Exception the exception
@@ -487,8 +471,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
    * @param terminologyId the terminology id
    * @param refset the refset
    * @param project the project
-   * @param num the num
-   * @param edition the edition
+   * @param dir the dir
+   * @param file the file
    * @param lang the lang
    * @param auth the auth
    * @return the translation jpa
