@@ -1274,11 +1274,10 @@ public class TranslationServiceJpa extends RefsetServiceJpa implements
             // the size of termIds, there was a problem
             if (cons.getTotalCount() != termIds.size() && !missingConcepts) {
               missingConcepts = true;
-              // log and email an exception and continue
-              ExceptionHandler.handleException(
-                  new Exception("Missing concepts"),
-                  "looking up translation concept names - " + translationId,
-                  null);
+              // warn
+              Logger.getLogger(getClass()).warn(
+                  "Missing concepts looking up translation concept names - "
+                      + translationId);
             }
 
             // Populate concept's names/statuses from results of Term

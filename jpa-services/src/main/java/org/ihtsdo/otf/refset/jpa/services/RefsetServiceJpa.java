@@ -1050,10 +1050,10 @@ public class RefsetServiceJpa extends ReleaseServiceJpa implements
             // the size of termIds, there was a problem
             if (cons.getTotalCount() != termIds.size() && !missingConcepts) {
               missingConcepts = true;
-              // log and email an exception and continue
-              ExceptionHandler.handleException(
-                  new Exception("Missing concepts"),
-                  "looking up refset member names - " + refsetId, null);
+              // warn
+              Logger.getLogger(getClass()).warn(
+                  "Missing concepts looking up refset member names - "
+                      + refsetId);
             }
 
             // Populate member's names/statuses from results of Term

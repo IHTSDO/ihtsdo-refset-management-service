@@ -976,8 +976,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find members",
-          UserRole.VIEWER); // Load refset
+      authorizeApp(securityService, authToken, "find members", UserRole.VIEWER); // Load
+                                                                                 // refset
 
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
@@ -1264,7 +1264,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       // Load refset
-      final Refset refset = refsetService.getRefset(refsetId);
+      Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -1299,6 +1299,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           refsetService.stageRefset(refset, Refset.StagingType.MIGRATION, null);
       refsetCopy.setTerminology(newTerminology);
       refsetCopy.setVersion(newVersion);
+
+      // Reread refset in case of commit
+      refset = refsetService.getRefset(refset.getId());
 
       // RECOMPUTE INTENSIONAL REFSET
       if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
