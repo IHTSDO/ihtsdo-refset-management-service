@@ -304,7 +304,7 @@ public class RefsetTest extends RefsetTestSupport {
     // Begin migration
     Refset julyStagedRefset =
         refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
+            "20150731", adminAuthToken);
 
     // Create Report with identical content
     // Thus Old & New the same size
@@ -508,7 +508,7 @@ public class RefsetTest extends RefsetTestSupport {
     Logger.getLogger(getClass()).debug("  begin migration");
     Refset julyStagedRefset =
         refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
+            "20150731", adminAuthToken);
 
     // Obtain reportToken via compareRefsets
     Logger.getLogger(getClass()).debug("  compare refsets");

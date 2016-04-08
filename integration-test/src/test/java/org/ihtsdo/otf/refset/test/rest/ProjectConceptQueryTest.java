@@ -53,7 +53,7 @@ public class ProjectConceptQueryTest extends ProjectTestSupport {
 
     // verify able to retrieve expected concept via direct call
     Concept concept =
-        projectService.getFullConcept("406473004", "SNOMEDCT", "2015-01-31",
+        projectService.getFullConcept("406473004", "SNOMEDCT", "20150131",
             null, adminAuthToken);
     assertNotNull(concept);
     assertTrue(concept.getName().equals("Contact allergen"));
@@ -61,14 +61,14 @@ public class ProjectConceptQueryTest extends ProjectTestSupport {
     // verify able to retrieve expected concept via query
     ConceptList conceptList =
         projectService.findConceptsForQuery("406473004", "SNOMEDCT",
-            "2015-01-31", null, adminAuthToken);
+            "20150131", null, adminAuthToken);
     assertEquals(1, conceptList.getCount());
     assertTrue(concept.getName().equals("Contact allergen"));
 
     // verify able to retrieve expected children
     conceptList =
         projectService.getConceptChildren("406473004", "SNOMEDCT",
-            "2015-01-31", null, null, adminAuthToken);
+            "20150131", null, null, adminAuthToken);
     assertTrue(conceptList.getCount() > 0);
 
     boolean foundExpectedChild = false;
@@ -83,7 +83,7 @@ public class ProjectConceptQueryTest extends ProjectTestSupport {
 
     // verify able to retrieve expected children
     conceptList =
-        projectService.getConceptParents("406473004", "SNOMEDCT", "2015-01-31",
+        projectService.getConceptParents("406473004", "SNOMEDCT", "20150131",
             null, adminAuthToken);
     assertTrue(conceptList.getCount() > 0);
 
@@ -109,26 +109,26 @@ public class ProjectConceptQueryTest extends ProjectTestSupport {
 
     // Concept doesn't exist thus should return null
     Concept concept =
-        projectService.getFullConcept("1234567890", "SNOMEDCT", "2015-01-31",
+        projectService.getFullConcept("1234567890", "SNOMEDCT", "20150131",
             null, adminAuthToken);
     assertNull(concept);
 
     // Concept doesn't exist thus should return empty list
     ConceptList conceptList =
         projectService.findConceptsForQuery("1234567890", "SNOMEDCT",
-            "2015-01-31", null, adminAuthToken);
+            "20150131", null, adminAuthToken);
     assertEquals(0, conceptList.getCount());
 
     // Concept doesn't exist thus should return empty list
     conceptList =
         projectService.getConceptChildren("1234567890", "SNOMEDCT",
-            "2015-01-31", null, null, adminAuthToken);
+            "20150131", null, null, adminAuthToken);
     assertEquals(0, conceptList.getCount());
 
     // Concept doesn't exist thus should return empty list
     conceptList =
         projectService.getConceptParents("1234567890", "SNOMEDCT",
-            "2015-01-31", null, adminAuthToken);
+            "20150131", null, adminAuthToken);
     assertEquals(0, conceptList.getCount());
   }
 

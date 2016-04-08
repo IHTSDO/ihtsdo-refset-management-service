@@ -949,7 +949,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   @ApiOperation(value = "Get standard description types", notes = "Gets standard description types for the specified parameters", response = DescriptionTypeListJpa.class)
   public DescriptionTypeList getStandardDescriptionTypes(
     @ApiParam(value = "Edition, e.g. SNOMEDCT", required = true) @PathParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -1041,7 +1041,7 @@ public class ProjectServiceRestImpl extends RootServiceRestImpl implements
   public ConceptList getReplacementConcepts(
     @ApiParam(value = "ConceptId, e.g. '58427002'", required = true) @QueryParam("conceptId") String conceptId,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(

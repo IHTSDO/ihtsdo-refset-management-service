@@ -104,6 +104,9 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     stagedRefset =
         stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
 
+    // Reload release info after potential commit
+    releaseInfo = getReleaseInfo(releaseInfo.getId());
+
     // Copy the release info, copy any release artifacts from
     // the origin refset
     ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
