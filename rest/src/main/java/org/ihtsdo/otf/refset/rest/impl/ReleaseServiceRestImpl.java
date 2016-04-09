@@ -78,8 +78,8 @@ import com.wordnik.swagger.annotations.ApiParam;
     MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML
 })
 @Api(value = "/release", description = "Operations to manage releases")
-public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
-    ReleaseServiceRest {
+public class ReleaseServiceRestImpl extends RootServiceRestImpl
+    implements ReleaseServiceRest {
 
   /** The security service. */
   private SecurityService securityService;
@@ -104,8 +104,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /refset with query:" + query
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Release): /refset with query:" + query
             + ", refsetId:" + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
@@ -141,23 +141,23 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "PFS Parameter, e.g. '{ \"startIndex\":\"1\", \"maxResults\":\"5\" }'", required = false) PfsParameterJpa pfs,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /translationId with query:" + query
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Release): /translationId with query:" + query
             + ", translationId:" + translationId);
 
     final TranslationService translationService = new TranslationServiceJpa();
     try {
       authorizeApp(securityService, authToken,
           "retrieve the release history for the translation", UserRole.VIEWER);
-      final ReleaseInfoList releaseInfoList =
-          translationService.findTranslationReleasesForQuery(translationId,
-              query, pfs);
+      final ReleaseInfoList releaseInfoList = translationService
+          .findTranslationReleasesForQuery(translationId, query, pfs);
       for (final ReleaseInfo info : releaseInfoList.getObjects()) {
         translationService.handleLazyInit(info);
       }
       return releaseInfoList;
     } catch (Exception e) {
-      handleException(e, "trying to retrieve release history for a translation");
+      handleException(e,
+          "trying to retrieve release history for a translation");
       return null;
     } finally {
       translationService.close();
@@ -176,8 +176,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Effective time, e.g. 20150131", required = true) @QueryParam("effectiveTime") String effectiveTime,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refset/begin " + refsetId + ", "
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/begin " + refsetId + ", "
             + effectiveTime);
 
     final BeginRefsetReleaseAlgorthm algo = new BeginRefsetReleaseAlgorthm();
@@ -202,8 +202,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
 
       // Verify date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new LocalException("date provided is not in 'YYYYMMDD' format:"
-            + effectiveTime);
+        throw new LocalException(
+            "date provided is not in 'YYYYMMDD' format:" + effectiveTime);
 
       algo.setRefset(refset);
       algo.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(effectiveTime));
@@ -211,8 +211,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BEGIN RELEASE refset ", refset.getProject()
-          .getId(), refset.getId(),
+      addLogEntry(algo, userName, "BEGIN RELEASE refset ",
+          refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + ": " + refset.getName());
 
       // Finish transaction
@@ -243,8 +243,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refset/validate " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/validate " + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     final ValidationServiceJpa validationService = new ValidationServiceJpa();
@@ -275,19 +275,18 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       // Verify that begin has completed
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
-        throw new LocalException("Refset release is not ready to validate "
-            + refsetId);
+        throw new LocalException(
+            "Refset release is not ready to validate " + refsetId);
 
       // Verify the workflow status
-      if (!WorkflowStatus.READY_FOR_PUBLICATION.equals(refset
-          .getWorkflowStatus()))
+      if (!WorkflowStatus.READY_FOR_PUBLICATION
+          .equals(refset.getWorkflowStatus()))
         throw new LocalException("Refset workflowstatus is not "
             + WorkflowStatus.READY_FOR_PUBLICATION + " for " + refsetId);
 
       // Perform validation
-      final ValidationResult result =
-          validationService.validateRefset(refset, refset.getProject(),
-              refsetService);
+      final ValidationResult result = validationService.validateRefset(refset,
+          refset.getProject(), refsetService);
       if (result.isValid()) {
         for (ConceptRefsetMember member : refset.getMembers()) {
           result.merge(validationService.validateMember(member,
@@ -318,8 +317,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "IoHandler Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refset/beta " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/beta " + refsetId);
 
     final PerformRefsetBetaAlgorithm algo = new PerformRefsetBetaAlgorithm();
     // Manage transaction
@@ -344,8 +343,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BETA RELEASE refset ", refset.getProject()
-          .getId(), refset.getId(),
+      addLogEntry(algo, userName, "BETA RELEASE refset ",
+          refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + ": " + refset.getName());
 
       // Finish transaction
@@ -374,8 +373,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refset/finish " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/finish " + refsetId);
 
     final PerformRefsetPublishAlgorithm algo =
         new PerformRefsetPublishAlgorithm();
@@ -398,9 +397,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "PUBLISH RELEASE refset ", refset
-          .getProject().getId(), refset.getId(), refset.getTerminologyId()
-          + ": " + refset.getName());
+      addLogEntry(algo, userName, "PUBLISH RELEASE refset ",
+          refset.getProject().getId(), refset.getId(),
+          refset.getTerminologyId() + ": " + refset.getName());
 
       // Finish transaction
       algo.commit();
@@ -427,8 +426,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /refset/cancel " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /refset/cancel " + refsetId);
 
     final CancelRefsetReleaseAlgorithm algo =
         new CancelRefsetReleaseAlgorithm();
@@ -451,8 +450,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "CANCEL RELEASE refset ", refset.getProject()
-          .getId(), refset.getId(),
+      addLogEntry(algo, userName, "CANCEL RELEASE refset ",
+          refset.getProject().getId(), refset.getId(),
           refset.getTerminologyId() + ": " + refset.getName());
 
       // Finish transaction
@@ -477,8 +476,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /translation/begin " + translationId
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /translation/begin " + translationId
             + ", " + effectiveTime);
 
     final BeginTranslationReleaseAlgorthm algo =
@@ -494,31 +493,29 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
       if (translation.getConcepts() == null
           || translation.getConcepts().size() == 0) {
-        throw new LocalException("Translation "
-            + translation.getTerminologyId() + " has no concepts to release.");
+        throw new LocalException("Translation " + translation.getTerminologyId()
+            + " has no concepts to release.");
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(algo, translation.getProject().getId(),
-              securityService, authToken, "begin translation release",
-              UserRole.AUTHOR);
+      final String userName = authorizeProject(algo,
+          translation.getProject().getId(), securityService, authToken,
+          "begin translation release", UserRole.AUTHOR);
 
       // check date format
       if (!effectiveTime.matches("([0-9]{8})"))
-        throw new LocalException("Date provided is not in 'YYYYMMDD' format:"
-            + effectiveTime);
+        throw new LocalException(
+            "Date provided is not in 'YYYYMMDD' format:" + effectiveTime);
 
       // Verify that there are READY_FOR_PUBLICATION concepts in the translation
       final PfsParameter pfs = new PfsParameterJpa();
       pfs.setStartIndex(0);
       pfs.setMaxResults(1);
-      ConceptList list =
-          algo.findConceptsForTranslation(translationId, "workflowStatus:"
-              + WorkflowStatus.READY_FOR_PUBLICATION, pfs);
+      ConceptList list = algo.findConceptsForTranslation(translationId,
+          "workflowStatus:" + WorkflowStatus.READY_FOR_PUBLICATION, pfs);
       if (list.getCount() == 0) {
-        throw new LocalException("Translation "
-            + translation.getTerminologyId() + " has no concepts to release.");
+        throw new LocalException("Translation " + translation.getTerminologyId()
+            + " has no concepts to release.");
       }
 
       algo.setTranslation(translation);
@@ -527,8 +524,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BEGIN RELEASE translation", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(algo, userName, "BEGIN RELEASE translation",
+          translation.getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
 
       // Finish transaction
@@ -576,21 +573,19 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
           securityService, authToken, "validate translation release",
           UserRole.AUTHOR);
 
-      final ReleaseInfoList releaseInfoList =
-          translationService.findTranslationReleasesForQuery(translationId,
-              null, null);
+      final ReleaseInfoList releaseInfoList = translationService
+          .findTranslationReleasesForQuery(translationId, null, null);
       if (releaseInfoList.getCount() != 1) {
-        throw new Exception("Cannot find release info for translation "
-            + translationId);
+        throw new Exception(
+            "Cannot find release info for translation " + translationId);
       }
       final ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
       if (releaseInfo == null || !releaseInfo.isPlanned()
           || releaseInfo.isPublished())
         throw new LocalException(
             "Translation release is not ready to validate " + translationId);
-      final ValidationResult result =
-          validationService.validateTranslation(translation,
-              translation.getProject(), translationService);
+      final ValidationResult result = validationService.validateTranslation(
+          translation, translation.getProject(), translationService);
       if (result.isValid()) {
         for (Concept member : translation.getConcepts()) {
           result.merge(validationService.validateConcept(member,
@@ -618,8 +613,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "IoHandlder Id, e.g. DEFAULT", required = true) @QueryParam("ioHandlerId") String ioHandlerId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /translation/beta " + translationId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /translation/beta " + translationId);
     final PerformTranslationBetaAlgorithm algo =
         new PerformTranslationBetaAlgorithm();
     // Manage transaction
@@ -634,10 +629,9 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(algo, translation.getProject().getId(),
-              securityService, authToken, "beta translation release",
-              UserRole.AUTHOR);
+      final String userName = authorizeProject(algo,
+          translation.getProject().getId(), securityService, authToken,
+          "beta translation release", UserRole.AUTHOR);
 
       algo.setTranslation(translation);
       algo.setIoHandlerId(ioHandlerId);
@@ -645,8 +639,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "BETA RELEASE translation", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(algo, userName, "BETA RELEASE translation",
+          translation.getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
@@ -690,18 +684,17 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeProject(algo, translation.getProject().getId(),
-              securityService, authToken, "finish translation release",
-              UserRole.AUTHOR);
+      final String userName = authorizeProject(algo,
+          translation.getProject().getId(), securityService, authToken,
+          "finish translation release", UserRole.AUTHOR);
 
       algo.setUserName(userName);
       algo.setTranslation(translation);
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "PUBLISH RELEASE translation", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(algo, userName, "PUBLISH RELEASE translation",
+          translation.getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
@@ -744,18 +737,17 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      String userName =
-          authorizeProject(algo, translation.getProject().getId(),
-              securityService, authToken, "cancel translation release",
-              UserRole.AUTHOR);
+      String userName = authorizeProject(algo, translation.getProject().getId(),
+          securityService, authToken, "cancel translation release",
+          UserRole.AUTHOR);
 
       algo.setUserName(userName);
       algo.setTranslation(translation);
       algo.checkPreconditions();
       algo.compute();
 
-      addLogEntry(algo, userName, "CANCEL RELEASE translation", translation
-          .getProject().getId(), translation.getId(),
+      addLogEntry(algo, userName, "CANCEL RELEASE translation",
+          translation.getProject().getId(), translation.getId(),
           translation.getTerminologyId() + ": " + translation.getName());
       // Finish transaction
       algo.commit();
@@ -776,8 +768,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Release): /info " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Release): /info " + refsetId);
 
     // Test preconditions
     if (refsetId == null) {
@@ -795,9 +787,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         return null;
       }
 
-      ReleaseInfo info =
-          refsetService.getCurrentRefsetReleaseInfo(refset.getTerminologyId(),
-              refset.getProject().getId());
+      ReleaseInfo info = refsetService.getCurrentRefsetReleaseInfo(
+          refset.getTerminologyId(), refset.getProject().getId());
 
       if (info != null) {
         refsetService.handleLazyInit(info);
@@ -824,8 +815,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Refset id, e.g. 5", required = false) @QueryParam("translationId") Long translationId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful POST call (Release): /info " + translationId);
+    Logger.getLogger(getClass())
+        .info("RESTful POST call (Release): /info " + translationId);
 
     // Test preconditions
     if (translationId == null) {
@@ -843,9 +834,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
         return null;
       }
 
-      ReleaseInfo info =
-          translationService.getCurrentTranslationReleaseInfo(
-              translation.getTerminologyId(), translation.getProject().getId());
+      ReleaseInfo info = translationService.getCurrentTranslationReleaseInfo(
+          translation.getTerminologyId(), translation.getProject().getId());
 
       if (info != null) {
         translationService.handleLazyInit(info);
@@ -873,8 +863,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release): /release/resume " + refsetId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release): /release/resume " + refsetId);
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
@@ -895,9 +885,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // recovering the previously saved state of the staged refset
-      final Refset result =
-          refsetService.getStagedRefsetChangeFromOrigin(refsetId)
-              .getStagedRefset();
+      final Refset result = refsetService
+          .getStagedRefsetChangeFromOrigin(refsetId).getStagedRefset();
       refsetService.handleLazyInit(result);
 
       return result;
@@ -919,8 +908,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Release Info id, e.g. 3", required = true) @PathParam("releaseInfoId") Long releaseInfoId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Release): /remove/" + releaseInfoId);
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Release): /remove/" + releaseInfoId);
 
     final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
@@ -962,8 +951,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Release artifact id, e.g. 3", required = true) @PathParam("artifactId") Long artifactId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call DELETE (Release): /remove/artifact/" + artifactId);
+    Logger.getLogger(getClass())
+        .info("RESTful call DELETE (Release): /remove/artifact/" + artifactId);
 
     final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
@@ -1008,8 +997,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Release info id, e.g. 3", required = true) @QueryParam("releaseInfoId") Long releaseInfoId,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call POST (Release): /import/artifact: releaseInfoId");
+    Logger.getLogger(getClass())
+        .info("RESTful call POST (Release): /import/artifact: releaseInfoId");
 
     final ReleaseService releaseService = new ReleaseServiceJpa();
     try {
@@ -1020,9 +1009,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       }
 
       // Authorize the call
-      final String userName =
-          authorizeApp(securityService, authToken, "import release artifact",
-              UserRole.VIEWER);
+      final String userName = authorizeApp(securityService, authToken,
+          "import release artifact", UserRole.VIEWER);
 
       // Create an populate
       final ReleaseArtifact artifact = new ReleaseArtifactJpa();
@@ -1043,8 +1031,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
       releaseService.addReleaseArtifact(artifact);
 
       addLogEntry(releaseService, userName, "ADD release artifact", 0L,
-          artifact.getId(), artifact.getName() + ", "
-              + artifact.getData().length);
+          artifact.getId(),
+          artifact.getName() + ", " + artifact.getData().length);
 
       return artifact;
 
@@ -1068,8 +1056,8 @@ public class ReleaseServiceRestImpl extends RootServiceRestImpl implements
     @ApiParam(value = "Artifact id", required = true) @PathParam("artifactId") Long artifactId,
     @ApiParam(value = "Authorization token", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "RESTful call GET (Release):  /export/" + artifactId);
+    Logger.getLogger(getClass())
+        .info("RESTful call GET (Release):  /export/" + artifactId);
 
     final ReleaseService releaseService = new ReleaseServiceJpa();
     try {

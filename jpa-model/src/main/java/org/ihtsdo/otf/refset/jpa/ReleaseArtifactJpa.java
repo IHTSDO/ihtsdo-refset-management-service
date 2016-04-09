@@ -61,6 +61,10 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
   @ManyToOne(targetEntity = ReleaseInfoJpa.class)
   private ReleaseInfo releaseInfo;
 
+  /** The io handler id - default to RF2 for backwards compatibility */
+  @Column(nullable = true)
+  private String ioHandlerId = "DEFAULT";
+
   /** The data. */
   @Lob
   @Column(nullable = false)
@@ -85,6 +89,7 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
     lastModifiedBy = artifact.getLastModifiedBy();
     releaseInfo = artifact.getReleaseInfo();
     data = artifact.getData();
+    ioHandlerId = artifact.getIoHandlerId();
   }
 
   /* see superclass */
@@ -148,7 +153,19 @@ public class ReleaseArtifactJpa implements ReleaseArtifact {
   }
 
   /* see superclass */
-  //@XmlElement(type = ReleaseInfoJpa.class)
+  @Override
+  public String getIoHandlerId() {
+    return ioHandlerId;
+  }
+
+  /* see superclass */
+  @Override
+  public void setIoHandlerId(String ioHandlerId) {
+    this.ioHandlerId = ioHandlerId;
+  }
+
+  /* see superclass */
+  // @XmlElement(type = ReleaseInfoJpa.class)
   @XmlTransient
   @Override
   public ReleaseInfo getReleaseInfo() {

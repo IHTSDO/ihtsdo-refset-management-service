@@ -104,6 +104,9 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
     stagedRefset =
         stageRefset(refset, StagingType.BETA, releaseInfo.getEffectiveTime());
 
+    // Reread release info in case transactions were used
+    releaseInfo = getReleaseInfo(releaseInfo.getId());
+
     // Copy the release info, copy any release artifacts from
     // the origin refset
     ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
@@ -117,8 +120,9 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
         handler.exportMembers(stagedRefset, stagedRefset.getMembers());
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
+    artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getFileName(stagedRefset.getProject()
+    artifact.setName(handler.getBetaFileName(stagedRefset.getProject()
         .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
@@ -191,8 +195,9 @@ public class PerformRefsetBetaAlgorithm extends RefsetServiceJpa implements
           handler.exportMembers(stagedRefset, Lists.newArrayList(delta));
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
+      artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getFileName(refset.getProject().getNamespace(),
+      artifact.setName(handler.getBetaFileName(refset.getProject().getNamespace(),
           "Delta", releaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());

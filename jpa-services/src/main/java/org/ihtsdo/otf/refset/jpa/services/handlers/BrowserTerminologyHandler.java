@@ -1,5 +1,5 @@
-/**
- * Copyright 2016 West Coast Informatics, LLC
+/*
+ *    Copyright 2015 West Coast Informatics, LLC
  */
 package org.ihtsdo.otf.refset.jpa.services.handlers;
 
@@ -90,11 +90,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       throw new Exception("Required property url not specified.");
     }
 
-    if (ConfigUtility.getConfigProperties().containsKey(
-        "terminology.handler.DEFAULT.assignNames")) {
-      assignNames =
-          Boolean.valueOf(ConfigUtility.getConfigProperties().getProperty(
-              "terminology.handler.DEFAULT.assignNames"));
+    if (ConfigUtility.getConfigProperties()
+        .containsKey("terminology.handler.DEFAULT.assignNames")) {
+      assignNames = Boolean.valueOf(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.DEFAULT.assignNames"));
     }
   }
 
@@ -106,20 +105,20 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getTerminologyEditions() throws Exception {
-    final Set<String> set = new HashSet<>();
+  public List<Terminology> getTerminologyEditions() throws Exception {
+    final Set<Terminology> set = new HashSet<>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
-    Logger.getLogger(getClass()).debug(
-        "  Get terminology editions - " + url + "/server/releases");
+    Logger.getLogger(getClass())
+        .debug("  Get terminology editions - " + url + "/server/releases");
     final WebTarget target = client.target(url + "/server/releases");
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -128,12 +127,20 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     JsonNode entry = null;
     int index = 0;
     while ((entry = doc.get(index++)) != null) {
-      set.add(entry.get("databaseName").asText());
+      final Terminology terminology = new TerminologyJpa();
+      terminology.setTerminology(entry.get("databaseName").asText());
+      terminology.setName(entry.get("resourceSetName").asText());
+      set.add(terminology);
     }
 
     // Sort results
-    List<String> editions = new ArrayList<String>(set);
-    Collections.sort(editions);
+    List<Terminology> editions = new ArrayList<Terminology>(set);
+    Collections.sort(editions, new Comparator<Terminology>() {
+      @Override
+      public int compare(Terminology o1, Terminology o2) {
+        return o1.getTerminology().compareTo(o2.getTerminology());
+      }
+    });
     return editions;
   }
 
@@ -144,16 +151,16 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final List<Terminology> list = new ArrayList<Terminology>();
     // Make a webservice call
     final Client client = ClientBuilder.newClient();
-    Logger.getLogger(getClass()).debug(
-        "  Get terminology versions - " + url + "/server/releases");
+    Logger.getLogger(getClass())
+        .debug("  Get terminology versions - " + url + "/server/releases");
     final WebTarget target = client.target(url + "/server/releases");
     final Response response = target.request(accept).get();
     final String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -194,11 +201,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
 
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
-            + conceptId;
-    Logger.getLogger(getClass()).debug(
-        "  Get replacement concepts - " + targetUrl);
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/concepts/" + conceptId;
+    Logger.getLogger(getClass())
+        .debug("  Get replacement concepts - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
     final String resultString = response.readEntity(String.class);
@@ -211,8 +217,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -226,15 +232,15 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       }
       final Concept concept = new ConceptJpa();
 
-      concept.setActive(membership.get("cidValue").get("active").asText()
-          .equals("true"));
-      concept.setTerminologyId(membership.get("cidValue").get("conceptId")
-          .asText());
+      concept.setActive(
+          membership.get("cidValue").get("active").asText().equals("true"));
+      concept.setTerminologyId(
+          membership.get("cidValue").get("conceptId").asText());
       concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(version));
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(membership.get("cidValue").get("module").asText());
-      concept.setDefinitionStatusId(membership.get("refset").get("conceptId")
-          .asText());
+      concept.setDefinitionStatusId(
+          membership.get("refset").get("conceptId").asText());
 
       concept.setName(membership.get("cidValue").get("defaultTerm").asText());
 
@@ -252,9 +258,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "  resolve expression - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+    Logger.getLogger(getClass()).debug("  resolve expression - " + terminology
+        + ", " + version + ", " + expr + ", " + pfs);
     final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = pfs;
@@ -274,12 +279,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // are and make a second call if needed
     final int initialMaxLimit = 1000;
 
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version
-            + "/query/concepts?ecQuery="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=" + Math.min(initialMaxLimit, localPfs.getMaxResults())
-            + "&offset=" + localPfs.getStartIndex();
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/query/concepts?ecQuery="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+        + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&offset="
+        + localPfs.getStartIndex();
     Logger.getLogger(getClass()).debug("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
@@ -295,8 +299,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ConceptList conceptList = new ConceptListJpa();
@@ -314,11 +318,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-          "effectiveTime").asText()));
+      concept.setLastModified(ConfigUtility.DATE_FORMAT
+          .parse(conceptNode.get("effectiveTime").asText()));
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatusId")
-          .asText());
+      concept.setDefinitionStatusId(
+          conceptNode.get("definitionStatusId").asText());
       concept.setName(conceptNode.get("fsn").asText());
       concept.setPublishable(true);
       concept.setPublished(true);
@@ -328,20 +332,19 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // If the total is over the initial max limit and pfs max results is too.
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
-      target =
-          client.target(url + "/snomed/" + terminology + "/v" + version
-              + "/query/concepts?ecQuery="
-              + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-              + "&limit=" + (total - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + localPfs.getStartIndex()));
+      target = client.target(url + "/snomed/" + terminology + "/v" + version
+          + "/query/concepts?ecQuery="
+          + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
+          + (total - initialMaxLimit) + "&offset="
+          + (initialMaxLimit + localPfs.getStartIndex()));
 
       response = target.request(accept).get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
+        throw new Exception(
+            "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -355,11 +358,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode
-            .get("effectiveTime").asText()));
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
         concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(conceptNode.get("definitionStatusId")
-            .asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatusId").asText());
         concept.setName(conceptNode.get("fsn").asText());
         concept.setPublishable(true);
         concept.setPublished(true);
@@ -377,9 +380,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   @SuppressWarnings("javadoc")
   public ConceptList resolveExpressionBrowser(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).debug(
-        "  resolve expression - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+    Logger.getLogger(getClass()).debug("  resolve expression - " + terminology
+        + ", " + version + ", " + expr + ", " + pfs);
     final Client client = ClientBuilder.newClient();
 
     PfsParameter localPfs = pfs;
@@ -403,12 +405,11 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     Logger.getLogger(getClass()).debug("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response =
-        target.request(accept).post(
-            Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
-                + Math.min(initialMaxLimit, localPfs.getMaxResults())
-                + "\", \"skip\": \"" + localPfs.getStartIndex()
-                + "\", \"form\": \"inferred\" }"));
+    Response response = target.request(accept)
+        .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
+            + Math.min(initialMaxLimit, localPfs.getMaxResults())
+            + "\", \"skip\": \"" + localPfs.getStartIndex()
+            + "\", \"form\": \"inferred\" }"));
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -419,8 +420,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ConceptList conceptList = new ConceptListJpa();
@@ -433,7 +434,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (doc.get("computeResponse") == null) {
       return conceptList;
     }
-    for (final JsonNode conceptNode : doc.get("computeResponse").get("matches")) {
+    for (final JsonNode conceptNode : doc.get("computeResponse")
+        .get("matches")) {
       final Concept concept = new ConceptJpa();
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
@@ -455,22 +457,20 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     // If the total is over the initial max limit and pfs max results is too.
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
 
-      target =
-          client.target(url + "/expressions/" + terminology + "/v" + version
-              + "/execute/brief");
+      target = client.target(url + "/expressions/" + terminology + "/v"
+          + version + "/execute/brief");
 
-      response =
-          target.request(accept).post(
-              Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
-                  + (total - initialMaxLimit) + "\", \"skip\": \""
-                  + (initialMaxLimit + localPfs.getStartIndex())
-                  + "\", \"form\": \"inferred\" }"));
+      response = target.request(accept)
+          .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
+              + (total - initialMaxLimit) + "\", \"skip\": \""
+              + (initialMaxLimit + localPfs.getStartIndex())
+              + "\", \"form\": \"inferred\" }"));
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
+        throw new Exception(
+            "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -479,8 +479,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (doc.get("computeResponse") == null) {
         return conceptList;
       }
-      for (final JsonNode conceptNode : doc.get("computeResponse").get(
-          "matches")) {
+      for (final JsonNode conceptNode : doc.get("computeResponse")
+          .get("matches")) {
         final Concept concept = new ConceptJpa();
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
@@ -518,11 +518,10 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     final Client client = ClientBuilder.newClient();
 
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version
-            + "/query/concepts?ecQuery="
-            + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
-            + "&limit=1&offset=0";
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/query/concepts?ecQuery="
+        + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20")
+        + "&limit=1&offset=0";
     Logger.getLogger(getClass()).debug("  Count expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
@@ -537,8 +536,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -563,10 +562,9 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     Logger.getLogger(getClass()).debug("  Count expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
-    Response response =
-        target.request(accept).post(
-            Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \"" + 1
-                + "\", \"skip\": \"" + 0 + "\", \"form\": \"inferred\" }"));
+    Response response = target.request(accept)
+        .post(Entity.json("{ \"expression\": \"" + expr + "\", \"limit\": \""
+            + 1 + "\", \"skip\": \"" + 0 + "\", \"form\": \"inferred\" }"));
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
@@ -577,8 +575,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -595,9 +593,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     String version) throws Exception {
 
     final Client client = ClientBuilder.newClient();
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId;
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/concepts/" + terminologyId;
     Logger.getLogger(getClass()).debug("  Get full concept - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
@@ -610,8 +607,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final Concept concept = new ConceptJpa();
@@ -626,8 +623,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       concept.setId(1L);
     }
 
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
-        "effectiveTime").asText()));
+    concept.setEffectiveTime(
+        ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
     concept.setLastModified(concept.getEffectiveTime());
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("module").asText());
@@ -647,12 +644,12 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         if (!description.isActive()) {
           continue;
         }
-        description.setCaseSignificanceId(desc.get("ics").get("conceptId")
-            .asText());
+        description
+            .setCaseSignificanceId(desc.get("ics").get("conceptId").asText());
 
         description.setConcept(concept);
-        description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(desc.get(
-            "effectiveTime").asText()));
+        description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(desc.get("effectiveTime").asText()));
         description.setLanguageCode(desc.get("lang").asText());
         description.setLastModified(description.getEffectiveTime());
         description.setLastModifiedBy(terminology);
@@ -670,8 +667,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
           member.setDescriptionId(terminologyId);
           String key = language.fieldNames().next();
           member.setRefsetId(key);
-          member.setAcceptabilityId(language.get("acceptability")
-              .get("conceptId").asText());
+          member.setAcceptabilityId(
+              language.get("acceptability").get("conceptId").asText());
           description.getLanguageRefsetMembers().add(member);
         }
 
@@ -689,17 +686,17 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
           continue;
         }
 
-        rel.setCharacteristicTypeId(relNode.get("charType").get("conceptId")
-            .asText());
+        rel.setCharacteristicTypeId(
+            relNode.get("charType").get("conceptId").asText());
         // Only keep INFERRED_RELATIONSHIP rels
         if (!rel.getCharacteristicTypeId().equals("900000000000011006")) {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
-        rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId")
-            .asText()));
-        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
-            "effectiveTime").asText()));
+        rel.setRelationshipGroup(
+            Integer.valueOf(relNode.get("groupId").asText()));
+        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(relNode.get("effectiveTime").asText()));
         rel.setModuleId(relNode.get("module").asText());
 
         rel.setTypeId(relNode.get("type").get("defaultTerm").asText()
@@ -717,8 +714,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         // rel.setTerminologyId(relNode.get("relationshipId").asText());
 
         final Concept destination = new ConceptJpa();
-        destination.setTerminologyId(relNode.get("target").get("conceptId")
-            .asText());
+        destination
+            .setTerminologyId(relNode.get("target").get("conceptId").asText());
         // Reuse as id if only digits, otherwise dummy id
         if (destination.getTerminologyId().matches("^\\d+$")) {
           destination.setId(Long.parseLong(destination.getTerminologyId()));
@@ -726,8 +723,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
           destination.setId(1L);
         }
         destination.setName(relNode.get("target").get("defaultTerm").asText());
-        destination.setDefinitionStatusId(relNode.get("target")
-            .get("definitionStatus").asText());
+        destination.setDefinitionStatusId(
+            relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
 
         concept.getRelationships().add(rel);
@@ -750,9 +747,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
     // Make a webservice call to browser api
     final Client client = ClientBuilder.newClient();
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId;
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/concepts/" + terminologyId;
     Logger.getLogger(getClass()).debug("  Get concept - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
     final Response response = target.request(accept).get();
@@ -764,8 +760,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
       }
     } else {
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -778,8 +774,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     concept.setActive(doc.get("active").asText().equals("true"));
 
     concept.setTerminologyId(doc.get("conceptId").asText());
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
-        "effectiveTime").asText()));
+    concept.setEffectiveTime(
+        ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
     concept.setLastModified(concept.getEffectiveTime());
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("module").asText());
@@ -837,12 +833,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
     // Use getConcept() if it's an id, otherwise search term
     final String targetUrl =
-        url
-            + "/snomed/"
-            + terminology
-            + "/v"
-            + version
-            + "/descriptions?query="
+        url + "/snomed/" + terminology + "/v" + version + "/descriptions?query="
             + URLEncoder.encode(query, "UTF-8").replaceAll(" ", "%20")
             + "&searchMode=partialMatching&lang=english&statusFilter=activeAndInactive&"
             + "skipTo=" + localPfs.getStartIndex() + "&returnLimit="
@@ -861,8 +852,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -877,8 +868,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
       concept.setTerminologyId(conceptNode.get("conceptId").asText());
       concept.setModuleId(conceptNode.get("module").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-          .asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
       concept.setName(conceptNode.get("term").asText());
 
       concept.setPublishable(true);
@@ -888,8 +879,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     }
 
     // Set total count
-    conceptList.setTotalCount(Integer.parseInt(doc.get("details").get("total")
-        .asText()));
+    conceptList.setTotalCount(
+        Integer.parseInt(doc.get("details").get("total").asText()));
     return conceptList;
   }
 
@@ -898,18 +889,17 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
   public ConceptList findRefsetsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
     if (query != null && !query.isEmpty()) {
-      List<Concept> list =
-          resolveExpression(
-              "<< 900000000000496009 | Simple map type reference set  |",
-              terminology, version, pfs).getObjects();
+      List<Concept> list = resolveExpression(
+          "<< 900000000000496009 | Simple map type reference set  |",
+          terminology, version, pfs).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
       };
       ConceptList result = new ConceptListJpa();
       int[] totalCt = new int[1];
-      result.setObjects(service.applyPfsToList(list, Concept.class, totalCt,
-          pfs));
+      result.setObjects(
+          service.applyPfsToList(list, Concept.class, totalCt, pfs));
       result.setTotalCount(totalCt[0]);
       service.close();
       return result;
@@ -923,14 +913,13 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version) throws Exception {
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId + "/parents?form=inferred";
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/concepts/" + terminologyId + "/parents?form=inferred";
     Logger.getLogger(getClass()).debug("  Get concept parents - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
     final Response response = target.request(accept).get();
@@ -938,8 +927,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();
@@ -977,9 +966,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     final ConceptList conceptList = new ConceptListJpa();
 
     final Client client = ClientBuilder.newClient();
-    final String targetUrl =
-        url + "/snomed/" + terminology + "/v" + version + "/concepts/"
-            + terminologyId + "/children?form=inferred";
+    final String targetUrl = url + "/snomed/" + terminology + "/v" + version
+        + "/concepts/" + terminologyId + "/children?form=inferred";
     Logger.getLogger(getClass()).debug("  Get concept children - " + targetUrl);
     final WebTarget target = client.target(targetUrl);
     final Response response = target.request("accept").get();
@@ -987,8 +975,8 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     final ObjectMapper mapper = new ObjectMapper();

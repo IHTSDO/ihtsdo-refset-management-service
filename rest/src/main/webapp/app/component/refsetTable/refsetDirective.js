@@ -2317,7 +2317,7 @@ tsApp
                 $scope.pageSize = 5;
                 $scope.paging = paging;
                 $scope.metadata = metadata;
-                $scope.versions = metadata.versions[metadata.terminologies[0]].sort().reverse();
+                $scope.versions = metadata.versions[metadata.terminologies[0].terminology].sort().reverse();
                 $scope.errors = [];
                 $scope.statusTypes = [ 'Active', 'Retired' ];
                 $scope.pagedStagedInclusions = [];

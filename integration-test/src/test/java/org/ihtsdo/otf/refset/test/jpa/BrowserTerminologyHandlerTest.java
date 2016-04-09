@@ -204,7 +204,7 @@ public class BrowserTerminologyHandlerTest extends JpaSupport {
   public void testGetTerminologyEditions() throws Exception {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
     ProjectService service = new ProjectServiceJpa();
-    List<String> terminologyList =
+    List<Terminology> terminologyList =
         service.getTerminologyHandler().getTerminologyEditions();
     assertEquals(3, terminologyList.size());
     service.close();

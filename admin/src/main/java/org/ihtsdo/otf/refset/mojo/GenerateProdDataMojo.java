@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -129,8 +128,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
       }
 
       boolean serverRunning = ConfigUtility.isServerActive();
-      getLog().info(
-          "Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
+      getLog()
+          .info("Server status detected:  " + (!serverRunning ? "DOWN" : "UP"));
       if (serverRunning) {
         throw new Exception("Server must not be running to generate data");
       }
@@ -163,9 +162,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
       //
       // Add "prod" users
       //
-      final BufferedReader in =
-          new BufferedReader(new FileReader(new File(
-              "../config/prod/src/main/resources/users.txt")));
+      final BufferedReader in = new BufferedReader(new FileReader(
+          new File("../config/prod/src/main/resources/users.txt")));
       String line;
       while ((line = in.readLine()) != null) {
         final String[] tokens = FieldedStringTokenizer.split(line, "|");
@@ -211,9 +209,7 @@ public class GenerateProdDataMojo extends AbstractMojo {
        * <pre>
        *  - Project 1 - IHTSDO
        *     - Refset 1: extensional GP/FP
-       *     - Refset 2: extensional CMT top 2500
-       *     - Refset 3: extensional CMT Radiology
-       *     - Refset 4: extensional Spanish Translation
+       *     - Refset 2: extensional Spanish Translation
        * </pre>
        */
 
@@ -227,47 +223,27 @@ public class GenerateProdDataMojo extends AbstractMojo {
               "en-edition", "20150731", Refset.Type.EXTENSIONAL, project1,
               "450970008", null, "900000000000207008", false, admin);
 
-      // CMT Top2500
-      // Use the "tech preview module" and only publish as far as BETA
-      RefsetJpa cmt2500 =
-          makeRefset("CMT Top 2500 Usage Subset", null, "cmt",
-              "cmt.top25002.txt", "en-edition", "20160131",
-              Refset.Type.EXTENSIONAL, project1, null, null, "705115006",
-              false, admin);
-
-      // CMT Radiology
-      // Use the "tech preview module" and only publish as far as BETA
-      RefsetJpa cmtRadiology =
-          makeRefset("CMT Top Radiology Subset", null, "cmt",
-              "cmt.radiology2.txt", "en-edition", "20160131",
-              Refset.Type.EXTENSIONAL, project1, null, null, "705115006",
-              false, admin);
-
       // RELEASE refsets -- good test of release process.
       getLog().info("Release IHTSDO refsets");
-      releaseRefset(gpfp, true, admin);
-      releaseRefset(cmt2500, false, admin);
-      releaseRefset(cmtRadiology, false, admin);
+      releaseRefset(gpfp, "20150930", true, admin);
 
       // Create IHTSDO Translations
       getLog().info("Create IHTSDO translations");
 
       // Spanish edition
       // No members needed, just load the translation
-      RefsetJpa sctspa =
-          makeRefset("SNOMED CT Spanish Edition", null, null, null,
-              "en-edition", "20160131", Refset.Type.EXTENSIONAL, project1,
-              null, null, "449081005", false, admin);
+      RefsetJpa sctspa = makeRefset("SNOMED CT Spanish Edition", null, null,
+          null, "en-edition", "20160131", Refset.Type.EXTENSIONAL, project1,
+          null, null, "449081005", false, admin);
 
       // Create spanish translation
-      TranslationJpa sctspaTranslation =
-          makeTranslation("SNOMED CT Spanish Edition",
-              sctspa.getTerminologyId(), sctspa, project1, "sctspa",
-              "SnomedSpanishTranslation.zip", "es", admin);
+      TranslationJpa sctspaTranslation = makeTranslation(
+          "SNOMED CT Spanish Edition", sctspa.getTerminologyId(), sctspa,
+          project1, "sctspa", "SnomedSpanishTranslation.zip", "es", admin);
 
       // RELEASE translations
       getLog().info("Release IHTSDO translations");
-      releaseTranslation(sctspaTranslation, true, admin);
+      releaseTranslation(sctspaTranslation, "20151031", true, admin);
 
       getLog().info("Done ...");
     } catch (Exception e) {
@@ -367,9 +343,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
     ValidationServiceRest validation = new ValidationServiceRestImpl();
 
     // Validate refset
-    ValidationResult result =
-        validation.validateRefset(refset, refset.getProject().getId(),
-            auth.getAuthToken());
+    ValidationResult result = validation.validateRefset(refset,
+        refset.getProject().getId(), auth.getAuthToken());
     if (!result.isValid()) {
       Logger.getLogger(getClass()).error(result.toString());
       throw new Exception("Refset does not pass validation.");
@@ -382,16 +357,14 @@ public class GenerateProdDataMojo extends AbstractMojo {
     if (type == Refset.Type.EXTENSIONAL && file != null
         && file.contains("Refset")) {
       // Import members (from file)
-      ValidationResult vr =
-          refsetService.beginImportMembers(refset.getId(), "DEFAULT",
-              auth.getAuthToken());
+      ValidationResult vr = refsetService.beginImportMembers(refset.getId(),
+          "DEFAULT", auth.getAuthToken());
       if (!vr.isValid()) {
         throw new Exception("import staging is invalid - " + vr);
       }
       refsetService = new RefsetServiceRestImpl();
-      InputStream in =
-          new FileInputStream(new File("../config/src/main/resources/data/"
-              + dir + "/" + file));
+      InputStream in = new FileInputStream(
+          new File("../config/src/main/resources/data/" + dir + "/" + file));
       refsetService.finishImportMembers(null, in, refset.getId(), "DEFAULT",
           auth.getAuthToken());
       in.close();
@@ -399,9 +372,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
 
     // Otherwise, assume a file of ids, and add each member
     else if (type == Refset.Type.EXTENSIONAL && file != null) {
-      final BufferedReader in =
-          new BufferedReader(new FileReader(new File(
-              "../config/src/main/resources/data/" + dir, file)));
+      final BufferedReader in = new BufferedReader(new FileReader(
+          new File("../config/src/main/resources/data/" + dir, file)));
       String line;
       while ((line = in.readLine()) != null) {
         line = line.replace("\r", "");
@@ -429,19 +401,19 @@ public class GenerateProdDataMojo extends AbstractMojo {
    * Release refset.
    *
    * @param refset the refset
+   * @param effectiveTime the effective time
    * @param finishFlag the finish flag
    * @param auth the auth
    * @return the refset jpa
    * @throws Exception the exception
    */
-  public RefsetJpa releaseRefset(Refset refset, boolean finishFlag, User auth)
-    throws Exception {
+  public RefsetJpa releaseRefset(Refset refset, String effectiveTime,
+    boolean finishFlag, User auth) throws Exception {
     ReleaseServiceRest releaseService = new ReleaseServiceRestImpl();
     getLog().info("  refset = " + refset.getName());
     // Begin release
     getLog().info("    begin");
-    releaseService.beginRefsetRelease(refset.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+    releaseService.beginRefsetRelease(refset.getId(), effectiveTime,
         auth.getAuthToken());
     // Validate release
     getLog().info("    validate");
@@ -484,8 +456,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
     getLog().info("  translation = " + name);
     final TranslationJpa translation = new TranslationJpa();
     translation.setName(name);
-    translation.setDescription("Description of translation "
-        + translation.getName());
+    translation
+        .setDescription("Description of translation " + translation.getName());
     translation.setActive(true);
     translation.setEffectiveTime(null);
     translation.setLanguage(lang);
@@ -507,23 +479,21 @@ public class GenerateProdDataMojo extends AbstractMojo {
 
     // Import members (from file) - switch file based on counter
     translationService = new TranslationServiceRestImpl();
-    ValidationResult vr =
-        translationService.beginImportConcepts(translation.getId(), "DEFAULT",
-            auth.getAuthToken());
+    ValidationResult vr = translationService.beginImportConcepts(
+        translation.getId(), "DEFAULT", auth.getAuthToken());
     if (!vr.isValid()) {
       throw new Exception("translation staging is not valid - " + vr);
     }
     translationService = new TranslationServiceRestImpl();
-    InputStream in =
-        new FileInputStream(new File("../config/src/main/resources/data/" + dir
-            + "/" + file));
+    InputStream in = new FileInputStream(
+        new File("../config/src/main/resources/data/" + dir + "/" + file));
     translationService.finishImportConcepts(null, in, translation.getId(),
         "DEFAULT", auth.getAuthToken());
     in.close();
 
     final TranslationJpa retval =
-        (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-            translation.getId(), auth.getAuthToken());
+        (TranslationJpa) new TranslationServiceRestImpl()
+            .getTranslation(translation.getId(), auth.getAuthToken());
     retval.setSpellingDictionary(null);
     retval.setPhraseMemory(null);
     return retval;
@@ -533,19 +503,19 @@ public class GenerateProdDataMojo extends AbstractMojo {
    * Release translation.
    *
    * @param translation the translation
+   * @param effectiveTime the effective time
    * @param finishFlag the finish flag
    * @param auth the auth
    * @return the translation jpa
    * @throws Exception the exception
    */
   public TranslationJpa releaseTranslation(Translation translation,
-    boolean finishFlag, User auth) throws Exception {
+    String effectiveTime, boolean finishFlag, User auth) throws Exception {
     ReleaseServiceRest releaseService = new ReleaseServiceRestImpl();
     getLog().info("  translation = " + translation.getName());
     // Begin release
     getLog().info("    begin");
-    releaseService.beginTranslationRelease(translation.getId(),
-        ConfigUtility.DATE_FORMAT.format(Calendar.getInstance()),
+    releaseService.beginTranslationRelease(translation.getId(), effectiveTime,
         auth.getAuthToken());
     // Validate release
     getLog().info("    validate");
@@ -566,8 +536,8 @@ public class GenerateProdDataMojo extends AbstractMojo {
           auth.getAuthToken());
     }
 
-    return (TranslationJpa) new TranslationServiceRestImpl().getTranslation(
-        translation.getId(), auth.getAuthToken());
+    return (TranslationJpa) new TranslationServiceRestImpl()
+        .getTranslation(translation.getId(), auth.getAuthToken());
   }
 
   /**

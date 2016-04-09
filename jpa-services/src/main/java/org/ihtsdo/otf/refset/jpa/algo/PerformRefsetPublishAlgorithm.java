@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Refset;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedRefsetChange;
 import org.ihtsdo.otf.refset.algo.Algorithm;
@@ -15,6 +16,7 @@ import org.ihtsdo.otf.refset.helpers.LocalException;
 import org.ihtsdo.otf.refset.helpers.ReleaseInfoList;
 import org.ihtsdo.otf.refset.jpa.services.RefsetServiceJpa;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -29,8 +31,8 @@ import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
  * </pre>
  * 
  */
-public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
-    Algorithm {
+public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa
+    implements Algorithm {
 
   /** Listeners. */
   private List<ProgressListener> listeners = new ArrayList<>();
@@ -63,11 +65,11 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
   @Override
   public void checkPreconditions() throws Exception {
     if (!refset.isStaged())
-      throw new LocalException("refset workflowstatus is not staged for "
-          + refset.getId());
+      throw new LocalException(
+          "refset workflowstatus is not staged for " + refset.getId());
     stagedRefsetChange = getStagedRefsetChangeFromOrigin(refset.getId());
-    if (!WorkflowStatus.BETA.equals(stagedRefsetChange.getStagedRefset()
-        .getWorkflowStatus())) {
+    if (!WorkflowStatus.BETA
+        .equals(stagedRefsetChange.getStagedRefset().getWorkflowStatus())) {
       throw new Exception(
           "Refset must be staged and with a workflow status of BETA");
     }
@@ -89,8 +91,8 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     ReleaseInfoList list =
         findRefsetReleasesForQuery(refset.getId(), null, null);
     if (list.getCount() != 1) {
-      throw new LocalException("Cannot find release info for refset "
-          + refset.getId());
+      throw new LocalException(
+          "Cannot find release info for refset " + refset.getId());
     }
     ReleaseInfo releaseInfo = list.getObjects().get(0);
     removeReleaseInfo(releaseInfo.getId());
@@ -107,14 +109,23 @@ public class PerformRefsetPublishAlgorithm extends RefsetServiceJpa implements
     // Update the PUBLISHED refset release info published/planned flags.
     list = findRefsetReleasesForQuery(stagedRefset.getId(), null, null);
     if (list.getCount() != 1) {
-      throw new LocalException("Cannot find release info for staged refset "
-          + stagedRefset.getId());
+      throw new LocalException(
+          "Cannot find release info for staged refset " + stagedRefset.getId());
     }
     releaseInfo = list.getObjects().get(0);
     releaseInfo.setPublished(true);
     releaseInfo.setPlanned(false);
     releaseInfo.setLastModifiedBy(userName);
     updateReleaseInfo(releaseInfo);
+
+    // Fix the artifact filenames
+    for (final ReleaseArtifact artifact : releaseInfo.getArtifacts()) {
+      ExportRefsetHandler handler =
+          getExportRefsetHandler(artifact.getIoHandlerId());
+      // Convert beta filename to published filename
+      artifact.setName(handler.getFileName(artifact.getName()));
+      updateReleaseArtifact(artifact);
+    }
 
     // feedback effective times
     for (ConceptRefsetMember member : refset.getMembers()) {

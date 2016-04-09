@@ -23,6 +23,9 @@ public class TerminologyJpa implements Terminology {
   /** The version. */
   private String version;
 
+  /** The name. */
+  private String name;
+
   /**
    * Instantiates an empty {@link TerminologyJpa}.
    */
@@ -39,6 +42,7 @@ public class TerminologyJpa implements Terminology {
     id = other.getId();
     terminology = other.getTerminology();
     version = other.getVersion();
+    name = other.getName();
   }
 
   /* see superclass */
@@ -80,12 +84,25 @@ public class TerminologyJpa implements Terminology {
 
   /* see superclass */
   @Override
+  public String getName() {
+    return name;
+  }
+
+  /* see superclass */
+  @Override
+  public void setName(String name) {
+    this.name = name;
+  }
+
+  /* see superclass */
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result =
         prime * result + ((terminology == null) ? 0 : terminology.hashCode());
     result = prime * result + ((version == null) ? 0 : version.hashCode());
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
     return result;
   }
 
@@ -109,6 +126,11 @@ public class TerminologyJpa implements Terminology {
         return false;
     } else if (!version.equals(other.version))
       return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
     return true;
   }
 
@@ -116,7 +138,7 @@ public class TerminologyJpa implements Terminology {
   @Override
   public String toString() {
     return "TerminologyJpa [id=" + id + ", terminology=" + terminology
-        + ", version=" + version + "]";
+        + ", version=" + version + ", name=" + name + "]";
   }
 
 }

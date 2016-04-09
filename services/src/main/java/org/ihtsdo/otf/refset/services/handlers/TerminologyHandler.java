@@ -43,7 +43,7 @@ public interface TerminologyHandler extends Configurable {
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public List<String> getTerminologyEditions() throws Exception;
+  public List<Terminology> getTerminologyEditions() throws Exception;
 
   /**
    * Returns the terminology versions.

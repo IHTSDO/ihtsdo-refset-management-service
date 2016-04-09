@@ -1002,6 +1002,7 @@ public class GenerateSampleDataMojo extends AbstractMojo {
 
     Path path = Paths.get(pathToFile);
     byte[] data = Files.readAllBytes(path);
+    artifact.setIoHandlerId("DEFAULT");
     artifact.setData(data);
 
     releaseInfo.getArtifacts().add(artifact);

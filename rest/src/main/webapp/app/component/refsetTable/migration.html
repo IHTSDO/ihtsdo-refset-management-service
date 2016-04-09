@@ -16,7 +16,7 @@
           <td>
             <select ng-model="newTerminology"
               ng-change="terminologySelected(refset.terminology)"
-              ng-options="item for item in metadata.terminologies"></select>
+              ng-options="item.name for item.terminology in metadata.terminologies"></select>
           </td>
         </tr>
         <tr>

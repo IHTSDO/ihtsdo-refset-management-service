@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.ihtsdo.otf.refset.ReleaseArtifact;
 import org.ihtsdo.otf.refset.ReleaseInfo;
 import org.ihtsdo.otf.refset.StagedTranslationChange;
 import org.ihtsdo.otf.refset.Translation;
@@ -17,6 +18,7 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.services.handlers.ExportRefsetHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
 import org.ihtsdo.otf.refset.workflow.WorkflowStatus;
@@ -67,9 +69,10 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     if (!translation.isStaged())
       throw new LocalException("translation workflowstatus is not staged for "
           + translation.getId());
-    stagedTranslationChange = getStagedTranslationChangeFromOrigin(translation.getId());
-    if (!WorkflowStatus.BETA.equals(stagedTranslationChange
-        .getStagedTranslation().getWorkflowStatus())) {
+    stagedTranslationChange =
+        getStagedTranslationChangeFromOrigin(translation.getId());
+    if (!WorkflowStatus.BETA.equals(
+        stagedTranslationChange.getStagedTranslation().getWorkflowStatus())) {
       throw new Exception(
           "Translation must be staged and with a workflow status of BETA");
     }
@@ -91,8 +94,8 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new LocalException("Cannot find release info for translation "
-          + translation.getId());
+      throw new LocalException(
+          "Cannot find release info for translation " + translation.getId());
     }
     ReleaseInfo releaseInfo = releaseInfoList.getObjects().get(0);
     removeReleaseInfo(releaseInfo.getId());
@@ -109,14 +112,23 @@ public class PerformTranslationPublishAlgorithm extends TranslationServiceJpa
     releaseInfoList =
         findTranslationReleasesForQuery(stagedTranslation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new LocalException("Cannot find release info for translation "
-          + translation.getId());
+      throw new LocalException(
+          "Cannot find release info for translation " + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);
     releaseInfo.setPublished(true);
     releaseInfo.setPlanned(false);
     releaseInfo.setLastModifiedBy(userName);
     updateReleaseInfo(releaseInfo);
+
+    // Fix the artifact filenames
+    for (final ReleaseArtifact artifact : releaseInfo.getArtifacts()) {
+      ExportRefsetHandler handler =
+          getExportRefsetHandler(artifact.getIoHandlerId());
+      // Convert beta filename to published filename
+      artifact.setName(handler.getFileName(artifact.getName()));
+      updateReleaseArtifact(artifact);
+    }
 
     // feedback effective times
     for (Concept concept : translation.getConcepts()) {

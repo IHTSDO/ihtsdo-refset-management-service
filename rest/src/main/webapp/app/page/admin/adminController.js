@@ -238,7 +238,7 @@ tsApp
         // Get $scope.metadata.terminologies
         $scope.getTerminologyEditions = function() {
           projectService.getTerminologyEditions().then(function(data) {
-            $scope.metadata.terminologies = data.strings;
+            $scope.metadata.terminologies = data.terminologies;
           });
 
         };
@@ -559,7 +559,7 @@ tsApp
 
           $scope.action = 'Add';
           $scope.project = {
-            terminology : metadata.terminologies[0],
+            terminology : metadata.terminologies[0].terminology,
             moduleId : user.userPreferences.moduleId,
             namespace : user.userPreferences.namespace,
             organization : user.userPreferences.organization,
@@ -693,7 +693,6 @@ tsApp
           };
           $scope.project = project;
           $scope.metadata = metadata;
-          $scope.terminologies = metadata.terminologies;
           $scope.validationChecks = validationChecks;
           $scope.availableChecks = [];
           $scope.selectedChecks = [];
