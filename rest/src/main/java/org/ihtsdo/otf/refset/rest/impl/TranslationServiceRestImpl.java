@@ -993,8 +993,13 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
     translationService.setTransactionPerOperation(false);
     translationService.beginTransaction();
     try {
+      if (concept.getTranslation() == null) {
+        throw new Exception("Concept does not have a valid translation "
+            + concept.getId());
+      }
       // Load translation
-      Translation translation = concept.getTranslation();
+      Translation translation =
+          translationService.getTranslation(concept.getTranslation().getId());
       if (translation == null) {
         throw new Exception("Concept does not have a valid translation "
             + concept.getId());
@@ -1021,24 +1026,35 @@ public class TranslationServiceRestImpl extends RootServiceRestImpl implements
       final Concept newConcept = translationService.addConcept(concept);
 
       // Add descriptions
-      for (final Description description : concept.getDescriptions()) {
+      List<Description> descriptions =
+          new ArrayList<>(concept.getDescriptions());
+      concept.getDescriptions().clear();
+      for (final Description description : descriptions) {
+
         description.setConcept(newConcept);
         description.setLastModifiedBy(userName);
         final Description newDescription =
             translationService.addDescription(description);
         newConcept.getDescriptions().add(newDescription);
+
         // Add language refset entries
-        for (final LanguageRefsetMember member : description
-            .getLanguageRefsetMembers()) {
-          member.setDescriptionId(newDescription.getTerminologyId());
+        List<LanguageRefsetMember> languages =
+            new ArrayList<>(description.getLanguageRefsetMembers());
+        description.getLanguageRefsetMembers().clear();
+        for (final LanguageRefsetMember member : languages) {
+          member.setDescriptionId(description.getTerminologyId());
           member.setLastModifiedBy(userName);
           translationService.addLanguageRefsetMember(member,
               translation.getTerminology());
-          description.getLanguageRefsetMembers().add(member);
         }
+        newDescription.setLastModifiedBy(userName);
+        translationService.updateDescription(newDescription);
+
       }
+      // Update concept now that has descriptions (needed for @IndexedEmbedded)
       newConcept.setLastModifiedBy(userName);
       translationService.updateConcept(newConcept);
+
       addLogEntry(translationService, userName, "ADD concept", translation
           .getProject().getId(), translation.getId(),
           newConcept.getTerminologyId() + ": " + newConcept.getName());
