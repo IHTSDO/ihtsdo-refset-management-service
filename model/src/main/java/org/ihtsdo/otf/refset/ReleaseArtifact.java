@@ -59,4 +59,17 @@ public interface ReleaseArtifact extends HasName, HasLastModified {
    */
   public Date getTimestamp();
 
+  /**
+   * Returns the io handler id.
+   *
+   * @return the io handler id
+   */
+  public String getIoHandlerId();
+
+  /**
+   * Sets the io handler id.
+   *
+   * @param ioHandlerId the io handler id
+   */
+  public void setIoHandlerId(String ioHandlerId);
 }

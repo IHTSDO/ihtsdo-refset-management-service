@@ -22,7 +22,7 @@ public class TerminologyListJpa extends AbstractResultList<Terminology>
 
   /* see superclass */
   @Override
-  @XmlElement(type = TerminologyJpa.class, name = "translations")
+  @XmlElement(type = TerminologyJpa.class, name = "terminologies")
   public List<Terminology> getObjects() {
     return super.getObjectsTransient();
   }

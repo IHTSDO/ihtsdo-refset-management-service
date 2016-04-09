@@ -33,14 +33,22 @@ public interface ExportTranslationHandler extends Configurable {
   public String getFileTypeFilter();
 
   /**
-   * Returns the file name.
+   * Returns the release file name computed from the beta file name.
+   *
+   * @param betaFileName the beta file name
+   * @return the file name
+   */
+  public String getFileName(String betaFileName);
+
+  /**
+   * Returns the beta file name.
    *
    * @param namespace the namespace
    * @param type the type
    * @param version the version
-   * @return the file name
+   * @return the beta file name
    */
-  public String getFileName(String namespace, String type, String version);
+  public String getBetaFileName(String namespace, String type, String version);
 
   /**
    * Returns the mime type.

@@ -112,11 +112,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
     // Uses the "DEFAULT" assignNames property - this must exist so that it can
     // be accessed externally
-    if (ConfigUtility.getConfigProperties().containsKey(
-        "terminology.handler.DEFAULT.assignNames")) {
-      assignNames =
-          Boolean.valueOf(ConfigUtility.getConfigProperties().getProperty(
-              "terminology.handler.DEFAULT.assignNames"));
+    if (ConfigUtility.getConfigProperties()
+        .containsKey("terminology.handler.DEFAULT.assignNames")) {
+      assignNames = Boolean.valueOf(ConfigUtility.getConfigProperties()
+          .getProperty("terminology.handler.DEFAULT.assignNames"));
     }
   }
 
@@ -128,10 +127,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public List<String> getTerminologyEditions() throws Exception {
-    return Arrays.asList(new String[] {
-      "SNOMEDCT"
-    });
+  public List<Terminology> getTerminologyEditions() throws Exception {
+    List<Terminology> result = new ArrayList<>();
+    Terminology t = new TerminologyJpa();
+    t.setTerminology("SNOMEDCT");
+    result.add(t);
+    return result;
   }
 
   /* see superclass */
@@ -150,8 +151,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
+        throw new Exception(
+            "Unexpected terminology server failure. Message = " + resultString);
       }
 
       /**
@@ -212,8 +213,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -272,9 +273,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     // Look up concepts - set "definition status id" to the reason for
     // inactivation
     // probably need a better placeholder for this, but for now - good enough
-    ConceptList list =
-        this.getConcepts(new ArrayList<>(reasonMap.keySet()), terminology,
-            version);
+    ConceptList list = this.getConcepts(new ArrayList<>(reasonMap.keySet()),
+        terminology, version);
     for (final Concept concept : list.getObjects()) {
       concept.setDefinitionStatusId(reasonMap.get(concept.getTerminologyId()));
     }
@@ -285,9 +285,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   @Override
   public ConceptList resolveExpression(String expr, String terminology,
     String version, PfsParameter pfs) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "  resolve expression - " + terminology + ", " + version + ", " + expr
-            + ", " + pfs);
+    Logger.getLogger(getClass()).info("  resolve expression - " + terminology
+        + ", " + version + ", " + expr + ", " + pfs);
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
 
@@ -327,8 +326,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return new ConceptListJpa();
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -384,12 +383,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
       concept.setActive(conceptNode.get("active").asText().equals("true"));
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-          "effectiveTime").asText()));
+      concept.setLastModified(ConfigUtility.DATE_FORMAT
+          .parse(conceptNode.get("effectiveTime").asText()));
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-          .asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
 
       // pt.term is the name
       concept.setName(conceptNode.get("pt").get("term").asText());
@@ -402,20 +401,18 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
     // If the total is over the initial max limit and pfs max results is too.
     if (total > initialMaxLimit && localPfs.getMaxResults() > initialMaxLimit) {
-      target =
-          client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-              + URLEncoder.encode(expr, "UTF-8") + "&limit="
-              + (total - initialMaxLimit) + "&offset="
-              + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
-      response =
-          target.request(accept).header("Authorization", authHeader)
-              .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
+      target = client.target(url + "/" + branch + "/" + version
+          + "/concepts?escg=" + URLEncoder.encode(expr, "UTF-8") + "&limit="
+          + (total - initialMaxLimit) + "&offset="
+          + (initialMaxLimit + localPfs.getStartIndex()) + "&expand=pt()");
+      response = target.request(accept).header("Authorization", authHeader)
+          .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
       resultString = response.readEntity(String.class);
       if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
         // n/a
       } else {
-        throw new Exception("Unexpected terminology server failure. Message = "
-            + resultString);
+        throw new Exception(
+            "Unexpected terminology server failure. Message = " + resultString);
       }
       mapper = new ObjectMapper();
       doc = mapper.readTree(resultString);
@@ -429,12 +426,12 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
         concept.setActive(conceptNode.get("active").asText().equals("true"));
         concept.setTerminologyId(conceptNode.get("id").asText());
-        concept.setLastModified(ConfigUtility.DATE_FORMAT.parse(conceptNode
-            .get("effectiveTime").asText()));
+        concept.setLastModified(ConfigUtility.DATE_FORMAT
+            .parse(conceptNode.get("effectiveTime").asText()));
         concept.setLastModifiedBy(terminology);
         concept.setModuleId(conceptNode.get("moduleId").asText());
-        concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-            .asText());
+        concept.setDefinitionStatusId(
+            conceptNode.get("definitionStatus").asText());
         // pt.term is the name
         if (conceptNode.get("pt") != null) {
           concept.setName(conceptNode.get("pt").get("term").asText());
@@ -480,8 +477,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         return 0;
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     ObjectMapper mapper = new ObjectMapper();
@@ -498,9 +495,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     String version) throws Exception {
     // Make a webservice call to SnowOwl to get concept
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId);
+    final WebTarget target = client.target(url + "browser/" + branch + "/"
+        + version + "/concepts/" + terminologyId);
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -513,8 +509,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       if (resultString.contains("loop did not match anything")) {
         return null;
       }
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -587,8 +583,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       concept.setId(1L);
     }
 
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(doc.get(
-        "effectiveTime").asText()));
+    concept.setEffectiveTime(
+        ConfigUtility.DATE_FORMAT.parse(doc.get("effectiveTime").asText()));
     concept.setLastModified(concept.getEffectiveTime());
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(doc.get("moduleId").asText());
@@ -612,8 +608,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
             .setCaseSignificanceId(desc.get("caseSignificance").asText());
 
         description.setConcept(concept);
-        description.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(desc.get(
-            "effectiveTime").asText()));
+        description.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(desc.get("effectiveTime").asText()));
         description.setLanguageCode(desc.get("lang").asText());
         description.setLastModified(description.getEffectiveTime());
         description.setLastModifiedBy(terminology);
@@ -665,10 +661,10 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
           continue;
         }
         rel.setModifierId(relNode.get("modifier").asText());
-        rel.setRelationshipGroup(Integer.valueOf(relNode.get("groupId")
-            .asText()));
-        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(relNode.get(
-            "effectiveTime").asText()));
+        rel.setRelationshipGroup(
+            Integer.valueOf(relNode.get("groupId").asText()));
+        rel.setEffectiveTime(ConfigUtility.DATE_FORMAT
+            .parse(relNode.get("effectiveTime").asText()));
         rel.setModuleId(relNode.get("moduleId").asText());
         rel.setTypeId(relNode.get("type").get("fsn").asText()
             .replaceFirst(" \\([a-zA-Z0-9 ]*\\)", ""));
@@ -685,8 +681,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         rel.setTerminologyId(relNode.get("relationshipId").asText());
 
         final Concept destination = new ConceptJpa();
-        destination.setTerminologyId(relNode.get("target").get("conceptId")
-            .asText());
+        destination
+            .setTerminologyId(relNode.get("target").get("conceptId").asText());
         // Reuse as id if only digits, otherwise dummy id
         if (destination.getTerminologyId().matches("^\\d+$")) {
           destination.setId(Long.parseLong(destination.getTerminologyId()));
@@ -694,8 +690,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
           destination.setId(1L);
         }
         destination.setName(relNode.get("target").get("fsn").asText());
-        destination.setDefinitionStatusId(relNode.get("target")
-            .get("definitionStatus").asText());
+        destination.setDefinitionStatusId(
+            relNode.get("target").get("definitionStatus").asText());
         rel.setDestinationConcept(destination);
 
         concept.getRelationships().add(rel);
@@ -718,9 +714,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + terminologyId + "&expand=pt()");
+    final WebTarget target = client.target(url + "/" + branch + "/" + version
+        + "/concepts?escg=" + terminologyId + "&expand=pt()");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -738,8 +733,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
         throw new LocalException("Badly formatted concept id.");
       }
 
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -788,15 +783,15 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     }
     final JsonNode conceptNode = concepts.next();
     if (concepts.hasNext()) {
-      throw new Exception("Multiple concepts found for same conceptId - "
-          + terminologyId);
+      throw new Exception(
+          "Multiple concepts found for same conceptId - " + terminologyId);
     }
     final Concept concept = new ConceptJpa();
     concept.setActive(conceptNode.get("active").asText().equals("true"));
 
     concept.setTerminologyId(conceptNode.get("id").asText());
-    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-        "effectiveTime").asText()));
+    concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+        .parse(conceptNode.get("effectiveTime").asText()));
     concept.setLastModified(concept.getEffectiveTime());
     concept.setLastModifiedBy(terminology);
     concept.setModuleId(conceptNode.get("moduleId").asText());
@@ -863,18 +858,22 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
     // Use "escg" if it's a concept id, otherwise search term
     final WebTarget target =
-        useTerm ? client.target(url + "/" + branch + "/" + version
-            + "/concepts?term="
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-            + "&offset=" + localPfs.getStartIndex() + "&limit="
-            + localPfs.getMaxResults() + "&expand=pt()")
+        useTerm
+            ? client
+                .target(url + "/" + branch + "/" + version + "/concepts?term="
+                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
+                        "%20")
+                    + "&offset=" + localPfs.getStartIndex() + "&limit="
+                    + localPfs.getMaxResults() + "&expand=pt()")
 
-        :
+            :
 
-        client.target(url + "/" + branch + "/" + version + "/concepts?escg="
-            + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ", "%20")
-            + "&offset=" + localPfs.getStartIndex() + "&limit="
-            + localPfs.getMaxResults() + "&expand=pt()");
+            client
+                .target(url + "/" + branch + "/" + version + "/concepts?escg="
+                    + URLEncoder.encode(localQuery, "UTF-8").replaceAll(" ",
+                        "%20")
+                    + "&offset=" + localPfs.getStartIndex() + "&limit="
+                    + localPfs.getMaxResults() + "&expand=pt()");
 
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
@@ -883,8 +882,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -933,13 +932,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
       concept.setActive(conceptNode.get("active").asText().equals("true"));
 
       concept.setTerminologyId(conceptNode.get("id").asText());
-      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT.parse(conceptNode.get(
-          "effectiveTime").asText()));
+      concept.setEffectiveTime(ConfigUtility.DATE_FORMAT
+          .parse(conceptNode.get("effectiveTime").asText()));
       concept.setLastModified(concept.getEffectiveTime());
       concept.setLastModifiedBy(terminology);
       concept.setModuleId(conceptNode.get("moduleId").asText());
-      concept.setDefinitionStatusId(conceptNode.get("definitionStatus")
-          .asText());
+      concept
+          .setDefinitionStatusId(conceptNode.get("definitionStatus").asText());
       concept.setName(conceptNode.get("pt").get("term").asText());
 
       concept.setPublishable(true);
@@ -958,18 +957,17 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
   public ConceptList findRefsetsForQuery(String query, String terminology,
     String version, PfsParameter pfs) throws Exception {
     if (query != null && !query.isEmpty()) {
-      List<Concept> list =
-          resolveExpression(
-              "<< 900000000000496009 | Simple map type reference set  |",
-              terminology, version, pfs).getObjects();
+      List<Concept> list = resolveExpression(
+          "<< 900000000000496009 | Simple map type reference set  |",
+          terminology, version, pfs).getObjects();
 
       final RootServiceJpa service = new RootServiceJpa() {
         // n/a
       };
       ConceptList result = new ConceptListJpa();
       int[] totalCt = new int[1];
-      result.setObjects(service.applyPfsToList(list, Concept.class, totalCt,
-          pfs));
+      result.setObjects(
+          service.applyPfsToList(list, Concept.class, totalCt, pfs));
       result.setTotalCount(totalCt[0]);
       service.close();
       return result;
@@ -983,14 +981,13 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId,
-    String terminology, String version) throws Exception {
+  public ConceptList getConceptParents(String terminologyId, String terminology,
+    String version) throws Exception {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId + "/parents");
+    final WebTarget target = client.target(url + "browser/" + branch + "/"
+        + version + "/concepts/" + terminologyId + "/parents");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -998,8 +995,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**
@@ -1049,9 +1046,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     final ConceptList conceptList = new ConceptListJpa();
     // Make a webservice call to SnowOwl
     final Client client = ClientBuilder.newClient();
-    final WebTarget target =
-        client.target(url + "browser/" + branch + "/" + version + "/concepts/"
-            + terminologyId + "/children?form=inferred");
+    final WebTarget target = client.target(url + "browser/" + branch + "/"
+        + version + "/concepts/" + terminologyId + "/children?form=inferred");
     final Response response =
         target.request("*/*").header("Authorization", authHeader)
             .header("Accept-Language", "en-US;q=0.8,en-GB;q=0.6").get();
@@ -1059,8 +1055,8 @@ public class DefaultTerminologyHandler implements TerminologyHandler {
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // n/a
     } else {
-      throw new Exception("Unexpected terminology server failure. Message = "
-          + resultString);
+      throw new Exception(
+          "Unexpected terminology server failure. Message = " + resultString);
     }
 
     /**

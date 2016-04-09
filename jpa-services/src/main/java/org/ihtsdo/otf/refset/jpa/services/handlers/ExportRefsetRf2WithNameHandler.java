@@ -37,9 +37,16 @@ public class ExportRefsetRf2WithNameHandler implements ExportRefsetHandler {
     return ".txt";
   }
 
+  /* see superclass */
   @Override
-  public String getFileName(String namespace, String type, String version) {
-    return "der2_Refset_Simple" + type + "_" + namespace + "_" + version
+  public String getFileName(String betaFileName) {
+    return betaFileName.substring(1);
+  }
+
+  /* see superclass */
+  @Override
+  public String getBetaFileName(String namespace, String type, String version) {
+    return "xder2_Refset_Simple" + type + "_" + namespace + "_" + version
         + getFileTypeFilter();
   }
 
@@ -59,9 +66,8 @@ public class ExportRefsetRf2WithNameHandler implements ExportRefsetHandler {
   @Override
   public InputStream exportMembers(Refset refset,
     List<ConceptRefsetMember> members) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset members- " + refset.getTerminologyId() + ", "
-            + refset.getName());
+    Logger.getLogger(getClass()).info("Export refset members- "
+        + refset.getTerminologyId() + ", " + refset.getName());
 
     // Write a header
     // Obtain members for refset,
@@ -101,8 +107,8 @@ public class ExportRefsetRf2WithNameHandler implements ExportRefsetHandler {
   /* see superclass */
   @Override
   public InputStream exportDefinition(Refset refset) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export refset definition - " + refset.getTerminologyId() + ", "
+    Logger.getLogger(getClass())
+        .info("Export refset definition - " + refset.getTerminologyId() + ", "
             + refset.getName() + ", " + refset.getDefinitionClauses());
 
     // Write RF2 refset definition pattern to an input stream

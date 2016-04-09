@@ -50,4 +50,17 @@ public interface Terminology {
    */
   public void setVersion(String version);
 
+  /**
+   * Returns the name.
+   *
+   * @return the name
+   */
+  public String getName();
+
+  /**
+   * Sets the name.
+   *
+   * @param name the name
+   */
+  public void setName(String name);
 }

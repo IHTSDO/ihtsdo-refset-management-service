@@ -93,10 +93,10 @@ tsApp.controller('DirectoryCtrl', [
       projectService.getTerminologyEditions().then(
       // Success
       function(data) {
-        $scope.metadata.terminologies = data.strings;
+        $scope.metadata.terminologies = data.terminologies;
         // Look up all versions
-        for (var i = 0; i < data.strings.length; i++) {
-          $scope.getTerminologyVersions(data.strings[i]);
+        for (var i = 0; i < data.terminologies.length; i++) {
+          $scope.getTerminologyVersions(data.terminologies[i].terminology);
         }
       });
 

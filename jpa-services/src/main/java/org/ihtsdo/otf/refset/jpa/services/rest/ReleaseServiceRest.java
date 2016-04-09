@@ -32,8 +32,8 @@ public interface ReleaseServiceRest {
    * @return the refset list
    * @throws Exception the exception
    */
-  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId,
-    String query, PfsParameterJpa pfs, String authToken) throws Exception;
+  public ReleaseInfoList findRefsetReleasesForQuery(Long refsetId, String query,
+    PfsParameterJpa pfs, String authToken) throws Exception;
 
   /**
    * Returns the current refset release.
@@ -43,8 +43,8 @@ public interface ReleaseServiceRest {
    * @return the current refset release
    * @throws Exception the exception
    */
-  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId, String authToken)
-    throws Exception;
+  public ReleaseInfo getCurrentRefsetReleaseInfo(Long refsetId,
+    String authToken) throws Exception;
 
   /**
    * Find translation releases for query.
@@ -79,8 +79,8 @@ public interface ReleaseServiceRest {
    * @return the release info
    * @throws Exception the exception
    */
-  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime, String authToken)
-    throws Exception;
+  public ReleaseInfo beginRefsetRelease(Long refsetId, String effectiveTime,
+    String authToken) throws Exception;
 
   /**
    * Perform refset release.
@@ -90,8 +90,8 @@ public interface ReleaseServiceRest {
    * @return the validation result
    * @throws Exception the exception
    */
-  public ValidationResult validateRefsetRelease(Long refsetId,
-    String authToken) throws Exception;
+  public ValidationResult validateRefsetRelease(Long refsetId, String authToken)
+    throws Exception;
 
   /**
    * Perform refset beta.
@@ -102,8 +102,8 @@ public interface ReleaseServiceRest {
    * @return the refset
    * @throws Exception the exception
    */
-  public Refset betaRefsetRelease(Long refsetId,
-    String ioHandlerId, String authToken) throws Exception;
+  public Refset betaRefsetRelease(Long refsetId, String ioHandlerId,
+    String authToken) throws Exception;
 
   /**
    * Finish refset release.
@@ -135,8 +135,8 @@ public interface ReleaseServiceRest {
    * @return the release info
    * @throws Exception the exception
    */
-  public ReleaseInfo beginTranslationRelease(Long translationId, String effectiveTime,
-    String authToken) throws Exception;
+  public ReleaseInfo beginTranslationRelease(Long translationId,
+    String effectiveTime, String authToken) throws Exception;
 
   /**
    * Perform translation release.
@@ -179,8 +179,8 @@ public interface ReleaseServiceRest {
    * @param authToken the auth token
    * @throws Exception the exception
    */
-  public void cancelTranslationRelease(Long translationId,
-    String authToken) throws Exception;
+  public void cancelTranslationRelease(Long translationId, String authToken)
+    throws Exception;
 
   /**
    * Removes the release artifact.

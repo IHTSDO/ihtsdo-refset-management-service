@@ -171,7 +171,7 @@ public interface ProjectServiceRest {
    * @return the terminology editions
    * @throws Exception the exception
    */
-  public StringList getTerminologyEditions(String authToken) throws Exception;
+  public TerminologyList getTerminologyEditions(String authToken) throws Exception;
 
   /**
    * Returns the terminology versions.

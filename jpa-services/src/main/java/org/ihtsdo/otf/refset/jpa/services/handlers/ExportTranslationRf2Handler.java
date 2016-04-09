@@ -57,20 +57,17 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   @Override
   public InputStream exportConcepts(Translation translation,
     List<Concept> concepts) throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export translation concepts - " + translation.getTerminologyId()
-            + ", " + translation.getName());
+    Logger.getLogger(getClass()).info("Export translation concepts - "
+        + translation.getTerminologyId() + ", " + translation.getName());
 
     // Use info from "translation" object to get file name right.
-    String languageRefsetMemberFileName =
-        "xder2_cRefset_LanguageSnapshot-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
-    String descriptionFileName =
-        "xsct2_Description_Snapshot-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
+    String languageRefsetMemberFileName = "der2_cRefset_LanguageSnapshot-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+    String descriptionFileName = "sct2_Description_Snapshot-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
 
     // TODO: rewire this to just extract all descriptions, then all langauges
-    // and call the exportContents with those. then logic is the same
+    // and call the exportDelta with those. then logic is the same
     // need to test import/export when we do this
 
     // Write descriptions and language refset entries
@@ -98,16 +95,15 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("acceptabilityId").append("\t");
     langSb.append("\r\n");
 
-    for (Concept concept : concepts) {
+    for (final Concept concept : concepts) {
       if (concept.isRevision()) {
         continue;
       }
-      for (Description description : concept.getDescriptions()) {
+      for (final Description description : concept.getDescriptions()) {
         Logger.getLogger(getClass())
-            .debug(
-                "  description = " + description.getTerminologyId() + ", "
-                    + description.getTerm() + ", "
-                    + description.getEffectiveTime());
+            .debug("  description = " + description.getTerminologyId() + ", "
+                + description.getTerm() + ", "
+                + description.getEffectiveTime());
 
         descSb.append(description.getTerminologyId()).append("\t");
         if (description.getEffectiveTime() != null) {
@@ -126,13 +122,14 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
         descSb.append(description.getCaseSignificanceId()).append("\t");
         descSb.append("\r\n");
 
-        for (LanguageRefsetMember member : description
+        for (final LanguageRefsetMember member : description
             .getLanguageRefsetMembers()) {
           Logger.getLogger(getClass()).debug("    member = " + member);
           langSb.append(member.getTerminologyId()).append("\t");
           if (member.getEffectiveTime() != null) {
-            langSb.append(
-                ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+            langSb
+                .append(
+                    ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
                 .append("\t");
           } else {
             langSb.append("\t");
@@ -146,22 +143,23 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
           langSb.append("\r\n");
         }
       }
+      
+      // Free up memory
+      concept.getDescriptions().clear();
     }
 
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    ZipOutputStream zos = new ZipOutputStream(baos);
+    Logger.getLogger(getClass()).info("  prepare .zip file");
 
-    /*
-     * File is not on the disk, test.txt indicates only the file name to be put
-     * into the zip
-     */
-    ZipEntry descEntry = new ZipEntry(descriptionFileName);
+    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    final ZipOutputStream zos = new ZipOutputStream(baos);
+
+    final ZipEntry descEntry = new ZipEntry(descriptionFileName);
     zos.putNextEntry(descEntry);
     byte[] bytes = descSb.toString().getBytes("UTF-8");
     zos.write(bytes, 0, bytes.length);
     zos.closeEntry();
 
-    ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
+    final ZipEntry langEntry = new ZipEntry(languageRefsetMemberFileName);
     zos.putNextEntry(langEntry);
 
     bytes = langSb.toString().getBytes("UTF-8");
@@ -176,17 +174,14 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
   public InputStream exportDelta(Translation translation,
     List<Description> descriptions, List<LanguageRefsetMember> languages)
     throws Exception {
-    Logger.getLogger(getClass()).info(
-        "Export translation contents - " + translation.getTerminologyId()
-            + ", " + translation.getName());
+    Logger.getLogger(getClass()).info("Export translation contents - "
+        + translation.getTerminologyId() + ", " + translation.getName());
 
     // Use info from "translation" object to get file name right.
-    String languageRefsetMemberFileName =
-        "xder2_cRefset_LanguageDelta-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
-    String descriptionFileName =
-        "xsct2_Description_Delta-" + translation.getLanguage() + "_"
-            + translation.getVersion() + ".txt";
+    String languageRefsetMemberFileName = "der2_cRefset_LanguageDelta-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
+    String descriptionFileName = "sct2_Description_Delta-"
+        + translation.getLanguage() + "_" + translation.getVersion() + ".txt";
 
     // Write descriptions and language refset entries
     // in SNOMED CT Structure to a .zip file
@@ -214,8 +209,8 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     langSb.append("\r\n");
 
     for (Description description : descriptions) {
-      Logger.getLogger(getClass()).debug(
-          "  description = " + description.getTerminologyId() + ", "
+      Logger.getLogger(getClass())
+          .info("  description = " + description.getTerminologyId() + ", "
               + description.getTerm() + ", " + description.getEffectiveTime());
 
       descSb.append(description.getTerminologyId()).append("\t");
@@ -237,11 +232,11 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     }
 
     for (LanguageRefsetMember member : languages) {
-      Logger.getLogger(getClass()).debug("    member = " + member);
+      Logger.getLogger(getClass()).info("    member = " + member);
       langSb.append(member.getTerminologyId()).append("\t");
       if (member.getEffectiveTime() != null) {
-        langSb.append(
-            ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
+        langSb
+            .append(ConfigUtility.DATE_FORMAT.format(member.getEffectiveTime()))
             .append("\t");
       } else {
         langSb.append("\t");
@@ -282,9 +277,23 @@ public class ExportTranslationRf2Handler implements ExportTranslationHandler {
     // n/a
   }
 
+  /* see superclass */
   @Override
-  public String getFileName(String namespace, String type, String version) {
-    return "translation_" + type + "_" + namespace + "_" + version
+  public String getFileName(String betaFileName) {
+    return betaFileName.substring(1);
+  }
+
+  /**
+   * Returns the beta file name.
+   *
+   * @param namespace the namespace
+   * @param type the type
+   * @param version the version
+   * @return the beta file name
+   */
+  @Override
+  public String getBetaFileName(String namespace, String type, String version) {
+    return "xder2_translation_" + type + "_" + namespace + "_" + version
         + getFileTypeFilter();
   }
 

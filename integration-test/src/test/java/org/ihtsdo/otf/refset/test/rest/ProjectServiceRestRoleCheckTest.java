@@ -6,21 +6,21 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.Project;
-import org.ihtsdo.otf.refset.Terminology;
 import org.ihtsdo.otf.refset.User;
 import org.ihtsdo.otf.refset.UserRole;
 import org.ihtsdo.otf.refset.helpers.DescriptionTypeList;
 import org.ihtsdo.otf.refset.helpers.KeyValuePair;
 import org.ihtsdo.otf.refset.helpers.KeyValuePairList;
 import org.ihtsdo.otf.refset.helpers.ProjectList;
-import org.ihtsdo.otf.refset.helpers.StringList;
 import org.ihtsdo.otf.refset.helpers.TerminologyList;
 import org.ihtsdo.otf.refset.jpa.ProjectJpa;
 import org.ihtsdo.otf.refset.rf2.DescriptionType;
@@ -53,7 +53,7 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     //
     // lookup.background=false
     //
-  
+
     // authentication
     viewerAuthToken =
         securityService.authenticate(testUser, testPassword).getAuthToken();
@@ -95,7 +95,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     project.setDescription("Sample Revised");
     try {
       projectService.updateProject(project, viewerAuthToken);
-      fail("Attempt to update a project with viewer authorization level passed.");
+      fail(
+          "Attempt to update a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
     }
@@ -103,7 +104,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     // Attempt to remove an existing project with viewer authorization level
     try {
       projectService.removeProject(project.getId(), viewerAuthToken);
-      fail("Attempt to remove a project with viewer authorization level passed.");
+      fail(
+          "Attempt to remove a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
     }
@@ -111,7 +113,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     // Even with admin privaleges, as project never created, nothing to remove
     try {
       projectService.removeProject(project.getId(), adminAuthToken);
-      fail("Attempt to remove a project with viewer authorization level passed.");
+      fail(
+          "Attempt to remove a project with viewer authorization level passed.");
     } catch (Exception e) {
       // do nothing
     }
@@ -143,42 +146,35 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Retrieve projects via a number of valid queries with values in DB
-    ProjectList projects =
-        projectService.findProjectsForQuery("terminology:SNOMEDCT", null,
-            adminAuthToken);
+    ProjectList projects = projectService
+        .findProjectsForQuery("terminology:SNOMEDCT", null, adminAuthToken);
     assertTrue(projects.getCount() > 0);
 
-    projects =
-        projectService.findProjectsForQuery("organization:IHTSDO", null,
-            adminAuthToken);
+    projects = projectService.findProjectsForQuery("organization:IHTSDO", null,
+        adminAuthToken);
     assertTrue(projects.getCount() > 0);
 
-    projects =
-        projectService.findProjectsForQuery("namespace:1000001", null,
-            adminAuthToken);
+    projects = projectService.findProjectsForQuery("namespace:1000001", null,
+        adminAuthToken);
     assertTrue(projects.getCount() > 0);
 
     // Attempt to retrieve projects via valid queries with values not in DB
-    projects =
-        projectService.findProjectsForQuery("terminology:IHTSDO", null,
-            adminAuthToken);
+    projects = projectService.findProjectsForQuery("terminology:IHTSDO", null,
+        adminAuthToken);
     assertTrue(projects.getCount() == 0);
 
-    projects =
-        projectService.findProjectsForQuery("organization:IHTSD", null,
-            adminAuthToken);
+    projects = projectService.findProjectsForQuery("organization:IHTSD", null,
+        adminAuthToken);
     assertTrue(projects.getCount() == 0);
 
-    projects =
-        projectService.findProjectsForQuery("namespace:IHTSDO", null,
-            adminAuthToken);
+    projects = projectService.findProjectsForQuery("namespace:IHTSDO", null,
+        adminAuthToken);
     assertTrue(projects.getCount() == 0);
 
     // Attempt to retrieve projects via invalid query
     try {
-      projects =
-          projectService.findProjectsForQuery("dumbkey:dumbValue", null,
-              adminAuthToken);
+      projects = projectService.findProjectsForQuery("dumbkey:dumbValue", null,
+          adminAuthToken);
       fail("Exception expected due to invalid query key.");
     } catch (Exception e) {
       // n/a, expected result
@@ -195,35 +191,17 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     Logger.getLogger(getClass()).info("TEST " + name.getMethodName());
 
     // Verify have at least one Terminology (specifically SNOMEDCT)
-    StringList editions = projectService.getTerminologyEditions(adminAuthToken);
+    TerminologyList editions =
+        projectService.getTerminologyEditions(adminAuthToken);
     assertTrue(editions.getCount() > 0);
 
-    boolean expectedSnomedEditionFound = false;
-    for (String s : editions.getObjects()) {
-      if (s.equalsIgnoreCase("SNOMEDCT")) {
-        expectedSnomedEditionFound = true;
-        break;
-      }
-    }
-    assertTrue(expectedSnomedEditionFound);
-
     // Verify return multiple versions of SNOMEDCT
-    TerminologyList versions =
-        projectService.getTerminologyVersions("SNOMEDCT", adminAuthToken);
-    assertTrue(versions.getCount() > 1);
-
-    boolean expectedVersionFound = false;
-    for (Terminology s : versions.getObjects()) {
-      if (s.getTerminology().equals("SNOMEDCT")
-          && s.getVersion().equals("2016-01-31")) {
-        expectedVersionFound = true;
-        break;
-      }
-    }
-    assertTrue(expectedVersionFound);
+    TerminologyList versions = projectService.getTerminologyVersions(
+        editions.getObjects().get(0).getTerminology(), adminAuthToken);
+    assertTrue(versions.getCount() > 0);
 
     // Verify that a nonsensical terminology will not retrieve any versions
-    versions = projectService.getTerminologyVersions("IHTSDO", adminAuthToken);
+    versions = projectService.getTerminologyVersions("XYZABC", adminAuthToken);
     assertTrue(versions.getCount() == 0);
   }
 
@@ -252,9 +230,8 @@ public class ProjectServiceRestRoleCheckTest extends ProjectTestSupport {
     assertTrue(pngFound);
 
     /* Test Accessing Project Description Types */
-    DescriptionTypeList types =
-        projectService.getStandardDescriptionTypes("SNOMEDCT", "2016-01-31",
-            adminAuthToken);
+    DescriptionTypeList types = projectService
+        .getStandardDescriptionTypes("SNOMEDCT", "2016-01-31", adminAuthToken);
     assertTrue(types.getCount() > 3);
 
     // verify FSN returned

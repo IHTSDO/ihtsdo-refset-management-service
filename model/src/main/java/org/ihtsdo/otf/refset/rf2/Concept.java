@@ -127,7 +127,7 @@ public interface Concept extends Component {
   public void setLeaf(boolean leaf);
 
   /**
-   * Indicates whether or not revision is the case.
+   * Indicates whether this object is under REVISION in the workflow.
    *
    * @return <code>true</code> if so, <code>false</code> otherwise
    */

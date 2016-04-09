@@ -7,8 +7,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.ihtsdo.otf.refset.ReleaseInfo;
@@ -22,6 +24,7 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -79,8 +82,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     ReleaseInfoList releaseInfoList =
         findTranslationReleasesForQuery(translation.getId(), null, null);
     if (releaseInfoList.getCount() != 1) {
-      throw new LocalException("Cannot find release info for translation "
-          + translation.getId());
+      throw new LocalException(
+          "Cannot find release info for translation " + translation.getId());
     }
     releaseInfo = releaseInfoList.getObjects().get(0);
     if (releaseInfo == null || !releaseInfo.isPlanned()
@@ -88,8 +91,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       throw new LocalException("translation release is not ready to validate "
           + translation.getId());
     if (translation.isStaged())
-      throw new LocalException("translation workflowstatus is staged for "
-          + translation.getId());
+      throw new LocalException(
+          "translation workflowstatus is staged for " + translation.getId());
   }
 
   /* see superclass */
@@ -99,35 +102,68 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     translation.setLastModifiedBy(userName);
 
     // Stage the translation
-    stagedTranslation =
-        stageTranslation(translation, Translation.StagingType.BETA,
-            releaseInfo.getEffectiveTime());
+    stagedTranslation = stageTranslation(translation,
+        Translation.StagingType.BETA, releaseInfo.getEffectiveTime());
 
+    // Reread in case a commit was used
+    releaseInfo = getReleaseInfo(releaseInfo.getId());
     // Copy the release info from origin refset
     ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
     stageReleaseInfo.setId(null);
     stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
     stageReleaseInfo.setTranslation(stagedTranslation);
 
+    if (!getTransactionPerOperation()) {
+      commitClearBegin();
+    }
+
+    // Re-read staged translation in case a commit occurred
+    stagedTranslation = getTranslation(stagedTranslation.getId());
+
+    // Now we need to read fully detached concept objects from the database
+    // for the staged translation so we can pass them as detached to the export
+    // process
+    // and avoid running out of memory (in the case of hundreds of thousands)
+
+    // Gather concept ids
+    final Set<Long> conceptIds = new HashSet<Long>();
+    for (final Concept concept : stagedTranslation.getConcepts()) {
+      conceptIds.add(concept.getId());
+    }
+
+    // Now from detached list, go back and reread concepts one at a time
+    // Lazy initialize to gather all datea
+    // THEN send to export process
+    final List<Concept> exportConcepts = new ArrayList<>();
+    int objectCt = 0;
+    for (final Long id : conceptIds) {
+      final Concept exportConcept = getConcept(id);
+      System.out.println("concept  = " + exportConcept );
+      handleLazyInit(exportConcept);
+      exportConcepts.add(exportConcept);
+      if (!getTransactionPerOperation() && ++objectCt % 5000 == 0) {
+        commitClearBegin();
+      }
+    }
     // Generate the snapshot release artifact and add it
     ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
-        handler.exportConcepts(stagedTranslation,
-            stagedTranslation.getConcepts());
+        handler.exportConcepts(stagedTranslation, exportConcepts);
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
     artifact.setReleaseInfo(stageReleaseInfo);
+    artifact.setIoHandlerId(ioHandlerId);
     artifact.setData(ByteStreams.toByteArray(inputStream));
-    artifact.setName(handler.getFileName(translation.getProject()
-        .getNamespace(), "ActiveSnapshot", releaseInfo.getName()));
+    artifact.setName(
+        handler.getBetaFileName(translation.getProject().getNamespace(),
+            "ActiveSnapshot", releaseInfo.getName()));
     artifact.setTimestamp(new Date());
     artifact.setLastModified(new Date());
     artifact.setLastModifiedBy(userName);
     stageReleaseInfo.getArtifacts().add(artifact);
 
     // Generate the delta release artifact and add it
-    releaseInfo =
-        getCurrentTranslationReleaseInfo(translation.getTerminologyId(),
-            translation.getProject().getId());
+    releaseInfo = getCurrentTranslationReleaseInfo(
+        translation.getTerminologyId(), translation.getProject().getId());
 
     if (releaseInfo != null) {
       // Get descriptions/languages from last time
@@ -180,8 +216,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
 
         // changed
         if (oldDescriptionMap.containsKey(description.getTerminologyId())
-            && !description.equals(oldDescriptionMap.get(description
-                .getTerminologyId()))) {
+            && !description.equals(
+                oldDescriptionMap.get(description.getTerminologyId()))) {
           description.setActive(true);
           description.setEffectiveTime(stageReleaseInfo.getEffectiveTime());
           deltaDescriptions.add(description);
@@ -226,15 +262,15 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       }
 
       // Export
-      inputStream =
-          handler.exportDelta(stagedTranslation, deltaDescriptions,
-              deltaMembers);
+      inputStream = handler.exportDelta(stagedTranslation, deltaDescriptions,
+          deltaMembers);
       artifact = new ReleaseArtifactJpa();
       artifact.setReleaseInfo(stageReleaseInfo);
-
+      artifact.setIoHandlerId(ioHandlerId);
       artifact.setData(ByteStreams.toByteArray(inputStream));
-      artifact.setName(handler.getFileName(stagedTranslation.getProject()
-          .getNamespace(), "Delta", stageReleaseInfo.getName()));
+      artifact.setName(
+          handler.getBetaFileName(stagedTranslation.getProject().getNamespace(),
+              "Delta", stageReleaseInfo.getName()));
       artifact.setTimestamp(new Date());
       artifact.setLastModified(new Date());
       artifact.setLastModifiedBy(userName);
