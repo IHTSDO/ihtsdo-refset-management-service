@@ -852,7 +852,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
       final String userName =
           authorizeProject(refsetService, refset.getProject().getId(),
-              securityService, authToken, "import refset definition",
+              securityService, authToken, "add new member",
               UserRole.AUTHOR);
 
       // Look up concept name and active
@@ -976,8 +976,8 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
 
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
-      authorizeApp(securityService, authToken, "find members",
-          UserRole.VIEWER); // Load refset
+      authorizeApp(securityService, authToken, "find members", UserRole.VIEWER); // Load
+                                                                                 // refset
 
       final Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
@@ -1253,7 +1253,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public Refset beginMigration(
     @ApiParam(value = "Refset id, e.g. 3", required = true) @QueryParam("refsetId") Long refsetId,
     @ApiParam(value = "New terminology, e.g. SNOMEDCT", required = true) @QueryParam("newTerminology") String newTerminology,
-    @ApiParam(value = "New version, e.g. 2015-07-31", required = true) @QueryParam("newVersion") String newVersion,
+    @ApiParam(value = "New version, e.g. 20150731", required = true) @QueryParam("newVersion") String newVersion,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
 
@@ -1264,7 +1264,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
     final RefsetService refsetService = new RefsetServiceJpa();
     try {
       // Load refset
-      final Refset refset = refsetService.getRefset(refsetId);
+      Refset refset = refsetService.getRefset(refsetId);
       if (refset == null) {
         throw new Exception("Invalid refset id " + refsetId);
       }
@@ -1299,6 +1299,9 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
           refsetService.stageRefset(refset, Refset.StagingType.MIGRATION, null);
       refsetCopy.setTerminology(newTerminology);
       refsetCopy.setVersion(newVersion);
+
+      // Reread refset in case of commit
+      refset = refsetService.getRefset(refset.getId());
 
       // RECOMPUTE INTENSIONAL REFSET
       if (refsetCopy.getType() == Refset.Type.INTENSIONAL) {
@@ -2860,7 +2863,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public Integer countExpression(
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(
@@ -2928,7 +2931,7 @@ public class RefsetServiceRestImpl extends RootServiceRestImpl implements
   public Boolean isExpressionValid(
     @ApiParam(value = "Expression, e.g. '<<58427002 | Antibiotic measurement (procedure) |'", required = true) String expression,
     @ApiParam(value = "Terminology, e.g. SNOMEDCT", required = true) @QueryParam("terminology") String terminology,
-    @ApiParam(value = "Version, e.g. 2015-01-31", required = true) @QueryParam("version") String version,
+    @ApiParam(value = "Version, e.g. 20150131", required = true) @QueryParam("version") String version,
     @ApiParam(value = "Authorization token, e.g. 'author1'", required = true) @HeaderParam("Authorization") String authToken)
     throws Exception {
     Logger.getLogger(getClass()).info(

@@ -177,7 +177,7 @@ public class RefsetLookupRestTest extends RestSupport {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.READY_FOR_PUBLICATION);
 

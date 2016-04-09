@@ -155,7 +155,7 @@ public class RefsetNoteTest extends RestSupport {
     refset.setPublished(false);
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");
     refset.setWorkflowStatus(WorkflowStatus.NEW);
 

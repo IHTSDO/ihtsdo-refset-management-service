@@ -150,13 +150,13 @@ public class MigrationTest extends RestSupport {
 
     // Test begin then cancel
     Logger.getLogger(getClass()).info("  begin/cancel");
-    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "2015-07-31 ",
+    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "20150731 ",
         adminAuthToken);
     refsetService.cancelMigration(refset1.getId(), adminAuthToken);
 
     // Begin migration
     Logger.getLogger(getClass()).info("  begin/resume/finish");
-    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "2015-07-31",
+    refsetService.beginMigration(refset1.getId(), "SNOMEDCT", "20150731",
         adminAuthToken);
     refsetService.resumeMigration(refset1.getId(), adminAuthToken);
     refsetService.finishMigration(refset1.getId(), adminAuthToken);
@@ -168,7 +168,7 @@ public class MigrationTest extends RestSupport {
   /**
    * Test migration003. Add concept 111269008 to the
    * der2_Refset_SimpleSnapshot_INT_20140731.txt file. This member becomes
-   * inactive in 2015-07-31, so this migration tests that it is removed from the
+   * inactive in 20150731, so this migration tests that it is removed from the
    * migrated refset.
    *
    * @throws Exception the exception
@@ -191,7 +191,7 @@ public class MigrationTest extends RestSupport {
     // Begin migration
     Refset julyStagedRefset =
         refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
+            "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
     // Get members - should match original member size
@@ -286,10 +286,10 @@ public class MigrationTest extends RestSupport {
             .findRefsetMembersForQuery(janRefset.getId(), "",
                 new PfsParameterJpa(), adminAuthToken).getObjects().size());
 
-    // Begin migration to 2015-07-31
+    // Begin migration to 20150731
     Refset julyStagedRefset =
         refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
-            "2015-07-31", adminAuthToken);
+            "20150731", adminAuthToken);
     Logger.getLogger(getClass()).info("  staged = " + julyStagedRefset);
 
     // Verify expected number of members - 164
@@ -410,7 +410,7 @@ public class MigrationTest extends RestSupport {
     refset.setTerminology("SNOMEDCT");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
-    refset.setVersion("2015-01-31");
+    refset.setVersion("20150131");
     refset.setWorkflowPath("DFEAULT");
     refset.setWorkflowStatus(WorkflowStatus.PUBLISHED);
 

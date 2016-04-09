@@ -62,7 +62,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     Concept concept =
         service.getTerminologyHandler().getConcept("126880001", "SNOMEDCT",
-            "2015-01-31");
+            "20150131");
     assertEquals(concept.getName(), "Neoplasm of kidney");
     service.close();
   }
@@ -81,7 +81,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setStartIndex(5);
     ConceptList conceptList =
         service.getTerminologyHandler().resolveExpression(
-            "<<284009009|Route of administration|", "SNOMEDCT", "2015-01-31",
+            "<<284009009|Route of administration|", "SNOMEDCT", "20150131",
             pfs);
     assertEquals(143, conceptList.getTotalCount());
     service.close();
@@ -99,7 +99,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     Concept concept =
         service.getTerminologyHandler().getFullConcept("126880001", "SNOMEDCT",
-            "2015-01-31");
+            "20150131");
     assertEquals(concept.getName(), "Neoplasm of kidney");
     assertEquals(6, concept.getDescriptions().size());
     assertEquals(2, concept.getRelationships().size());
@@ -119,7 +119,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList concepts =
         service.getTerminologyHandler().getReplacementConcepts("150606004",
-            "SNOMEDCT", "2015-01-31");
+            "SNOMEDCT", "20150131");
     assertEquals(2, concepts.getObjects().size());
     service.close();
   }
@@ -136,7 +136,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList concepts =
         service.getTerminologyHandler().getConceptParents("108369006",
-            "SNOMEDCT", "2015-01-31");
+            "SNOMEDCT", "20150131");
     assertEquals(1, concepts.getObjects().size());
     assertEquals(concepts.getObjects().get(0).getName(),
         "Neoplasm and/or hamartoma (morphologic abnormality)");
@@ -156,7 +156,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList concepts =
         service.getTerminologyHandler().getConceptChildren("108369006",
-            "SNOMEDCT", "2015-01-31");
+            "SNOMEDCT", "20150131");
     assertEquals(40, concepts.getObjects().size());
 
     service.close();
@@ -177,14 +177,14 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     pfs.setMaxResults(50);
     ConceptList concepts =
         service.getTerminologyHandler().findConceptsForQuery("tumor",
-            "SNOMEDCT", "2015-01-31", pfs);
+            "SNOMEDCT", "20150131", pfs);
     assertEquals(50, concepts.getObjects().size());
     assertEquals(3871, concepts.getTotalCount());
 
     // check someing with no results
     concepts =
         service.getTerminologyHandler().findConceptsForQuery("tmuor",
-            "SNOMEDCT", "2015-01-31", pfs);
+            "SNOMEDCT", "20150131", pfs);
     assertEquals(0, concepts.getObjects().size());
     service.close();
   }
@@ -203,7 +203,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
     try {
       Concept c =
           service.getTerminologyHandler().getConcept("12345", "abc",
-              "2015-01-31");
+              "20150131");
       assertNull(c);
     } catch (Exception e) {
       fail("unexpected exception");
@@ -211,12 +211,12 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
 
     ConceptList list =
         service.getTerminologyHandler().getConceptChildren("12345", "abc",
-            "2015-01-31");
+            "20150131");
     assertEquals(0, list.getCount());
 
     list =
         service.getTerminologyHandler().getConceptParents("12345", "abc",
-            "2015-01-31");
+            "20150131");
     assertEquals(0, list.getCount());
 
     try {
@@ -224,7 +224,7 @@ public class DefaultTerminologyHandlerTest extends JpaSupport {
       ids.add("1234");
       ids.add("5679");
       list =
-          service.getTerminologyHandler().getConcepts(ids, "abc", "2015-01-31");
+          service.getTerminologyHandler().getConcepts(ids, "abc", "20150131");
       fail("Exception expected.");
     } catch (Exception e) {
       // n/a, expected result

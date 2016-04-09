@@ -197,25 +197,15 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
         } else {
           part1 = fields[6];
         }
-        if (part1.startsWith("(")) {
-          part1 = part1.substring(1);
-        }
-        if (part1.endsWith(")")) {
-          part1 = part1.substring(0, part1.length() - 1);
-        }
+
         String[] positiveClauses = part1.split(" OR ");
         for (String clause : positiveClauses) {
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(false);
-          defClause.setValue(clause.trim());
+          defClause.setValue(trimClause(clause));
           definitionClauses.add(defClause);
         }
-        if (part2.startsWith(" (")) {
-          part2 = part2.substring(2);
-        }
-        if (part2.endsWith(")")) {
-          part2 = part2.substring(0, part2.length() - 1);
-        }
+
         String[] negativeClauses = part2.split(" OR ");
         for (String clause : negativeClauses) {
           // Skip the empty clause (i.e. if there are no clauses)
@@ -223,19 +213,36 @@ public class ImportRefsetRf2Handler implements ImportRefsetHandler {
             continue;
           }
           // Skip project exclusion clause
-          if (clause.equals(refset.getProject().getExclusionClause())) {
+          if (trimClause(clause).equals(
+              refset.getProject().getExclusionClause())) {
             continue;
           }
 
           DefinitionClause defClause = new DefinitionClauseJpa();
           defClause.setNegated(true);
-          defClause.setValue(clause.trim());
+          defClause.setValue(trimClause(clause));
           definitionClauses.add(defClause);
         }
       }
     }
     pbr.close();
     return definitionClauses;
+  }
+
+  /**
+   * Trim clause.
+   *
+   * @param clause the clause
+   * @return the string
+   */
+  @SuppressWarnings("static-method")
+  private String trimClause(String clause) {
+    // Strip leading parens
+    String retval =
+        clause.replace("^\\s*\\(\\s*", "").replace("^\\s*\\(\\s*", "");
+    // Strip trailing parens
+    retval = retval.replace("^\\s*\\)\\s*", "").replace("^\\s*\\)\\s*", "");
+    return retval.trim();
   }
 
   /* see superclass */

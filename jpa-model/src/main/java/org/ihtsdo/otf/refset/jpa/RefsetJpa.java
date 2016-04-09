@@ -610,17 +610,19 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       negativeClauses.add(clause);
     }
 
+    int groupSize = positiveClauses.size() + negativeClauses.size();
     StringBuilder computedDefinition = new StringBuilder();
     if (positiveClauses.size() > 0) {
       // only use parens if there is more than one positive and at least one
-      // negative clause
+      // negative clause.
       if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(positiveClauses.get(0).getValue());
+      computedDefinition.append(getClauseValue(positiveClauses.get(0)
+          .getValue(), groupSize));
       for (int i = 1; i < positiveClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
-            positiveClauses.get(i).getValue());
+            getClauseValue(positiveClauses.get(i).getValue(), groupSize));
       }
       if (positiveClauses.size() > 1 && negativeClauses.size() > 0) {
         computedDefinition.append(")");
@@ -632,10 +634,11 @@ public class RefsetJpa extends AbstractComponent implements Refset {
       if (negativeClauses.size() > 1) {
         computedDefinition.append("(");
       }
-      computedDefinition.append(negativeClauses.get(0).getValue());
+      computedDefinition.append(getClauseValue(negativeClauses.get(0)
+          .getValue(), groupSize));
       for (int i = 1; i < negativeClauses.size(); i++) {
         computedDefinition.append(" OR ").append(
-            negativeClauses.get(i).getValue());
+            getClauseValue(negativeClauses.get(i).getValue(), groupSize));
       }
       if (negativeClauses.size() > 1) {
         computedDefinition.append(")");
@@ -643,6 +646,25 @@ public class RefsetJpa extends AbstractComponent implements Refset {
 
     }
     return computedDefinition.toString();
+  }
+
+  /**
+   * Wraps the clause in parens if there are role restrictions.
+   *
+   * @param clause the clause
+   * @param groupSize the group size
+   * @return <code>true</code> if so, <code>false</code> otherwise
+   */
+  @SuppressWarnings("static-method")
+  private String getClauseValue(String clause, int groupSize) {
+    if (groupSize > 1 &&
+    // e.g. .. 19829001 : 116676008 ...
+        (clause.matches(".*\\d\\s*:\\s*\\d.*") ||
+        // e.g. .. 19829001 |abc| : 116676008 ...
+        clause.matches(".*\\|\\s*:\\s*\\d.*"))) {
+      return "(" + clause + ")";
+    }
+    return clause;
   }
 
   /* see superclass */
