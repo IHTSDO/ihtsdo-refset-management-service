@@ -657,14 +657,16 @@ public class ProjectClientRest extends RootClientRest implements
   @Override
   public DescriptionTypeList getStandardDescriptionTypes(String terminology,
     String version, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get terminologies");
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get standard description types");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/terminology/"
-            + terminology + "/descriptiontypes?" + "version=" + version);
+        client.target(config.getProperty("base.url")
+            + "/project/descriptiontypes?terminology=" + terminology
+            + "&version=" + version);
     Response response =
         target.request(MediaType.APPLICATION_XML)
             .header("Authorization", authToken).get();
@@ -679,6 +681,36 @@ public class ProjectClientRest extends RootClientRest implements
     // converting to object
     return (DescriptionTypeListJpa) ConfigUtility.getGraphForString(
         resultString, DescriptionTypeListJpa.class);
+
+  }
+
+  /* see superclass */
+  @Override
+  public ConceptList getModules(String terminology, String version,
+    String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug("Project Client - get modules");
+    validateNotEmpty(terminology, "terminology");
+    validateNotEmpty(version, "version");
+
+    Client client = ClientBuilder.newClient();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/modules?terminology=" + terminology + "&version="
+            + version);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
+
+    String resultString = response.readEntity(String.class);
+    if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
+      // n/a
+    } else {
+      throw new Exception(response.toString());
+    }
+
+    // converting to object
+    return (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+        ConceptListJpa.class);
 
   }
 

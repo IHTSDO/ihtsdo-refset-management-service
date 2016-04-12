@@ -12,7 +12,7 @@
           ng-click="error.expand = !error.expand;">attach_file</i>
         <i class="glyphicon glyphicon-remove" ng-click="clearError()"></i>
       </span>
-      <span class="intro-text" ng-show="error.longMessage && error.expand">
+      <span ng-show="error.longMessage && error.expand">
         <br />{{error.longMessage}}
       </span>
     </h4>
