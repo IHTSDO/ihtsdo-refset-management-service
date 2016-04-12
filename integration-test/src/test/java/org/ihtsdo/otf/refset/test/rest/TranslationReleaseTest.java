@@ -49,6 +49,7 @@ import org.ihtsdo.otf.refset.rest.client.ReleaseClientRest;
 import org.ihtsdo.otf.refset.rest.client.SecurityClientRest;
 import org.ihtsdo.otf.refset.rest.client.TranslationClientRest;
 import org.ihtsdo.otf.refset.rest.client.ValidationClientRest;
+import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
@@ -820,11 +821,11 @@ public class TranslationReleaseTest extends RestSupport {
     // descId1 true
     // langId1 true
     //
-    ConceptJpa concept =
+    ConceptJpa concept1 =
         makeConcept("10000001", "term a", "sensitive", "acceptable");
-    concept.setTranslation(translation1);
-    concept =
-        (ConceptJpa) translationService.addTranslationConcept(concept,
+    concept1.setTranslation(translation1);
+    concept1 =
+        (ConceptJpa) translationService.addTranslationConcept(concept1,
             adminAuthToken);
 
     // Begin release
@@ -843,26 +844,230 @@ public class TranslationReleaseTest extends RestSupport {
 
     Map<String, Boolean> activeDescMap = new HashMap<>();
     Map<String, String> etDescMap = new HashMap<>();
-    String descId1 = concept.getDescriptions().get(0).getTerminologyId();
+    String descId1 = concept1.getDescriptions().get(0).getTerminologyId();
     activeDescMap.put(descId1, true);
     etDescMap.put(descId1, "20160101");
 
     Map<String, Boolean> activeLangMap = new HashMap<>();
     Map<String, String> etLangMap = new HashMap<>();
     String langId1 =
-        concept.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
+        concept1.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
             .getTerminologyId();
     activeLangMap.put(langId1, true);
     etLangMap.put(langId1, "20160101");
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Snapshot");
+
+    // Add a description to concept1
+    addDescription(concept1, "term b", "insensitive", "preferred");
+    concept1 =
+        (ConceptJpa) translationService.updateTranslationConcept(concept1,
+            adminAuthToken);
+
+    // Begin release
+    releaseService.beginTranslationRelease(translation1.getId(), "20160102",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
+    // Beta release
+    Translation release2 =
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
+
+    // Verify snapshot
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    String descId2 = concept1.getDescriptions().get(1).getTerminologyId();
+    activeDescMap.put(descId1, true);
+    activeDescMap.put(descId2, true);
+    etDescMap.put(descId1, "20160101");
+    etDescMap.put(descId2, "20160102");
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    String langId2 =
+        concept1.getDescriptions().get(1).getLanguageRefsetMembers().get(0)
+            .getTerminologyId();
+    activeLangMap.put(langId1, true);
+    activeLangMap.put(langId2, true);
+    etLangMap.put(langId1, "20160101");
+    etLangMap.put(langId2, "20160102");
 
     verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
-        refset1.getId(), "Snapshot");
+        translation1.getId(), "Snapshot");
 
+    // Verify delta
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    activeDescMap.put(descId2, true);
+    etDescMap.put(descId2, "20160102");
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    activeLangMap.put(langId2, true);
+    etLangMap.put(langId2, "20160102");
+
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Delta");
+
+    // Add/remove from concept 1
+    addDescription(concept1, "term c", "insensitive", "preferred");
+    concept1 =
+        (ConceptJpa) translationService.updateTranslationConcept(concept1,
+            adminAuthToken);
+    concept1.getDescriptions().remove(0);
+    concept1 =
+        (ConceptJpa) translationService.updateTranslationConcept(concept1,
+            adminAuthToken);
+
+    // Begin release
+    releaseService.beginTranslationRelease(translation1.getId(), "20160103",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
+    // Beta release
+    Translation release3 =
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
+
+    // Verify snapshot
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    // desc 0 has been removed, so 3rd one is now in 2nd position (index 1)
+    String descId3 = concept1.getDescriptions().get(1).getTerminologyId();
+    activeDescMap.put(descId1, false);
+    activeDescMap.put(descId2, true);
+    activeDescMap.put(descId3, true);
+    etDescMap.put(descId1, "20160103");
+    etDescMap.put(descId2, "20160102");
+    etDescMap.put(descId3, "20160103");
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    // desc 0 has been removed, so 3rd one is now in 2nd position (index 1)
+    String langId3 =
+        concept1.getDescriptions().get(1).getLanguageRefsetMembers().get(0)
+            .getTerminologyId();
+    activeLangMap.put(langId1, false);
+    activeLangMap.put(langId2, true);
+    activeLangMap.put(langId3, true);
+    etLangMap.put(langId1, "20160103");
+    etLangMap.put(langId2, "20160102");
+    etLangMap.put(langId3, "20160103");
+
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Snapshot");
+
+    // Verify delta
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    activeDescMap.put(descId1, false);
+    activeDescMap.put(descId3, true);
+    etDescMap.put(descId1, "20160103");
+    etDescMap.put(descId3, "20160103");
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    activeLangMap.put(langId1, false);
+    activeLangMap.put(langId3, true);
+    etLangMap.put(langId1, "20160103");
+    etLangMap.put(langId3, "20160103");
+
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Delta");
+
+    // Change language preference of desc2
+    concept1.getDescriptions().get(0).getLanguageRefsetMembers().get(0)
+        .setAcceptabilityId("changed");
+
+    concept1 =
+        (ConceptJpa) translationService.updateTranslationConcept(concept1,
+            adminAuthToken);
+
+    // Begin release
+    releaseService.beginTranslationRelease(translation1.getId(), "20160104",
+        adminAuthToken);
+    // Validate release
+    releaseService.validateTranslationRelease(translation1.getId(),
+        adminAuthToken);
+    // Beta release
+    Translation release4 =
+        releaseService.betaTranslationRelease(translation1.getId(), "DEFAULT",
+            adminAuthToken);
+    // Finish release
+    releaseService.finishTranslationRelease(translation1.getId(),
+        adminAuthToken);
+
+    // Verify snapshot
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    // desc 0 has been removed, so 3rd one is now in 2nd position (index 1)
+    activeDescMap.put(descId1, false);
+    activeDescMap.put(descId2, true);
+    activeDescMap.put(descId3, true);
+    etDescMap.put(descId1, "20160103");
+    etDescMap.put(descId2, "20160102");
+    etDescMap.put(descId3, "20160103");
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    // desc 0 has been removed, so 3rd one is now in 2nd position (index 1)
+
+    activeLangMap.put(langId1, false);
+    activeLangMap.put(langId2, true);
+    activeLangMap.put(langId3, true);
+    etLangMap.put(langId1, "20160103");
+    etLangMap.put(langId2, "20160104");
+    etLangMap.put(langId3, "20160103");
+
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Snapshot");
+
+    // Verify delta
+    activeDescMap = new HashMap<>();
+    etDescMap = new HashMap<>();
+    descId1 = concept1.getDescriptions().get(0).getTerminologyId();
+    // empty description delta, only language changed
+
+    activeLangMap = new HashMap<>();
+    etLangMap = new HashMap<>();
+    activeLangMap.put(langId2, true);
+    etLangMap.put(langId2, "20160104");
+
+    verifyData(activeDescMap, etDescMap, activeLangMap, etLangMap,
+        translation1.getId(), "Delta");
+
+    // Change case sensitivity of desc2
+
+    
+    // Change STR of desc2
+
+    
+    // Change active
     // clean up
     translationService.removeTranslation(translation1.getId(), true,
         adminAuthToken);
     translationService
         .removeTranslation(release1.getId(), true, adminAuthToken);
+    translationService
+        .removeTranslation(release2.getId(), true, adminAuthToken);
+    translationService
+    .removeTranslation(release3.getId(), true, adminAuthToken);
+    translationService
+    .removeTranslation(release4.getId(), true, adminAuthToken);
 
   }
 
@@ -895,17 +1100,51 @@ public class TranslationReleaseTest extends RestSupport {
     desc.setCaseSignificanceId(caseId);
     desc.setTypeId("pt");
     desc.setLanguageCode("en");
+    desc.setConcept(concept);
     concept.getDescriptions().add(desc);
 
     LanguageRefsetMember lang = new LanguageRefsetMemberJpa();
     lang.setActive(true);
-    lang.setAcceptabilityId("Acceptable");
+    lang.setAcceptabilityId(acceptability);
     lang.setEffectiveTime(null);
     lang.setModuleId("");
     lang.setRefsetId("us english");
     desc.getLanguageRefsetMembers().add(lang);
 
     return concept;
+  }
+
+  /**
+   * Adds the description.
+   *
+   * @param concept the concept
+   * @param term the term
+   * @param caseId the case id
+   * @param acceptability the acceptability
+   */
+  @SuppressWarnings("static-method")
+  public void addDescription(Concept concept, String term, String caseId,
+    String acceptability) {
+
+    DescriptionJpa desc = new DescriptionJpa();
+    desc.setActive(true);
+    desc.setEffectiveTime(null);
+    desc.setModuleId("");
+    desc.setTerm(term);
+    desc.setCaseSignificanceId(caseId);
+    desc.setTypeId("pt");
+    desc.setLanguageCode("en");
+    desc.setConcept(concept);
+    concept.getDescriptions().add(desc);
+
+    LanguageRefsetMember lang = new LanguageRefsetMemberJpa();
+    lang.setActive(true);
+    lang.setAcceptabilityId(acceptability);
+    lang.setEffectiveTime(null);
+    lang.setModuleId("");
+    lang.setRefsetId("us english");
+    desc.getLanguageRefsetMembers().add(lang);
+
   }
 
   /**
@@ -968,15 +1207,15 @@ public class TranslationReleaseTest extends RestSupport {
         for (String line : lines) {
           line = line.replace("\r", "");
           final String[] tokens = FieldedStringTokenizer.split(line, "\t");
-          if (activeMapCopy.containsKey(tokens[5])
-              && activeMapCopy.get(tokens[5]) == tokens[2].equals("1")) {
-            activeMapCopy.remove(tokens[5]);
+          if (activeMapCopy.containsKey(tokens[0])
+              && activeMapCopy.get(tokens[0]) == tokens[2].equals("1")) {
+            activeMapCopy.remove(tokens[0]);
           } else {
             badLines.add(line);
           }
-          if (etMapCopy.containsKey(tokens[5])
-              && etMapCopy.get(tokens[5]).equals(tokens[1])) {
-            etMapCopy.remove(tokens[5]);
+          if (etMapCopy.containsKey(tokens[0])
+              && etMapCopy.get(tokens[0]).equals(tokens[1])) {
+            etMapCopy.remove(tokens[0]);
           } else {
             badLines.add(line);
           }
@@ -1000,15 +1239,15 @@ public class TranslationReleaseTest extends RestSupport {
         for (String line : lines) {
           line = line.replace("\r", "");
           final String[] tokens = FieldedStringTokenizer.split(line, "\t");
-          if (activeMapCopy.containsKey(tokens[5])
-              && activeMapCopy.get(tokens[5]) == tokens[2].equals("1")) {
-            activeMapCopy.remove(tokens[5]);
+          if (activeMapCopy.containsKey(tokens[0])
+              && activeMapCopy.get(tokens[0]) == tokens[2].equals("1")) {
+            activeMapCopy.remove(tokens[0]);
           } else {
             badLines.add(line);
           }
-          if (etMapCopy.containsKey(tokens[5])
-              && etMapCopy.get(tokens[5]).equals(tokens[1])) {
-            etMapCopy.remove(tokens[5]);
+          if (etMapCopy.containsKey(tokens[0])
+              && etMapCopy.get(tokens[0]).equals(tokens[1])) {
+            etMapCopy.remove(tokens[0]);
           } else {
             badLines.add(line);
           }
@@ -1045,11 +1284,11 @@ public class TranslationReleaseTest extends RestSupport {
       // Find the matching file
       if (zipEntry.getName().contains(type)) {
         // Scan through the file and create descriptions and cache concepts
-        Scanner sc = new Scanner(zin);
+        @SuppressWarnings("resource")
+        final Scanner sc = new Scanner(zin);
         while (sc.hasNextLine()) {
           lines.add(sc.nextLine());
         }
-        sc.close();
       }
     } // zin close
     zin.close();
