@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.jpa.helpers.PfsParameterJpa;
 import org.ihtsdo.otf.refset.rest.client.RefsetClientRest;
 import org.ihtsdo.otf.refset.rf2.ConceptRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptRefsetMemberJpa;
+import org.ihtsdo.otf.refset.services.handlers.TerminologyHandler;
 import org.junit.Test;
 
 /**
@@ -103,7 +104,8 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(1, updateMembers.getCount());
     ConceptRefsetMember updateMember = updateMembers.getObjects().get(0);
     assertEquals("284009009", updateMember.getConceptId());
-    assertEquals("Route of administration value", updateMember.getConceptName());
+    assertEquals("Route of administration value (qualifier value)",
+        updateMember.getConceptName());
 
     // Verify number of members in refset has increased due to new member
     foundMembers =
@@ -153,7 +155,8 @@ public class RefsetTest extends RefsetTestSupport {
         refsetService.removeRefsetExclusion(memberToRemove.getObjects().get(0)
             .getId(), adminAuthToken);
     assertEquals(exclusionRemovedMember.getConceptId(), "429817007");
-    assertEquals(exclusionRemovedMember.getConceptName(), "Interstitial route");
+    assertEquals("Interstitial route (qualifier value)",
+        exclusionRemovedMember.getConceptName());
     ConceptRefsetMemberList finalMemberList =
         refsetService.findRefsetMembersForQuery(refset.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
@@ -216,7 +219,7 @@ public class RefsetTest extends RefsetTestSupport {
     members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
-    assertEquals(143, members.getCount());
+    assertEquals(141, members.getCount());
     assertEquals(3, refset.getDefinitionClauses().size());
 
     // Add 2nd negated clause that is based on concept that is child of original
@@ -231,7 +234,7 @@ public class RefsetTest extends RefsetTestSupport {
     members =
         refsetService.findRefsetMembersForQuery(refset.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
-    assertEquals(143, members.getCount());
+    assertEquals(141, members.getCount());
     assertEquals(4, refset.getDefinitionClauses().size());
 
     // After Optimize, should turn into 2 clauses (one positive & one negated)
@@ -242,7 +245,7 @@ public class RefsetTest extends RefsetTestSupport {
     members =
         refsetService.findRefsetMembersForQuery(optomizedRefset.getId(),
             "memberType:MEMBER", new PfsParameterJpa(), adminAuthToken);
-    assertEquals(143, members.getCount());
+    assertEquals(141, members.getCount());
 
     int posClauses = 0;
     int negClauses = 0;
@@ -303,7 +306,7 @@ public class RefsetTest extends RefsetTestSupport {
 
     // Begin migration
     Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+        refsetService.beginMigration(janRefset.getId(), "en-edition",
             "20150731", adminAuthToken);
 
     // Create Report with identical content
@@ -346,8 +349,9 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(1, newRegularMembers.getCount());
     assertEquals(createdMember.getConceptId(), newRegularMembers.getObjects()
         .get(0).getConceptId());
-    assertEquals(createdMember.getConceptName(), newRegularMembers.getObjects()
-        .get(0).getConceptName());
+    // Name is recomputed now, so it won't match "Test Name"
+    assertEquals(TerminologyHandler.UNABLE_TO_DETERMINE_NAME, newRegularMembers
+        .getObjects().get(0).getConceptName());
 
     // Add identical member to Jan refset and regenerate report
     // Thus Old & New again the same size
@@ -397,7 +401,7 @@ public class RefsetTest extends RefsetTestSupport {
     assertEquals(0, newRegularMembers.getCount());
     assertEquals(createdMember3.getConceptId(), oldRegularMembers.getObjects()
         .get(0).getConceptId());
-    assertEquals(createdMember3.getConceptName(), oldRegularMembers
+    assertEquals("TestMember3", oldRegularMembers
         .getObjects().get(0).getConceptName());
     refsetService.releaseReportToken(reportToken, adminAuthToken);
 
@@ -507,7 +511,7 @@ public class RefsetTest extends RefsetTestSupport {
     // Begin migration
     Logger.getLogger(getClass()).debug("  begin migration");
     Refset julyStagedRefset =
-        refsetService.beginMigration(janRefset.getId(), "SNOMEDCT",
+        refsetService.beginMigration(janRefset.getId(), "en-edition",
             "20150731", adminAuthToken);
 
     // Obtain reportToken via compareRefsets

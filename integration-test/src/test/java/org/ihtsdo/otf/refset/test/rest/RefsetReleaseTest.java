@@ -209,7 +209,7 @@ public class RefsetReleaseTest extends RestSupport {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
@@ -1026,7 +1026,6 @@ public class RefsetReleaseTest extends RestSupport {
     //
     // 10519008 true
     // 61233003 true
-    // 10674871000119105 true
     // 233711002 true
     //
     // Begin release
@@ -1044,11 +1043,9 @@ public class RefsetReleaseTest extends RestSupport {
     Map<String, String> etMap = new HashMap<>();
     activeMap.put("10519008", true);
     activeMap.put("61233003", true);
-    activeMap.put("10674871000119105", true);
     activeMap.put("233711002", true);
     etMap.put("10519008", "20160101");
     etMap.put("61233003", "20160101");
-    etMap.put("10674871000119105", "20160101");
     etMap.put("233711002", "20160101");
     verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
 
@@ -1077,11 +1074,9 @@ public class RefsetReleaseTest extends RestSupport {
     etMap = new HashMap<>();
     activeMap.put("10519008", false);
     activeMap.put("61233003", true);
-    activeMap.put("10674871000119105", true);
     activeMap.put("233711002", true);
     etMap.put("10519008", "20160102");
     etMap.put("61233003", "20160101");
-    etMap.put("10674871000119105", "20160101");
     etMap.put("233711002", "20160101");
     verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
     activeMap = new HashMap<>();
@@ -1125,12 +1120,10 @@ public class RefsetReleaseTest extends RestSupport {
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
     activeMap.put("61233003", true);
-    activeMap.put("10674871000119105", true);
     activeMap.put("233711002", true);
     activeMap.put("12345001", true);
     etMap.put("10519008", "20160103");
     etMap.put("61233003", "20160101");
-    etMap.put("10674871000119105", "20160101");
     etMap.put("233711002", "20160101");
     etMap.put("12345001", "20160103");
     verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
@@ -1164,12 +1157,10 @@ public class RefsetReleaseTest extends RestSupport {
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
     activeMap.put("61233003", true);
-    activeMap.put("10674871000119105", true);
     activeMap.put("233711002", true);
     activeMap.put("12345001", false);
     etMap.put("10519008", "20160103");
     etMap.put("61233003", "20160101");
-    etMap.put("10674871000119105", "20160101");
     etMap.put("233711002", "20160101");
     etMap.put("12345001", "20160104");
     verifyData(activeMap, etMap, refset1.getId(), "Snapshot");
@@ -1208,13 +1199,11 @@ public class RefsetReleaseTest extends RestSupport {
     etMap = new HashMap<>();
     activeMap.put("10519008", true);
     activeMap.put("61233003", true);
-    activeMap.put("10674871000119105", true);
     activeMap.put("233711002", true);
     activeMap.put("12345001", false);
     activeMap.put("95437004", true);
     etMap.put("10519008", "20160103");
     etMap.put("61233003", "20160101");
-    etMap.put("10674871000119105", "20160101");
     etMap.put("233711002", "20160101");
     etMap.put("12345001", "20160104");
     etMap.put("95437004", "20160105");

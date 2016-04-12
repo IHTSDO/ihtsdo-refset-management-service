@@ -3,7 +3,8 @@
  */
 package org.ihtsdo.otf.refset.test.rest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 
@@ -25,7 +26,7 @@ import org.junit.Test;
 /**
  * Integration test for extensional refset editing.
  */
-public class ExtensionalRefsetEditingTest extends RefsetTest {
+public class ExtensionalRefsetEditingTest extends RefsetTestSupport {
 
   /**
    * Test EXTENSIONAL refset - creation, addition, adding members, removing

@@ -284,7 +284,7 @@ public class BrowserTerminologyHandler implements TerminologyHandler {
         + URLEncoder.encode(expr, "UTF-8").replaceAll(" ", "%20") + "&limit="
         + Math.min(initialMaxLimit, localPfs.getMaxResults()) + "&offset="
         + localPfs.getStartIndex();
-    Logger.getLogger(getClass()).debug("  Resolve expression - " + targetUrl);
+    Logger.getLogger(getClass()).info("  Resolve expression - " + targetUrl);
     WebTarget target = client.target(targetUrl);
 
     Response response = target.request(accept).get();

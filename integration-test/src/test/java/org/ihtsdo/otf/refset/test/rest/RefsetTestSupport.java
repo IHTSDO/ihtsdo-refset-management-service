@@ -201,7 +201,7 @@ public class RefsetTestSupport extends RestSupport {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(false);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     refset.setVersion("20150131");
     refset.setWorkflowPath("DEFAULT");

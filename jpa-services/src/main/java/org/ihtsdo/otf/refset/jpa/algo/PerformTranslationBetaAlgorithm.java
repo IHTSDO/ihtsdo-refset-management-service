@@ -24,6 +24,7 @@ import org.ihtsdo.otf.refset.jpa.services.TranslationServiceJpa;
 import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
+import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
 import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
@@ -141,7 +142,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       // Detach object by copying it
       final Concept copy = new ConceptJpa(exportConcept, true);
       exportConcepts.add(copy);
-      }
+    }
     // Generate the snapshot release artifact and add it
     final ExportTranslationHandler handler =
         getExportTranslationHandler(ioHandlerId);

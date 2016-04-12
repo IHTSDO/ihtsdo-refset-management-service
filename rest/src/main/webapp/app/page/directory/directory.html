@@ -2,6 +2,9 @@
 
 <div class="row">
 
+  <!-- Show intro text if user is not logged in -->
+  <div ng-if="!isLoggedIn()" ng-include="'app/page/general/intro.html'"></div>
+
   <div class="col-md-12 col-xs-12">
 
     <h4>Refsets</h4>

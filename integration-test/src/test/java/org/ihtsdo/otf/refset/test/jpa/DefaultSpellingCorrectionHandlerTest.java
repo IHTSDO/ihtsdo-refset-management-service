@@ -241,7 +241,7 @@ public class DefaultSpellingCorrectionHandlerTest extends JpaSupport {
     }
 
     // Assert
-    assertEquals(origLcVals, convertedVals);
+    assertEquals(origVals, convertedVals);
   }
 
   /**

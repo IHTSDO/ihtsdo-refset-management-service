@@ -65,7 +65,7 @@ public class ProjectUserQueryTest extends ProjectTestSupport {
     project.setName(name);
     project.setDescription("Description of project " + name);
     project.setLastModified(new Date());
-    project.setTerminology("SNOMEDCT");
+    project.setTerminology("en-edition");
     project.setTerminologyId("JIRA-12345");
     project.setVersion("latest");
     // This is the only namespace configured in the sample id generation service

@@ -38,8 +38,8 @@ import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
 /**
  * A client for connecting to a project REST service.
  */
-public class ProjectClientRest extends RootClientRest
-    implements ProjectServiceRest {
+public class ProjectClientRest extends RootClientRest implements
+    ProjectServiceRest {
 
   /** The config. */
   private Properties config = null;
@@ -64,10 +64,12 @@ public class ProjectClientRest extends RootClientRest
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/add");
 
-    String projectString = ConfigUtility
-        .getStringForGraph(project == null ? new ProjectJpa() : project);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).put(Entity.xml(projectString));
+    String projectString =
+        ConfigUtility.getStringForGraph(project == null ? new ProjectJpa()
+            : project);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).put(Entity.xml(projectString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -77,8 +79,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ProjectJpa result = (ProjectJpa) ConfigUtility
-        .getGraphForString(resultString, ProjectJpa.class);
+    ProjectJpa result =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
 
     return result;
   }
@@ -87,16 +90,18 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public void updateProject(ProjectJpa project, String authToken)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - update project " + project);
+    Logger.getLogger(getClass()).debug(
+        "Project Client - update project " + project);
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/update");
 
-    String projectString = ConfigUtility
-        .getStringForGraph(project == null ? new ProjectJpa() : project);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(projectString));
+    String projectString =
+        ConfigUtility.getStringForGraph(project == null ? new ProjectJpa()
+            : project);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(projectString));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing, successful
@@ -114,8 +119,9 @@ public class ProjectClientRest extends RootClientRest
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/remove/" + id);
 
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).delete();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).delete();
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing, successful
@@ -127,15 +133,16 @@ public class ProjectClientRest extends RootClientRest
   /* see superclass */
   @Override
   public Project getProject(Long projectId, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - get project " + projectId);
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get project " + projectId);
     validateNotEmpty(projectId, "projectId");
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/" + projectId);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     if (response.getStatus() == 204) {
       return null;
@@ -149,8 +156,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ProjectJpa project = (ProjectJpa) ConfigUtility
-        .getGraphForString(resultString, ProjectJpa.class);
+    ProjectJpa project =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
     return project;
   }
 
@@ -158,19 +166,21 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public Project assignUserToProject(Long projectId, String userName,
     String role, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - assign user to project " + projectId + ", "
+    Logger.getLogger(getClass()).debug(
+        "Project Client - assign user to project " + projectId + ", "
             + userName + ", " + role);
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(userName, "userName");
     validateNotEmpty(role, "role");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/assign?projectId="
-            + projectId + "&userName=" + userName + "&role=" + role);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/assign?projectId=" + projectId + "&userName="
+            + userName + "&role=" + role);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -180,8 +190,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ProjectJpa project = (ProjectJpa) ConfigUtility
-        .getGraphForString(resultString, ProjectJpa.class);
+    ProjectJpa project =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
     return project;
 
   }
@@ -190,17 +201,20 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public Project unassignUserFromProject(Long projectId, String userName,
     String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - assign user to project " + projectId + ", "
+    Logger.getLogger(getClass()).debug(
+        "Project Client - assign user to project " + projectId + ", "
             + userName);
     validateNotEmpty(projectId, "projectId");
     validateNotEmpty(userName, "userName");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/unassign?projectId=" + projectId + "&userName=" + userName);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/unassign?projectId=" + projectId + "&userName="
+            + userName);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -210,8 +224,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ProjectJpa project = (ProjectJpa) ConfigUtility
-        .getGraphForString(resultString, ProjectJpa.class);
+    ProjectJpa project =
+        (ProjectJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectJpa.class);
     return project;
 
   }
@@ -224,8 +239,9 @@ public class ProjectClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/roles");
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -235,8 +251,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    StringList list = (StringList) ConfigUtility.getGraphForString(resultString,
-        StringList.class);
+    StringList list =
+        (StringList) ConfigUtility.getGraphForString(resultString,
+            StringList.class);
     return list;
   }
 
@@ -244,14 +261,16 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public void luceneReindex(String indexedObjects, String authToken)
     throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - lucene reindex " + indexedObjects);
+    Logger.getLogger(getClass()).debug(
+        "Project Client - lucene reindex " + indexedObjects);
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/reindex");
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.text(indexedObjects));
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken)
+            .post(Entity.text(indexedObjects));
 
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
       // do nothing
@@ -270,13 +289,17 @@ public class ProjectClientRest extends RootClientRest
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/projects"
-            + "?query=" + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+        client.target(config.getProperty("base.url")
+            + "/project/projects"
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
                 .replaceAll("\\+", "%20"));
-    String pfsString = ConfigUtility
-        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(pfsString));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -286,8 +309,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ProjectList list = (ProjectListJpa) ConfigUtility
-        .getGraphForString(resultString, ProjectListJpa.class);
+    ProjectList list =
+        (ProjectListJpa) ConfigUtility.getGraphForString(resultString,
+            ProjectListJpa.class);
     return list;
   }
 
@@ -299,14 +323,19 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/users/" + projectId
-            + "?query=" + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/users/"
+            + projectId
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
                 .replaceAll("\\+", "%20"));
-    String pfsString = ConfigUtility
-        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(pfsString));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -316,8 +345,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    UserList list = (UserListJpa) ConfigUtility.getGraphForString(resultString,
-        UserListJpa.class);
+    UserList list =
+        (UserListJpa) ConfigUtility.getGraphForString(resultString,
+            UserListJpa.class);
     return list;
   }
 
@@ -329,14 +359,20 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(query, "query");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/users/" + projectId + "/unassigned" + "?query="
-        + URLEncoder.encode(query == null ? "" : query, "UTF-8")
-            .replaceAll("\\+", "%20"));
-    String pfsString = ConfigUtility
-        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(pfsString));
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/users/"
+            + projectId
+            + "/unassigned"
+            + "?query="
+            + URLEncoder.encode(query == null ? "" : query, "UTF-8")
+                .replaceAll("\\+", "%20"));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -346,8 +382,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    UserList list = (UserListJpa) ConfigUtility.getGraphForString(resultString,
-        UserListJpa.class);
+    UserList list =
+        (UserListJpa) ConfigUtility.getGraphForString(resultString,
+            UserListJpa.class);
     return list;
   }
 
@@ -358,8 +395,9 @@ public class ProjectClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/user/anyrole");
-    Response response = target.request(MediaType.TEXT_PLAIN)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.TEXT_PLAIN).header("Authorization", authToken)
+            .get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -379,10 +417,12 @@ public class ProjectClientRest extends RootClientRest
     Logger.getLogger(getClass()).debug("Project Client - get terminologies");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/terminology/all");
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/terminology/all");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -392,8 +432,8 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    return (TerminologyList) ConfigUtility.getGraphForString(resultString,
-        TerminologyList.class);
+    return (TerminologyListJpa) ConfigUtility.getGraphForString(resultString,
+        TerminologyListJpa.class);
 
   }
 
@@ -405,10 +445,12 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(terminology, "terminology");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/terminology/" + terminology + "/all");
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/terminology/"
+            + terminology + "/all");
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -418,8 +460,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    TerminologyListJpa list = (TerminologyListJpa) ConfigUtility
-        .getGraphForString(resultString, TerminologyListJpa.class);
+    TerminologyListJpa list =
+        (TerminologyListJpa) ConfigUtility.getGraphForString(resultString,
+            TerminologyListJpa.class);
     return list;
   }
 
@@ -431,8 +474,9 @@ public class ProjectClientRest extends RootClientRest
     Client client = ClientBuilder.newClient();
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/icons");
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -442,8 +486,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    KeyValuePairList list = (KeyValuePairList) ConfigUtility
-        .getGraphForString(resultString, KeyValuePairList.class);
+    KeyValuePairList list =
+        (KeyValuePairList) ConfigUtility.getGraphForString(resultString,
+            KeyValuePairList.class);
     return list;
   }
 
@@ -451,8 +496,8 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public ConceptList findConceptsForQuery(String query, String terminology,
     String version, PfsParameterJpa pfs, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - find concepts for query " + query + ", "
+    Logger.getLogger(getClass()).debug(
+        "Project Client - find concepts for query " + query + ", "
             + terminology + ", " + version + ", " + pfs);
     validateNotEmpty(query, "query");
     validateNotEmpty(terminology, "terminology");
@@ -460,15 +505,22 @@ public class ProjectClientRest extends RootClientRest
 
     Client client = ClientBuilder.newClient();
     WebTarget target =
-        client.target(config.getProperty("base.url") + "/project/concepts?"
-            + "terminology=" + terminology + "&version=" + version + "&query="
+        client.target(config.getProperty("base.url")
+            + "/project/concepts?"
+            + "terminology="
+            + terminology
+            + "&version="
+            + version
+            + "&query="
             + URLEncoder.encode(query == null ? "" : query, "UTF-8")
                 .replaceAll("\\+", "%20"));
 
-    String pfsString = ConfigUtility
-        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(pfsString));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -478,8 +530,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ConceptListJpa list = (ConceptListJpa) ConfigUtility
-        .getGraphForString(resultString, ConceptListJpa.class);
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
     return list;
   }
 
@@ -487,21 +540,23 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public Concept getFullConcept(String terminologyId, String terminology,
     String version, Long translationId, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Project Client - get concept with descriptions - "
-            + terminologyId + ", " + terminology + ", " + version);
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get concept with descriptions - " + terminologyId
+            + ", " + terminology + ", " + version);
     validateNotEmpty(terminologyId, "terminologyId");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/concept?" + "terminologyId=" + terminologyId
-        + "&terminology=" + terminology + "&version=" + version
-        + (translationId != null ? "&translationId=" + translationId : ""));
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/concept?"
+            + "terminologyId=" + terminologyId + "&terminology=" + terminology
+            + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     if (response.getStatus() == 204) {
       return null;
@@ -515,32 +570,37 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ConceptJpa con = (ConceptJpa) ConfigUtility.getGraphForString(resultString,
-        ConceptJpa.class);
+    ConceptJpa con =
+        (ConceptJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptJpa.class);
     return con;
   }
 
   /* see superclass */
   @Override
   public ConceptList getConceptChildren(String terminologyId,
-    String terminology, String version, Long translationId, PfsParameterJpa pfs,
-    String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get children - "
-        + terminologyId + ", " + terminology + ", " + version + ", " + pfs);
+    String terminology, String version, Long translationId,
+    PfsParameterJpa pfs, String authToken) throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get children - " + terminologyId + ", " + terminology
+            + ", " + version + ", " + pfs);
     validateNotEmpty(terminologyId, "terminologyId");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/concept/children?" + "terminologyId=" + terminologyId
-        + "&terminology=" + terminology + "&version=" + version
-        + (translationId != null ? "&translationId=" + translationId : ""));
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/concept/children?" + "terminologyId=" + terminologyId
+            + "&terminology=" + terminology + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
-    String pfsString = ConfigUtility
-        .getStringForGraph(pfs == null ? new PfsParameterJpa() : pfs);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).post(Entity.xml(pfsString));
+    String pfsString =
+        ConfigUtility.getStringForGraph(pfs == null ? new PfsParameterJpa()
+            : pfs);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).post(Entity.xml(pfsString));
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -550,29 +610,34 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ConceptListJpa list = (ConceptListJpa) ConfigUtility
-        .getGraphForString(resultString, ConceptListJpa.class);
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
     return list;
   }
 
   /* see superclass */
   @Override
-  public ConceptList getConceptParents(String terminologyId, String terminology,
-    String version, Long translationId, String authToken) throws Exception {
-    Logger.getLogger(getClass()).debug("Project Client - get parents - "
-        + terminologyId + ", " + terminology + ", " + version);
+  public ConceptList getConceptParents(String terminologyId,
+    String terminology, String version, Long translationId, String authToken)
+    throws Exception {
+    Logger.getLogger(getClass()).debug(
+        "Project Client - get parents - " + terminologyId + ", " + terminology
+            + ", " + version);
     validateNotEmpty(terminologyId, "terminologyId");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/project/concept/parents?" + "terminologyId=" + terminologyId
-        + "&terminology=" + terminology + "&version=" + version
-        + (translationId != null ? "&translationId=" + translationId : ""));
+    WebTarget target =
+        client.target(config.getProperty("base.url")
+            + "/project/concept/parents?" + "terminologyId=" + terminologyId
+            + "&terminology=" + terminology + "&version=" + version
+            + (translationId != null ? "&translationId=" + translationId : ""));
 
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -582,8 +647,9 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    ConceptListJpa list = (ConceptListJpa) ConfigUtility
-        .getGraphForString(resultString, ConceptListJpa.class);
+    ConceptListJpa list =
+        (ConceptListJpa) ConfigUtility.getGraphForString(resultString,
+            ConceptListJpa.class);
     return list;
   }
 
@@ -599,8 +665,9 @@ public class ProjectClientRest extends RootClientRest
     WebTarget target =
         client.target(config.getProperty("base.url") + "/project/terminology/"
             + terminology + "/descriptiontypes?" + "version=" + version);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -610,8 +677,8 @@ public class ProjectClientRest extends RootClientRest
     }
 
     // converting to object
-    return (DescriptionTypeListJpa) ConfigUtility
-        .getGraphForString(resultString, DescriptionTypeListJpa.class);
+    return (DescriptionTypeListJpa) ConfigUtility.getGraphForString(
+        resultString, DescriptionTypeListJpa.class);
 
   }
 
@@ -624,11 +691,13 @@ public class ProjectClientRest extends RootClientRest
     validateNotEmpty(objectId, "objectId");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client
-        .target(config.getProperty("base.url") + "/project/log?" + "projectId="
-            + projectId + "&objectId=" + objectId + "&lines=" + lines);
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/project/log?"
+            + "projectId=" + projectId + "&objectId=" + objectId + "&lines="
+            + lines);
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {
@@ -646,20 +715,22 @@ public class ProjectClientRest extends RootClientRest
   @Override
   public ConceptList getReplacementConcepts(String conceptId,
     String terminology, String version, String authToken) throws Exception {
-    Logger.getLogger(getClass())
-        .debug("Refset Client - find refset members for query " + conceptId
-            + ", " + terminology + ", " + version);
+    Logger.getLogger(getClass()).debug(
+        "Refset Client - find refset members for query " + conceptId + ", "
+            + terminology + ", " + version);
     validateNotEmpty(conceptId, "conceptId");
     validateNotEmpty(terminology, "terminology");
     validateNotEmpty(version, "version");
 
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(config.getProperty("base.url")
-        + "/concept/replacements" + "?conceptId=" + conceptId + "&terminology="
-        + terminology + "&version=" + version);
+    WebTarget target =
+        client.target(config.getProperty("base.url") + "/concept/replacements"
+            + "?conceptId=" + conceptId + "&terminology=" + terminology
+            + "&version=" + version);
 
-    Response response = target.request(MediaType.APPLICATION_XML)
-        .header("Authorization", authToken).get();
+    Response response =
+        target.request(MediaType.APPLICATION_XML)
+            .header("Authorization", authToken).get();
 
     String resultString = response.readEntity(String.class);
     if (response.getStatusInfo().getFamily() == Family.SUCCESSFUL) {

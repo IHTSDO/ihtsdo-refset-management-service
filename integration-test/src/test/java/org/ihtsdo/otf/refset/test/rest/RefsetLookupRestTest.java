@@ -8,6 +8,7 @@ package org.ihtsdo.otf.refset.test.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,7 +83,7 @@ public class RefsetLookupRestTest extends RestSupport {
     //
     // lookup.background=false
     //
-   
+
     // instantiate properties
     properties = ConfigUtility.getConfigProperties();
 
@@ -174,7 +175,7 @@ public class RefsetLookupRestTest extends RestSupport {
     refset.setPublishable(true);
     refset.setPublished(true);
     refset.setInPublicationProcess(false);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
@@ -281,8 +282,8 @@ public class RefsetLookupRestTest extends RestSupport {
             new PfsParameterJpa(), adminAuthToken);
 
     // Verify proper name & statues set
-    assertEquals("Neoplasm of kidney", members.getObjects().get(0)
-        .getConceptName());
+    assertTrue(members.getObjects().get(0).getConceptName()
+        .startsWith("Neoplasm of kidney"));
     assertEquals(true, members.getObjects().get(0).isConceptActive());
 
     // clean up

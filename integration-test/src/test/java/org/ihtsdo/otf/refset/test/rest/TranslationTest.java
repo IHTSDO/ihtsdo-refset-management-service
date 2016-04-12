@@ -287,7 +287,7 @@ public class TranslationTest extends RestSupport {
     refset.setProject(project);
     refset.setPublishable(true);
     refset.setPublished(true);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");
@@ -361,7 +361,7 @@ public class TranslationTest extends RestSupport {
     InputStream in =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/translation/memoryEntries.txt"));
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
     translationService.importPhraseMemory(null, in, translation.getId(),
         adminAuthToken);
     InputStream inputStream =
@@ -406,7 +406,7 @@ public class TranslationTest extends RestSupport {
     InputStream in =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/translation/memoryEntries.txt"));
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
 
     // Verify phrase memory is empty to start with
     InputStream inputStream =
@@ -472,7 +472,7 @@ public class TranslationTest extends RestSupport {
     InputStream in =
         new FileInputStream(
             new File(
-                "../config/src/main/resources/data/translation/memoryEntries.txt"));
+                "../config/src/main/resources/data/translation/phraseMemoryEntries.txt"));
     translationService.importPhraseMemory(null, in, translation.getId(),
         adminAuthToken);
     translationService.addPhraseMemoryEntry(translation.getId(), "test1",

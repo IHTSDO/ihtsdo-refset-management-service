@@ -183,7 +183,7 @@ public class SpellingCorrectionRestTest extends RestSupport {
     refset.setPublishable(true);
     refset.setPublished(true);
     refset.setInPublicationProcess(false);
-    refset.setTerminology("SNOMEDCT");
+    refset.setTerminology("en-edition");
     refset.setTerminologyId(refsetId);
     // This is an opportunity to use "branch"
     refset.setVersion("20150131");

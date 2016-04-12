@@ -16,7 +16,7 @@ import org.ihtsdo.otf.refset.jpa.TerminologyJpa;
 /**
  * JAXB enabled implementation of {@link TerminologyList}.
  */
-@XmlRootElement(name = "projectList")
+@XmlRootElement(name = "terminologyList")
 public class TerminologyListJpa extends AbstractResultList<Terminology>
     implements TerminologyList {
 
