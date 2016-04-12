@@ -901,7 +901,7 @@ public class RefsetReleaseTest extends RestSupport {
     // 10000003 true
     refset1 =
         (RefsetJpa) refsetService.getRefset(refset1.getId(), adminAuthToken);
-    refsetService.removeRefsetMember(member.getId(), adminAuthToken)
+    refsetService.removeRefsetMember(member.getId(), adminAuthToken);
     // clean up
     refsetService.removeRefset(release2.getId(), true, adminAuthToken);
     refsetService.removeRefset(release1.getId(), true, adminAuthToken);

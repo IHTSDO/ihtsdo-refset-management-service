@@ -1059,6 +1059,11 @@ public class TranslationServiceJpa extends RefsetServiceJpa
     stagedChange.setStagedTranslation(translationCopy);
     addStagedTranslationChange(stagedChange);
 
+    // Commit if not using transaction per operation
+    if (!getTransactionPerOperation()) {
+      commitClearBegin();
+    }
+    
     // return connected copy with members attached
     return getTranslation(translationCopy.getId());
   }

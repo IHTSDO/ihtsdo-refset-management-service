@@ -25,6 +25,8 @@ import org.ihtsdo.otf.refset.rf2.Concept;
 import org.ihtsdo.otf.refset.rf2.Description;
 import org.ihtsdo.otf.refset.rf2.LanguageRefsetMember;
 import org.ihtsdo.otf.refset.rf2.jpa.ConceptJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.DescriptionJpa;
+import org.ihtsdo.otf.refset.rf2.jpa.LanguageRefsetMemberJpa;
 import org.ihtsdo.otf.refset.services.handlers.ExportTranslationHandler;
 import org.ihtsdo.otf.refset.services.helpers.ProgressEvent;
 import org.ihtsdo.otf.refset.services.helpers.ProgressListener;
@@ -108,7 +110,7 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     // Reread in case a commit was used
     releaseInfo = getReleaseInfo(releaseInfo.getId());
     // Copy the release info from origin refset
-    ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
+    final ReleaseInfo stageReleaseInfo = new ReleaseInfoJpa(releaseInfo);
     stageReleaseInfo.setId(null);
     stageReleaseInfo.getArtifacts().addAll(releaseInfo.getArtifacts());
     stageReleaseInfo.setTranslation(stagedTranslation);
@@ -130,23 +132,19 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
     for (final Concept concept : stagedTranslation.getConcepts()) {
       conceptIds.add(concept.getId());
     }
-
     // Now from detached list, go back and reread concepts one at a time
-    // Lazy initialize to gather all datea
+    // Lazy initialize to gather all data
     // THEN send to export process
     final List<Concept> exportConcepts = new ArrayList<>();
-    int objectCt = 0;
     for (final Long id : conceptIds) {
       final Concept exportConcept = getConcept(id);
-      System.out.println("concept  = " + exportConcept );
-      handleLazyInit(exportConcept);
-      exportConcepts.add(exportConcept);
-      if (!getTransactionPerOperation() && ++objectCt % 5000 == 0) {
-        commitClearBegin();
-      }
+      // Detach object by copying it
+      final Concept copy = new ConceptJpa(exportConcept, true);
+      exportConcepts.add(copy);
     }
     // Generate the snapshot release artifact and add it
-    ExportTranslationHandler handler = getExportTranslationHandler(ioHandlerId);
+    final ExportTranslationHandler handler =
+        getExportTranslationHandler(ioHandlerId);
     InputStream inputStream =
         handler.exportConcepts(stagedTranslation, exportConcepts);
     ReleaseArtifactJpa artifact = new ReleaseArtifactJpa();
@@ -166,15 +164,18 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
         translation.getTerminologyId(), translation.getProject().getId());
 
     if (releaseInfo != null) {
+      System.out.println("start delta");
       // Get descriptions/languages from last time
-      Map<String, Description> oldDescriptionMap = new HashMap<>();
-      Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();
+      final Map<String, Description> oldDescriptionMap = new HashMap<>();
+      final Map<String, LanguageRefsetMember> oldMemberMap = new HashMap<>();
       for (final Concept concept : releaseInfo.getTranslation().getConcepts()) {
         for (final Description description : concept.getDescriptions()) {
-          oldDescriptionMap.put(description.getTerminologyId(), description);
+          oldDescriptionMap.put(description.getTerminologyId(),
+              new DescriptionJpa(description, false));
           for (final LanguageRefsetMember member : description
               .getLanguageRefsetMembers()) {
-            oldMemberMap.put(member.getTerminologyId(), member);
+            oldMemberMap.put(member.getTerminologyId(),
+                new LanguageRefsetMemberJpa(member));
           }
           // clear languages to populate them later
           description.getLanguageRefsetMembers().clear();
@@ -188,10 +189,12 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       Map<String, LanguageRefsetMember> newMemberMap = new HashMap<>();
       for (final Concept concept : stagedTranslation.getConcepts()) {
         for (final Description description : concept.getDescriptions()) {
-          newDescriptionMap.put(description.getTerminologyId(), description);
+          newDescriptionMap.put(description.getTerminologyId(),
+              new DescriptionJpa(description, false));
           for (final LanguageRefsetMember member : description
               .getLanguageRefsetMembers()) {
-            newMemberMap.put(member.getTerminologyId(), member);
+            newMemberMap.put(member.getTerminologyId(),
+                new LanguageRefsetMemberJpa(member));
           }
           // clear languages to populate them later
           description.getLanguageRefsetMembers().clear();
@@ -201,8 +204,8 @@ public class PerformTranslationBetaAlgorithm extends TranslationServiceJpa
       }
 
       // Delta descriptions/languages
-      List<Description> deltaDescriptions = new ArrayList<>();
-      List<LanguageRefsetMember> deltaMembers = new ArrayList<>();
+      final List<Description> deltaDescriptions = new ArrayList<>();
+      final List<LanguageRefsetMember> deltaMembers = new ArrayList<>();
 
       // description now that did not exist before - add active
       // description now that did exist before but is changed - add active
