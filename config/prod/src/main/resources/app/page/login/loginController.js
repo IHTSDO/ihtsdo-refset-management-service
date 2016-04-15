@@ -9,7 +9,8 @@ tsApp
       'securityService',
       'gpService',
       'utilService',
-      function($scope, $http, $location, securityService, gpService, utilService) {
+      'projectService',
+      function($scope, $http, $location, securityService, gpService, utilService, projectService) {
 
         $scope.message = "Authenticating ${security.handler.IMS.url} user ...";
 
@@ -47,6 +48,7 @@ tsApp
                       $location.path("/directory");
                     }
                     gpService.decrement();
+
                   },
                   // Error
                   function(response) {
